@@ -1,0 +1,328 @@
+[
+  {
+    "produto_id": "CART_CONTROL",
+    "categoria": "emagrecimento",
+    "indicacoes_principais": ["obesidade", "sobrepeso", "gordura_visceral"],
+    "mensagem_persuasiva": "CART CONTROL é o nutracêutico mais avançado para emagrecimento. Com ingredientes termogênicos comprovados cientificamente, ele ativa seu metabolismo mesmo em repouso.",
+    "gatilhos_mentais": ["urgencia_medica", "prova_cientifica", "transformacao"],
+    "beneficios_persuasivos": [
+      "Reduz circunferência abdominal em média 4.5cm em 8 semanas",
+      "Acelera metabolismo em até 15%",
+      "Controla apetite e compulsão por doces",
+      "Melhora sensibilidade à insulina"
+    ]
+  },
+  {
+    "produto_id": "AZ_COMPLEX",
+    "categoria": "vitaminas",
+    "indicacoes_principais": ["deficiencia_nutricional", "energia_baixa", "prevencao"],
+    "mensagem_persuasiva": "A-Z COMPLEX é sua base nutricional completa. Com 24 vitaminas e minerais em doses ideais, garante que seu corpo tenha tudo que precisa.",
+    "gatilhos_mentais": ["essencial", "completo", "prevencao"],
+    "beneficios_persuasivos": [
+      "Previne deficiências nutricionais",
+      "Aumenta energia e disposição",
+      "Fortalece sistema imunológico",
+      "Melhora concentração e memória"
+    ]
+  },
+  {
+    "produto_id": "OMEGA_3",
+    "categoria": "cardiovascular",
+    "indicacoes_principais": ["hipertensao", "triglicerides_alto", "prevencao_cardiovascular"],
+    "mensagem_persuasiva": "OMEGA 3 é seu protetor cardiovascular. Estudos mostram redução de 25% em eventos cardíacos.",
+    "gatilhos_mentais": ["protecao", "prevencao", "longevidade"],
+    "beneficios_persuasivos": [
+      "Reduz triglicerídeos em até 30%",
+      "Protege coração e artérias",
+      "Melhora função cerebral",
+      "Ação anti-inflamatória potente"
+    ]
+  },
+  {
+    "produto_id": "CLORETO_MAGNESIO",
+    "categoria": "minerais",
+    "indicacoes_principais": ["hipertensao", "insonia", "estresse", "cansaco"],
+    "mensagem_persuasiva": "CLORETO DE MAGNÉSIO é o mineral da tranquilidade. Regula pressão arterial, melhora sono e relaxa músculos.",
+    "gatilhos_mentais": ["alivio", "natural", "essencial"],
+    "beneficios_persuasivos": [
+      "Reduz pressão arterial em média 4.2 mmHg",
+      "Melhora qualidade do sono",
+      "Alivia cãibras e tensão muscular",
+      "Regula batimentos cardíacos"
+    ]
+  },
+  {
+    "produto_id": "MACA_PERUANA",
+    "categoria": "energia",
+    "indicacoes_principais": ["fadiga", "baixa_energia", "libido_baixa", "hormonal"],
+    "mensagem_persuasiva": "MACA PERUANA é o energético natural dos Andes. Usado há milênios para vitalidade e equilíbrio hormonal.",
+    "gatilhos_mentais": ["ancestral", "natural", "vitalidade"],
+    "beneficios_persuasivos": [
+      "Aumenta energia sem estimulantes",
+      "Melhora libido naturalmente",
+      "Equilibra hormônios",
+      "Combate fadiga crônica"
+    ]
+  },
+  {
+    "produto_id": "VITAMINA_D3",
+    "categoria": "vitaminas",
+    "indicacoes_principais": ["imunidade_baixa", "ossos_fracos", "depressao"],
+    "mensagem_persuasiva": "VITAMINA D3 é o hormônio do sol. Essencial para ossos fortes e sistema imune blindado.",
+    "gatilhos_mentais": ["essencial", "prevencao", "deficiencia_comum"],
+    "beneficios_persuasivos": [
+      "Reduz infecções em 42%",
+      "Fortalece ossos e previne osteoporose",
+      "Melhora humor e bem-estar",
+      "Essencial para absorção de cálcio"
+    ]
+  },
+  {
+    "produto_id": "VITAMINA_B12",
+    "categoria": "vitaminas",
+    "indicacoes_principais": ["fadiga", "memoria_fraca", "vegetarianos"],
+    "mensagem_persuasiva": "VITAMINA B12 é a vitamina da energia. Essencial para nervos, cérebro e produção de energia celular.",
+    "gatilhos_mentais": ["energia", "essencial", "deficiencia_comum"],
+    "beneficios_persuasivos": [
+      "Combate fadiga e cansaço extremo",
+      "Melhora memória e concentração",
+      "Protege nervos",
+      "Essencial para vegetarianos e veganos"
+    ]
+  },
+  {
+    "produto_id": "COLAGENO",
+    "categoria": "colageno",
+    "indicacoes_principais": ["envelhecimento", "dor_articular", "pele_flacida"],
+    "mensagem_persuasiva": "COLÁGENO HIDROLISADO é a proteína da juventude. Restaura pele, articulações e tecidos.",
+    "gatilhos_mentais": ["rejuvenescimento", "beleza", "prevencao"],
+    "beneficios_persuasivos": [
+      "Melhora elasticidade da pele em 35%",
+      "Reduz dor articular em 43%",
+      "Fortalece cabelo e unhas",
+      "Previne rugas e flacidez"
+    ]
+  },
+  {
+    "produto_id": "PROBIOTICOS",
+    "categoria": "digestao",
+    "indicacoes_principais": ["intestino_preso", "gases", "imunidade_baixa"],
+    "mensagem_persuasiva": "PROBIÓTICOS são seus aliados intestinais. 70% da imunidade está no intestino - cuide dele!",
+    "gatilhos_mentais": ["saude_intestinal", "imunidade", "essencial"],
+    "beneficios_persuasivos": [
+      "Regula funcionamento intestinal",
+      "Fortalece sistema imune em 60%",
+      "Reduz gases e inchaço",
+      "Melhora absorção de nutrientes"
+    ]
+  },
+  {
+    "produto_id": "CREATINA",
+    "categoria": "performance",
+    "indicacoes_principais": ["ganho_muscular", "forca", "performance"],
+    "mensagem_persuasiva": "CREATINA MONOHIDRATADA é o suplemento mais estudado do mundo. Mais de 1000 estudos comprovam eficácia.",
+    "gatilhos_mentais": ["ciencia", "performance", "comprovado"],
+    "beneficios_persuasivos": [
+      "Aumenta força em até 20%",
+      "Ganha 2.5kg de massa magra em média",
+      "Melhora performance no treino",
+      "Acelera recuperação muscular"
+    ]
+  },
+  {
+    "produto_id": "WHEY_PROTEIN",
+    "categoria": "proteinas",
+    "indicacoes_principais": ["ganho_muscular", "emagrecimento", "recuperacao"],
+    "mensagem_persuasiva": "WHEY PROTEIN é a proteína de maior valor biológico. Absorção rápida e completa.",
+    "gatilhos_mentais": ["performance", "recuperacao", "qualidade"],
+    "beneficios_persuasivos": [
+      "Maximiza ganho de massa muscular",
+      "Acelera recuperação pós-treino",
+      "Aumenta saciedade",
+      "Rica em aminoácidos essenciais"
+    ]
+  },
+  {
+    "produto_id": "ZINCO",
+    "categoria": "minerais",
+    "indicacoes_principais": ["imunidade_baixa", "acne", "cicatrizacao"],
+    "mensagem_persuasiva": "ZINCO QUELADO é o mineral da imunidade. Reduz resfriados e fortalece defesas.",
+    "gatilhos_mentais": ["imunidade", "prevencao", "essencial"],
+    "beneficios_persuasivos": [
+      "Reduz duração de resfriados em 33%",
+      "Melhora saúde da pele",
+      "Acelera cicatrização",
+      "Fortalece sistema imune"
+    ]
+  },
+  {
+    "produto_id": "VITAMINA_C",
+    "categoria": "vitaminas",
+    "indicacoes_principais": ["imunidade", "antioxidante", "estresse"],
+    "mensagem_persuasiva": "VITAMINA C é o antioxidante essencial. Protege células e fortalece imunidade.",
+    "gatilhos_mentais": ["protecao", "essencial", "antioxidante"],
+    "beneficios_persuasivos": [
+      "Antioxidante potente",
+      "Fortalece sistema imune",
+      "Melhora absorção de ferro",
+      "Protege contra estresse oxidativo"
+    ]
+  },
+  {
+    "produto_id": "SELENIO",
+    "categoria": "minerais",
+    "indicacoes_principais": ["tireoide", "antioxidante", "imunidade"],
+    "mensagem_persuasiva": "SELÊNIO é o mineral da tireoide. Essencial para metabolismo e função hormonal.",
+    "gatilhos_mentais": ["hormonal", "metabolismo", "essencial"],
+    "beneficios_persuasivos": [
+      "Melhora função tireoidiana",
+      "Antioxidante poderoso",
+      "Fortalece imunidade",
+      "Protege contra autoimunidade"
+    ]
+  },
+  {
+    "produto_id": "ASHWAGANDHA",
+    "categoria": "adaptogenos",
+    "indicacoes_principais": ["estresse", "ansiedade", "cortisol_alto"],
+    "mensagem_persuasiva": "ASHWAGANDHA é o adaptógeno milenar. Reduz estresse e equilibra cortisol naturalmente.",
+    "gatilhos_mentais": ["natural", "ancestral", "equilibrio"],
+    "beneficios_persuasivos": [
+      "Reduz cortisol em 28%",
+      "Alivia estresse e ansiedade",
+      "Melhora qualidade do sono",
+      "Aumenta resistência ao estresse"
+    ]
+  },
+  {
+    "produto_id": "MELATONINA",
+    "categoria": "sono",
+    "indicacoes_principais": ["insonia", "jet_lag", "ciclo_irregular"],
+    "mensagem_persuasiva": "MELATONINA é o hormônio do sono. Regula seu relógio biológico naturalmente.",
+    "gatilhos_mentais": ["sono", "natural", "regulador"],
+    "beneficios_persuasivos": [
+      "Reduz latência do sono em 7 minutos",
+      "Melhora qualidade do sono em 58%",
+      "Regula ciclo circadiano",
+      "Sem dependência ou efeito rebote"
+    ]
+  },
+  {
+    "produto_id": "GLUTAMINA",
+    "categoria": "aminoacidos",
+    "indicacoes_principais": ["intestino_permeavel", "recuperacao", "imunidade"],
+    "mensagem_persuasiva": "GLUTAMINA é o aminoácido do intestino. Restaura permeabilidade e melhora imunidade.",
+    "gatilhos_mentais": ["recuperacao", "intestino", "essencial"],
+    "beneficios_persuasivos": [
+      "Restaura integridade intestinal",
+      "Acelera recuperação muscular",
+      "Fortalece sistema imune",
+      "Previne catabolismo"
+    ]
+  },
+  {
+    "produto_id": "BCAA",
+    "categoria": "aminoacidos",
+    "indicacoes_principais": ["fadiga_treino", "recuperacao", "massa_muscular"],
+    "mensagem_persuasiva": "BCAA são os aminoácidos da performance. Reduzem fadiga e aceleram recuperação.",
+    "gatilhos_mentais": ["performance", "recuperacao", "treino"],
+    "beneficios_persuasivos": [
+      "Reduz fadiga muscular",
+      "Acelera recuperação",
+      "Preserva massa muscular",
+      "Melhora performance em treinos longos"
+    ]
+  },
+  {
+    "produto_id": "COENZIMA_Q10",
+    "categoria": "energia",
+    "indicacoes_principais": ["fadiga", "cardiovascular", "envelhecimento"],
+    "mensagem_persuasiva": "COENZIMA Q10 é a molécula da energia celular. Produz ATP nas mitocôndrias.",
+    "gatilhos_mentais": ["energia", "cardiovascular", "longevidade"],
+    "beneficios_persuasivos": [
+      "Aumenta produção de energia celular",
+      "Melhora função cardíaca",
+      "Antioxidante mitocondrial",
+      "Combate fadiga crônica"
+    ]
+  },
+  {
+    "produto_id": "CURCUMA",
+    "categoria": "antiinflamatorios",
+    "indicacoes_principais": ["inflamacao", "dor_articular", "intestino"],
+    "mensagem_persuasiva": "CÚRCUMA é o anti-inflamatório natural. Ação comparável a AINEs sem efeitos colaterais.",
+    "gatilhos_mentais": ["natural", "antiinflamatorio", "sem_efeitos_colaterais"],
+    "beneficios_persuasivos": [
+      "Potente ação anti-inflamatória",
+      "Reduz dor articular",
+      "Protege fígado e intestino",
+      "Antioxidante poderoso"
+    ]
+  },
+  {
+    "produto_id": "SPIRULINA",
+    "categoria": "superalimentos",
+    "indicacoes_principais": ["desnutricao", "vegetarianos", "energia"],
+    "mensagem_persuasiva": "SPIRULINA é o superalimento completo. 60% de proteína e todos os aminoácidos essenciais.",
+    "gatilhos_mentais": ["completo", "natural", "superalimento"],
+    "beneficios_persuasivos": [
+      "Rica em proteínas (60%)",
+      "Fonte de vitamina B12 vegetal",
+      "Antioxidante poderoso",
+      "Energia sustentável"
+    ]
+  },
+  {
+    "produto_id": "FERRO",
+    "categoria": "minerais",
+    "indicacoes_principais": ["anemia", "fadiga", "menstruacao"],
+    "mensagem_persuasiva": "FERRO QUELADO é altamente biodisponível. Sem desconforto gastrointestinal.",
+    "gatilhos_mentais": ["energia", "essencial", "sem_efeitos_colaterais"],
+    "beneficios_persuasivos": [
+      "Combate anemia rapidamente",
+      "Aumenta energia e disposição",
+      "Melhora concentração",
+      "Não causa desconforto estomacal"
+    ]
+  },
+  {
+    "produto_id": "CALCIO_VITAMINA_K2",
+    "categoria": "ossos",
+    "indicacoes_principais": ["osteoporose", "menopausa", "fraturas"],
+    "mensagem_persuasiva": "CÁLCIO + K2 é a dupla perfeita para ossos. K2 direciona cálcio para os ossos e não para as artérias.",
+    "gatilhos_mentais": ["sinergia", "protecao", "longevidade"],
+    "beneficios_persuasivos": [
+      "Fortalece ossos efetivamente",
+      "Previne calcificação arterial",
+      "Reduz risco de fraturas",
+      "Ideal para menopausa"
+    ]
+  },
+  {
+    "produto_id": "L_TEANINA",
+    "categoria": "foco",
+    "indicacoes_principais": ["ansiedade", "foco", "estresse"],
+    "mensagem_persuasiva": "L-TEANINA é o relaxante sem sonolência. Melhora foco e acalma mente.",
+    "gatilhos_mentais": ["foco", "relaxamento", "natural"],
+    "beneficios_persuasivos": [
+      "Relaxa sem causar sonolência",
+      "Melhora foco e atenção",
+      "Reduz ansiedade",
+      "Sinergiza com cafeína"
+    ]
+  },
+  {
+    "produto_id": "TRIBULUS_TERRESTRIS",
+    "categoria": "libido",
+    "indicacoes_principais": ["libido_baixa", "energia", "vitalidade"],
+    "mensagem_persuasiva": "TRIBULUS TERRESTRIS é o revitalizador natural. Usado há milênios para vitalidade.",
+    "gatilhos_mentais": ["vitalidade", "ancestral", "natural"],
+    "beneficios_persuasivos": [
+      "Melhora libido naturalmente",
+      "Aumenta energia e vitalidade",
+      "Melhora performance física",
+      "Tradicional e comprovado"
+    ]
+  }
+]
+

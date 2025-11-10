@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <title>Instituto dos Sonhos - Transformação Integral</title>
+    <meta name="description" content="Transforme seu corpo e sua vida com nosso método exclusivo de emagrecimento integral">
+    <meta name="author" content="Instituto dos Sonhos" />
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/images/instituto-logo.png">
+    <link rel="shortcut icon" type="image/png" href="/images/instituto-logo.png">
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#6366f1">
+    <meta name="apple-mobile-web-app-title" content="Instituto Sonhos">
+    
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" href="/images/instituto-logo.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/images/instituto-logo.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/images/instituto-logo.png">
+    <link rel="apple-touch-icon" sizes="167x167" href="/images/instituto-logo.png">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    
+    
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://storage.googleapis.com/gpt-engineer-file-uploads/DSfJ4Do8KOMdBoz1WNZmAh63GEN2/social-images/social-1761133110266-butterfly-wings.jpg">
+
+    <meta name="twitter:card" content="summary_large_image" />
+    
+    
+    <meta name="twitter:image" content="https://storage.googleapis.com/gpt-engineer-file-uploads/DSfJ4Do8KOMdBoz1WNZmAh63GEN2/social-images/social-1761133110266-butterfly-wings.jpg">
+    <meta property="og:title" content="Instituto dos Sonhos - Transformação Integral">
+  <meta name="twitter:title" content="Instituto dos Sonhos - Transformação Integral">
+  <meta property="og:description" content="Transforme seu corpo e sua vida com nosso método exclusivo de emagrecimento integral">
+  <meta name="twitter:description" content="Transforme seu corpo e sua vida com nosso método exclusivo de emagrecimento integral">
+</head>
+
+  <body>
+    <div id="root"></div>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
+    
+    <!-- Service Worker Registration with Cache Clearing -->
+    <script>
+      // Função para limpar cache antigo
+      function clearOldCaches() {
+        if ('caches' in window) {
+          caches.keys().then(names => {
+            names.forEach(name => {
+              if (name !== 'instituto-sonhos-v2.0') {
+                caches.delete(name);
+              }
+            });
+          });
+        }
+      }
+      
+      // Registrar Service Worker
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js', { 
+            scope: '/',
+            updateViaCache: 'none'  // Força verificação de atualizações
+          })
+          .then((registration) => {
+            console.log('SW registrado:', registration.scope);
+            clearOldCaches();
+            
+            // Verificar atualizações a cada 30 segundos
+            setInterval(() => {
+              registration.update();
+            }, 30000);
+          })
+          .catch((error) => {
+            console.log('Erro no SW:', error);
+          });
+        });
+      }
+      
+      // Forçar reload em caso de nova versão
+      let refreshing = false;
+      navigator.serviceWorker?.addEventListener('controllerchange', () => {
+        if (!refreshing) {
+          refreshing = true;
+          window.location.reload();
+        }
+      });
+    </script>
+    
+    <!-- Bloquear conexões Firebase indesejadas -->
+    <script>
+      // Bloquear tentativas de conexão com Firebase
+      if (window.XMLHttpRequest) {
+        const originalOpen = XMLHttpRequest.prototype.open;
+        XMLHttpRequest.prototype.open = function(method, url, ...args) {
+          if (typeof url === 'string' && url.includes('firebaseio.com')) {
+            console.warn('Bloqueada tentativa de conexão Firebase:', url);
+            return;
+          }
+          return originalOpen.call(this, method, url, ...args);
+        };
+      }
+      
+      // Bloquear fetch para Firebase
+      if (window.fetch) {
+        const originalFetch = window.fetch;
+        window.fetch = function(url, ...args) {
+          if (typeof url === 'string' && url.includes('firebaseio.com')) {
+            console.warn('Bloqueada tentativa de fetch Firebase:', url);
+            return Promise.reject(new Error('Firebase bloqueado'));
+          }
+          return originalFetch.call(this, url, ...args);
+        };
+      }
+    </script>
+    
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

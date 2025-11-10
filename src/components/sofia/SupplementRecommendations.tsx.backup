@@ -1,0 +1,567 @@
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Progress } from '@/components/ui/progress';
+import { 
+  Pill, 
+  Heart, 
+  AlertCircle,
+  CheckCircle,
+  AlertTriangle,
+  Plus,
+  RefreshCw,
+  Target,
+  Brain,
+  Sparkles,
+  Zap,
+  Shield,
+  Star,
+  Percent,
+  User,
+  MessageCircle,
+  TrendingUp
+} from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useSupplementRecommendations } from '@/hooks/useSupplementRecommendations';
+import { iaRecomendacaoSuplementos } from '@/services/iaRecomendacaoSuplementos';
+
+interface SupplementRecommendationsProps {
+  userId?: string;
+}
+
+export const SupplementRecommendations: React.FC<SupplementRecommendationsProps> = ({ userId }) => {
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [quantidadeProdutos, setQuantidadeProdutos] = useState(6);
+  const [recommendedSupplements, setRecommendedSupplements] = useState<any[]>([]);
+  
+  const { 
+    supplements, 
+    userSupplements, 
+    loading, 
+    error, 
+    userName,
+    userProfile,
+    userAnamnesis,
+    userMeasurements,
+    addSupplementToPlan, 
+    removeSupplementFromPlan,
+    refreshRecommendations
+  } = useSupplementRecommendations(userId, quantidadeProdutos);
+
+  // Gerar recomendações personalizadas quando os dados estiverem carregados
+  useEffect(() => {
+    console.log('🔍 Debug SupplementRecommendations:', {
+      userId,
+      userProfile,
+      supplements: supplements.length,
+      loading,
+      error,
+      userAnamnesis,
+      userMeasurements
+    });
+    
+    if (userProfile && supplements.length > 0) {
+      const recommendations = iaRecomendacaoSuplementos.recomendarProdutos(
+        userProfile,
+        userAnamnesis,
+        userMeasurements,
+        quantidadeProdutos
+      );
+      console.log('🎯 Recomendações geradas:', recommendations.length);
+      setRecommendedSupplements(recommendations);
+    }
+  }, [userProfile, userAnamnesis, userMeasurements, supplements, quantidadeProdutos, userId, loading, error]);
+
+  // Obter categorias únicas
+  const categories = ['all', ...Array.from(new Set(supplements.map(s => s.category)))];
+
+  // Filtrar suplementos por categoria
+  const filteredSupplements = selectedCategory === 'all' 
+    ? supplements 
+    : supplements.filter(s => s.category === selectedCategory);
+
+  // Mapear ícones por categoria
+  const getCategoryIcon = (category: string) => {
+    switch (category.toLowerCase()) {
+      case 'vitaminas': return <Star className="w-4 h-4" />;
+      case 'minerais': return <Shield className="w-4 h-4" />;
+      case 'aminoácidos': return <Zap className="w-4 h-4" />;
+      case 'antioxidantes': return <Sparkles className="w-4 h-4" />;
+      case 'probióticos': return <Pill className="w-4 h-4" />;
+      case 'ácidos graxos': return <Heart className="w-4 h-4" />;
+      case 'fitoterápicos': return <Pill className="w-4 h-4" />;
+      case 'neurotransmissores': return <Brain className="w-4 h-4" />;
+      default: return <Pill className="w-4 h-4" />;
+    }
+  };
+
+  // Calcular dados de saúde do usuário
+  const calcularIMC = () => {
+    const peso = userMeasurements[0]?.weight_kg || userProfile?.weight_kg;
+    const altura = userProfile?.height_cm;
+    if (!peso || !altura) return null;
+    return (peso / ((altura / 100) ** 2)).toFixed(1);
+  };
+
+  const calcularIdade = () => {
+    if (!userProfile?.birth_date) return null;
+    const hoje = new Date();
+    const nascimento = new Date(userProfile.birth_date);
+    let idade = hoje.getFullYear() - nascimento.getFullYear();
+    const mes = hoje.getMonth() - nascimento.getMonth();
+    if (mes < 0 || (mes === 0 && hoje.getDate() < nascimento.getDate())) {
+      idade--;
+    }
+    return idade;
+  };
+
+  // Problemas de saúde identificados
+  const getProblemasSaude = () => {
+    const problemas = [
+      ...(userAnamnesis?.chronic_diseases || []),
+      ...(userAnamnesis?.family_diabetes_history ? ['diabetes'] : []),
+      ...(userAnamnesis?.family_heart_disease_history ? ['hipertensao'] : []),
+      ...(userAnamnesis?.family_thyroid_problems_history ? ['saude_hormonal'] : []),
+      ...(userAnamnesis?.family_depression_anxiety_history ? ['ansiedade'] : []),
+      ...(userAnamnesis?.family_obesity_history ? ['obesidade'] : []),
+      ...(userAnamnesis?.daily_stress_level && userAnamnesis.daily_stress_level > 7 ? ['estresse'] : []),
+      ...(userAnamnesis?.sleep_quality_score && userAnamnesis.sleep_quality_score < 5 ? ['problemas_sono'] : []),
+      ...(userAnamnesis?.daily_energy_level && userAnamnesis.daily_energy_level < 5 ? ['baixa_energia'] : [])
+    ];
+    return problemas;
+  };
+
+  // Buscar usuário atual se não fornecido
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      if (!userId) {
+        const { data: auth } = await supabase.auth.getUser();
+        if (auth.user?.id) {
+          // Não precisamos fazer nada aqui, pois o hook vai buscar os dados
+          console.log("Usuário autenticado:", auth.user.id);
+        }
+      }
+    };
+    
+    fetchCurrentUser();
+  }, [userId]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Analisando seu perfil de saúde...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6 bg-red-50 border border-red-200 rounded-lg">
+        <div className="flex items-start gap-3">
+          <AlertCircle className="w-5 h-5 text-red-600 mt-0.5" />
+          <div>
+            <h3 className="font-semibold text-red-800 mb-1">Erro ao carregar recomendações</h3>
+            <p className="text-red-700 text-sm">{error}</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Se está carregando, mostrar loading
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="text-center py-12">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-green-600 mx-auto mb-4"></div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Analisando seu perfil...</h2>
+          <p className="text-gray-600">
+            Gerando recomendações personalizadas de suplementos
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Se há erro, mostrar mensagem
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div className="text-center py-12">
+          <AlertCircle className="w-16 h-16 text-red-300 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Erro ao carregar</h2>
+          <p className="text-gray-600 mb-4">
+            {error}
+          </p>
+          <Button onClick={refreshRecommendations} variant="outline">
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Tentar novamente
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Se não há recomendações, mostrar mensagem informativa
+  if (recommendedSupplements.length === 0 && !loading) {
+    return (
+      <div className="space-y-6">
+        <div className="text-center py-12">
+          <Pill className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Carregando Recomendações</h2>
+          <p className="text-gray-600 mb-4">
+            Analisando seu perfil para recomendações personalizadas...
+          </p>
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 max-w-md mx-auto">
+            <div className="flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="font-semibold text-blue-800 text-sm mb-1">
+                  Sistema Funcionando:
+                </p>
+                <p className="text-blue-700 text-sm leading-relaxed">
+                  ✅ 60 suplementos disponíveis<br/>
+                  ✅ IA analisando seu perfil<br/>
+                  ✅ Recomendações personalizadas<br/>
+                  ✅ Links para evidência científica
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">Recomendações Personalizadas</h2>
+          <p className="text-muted-foreground">Suplementos indicados para {userName}</p>
+        </div>
+        <Badge variant="secondary" className="bg-emerald-100 text-emerald-800">
+          <Pill className="w-4 h-4 mr-1" />
+          {recommendedSupplements.length} Recomendações
+        </Badge>
+      </div>
+
+      {/* Dados de Saúde do Usuário */}
+      {userProfile && (
+        <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <User className="w-5 h-5 text-blue-600" />
+              Seu Perfil de Saúde
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-blue-600">{calcularIdade() || 'N/A'}</div>
+                <div className="text-sm text-gray-600">Idade</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-green-600">
+                  {userMeasurements[0]?.weight_kg || userProfile?.weight_kg || 'N/A'} kg
+                </div>
+                <div className="text-sm text-gray-600">Peso Atual</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-purple-600">{calcularIMC() || 'N/A'}</div>
+                <div className="text-sm text-gray-600">IMC</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-orange-600">
+                  {userMeasurements[0]?.body_fat_percentage ? 
+                    `${userMeasurements[0].body_fat_percentage.toFixed(1)}%` : 'N/A'}
+                </div>
+                <div className="text-sm text-gray-600">Gordura Corporal</div>
+              </div>
+            </div>
+            
+            {/* Problemas de Saúde Identificados */}
+            {getProblemasSaude().length > 0 && (
+              <div className="mt-4 pt-4 border-t border-blue-200">
+                <h4 className="font-semibold text-gray-800 mb-2">Aspectos de Saúde Identificados:</h4>
+                <div className="flex flex-wrap gap-2">
+                  {getProblemasSaude().map((problema, index) => (
+                    <Badge key={index} variant="outline" className="bg-blue-50 text-blue-700 border-blue-300">
+                      {problema.replace('_', ' ').toUpperCase()}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Controles */}
+      <div className="flex flex-wrap items-center justify-between gap-4 bg-gray-50 p-4 rounded-lg border border-gray-200">
+        {/* Seletor de quantidade */}
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium text-gray-700">Quantidade:</span>
+          <select
+            value={quantidadeProdutos}
+            onChange={(e) => setQuantidadeProdutos(Number(e.target.value))}
+            className="px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+            disabled={loading}
+          >
+            {[3, 4, 5, 6, 8, 10, 12].map(num => (
+              <option key={num} value={num}>{num}</option>
+            ))}
+          </select>
+          <span className="text-xs text-gray-500">produtos</span>
+        </div>
+        
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={refreshRecommendations}
+          disabled={loading}
+          className="flex items-center gap-1"
+        >
+          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+          {loading ? 'Analisando...' : 'Atualizar Recomendações'}
+        </Button>
+      </div>
+
+      {/* Categorias */}
+      <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
+        <TabsList className="grid w-full grid-cols-4 md:grid-cols-8">
+          <TabsTrigger value="all">Todos</TabsTrigger>
+          {categories.slice(1).map(category => (
+            <TabsTrigger key={category} value={category} className="flex items-center gap-1">
+              {getCategoryIcon(category)}
+              <span className="hidden sm:inline">{category}</span>
+            </TabsTrigger>
+          ))}
+        </TabsList>
+
+        <TabsContent value={selectedCategory} className="space-y-4 mt-4">
+          {/* Grid de suplementos */}
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {recommendedSupplements.map((recommendation, index) => {
+              const supplement = recommendation.supplement;
+              return (
+                <Card key={supplement.id} className="bg-white shadow-sm border hover:shadow-md transition-shadow">
+                  <CardHeader className="pb-3">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-2">
+                        {getCategoryIcon(supplement.category)}
+                        <Badge variant="outline" className="text-xs">
+                          {supplement.category}
+                        </Badge>
+                        {index < 3 && (
+                          <Badge className="bg-green-100 text-green-800 border-green-200">
+                            <Target className="w-3 h-3 mr-1" />
+                            Prioridade {index + 1}
+                          </Badge>
+                        )}
+                      </div>
+                      {userSupplements.some(us => us.supplement_name === supplement.name) ? (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => {
+                            const userSupplement = userSupplements.find(us => us.supplement_name === supplement.name);
+                            if (userSupplement) removeSupplementFromPlan(userSupplement.id);
+                          }}
+                          className="h-8 text-green-600"
+                        >
+                          <CheckCircle className="w-5 h-5" />
+                        </Button>
+                      ) : (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => addSupplementToPlan(supplement.id, supplement.name, recommendation.dosage)}
+                          className="h-8 px-3"
+                        >
+                          <Plus className="w-4 h-4 mr-1" />
+                          Adicionar
+                        </Button>
+                      )}
+                    </div>
+                    <CardTitle className="text-lg leading-tight mt-2">
+                      {supplement.name}
+                    </CardTitle>
+                  </CardHeader>
+
+                  <CardContent className="space-y-4">
+                    {/* Motivo personalizado */}
+                    {recommendation.personalizedReason && (
+                      <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-lg p-4">
+                        <div className="flex items-start gap-2">
+                          <Brain className="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <p className="font-medium text-emerald-800 text-sm mb-1">Por que para você:</p>
+                            <p className="text-sm text-gray-700 leading-relaxed">
+                              {recommendation.personalizedReason}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Ingredientes ativos */}
+                    <div>
+                      <h4 className="font-medium text-sm text-gray-700 mb-2">Ingredientes Ativos:</h4>
+                      <div className="flex flex-wrap gap-1">
+                        {supplement.active_ingredients.map((ingredient, index) => (
+                          <Badge key={index} variant="secondary" className="text-xs">
+                            {ingredient}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Dosagem */}
+                    <div>
+                      <h4 className="font-medium text-sm text-gray-700 mb-1">Dosagem Personalizada:</h4>
+                      <p className="text-sm text-gray-600">{recommendation.dosage}</p>
+                    </div>
+
+                    {/* Benefícios */}
+                    <div>
+                      <h4 className="font-medium text-sm text-gray-700 mb-2 flex items-center gap-1">
+                        <Heart className="w-4 h-4 text-green-500" />
+                        Benefícios:
+                      </h4>
+                      <ul className="text-sm text-gray-600 space-y-1">
+                        {recommendation.specificBenefits.slice(0, 3).map((benefit, index) => (
+                          <li key={index} className="flex items-start gap-2">
+                            <span className="text-green-500 mt-1">•</span>
+                            <span>{benefit}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    {/* Contraindicações */}
+                    {supplement.contraindications.length > 0 && (
+                      <div>
+                        <h4 className="font-medium text-sm text-gray-700 mb-2 flex items-center gap-1">
+                          <AlertTriangle className="w-4 h-4 text-orange-500" />
+                          Atenção:
+                        </h4>
+                        <ul className="text-sm text-gray-600 space-y-1">
+                          {supplement.contraindications.slice(0, 2).map((contraindication, index) => (
+                            <li key={index} className="flex items-start gap-2">
+                              <span className="text-orange-500 mt-1">•</span>
+                              <span>{contraindication}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {/* Preço e Desconto */}
+                    <div className="bg-gradient-to-r from-red-50 to-pink-50 border border-red-200 rounded-lg p-3">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-lg font-bold text-gray-900">
+                            R$ {(supplement.discount_price || recommendation.discountPrice).toFixed(2).replace('.', ',')}
+                          </span>
+                          <span className="text-sm text-gray-500 line-through">
+                            R$ {(supplement.original_price || recommendation.originalPrice).toFixed(2).replace('.', ',')}
+                          </span>
+                        </div>
+                        <Badge variant="destructive" className="text-xs font-bold">
+                          -50% OFF
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-red-700 font-medium">
+                        🎉 Desconto exclusivo para clientes Sofia Nutricional!
+                      </p>
+                    </div>
+
+                    {/* Evidência Científica */}
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                      <div className="flex items-start gap-2">
+                        <Star className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <p className="font-medium text-blue-800 text-sm mb-2">Evidência Científica:</p>
+                          <div className="space-y-1">
+                            {recommendation.pubmedLinks.map((link, index) => (
+                              <a 
+                                key={index}
+                                href={link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:text-blue-800 text-xs underline block"
+                              >
+                                Estudo {index + 1} na PubMed →
+                              </a>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Score da IA */}
+                    <div className="mt-4 pt-3 border-t border-gray-100">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs text-gray-500 flex items-center gap-1">
+                          <Brain className="w-3 h-3" /> Relevância para seu perfil
+                        </span>
+                        <span className="text-xs font-medium text-gray-700">{Math.round(recommendation.score)}%</span>
+                      </div>
+                      <Progress value={recommendation.score} className="h-1" />
+                    </div>
+
+                    {/* Botão de Compra WhatsApp */}
+                    <div className="mt-4 pt-3 border-t border-gray-100">
+                      <Button
+                        className="w-full bg-green-600 hover:bg-green-700 text-white font-medium"
+                        onClick={() => {
+                          const discountPrice = supplement.discount_price || recommendation.discountPrice;
+                          const originalPrice = supplement.original_price || recommendation.originalPrice;
+                          const message = `Olá! Gostaria de comprar o ${supplement.name} da Atlântica Natural com o desconto de 50% para clientes Sofia Nutricional. Preço: R$ ${discountPrice.toFixed(2).replace('.', ',')} (era R$ ${originalPrice.toFixed(2).replace('.', ',')}).`;
+                          window.open(`https://wa.me/5511999999999?text=${encodeURIComponent(message)}`, '_blank');
+                        }}
+                      >
+                        <MessageCircle className="w-4 h-4 mr-2" />
+                        Comprar no WhatsApp (-50% OFF)
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+
+          {filteredSupplements.length === 0 && (
+            <div className="text-center py-8">
+              <Pill className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+              <p className="text-gray-500">Nenhum suplemento encontrado nesta categoria.</p>
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
+
+      {/* Informação adicional */}
+      <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+        <div className="flex items-start gap-3">
+          <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
+          <div>
+            <p className="font-semibold text-amber-800 text-sm mb-1">
+              Importante:
+            </p>
+            <p className="text-amber-700 text-sm leading-relaxed">
+              As recomendações são baseadas no seu perfil de saúde, mas não substituem a orientação de um profissional. 
+              Consulte seu médico ou nutricionista antes de iniciar qualquer suplementação.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};

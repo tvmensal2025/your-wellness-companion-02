@@ -1,0 +1,36 @@
+import { useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+
+export const useGoogleAuth = () => {
+  const [isLoading, setIsLoading] = useState(false);
+
+  const signInWithGoogle = async () => {
+    try {
+      setIsLoading(true);
+      
+      // Configurar OAuth com novas credenciais Google
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
+        },
+      });
+
+      if (error) throw error;
+
+      return { success: true };
+      
+    } catch (error) {
+      console.error('Erro no login Google:', error);
+      return { success: false, error };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return { signInWithGoogle, isLoading };
+};
