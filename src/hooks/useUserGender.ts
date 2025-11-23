@@ -16,8 +16,9 @@ export const useUserGender = (user: User | null) => {
   }, [user?.id]);
 
   const loadUserGender = async () => {
-    if (!user) {
+    if (!user?.id) {
       setLoading(false);
+      setGender(null);
       return;
     }
 
