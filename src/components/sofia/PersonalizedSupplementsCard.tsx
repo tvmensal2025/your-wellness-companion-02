@@ -144,7 +144,7 @@ export const PersonalizedSupplementsCard: React.FC = () => {
         id: user.id,
         age: profile?.birth_date ? new Date().getFullYear() - new Date(profile.birth_date).getFullYear() : 30,
         gender: profile?.gender || 'masculino',
-        weight: profile?.weight || 70,
+        weight: profile?.current_weight || 70,
         height: profile?.height || 170,
         activity_level: anamnesis?.physical_activity_frequency || 'moderado',
         goals: anamnesis?.main_treatment_goals ? [anamnesis.main_treatment_goals] : [],
@@ -152,7 +152,7 @@ export const PersonalizedSupplementsCard: React.FC = () => {
           ...chronicDiseases,
           ...((anamnesis?.daily_stress_level || 0) > 7 ? ['estresse'] : []),
           ...((anamnesis?.sleep_quality_score || 0) < 5 ? ['problemas_sono'] : []),
-          ...((profile?.weight || 0) > 90 ? ['sobrepeso'] : [])
+          ...((profile?.current_weight || 0) > 90 ? ['sobrepeso'] : [])
         ]
       };
 

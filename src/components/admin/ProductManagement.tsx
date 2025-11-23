@@ -125,6 +125,7 @@ export const ProductManagement = () => {
 
       const productData = {
         ...formData,
+        name: formData.name, // Ensure name is explicitly set
         // Recalcular desconto automático se mudar o preço
         discount_price: formData.original_price ? formData.original_price * 0.5 : 0
       };
