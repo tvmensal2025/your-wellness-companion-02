@@ -846,7 +846,11 @@ const AuthPage = () => {
                             <SelectTrigger id="signup-gender" className="h-12 bg-background/50 border-border/50 focus:border-primary focus:ring-primary/20">
                               <SelectValue placeholder="Selecione seu gênero" />
                             </SelectTrigger>
-                            <SelectContent className="bg-background z-[100]">
+                            <SelectContent 
+                              position="popper" 
+                              className="bg-background border-border shadow-lg z-[9999] max-h-[300px] overflow-auto"
+                              sideOffset={4}
+                            >
                               <SelectItem value="masculino">Masculino</SelectItem>
                               <SelectItem value="feminino">Feminino</SelectItem>
                               <SelectItem value="outro">Outro</SelectItem>
