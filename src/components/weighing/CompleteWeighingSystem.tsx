@@ -139,6 +139,7 @@ const CompleteWeighingSystem: React.FC = () => {
   const [weightData, setWeightData] = useState<any[]>([]);
   const [lastMeasurement, setLastMeasurement] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [activeWeighingType, setActiveWeighingType] = useState<'manual' | 'automatic'>('manual');
   const { gender } = useUserGender(user);
   const { toast } = useToast();
 
@@ -278,6 +279,53 @@ const CompleteWeighingSystem: React.FC = () => {
     }
   };
 
+  const handleManualWeightChange = async (weight: number) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (!user) {
+        toast({
+          title: 'Você precisa estar logado',
+          description: 'Faça login para registrar seu peso.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      const { error } = await supabase.from('weight_measurements').insert({
+        user_id: user.id,
+        peso_kg: weight,
+        measurement_date: new Date().toISOString(),
+        device_type: 'manual',
+      });
+
+      if (error) {
+        console.error('Erro ao registrar peso manual:', error);
+        toast({
+          title: 'Erro ao registrar peso',
+          description: 'Tente novamente em alguns instantes.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      toast({
+        title: 'Peso registrado com sucesso!',
+        description: 'Atualizamos seus gráficos com a nova pesagem.',
+      });
+
+      await loadWeightData();
+    } catch (error) {
+      console.error('Erro inesperado ao registrar peso manual:', error);
+      toast({
+        title: 'Erro inesperado',
+        description: 'Não foi possível registrar o peso.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 text-white">
       {/* Header Gigante para TV */}
       <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700 text-white shadow-2xl border-b-4 border-blue-400">
@@ -331,7 +379,7 @@ const CompleteWeighingSystem: React.FC = () => {
             </h2>
           </div>
           <div className="p-3 sm:p-4 lg:p-5 xl:p-6">
-            <SimpleWeightForm />
+            <SimpleWeightForm onWeightChange={handleManualWeightChange} />
           </div>
         </div>
 
