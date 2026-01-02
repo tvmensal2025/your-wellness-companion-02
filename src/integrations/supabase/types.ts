@@ -98,6 +98,42 @@ export type Database = {
         }
         Relationships: []
       }
+      alimentos_completos: {
+        Row: {
+          aliases: string[] | null
+          categoria: string | null
+          created_at: string | null
+          id: string
+          is_verified: boolean | null
+          nome: string
+          peso_medio_g: number | null
+          unidade_padrao: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          aliases?: string[] | null
+          categoria?: string | null
+          created_at?: string | null
+          id?: string
+          is_verified?: boolean | null
+          nome: string
+          peso_medio_g?: number | null
+          unidade_padrao?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          aliases?: string[] | null
+          categoria?: string | null
+          created_at?: string | null
+          id?: string
+          is_verified?: boolean | null
+          nome?: string
+          peso_medio_g?: number | null
+          unidade_padrao?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       bioimpedance_analysis: {
         Row: {
           analysis_result: Json | null
@@ -863,6 +899,39 @@ export type Database = {
         }
         Relationships: []
       }
+      image_cache: {
+        Row: {
+          access_count: number | null
+          accessed_at: string | null
+          base64_data: string | null
+          created_at: string | null
+          file_size: number | null
+          id: string
+          mime_type: string | null
+          storage_path: string
+        }
+        Insert: {
+          access_count?: number | null
+          accessed_at?: string | null
+          base64_data?: string | null
+          created_at?: string | null
+          file_size?: number | null
+          id?: string
+          mime_type?: string | null
+          storage_path: string
+        }
+        Update: {
+          access_count?: number | null
+          accessed_at?: string | null
+          base64_data?: string | null
+          created_at?: string | null
+          file_size?: number | null
+          id?: string
+          mime_type?: string | null
+          storage_path?: string
+        }
+        Relationships: []
+      }
       lessons: {
         Row: {
           created_at: string
@@ -1590,6 +1659,7 @@ export type Database = {
           name: string
           original_price: number | null
           price: number | null
+          score: number | null
           stock_quantity: number | null
           tags: string[] | null
           updated_at: string | null
@@ -1612,6 +1682,7 @@ export type Database = {
           name: string
           original_price?: number | null
           price?: number | null
+          score?: number | null
           stock_quantity?: number | null
           tags?: string[] | null
           updated_at?: string | null
@@ -1634,6 +1705,7 @@ export type Database = {
           name?: string
           original_price?: number | null
           price?: number | null
+          score?: number | null
           stock_quantity?: number | null
           tags?: string[] | null
           updated_at?: string | null
@@ -2201,6 +2273,53 @@ export type Database = {
             columns: ["session_id"]
             isOneToOne: false
             referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      valores_nutricionais_completos: {
+        Row: {
+          alimento_id: string | null
+          alimento_nome: string
+          carboidratos: number | null
+          created_at: string | null
+          fibras: number | null
+          gorduras: number | null
+          id: string
+          kcal: number | null
+          proteina: number | null
+          sodio: number | null
+        }
+        Insert: {
+          alimento_id?: string | null
+          alimento_nome: string
+          carboidratos?: number | null
+          created_at?: string | null
+          fibras?: number | null
+          gorduras?: number | null
+          id?: string
+          kcal?: number | null
+          proteina?: number | null
+          sodio?: number | null
+        }
+        Update: {
+          alimento_id?: string | null
+          alimento_nome?: string
+          carboidratos?: number | null
+          created_at?: string | null
+          fibras?: number | null
+          gorduras?: number | null
+          id?: string
+          kcal?: number | null
+          proteina?: number | null
+          sodio?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "valores_nutricionais_completos_alimento_id_fkey"
+            columns: ["alimento_id"]
+            isOneToOne: false
+            referencedRelation: "alimentos_completos"
             referencedColumns: ["id"]
           },
         ]
