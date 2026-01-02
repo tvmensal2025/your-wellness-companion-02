@@ -279,7 +279,7 @@ const CompleteWeighingSystem: React.FC = () => {
     }
   };
 
-  const handleManualWeightChange = async (weight: number) => {
+  const handleManualWeightChange = async ({ weight, height, waist }: { weight: number; height: number; waist: number }) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
 
@@ -292,10 +292,46 @@ const CompleteWeighingSystem: React.FC = () => {
         return;
       }
 
+      const alturaM = height / 100;
+      const imc = alturaM > 0 ? weight / (alturaM * alturaM) : undefined;
+      const rce = height > 0 ? waist / height : undefined;
+
+      const getIMCClassification = (value?: number) => {
+        if (!value || isNaN(value)) return 'N/A';
+        if (value < 18.5) return 'Abaixo do peso';
+        if (value < 25) return 'Normal';
+        if (value < 30) return 'Sobrepeso';
+        return 'Obesidade';
+      };
+
+      const getRiskFromRCE = (value?: number) => {
+        if (!value || isNaN(value)) return 'BAIXO';
+        // Limiares padrão: diferentes para homens e mulheres
+        const isFeminino = (gender || '').toLowerCase().startsWith('f');
+        if (isFeminino) {
+          if (value < 0.85) return 'BAIXO';
+          if (value < 0.9) return 'MODERADO';
+          return 'ALTO';
+        } else {
+          if (value < 0.9) return 'BAIXO';
+          if (value < 1) return 'MODERADO';
+          return 'ALTO';
+        }
+      };
+
+      const classificacao_imc = getIMCClassification(imc);
+      const risco_cardiometabolico = getRiskFromRCE(rce);
+
       const { error } = await supabase.from('weight_measurements').insert({
         user_id: user.id,
         peso_kg: weight,
+        circunferencia_abdominal_cm: waist,
         measurement_date: new Date().toISOString(),
+        measurement_type: 'manual',
+        imc,
+        rce,
+        risco_cardiometabolico,
+        classificacao_imc,
         device_type: 'manual',
       });
 
@@ -379,7 +415,7 @@ const CompleteWeighingSystem: React.FC = () => {
             </h2>
           </div>
           <div className="p-3 sm:p-4 lg:p-5 xl:p-6">
-            <SimpleWeightForm onWeightChange={handleManualWeightChange} />
+            <SimpleWeightForm onSubmit={handleManualWeightChange} />
           </div>
         </div>
 
