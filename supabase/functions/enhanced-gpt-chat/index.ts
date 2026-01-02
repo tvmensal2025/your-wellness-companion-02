@@ -103,12 +103,13 @@ serve(async (req) => {
       }
     );
 
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error in GPT chat:', error);
+    const message = error instanceof Error ? error.message : 'Failed to process chat request';
     return new Response(
       JSON.stringify({ 
         error: 'Failed to process chat request', 
-        details: error.message 
+        details: message
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

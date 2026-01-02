@@ -515,14 +515,13 @@ async function getUserCompleteProfile(supabase: any, userId: string): Promise<Us
     
     if (documentsData) profile.medicalDocuments = documentsData;
     
-    // 📚 BASE DE CONHECIMENTO DA EMPRESA - INSTITUTO DOS SONHOS
     const { data: companyKnowledge } = await supabase
       .from('company_knowledge_base')
       .select('category, title, content')
       .eq('is_active', true)
       .order('priority', { ascending: false });
     
-    if (companyKnowledge) profile.companyKnowledge = companyKnowledge;
+    if (companyKnowledge) (profile as any).companyKnowledge = companyKnowledge;
     
     // 17. Frequência cardíaca e dados de dispositivos
     const { data: heartRateData } = await supabase
@@ -867,17 +866,56 @@ serve(async (req) => {
     (userProfile as any).medicalDocuments = Array.isArray(documentsExtra) ? documentsExtra : [];
     (userProfile as any).dailyAnswers = Array.isArray(dailyAnswersExtra) ? dailyAnswersExtra : [];
 
+    // Tracking geral
+    const trackingGroups = {
+      activity: ['activity_tracking', 'activity_logs'],
+      sleep: ['sleep_tracking', 'sleep_logs'],
+      hydration: ['hydration_tracking', 'water_intake_logs'],
+      calories: ['calorie_tracking', 'calories_logs']
+    } as const;
+
+    // Google Fit
+    const googleFitGroups = {
+      steps: ['google_fit_steps', 'gf_steps'],
+      heartRate: ['google_fit_heart_rate', 'gf_heart_rate'],
+      sleep: ['google_fit_sleep', 'gf_sleep'],
+      activities: ['google_fit_activities', 'gf_activities'],
+      calories: ['google_fit_calories', 'gf_calories'],
+      distance: ['google_fit_distance', 'gf_distance'],
+      moveMinutes: ['google_fit_move_minutes', 'gf_move_minutes'],
+      weight: ['google_fit_weight', 'gf_weight']
+    } as const;
+
+    // Coletas principais (primeira tabela disponível)
+    const [{ data: weightExtra }, { data: nutritionExtra }, { data: goalsExtra }, { data: missionsExtra }, { data: achievementsExtra }, { data: documentsExtra }, { data: dailyAnswersExtra }] = await Promise.all([
+      fetchFirstAvailable(supabase, weightCandidates, '*', [['user_id', userId]]),
+      fetchFirstAvailable(supabase, nutritionCandidates, '*', [['user_id', userId]]),
+      fetchFirstAvailable(supabase, goalsCandidates, '*', [['user_id', userId]]),
+      fetchFirstAvailable(supabase, missionsCandidates, '*', [['user_id', userId]]),
+      fetchFirstAvailable(supabase, achievementsCandidates, '*', [['user_id', userId]]),
+      fetchFirstAvailable(supabase, documentsCandidates, '*', [['user_id', userId]]),
+      fetchFirstAvailable(supabase, dailyAnswersCandidates, '*', [['user_id', userId]])
+    ]);
+
+    if (!userProfile.weightHistory && Array.isArray(weightExtra)) userProfile.weightHistory = weightExtra;
+    if (!userProfile.nutritionHistory && Array.isArray(nutritionExtra)) userProfile.nutritionHistory = nutritionExtra;
+    if (!userProfile.activeGoals && Array.isArray(goalsExtra)) userProfile.activeGoals = goalsExtra;
+    if (!userProfile.dailyMissions && Array.isArray(missionsExtra)) userProfile.dailyMissions = missionsExtra as any;
+    if (!userProfile.achievements && Array.isArray(achievementsExtra)) userProfile.achievements = achievementsExtra as any;
+    (userProfile as any).medicalDocuments = Array.isArray(documentsExtra) ? documentsExtra : [];
+    (userProfile as any).dailyAnswers = Array.isArray(dailyAnswersExtra) ? dailyAnswersExtra : [];
+
     // Tracking geral (merge de múltiplas tabelas)
     const trackingData: any = {};
     for (const [key, tables] of Object.entries(trackingGroups)) {
-      trackingData[key] = await fetchAllFromCandidates(supabase, tables as string[], '*', [['user_id', userId]]);
+      trackingData[key] = await fetchAllFromCandidates(supabase, tables as unknown as string[], '*', [['user_id', userId]]);
     }
     (userProfile as any).tracking = trackingData;
 
     // Google Fit (merge por categoria)
     const googleFitData: any = {};
     for (const [key, tables] of Object.entries(googleFitGroups)) {
-      googleFitData[key] = await fetchAllFromCandidates(supabase, tables as string[], '*', [['user_id', userId]]);
+      googleFitData[key] = await fetchAllFromCandidates(supabase, tables as unknown as string[], '*', [['user_id', userId]]);
     }
     (userProfile as any).googleFit = googleFitData;
     
