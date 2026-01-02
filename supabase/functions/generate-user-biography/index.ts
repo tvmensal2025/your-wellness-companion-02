@@ -51,15 +51,19 @@ serve(async (req) => {
     const conversationCount = conversations?.length || 0;
     const recentTopics = conversations?.slice(0, 10).map(c => c.user_message).join(' ') || '';
     
+    const safeHealthDiary = healthDiary || [];
+    const safeMeasurements = measurements || [];
+    const safeMissions = missions || [];
+    
     // Calcular estatísticas de engajamento
-    const avgMood = healthDiary?.length > 0 ? 
-      healthDiary.reduce((sum, h) => sum + (h.mood_rating || 0), 0) / healthDiary.length : 0;
+    const avgMood = safeHealthDiary.length > 0 ? 
+      safeHealthDiary.reduce((sum, h) => sum + (h.mood_rating || 0), 0) / safeHealthDiary.length : 0;
     
-    const completedMissions = missions?.filter(m => m.is_completed).length || 0;
-    const streakDays = missions?.[0]?.streak_days || 0;
+    const completedMissions = safeMissions.filter(m => m.is_completed).length || 0;
+    const streakDays = safeMissions[0]?.streak_days || 0;
     
-    const weightTrend = measurements?.length >= 2 ? 
-      (measurements[0].peso_kg - measurements[1].peso_kg) : 0;
+    const weightTrend = safeMeasurements.length >= 2 ? 
+      (safeMeasurements[0].peso_kg - safeMeasurements[1].peso_kg) : 0;
 
     // Prompt para gerar biografia personalizada
     const biographyPrompt = `Você é Sof.ia, a assistente de saúde empática e carinhosa. Crie uma biografia personalizada de 2-3 frases para ${profile?.full_name || 'o usuário'}, baseada nos dados abaixo.
@@ -152,8 +156,9 @@ Agora crie a biografia personalizada:`;
 
   } catch (error) {
     console.error('Erro ao gerar biografia:', error);
+    const err = error as Error;
     return new Response(JSON.stringify({ 
-      error: error.message || 'Erro interno do servidor' 
+      error: err.message || 'Erro interno do servidor' 
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

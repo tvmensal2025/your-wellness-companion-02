@@ -935,7 +935,8 @@ serve(async (req) => {
       return model;
     };
 
-    const service = (forceService || serviceSelected).toLowerCase();
+    const requestedService = forceService || (rawConfig as any).service || 'openai';
+    const service = String(requestedService).toLowerCase();
 
     const effectiveConfig = {
       ...rawConfig,
@@ -1096,8 +1097,9 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Erro no Dr. Vital Enhanced:', error);
+    const err = error as Error;
     return new Response(JSON.stringify({ 
-      error: error.message,
+      error: err.message,
       details: 'Erro interno do servidor'
     }), {
       status: 500,

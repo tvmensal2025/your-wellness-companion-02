@@ -91,14 +91,16 @@ serve(async (req) => {
 
         if (error) {
           console.error(`❌ Erro ao inserir ${config.functionality}:`, error)
-          results.push({ functionality: config.functionality, success: false, error: error.message })
+          const err = error as Error;
+          results.push({ functionality: config.functionality, success: false, error: err.message })
         } else {
           console.log(`✅ Configuração ${config.functionality} inserida`)
           results.push({ functionality: config.functionality, success: true })
         }
       } catch (error) {
-        console.error(`💥 Erro fatal ao inserir ${config.functionality}:`, error)
-        results.push({ functionality: config.functionality, success: false, error: error.message })
+        const err = error as Error;
+        console.error(`💥 Erro fatal ao inserir ${config.functionality}:`, err)
+        results.push({ functionality: config.functionality, success: false, error: err.message })
       }
     }
 
