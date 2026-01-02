@@ -34,8 +34,8 @@ export const SofiaTutorialDemo: React.FC<SofiaTutorialDemoProps> = ({
           delay: 0.1
         }}
         style={{
-          padding: '1rem', // REDUZIDO para caber sem scroll
-          maxWidth: '380px', // REDUZIDO para caber melhor
+          padding: '1.5rem', // REDUZIDO de 2rem para 1.5rem
+          maxWidth: '420px', // REDUZIDO de ~480px para 420px
           minHeight: 'auto' // Removido altura mínima fixa
         }}
       >
@@ -51,9 +51,9 @@ export const SofiaTutorialDemo: React.FC<SofiaTutorialDemoProps> = ({
             delay: 0.3
           }}
           style={{
-            width: '60px', // REDUZIDO para caber sem scroll
-            height: '60px', // REDUZIDO para caber sem scroll
-            marginBottom: '0.5rem' // REDUZIDO para caber sem scroll
+            width: '70px', // REDUZIDO de 80px para 70px
+            height: '70px', // REDUZIDO de 80px para 70px
+            marginBottom: '0.75rem' // REDUZIDO de 1rem para 0.75rem
           }}
         >
           <img
@@ -79,9 +79,9 @@ export const SofiaTutorialDemo: React.FC<SofiaTutorialDemoProps> = ({
                       animate={{ y: 0, opacity: 1 }}
                       transition={{ duration: 0.4, delay: 0.2 }}
                       style={{
-                        fontSize: '1.25rem', // REDUZIDO para caber sem scroll
+                        fontSize: '1.5rem', // REDUZIDO de ~2rem para 1.5rem
                         fontWeight: '600', // REDUZIDO de bold para 600
-                        marginBottom: '0.5rem' // REDUZIDO para caber sem scroll
+                        marginBottom: '0.75rem' // REDUZIDO de 1rem para 0.75rem
                       }}
                     >
                       Olá! Sou a Sofia ✨
@@ -118,10 +118,10 @@ export const SofiaTutorialDemo: React.FC<SofiaTutorialDemoProps> = ({
                         onClick={onStart}
                         className="welcome-button primary"
                         style={{
-                          padding: '0.65rem 1.25rem', // REDUZIDO para caber sem scroll
-                          fontSize: '0.9rem', // REDUZIDO para caber sem scroll
-                          borderRadius: '10px', // REDUZIDO para caber sem scroll
-                          minHeight: '40px' // REDUZIDO para caber sem scroll
+                          padding: '0.75rem 1.5rem', // REDUZIDO de 1rem 2rem para 0.75rem 1.5rem
+                          fontSize: '0.95rem', // REDUZIDO de ~1.1rem para 0.95rem
+                          borderRadius: '12px', // REDUZIDO de ~16px para 12px
+                          minHeight: '44px' // REDUZIDO de ~48px para 44px
                         }}
                       >
                         Próximo Passo
@@ -131,10 +131,10 @@ export const SofiaTutorialDemo: React.FC<SofiaTutorialDemoProps> = ({
                         onClick={onSkip}
                         className="welcome-button secondary"
                         style={{
-                          padding: '0.5rem 1rem', // REDUZIDO para caber sem scroll
-                          fontSize: '0.8rem', // REDUZIDO para caber sem scroll
-                          borderRadius: '8px', // REDUZIDO para caber sem scroll
-                          minHeight: '36px' // REDUZIDO para caber sem scroll
+                          padding: '0.6rem 1.2rem', // REDUZIDO de 0.8rem 1.5rem para 0.6rem 1.2rem
+                          fontSize: '0.85rem', // REDUZIDO de ~1rem para 0.85rem
+                          borderRadius: '10px', // REDUZIDO de ~14px para 10px
+                          minHeight: '38px' // REDUZIDO de ~42px para 38px
                         }}
                       >
                         ✖️ Pular Tutorial

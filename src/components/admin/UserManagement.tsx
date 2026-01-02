@@ -229,12 +229,7 @@ const UserManagement: React.FC = () => {
       link.style.visibility = 'hidden';
       document.body.appendChild(link);
       link.click();
-      // Usar setTimeout para garantir que o click foi processado antes de remover
-      setTimeout(() => {
-        if (link.parentNode === document.body) {
-          document.body.removeChild(link);
-        }
-      }, 100);
+      document.body.removeChild(link);
     } catch (error) {
       console.error('Error exporting users:', error);
     }

@@ -15,7 +15,6 @@ import { InstallPrompt } from "./components/InstallPrompt";
 import SofiaFloatingButton from "./components/SofiaFloatingButton";
 import { PerformanceProvider } from "./components/PerformanceProvider";
 import RouterPerformanceProvider from "./components/RouterPerformanceProvider";
-import { ErrorBoundary } from "./components/ui/error-boundary";
 
 // Core pages - loaded immediately
 import AuthPage from "./pages/AuthPage";
@@ -180,16 +179,15 @@ const App: React.FC = () => {
   };
 
   return (
-    <ErrorBoundary>
-      <QueryClientProvider client={queryClient}>
-        <PerformanceProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <RouterPerformanceProvider>
-                <Suspense fallback={<PageLoader />}>
-                  <Routes>
+    <QueryClientProvider client={queryClient}>
+      <PerformanceProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <RouterPerformanceProvider>
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
               {/* Home page as default */}
               <Route path="/" element={<Suspense fallback={<PageLoader />}><HomePage /></Suspense>} />
               
@@ -292,12 +290,11 @@ const App: React.FC = () => {
 
             {/* Tutorial da Sofia - Modal Global */}
             <InteractiveTutorial />
-              </RouterPerformanceProvider>
-            </BrowserRouter>
-          </TooltipProvider>
-        </PerformanceProvider>
-      </QueryClientProvider>
-    </ErrorBoundary>
+            </RouterPerformanceProvider>
+          </BrowserRouter>
+        </TooltipProvider>
+      </PerformanceProvider>
+    </QueryClientProvider>
   );
 };
 

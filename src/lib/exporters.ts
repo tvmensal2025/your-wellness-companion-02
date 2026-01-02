@@ -1,6 +1,5 @@
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-import { safeRemoveChild } from './utils';
 
 export async function exportPNG(element: HTMLElement, filename = `cardapio-${Date.now()}.png`) {
   const canvas = await html2canvas(element, {
@@ -20,10 +19,7 @@ export async function exportPNG(element: HTMLElement, filename = `cardapio-${Dat
   a.download = filename;
   document.body.appendChild(a);
   a.click();
-  // Usar setTimeout para garantir que o click foi processado antes de remover
-  setTimeout(() => {
-    safeRemoveChild(document.body, a);
-  }, 100);
+  document.body.removeChild(a);
 }
 
 export async function exportPDF(element: HTMLElement, filename = `cardapio-${Date.now()}.pdf`) {

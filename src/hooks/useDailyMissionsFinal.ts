@@ -113,100 +113,132 @@ export const useDailyMissionsFinal = ({ user }: UseDailyMissionsFinalProps) => {
     
     try {
       switch (trackingType) {
-        case 'water_intake': {
+        case 'water_intake':
           const waterAmount = calculateWaterIntake(answer.toString());
           
-          // Usar upsert com constraint UNIQUE(user_id, date)
-          const { error } = await supabase
+          // Verificar se já existe entrada para hoje
+          const { data: existingDiary } = await supabase
             .from('health_diary')
-            .upsert({
-              user_id: user.id,
-              date: today,
-              water_intake: parseFloat(waterAmount.toString()),
-              notes: `Água: ${waterAmount}L`
-            }, {
-              onConflict: 'user_id,date'
-            });
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('date', today)
+            .maybeSingle();
 
-          if (error) {
-            console.error('Erro ao salvar water_intake:', error);
-            throw error;
+          if (existingDiary) {
+            // Atualizar entrada existente
+            await supabase
+              .from('health_diary')
+              .update({
+                water_intake: waterAmount,
+                notes: `Água: ${waterAmount}L`
+              })
+              .eq('id', existingDiary.id);
+          } else {
+            // Criar nova entrada
+            await supabase
+              .from('health_diary')
+              .insert({
+                user_id: user.id,
+                date: today,
+                water_intake: waterAmount,
+                notes: `Água: ${waterAmount}L`
+              });
           }
           break;
-        }
 
-        case 'sleep_hours': {
+        case 'sleep_hours':
           const sleepHours = calculateSleepHours(answer.toString());
           
-          const { error } = await supabase
+          const { data: existingSleep } = await supabase
             .from('health_diary')
-            .upsert({
-              user_id: user.id,
-              date: today,
-              sleep_hours: parseFloat(sleepHours.toString()),
-              notes: `Sono: ${sleepHours} horas`
-            }, {
-              onConflict: 'user_id,date'
-            });
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('date', today)
+            .maybeSingle();
 
-          if (error) {
-            console.error('Erro ao salvar sleep_hours:', error);
-            throw error;
+          if (existingSleep) {
+            await supabase
+              .from('health_diary')
+              .update({
+                sleep_hours: sleepHours,
+                notes: `Sono: ${sleepHours} horas`
+              })
+              .eq('id', existingSleep.id);
+          } else {
+            await supabase
+              .from('health_diary')
+              .insert({
+                user_id: user.id,
+                date: today,
+                sleep_hours: sleepHours,
+                notes: `Sono: ${sleepHours} horas`
+              });
           }
           break;
-        }
 
         case 'energy_level':
         case 'stress_level':
-        case 'day_rating': {
+        case 'day_rating':
+          const { data: existingRating } = await supabase
+            .from('health_diary')
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('date', today)
+            .maybeSingle();
+
           const updateData: any = {
-            user_id: user.id,
-            date: today,
             notes: `${trackingType}: ${answer}`
           };
           
-          if (trackingType === 'energy_level') {
-            updateData.energy_level = Number(answer);
-          }
-          if (trackingType === 'day_rating') {
-            updateData.mood_rating = Number(answer);
-          }
+          if (trackingType === 'energy_level') updateData.energy_level = answer as number;
+          if (trackingType === 'day_rating') updateData.mood_rating = answer as number;
 
-          const { error } = await supabase
-            .from('health_diary')
-            .upsert(updateData, {
-              onConflict: 'user_id,date'
-            });
-
-          if (error) {
-            console.error(`Erro ao salvar ${trackingType}:`, error);
-            throw error;
-          }
-          break;
-        }
-
-        case 'small_victory': {
-          const { error } = await supabase
-            .from('health_diary')
-            .upsert({
-              user_id: user.id,
-              date: today,
-              notes: answer.toString(),
-              mood_rating: 5
-            }, {
-              onConflict: 'user_id,date'
-            });
-
-          if (error) {
-            console.error('Erro ao salvar small_victory:', error);
-            throw error;
+          if (existingRating) {
+            await supabase
+              .from('health_diary')
+              .update(updateData)
+              .eq('id', existingRating.id);
+          } else {
+            await supabase
+              .from('health_diary')
+              .insert({
+                user_id: user.id,
+                date: today,
+                ...updateData
+              });
           }
           break;
-        }
+
+        case 'small_victory':
+          const { data: existingVictory } = await supabase
+            .from('health_diary')
+            .select('id')
+            .eq('user_id', user.id)
+            .eq('date', today)
+            .maybeSingle();
+
+          if (existingVictory) {
+            await supabase
+              .from('health_diary')
+              .update({
+                notes: answer.toString(),
+                mood_rating: 5
+              })
+              .eq('id', existingVictory.id);
+          } else {
+            await supabase
+              .from('health_diary')
+              .insert({
+                user_id: user.id,
+                date: today,
+                notes: answer.toString(),
+                mood_rating: 5
+              });
+          }
+          break;
       }
     } catch (error) {
       console.error(`Erro ao salvar tracking ${trackingType}:`, error);
-      // Não propagar o erro para não quebrar o fluxo principal
     }
   };
 

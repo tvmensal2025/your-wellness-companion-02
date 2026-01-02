@@ -94,26 +94,26 @@ export const SofiaNutricionalPage: React.FC = () => {
   }
 
   return (
-    <div className="container mx-auto p-4 sm:p-6 space-y-6 max-w-7xl">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-        <div className="space-y-1">
-          <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-emerald-600 via-teal-500 to-emerald-600 bg-clip-text text-transparent animate-gradient">
+    <div className="container mx-auto p-4 space-y-6 max-w-7xl">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
             Sofia Nutricional
           </h1>
-          <p className="text-sm sm:text-base text-muted-foreground">Seu assistente inteligente para nutrição e bem-estar</p>
+          <p className="text-muted-foreground">Sua assistente inteligente para nutrição e bem-estar</p>
         </div>
-        <Badge variant="secondary" className="bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-800 border border-emerald-200 shadow-sm px-3 py-1.5">
-          <Sparkles className="w-4 h-4 mr-1.5 animate-pulse" />
+        <Badge variant="secondary" className="bg-emerald-100 text-emerald-800">
+          <Sparkles className="w-4 h-4 mr-1" />
           IA Ativa
         </Badge>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-4 lg:grid-cols-4 bg-gradient-to-r from-gray-50 to-gray-100/50 p-1 rounded-lg shadow-inner">
-          <TabsTrigger value="tracker" className="data-[state=active]:bg-white data-[state=active]:shadow-md data-[state=active]:text-emerald-600 transition-all duration-200">Nutrição</TabsTrigger>
-          <TabsTrigger value="generator" className="data-[state=active]:bg-white data-[state=active]:shadow-md data-[state=active]:text-emerald-600 transition-all duration-200">Cardápios</TabsTrigger>
-          <TabsTrigger value="insights" className="data-[state=active]:bg-white data-[state=active]:shadow-md data-[state=active]:text-emerald-600 transition-all duration-200">Percepções</TabsTrigger>
-          <TabsTrigger value="history" className="data-[state=active]:bg-white data-[state=active]:shadow-md data-[state=active]:text-emerald-600 transition-all duration-200">Histórico</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-4 lg:grid-cols-4">
+          <TabsTrigger value="tracker">Nutrição</TabsTrigger>
+          <TabsTrigger value="generator">Cardápios</TabsTrigger>
+          <TabsTrigger value="insights">Insights</TabsTrigger>
+          <TabsTrigger value="history">Histórico</TabsTrigger>
         </TabsList>
 
         <TabsContent value="tracker" className="space-y-6">

@@ -291,37 +291,37 @@ const SessionDashboardPage: React.FC = () => {
             <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
               {patientData.name}
             </h1>
-            <div className="flex items-center gap-6 mt-2 text-base text-gray-400">
+            <div className="flex items-center gap-6 mt-2 text-sm text-gray-400">
               <span>📧 Avaliador: {patientData.evaluatedBy}</span>
               <span>📅 Data de nascimento: {patientData.birthDate}</span>
               <span>🗓️ {patientData.measurementDate}</span>
             </div>
-            <div className="flex items-center gap-6 mt-1 text-base text-gray-300">
+            <div className="flex items-center gap-6 mt-1 text-sm text-gray-300">
               <span>⚖️ Peso: {patientData.weight} kg</span>
               <span>📏 Altura: {patientData.height} cm</span>
               <span>📊 IMC: {patientData.bmi} kg/m²</span>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <img src="/images/dr-vital.png" alt="Logo" className="h-14 w-14" />
+            <img src="/images/dr-vital.png" alt="Logo" className="h-12 w-12" />
             <div className="text-right">
-              <div className="text-base font-semibold">b.i.a</div>
-              <div className="text-sm text-gray-400">TeraScience</div>
+              <div className="text-sm font-semibold">b.i.a</div>
+              <div className="text-xs text-gray-400">TeraScience</div>
             </div>
           </div>
         </div>
       </div>
 
       {/* Layout Principal */}
-      <div className="p-3 grid grid-cols-1 lg:grid-cols-3 gap-3">
+      <div className="p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* SEÇÃO 1: GORDURA */}
         <Card className="bg-gradient-to-br from-gray-800 to-gray-900 border-gray-700 shadow-2xl">
-          <CardHeader className="text-center pb-2">
-            <CardTitle className="text-lg font-bold text-white">Gordura</CardTitle>
+          <CardHeader className="text-center pb-4">
+            <CardTitle className="text-xl font-bold text-white">Gordura</CardTitle>
           </CardHeader>
-          <CardContent className="p-3">
-            <div className="flex flex-col items-center space-y-2">
+          <CardContent>
+            <div className="flex flex-col items-center space-y-4">
               <div className="relative">
                 <CircularProgress
                   value={patientData.bodyFat}
@@ -334,17 +334,17 @@ const SessionDashboardPage: React.FC = () => {
               </div>
               
               <div className="text-center">
-                <div className="text-base text-gray-400 mb-2">Massa Gorda</div>
-                <div className="text-3xl font-bold">{patientData.leanMass} <span className="text-lg">kg</span></div>
-                <div className="text-base text-gray-400">% Gordura</div>
-                <div className="text-2xl font-semibold text-red-400">{patientData.bodyFat}%</div>
+                <div className="text-sm text-gray-400 mb-2">Massa Gorda</div>
+                <div className="text-2xl font-bold">{patientData.leanMass} <span className="text-sm">kg</span></div>
+                <div className="text-sm text-gray-400">% Gordura</div>
+                <div className="text-lg font-semibold text-red-400">{patientData.bodyFat}%</div>
               </div>
 
-              <div className="flex items-center justify-center mt-2">
+              <div className="flex items-center justify-center mt-4">
                 <BodySilhouette className="h-16 w-16" color="#ef4444" />
               </div>
 
-              <Button className="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-full text-sm">
+              <Button className="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-full">
                 🎯 Target
               </Button>
             </div>
@@ -370,22 +370,22 @@ const SessionDashboardPage: React.FC = () => {
               </div>
               
               <div className="text-center">
-                <div className="text-5xl font-bold text-green-400">{patientData.hydrationIndex}</div>
-                <div className="text-base text-gray-400">Índice de hidratação</div>
+                <div className="text-4xl font-bold text-green-400">{patientData.hydrationIndex}</div>
+                <div className="text-sm text-gray-400">Índice de hidratação</div>
               </div>
 
-              <div className="grid grid-cols-1 gap-3 w-full text-base">
-                <div className="bg-gray-800/50 p-4 rounded-lg text-center">
+              <div className="grid grid-cols-1 gap-3 w-full text-sm">
+                <div className="bg-gray-800/50 p-3 rounded-lg text-center">
                   <div className="text-gray-400">Água Corporal Total</div>
-                  <div className="font-bold text-lg">{patientData.waterTotal} <span className="text-sm">litros</span> / {patientData.waterTotalPercent} <span className="text-sm">%</span></div>
+                  <div className="font-bold">{patientData.waterTotal} <span className="text-xs">litros</span> / {patientData.waterTotalPercent} <span className="text-xs">%</span></div>
                 </div>
-                <div className="bg-gray-800/50 p-4 rounded-lg text-center">
+                <div className="bg-gray-800/50 p-3 rounded-lg text-center">
                   <div className="text-gray-400">Índice de hidratação</div>
-                  <div className="font-bold text-lg">{patientData.hydrationIndex} <span className="text-sm">cm/ohms x 10</span></div>
+                  <div className="font-bold">{patientData.hydrationIndex} <span className="text-xs">cm/ohms x 10</span></div>
                 </div>
-                <div className="bg-gray-800/50 p-4 rounded-lg text-center">
+                <div className="bg-gray-800/50 p-3 rounded-lg text-center">
                   <div className="text-gray-400">Água na Massa Magra</div>
-                  <div className="font-bold text-lg">{patientData.waterInLeanMass}%</div>
+                  <div className="font-bold">{patientData.waterInLeanMass}%</div>
                 </div>
               </div>
             </div>
@@ -402,19 +402,19 @@ const SessionDashboardPage: React.FC = () => {
               
               {/* Água Intracelular */}
               <div className="text-center">
-                <div className="text-base text-gray-400 mb-2">Intracelular</div>
+                <div className="text-sm text-gray-400 mb-2">Intracelular</div>
                 <CircularProgress
                   value={patientData.waterIntracellular}
                   max={40}
-                  size={140}
-                  strokeWidth={12}
+                  size={120}
+                  strokeWidth={10}
                   color="#3b82f6"
                   unit="litros"
                 />
                 <div className="mt-2">
-                  <div className="text-3xl font-bold text-yellow-400">{patientData.waterIntracellularPercent}%</div>
-                  <div className="text-base text-gray-400">Água Intracelular %</div>
-                  <div className="font-bold text-lg">{patientData.waterIntracellular} litros</div>
+                  <div className="text-2xl font-bold text-yellow-400">{patientData.waterIntracellularPercent}%</div>
+                  <div className="text-sm text-gray-400">Água Intracelular %</div>
+                  <div className="font-bold">{patientData.waterIntracellular} litros</div>
                 </div>
               </div>
 
@@ -422,12 +422,12 @@ const SessionDashboardPage: React.FC = () => {
 
               {/* Água Extracelular */}
               <div className="text-center">
-                <div className="text-base text-gray-400 mb-2">Extracelular</div>
+                <div className="text-sm text-gray-400 mb-2">Extracelular</div>
                 <div className="flex items-center justify-center">
-                  <BodySilhouette className="h-16 w-16" color="#22c55e" />
+                  <BodySilhouette className="h-12 w-12" color="#22c55e" />
                   <div className="ml-4 text-left">
-                    <div className="text-xl font-bold">{patientData.waterExtracellular} litros</div>
-                    <div className="text-base text-gray-400">{patientData.waterExtracellularPercent}%</div>
+                    <div className="text-lg font-bold">{patientData.waterExtracellular} litros</div>
+                    <div className="text-sm text-gray-400">{patientData.waterExtracellularPercent}%</div>
                   </div>
                 </div>
               </div>
@@ -454,26 +454,26 @@ const SessionDashboardPage: React.FC = () => {
               </div>
               
               <div className="text-center">
-                <div className="text-5xl font-bold text-orange-400">{patientData.muscleToFatRatio}</div>
-                <div className="text-base text-gray-400">Razão Músculo/Gordura</div>
+                <div className="text-4xl font-bold text-orange-400">{patientData.muscleToFatRatio}</div>
+                <div className="text-sm text-gray-400">Razão Músculo/Gordura</div>
               </div>
 
-              <div className="grid grid-cols-1 gap-3 w-full text-base">
-                <div className="bg-gray-800/50 p-4 rounded-lg text-center">
+              <div className="grid grid-cols-1 gap-3 w-full text-sm">
+                <div className="bg-gray-800/50 p-3 rounded-lg text-center">
                   <div className="text-gray-400">Massa Magra</div>
-                  <div className="font-bold text-lg">{patientData.leanMass} kg / {patientData.leanMassPercent}%</div>
+                  <div className="font-bold">{patientData.leanMass} kg / {patientData.leanMassPercent}%</div>
                 </div>
-                <div className="bg-gray-800/50 p-4 rounded-lg text-center">
+                <div className="bg-gray-800/50 p-3 rounded-lg text-center">
                   <div className="text-gray-400">Razão Músculo Gordura</div>
-                  <div className="font-bold text-lg">{patientData.muscleToFatRatio} kg músculo / kg gordura</div>
+                  <div className="font-bold">{patientData.muscleToFatRatio} kg músculo / kg gordura</div>
                 </div>
-                <div className="bg-gray-800/50 p-4 rounded-lg text-center">
+                <div className="bg-gray-800/50 p-3 rounded-lg text-center">
                   <div className="text-gray-400">Massa Muscular</div>
-                  <div className="font-bold text-lg">{patientData.muscleMass} kg / 28,2%</div>
+                  <div className="font-bold">{patientData.muscleMass} kg / 28,2%</div>
                 </div>
               </div>
 
-              <Button className="bg-blue-600 hover:bg-blue-700 px-8 py-3 rounded-full text-base">
+              <Button className="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-full">
                 ⚡ Vitality
               </Button>
             </div>
@@ -489,22 +489,22 @@ const SessionDashboardPage: React.FC = () => {
             <div className="flex flex-col items-center space-y-6">
               
               {/* Silhueta com medidas */}
-              <div className="relative my-4">
-                <BodySilhouette className="h-40 w-32" color="#6b7280" />
+              <div className="relative">
+                <BodySilhouette className="h-32 w-24" color="#6b7280" />
                 
                 {/* Indicadores de medidas */}
-                <div className="absolute -top-2 -right-10">
-                  <Badge variant="secondary" className="bg-gray-700 text-white text-sm px-2 py-1">
+                <div className="absolute -top-2 -right-8">
+                  <Badge variant="secondary" className="bg-gray-700 text-white text-xs">
                     {patientData.height} cm
                   </Badge>
                 </div>
-                <div className="absolute top-10 -left-14">
-                  <Badge variant="secondary" className="bg-gray-700 text-white text-sm px-2 py-1">
+                <div className="absolute top-8 -left-12">
+                  <Badge variant="secondary" className="bg-gray-700 text-white text-xs">
                     124,0 cm
                   </Badge>
                 </div>
-                <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2">
-                  <Badge variant="secondary" className="bg-gray-700 text-white text-sm px-2 py-1">
+                <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2">
+                  <Badge variant="secondary" className="bg-gray-700 text-white text-xs">
                     {patientData.weight} kg
                   </Badge>
                 </div>
@@ -513,33 +513,33 @@ const SessionDashboardPage: React.FC = () => {
               {/* Grid de dados */}
               <div className="grid grid-cols-2 gap-4 w-full">
                 <div className="bg-gray-800/50 p-4 rounded-lg text-center">
-                  <div className="text-base text-gray-400">IMC</div>
-                  <div className="text-3xl font-bold">{patientData.bmi}</div>
-                  <div className="text-sm text-gray-500">kg/m²</div>
+                  <div className="text-sm text-gray-400">IMC</div>
+                  <div className="text-2xl font-bold">{patientData.bmi}</div>
+                  <div className="text-xs text-gray-500">kg/m²</div>
                 </div>
                 <div className="bg-gray-800/50 p-4 rounded-lg text-center">
-                  <div className="text-base text-gray-400">Idade</div>
-                  <div className="text-3xl font-bold">{patientData.age}</div>
-                  <div className="text-sm text-gray-500">anos</div>
+                  <div className="text-sm text-gray-400">Idade</div>
+                  <div className="text-2xl font-bold">{patientData.age}</div>
+                  <div className="text-xs text-gray-500">anos</div>
                 </div>
                 <div className="bg-gray-800/50 p-4 rounded-lg text-center">
-                  <div className="text-base text-gray-400">Taxa Metabólica Basal</div>
-                  <div className="text-2xl font-bold">{patientData.bmr}</div>
-                  <div className="text-sm text-gray-500">kcal/24h</div>
+                  <div className="text-sm text-gray-400">Taxa Metabólica Basal</div>
+                  <div className="text-xl font-bold">{patientData.bmr}</div>
+                  <div className="text-xs text-gray-500">kcal/24h</div>
                 </div>
                 <div className="bg-gray-800/50 p-4 rounded-lg text-center">
-                  <div className="text-base text-gray-400">Ângulo de Fase</div>
-                  <div className="text-2xl font-bold">{patientData.phaseAngle}</div>
-                  <div className="text-sm text-gray-500">graus</div>
+                  <div className="text-sm text-gray-400">Ângulo de Fase</div>
+                  <div className="text-xl font-bold">{patientData.phaseAngle}</div>
+                  <div className="text-xs text-gray-500">graus</div>
                 </div>
               </div>
 
               {/* Botões de ação */}
-              <div className="flex gap-4 mt-2">
-                <Button className="bg-red-600 hover:bg-red-700 px-6 py-2 rounded-full text-base">
+              <div className="flex gap-3">
+                <Button className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-full text-sm">
                   ⚠️ Risco
                 </Button>
-                <Button className="bg-red-600 hover:bg-red-700 px-6 py-2 rounded-full text-base">
+                <Button className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-full text-sm">
                   ❤️ Sintomas
                 </Button>
               </div>
@@ -566,21 +566,21 @@ const SessionDashboardPage: React.FC = () => {
               </div>
               
               <div className="text-center">
-                <div className="text-5xl font-bold text-yellow-400">{patientData.phaseAngle}°</div>
-                <div className="text-base text-gray-400">Ângulo de Fase</div>
+                <div className="text-4xl font-bold text-yellow-400">{patientData.phaseAngle}°</div>
+                <div className="text-sm text-gray-400">Ângulo de Fase</div>
               </div>
 
               <div className="flex flex-col items-center space-y-4 mt-6">
-                <BodySilhouette className="h-20 w-16" color="#facc15" />
+                <BodySilhouette className="h-16 w-12" color="#facc15" />
                 
                 <div className="grid grid-cols-1 gap-3 w-full text-center">
-                  <div className="bg-gray-800/50 p-4 rounded-lg">
-                    <div className="text-base text-gray-400">Idade</div>
-                    <div className="text-2xl font-bold">{patientData.age} anos</div>
+                  <div className="bg-gray-800/50 p-3 rounded-lg">
+                    <div className="text-sm text-gray-400">Idade</div>
+                    <div className="text-xl font-bold">{patientData.age} anos</div>
                   </div>
-                  <div className="bg-gray-800/50 p-4 rounded-lg">
-                    <div className="text-base text-gray-400">🏥 Idade Celular</div>
-                    <div className="text-2xl font-bold text-yellow-400">{patientData.cellularAge} anos</div>
+                  <div className="bg-gray-800/50 p-3 rounded-lg">
+                    <div className="text-sm text-gray-400">🏥 Idade Celular</div>
+                    <div className="text-xl font-bold text-yellow-400">{patientData.cellularAge} anos</div>
                   </div>
                 </div>
               </div>

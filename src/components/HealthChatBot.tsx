@@ -252,13 +252,9 @@ Clique no botão abaixo para começar! ⬇️`,
   // Cleanup apenas na desmontagem (evita cancelar voz a cada re-render)
   useEffect(() => {
     return () => {
-      try {
-        cleanup();
-      } catch (error) {
-        console.warn('Erro no cleanup do HealthChatBot:', error);
-      }
+      cleanup();
     };
-  }, [cleanup]);
+  }, []);
 
   const handleVoiceToggle = () => {
     if (!voiceEnabled) {

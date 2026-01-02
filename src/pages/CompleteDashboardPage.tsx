@@ -160,7 +160,7 @@ const CompleteDashboardPage = () => {
       };
       
       return (
-        <div key="locked-content" className="min-h-screen flex items-center justify-center p-6">
+        <div className="min-h-screen flex items-center justify-center p-6">
           <div className="text-center max-w-md mx-auto">
             <div className="mb-6">
               <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
@@ -184,55 +184,54 @@ const CompleteDashboardPage = () => {
       );
     }
 
-    // Adicionar key para cada componente renderizado para evitar problemas de DOM
     switch (activeSection) {
       case 'dashboard':
-        return <DashboardOverview key="dashboard" />;
+        return <DashboardOverview />;
       case 'missions':
-        return <DailyMissions key="missions" user={user} />;
+        return <DailyMissions user={user} />;
       case 'progress':
-        return <MyProgress key="progress" />;
+        return <MyProgress />;
       case 'saboteur-test':
-        return <SaboteurTest key="saboteur-test" />;
+        return <SaboteurTest />;
       case 'goals':
-        return <GoalsPage key="goals" />;
+        return <GoalsPage />;
       case 'subscriptions':
-        return <PaymentPlans key="subscriptions" />;
+        return <PaymentPlans />;
       case 'courses':
-        return <CoursePlatformNetflix key="courses" user={user} />;
+        return <CoursePlatformNetflix user={user} />;
       case 'sessions':
         return (
-          <div key="sessions" className="p-6">
+          <div className="p-6">
             <UserSessions user={user} />
           </div>
         );
       case 'comunidade':
         return (
-          <div key="comunidade" className="p-6">
+          <div className="p-6">
             <RankingCommunity user={user} />
           </div>
         );
       case 'challenges':
         return (
-          <div key="challenges" className="p-6">
+          <div className="p-6">
             <DesafiosSection user={user} />
           </div>
         );
       case 'sofia-nutricional':
-        return <SofiaNutricionalPage key="sofia-nutricional" />;
+        return <SofiaNutricionalPage />;
       case 'dr-vital':
-        return <UserDrVitalPage key="dr-vital" />;
+        return <UserDrVitalPage />;
       case 'exercicios':
-        return <ExerciseDashboard key="exercicios" user={user} />;
+        return <ExerciseDashboard user={user} />;
       case 'profile':
         return (
-          <div key="profile" className="p-6">
+          <div className="p-6">
             <UserProfile />
           </div>
         );
       default:
         return (
-          <div key={`default-${activeSection}`} className="p-6">
+          <div className="p-6">
             <h1 className="text-3xl font-bold mb-4 capitalize">{activeSection.replace('-', ' ')}</h1>
             <p className="text-muted-foreground">Esta funcionalidade está em desenvolvimento...</p>
           </div>

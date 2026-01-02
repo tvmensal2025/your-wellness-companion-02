@@ -86,53 +86,50 @@ export const AnamnesisStatusCard: React.FC = () => {
   }
 
   return (
-    <Card className="bg-gradient-to-br from-white to-emerald-50/30 shadow-md border border-emerald-100/50 hover:shadow-lg transition-all duration-300 rounded-xl overflow-hidden">
-      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-500"></div>
-      <CardHeader className="pb-3">
+    <Card className="bg-white shadow-sm border-0">
+      <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2 text-lg font-bold text-gray-900">
-            <div className="p-1.5 bg-emerald-100 rounded-lg">
-              <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-            </div>
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <CheckCircle2 className="w-5 h-5 text-emerald-600" />
             Anamnese Completa
           </CardTitle>
-          <Badge variant="secondary" className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white border-0 shadow-sm px-2.5 py-1">
+          <Badge variant="secondary" className="bg-emerald-100 text-emerald-700">
             Ativo
           </Badge>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4 pt-2">
+      <CardContent className="space-y-4">
         <div className="grid grid-cols-2 gap-3 text-sm">
           {anamnesis.profession && (
-            <div className="p-2.5 bg-white/60 rounded-lg border border-emerald-100 hover:bg-white transition-colors">
-              <p className="text-muted-foreground text-xs font-medium mb-1">Profissão</p>
-              <p className="font-semibold text-gray-900">{anamnesis.profession}</p>
+            <div>
+              <p className="text-muted-foreground text-xs">Profissão</p>
+              <p className="font-medium">{anamnesis.profession}</p>
             </div>
           )}
           {anamnesis.physical_activity_frequency && (
-            <div className="p-2.5 bg-white/60 rounded-lg border border-emerald-100 hover:bg-white transition-colors">
-              <p className="text-muted-foreground text-xs font-medium mb-1">Atividade Física</p>
-              <p className="font-semibold text-gray-900">{anamnesis.physical_activity_frequency}</p>
+            <div>
+              <p className="text-muted-foreground text-xs">Atividade Física</p>
+              <p className="font-medium">{anamnesis.physical_activity_frequency}</p>
             </div>
           )}
           {anamnesis.sleep_hours_per_night && (
-            <div className="p-2.5 bg-white/60 rounded-lg border border-emerald-100 hover:bg-white transition-colors">
-              <p className="text-muted-foreground text-xs font-medium mb-1">Horas de Sono</p>
-              <p className="font-semibold text-gray-900">{anamnesis.sleep_hours_per_night}h por noite</p>
+            <div>
+              <p className="text-muted-foreground text-xs">Horas de Sono</p>
+              <p className="font-medium">{anamnesis.sleep_hours_per_night}h por noite</p>
             </div>
           )}
           {anamnesis.daily_stress_level && (
-            <div className="p-2.5 bg-white/60 rounded-lg border border-emerald-100 hover:bg-white transition-colors">
-              <p className="text-muted-foreground text-xs font-medium mb-1">Nível de Estresse</p>
-              <p className="font-semibold text-gray-900">{anamnesis.daily_stress_level}/10</p>
+            <div>
+              <p className="text-muted-foreground text-xs">Nível de Estresse</p>
+              <p className="font-medium">{anamnesis.daily_stress_level}/10</p>
             </div>
           )}
         </div>
 
         {anamnesis.main_treatment_goals && (
-          <div className="pt-3 border-t border-emerald-100">
-            <p className="text-xs text-muted-foreground mb-1.5 font-medium">Objetivo Principal</p>
-            <p className="text-sm font-semibold text-gray-900 bg-emerald-50/50 p-2 rounded-lg border border-emerald-100">{anamnesis.main_treatment_goals}</p>
+          <div className="pt-2 border-t">
+            <p className="text-xs text-muted-foreground mb-1">Objetivo Principal</p>
+            <p className="text-sm">{anamnesis.main_treatment_goals}</p>
           </div>
         )}
 
@@ -153,9 +150,9 @@ export const AnamnesisStatusCard: React.FC = () => {
           onClick={() => navigate('/anamnesis')}
           variant="outline"
           size="sm"
-          className="w-full mt-2 border-emerald-200 text-emerald-700 hover:bg-emerald-50 hover:border-emerald-300 transition-all duration-200 shadow-sm"
+          className="w-full mt-2"
         >
-          <ExternalLink className="w-3.5 h-3.5 mr-2" />
+          <ExternalLink className="w-3 h-3 mr-2" />
           Ver/Editar Anamnese
         </Button>
       </CardContent>

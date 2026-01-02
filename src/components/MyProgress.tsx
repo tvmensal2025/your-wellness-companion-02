@@ -222,7 +222,7 @@ const MyProgress: React.FC = () => {
         <Button onClick={() => window.location.reload()}>Tentar novamente</Button>
       </div>;
   }
-  return <motion.div initial="hidden" animate="visible" variants={cardVariants} className="space-y-3">
+  return <motion.div initial="hidden" animate="visible" variants={cardVariants} className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -270,17 +270,17 @@ const MyProgress: React.FC = () => {
       </div>
 
       {/* Cards KPIs principais */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <motion.div variants={cardVariants}>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-base font-medium">Passos</CardTitle>
-              <Activity className="h-5 w-5 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium">Passos</CardTitle>
+              <Activity className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">{filteredData.length ? currentStats.totalSteps.toLocaleString() : '—'}</div>
-              {comparisonStats && filteredData.length > 0 && <div className="flex items-center text-sm text-muted-foreground mt-1">
-                  <TrendingUp className={`mr-1 h-4 w-4 ${currentStats.totalSteps - comparisonStats.totalSteps >= 0 ? 'text-green-500' : 'text-red-500'}`} />
+              <div className="text-2xl font-bold">{filteredData.length ? currentStats.totalSteps.toLocaleString() : '—'}</div>
+              {comparisonStats && filteredData.length > 0 && <div className="flex items-center text-xs text-muted-foreground">
+                  <TrendingUp className={`mr-1 h-3 w-3 ${currentStats.totalSteps - comparisonStats.totalSteps >= 0 ? 'text-green-500' : 'text-red-500'}`} />
                   {Math.round((currentStats.totalSteps - comparisonStats.totalSteps) / Math.max(1, comparisonStats.totalSteps) * 100)}% vs {period === 'day' ? 'ontem' : period === 'week' ? 'semana passada' : 'mês passado'}
                 </div>}
             </CardContent>
@@ -289,13 +289,13 @@ const MyProgress: React.FC = () => {
         <motion.div variants={cardVariants}>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-base font-medium">Calorias Ativas</CardTitle>
-              <Activity className="h-5 w-5 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium">Calorias Ativas</CardTitle>
+              <Activity className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">{filteredData.length ? currentStats.totalCalories.toLocaleString() : '—'}</div>
-              {comparisonStats && filteredData.length > 0 && <div className="flex items-center text-sm text-muted-foreground mt-1">
-                  <TrendingUp className={`mr-1 h-4 w-4 ${currentStats.totalCalories - comparisonStats.totalCalories >= 0 ? 'text-green-500' : 'text-red-500'}`} />
+              <div className="text-2xl font-bold">{filteredData.length ? currentStats.totalCalories.toLocaleString() : '—'}</div>
+              {comparisonStats && filteredData.length > 0 && <div className="flex items-center text-xs text-muted-foreground">
+                  <TrendingUp className={`mr-1 h-3 w-3 ${currentStats.totalCalories - comparisonStats.totalCalories >= 0 ? 'text-green-500' : 'text-red-500'}`} />
                   {Math.round((currentStats.totalCalories - comparisonStats.totalCalories) / Math.max(1, comparisonStats.totalCalories) * 100)}% vs {period === 'day' ? 'ontem' : 'semana passada'}
                 </div>}
             </CardContent>
@@ -304,22 +304,22 @@ const MyProgress: React.FC = () => {
         <motion.div variants={cardVariants}>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-base font-medium">Distância</CardTitle>
-              <Activity className="h-5 w-5 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium">Distância</CardTitle>
+              <Activity className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">{filteredData.length ? `${currentStats.totalDistance.toFixed(1)} km` : '—'}</div>
+              <div className="text-2xl font-bold">{filteredData.length ? `${currentStats.totalDistance.toFixed(1)} km` : '—'}</div>
             </CardContent>
           </Card>
         </motion.div>
         <motion.div variants={cardVariants}>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-base font-medium">Freq. Cardíaca média</CardTitle>
-              <Activity className="h-5 w-5 text-muted-foreground" />
+              <CardTitle className="text-sm font-medium">Freq. Cardíaca média</CardTitle>
+              <Activity className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">{filteredData.length ? `${currentStats.avgHeartRate} bpm` : '—'}</div>
+              <div className="text-2xl font-bold">{filteredData.length ? `${currentStats.avgHeartRate} bpm` : '—'}</div>
             </CardContent>
           </Card>
         </motion.div>

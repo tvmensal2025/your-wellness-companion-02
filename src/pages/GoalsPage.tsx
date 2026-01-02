@@ -17,7 +17,6 @@ import { useWeeklyGoalProgress } from '@/hooks/useWeeklyGoalProgress';
 
 export default function GoalsPage() {
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [selectedFilter, setSelectedFilter] = useState<string | null>(null);
   const { toast } = useToast();
   const { data: weeklyProgress, isLoading: weeklyLoading } = useWeeklyGoalProgress();
 
@@ -101,88 +100,46 @@ export default function GoalsPage() {
         </Button>
       </div>
 
-      {/* Stats Cards - Interativos */}
+      {/* Stats Cards */}
       {stats && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card 
-            className={`cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-105 ${
-              selectedFilter === null ? 'ring-2 ring-primary shadow-md' : ''
-            }`}
-            onClick={() => setSelectedFilter(null)}
-          >
+          <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total de Metas</CardTitle>
-              <Target className={`h-4 w-4 transition-colors ${
-                selectedFilter === null ? 'text-primary' : 'text-muted-foreground'
-              }`} />
+              <Target className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className={`text-2xl font-bold transition-colors ${
-                selectedFilter === null ? 'text-primary' : ''
-              }`}>{stats.total}</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                {selectedFilter === null ? '← Filtro ativo' : 'Clique para ver todas'}
-              </p>
+              <div className="text-2xl font-bold">{stats.total}</div>
             </CardContent>
           </Card>
           
-          <Card 
-            className={`cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-105 ${
-              selectedFilter === 'pendente' ? 'ring-2 ring-yellow-500 shadow-md' : ''
-            }`}
-            onClick={() => setSelectedFilter('pendente')}
-          >
+          <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Aguardando Aprovação</CardTitle>
-              <Clock className={`h-4 w-4 transition-colors ${
-                selectedFilter === 'pendente' ? 'text-yellow-600' : 'text-muted-foreground'
-              }`} />
+              <Clock className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-yellow-600">{stats.pending}</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                {selectedFilter === 'pendente' ? '← Filtro ativo' : 'Clique para filtrar'}
-              </p>
             </CardContent>
           </Card>
 
-          <Card 
-            className={`cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-105 ${
-              selectedFilter === 'em_progresso' ? 'ring-2 ring-blue-500 shadow-md' : ''
-            }`}
-            onClick={() => setSelectedFilter('em_progresso')}
-          >
+          <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Em Progresso</CardTitle>
-              <Calendar className={`h-4 w-4 transition-colors ${
-                selectedFilter === 'em_progresso' ? 'text-blue-600' : 'text-muted-foreground'
-              }`} />
+              <Calendar className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-blue-600">{stats.inProgress}</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                {selectedFilter === 'em_progresso' ? '← Filtro ativo' : 'Clique para filtrar'}
-              </p>
             </CardContent>
           </Card>
 
-          <Card 
-            className={`cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-105 ${
-              selectedFilter === 'concluida' ? 'ring-2 ring-green-500 shadow-md' : ''
-            }`}
-            onClick={() => setSelectedFilter('concluida')}
-          >
+          <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Concluídas</CardTitle>
-              <Trophy className={`h-4 w-4 transition-colors ${
-                selectedFilter === 'concluida' ? 'text-green-600' : 'text-muted-foreground'
-              }`} />
+              <Trophy className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-green-600">{stats.completed}</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                {selectedFilter === 'concluida' ? '← Filtro ativo' : 'Clique para filtrar'}
-              </p>
             </CardContent>
           </Card>
         </div>
@@ -260,32 +217,9 @@ export default function GoalsPage() {
         </div>
       )}
 
-      {/* Goals List - Filtrada */}
+      {/* Goals List */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold">
-            {selectedFilter === null 
-              ? 'Todas as Metas' 
-              : selectedFilter === 'pendente' 
-                ? 'Metas Aguardando Aprovação'
-                : selectedFilter === 'em_progresso'
-                  ? 'Metas Em Progresso'
-                  : selectedFilter === 'concluida'
-                    ? 'Metas Concluídas'
-                    : 'Suas Metas'
-            }
-          </h2>
-          {selectedFilter && (
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => setSelectedFilter(null)}
-              className="gap-2"
-            >
-              Limpar Filtro
-            </Button>
-          )}
-        </div>
+        <h2 className="text-xl font-semibold">Suas Metas</h2>
         
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -305,60 +239,15 @@ export default function GoalsPage() {
             ))}
           </div>
         ) : goals && goals.length > 0 ? (
-          <>
-            {(() => {
-              const filteredGoals = selectedFilter 
-                ? goals.filter(goal => goal.status === selectedFilter)
-                : goals;
-              
-              if (filteredGoals.length === 0) {
-                return (
-                  <Card>
-                    <CardContent className="flex flex-col items-center justify-center py-12">
-                      <Target className="h-12 w-12 text-muted-foreground mb-4" />
-                      <h3 className="text-lg font-semibold mb-2">
-                        Nenhuma meta {selectedFilter === 'pendente' ? 'aguardando aprovação' 
-                          : selectedFilter === 'em_progresso' ? 'em progresso'
-                          : selectedFilter === 'concluida' ? 'concluída'
-                          : ''}
-                      </h3>
-                      <p className="text-muted-foreground text-center mb-4">
-                        {selectedFilter 
-                          ? 'Tente selecionar outro filtro ou criar uma nova meta.'
-                          : 'Crie sua primeira meta e comece sua jornada de transformação!'
-                        }
-                      </p>
-                      {selectedFilter && (
-                        <Button 
-                          variant="outline"
-                          onClick={() => setSelectedFilter(null)}
-                          className="mb-2"
-                        >
-                          Ver Todas as Metas
-                        </Button>
-                      )}
-                      <Button onClick={() => setCreateDialogOpen(true)} className="gap-2">
-                        <Plus className="w-4 h-4" />
-                        Criar Nova Meta
-                      </Button>
-                    </CardContent>
-                  </Card>
-                );
-              }
-              
-              return (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {filteredGoals.map((goal) => (
-                    <EnhancedGoalCard 
-                      key={goal.id} 
-                      goal={goal as any} 
-                      onUpdate={refetch} 
-                    />
-                  ))}
-                </div>
-              );
-            })()}
-          </>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {goals.map((goal) => (
+              <EnhancedGoalCard 
+                key={goal.id} 
+                goal={goal as any} 
+                onUpdate={refetch} 
+              />
+            ))}
+          </div>
         ) : (
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12">

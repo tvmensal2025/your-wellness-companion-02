@@ -629,33 +629,33 @@ const AuthPage = () => {
   return <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
       {/* Header */}
       <header className="absolute top-0 left-0 right-0 z-10 border-b border-border/10 bg-background/80 backdrop-blur-xl">
-        <div className="container mx-auto px-4 sm:px-6 py-2 sm:py-3">
-          <Link to="/" className="flex items-center gap-2 sm:gap-3 group">
-            <div className="flex items-center gap-1.5 sm:gap-2">
-              <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5 transition-transform group-hover:-translate-x-1" />
+        <div className="container mx-auto px-6 py-4">
+          <Link to="/" className="flex items-center gap-3 group">
+            <div className="flex items-center gap-2">
+              <ArrowLeft className="h-5 w-5 transition-transform group-hover:-translate-x-1" />
               <div className="relative">
-                <img src="/images/instituto-logo.png" alt="Instituto dos Sonhos" className="h-6 w-6 sm:h-8 sm:w-8 object-contain" />
+                <img src="/images/instituto-logo.png" alt="Instituto dos Sonhos" className="h-8 w-8 object-contain" />
               </div>
             </div>
-            <h1 className="text-lg sm:text-xl md:text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
               Instituto dos Sonhos
             </h1>
           </Link>
         </div>
       </header>
 
-      <div className="min-h-screen flex items-center justify-center px-6 py-4 sm:py-8">
-        <div className="w-full max-w-[95vw] sm:max-w-md md:max-w-lg space-y-3 sm:space-y-4 px-4 sm:px-0 max-h-[95vh] overflow-y-auto">
+      <div className="min-h-screen flex items-center justify-center px-6 py-20">
+        <div className="w-full max-w-[95vw] sm:max-w-md md:max-w-lg space-y-6 px-4 sm:px-0">
           {/* Header Text */}
-          <div className="text-center space-y-2">
-            <div className="space-y-1">
-              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
+          <div className="text-center space-y-4">
+            <div className="space-y-2">
+              <h1 className="text-4xl font-bold tracking-tight">
                 Comece sua
                 <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
                   {" "}transformação
                 </span>
               </h1>
-              <p className="text-sm sm:text-base text-muted-foreground">
+              <p className="text-lg text-muted-foreground">
                 Faça login ou crie sua conta gratuita
               </p>
             </div>
@@ -663,21 +663,21 @@ const AuthPage = () => {
 
           {/* Main Auth Card */}
           <Card className="border-0 shadow-2xl shadow-primary/5 bg-card/50 backdrop-blur-xl">
-            <CardContent className="p-4 sm:p-6">
+            <CardContent className="p-8">
               <Tabs defaultValue="login" className="w-full">
-                <TabsList className="grid w-full grid-cols-2 mb-4 sm:mb-6 bg-muted/50">
-                  <TabsTrigger value="login" className="data-[state=active]:bg-background data-[state=active]:shadow-md text-sm">
+                <TabsList className="grid w-full grid-cols-2 mb-8 bg-muted/50">
+                  <TabsTrigger value="login" className="data-[state=active]:bg-background data-[state=active]:shadow-md">
                     Entrar
                   </TabsTrigger>
-                  <TabsTrigger value="signup" className="data-[state=active]:bg-background data-[state=active]:shadow-md text-sm">
+                  <TabsTrigger value="signup" className="data-[state=active]:bg-background data-[state=active]:shadow-md">
                     Criar Conta
                   </TabsTrigger>
                 </TabsList>
 
                 {/* Login Tab */}
-                <TabsContent value="login" className="space-y-3 sm:space-y-4">
+                <TabsContent value="login" className="space-y-6">
                   {/* Google Login Button */}
-                  <div className="space-y-2">
+                  <div className="space-y-4">
                     
                     
                     <div className="relative">
@@ -688,35 +688,35 @@ const AuthPage = () => {
                     </div>
                   </div>
                   
-                  <div className="space-y-3">
-                    <div className="space-y-1.5">
-                      <Label htmlFor="login-email" className="text-xs sm:text-sm font-medium">Email</Label>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="login-email" className="text-sm font-medium">Email</Label>
                       <Input id="login-email" type="email" placeholder="seu@email.com" value={loginData.email} onChange={e => setLoginData({
                       ...loginData,
                       email: e.target.value
-                    })} className="h-10 sm:h-11 bg-background/50 border-border/50 focus:border-primary focus:ring-primary/20 text-sm" required />
+                    })} className="h-12 bg-background/50 border-border/50 focus:border-primary focus:ring-primary/20" required />
                     </div>
                     
-                    <div className="space-y-1.5">
-                      <Label htmlFor="login-password" className="text-xs sm:text-sm font-medium">Senha</Label>
+                    <div className="space-y-2">
+                      <Label htmlFor="login-password" className="text-sm font-medium">Senha</Label>
                       <Input id="login-password" type="password" placeholder="Sua senha" value={loginData.password} onChange={e => setLoginData({
                       ...loginData,
                       password: e.target.value
-                    })} onKeyDown={e => e.key === 'Enter' && handleLogin()} className="h-10 sm:h-11 bg-background/50 border-border/50 focus:border-primary focus:ring-primary/20 text-sm" required />
+                    })} onKeyDown={e => e.key === 'Enter' && handleLogin()} className="h-12 bg-background/50 border-border/50 focus:border-primary focus:ring-primary/20" required />
                     </div>
 
-                    <div className="flex items-center justify-between text-xs sm:text-sm">
-                      <div className="flex items-center space-x-1.5">
-                        <Checkbox id="remember" checked={rememberMe} onCheckedChange={checked => setRememberMe(checked === true)} className="h-4 w-4" />
-                        <Label htmlFor="remember" className="text-xs sm:text-sm text-muted-foreground cursor-pointer">Lembrar de mim</Label>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <Checkbox id="remember" checked={rememberMe} onCheckedChange={checked => setRememberMe(checked === true)} />
+                        <Label htmlFor="remember" className="text-sm text-muted-foreground">Lembrar de mim</Label>
                       </div>
-                      <button onClick={() => setShowForgotPassword(true)} className="text-xs sm:text-sm text-primary hover:underline">
+                      <button onClick={() => setShowForgotPassword(true)} className="text-sm text-primary hover:underline">
                         Esqueceu a senha?
                       </button>
                     </div>
                   </div>
 
-                  <Button onClick={handleLogin} disabled={isLoading} className="w-full h-10 sm:h-11 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-primary-foreground font-medium shadow-lg shadow-primary/25 transition-all duration-200 text-sm">
+                  <Button onClick={handleLogin} disabled={isLoading} className="w-full h-12 bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-primary-foreground font-medium shadow-lg shadow-primary/25 transition-all duration-200">
                     {isLoading ? <div className="flex items-center gap-2">
                         <div className="w-4 h-4 border-2 border-primary-foreground/20 border-t-primary-foreground rounded-full animate-spin" />
                         Entrando...
@@ -725,8 +725,8 @@ const AuthPage = () => {
 
                   {/* Botões de teste removidos */}
 
-                  <div className="text-center pt-1">
-                    <p className="text-xs sm:text-sm text-muted-foreground">
+                  <div className="text-center">
+                    <p className="text-sm text-muted-foreground">
                       Ainda não tem conta?{" "}
                       <span className="text-primary font-medium cursor-pointer hover:underline">
                         Crie uma agora
@@ -745,10 +745,10 @@ const AuthPage = () => {
                         Digite seu email para receber as instruções de recuperação
                       </p>
                       
-                      <div className="space-y-3">
-                        <div className="space-y-1.5">
-                          <Label htmlFor="forgot-email" className="text-sm">Email</Label>
-                          <Input id="forgot-email" type="email" placeholder="seu@email.com" value={forgotPasswordEmail} onChange={e => setForgotPasswordEmail(e.target.value)} className="h-10 sm:h-11 bg-background/50 border-border/50 focus:border-primary focus:ring-primary/20 text-sm" />
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="forgot-email">Email</Label>
+                          <Input id="forgot-email" type="email" placeholder="seu@email.com" value={forgotPasswordEmail} onChange={e => setForgotPasswordEmail(e.target.value)} className="h-12 bg-background/50 border-border/50 focus:border-primary focus:ring-primary/20" />
                         </div>
                         
                         <div className="flex gap-2">
@@ -769,9 +769,9 @@ const AuthPage = () => {
                   </div>}
 
                 {/* Signup Tab */}
-                <TabsContent value="signup" className="space-y-3 sm:space-y-4">
+                <TabsContent value="signup" className="space-y-6">
                   {/* Google Signup Button */}
-                  <div className="space-y-2">
+                  <div className="space-y-4">
                     
                     
                     <div className="relative">
@@ -785,65 +785,65 @@ const AuthPage = () => {
                   </div>
                   
                   {/* Dados Pessoais */}
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2 pb-1.5 border-b border-border/50">
-                      <div className="p-1.5 bg-primary/10 rounded-lg">
-                        <User className="h-3.5 w-3.5 text-primary" />
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2 pb-2 border-b border-border/50">
+                      <div className="p-2 bg-primary/10 rounded-lg">
+                        <User className="h-4 w-4 text-primary" />
                       </div>
-                      <span className="font-semibold text-foreground text-sm">Dados Pessoais</span>
+                      <span className="font-semibold text-foreground">Dados Pessoais</span>
                     </div>
                     
-                    <div className="grid grid-cols-1 gap-3">
-                      <div className="space-y-1.5">
-                        <Label htmlFor="signup-name" className="text-xs sm:text-sm font-medium">Nome completo *</Label>
+                    <div className="grid grid-cols-1 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="signup-name" className="text-sm font-medium">Nome completo *</Label>
                         <Input id="signup-name" type="text" placeholder="Digite seu nome completo" value={signupData.fullName} onChange={e => setSignupData({
                         ...signupData,
                         fullName: e.target.value
-                      })} className="h-10 sm:h-11 bg-background/50 border-border/50 focus:border-primary focus:ring-primary/20 text-sm" required />
+                      })} className="h-12 bg-background/50 border-border/50 focus:border-primary focus:ring-primary/20" required />
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <div className="space-y-1.5">
-                          <Label htmlFor="signup-phone" className="text-xs sm:text-sm font-medium flex items-center gap-2">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="signup-phone" className="text-sm font-medium flex items-center gap-2">
                             <Phone className="h-3 w-3" />
                             Celular *
                           </Label>
                           <Input id="signup-phone" type="tel" placeholder="(11) 99999-9999" value={signupData.phone} onChange={e => setSignupData({
                           ...signupData,
                           phone: e.target.value
-                        })} className="h-10 sm:h-11 bg-background/50 border-border/50 focus:border-primary focus:ring-primary/20 text-sm" required />
+                        })} className="h-12 bg-background/50 border-border/50 focus:border-primary focus:ring-primary/20" required />
                         </div>
 
-                        <div className="space-y-1.5">
-                          <Label htmlFor="signup-email" className="text-xs sm:text-sm font-medium">Email *</Label>
+                        <div className="space-y-2">
+                          <Label htmlFor="signup-email" className="text-sm font-medium">Email *</Label>
                           <Input id="signup-email" type="email" placeholder="seu@email.com" value={signupData.email} onChange={e => setSignupData({
                           ...signupData,
                           email: e.target.value
-                        })} className="h-10 sm:h-11 bg-background/50 border-border/50 focus:border-primary focus:ring-primary/20 text-sm" required />
+                        })} className="h-12 bg-background/50 border-border/50 focus:border-primary focus:ring-primary/20" required />
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                         <div className="space-y-1.5">
-                           <Label htmlFor="signup-birth" className="text-xs sm:text-sm font-medium flex items-center gap-2">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                         <div className="space-y-2">
+                           <Label htmlFor="signup-birth" className="text-sm font-medium flex items-center gap-2">
                              <Calendar className="h-3 w-3" />
                              Data de Nascimento *
                            </Label>
                            <Input id="signup-birth" type="date" value={signupData.birthDate} onChange={e => setSignupData({
                           ...signupData,
                           birthDate: e.target.value
-                        })} className="h-10 sm:h-11 bg-background/50 border-border/50 focus:border-primary focus:ring-primary/20 text-sm" required />
+                        })} className="h-12 bg-background/50 border-border/50 focus:border-primary focus:ring-primary/20" required />
                          </div>
 
-                        <div className="space-y-1.5">
-                          <Label htmlFor="signup-gender" className="text-xs sm:text-sm font-medium">Gênero *</Label>
+                        <div className="space-y-2">
+                          <Label htmlFor="signup-gender" className="text-sm font-medium">Gênero *</Label>
                           <Select value={signupData.gender} onValueChange={value => {
                           setSignupData({
                             ...signupData,
                             gender: value
                           });
                         }}>
-                            <SelectTrigger id="signup-gender" className="h-10 sm:h-11 bg-background/50 border-border/50 focus:border-primary focus:ring-primary/20 text-sm">
+                            <SelectTrigger id="signup-gender" className="h-12 bg-background/50 border-border/50 focus:border-primary focus:ring-primary/20">
                               <SelectValue placeholder="Selecione seu gênero" />
                             </SelectTrigger>
                             <SelectContent 
@@ -859,71 +859,71 @@ const AuthPage = () => {
                         </div>
                       </div>
 
-                       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                         <div className="space-y-1.5">
-                           <Label htmlFor="signup-city" className="text-xs sm:text-sm font-medium flex items-center gap-2">
+                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                         <div className="space-y-2">
+                           <Label htmlFor="signup-city" className="text-sm font-medium flex items-center gap-2">
                              <MapPin className="h-3 w-3" />
                              Cidade *
                            </Label>
                            <Input id="signup-city" type="text" placeholder="Sua cidade" value={signupData.city} onChange={e => setSignupData({
                           ...signupData,
                           city: e.target.value
-                        })} className="h-10 sm:h-11 bg-background/50 border-border/50 focus:border-primary focus:ring-primary/20 text-sm" required />
+                        })} className="h-12 bg-background/50 border-border/50 focus:border-primary focus:ring-primary/20" required />
                          </div>
 
-                         <div className="space-y-1.5">
-                           <Label htmlFor="signup-state" className="text-xs sm:text-sm font-medium">Estado *</Label>
+                         <div className="space-y-2">
+                           <Label htmlFor="signup-state" className="text-sm font-medium">Estado *</Label>
                            <Input id="signup-state" type="text" placeholder="SP" value={signupData.state} onChange={e => setSignupData({
                           ...signupData,
                           state: e.target.value
-                        })} className="h-10 sm:h-11 bg-background/50 border-border/50 focus:border-primary focus:ring-primary/20 text-sm" required />
+                        })} className="h-12 bg-background/50 border-border/50 focus:border-primary focus:ring-primary/20" required />
                          </div>
 
-                         <div className="space-y-1.5">
-                           <Label htmlFor="signup-height" className="text-xs sm:text-sm font-medium flex items-center gap-2">
+                         <div className="space-y-2">
+                           <Label htmlFor="signup-height" className="text-sm font-medium flex items-center gap-2">
                              <Ruler className="h-3 w-3" />
                              Altura (cm) *
                            </Label>
                            <Input id="signup-height" type="number" placeholder="175" min="100" max="250" value={signupData.height} onChange={e => setSignupData({
                           ...signupData,
                           height: e.target.value
-                        })} className="h-10 sm:h-11 bg-background/50 border-border/50 focus:border-primary focus:ring-primary/20 text-sm" required />
+                        })} className="h-12 bg-background/50 border-border/50 focus:border-primary focus:ring-primary/20" required />
                          </div>
                        </div>
                     </div>
                   </div>
 
                   {/* Segurança */}
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2 pb-1.5 border-b border-border/50">
-                      <div className="p-1.5 bg-primary/10 rounded-lg">
-                        <Heart className="h-3.5 w-3.5 text-primary" />
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2 pb-2 border-b border-border/50">
+                      <div className="p-2 bg-primary/10 rounded-lg">
+                        <Heart className="h-4 w-4 text-primary" />
                       </div>
-                      <span className="font-semibold text-foreground text-sm">Segurança</span>
+                      <span className="font-semibold text-foreground">Segurança</span>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <div className="space-y-1.5">
-                        <Label htmlFor="signup-password" className="text-xs sm:text-sm font-medium">Senha *</Label>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="signup-password" className="text-sm font-medium">Senha *</Label>
                         <Input id="signup-password" type="password" placeholder="Crie uma senha forte" value={signupData.password} onChange={e => setSignupData({
                         ...signupData,
                         password: e.target.value
-                      })} className="h-10 sm:h-11 bg-background/50 border-border/50 focus:border-primary focus:ring-primary/20 text-sm" required />
+                      })} className="h-12 bg-background/50 border-border/50 focus:border-primary focus:ring-primary/20" required />
                       </div>
 
-                      <div className="space-y-1.5">
-                        <Label htmlFor="confirm-password" className="text-xs sm:text-sm font-medium">Confirmar senha *</Label>
+                      <div className="space-y-2">
+                        <Label htmlFor="confirm-password" className="text-sm font-medium">Confirmar senha *</Label>
                         <Input id="confirm-password" type="password" placeholder="Confirme sua senha" value={signupData.confirmPassword} onChange={e => setSignupData({
                         ...signupData,
                         confirmPassword: e.target.value
-                      })} className="h-10 sm:h-11 bg-background/50 border-border/50 focus:border-primary focus:ring-primary/20 text-sm" required />
+                      })} className="h-12 bg-background/50 border-border/50 focus:border-primary focus:ring-primary/20" required />
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex items-start space-x-2 p-3 bg-muted/20 rounded-lg border border-border/50">
-                    <Checkbox id="terms" checked={acceptTerms} onCheckedChange={checked => setAcceptTerms(checked === true)} className="mt-0.5 h-4 w-4" />
-                    <Label htmlFor="terms" className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                  <div className="flex items-start space-x-3 p-4 bg-muted/20 rounded-lg border border-border/50">
+                    <Checkbox id="terms" checked={acceptTerms} onCheckedChange={checked => setAcceptTerms(checked === true)} className="mt-0.5" />
+                    <Label htmlFor="terms" className="text-sm text-muted-foreground leading-relaxed">
                       Aceito os{" "}
                       <Link to="/termos" className="text-primary hover:underline font-medium">termos de uso</Link>{" "}
                       e{" "}
@@ -931,7 +931,7 @@ const AuthPage = () => {
                     </Label>
                   </div>
 
-                  <Button onClick={handleSignup} disabled={isLoading} className="w-full h-10 sm:h-11 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white font-medium shadow-lg shadow-green-500/25 transition-all duration-200 text-sm">
+                  <Button onClick={handleSignup} disabled={isLoading} className="w-full h-12 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600 text-white font-medium shadow-lg shadow-green-500/25 transition-all duration-200">
                     {isLoading ? <div className="flex items-center gap-2">
                         <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
                         Criando conta...
@@ -943,22 +943,22 @@ const AuthPage = () => {
           </Card>
 
           {/* Social Proof */}
-          <div className="space-y-2 sm:space-y-3">
+          <div className="space-y-4">
             <div className="text-center">
-              <p className="text-xs sm:text-sm text-muted-foreground">
+              <p className="text-sm text-muted-foreground">
                 Estamos <span className="font-semibold text-primary">iniciando nossa jornada</span> de transformação
               </p>
             </div>
             
             <Card className="border-0 bg-gradient-to-r from-primary/5 to-green-500/5 backdrop-blur-sm">
-              <CardContent className="p-3 sm:p-4 text-center">
-                <div className="flex items-center justify-center gap-1 mb-2">
-                  <Star className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+              <CardContent className="p-6 text-center">
+                <div className="flex items-center justify-center gap-1 mb-3">
+                  <Star className="h-5 w-5 text-primary" />
                 </div>
-                <p className="text-sm sm:text-base font-medium mb-1">
+                <p className="text-lg font-medium mb-2">
                   "Faça de seu alimento seu remédio"
                 </p>
-                <p className="text-xs sm:text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground">
                   Transforme sua saúde através da alimentação consciente
                 </p>
               </CardContent>
