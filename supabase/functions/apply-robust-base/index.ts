@@ -245,7 +245,7 @@ serve(async (req) => {
           console.log(`✅ Comando ${i + 1}: Executado com sucesso`);
           successCount++;
         }
-      } catch (err) {
+      } catch (err: any) {
         console.log(`❌ Comando ${i + 1}: ${err.message}`);
         errorCount++;
         errors.push(`Comando ${i + 1}: ${err.message}`);
@@ -287,7 +287,7 @@ serve(async (req) => {
       }
     );
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('❌ Erro geral:', error);
     return new Response(
       JSON.stringify({
