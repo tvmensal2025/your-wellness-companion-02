@@ -475,7 +475,7 @@ export const InteractiveTutorialPopup: React.FC<InteractiveTutorialPopupProps> =
             {/* Sofia Avatar Premium */}
             <div className="popup-sofia-avatar">
               <motion.img
-                src="http://45.67.221.8086/Sofia.png"
+                src="/placeholder.svg"
                 alt="Sofia - Conselheira dos Sonhos"
                 className="sofia-avatar-image"
                 initial={{ scale: 0 }}

@@ -57,7 +57,7 @@ export const SofiaTutorialDemo: React.FC<SofiaTutorialDemoProps> = ({
           }}
         >
           <img
-            src="http://45.67.221.216:8086/Sofia.png"
+            src="/placeholder.svg"
             alt="Sofia - Conselheira dos Sonhos"
             className="sofia-avatar-image"
             style={{
