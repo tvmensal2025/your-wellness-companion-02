@@ -25,30 +25,30 @@ export const useWeeklyGoalProgress = () => {
       if (goalsError) throw goalsError;
 
       // Buscar pesagens da semana atual e anterior
-      const { data: weighings, error: weighingsError } = await supabase
-        .from('weighings')
+      const { data: measurements, error: measurementsError } = await supabase
+        .from('weight_measurements')
         .select('*')
         .eq('user_id', user.id)
-        .gte('created_at', previousWeekStart.toISOString())
-        .lte('created_at', weekEnd.toISOString())
-        .order('created_at', { ascending: false });
+        .gte('measurement_date', previousWeekStart.toISOString().split('T')[0])
+        .lte('measurement_date', weekEnd.toISOString().split('T')[0])
+        .order('measurement_date', { ascending: false });
 
-      if (weighingsError) throw weighingsError;
+      if (measurementsError) throw measurementsError;
 
       // Mock data - tabela google_fit_data ainda não existe
       const fitData = [];
 
       // Calcular progresso do peso
-      const currentWeekWeighings = weighings?.filter(w => 
-        new Date(w.created_at) >= weekStart && new Date(w.created_at) <= weekEnd
+      const currentWeekMeasurements = measurements?.filter(m => 
+        new Date(m.measurement_date) >= weekStart && new Date(m.measurement_date) <= weekEnd
       ) || [];
       
-      const previousWeekWeighings = weighings?.filter(w => 
-        new Date(w.created_at) >= previousWeekStart && new Date(w.created_at) <= previousWeekEnd
+      const previousWeekMeasurements = measurements?.filter(m => 
+        new Date(m.measurement_date) >= previousWeekStart && new Date(m.measurement_date) <= previousWeekEnd
       ) || [];
 
-      const currentWeight = currentWeekWeighings[0]?.weight || 0;
-      const previousWeight = previousWeekWeighings[0]?.weight || currentWeight;
+      const currentWeight = currentWeekMeasurements[0]?.peso_kg || 0;
+      const previousWeight = previousWeekMeasurements[0]?.peso_kg || currentWeight;
       const weightChange = currentWeight - previousWeight;
 
       // Encontrar meta de peso

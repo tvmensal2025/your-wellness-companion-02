@@ -10,7 +10,7 @@ interface AnamnesisData {
   profession?: string;
   marital_status?: string;
   sleep_hours_per_night?: number;
-  daily_stress_level?: number;
+  daily_stress_level?: string | null;
   physical_activity_frequency?: string;
   main_treatment_goals?: string;
   supplements?: any;

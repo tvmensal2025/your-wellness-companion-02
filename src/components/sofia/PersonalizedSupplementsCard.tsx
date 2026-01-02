@@ -189,7 +189,7 @@ export const PersonalizedSupplementsCard: React.FC = () => {
         goals: anamnesis?.main_treatment_goals ? [anamnesis.main_treatment_goals] : [],
         health_conditions: [
           ...chronicDiseases,
-          ...((anamnesis?.daily_stress_level || 0) > 7 ? ['estresse'] : []),
+          ...((typeof anamnesis?.daily_stress_level === 'number' ? anamnesis?.daily_stress_level : parseInt(anamnesis?.daily_stress_level || '0')) > 7 ? ['estresse'] : []),
           ...((anamnesis?.sleep_quality_score || 0) < 5 ? ['problemas_sono'] : []),
           ...((profile?.current_weight || 0) > 90 ? ['sobrepeso'] : [])
         ]

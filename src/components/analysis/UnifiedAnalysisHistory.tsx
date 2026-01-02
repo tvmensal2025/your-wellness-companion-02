@@ -143,7 +143,7 @@ export const UnifiedAnalysisHistory: React.FC = () => {
           created_at: item.created_at,
           data: item,
           user_id: userId,
-          analysis_text: item.results
+          analysis_text: typeof item.results === 'string' ? item.results : JSON.stringify(item.results)
         });
       });
 

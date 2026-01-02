@@ -47,7 +47,7 @@ export const useUserProfile = (user: User | null) => {
       // Buscar da tabela profiles unificada
       const { data, error } = await supabase
         .from('profiles')
-        .select('user_id, full_name, email, phone, birth_date, city, state, avatar_url, bio, goals, achievements')
+        .select('user_id, full_name, email, phone, birth_date, city, state, avatar_url')
         .eq('user_id', user.id)
         .maybeSingle();
 
