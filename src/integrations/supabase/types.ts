@@ -8316,6 +8316,7 @@ export type Database = {
           daily_stress_level: string | null
           digestive_issues: string | null
           eating_habits: string | null
+          emotional_events_during_weight_gain: string | null
           family_history: string | null
           food_allergies: string | null
           food_intolerances: string | null
@@ -8326,6 +8327,7 @@ export type Database = {
           hip_circumference_cm: number | null
           id: string
           main_treatment_goals: string | null
+          major_weight_gain_periods: string | null
           physical_activity: string | null
           physical_activity_frequency: string | null
           previous_weight_treatments: string | null
@@ -8339,6 +8341,8 @@ export type Database = {
           user_id: string | null
           waist_circumference_cm: number | null
           water_intake: string | null
+          weight_fluctuation_classification: string | null
+          weight_gain_started_age: number | null
         }
         Insert: {
           additional_notes?: string | null
@@ -8352,6 +8356,7 @@ export type Database = {
           daily_stress_level?: string | null
           digestive_issues?: string | null
           eating_habits?: string | null
+          emotional_events_during_weight_gain?: string | null
           family_history?: string | null
           food_allergies?: string | null
           food_intolerances?: string | null
@@ -8362,6 +8367,7 @@ export type Database = {
           hip_circumference_cm?: number | null
           id?: string
           main_treatment_goals?: string | null
+          major_weight_gain_periods?: string | null
           physical_activity?: string | null
           physical_activity_frequency?: string | null
           previous_weight_treatments?: string | null
@@ -8375,6 +8381,8 @@ export type Database = {
           user_id?: string | null
           waist_circumference_cm?: number | null
           water_intake?: string | null
+          weight_fluctuation_classification?: string | null
+          weight_gain_started_age?: number | null
         }
         Update: {
           additional_notes?: string | null
@@ -8388,6 +8396,7 @@ export type Database = {
           daily_stress_level?: string | null
           digestive_issues?: string | null
           eating_habits?: string | null
+          emotional_events_during_weight_gain?: string | null
           family_history?: string | null
           food_allergies?: string | null
           food_intolerances?: string | null
@@ -8398,6 +8407,7 @@ export type Database = {
           hip_circumference_cm?: number | null
           id?: string
           main_treatment_goals?: string | null
+          major_weight_gain_periods?: string | null
           physical_activity?: string | null
           physical_activity_frequency?: string | null
           previous_weight_treatments?: string | null
@@ -8411,6 +8421,8 @@ export type Database = {
           user_id?: string | null
           waist_circumference_cm?: number | null
           water_intake?: string | null
+          weight_fluctuation_classification?: string | null
+          weight_gain_started_age?: number | null
         }
         Relationships: []
       }
