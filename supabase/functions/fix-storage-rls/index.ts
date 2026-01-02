@@ -104,7 +104,8 @@ serve(async (req) => {
 
   } catch (e) {
     console.error('Erro na função fix-storage-rls:', e);
-    return new Response(JSON.stringify({ error: String(e?.message ?? e) }), { 
+    const message = e instanceof Error ? e.message : String(e);
+    return new Response(JSON.stringify({ error: message }), { 
       status: 500, 
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });

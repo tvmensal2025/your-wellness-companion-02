@@ -43,8 +43,8 @@ async function retryWithBackoff<T>(
       return await operation();
     } catch (error) {
       lastError = error as Error;
-      console.warn(`⚠️ Tentativa ${attempt}/${maxRetries} falhou:`, error.message);
-      
+      console.warn(`⚠️ Tentativa ${attempt}/${maxRetries} falhou:`, lastError.message);
+
       if (attempt === maxRetries) {
         throw lastError;
       }

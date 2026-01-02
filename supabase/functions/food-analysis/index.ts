@@ -97,9 +97,6 @@ serve(async (req) => {
     const safeHealthDiary = healthDiary || [];
     const safeGoals = goals || [];
 
-      const measurements = measurementsResult.data || [];
-      const healthDiary = healthDiaryResult.data || [];
-      const goals = goalsResult.data || [];
     // Calcular análise nutricional
     const nutritionAnalysis = calculateNutritionAnalysis(foodItems);
     
@@ -110,9 +107,9 @@ serve(async (req) => {
       mealType, 
       userContext,
       profile,
-      measurements,
-      healthDiary,
-      goals,
+      safeMeasurements,
+      safeHealthDiary,
+      safeGoals,
       anamnesis
     );
 
@@ -149,8 +146,9 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Erro na análise de comida:', error);
+    const err = error as Error;
     return new Response(JSON.stringify({ 
-      error: error.message || 'Erro interno do servidor' 
+      error: err.message || 'Erro interno do servidor' 
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -237,7 +235,13 @@ function calculateNutritionAnalysis(foodItems: FoodItem[]): NutritionAnalysis {
   }
 
   return {
-    ...totals,
+    totalCalories: totals.calories,
+    totalProtein: totals.protein,
+    totalCarbs: totals.carbs,
+    totalFat: totals.fat,
+    totalFiber: totals.fiber,
+    totalSugar: totals.sugar,
+    totalSodium: totals.sodium,
     mealBalance,
     healthScore: avgHealthScore,
     recommendations,
