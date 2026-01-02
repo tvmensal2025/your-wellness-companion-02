@@ -127,11 +127,12 @@ serve(async (req) => {
     )
 
   } catch (error) {
-    console.error('💥 Erro fatal:', error)
+    const err = error as Error;
+    console.error('💥 Erro fatal:', err)
     return new Response(
       JSON.stringify({
         success: false,
-        error: error.message
+        error: err.message
       }),
       {
         status: 500,
@@ -139,4 +140,4 @@ serve(async (req) => {
       }
     )
   }
-}) 
+})

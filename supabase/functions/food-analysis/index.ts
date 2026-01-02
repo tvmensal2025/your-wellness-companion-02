@@ -93,6 +93,13 @@ serve(async (req) => {
       supabase.from('user_anamnesis').select('*').eq('user_id', userId).single()
     ]);
 
+    const safeMeasurements = measurements || [];
+    const safeHealthDiary = healthDiary || [];
+    const safeGoals = goals || [];
+
+      const measurements = measurementsResult.data || [];
+      const healthDiary = healthDiaryResult.data || [];
+      const goals = goalsResult.data || [];
     // Calcular análise nutricional
     const nutritionAnalysis = calculateNutritionAnalysis(foodItems);
     

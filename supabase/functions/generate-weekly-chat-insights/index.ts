@@ -93,8 +93,8 @@ serve(async (req) => {
       acc[emotion] = (acc[emotion] || 0) + 1;
       return acc;
     }, {});
-    const dominantEmotions = Object.entries(emotionCounts)
-      .sort(([,a], [,b]) => b - a)
+    const dominantEmotions = Object.entries(emotionCounts as Record<string, number>)
+      .sort(([, a], [, b]) => (b as number) - (a as number))
       .slice(0, 5)
       .map(([emotion]) => emotion);
 

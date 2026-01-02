@@ -94,8 +94,7 @@ serve(async (req) => {
       substituicoes = substituicoesData || [];
     }
 
-    // 3. BUSCAR COMBINAÇÕES TERAPÊUTICAS
-    const combinacoes = [];
+    const combinacoes: any[] = [];
     for (const food of enrichedFoods) {
       const { data: combinacoesData } = await supabase
         .from('combinacoes_terapeuticas')
@@ -104,7 +103,7 @@ serve(async (req) => {
           alimento1:alimentos_completos!alimento1_id(nome),
           alimento2:alimentos_completos!alimento2_id(nome)
         `)
-        .or(`alimento1_id.eq.${food.id},alimento2_id.eq.${food.id}`)
+        .or(`alimento1_id.ilike.%${food.nome}%,alimento2_id.ilike.%${food.nome}%`)
         .limit(3);
 
       if (combinacoesData) {

@@ -92,9 +92,10 @@ serve(async (req) => {
     )
 
   } catch (error) {
-    console.error('Erro geral:', error)
+    const err = error as Error;
+    console.error('Erro geral:', err)
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: err.message }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
     )
   }
