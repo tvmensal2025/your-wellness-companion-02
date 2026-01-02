@@ -8900,6 +8900,7 @@ export type Database = {
       user_goals: {
         Row: {
           admin_notes: string | null
+          approved_at: string | null
           category: string | null
           challenge_id: string | null
           created_at: string | null
@@ -8926,6 +8927,7 @@ export type Database = {
         }
         Insert: {
           admin_notes?: string | null
+          approved_at?: string | null
           category?: string | null
           challenge_id?: string | null
           created_at?: string | null
@@ -8952,6 +8954,7 @@ export type Database = {
         }
         Update: {
           admin_notes?: string | null
+          approved_at?: string | null
           category?: string | null
           challenge_id?: string | null
           created_at?: string | null
