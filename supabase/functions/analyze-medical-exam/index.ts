@@ -78,7 +78,7 @@ INSTRUÇÕES IMPORTANTES:
 6. Personalize as recomendações com base nos resultados`;
 
 // 📚 BANCO DE EXPLICAÇÕES DIDÁTICAS PRÉ-PRONTAS
-const EXPLICACOES_EXAMES = {
+const EXPLICACOES_EXAMES: Record<string, { categoria: string; icone: string; explicacao: string }> = {
   'colesterol_total': {
     categoria: '🫀 Perfil Lipídico',
     icone: '🫀',
@@ -579,7 +579,7 @@ function getRecommendations(examName: string, status: string) {
 }
 
 // Função para gerar relatório didático
-async function generateDidacticReport(supabase, userId, documentId) {
+async function generateDidacticReport(supabase: any, userId: string, documentId: string) {
   console.log('🎓 Gerando relatório didático para documento:', documentId);
   
   // Buscar dados do documento
@@ -650,18 +650,18 @@ async function generateDidacticReport(supabase, userId, documentId) {
 }
 
 // Função para gerar HTML didático
-function generateDidacticHTML(data, profile, documentId) {
+function generateDidacticHTML(data: any, profile: any, documentId: string) {
   const patientName = data.patient_name || profile?.full_name || 'Paciente';
   const examDate = data.exam_date || new Date().toLocaleDateString('pt-BR');
   
   // Renderizar seções com explicações didáticas
-  const renderSections = (sections) => {
+  const renderSections = (sections: any[]) => {
     if (!sections || !Array.isArray(sections) || sections.length === 0) {
       return '<p>Não foram encontrados dados estruturados para este exame.</p>';
     }
     
-    return sections.map(section => {
-      const metricsHTML = section.metrics.map(metric => {
+    return sections.map((section: any) => {
+      const metricsHTML = (section.metrics || []).map((metric: any) => {
         const explicacao = getExplicacaoDidatica(metric.name);
         const status = metric.status || 'normal';
         const statusIcon = status === 'normal' ? '✅' : status === 'elevated' ? '⚠️' : '🔴';
@@ -1196,6 +1196,7 @@ serve(async (req) => {
 
   let documentId: string | undefined;
   let userIdEffective: string | null = null;
+  let supabase: any;
   
   try {
     // Verificar variáveis de ambiente
@@ -1212,7 +1213,7 @@ serve(async (req) => {
       throw new Error('Variáveis de ambiente não configuradas corretamente');
     }
     
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    supabase = createClient(supabaseUrl, supabaseKey);
     console.log('✅ Supabase client criado com sucesso');
     console.log('⏰ Timestamp:', new Date().toISOString());
     
@@ -1221,7 +1222,7 @@ serve(async (req) => {
     try {
       requestBody = await req.json();
       console.log('📥 Body da requisição recebido:', Object.keys(requestBody));
-    } catch (parseError) {
+    } catch (parseError: any) {
       console.error('❌ Erro ao parsear JSON:', parseError);
       return new Response(JSON.stringify({
         error: 'Body da requisição inválido',
@@ -1260,7 +1261,7 @@ serve(async (req) => {
           status: 200,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         });
-      } catch (error) {
+      } catch (error: any) {
         console.error('❌ Erro ao gerar relatório didático:', error);
         return new Response(JSON.stringify({
           error: 'Falha ao gerar relatório didático',
@@ -1292,13 +1293,9 @@ serve(async (req) => {
       max_tokens: 8000, // Usar max_tokens para GPT-4o
       temperature: 0.1, // Temperatura baixa para maior precisão
       openai_key: OPENAI_API_KEY
-    };
+    } as const;
 
-    console.log(`🔬 Análise médica usando: ${config.service} ${config.model} (${config.max_completion_tokens} tokens)`);
-    
-    if (config.service === 'gemini' && !GOOGLE_AI_API_KEY) {
-      throw new Error('GOOGLE_AI_API_KEY não configurada');
-    }
+    console.log(`🔬 Análise médica usando: ${config.service} ${config.model} (${config.max_tokens} tokens)`);
     if (config.service === 'openai' && !OPENAI_API_KEY) {
       throw new Error('OPENAI_API_KEY não configurada');
     }
@@ -1332,7 +1329,7 @@ serve(async (req) => {
           tmpPaths
         );
         console.log('✅ Novo documento criado:', documentId);
-      } catch (createError) {
+      } catch (createError: any) {
         console.error('❌ Erro ao criar documento:', createError);
         throw new Error(`Falha ao criar documento: ${createError.message}`);
       }
@@ -1653,7 +1650,7 @@ ANTES DO JSON, escreva uma análise clínica objetiva baseada APENAS nos dados l
               data: cached.base64_data 
             };
           }
-        } catch (cacheTableError) {
+        } catch (cacheTableError: any) {
           console.log(`⚠️ Tabela cache não existe ou erro: ${cacheTableError.message}`);
           console.log(`📝 Processando sem cache: ${storagePath}`);
         }
@@ -1674,6 +1671,9 @@ ANTES DO JSON, escreva uma análise clínica objetiva baseada APENAS nos dados l
         }
         
         // Conversão ultra-otimizada com fallback robusto
+        if (!blob) {
+          throw new Error('Blob indefinido durante conversão');
+        }
         const mt = (blob.type && blob.type !== 'application/octet-stream') ? blob.type : (fallbackMime || 'image/jpeg');
         const arr = await blob.arrayBuffer();
         const bytes = new Uint8Array(arr);
@@ -1710,7 +1710,7 @@ ANTES DO JSON, escreva uma análise clínica objetiva baseada APENAS nos dados l
           const base64 = btoa(binary);
           base64Data = `data:${mt};base64,${base64}`;
           console.log(`✅ Conversão base64 concluída com sucesso!`);
-        } catch (conversionError) {
+        } catch (conversionError: any) {
           console.error('❌ Erro na conversão direta, tentando método alternativo:', conversionError);
           
           // Método 3: Fallback ultra-seguro
@@ -1718,7 +1718,7 @@ ANTES DO JSON, escreva uma análise clínica objetiva baseada APENAS nos dados l
           base64Data = await new Promise((resolve, reject) => {
             reader.onload = () => resolve(reader.result as string);
             reader.onerror = () => reject(new Error('Erro no FileReader'));
-            reader.readAsDataURL(blob);
+            reader.readAsDataURL(blob as Blob);
           });
         }
         
@@ -1747,7 +1747,7 @@ ANTES DO JSON, escreva uma análise clínica objetiva baseada APENAS nos dados l
         console.log(`✅ Conversão concluída: ${storagePath}`);
         return { mime: mt, data: base64Data };
         
-      } catch (error) {
+      } catch (error: any) {
         console.error('❌ Erro no cache/conversão:', error);
         
         // Fallback: Retornar erro mas não quebrar o processamento
@@ -1760,13 +1760,13 @@ ANTES DO JSON, escreva uma análise clínica objetiva baseada APENAS nos dados l
             const result = await new Promise((resolve, reject) => {
               reader.onload = () => resolve(reader.result as string);
               reader.onerror = () => reject(new Error('Fallback FileReader falhou'));
-              reader.readAsDataURL(blob);
+              reader.readAsDataURL(blob as Blob);
             });
             
             const mt = (blob.type && blob.type !== 'application/octet-stream') ? blob.type : 'image/jpeg';
             return { mime: mt, data: result as string };
           }
-        } catch (fallbackError) {
+        } catch (fallbackError: any) {
           console.error('❌ Fallback também falhou:', fallbackError);
         }
         
@@ -1946,7 +1946,13 @@ ANTES DO JSON, escreva uma análise clínica objetiva baseada APENAS nos dados l
     } else if (storagePath) {
       const { data: dl, error: dlErr } = await supabase.storage.from('medical-documents').download(storagePath);
       if (dlErr) throw dlErr;
-      images.push(await toBase64(dl as Blob, guessMimeFromPath(storagePath)));
+      const mt = guessMimeFromPath(storagePath);
+      images.push({ mime: mt, data: await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = () => reject(new Error('Erro ao converter imagem para base64'));
+        reader.readAsDataURL(dl as Blob);
+      }) });
     } else if (imageData) {
       if (Array.isArray(imageData)) {
         images = imageData.map((d: string) => ({ mime: (d.split(';')[0].split(':')[1] || 'application/octet-stream'), data: d }));
@@ -2126,7 +2132,7 @@ ANTES DO JSON, escreva uma análise clínica objetiva baseada APENAS nos dados l
       };
 
       // Usar o modelo definido na configuração
-      let usedModel = config.model;
+      let usedModel: string = config.model;
       let aiResponse: any;
       
       console.log('🤖 Chamando OpenAI com modelo PREMIUM:', usedModel);
@@ -2416,7 +2422,7 @@ EXTRAIA EXATAMENTE O QUE ESTÁ ESCRITO NA IMAGEM. NÃO INVENTE DADOS.`;
 
       console.log('✅ Análise processada');
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Erro ao gerar análise com OpenAI:', error);
       
       // Mensagem mais informativa sobre o erro
@@ -2425,7 +2431,7 @@ EXTRAIA EXATAMENTE O QUE ESTÁ ESCRITO NA IMAGEM. NÃO INVENTE DADOS.`;
       } else if (error.message?.includes('rate limit')) {
         analysis = 'Limite de requisições atingido. Por favor, aguarde alguns minutos e tente novamente.';
       } else {
-        analysis = `Não foi possível analisar a imagem do exame. ${error.message || 'Erro desconhecido'}. 
+        analysis = `Não foi possível analisar a imagem do exame. ${error.message || 'Erro desconhecido'}.
         
 Por favor, analise as imagens dos exames médicos e extraia todos os valores encontrados. Retorne um relatório completo baseado nos dados reais extraídos das imagens.`;
       }
@@ -2979,7 +2985,7 @@ Por favor, analise as imagens dos exames médicos e extraia todos os valores enc
       </div>
       <div class="info-item">
         <div class="info-label">ID Exame</div>
-        <div class="info-value">#${documentId.substring(0, 8)}</div>
+        <div class="info-value">#${documentId ? documentId.substring(0, 8) : 'N/A'}</div>
       </div>
       ${examTypeEffective ? `
       <div class="info-item">
@@ -3013,13 +3019,13 @@ Por favor, analise as imagens dos exames médicos e extraia todos os valores enc
       </h2>
       <div class="metabolic-grid">
         ${parsed?.sections && parsed.sections.length > 0 ? 
-          parsed.sections.filter(section => 
+          parsed.sections.filter((section: any) => 
             section.title === 'Perfil Lipídico' || 
             section.title === 'Glicemia' || 
             section.title === 'Metabolismo' ||
             section.title === 'Vitaminas'
-          ).map(section => 
-            section.metrics ? section.metrics.map(metric => {
+          ).map((section: any) => 
+            section.metrics ? section.metrics.map((metric: any) => {
               const statusClass = metric.status || 'normal';
               const statusIcon = metric.status === 'elevated' ? '⚠️' : metric.status === 'low' ? '⚠️' : '✓';
               
@@ -3066,7 +3072,7 @@ Por favor, analise as imagens dos exames médicos e extraia todos os valores enc
         Exames Detalhados
       </h2>
       <div class="metabolic-grid">
-        ${allMetrics && allMetrics.length > 0 ? allMetrics.map(metric => {
+        ${allMetrics && allMetrics.length > 0 ? allMetrics.map((metric: any) => {
           const statusClass = metric.status || 'normal';
           const statusIcon = metric.status === 'elevated' ? '⚠️' : metric.status === 'low' ? '⚠️' : '✓';
           return `
@@ -3099,12 +3105,12 @@ Por favor, analise as imagens dos exames médicos e extraia todos os valores enc
       </h2>
       <div class="metabolic-grid">
         ${parsed?.sections && parsed.sections.length > 0 ? 
-          parsed.sections.filter(section => 
+          parsed.sections.filter((section: any) => 
             section.title === 'Função Renal' || 
             section.title === 'Função Hepática' ||
             section.title === 'Fígado'
-          ).map(section => 
-            section.metrics ? section.metrics.map(metric => {
+          ).map((section: any) => 
+            section.metrics ? section.metrics.map((metric: any) => {
               const statusClass = metric.status || 'normal';
               const statusIcon = metric.status === 'elevated' ? '⚠️' : metric.status === 'low' ? '⚠️' : '✓';
               
@@ -3168,7 +3174,7 @@ Por favor, analise as imagens dos exames médicos e extraia todos os valores enc
           <div class="recommendation-icon">🥗</div>
           <h3 class="recommendation-title">Alimentação</h3>
           <p class="recommendation-text">
-            ${parsed?.recommendations?.medium?.filter(r => r.includes('aliment') || r.includes('diet') || r.includes('nutri')).slice(0, 1)[0] || 
+            ${parsed?.recommendations?.medium?.filter((r: string) => r.includes('aliment') || r.includes('diet') || r.includes('nutri')).slice(0, 1)[0] || 
             'Priorize uma dieta rica em vegetais, frutas, grãos integrais e proteínas magras. Reduza o consumo de alimentos processados, açúcares refinados e gorduras saturadas.'}
           </p>
         </div>
@@ -3176,7 +3182,7 @@ Por favor, analise as imagens dos exames médicos e extraia todos os valores enc
           <div class="recommendation-icon">🏃</div>
           <h3 class="recommendation-title">Atividade Física</h3>
           <p class="recommendation-text">
-            ${parsed?.recommendations?.medium?.filter(r => r.includes('exerc') || r.includes('atividade') || r.includes('físic')).slice(0, 1)[0] || 
+            ${parsed?.recommendations?.medium?.filter((r: string) => r.includes('exerc') || r.includes('atividade') || r.includes('físic')).slice(0, 1)[0] || 
             'Realize pelo menos 150 minutos de atividade física moderada por semana, combinando exercícios aeróbicos e de resistência para saúde cardiovascular e muscular.'}
           </p>
         </div>
@@ -3184,7 +3190,7 @@ Por favor, analise as imagens dos exames médicos e extraia todos os valores enc
           <div class="recommendation-icon">🧠</div>
           <h3 class="recommendation-title">Bem-estar</h3>
           <p class="recommendation-text">
-            ${parsed?.recommendations?.low?.filter(r => r.includes('estresse') || r.includes('sono') || r.includes('bem-estar')).slice(0, 1)[0] || 
+            ${parsed?.recommendations?.low?.filter((r: string) => r.includes('estresse') || r.includes('sono') || r.includes('bem-estar')).slice(0, 1)[0] || 
             'Priorize um sono de qualidade (7-8h), pratique técnicas de gerenciamento de estresse como meditação e reserve tempo para atividades prazerosas.'}
           </p>
         </div>
@@ -3192,7 +3198,7 @@ Por favor, analise as imagens dos exames médicos e extraia todos os valores enc
           <div class="recommendation-icon">⚕️</div>
           <h3 class="recommendation-title">Acompanhamento</h3>
           <p class="recommendation-text">
-            ${parsed?.recommendations?.high?.filter(r => r.includes('médico') || r.includes('consulta') || r.includes('acompanhamento')).slice(0, 1)[0] || 
+            ${parsed?.recommendations?.high?.filter((r: string) => r.includes('médico') || r.includes('consulta') || r.includes('acompanhamento')).slice(0, 1)[0] || 
             'Mantenha consultas regulares com seu médico. Repita os exames em 6 meses para acompanhamento dos valores que necessitam atenção.'}
           </p>
         </div>
@@ -3299,7 +3305,7 @@ Por favor, analise as imagens dos exames médicos e extraia todos os valores enc
       console.log('🎉 Finalizando relatório para documento:', documentId);
       
       // Preparar dados estruturados dos exames para o report_content
-      const structuredExams = [];
+      let structuredExams: any[] = [];
       
       // Tentar extrair dados estruturados da análise
       try {
