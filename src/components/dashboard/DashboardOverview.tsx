@@ -13,6 +13,9 @@ import { BodyEvolutionChart } from './BodyEvolutionChart';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { useNavigate } from 'react-router-dom';
 import { User } from '@supabase/supabase-js';
+import SimpleWeightForm from '@/components/weighing/SimpleWeightForm';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { useToast } from '@/hooks/use-toast';
 
 const weeklyStats = [{
   day: 'Seg',
@@ -121,7 +124,9 @@ const DashboardOverview: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [exerciseData, setExerciseData] = useState<any[]>([]);
   const [waterData, setWaterData] = useState<any[]>([]);
+  const [isWeightModalOpen, setIsWeightModalOpen] = useState(false);
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   // Obter gênero do usuário
   const [user, setUser] = useState<User | null>(null);
@@ -601,7 +606,7 @@ const DashboardOverview: React.FC = () => {
             <Button
               size="sm"
               className="mt-1 text-xs xs:text-sm px-4"
-              onClick={() => navigate('/scale-test')}
+              onClick={() => setIsWeightModalOpen(true)}
             >
               Registrar peso agora
             </Button>
@@ -855,6 +860,64 @@ const DashboardOverview: React.FC = () => {
           </CardContent>
         </Card>
       </div>
+
+      <Dialog open={isWeightModalOpen} onOpenChange={setIsWeightModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Registrar novo peso</DialogTitle>
+            <DialogDescription>
+              Informe seu peso atual para atualizar seus gráficos e análises.
+            </DialogDescription>
+          </DialogHeader>
+          <SimpleWeightForm
+            onWeightChange={async (weight) => {
+              try {
+                const { data: { user } } = await supabase.auth.getUser();
+
+                if (!user) {
+                  toast({
+                    title: 'Você precisa estar logado',
+                    description: 'Faça login para registrar seu peso.',
+                    variant: 'destructive',
+                  });
+                  return;
+                }
+
+                const { error } = await supabase.from('weight_measurements').insert({
+                  user_id: user.id,
+                  peso_kg: weight,
+                  measurement_date: new Date().toISOString(),
+                  device_type: 'manual',
+                });
+
+                if (error) {
+                  console.error('Erro ao registrar peso manual:', error);
+                  toast({
+                    title: 'Erro ao registrar peso',
+                    description: 'Tente novamente em alguns instantes.',
+                    variant: 'destructive',
+                  });
+                  return;
+                }
+
+                toast({
+                  title: 'Peso registrado com sucesso!',
+                  description: 'Atualizamos seus gráficos com a nova pesagem.',
+                });
+
+                setIsWeightModalOpen(false);
+              } catch (error) {
+                console.error('Erro inesperado ao registrar peso manual:', error);
+                toast({
+                  title: 'Erro inesperado',
+                  description: 'Não foi possível registrar o peso.',
+                  variant: 'destructive',
+                });
+              }
+            }}
+          />
+        </DialogContent>
+      </Dialog>
     </div>;
 };
 export default DashboardOverview;
