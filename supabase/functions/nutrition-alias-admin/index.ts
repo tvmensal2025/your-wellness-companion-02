@@ -49,9 +49,10 @@ serve(async (req) => {
     return new Response(JSON.stringify({ success: true, upserted: rows.length }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('nutrition-alias-admin error:', error);
-    return new Response(JSON.stringify({ success: false, error: String(error?.message || error) }), {
+    const message = error instanceof Error ? error.message : String(error);
+    return new Response(JSON.stringify({ success: false, error: message }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

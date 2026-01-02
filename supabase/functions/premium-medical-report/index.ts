@@ -222,13 +222,13 @@ serve(async (req) => {
 
     // Build dynamic sections (only if at least one item exists)
     const sections: any[] = [];
-    const hasAny = (...keys: string[]) => keys.some((k) => biomarkers.find((b) => b.name === k));
+    const hasAny = (...keys: string[]) => keys.some((k) => biomarkers.find((b: any) => b.name === k));
 
     if (hasAny("ldl", "hdl", "triglicerideos")) {
       sections.push({
         title: "Cardiovascular",
         icon: "❤️",
-        items: biomarkers.filter((b) => ["ldl", "hdl", "triglicerideos"].includes(b.name)),
+        items: biomarkers.filter((b: any) => ["ldl", "hdl", "triglicerideos"].includes(b.name)),
         meaning: "Seu perfil lipídico foi resumido. Valores fora de faixa sugerem atenção e conversa com o médico.",
         suggest: "Priorize fibras solúveis, sono de qualidade e atividade física. Reavalie em 8–12 semanas.",
       });
@@ -238,7 +238,7 @@ serve(async (req) => {
         title: "Açúcar no sangue",
         icon: "🩸",
         items: [
-          ...biomarkers.filter((b) => ["glicose", "hba1c", "insulina"].includes(b.name)),
+          ...biomarkers.filter((b: any) => ["glicose", "hba1c", "insulina"].includes(b.name)),
           derived.homa_ir != null ? { label: "HOMA-IR", value: derived.homa_ir, unit: "", status: derived.homa_ir > 2.5 ? "altered" : "normal" } : null,
         ].filter(Boolean),
         meaning: "Marcadores de glicemia e sensibilidade à insulina.",
@@ -246,11 +246,11 @@ serve(async (req) => {
       });
     }
     if (hasAny("creatinina", "ureia")) {
-      sections.push({ title: "Rins", icon: "🧪", items: biomarkers.filter((b) => ["creatinina", "ureia"].includes(b.name)), meaning: "Função renal básica.", suggest: "Hidratação adequada e acompanhamento médico se alterado." });
+      sections.push({ title: "Rins", icon: "🧪", items: biomarkers.filter((b: any) => ["creatinina", "ureia"].includes(b.name)), meaning: "Função renal básica.", suggest: "Hidratação adequada e acompanhamento médico se alterado." });
     }
     if (hasAny("alt", "ast")) {
       sections.push({ title: "Fígado", icon: "🫀", items: [
-        ...biomarkers.filter((b) => ["alt", "ast"].includes(b.name)),
+        ...biomarkers.filter((b: any) => ["alt", "ast"].includes(b.name)),
         derived.ast_alt_ratio != null ? { label: "AST/ALT", value: derived.ast_alt_ratio, unit: "", status: derived.ast_alt_ratio > 2 ? "altered" : "normal" } : null,
       ].filter(Boolean), meaning: "Enzimas hepáticas.", suggest: "Evite álcool excessivo, monitore medicamentos e reavalie se persistir." });
     }
