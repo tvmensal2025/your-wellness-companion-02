@@ -563,6 +563,27 @@ export type Database = {
         }
         Relationships: []
       }
+      alimentos_alias: {
+        Row: {
+          alimento_id: string | null
+          created_at: string | null
+          id: string
+          nome_alias: string
+        }
+        Insert: {
+          alimento_id?: string | null
+          created_at?: string | null
+          id?: string
+          nome_alias: string
+        }
+        Update: {
+          alimento_id?: string | null
+          created_at?: string | null
+          id?: string
+          nome_alias?: string
+        }
+        Relationships: []
+      }
       alimentos_completos: {
         Row: {
           aliases: string[] | null
@@ -596,6 +617,72 @@ export type Database = {
           peso_medio_g?: number | null
           unidade_padrao?: string | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      alimentos_principios_ativos: {
+        Row: {
+          alimento_id: string | null
+          alimento_nome: string | null
+          beneficios: string[] | null
+          concentracao: string | null
+          created_at: string | null
+          id: string
+          principio_ativo: string
+          unidade_medida: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          alimento_id?: string | null
+          alimento_nome?: string | null
+          beneficios?: string[] | null
+          concentracao?: string | null
+          created_at?: string | null
+          id?: string
+          principio_ativo: string
+          unidade_medida?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          alimento_id?: string | null
+          alimento_nome?: string | null
+          beneficios?: string[] | null
+          concentracao?: string | null
+          created_at?: string | null
+          id?: string
+          principio_ativo?: string
+          unidade_medida?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      análise_estatísticas: {
+        Row: {
+          created_at: string | null
+          id: string
+          insights: string[] | null
+          metricas: Json
+          periodo: string
+          tendencias: Json | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          insights?: string[] | null
+          metricas: Json
+          periodo: string
+          tendencias?: Json | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          insights?: string[] | null
+          metricas?: Json
+          periodo?: string
+          tendencias?: Json | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -638,6 +725,87 @@ export type Database = {
         }
         Relationships: []
       }
+      avaliações_sabotadores: {
+        Row: {
+          completed: boolean | null
+          created_at: string | null
+          data_avaliacao: string
+          id: string
+          nivel_intensidade: string | null
+          plano_acao: string | null
+          pontuacao_total: number | null
+          recomendacoes: string[] | null
+          sabotadores_identificados: Json | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean | null
+          created_at?: string | null
+          data_avaliacao?: string
+          id?: string
+          nivel_intensidade?: string | null
+          plano_acao?: string | null
+          pontuacao_total?: number | null
+          recomendacoes?: string[] | null
+          sabotadores_identificados?: Json | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          completed?: boolean | null
+          created_at?: string | null
+          data_avaliacao?: string
+          id?: string
+          nivel_intensidade?: string | null
+          plano_acao?: string | null
+          pontuacao_total?: number | null
+          recomendacoes?: string[] | null
+          sabotadores_identificados?: Json | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      backups_anamnese_do_usuário: {
+        Row: {
+          created_at: string | null
+          dados_backup: Json
+          data_backup: string | null
+          data_restauracao: string | null
+          id: string
+          motivo_backup: string | null
+          restaurado: boolean | null
+          updated_at: string | null
+          user_id: string
+          versao_backup: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          dados_backup: Json
+          data_backup?: string | null
+          data_restauracao?: string | null
+          id?: string
+          motivo_backup?: string | null
+          restaurado?: boolean | null
+          updated_at?: string | null
+          user_id: string
+          versao_backup?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          dados_backup?: Json
+          data_backup?: string | null
+          data_restauracao?: string | null
+          id?: string
+          motivo_backup?: string | null
+          restaurado?: boolean | null
+          updated_at?: string | null
+          user_id?: string
+          versao_backup?: string | null
+        }
+        Relationships: []
+      }
       bakery_pool: {
         Row: {
           category: string | null
@@ -650,6 +818,84 @@ export type Database = {
         Update: {
           category?: string | null
           food_name?: string
+        }
+        Relationships: []
+      }
+      base_de_conhecimento_da_empresa: {
+        Row: {
+          categoria: string | null
+          conteudo: string | null
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          prioridade: number | null
+          tags: string[] | null
+          titulo: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          categoria?: string | null
+          conteudo?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          prioridade?: number | null
+          tags?: string[] | null
+          titulo?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          categoria?: string | null
+          conteudo?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          prioridade?: number | null
+          tags?: string[] | null
+          titulo?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      base_de_conhecimento_sofia: {
+        Row: {
+          categoria: string
+          conteudo: string
+          created_at: string | null
+          fonte: string | null
+          id: string
+          is_active: boolean | null
+          referencias: string[] | null
+          relevancia: number | null
+          tags: string[] | null
+          topico: string
+          updated_at: string | null
+        }
+        Insert: {
+          categoria: string
+          conteudo: string
+          created_at?: string | null
+          fonte?: string | null
+          id?: string
+          is_active?: boolean | null
+          referencias?: string[] | null
+          relevancia?: number | null
+          tags?: string[] | null
+          topico: string
+          updated_at?: string | null
+        }
+        Update: {
+          categoria?: string
+          conteudo?: string
+          created_at?: string | null
+          fonte?: string | null
+          id?: string
+          is_active?: boolean | null
+          referencias?: string[] | null
+          relevancia?: number | null
+          tags?: string[] | null
+          topico?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -1166,6 +1412,81 @@ export type Database = {
         }
         Relationships: []
       }
+      combinacoes_ideais: {
+        Row: {
+          alimento_combinado: string
+          alimento_principal: string
+          beneficio: string | null
+          categoria_combinacao: string | null
+          created_at: string | null
+          id: string
+          potencializacao_percentual: number | null
+          referencias_cientificas: string[] | null
+          sinergia_nutricional: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          alimento_combinado: string
+          alimento_principal: string
+          beneficio?: string | null
+          categoria_combinacao?: string | null
+          created_at?: string | null
+          id?: string
+          potencializacao_percentual?: number | null
+          referencias_cientificas?: string[] | null
+          sinergia_nutricional?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          alimento_combinado?: string
+          alimento_principal?: string
+          beneficio?: string | null
+          categoria_combinacao?: string | null
+          created_at?: string | null
+          id?: string
+          potencializacao_percentual?: number | null
+          referencias_cientificas?: string[] | null
+          sinergia_nutricional?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      comidas_favoritas_do_usuário: {
+        Row: {
+          alimento_nome: string
+          categoria: string | null
+          created_at: string | null
+          frequencia_consumo: string | null
+          id: string
+          nivel_preferencia: number | null
+          notas: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          alimento_nome: string
+          categoria?: string | null
+          created_at?: string | null
+          frequencia_consumo?: string | null
+          id?: string
+          nivel_preferencia?: number | null
+          notas?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          alimento_nome?: string
+          categoria?: string | null
+          created_at?: string | null
+          frequencia_consumo?: string | null
+          id?: string
+          nivel_preferencia?: number | null
+          notas?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       comments: {
         Row: {
           content: string
@@ -1322,6 +1643,99 @@ export type Database = {
           tags?: string[] | null
           title?: string | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      configurações_ai: {
+        Row: {
+          created_at: string | null
+          custo_por_requisicao: number | null
+          funcionalidade: string
+          id: string
+          is_enabled: boolean
+          max_tokens: number
+          modelo: string
+          nivel: string | null
+          personalidade: string | null
+          prioridade: number | null
+          servico: string
+          system_prompt: string | null
+          temperatura: number
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          custo_por_requisicao?: number | null
+          funcionalidade: string
+          id?: string
+          is_enabled?: boolean
+          max_tokens?: number
+          modelo?: string
+          nivel?: string | null
+          personalidade?: string | null
+          prioridade?: number | null
+          servico?: string
+          system_prompt?: string | null
+          temperatura?: number
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          custo_por_requisicao?: number | null
+          funcionalidade?: string
+          id?: string
+          is_enabled?: boolean
+          max_tokens?: number
+          modelo?: string
+          nivel?: string | null
+          personalidade?: string | null
+          prioridade?: number | null
+          servico?: string
+          system_prompt?: string | null
+          temperatura?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      conquistas_do_usuário: {
+        Row: {
+          created_at: string | null
+          data_desbloqueio: string | null
+          descricao: string | null
+          icone_badge: string | null
+          id: string
+          nome_conquista: string
+          progresso_atual: number | null
+          progresso_total: number | null
+          tipo_conquista: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          data_desbloqueio?: string | null
+          descricao?: string | null
+          icone_badge?: string | null
+          id?: string
+          nome_conquista: string
+          progresso_atual?: number | null
+          progresso_total?: number | null
+          tipo_conquista?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          data_desbloqueio?: string | null
+          descricao?: string | null
+          icone_badge?: string | null
+          id?: string
+          nome_conquista?: string
+          progresso_atual?: number | null
+          progresso_total?: number | null
+          tipo_conquista?: string | null
+          updated_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -1702,6 +2116,42 @@ export type Database = {
         }
         Relationships: []
       }
+      dados_físicos_do_usuário: {
+        Row: {
+          altura_cm: number | null
+          created_at: string | null
+          data_nascimento: string | null
+          id: string
+          peso_atual_kg: number | null
+          sexo: string | null
+          tipo_sanguineo: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          altura_cm?: number | null
+          created_at?: string | null
+          data_nascimento?: string | null
+          id?: string
+          peso_atual_kg?: number | null
+          sexo?: string | null
+          tipo_sanguineo?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          altura_cm?: number | null
+          created_at?: string | null
+          data_nascimento?: string | null
+          id?: string
+          peso_atual_kg?: number | null
+          sexo?: string | null
+          tipo_sanguineo?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       daily_mission_sessions: {
         Row: {
           completed_sections: Json | null
@@ -1888,6 +2338,75 @@ export type Database = {
         }
         Relationships: []
       }
+      desafios_esportivos: {
+        Row: {
+          badge_recompensa: string | null
+          created_at: string | null
+          criado_por: string | null
+          data_fim: string | null
+          data_inicio: string | null
+          descricao: string | null
+          duracao_dias: number | null
+          esporte: string | null
+          id: string
+          instrucoes: string | null
+          is_grupo: boolean | null
+          max_participantes: number | null
+          meta_unidade: string | null
+          meta_valor: number | null
+          nivel_dificuldade: string | null
+          pontos_recompensa: number | null
+          regras: string | null
+          tipo_desafio: string | null
+          titulo: string
+          updated_at: string | null
+        }
+        Insert: {
+          badge_recompensa?: string | null
+          created_at?: string | null
+          criado_por?: string | null
+          data_fim?: string | null
+          data_inicio?: string | null
+          descricao?: string | null
+          duracao_dias?: number | null
+          esporte?: string | null
+          id?: string
+          instrucoes?: string | null
+          is_grupo?: boolean | null
+          max_participantes?: number | null
+          meta_unidade?: string | null
+          meta_valor?: number | null
+          nivel_dificuldade?: string | null
+          pontos_recompensa?: number | null
+          regras?: string | null
+          tipo_desafio?: string | null
+          titulo: string
+          updated_at?: string | null
+        }
+        Update: {
+          badge_recompensa?: string | null
+          created_at?: string | null
+          criado_por?: string | null
+          data_fim?: string | null
+          data_inicio?: string | null
+          descricao?: string | null
+          duracao_dias?: number | null
+          esporte?: string | null
+          id?: string
+          instrucoes?: string | null
+          is_grupo?: boolean | null
+          max_participantes?: number | null
+          meta_unidade?: string | null
+          meta_valor?: number | null
+          nivel_dificuldade?: string | null
+          pontos_recompensa?: number | null
+          regras?: string | null
+          tipo_desafio?: string | null
+          titulo?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       device_sync_log: {
         Row: {
           created_at: string | null
@@ -1981,6 +2500,111 @@ export type Database = {
           symptoms?: string[] | null
           treatment_approaches?: string[] | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      documentos_médicos: {
+        Row: {
+          alertas: string[] | null
+          analise_completa: Json | null
+          analise_ia: string | null
+          arquivo_nome: string | null
+          arquivo_tamanho: number | null
+          arquivo_url: string | null
+          categoria: string | null
+          compartilhado_com: string[] | null
+          created_at: string | null
+          data_documento: string | null
+          data_processamento: string | null
+          data_proxima_revisao: string | null
+          descricao: string | null
+          id: string
+          instituicao: string | null
+          is_publico: boolean | null
+          medico_responsavel: string | null
+          metadata: Json | null
+          notas_profissional: string | null
+          notas_usuario: string | null
+          prioridade: string | null
+          processado: boolean | null
+          resultado_geral: string | null
+          resultados_exames: Json | null
+          status: string | null
+          tags: string[] | null
+          tipo_documento: string
+          tipo_mime: string | null
+          titulo: string
+          updated_at: string | null
+          user_id: string
+          versao_processamento: string | null
+        }
+        Insert: {
+          alertas?: string[] | null
+          analise_completa?: Json | null
+          analise_ia?: string | null
+          arquivo_nome?: string | null
+          arquivo_tamanho?: number | null
+          arquivo_url?: string | null
+          categoria?: string | null
+          compartilhado_com?: string[] | null
+          created_at?: string | null
+          data_documento?: string | null
+          data_processamento?: string | null
+          data_proxima_revisao?: string | null
+          descricao?: string | null
+          id?: string
+          instituicao?: string | null
+          is_publico?: boolean | null
+          medico_responsavel?: string | null
+          metadata?: Json | null
+          notas_profissional?: string | null
+          notas_usuario?: string | null
+          prioridade?: string | null
+          processado?: boolean | null
+          resultado_geral?: string | null
+          resultados_exames?: Json | null
+          status?: string | null
+          tags?: string[] | null
+          tipo_documento: string
+          tipo_mime?: string | null
+          titulo: string
+          updated_at?: string | null
+          user_id: string
+          versao_processamento?: string | null
+        }
+        Update: {
+          alertas?: string[] | null
+          analise_completa?: Json | null
+          analise_ia?: string | null
+          arquivo_nome?: string | null
+          arquivo_tamanho?: number | null
+          arquivo_url?: string | null
+          categoria?: string | null
+          compartilhado_com?: string[] | null
+          created_at?: string | null
+          data_documento?: string | null
+          data_processamento?: string | null
+          data_proxima_revisao?: string | null
+          descricao?: string | null
+          id?: string
+          instituicao?: string | null
+          is_publico?: boolean | null
+          medico_responsavel?: string | null
+          metadata?: Json | null
+          notas_profissional?: string | null
+          notas_usuario?: string | null
+          prioridade?: string | null
+          processado?: boolean | null
+          resultado_geral?: string | null
+          resultados_exames?: Json | null
+          status?: string | null
+          tags?: string[] | null
+          tipo_documento?: string
+          tipo_mime?: string | null
+          titulo?: string
+          updated_at?: string | null
+          user_id?: string
+          versao_processamento?: string | null
         }
         Relationships: []
       }
@@ -2404,6 +3028,45 @@ export type Database = {
           name?: string
           updated_at?: string | null
           video_url?: string | null
+        }
+        Relationships: []
+      }
+      fatos_da_conversação: {
+        Row: {
+          conteudo_fato: string | null
+          created_at: string | null
+          id: string
+          importancia: number | null
+          is_active: boolean | null
+          mensagem_origem_id: string | null
+          tags: string[] | null
+          tipo_fato: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          conteudo_fato?: string | null
+          created_at?: string | null
+          id?: string
+          importancia?: number | null
+          is_active?: boolean | null
+          mensagem_origem_id?: string | null
+          tags?: string[] | null
+          tipo_fato?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          conteudo_fato?: string | null
+          created_at?: string | null
+          id?: string
+          importancia?: number | null
+          is_active?: boolean | null
+          mensagem_origem_id?: string | null
+          tags?: string[] | null
+          tipo_fato?: string | null
+          updated_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -3564,6 +4227,45 @@ export type Database = {
         }
         Relationships: []
       }
+      informações_economicas: {
+        Row: {
+          alimento_nome: string | null
+          disponibilidade: string | null
+          faixa_preco_max: number | null
+          faixa_preco_min: number | null
+          id: string
+          moeda: string | null
+          preco_medio: number | null
+          regiao: string | null
+          sazonalidade: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          alimento_nome?: string | null
+          disponibilidade?: string | null
+          faixa_preco_max?: number | null
+          faixa_preco_min?: number | null
+          id?: string
+          moeda?: string | null
+          preco_medio?: number | null
+          regiao?: string | null
+          sazonalidade?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          alimento_nome?: string | null
+          disponibilidade?: string | null
+          faixa_preco_max?: number | null
+          faixa_preco_min?: number | null
+          id?: string
+          moeda?: string | null
+          preco_medio?: number | null
+          regiao?: string | null
+          sazonalidade?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       information_feedback: {
         Row: {
           content_id: string | null
@@ -3733,6 +4435,69 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      lições: {
+        Row: {
+          conteudo: string | null
+          created_at: string | null
+          curso_id: string | null
+          descricao: string | null
+          duracao_minutos: number | null
+          id: string
+          is_completed: boolean | null
+          is_premium: boolean | null
+          modulo_id: string | null
+          ordem_index: number
+          prerequisitos: string[] | null
+          questoes_quiz: Json | null
+          recursos: Json | null
+          tipo_licao: string | null
+          titulo: string
+          updated_at: string | null
+          url_thumbnail: string | null
+          url_video: string | null
+        }
+        Insert: {
+          conteudo?: string | null
+          created_at?: string | null
+          curso_id?: string | null
+          descricao?: string | null
+          duracao_minutos?: number | null
+          id?: string
+          is_completed?: boolean | null
+          is_premium?: boolean | null
+          modulo_id?: string | null
+          ordem_index: number
+          prerequisitos?: string[] | null
+          questoes_quiz?: Json | null
+          recursos?: Json | null
+          tipo_licao?: string | null
+          titulo: string
+          updated_at?: string | null
+          url_thumbnail?: string | null
+          url_video?: string | null
+        }
+        Update: {
+          conteudo?: string | null
+          created_at?: string | null
+          curso_id?: string | null
+          descricao?: string | null
+          duracao_minutos?: number | null
+          id?: string
+          is_completed?: boolean | null
+          is_premium?: boolean | null
+          modulo_id?: string | null
+          ordem_index?: number
+          prerequisitos?: string[] | null
+          questoes_quiz?: Json | null
+          recursos?: Json | null
+          tipo_licao?: string | null
+          titulo?: string
+          updated_at?: string | null
+          url_thumbnail?: string | null
+          url_video?: string | null
+        }
+        Relationships: []
       }
       meal_feedback: {
         Row: {
@@ -4022,6 +4787,177 @@ export type Database = {
         }
         Relationships: []
       }
+      medidas_de_peso: {
+        Row: {
+          agua_corporal_percentual: number | null
+          altura_cm: number | null
+          circunferencia_abdominal_cm: number | null
+          circunferencia_braco_cm: number | null
+          circunferencia_cintura_cm: number | null
+          circunferencia_coxa_cm: number | null
+          circunferencia_panturrilha_cm: number | null
+          circunferencia_quadril_cm: number | null
+          created_at: string | null
+          data_medicao: string
+          dobra_biceps_mm: number | null
+          dobra_subescapular_mm: number | null
+          dobra_suprailiaca_mm: number | null
+          dobra_triceps_mm: number | null
+          gordura_corporal_percentual: number | null
+          gordura_visceral: number | null
+          id: string
+          idade_metabolica: number | null
+          imc: number | null
+          massa_muscular_kg: number | null
+          massa_ossea_kg: number | null
+          notas: string | null
+          peso_kg: number | null
+          pressao_diastolica: number | null
+          pressao_sistolica: number | null
+          risco_cardiometabolico: string | null
+          taxa_metabolica_basal: number | null
+          tipo_dispositivo: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          agua_corporal_percentual?: number | null
+          altura_cm?: number | null
+          circunferencia_abdominal_cm?: number | null
+          circunferencia_braco_cm?: number | null
+          circunferencia_cintura_cm?: number | null
+          circunferencia_coxa_cm?: number | null
+          circunferencia_panturrilha_cm?: number | null
+          circunferencia_quadril_cm?: number | null
+          created_at?: string | null
+          data_medicao?: string
+          dobra_biceps_mm?: number | null
+          dobra_subescapular_mm?: number | null
+          dobra_suprailiaca_mm?: number | null
+          dobra_triceps_mm?: number | null
+          gordura_corporal_percentual?: number | null
+          gordura_visceral?: number | null
+          id?: string
+          idade_metabolica?: number | null
+          imc?: number | null
+          massa_muscular_kg?: number | null
+          massa_ossea_kg?: number | null
+          notas?: string | null
+          peso_kg?: number | null
+          pressao_diastolica?: number | null
+          pressao_sistolica?: number | null
+          risco_cardiometabolico?: string | null
+          taxa_metabolica_basal?: number | null
+          tipo_dispositivo?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          agua_corporal_percentual?: number | null
+          altura_cm?: number | null
+          circunferencia_abdominal_cm?: number | null
+          circunferencia_braco_cm?: number | null
+          circunferencia_cintura_cm?: number | null
+          circunferencia_coxa_cm?: number | null
+          circunferencia_panturrilha_cm?: number | null
+          circunferencia_quadril_cm?: number | null
+          created_at?: string | null
+          data_medicao?: string
+          dobra_biceps_mm?: number | null
+          dobra_subescapular_mm?: number | null
+          dobra_suprailiaca_mm?: number | null
+          dobra_triceps_mm?: number | null
+          gordura_corporal_percentual?: number | null
+          gordura_visceral?: number | null
+          id?: string
+          idade_metabolica?: number | null
+          imc?: number | null
+          massa_muscular_kg?: number | null
+          massa_ossea_kg?: number | null
+          notas?: string | null
+          peso_kg?: number | null
+          pressao_diastolica?: number | null
+          pressao_sistolica?: number | null
+          risco_cardiometabolico?: string | null
+          taxa_metabolica_basal?: number | null
+          tipo_dispositivo?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      membros_do_grupo_feed_de_saúde: {
+        Row: {
+          created_at: string | null
+          grupo_id: string
+          id: string
+          papel: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          grupo_id: string
+          id?: string
+          papel?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          grupo_id?: string
+          id?: string
+          papel?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      memória_sofia: {
+        Row: {
+          conteudo: string
+          contexto: Json | null
+          created_at: string | null
+          expira_em: string | null
+          frequencia_acesso: number | null
+          id: string
+          importancia: number | null
+          is_active: boolean | null
+          tags: string[] | null
+          tipo_memoria: string
+          ultimo_acesso: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          conteudo: string
+          contexto?: Json | null
+          created_at?: string | null
+          expira_em?: string | null
+          frequencia_acesso?: number | null
+          id?: string
+          importancia?: number | null
+          is_active?: boolean | null
+          tags?: string[] | null
+          tipo_memoria: string
+          ultimo_acesso?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          conteudo?: string
+          contexto?: Json | null
+          created_at?: string | null
+          expira_em?: string | null
+          frequencia_acesso?: number | null
+          id?: string
+          importancia?: number | null
+          is_active?: boolean | null
+          tags?: string[] | null
+          tipo_memoria?: string
+          ultimo_acesso?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       missions: {
         Row: {
           category: string | null
@@ -4052,6 +4988,63 @@ export type Database = {
           is_active?: boolean | null
           points?: number | null
           title?: string
+        }
+        Relationships: []
+      }
+      missões_diárias: {
+        Row: {
+          categoria: string | null
+          cor: string | null
+          created_at: string | null
+          descricao: string | null
+          dificuldade: string | null
+          icone: string | null
+          id: string
+          is_active: boolean | null
+          is_diaria: boolean | null
+          objetivo_unidade: string | null
+          objetivo_valor: number | null
+          pontos_recompensa: number | null
+          tipo_missao: string | null
+          titulo: string
+          updated_at: string | null
+          xp_recompensa: number | null
+        }
+        Insert: {
+          categoria?: string | null
+          cor?: string | null
+          created_at?: string | null
+          descricao?: string | null
+          dificuldade?: string | null
+          icone?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_diaria?: boolean | null
+          objetivo_unidade?: string | null
+          objetivo_valor?: number | null
+          pontos_recompensa?: number | null
+          tipo_missao?: string | null
+          titulo: string
+          updated_at?: string | null
+          xp_recompensa?: number | null
+        }
+        Update: {
+          categoria?: string | null
+          cor?: string | null
+          created_at?: string | null
+          descricao?: string | null
+          dificuldade?: string | null
+          icone?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_diaria?: boolean | null
+          objetivo_unidade?: string | null
+          objetivo_valor?: number | null
+          pontos_recompensa?: number | null
+          tipo_missao?: string | null
+          titulo?: string
+          updated_at?: string | null
+          xp_recompensa?: number | null
         }
         Relationships: []
       }
@@ -4118,6 +5111,57 @@ export type Database = {
           time?: string | null
           triggers?: string[] | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      notificações_enviadas: {
+        Row: {
+          acao_url: string | null
+          canal: string | null
+          created_at: string | null
+          data_leitura: string | null
+          id: string
+          lida: boolean | null
+          mensagem: string
+          metadata: Json | null
+          prioridade: string | null
+          status_envio: string | null
+          tipo_notificacao: string
+          titulo: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          acao_url?: string | null
+          canal?: string | null
+          created_at?: string | null
+          data_leitura?: string | null
+          id?: string
+          lida?: boolean | null
+          mensagem: string
+          metadata?: Json | null
+          prioridade?: string | null
+          status_envio?: string | null
+          tipo_notificacao: string
+          titulo: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          acao_url?: string | null
+          canal?: string | null
+          created_at?: string | null
+          data_leitura?: string | null
+          id?: string
+          lida?: boolean | null
+          mensagem?: string
+          metadata?: Json | null
+          prioridade?: string | null
+          status_envio?: string | null
+          tipo_notificacao?: string
+          titulo?: string
+          updated_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -4678,6 +5722,84 @@ export type Database = {
         }
         Relationships: []
       }
+      pontos_do_usuário: {
+        Row: {
+          created_at: string | null
+          experiencia_atual: number | null
+          experiencia_proximo_nivel: number | null
+          id: string
+          nivel_atual: number | null
+          pontos_mes: number | null
+          pontos_semana: number | null
+          total_pontos: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          experiencia_atual?: number | null
+          experiencia_proximo_nivel?: number | null
+          id?: string
+          nivel_atual?: number | null
+          pontos_mes?: number | null
+          pontos_semana?: number | null
+          total_pontos?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          experiencia_atual?: number | null
+          experiencia_proximo_nivel?: number | null
+          id?: string
+          nivel_atual?: number | null
+          pontos_mes?: number | null
+          pontos_semana?: number | null
+          total_pontos?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      pontuações_do_usuário: {
+        Row: {
+          categoria: string
+          created_at: string | null
+          data_avaliacao: string
+          detalhes: Json | null
+          id: string
+          pontuacao: number
+          pontuacao_maxima: number | null
+          tendencia: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          categoria: string
+          created_at?: string | null
+          data_avaliacao?: string
+          detalhes?: Json | null
+          id?: string
+          pontuacao: number
+          pontuacao_maxima?: number | null
+          tendencia?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          categoria?: string
+          created_at?: string | null
+          data_avaliacao?: string
+          detalhes?: Json | null
+          id?: string
+          pontuacao?: number
+          pontuacao_maxima?: number | null
+          tendencia?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       pregnancy_nutrition: {
         Row: {
           benefits: string | null
@@ -5051,6 +6173,78 @@ export type Database = {
           },
         ]
       }
+      reações_feed_de_saúde: {
+        Row: {
+          created_at: string | null
+          id: string
+          post_id: string
+          tipo_reacao: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          post_id: string
+          tipo_reacao: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          post_id?: string
+          tipo_reacao?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      receitas_terapeuticas: {
+        Row: {
+          beneficios_terapeuticos: string[] | null
+          calorias_por_porcao: number | null
+          condicao_alvo: string | null
+          contraindicacoes: string[] | null
+          created_at: string | null
+          descricao: string | null
+          id: string
+          ingredientes: Json
+          modo_preparo: string | null
+          nome_receita: string
+          porcoes: number | null
+          tempo_preparo_minutos: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          beneficios_terapeuticos?: string[] | null
+          calorias_por_porcao?: number | null
+          condicao_alvo?: string | null
+          contraindicacoes?: string[] | null
+          created_at?: string | null
+          descricao?: string | null
+          id?: string
+          ingredientes?: Json
+          modo_preparo?: string | null
+          nome_receita: string
+          porcoes?: number | null
+          tempo_preparo_minutos?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          beneficios_terapeuticos?: string[] | null
+          calorias_por_porcao?: number | null
+          condicao_alvo?: string | null
+          contraindicacoes?: string[] | null
+          created_at?: string | null
+          descricao?: string | null
+          id?: string
+          ingredientes?: Json
+          modo_preparo?: string | null
+          nome_receita?: string
+          porcoes?: number | null
+          tempo_preparo_minutos?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       recipe_components: {
         Row: {
           food_name: string | null
@@ -5164,6 +6358,198 @@ export type Database = {
           id?: string
           instructions?: string | null
           name?: string
+        }
+        Relationships: []
+      }
+      registros_diários_de_desafio: {
+        Row: {
+          completado: boolean | null
+          created_at: string | null
+          data_registro: string
+          id: string
+          notas: string | null
+          participacao_id: string
+          valor_numerico: number | null
+          valor_registrado: string | null
+        }
+        Insert: {
+          completado?: boolean | null
+          created_at?: string | null
+          data_registro?: string
+          id?: string
+          notas?: string | null
+          participacao_id: string
+          valor_numerico?: number | null
+          valor_registrado?: string | null
+        }
+        Update: {
+          completado?: boolean | null
+          created_at?: string | null
+          data_registro?: string
+          id?: string
+          notas?: string | null
+          participacao_id?: string
+          valor_numerico?: number | null
+          valor_registrado?: string | null
+        }
+        Relationships: []
+      }
+      respostas_do_sabotador: {
+        Row: {
+          avaliacao_id: string | null
+          created_at: string | null
+          id: string
+          intensidade: string | null
+          pontuacao: number | null
+          questao_id: string | null
+          resposta: string | null
+          sabotador_identificado: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          avaliacao_id?: string | null
+          created_at?: string | null
+          id?: string
+          intensidade?: string | null
+          pontuacao?: number | null
+          questao_id?: string | null
+          resposta?: string | null
+          sabotador_identificado?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          avaliacao_id?: string | null
+          created_at?: string | null
+          id?: string
+          intensidade?: string | null
+          pontuacao?: number | null
+          questao_id?: string | null
+          resposta?: string | null
+          sabotador_identificado?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      resumo_nutricional_diário: {
+        Row: {
+          aderencia_plano_percentual: number | null
+          calorias_almoco: number | null
+          calorias_cafe: number | null
+          calorias_jantar: number | null
+          calorias_lanches: number | null
+          created_at: string | null
+          data: string
+          id: string
+          metas_atingidas: boolean | null
+          notas: string | null
+          quantidade_refeicoes: number | null
+          score_saude: number | null
+          total_agua_ml: number | null
+          total_calorias: number | null
+          total_carboidratos: number | null
+          total_fibras: number | null
+          total_gorduras: number | null
+          total_proteinas: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          aderencia_plano_percentual?: number | null
+          calorias_almoco?: number | null
+          calorias_cafe?: number | null
+          calorias_jantar?: number | null
+          calorias_lanches?: number | null
+          created_at?: string | null
+          data?: string
+          id?: string
+          metas_atingidas?: boolean | null
+          notas?: string | null
+          quantidade_refeicoes?: number | null
+          score_saude?: number | null
+          total_agua_ml?: number | null
+          total_calorias?: number | null
+          total_carboidratos?: number | null
+          total_fibras?: number | null
+          total_gorduras?: number | null
+          total_proteinas?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          aderencia_plano_percentual?: number | null
+          calorias_almoco?: number | null
+          calorias_cafe?: number | null
+          calorias_jantar?: number | null
+          calorias_lanches?: number | null
+          created_at?: string | null
+          data?: string
+          id?: string
+          metas_atingidas?: boolean | null
+          notas?: string | null
+          quantidade_refeicoes?: number | null
+          score_saude?: number | null
+          total_agua_ml?: number | null
+          total_calorias?: number | null
+          total_carboidratos?: number | null
+          total_fibras?: number | null
+          total_gorduras?: number | null
+          total_proteinas?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      sabotadores_personalizados: {
+        Row: {
+          categoria: string | null
+          created_at: string | null
+          descricao: string | null
+          estrategias_enfrentamento: string[] | null
+          gatilhos_comuns: string[] | null
+          id: string
+          is_active: boolean | null
+          niveis_gravidade: Json | null
+          nome_sabotador: string
+          padroes_comportamentais: string[] | null
+          padroes_mentais: string[] | null
+          sabotadores_relacionados: string[] | null
+          sintomas_fisicos: string[] | null
+          updated_at: string | null
+        }
+        Insert: {
+          categoria?: string | null
+          created_at?: string | null
+          descricao?: string | null
+          estrategias_enfrentamento?: string[] | null
+          gatilhos_comuns?: string[] | null
+          id?: string
+          is_active?: boolean | null
+          niveis_gravidade?: Json | null
+          nome_sabotador: string
+          padroes_comportamentais?: string[] | null
+          padroes_mentais?: string[] | null
+          sabotadores_relacionados?: string[] | null
+          sintomas_fisicos?: string[] | null
+          updated_at?: string | null
+        }
+        Update: {
+          categoria?: string | null
+          created_at?: string | null
+          descricao?: string | null
+          estrategias_enfrentamento?: string[] | null
+          gatilhos_comuns?: string[] | null
+          id?: string
+          is_active?: boolean | null
+          niveis_gravidade?: Json | null
+          nome_sabotador?: string
+          padroes_comportamentais?: string[] | null
+          padroes_mentais?: string[] | null
+          sabotadores_relacionados?: string[] | null
+          sintomas_fisicos?: string[] | null
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -5286,6 +6672,51 @@ export type Database = {
           score?: number | null
           updated_at?: string | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      saude_especifica: {
+        Row: {
+          condicao: string
+          created_at: string | null
+          data_diagnostico: string | null
+          diagnostico_confirmado: boolean | null
+          gravidade: string | null
+          id: string
+          medicamentos: string[] | null
+          notas: string | null
+          restricoes_alimentares: string[] | null
+          tratamento_atual: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          condicao: string
+          created_at?: string | null
+          data_diagnostico?: string | null
+          diagnostico_confirmado?: boolean | null
+          gravidade?: string | null
+          id?: string
+          medicamentos?: string[] | null
+          notas?: string | null
+          restricoes_alimentares?: string[] | null
+          tratamento_atual?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          condicao?: string
+          created_at?: string | null
+          data_diagnostico?: string | null
+          diagnostico_confirmado?: boolean | null
+          gravidade?: string | null
+          id?: string
+          medicamentos?: string[] | null
+          notas?: string | null
+          restricoes_alimentares?: string[] | null
+          tratamento_atual?: string | null
+          updated_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -6338,6 +7769,126 @@ export type Database = {
           plan_name?: string
           price?: number | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      sugestões_nutracêuticas_do_usuário: {
+        Row: {
+          beneficios_esperados: string[] | null
+          condicao_alvo: string | null
+          contraindicacoes: string[] | null
+          created_at: string | null
+          created_by: string | null
+          criado_por_ia: boolean | null
+          data_inicio_sugerida: string | null
+          data_revisao: string | null
+          dosagem: string | null
+          duracao_sugerida: string | null
+          evidencia_cientifica: string | null
+          frequencia: string | null
+          id: string
+          interacoes_medicamentosas: string[] | null
+          nome_suplemento: string
+          notas: string | null
+          objetivo: string | null
+          prioridade: string | null
+          status_sugestao: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          beneficios_esperados?: string[] | null
+          condicao_alvo?: string | null
+          contraindicacoes?: string[] | null
+          created_at?: string | null
+          created_by?: string | null
+          criado_por_ia?: boolean | null
+          data_inicio_sugerida?: string | null
+          data_revisao?: string | null
+          dosagem?: string | null
+          duracao_sugerida?: string | null
+          evidencia_cientifica?: string | null
+          frequencia?: string | null
+          id?: string
+          interacoes_medicamentosas?: string[] | null
+          nome_suplemento: string
+          notas?: string | null
+          objetivo?: string | null
+          prioridade?: string | null
+          status_sugestao?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          beneficios_esperados?: string[] | null
+          condicao_alvo?: string | null
+          contraindicacoes?: string[] | null
+          created_at?: string | null
+          created_by?: string | null
+          criado_por_ia?: boolean | null
+          data_inicio_sugerida?: string | null
+          data_revisao?: string | null
+          dosagem?: string | null
+          duracao_sugerida?: string | null
+          evidencia_cientifica?: string | null
+          frequencia?: string | null
+          id?: string
+          interacoes_medicamentosas?: string[] | null
+          nome_suplemento?: string
+          notas?: string | null
+          objetivo?: string | null
+          prioridade?: string | null
+          status_sugestao?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      suplementos_do_usuário: {
+        Row: {
+          created_at: string | null
+          data_fim: string | null
+          data_inicio: string | null
+          dosagem: string | null
+          frequencia: string | null
+          horario_tomada: string | null
+          id: string
+          is_ativo: boolean | null
+          nome_suplemento: string
+          notas: string | null
+          objetivo: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          data_fim?: string | null
+          data_inicio?: string | null
+          dosagem?: string | null
+          frequencia?: string | null
+          horario_tomada?: string | null
+          id?: string
+          is_ativo?: boolean | null
+          nome_suplemento: string
+          notas?: string | null
+          objetivo?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          data_fim?: string | null
+          data_inicio?: string | null
+          dosagem?: string | null
+          frequencia?: string | null
+          horario_tomada?: string | null
+          id?: string
+          is_ativo?: boolean | null
+          nome_suplemento?: string
+          notas?: string | null
+          objetivo?: string | null
+          updated_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -8485,7 +10036,31 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      v_ingestão_diária_de_macronutrientes: {
+        Row: {
+          agua_ml_dia: number | null
+          calorias_dia: number | null
+          carboidratos_dia: number | null
+          data: string | null
+          fibras_dia: number | null
+          gorduras_dia: number | null
+          proteinas_dia: number | null
+          registros_dia: number | null
+          score_medio: number | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
+      v_user_conversation_summary: {
+        Row: {
+          conversas_ids: string[] | null
+          sentimento_medio: number | null
+          total_conversas: number | null
+          ultima_conversa: string | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       has_role: { Args: { _role: string; _user_id: string }; Returns: boolean }
