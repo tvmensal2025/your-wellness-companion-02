@@ -49,7 +49,7 @@ const SimpleWeightForm: React.FC<SimpleWeightFormProps> = ({ onSubmit }) => {
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div>
-          <Label htmlFor="weight" className="text-white">
+          <Label htmlFor="weight" className="text-foreground">
             Peso atual (kg)
           </Label>
           <Input
@@ -61,12 +61,11 @@ const SimpleWeightForm: React.FC<SimpleWeightFormProps> = ({ onSubmit }) => {
             value={weight}
             onChange={(e) => setWeight(e.target.value)}
             placeholder="Ex: 70.5"
-            className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
           />
         </div>
 
         <div>
-          <Label htmlFor="height" className="text-white">
+          <Label htmlFor="height" className="text-foreground">
             Altura (cm)
           </Label>
           <Input
@@ -78,12 +77,11 @@ const SimpleWeightForm: React.FC<SimpleWeightFormProps> = ({ onSubmit }) => {
             value={height}
             onChange={(e) => setHeight(e.target.value)}
             placeholder="Ex: 170"
-            className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
           />
         </div>
 
         <div>
-          <Label htmlFor="waist" className="text-white">
+          <Label htmlFor="waist" className="text-foreground">
             Circunferência abdominal (cm)
           </Label>
           <Input
@@ -95,7 +93,6 @@ const SimpleWeightForm: React.FC<SimpleWeightFormProps> = ({ onSubmit }) => {
             value={waist}
             onChange={(e) => setWaist(e.target.value)}
             placeholder="Ex: 90"
-            className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
           />
         </div>
       </div>
@@ -103,7 +100,7 @@ const SimpleWeightForm: React.FC<SimpleWeightFormProps> = ({ onSubmit }) => {
       <Button
         type="submit"
         disabled={isSubmitting}
-        className="w-full bg-blue-500 hover:bg-blue-600"
+        className="w-full"
       >
         <Scale className="w-4 h-4 mr-2" />
         {isSubmitting ? 'Registrando...' : 'Registrar Peso'}

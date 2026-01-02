@@ -331,7 +331,6 @@ const CompleteWeighingSystem: React.FC = () => {
         imc,
         rce,
         risco_cardiometabolico,
-        classificacao_imc,
         device_type: 'manual',
       });
 
