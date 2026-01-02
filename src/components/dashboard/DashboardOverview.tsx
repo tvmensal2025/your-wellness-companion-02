@@ -590,14 +590,21 @@ const DashboardOverview: React.FC = () => {
               <MessageCircle className="h-5 w-5 xs:h-6 xs:w-6 sm:h-7 sm:w-7 text-purple-500" />
             </div>
           </CardHeader>
-          <CardContent className="p-4 xs:p-5">
-            <div className="text-center mb-4">
+          <CardContent className="p-4 xs:p-5 flex flex-col items-center gap-3">
+            <div className="text-center">
               <Scale className="h-10 w-10 xs:h-12 xs:w-12 sm:h-14 w-14 text-primary mx-auto mb-3" />
               <p className="text-sm xs:text-base text-muted-foreground">Pesagem manual</p>
             </div>
-            <p className="text-xs xs:text-sm text-muted-foreground text-center">
-              A conexão com balança Xiaomi foi desativada. Registre seu peso usando o formulário de pesagem manual.
+            <p className="text-xs xs:text-sm text-muted-foreground text-center max-w-xs">
+              A conexão com balança Xiaomi foi desativada. Registre seu peso usando o formulário completo de pesagem manual.
             </p>
+            <Button
+              size="sm"
+              className="mt-1 text-xs xs:text-sm px-4"
+              onClick={() => navigate('/scale-test')}
+            >
+              Registrar peso agora
+            </Button>
           </CardContent>
         </Card>
       </div>
