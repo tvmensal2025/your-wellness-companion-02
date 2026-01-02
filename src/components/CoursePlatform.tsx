@@ -76,8 +76,8 @@ const CoursePlatform = () => {
     try {
       const { data, error } = await supabase
         .from('lessons')
-        .select('*')
-        .eq('course_id', courseId)
+        .select('id, module_id, title, description, video_url, duration_minutes, order_index, is_free, is_premium, created_at')
+        .eq('module_id', courseId)
         .order('order_index', { ascending: true });
 
       if (error) throw error;

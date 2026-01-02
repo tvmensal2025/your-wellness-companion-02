@@ -104,35 +104,11 @@ export const PersonalizedSupplementsCard: React.FC = () => {
 
   const loadProtocols = async () => {
     try {
-      // Primeiro, buscar condições de saúde de nutrição
-      const { data: nutritionConditions } = await supabase
-        .from('health_conditions')
-        .select('id')
-        .eq('category', 'nutrição')
-        .eq('is_active', true);
-      
-      if (!nutritionConditions || nutritionConditions.length === 0) {
-        // Se não houver categoria, carregar todos (fallback)
-        const { data } = await supabase
-          .from('supplement_protocols')
-          .select('id, name, description')
-          .eq('is_active', true)
-          .order('name');
-        
-        if (data) {
-          setProtocols(data);
-        }
-        return;
-      }
-      
-      const nutritionConditionIds = nutritionConditions.map(c => c.id);
-      
-      // Buscar protocolos apenas das condições de nutrição
+      // Carregar todos os protocolos ativos
       const { data } = await supabase
         .from('supplement_protocols')
         .select('id, name, description')
         .eq('is_active', true)
-        .in('health_condition_id', nutritionConditionIds)
         .order('name');
       
       if (data) {
