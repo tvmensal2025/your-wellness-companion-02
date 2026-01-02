@@ -818,7 +818,7 @@ serve(async (req) => {
   }
   
   // Variáveis para tracking
-  let requestId: string;
+  let requestId: string | null = null;
   let documentId: string | undefined;
   let userId: string | undefined;
   
@@ -996,12 +996,13 @@ serve(async (req) => {
     });
     
   } catch (error) {
+    const err = error as Error;
     console.error('💥 === ERRO EM FINALIZE-MEDICAL-DOCUMENT ===');
     console.error('🆔 Request ID:', requestId || 'N/A');
     console.error('👤 User ID:', userId || 'N/A');
     console.error('📄 Document ID:', documentId || 'N/A');
-    console.error('❌ Erro:', error);
-    console.error('📝 Stack trace:', error.stack);
+    console.error('❌ Erro:', err);
+    console.error('📝 Stack trace:', err.stack);
     
     // Tentar marcar documento como erro se possível
     if (documentId && userId) {
@@ -1018,7 +1019,7 @@ serve(async (req) => {
             analysis_status: 'error',
             processing_stage: 'erro_na_finalizacao',
             progress_pct: 0,
-            error_message: error.message,
+            error_message: err.message,
             updated_at: new Date().toISOString()
           })
           .eq('id', documentId);
@@ -1033,7 +1034,7 @@ serve(async (req) => {
     const errorResponse = {
       success: false,
       error: 'Falha ao finalizar documento médico',
-      details: error.message || 'Erro desconhecido',
+      details: err.message || 'Erro desconhecido',
       requestId: requestId || null,
       documentId: documentId || null,
       userId: userId || null,

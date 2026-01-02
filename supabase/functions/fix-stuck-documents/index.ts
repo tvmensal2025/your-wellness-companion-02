@@ -69,7 +69,8 @@ serve(async (req) => {
                 images.push(data.signedUrl);
               }
             } catch (e) {
-              console.warn(`⚠️ Erro ao gerar URL para ${path}:`, e.message);
+              const err = e as Error;
+              console.warn(`⚠️ Erro ao gerar URL para ${path}:`, err.message);
             }
           }
         }
@@ -133,11 +134,12 @@ serve(async (req) => {
     });
 
   } catch (error) {
-    console.error('❌ Erro na correção de documentos:', error);
+    const err = error as Error;
+    console.error('❌ Erro na correção de documentos:', err);
     
     return new Response(JSON.stringify({
       success: false,
-      error: error.message
+      error: err.message
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
