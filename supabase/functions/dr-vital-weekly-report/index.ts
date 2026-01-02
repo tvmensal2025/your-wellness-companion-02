@@ -40,7 +40,18 @@ serve(async (req) => {
     console.log('📊 Coletando dados da semana:', weekStartStr, 'até', weekEndStr);
 
     // 🔍 Buscar dados do usuário e da semana
-    let reportData = {
+    type WeeklyReportData = {
+      user: any | null;
+      weight: { measurements: any[]; trend: string; change: number };
+      water: { daily: any[]; average: number; consistency: number };
+      sleep: { daily: any[]; average: number; quality: number };
+      mood: { daily: any[]; average: number; energy: number; stress: number };
+      exercise: { sessions: any[]; totalMinutes: number; days: number };
+      missions: { completed: number; streak: number; points: number };
+      healthScore: number;
+    };
+
+    let reportData: WeeklyReportData = {
       user: null,
       weight: { measurements: [], trend: 'stable', change: 0 },
       water: { daily: [], average: 0, consistency: 0 },
@@ -96,12 +107,12 @@ serve(async (req) => {
       
       if (waterData) {
         reportData.water.daily = waterData;
-        const dailyTotals = {};
-        waterData.forEach(entry => {
+        const dailyTotals: Record<string, number> = {};
+        waterData.forEach((entry: any) => {
           if (!dailyTotals[entry.date]) dailyTotals[entry.date] = 0;
           dailyTotals[entry.date] += entry.amount_ml;
         });
-        const dailyValues = Object.values(dailyTotals);
+        const dailyValues: number[] = Object.values(dailyTotals);
         reportData.water.average = dailyValues.length > 0 ? 
           dailyValues.reduce((sum, val) => sum + val, 0) / dailyValues.length : 0;
         reportData.water.consistency = dailyValues.filter(val => val >= 2000).length / 7 * 100;
@@ -189,13 +200,14 @@ serve(async (req) => {
       reportData.healthScore = healthScore || 0;
       console.log('📊 Health Score:', reportData.healthScore);
 
-    } catch (error) {
-      console.log('⚠️ Erro ao buscar dados:', error.message);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Erro ao buscar dados';
+      console.log('⚠️ Erro ao buscar dados:', message);
     }
 
     // 🤖 Gerar análise do Dr. Vital
     let drVitalAnalysis = '';
-    let recommendations = [];
+    let recommendations: string[] = [];
 
     if (OPENAI_API_KEY) {
       console.log('🩺 Dr. Vital analisando dados...');
@@ -268,8 +280,9 @@ ANÁLISE DR. VITAL:`;
         } else {
           throw new Error(`Erro na API: ${response.status}`);
         }
-      } catch (error) {
-        console.log('⚠️ Erro na análise:', error.message);
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'Erro na análise';
+        console.log('⚠️ Erro na análise:', message);
         drVitalAnalysis = `Prezado(a) ${reportData.user?.full_name || 'Paciente'},
 
 Com base nos dados coletados nesta semana, observo um health score de ${reportData.healthScore}/100. 
@@ -335,10 +348,11 @@ Medicina Preventiva`;
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('❌ Erro no Dr. Vital:', error);
+    const message = error instanceof Error ? error.message : 'Erro interno do servidor';
     return new Response(JSON.stringify({ 
-      error: error.message || 'Erro interno do servidor',
+      error: message,
       success: false
     }), {
       status: 500,

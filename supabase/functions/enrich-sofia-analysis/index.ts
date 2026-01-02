@@ -386,12 +386,13 @@ serve(async (req) => {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('❌ Erro na função de enriquecimento:', error);
+    const message = error instanceof Error ? error.message : 'Erro na função de enriquecimento';
     
     return new Response(JSON.stringify({
       success: false,
-      error: error.message,
+      error: message,
       enriched_analysis: '⚠️ Erro ao enriquecer análise. Usando dados básicos.',
       medicinal_data_available: false
     }), {

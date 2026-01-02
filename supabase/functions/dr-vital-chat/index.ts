@@ -372,7 +372,7 @@ INSTRUÇÕES FINAIS:
           await db.from('dr_vital_memory').upsert({ user_id: userId, key: item.key, value: { ...item.value, last_update: new Date().toISOString(), source: 'chat' } });
           // Grava em conversation_facts, sem duplicar graças ao índice (user_id, category, hash)
           if (conversationId) {
-            await db.from('conversation_facts').insert({ user_id: userId, conversation_id: conversationId, category: item.key, payload: item.value }).catch(() => {});
+            await db.from('conversation_facts').insert({ user_id: userId, conversation_id: conversationId, category: item.key, payload: item.value });
           }
         }
       }

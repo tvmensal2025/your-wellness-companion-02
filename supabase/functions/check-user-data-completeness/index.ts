@@ -167,12 +167,13 @@ serve(async (req) => {
       }
     );
 
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('❌ Erro ao verificar completude dos dados:', error);
+    const message = error instanceof Error ? error.message : 'Erro desconhecido';
     return new Response(
       JSON.stringify({ 
         error: 'Falha ao verificar completude dos dados', 
-        details: error.message 
+        details: message
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

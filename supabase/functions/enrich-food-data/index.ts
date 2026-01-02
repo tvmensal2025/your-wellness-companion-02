@@ -166,12 +166,13 @@ serve(async (req) => {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('❌ Erro ao enriquecer dados:', error);
+    const message = error instanceof Error ? error.message : 'Erro ao enriquecer dados';
     
     return new Response(JSON.stringify({
       success: false,
-      error: error.message,
+      error: message,
       enriched_foods: [],
       substituicoes: [],
       combinacoes: [],
