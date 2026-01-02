@@ -4,7 +4,6 @@ import { Heart, Activity, Droplets, Target, TrendingUp, Scale, Zap, Calendar, Aw
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
-import { XiaomiScaleFlow } from '@/components/XiaomiScaleFlow';
 import { useWeightMeasurement } from '@/hooks/useWeightMeasurement';
 import { useUserGender } from '@/hooks/useUserGender';
 import { supabase } from '@/integrations/supabase/client';
@@ -593,10 +592,12 @@ const DashboardOverview: React.FC = () => {
           </CardHeader>
           <CardContent className="p-4 xs:p-5">
             <div className="text-center mb-4">
-              <Scale className="h-10 w-10 xs:h-12 xs:w-12 sm:h-14 sm:w-14 text-primary mx-auto mb-3" />
-              <p className="text-sm xs:text-base text-muted-foreground">Balança Xiaomi</p>
+              <Scale className="h-10 w-10 xs:h-12 xs:w-12 sm:h-14 w-14 text-primary mx-auto mb-3" />
+              <p className="text-sm xs:text-base text-muted-foreground">Pesagem manual</p>
             </div>
-            <XiaomiScaleFlow />
+            <p className="text-xs xs:text-sm text-muted-foreground text-center">
+              A conexão com balança Xiaomi foi desativada. Registre seu peso usando o formulário de pesagem manual.
+            </p>
           </CardContent>
         </Card>
       </div>
