@@ -8307,36 +8307,66 @@ export type Database = {
         Row: {
           additional_notes: string | null
           alcohol_consumption: string | null
+          biggest_weight_loss_challenge: string | null
           body_fat_percentage: number | null
           chronic_diseases: string | null
+          compulsive_eating_situations: string | null
           created_at: string | null
           current_bmi: number | null
           current_medications: string | null
           current_weight_kg: number | null
+          daily_energy_level: number | null
           daily_stress_level: string | null
           digestive_issues: string | null
           eating_habits: string | null
+          eats_in_secret: boolean | null
+          eats_until_uncomfortable: boolean | null
           emotional_events_during_weight_gain: string | null
+          family_depression_anxiety_history: boolean | null
+          family_diabetes_history: boolean | null
+          family_eating_disorders_history: boolean | null
+          family_heart_disease_history: boolean | null
           family_history: string | null
+          family_obesity_history: boolean | null
+          family_other_chronic_diseases: string | null
+          family_thyroid_problems_history: boolean | null
+          feels_guilt_after_eating: boolean | null
           food_allergies: string | null
           food_intolerances: string | null
+          food_relationship_score: number | null
           forbidden_foods: string | null
+          general_quality_of_life: number | null
+          had_rebound_effect: boolean | null
+          has_compulsive_eating: boolean | null
           health_goals: string | null
           height_cm: number | null
           herbal_medicines: string | null
+          highest_adult_weight: number | null
           hip_circumference_cm: number | null
+          how_found_method: string | null
           id: string
+          ideal_weight_goal: number | null
+          least_effective_treatment: string | null
+          lowest_adult_weight: number | null
           main_treatment_goals: string | null
           major_weight_gain_periods: string | null
+          marital_status: string | null
+          most_effective_treatment: string | null
+          motivation_for_seeking_treatment: string | null
           physical_activity: string | null
           physical_activity_frequency: string | null
+          physical_activity_type: string | null
           previous_weight_treatments: string | null
           problematic_foods: string | null
+          profession: string | null
+          sleep_hours_per_night: number | null
           sleep_quality: string | null
           sleep_quality_score: number | null
           smoking: string | null
           stress_level: string | null
           supplements: string | null
+          timeframe_to_achieve_goal: string | null
+          treatment_success_definition: string | null
           updated_at: string | null
           user_id: string | null
           waist_circumference_cm: number | null
@@ -8347,36 +8377,66 @@ export type Database = {
         Insert: {
           additional_notes?: string | null
           alcohol_consumption?: string | null
+          biggest_weight_loss_challenge?: string | null
           body_fat_percentage?: number | null
           chronic_diseases?: string | null
+          compulsive_eating_situations?: string | null
           created_at?: string | null
           current_bmi?: number | null
           current_medications?: string | null
           current_weight_kg?: number | null
+          daily_energy_level?: number | null
           daily_stress_level?: string | null
           digestive_issues?: string | null
           eating_habits?: string | null
+          eats_in_secret?: boolean | null
+          eats_until_uncomfortable?: boolean | null
           emotional_events_during_weight_gain?: string | null
+          family_depression_anxiety_history?: boolean | null
+          family_diabetes_history?: boolean | null
+          family_eating_disorders_history?: boolean | null
+          family_heart_disease_history?: boolean | null
           family_history?: string | null
+          family_obesity_history?: boolean | null
+          family_other_chronic_diseases?: string | null
+          family_thyroid_problems_history?: boolean | null
+          feels_guilt_after_eating?: boolean | null
           food_allergies?: string | null
           food_intolerances?: string | null
+          food_relationship_score?: number | null
           forbidden_foods?: string | null
+          general_quality_of_life?: number | null
+          had_rebound_effect?: boolean | null
+          has_compulsive_eating?: boolean | null
           health_goals?: string | null
           height_cm?: number | null
           herbal_medicines?: string | null
+          highest_adult_weight?: number | null
           hip_circumference_cm?: number | null
+          how_found_method?: string | null
           id?: string
+          ideal_weight_goal?: number | null
+          least_effective_treatment?: string | null
+          lowest_adult_weight?: number | null
           main_treatment_goals?: string | null
           major_weight_gain_periods?: string | null
+          marital_status?: string | null
+          most_effective_treatment?: string | null
+          motivation_for_seeking_treatment?: string | null
           physical_activity?: string | null
           physical_activity_frequency?: string | null
+          physical_activity_type?: string | null
           previous_weight_treatments?: string | null
           problematic_foods?: string | null
+          profession?: string | null
+          sleep_hours_per_night?: number | null
           sleep_quality?: string | null
           sleep_quality_score?: number | null
           smoking?: string | null
           stress_level?: string | null
           supplements?: string | null
+          timeframe_to_achieve_goal?: string | null
+          treatment_success_definition?: string | null
           updated_at?: string | null
           user_id?: string | null
           waist_circumference_cm?: number | null
@@ -8387,36 +8447,66 @@ export type Database = {
         Update: {
           additional_notes?: string | null
           alcohol_consumption?: string | null
+          biggest_weight_loss_challenge?: string | null
           body_fat_percentage?: number | null
           chronic_diseases?: string | null
+          compulsive_eating_situations?: string | null
           created_at?: string | null
           current_bmi?: number | null
           current_medications?: string | null
           current_weight_kg?: number | null
+          daily_energy_level?: number | null
           daily_stress_level?: string | null
           digestive_issues?: string | null
           eating_habits?: string | null
+          eats_in_secret?: boolean | null
+          eats_until_uncomfortable?: boolean | null
           emotional_events_during_weight_gain?: string | null
+          family_depression_anxiety_history?: boolean | null
+          family_diabetes_history?: boolean | null
+          family_eating_disorders_history?: boolean | null
+          family_heart_disease_history?: boolean | null
           family_history?: string | null
+          family_obesity_history?: boolean | null
+          family_other_chronic_diseases?: string | null
+          family_thyroid_problems_history?: boolean | null
+          feels_guilt_after_eating?: boolean | null
           food_allergies?: string | null
           food_intolerances?: string | null
+          food_relationship_score?: number | null
           forbidden_foods?: string | null
+          general_quality_of_life?: number | null
+          had_rebound_effect?: boolean | null
+          has_compulsive_eating?: boolean | null
           health_goals?: string | null
           height_cm?: number | null
           herbal_medicines?: string | null
+          highest_adult_weight?: number | null
           hip_circumference_cm?: number | null
+          how_found_method?: string | null
           id?: string
+          ideal_weight_goal?: number | null
+          least_effective_treatment?: string | null
+          lowest_adult_weight?: number | null
           main_treatment_goals?: string | null
           major_weight_gain_periods?: string | null
+          marital_status?: string | null
+          most_effective_treatment?: string | null
+          motivation_for_seeking_treatment?: string | null
           physical_activity?: string | null
           physical_activity_frequency?: string | null
+          physical_activity_type?: string | null
           previous_weight_treatments?: string | null
           problematic_foods?: string | null
+          profession?: string | null
+          sleep_hours_per_night?: number | null
           sleep_quality?: string | null
           sleep_quality_score?: number | null
           smoking?: string | null
           stress_level?: string | null
           supplements?: string | null
+          timeframe_to_achieve_goal?: string | null
+          treatment_success_definition?: string | null
           updated_at?: string | null
           user_id?: string | null
           waist_circumference_cm?: number | null
