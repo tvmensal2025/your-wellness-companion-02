@@ -9,10 +9,6 @@ export default defineConfig(({ mode }) => ({
     host: "localhost", // Mudado de "::" para "localhost" para evitar problemas de rede
     port: 8080, // Voltando para a porta original 8080
     strictPort: true, // Falhar se a porta estiver ocupada
-    hmr: {
-      port: 8081, // Porta diferente para HMR (Hot Module Replacement)
-      host: "localhost"
-    },
     watch: {
       usePolling: false, // Desabilitar polling para melhor performance
       ignored: ['**/node_modules/**', '**/.git/**']
