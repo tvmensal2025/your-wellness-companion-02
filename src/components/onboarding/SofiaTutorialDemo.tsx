@@ -66,7 +66,7 @@ export const SofiaTutorialDemo: React.FC<SofiaTutorialDemoProps> = ({
               objectFit: 'cover'
             }}
             onError={(e) => {
-              e.currentTarget.src = 'https://via.placeholder.com/70x70/3b82f6/ffffff?text=S';
+              e.currentTarget.src = '/placeholder.svg';
             }}
           />
           <div className="sofia-avatar-glow" />
