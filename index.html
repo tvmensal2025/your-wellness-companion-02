@@ -65,36 +65,67 @@
         }
       }
       
-      // Registrar Service Worker
+      // Registrar Service Worker com tratamento de erros melhorado
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
+          // Verificar se já existe um ServiceWorker registrado
+          navigator.serviceWorker.getRegistrations().then((registrations) => {
+            // Desregistrar ServiceWorkers antigos se houver problemas
+            if (registrations.length > 0) {
+              registrations.forEach((reg) => {
+                if (reg.active?.state === 'redundant') {
+                  reg.unregister().catch(() => {});
+                }
+              });
+            }
+          }).catch(() => {});
+
           navigator.serviceWorker.register('/sw.js', { 
             scope: '/',
-            updateViaCache: 'none'  // Força verificação de atualizações
+            updateViaCache: 'none'
           })
           .then((registration) => {
             console.log('SW registrado:', registration.scope);
             clearOldCaches();
             
-            // Verificar atualizações a cada 30 segundos
+            // Verificar atualizações periodicamente, mas com tratamento de erros
             setInterval(() => {
-              registration.update();
-            }, 30000);
+              try {
+                if (registration.active && registration.active.state !== 'redundant') {
+                  registration.update().catch((err) => {
+                    // Ignorar erros de atualização silenciosamente
+                    if (err.name !== 'InvalidStateError') {
+                      console.warn('Erro ao atualizar SW:', err);
+                    }
+                  });
+                }
+              } catch (err) {
+                // Ignorar erros de estado inválido
+                if (err.name !== 'InvalidStateError') {
+                  console.warn('Erro ao verificar SW:', err);
+                }
+              }
+            }, 60000); // Aumentar intervalo para 60 segundos
           })
           .catch((error) => {
-            console.log('Erro no SW:', error);
+            // Ignorar erros de registro em desenvolvimento
+            if (window.location.hostname !== 'localhost') {
+              console.warn('Erro ao registrar SW:', error);
+            }
           });
         });
       }
       
       // Forçar reload em caso de nova versão
       let refreshing = false;
-      navigator.serviceWorker?.addEventListener('controllerchange', () => {
-        if (!refreshing) {
-          refreshing = true;
-          window.location.reload();
-        }
-      });
+      if (navigator.serviceWorker) {
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          if (!refreshing) {
+            refreshing = true;
+            window.location.reload();
+          }
+        });
+      }
     </script>
     
     <!-- Bloquear conexões Firebase indesejadas -->

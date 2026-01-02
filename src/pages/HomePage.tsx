@@ -1,11 +1,10 @@
-import React, { useState } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
+import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { 
   Sparkles, 
   Target, 
-  Heart, 
   TrendingUp, 
   Users, 
   CheckCircle,
@@ -14,21 +13,16 @@ import {
   Trophy,
   Brain,
   Dumbbell,
-  Apple,
   MessageCircle,
   Calendar,
   ChevronDown,
-  Award,
   Activity,
   Utensils,
-  Moon,
-  Zap,
   Shield,
   BarChart3,
-  BookOpen,
-  Smartphone,
-  Clock,
-  Quote
+  Quote,
+  Play,
+  Check
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import butterflyLogo from '@/assets/logo-instituto.png';
@@ -36,670 +30,342 @@ import butterflyLogo from '@/assets/logo-instituto.png';
 const HomePage = () => {
   const { scrollYProgress } = useScroll();
   const opacity = useTransform(scrollYProgress, [0, 0.2], [1, 0]);
-  const scale = useTransform(scrollYProgress, [0, 0.2], [1, 0.95]);
+  const y = useTransform(scrollYProgress, [0, 0.2], [0, 50]);
+  const headerOpacity = useTransform(scrollYProgress, [0, 0.1], [0, 1]);
 
-  const [selectedTestimonial, setSelectedTestimonial] = useState(0);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const testimonials = [
     {
       name: "Maria Silva",
-      role: "Perdeu 18kg em 3 meses",
-      content: "O Instituto dos Sonhos mudou completamente minha vida. A Sofia me ajudou em cada etapa, e o sistema de gamificação me manteve motivada todos os dias!",
+      role: "Advogada",
+      result: "-18kg em 3 meses",
+      content: "O Instituto dos Sonhos trouxe a organização que eu precisava. A Sofia é incrível, parece que ela realmente me entende. Nunca me senti tão bem comigo mesma.",
       rating: 5,
       image: "👩‍💼"
     },
     {
       name: "João Santos",
-      role: "Perdeu 25kg em 4 meses",
-      content: "Nunca imaginei que seria tão fácil e prazeroso emagrecer. O acompanhamento profissional e as ferramentas são incríveis!",
+      role: "Empresário",
+      result: "-25kg em 4 meses",
+      content: "A praticidade da plataforma é surreal. Consigo acompanhar minha dieta e treinos entre reuniões. A gamificação me mantém focado como nenhum outro app conseguiu.",
       rating: 5,
       image: "👨‍💼"
     },
     {
       name: "Ana Costa",
-      role: "Perdeu 12kg em 2 meses",
-      content: "Além de perder peso, aprendi a ter uma relação saudável com a comida. O método é transformador!",
+      role: "Médica",
+      result: "-12kg em 2 meses",
+      content: "Como médica, sou cética com promessas de emagrecimento. Mas a abordagem científica e integral do Instituto me conquistou. Resultados reais e sustentáveis.",
       rating: 5,
-      image: "👩"
-    }
-  ];
-
-  const howItWorks = [
-    {
-      step: "1",
-      title: "Avaliação Inicial",
-      description: "Análise completa do seu perfil, objetivos e histórico de saúde",
-      icon: Clipboard
-    },
-    {
-      step: "2", 
-      title: "Plano Personalizado",
-      description: "Receba seu plano de alimentação e exercícios feito especialmente para você",
-      icon: Target
-    },
-    {
-      step: "3",
-      title: "Acompanhamento Diário",
-      description: "Sofia, sua IA nutricional, está disponível 24/7 para te apoiar",
-      icon: MessageCircle
-    },
-    {
-      step: "4",
-      title: "Evolução Constante",
-      description: "Monitore seus resultados e ajuste seu plano conforme necessário",
-      icon: TrendingUp
+      image: "👩‍⚕️"
     }
   ];
 
   const benefits = [
     {
       icon: Brain,
-      title: "IA Sofia - Sua Nutricionista 24/7",
-      description: "Assistente inteligente que responde suas dúvidas, analisa fotos de refeições e oferece orientações personalizadas a qualquer momento.",
-      color: "from-purple-500 to-pink-500"
-    },
-    {
-      icon: Target,
-      title: "Metas Inteligentes",
-      description: "Sistema avançado que cria objetivos alcançáveis e adapta seu plano conforme você evolui.",
-      color: "from-blue-500 to-cyan-500"
-    },
-    {
-      icon: Trophy,
-      title: "Gamificação Motivadora",
-      description: "Ganhe pontos, conquiste badges e participe de desafios para manter sua motivação nas alturas.",
-      color: "from-yellow-500 to-orange-500"
-    },
-    {
-      icon: Activity,
-      title: "Análise Corporal Completa",
-      description: "Acompanhe peso, medidas, IMC e composição corporal com gráficos interativos.",
-      color: "from-green-500 to-emerald-500"
+      title: "Inteligência Artificial Sofia",
+      description: "Sua nutricionista pessoal disponível 24h. Tira dúvidas, analisa pratos por foto e ajusta seu plano em tempo real.",
+      bg: "bg-purple-50 text-purple-600"
     },
     {
       icon: Utensils,
-      title: "Plano Alimentar Personalizado",
-      description: "Cardápios adaptados às suas preferências, restrições e objetivos específicos.",
-      color: "from-red-500 to-pink-500"
+      title: "Nutrição Personalizada",
+      description: "Cardápios deliciosos adaptados ao seu paladar e rotina, sem restrições malucas. Redescubra o prazer de comer bem.",
+      bg: "bg-emerald-50 text-emerald-600"
     },
     {
-      icon: Dumbbell,
-      title: "Treinos Personalizados",
-      description: "Exercícios adaptados ao seu nível, com vídeos explicativos e progressão inteligente.",
-      color: "from-indigo-500 to-purple-500"
-    },
-    {
-      icon: Calendar,
-      title: "Missão do Dia",
-      description: "Tarefas diárias estruturadas para criar hábitos saudáveis de forma natural e sustentável.",
-      color: "from-teal-500 to-cyan-500"
-    },
-    {
-      icon: BarChart3,
-      title: "Relatórios Profissionais",
-      description: "Análises detalhadas da sua evolução com insights e recomendações personalizadas.",
-      color: "from-orange-500 to-red-500"
-    },
-    {
-      icon: Users,
-      title: "Comunidade Ativa",
-      description: "Conecte-se com outras pessoas em transformação, compartilhe experiências e inspire-se.",
-      color: "from-pink-500 to-rose-500"
-    }
-  ];
-
-  const faq = [
-    {
-      question: "Como funciona o período gratuito?",
-      answer: "Você tem 7 dias para experimentar todas as funcionalidades da plataforma sem custo. Não é necessário cadastrar cartão de crédito."
-    },
-    {
-      question: "A IA Sofia substitui um nutricionista?",
-      answer: "A Sofia é uma ferramenta complementar de apoio 24/7, mas não substitui o acompanhamento de um profissional de saúde. Recomendamos consultas regulares com nutricionista."
-    },
-    {
-      question: "Posso cancelar a qualquer momento?",
-      answer: "Sim! Você pode cancelar sua assinatura a qualquer momento, sem multas ou taxas adicionais."
-    },
-    {
-      question: "O método funciona para todos?",
-      answer: "Nosso método é baseado em ciência e funciona para a maioria das pessoas. Temos uma taxa de sucesso de 92% entre nossos usuários ativos."
-    },
-    {
-      question: "Preciso seguir uma dieta restritiva?",
-      answer: "Não! Nosso método é baseado em reeducação alimentar, não em dietas restritivas. Você aprenderá a fazer escolhas saudáveis de forma sustentável."
+      icon: Trophy,
+      title: "Gamificação Envolvente",
+      description: "Transforme sua jornada em um jogo. Ganhe recompensas, suba de nível e celebre cada pequena vitória.",
+      bg: "bg-amber-50 text-amber-600"
     }
   ];
 
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden">
-      {/* Animated Background Elements */}
-      <div className="fixed inset-0 -z-10">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl animate-float" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-accent/5 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }} />
-      </div>
-
-      {/* Header */}
+    <div className="min-h-screen bg-white text-slate-900 font-sans selection:bg-emerald-100">
+      
+      {/* Navbar Elegante */}
       <motion.header 
-        className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/40"
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        transition={{ duration: 0.6 }}
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+          isScrolled ? 'bg-white/80 backdrop-blur-md shadow-sm py-3' : 'bg-transparent py-6'
+        }`}
       >
-        <div className="container mx-auto px-4 sm:px-6 py-4">
-          <div className="flex justify-between items-center">
-            <motion.div 
-              className="flex items-center gap-3"
-              whileHover={{ scale: 1.02 }}
-            >
-              <img src={butterflyLogo} alt="Instituto dos Sonhos" className="w-10 h-10 sm:w-12 sm:h-12" />
-              <span className="text-lg sm:text-xl font-bold bg-gradient-to-r from-primary via-primary to-accent bg-clip-text text-transparent">
-                Instituto dos Sonhos
-              </span>
-            </motion.div>
-            
-            <div className="flex gap-2 sm:gap-3">
-              <Link to="/auth">
-                <Button variant="ghost" className="text-foreground/70 hover:text-primary transition-colors">
-                  Entrar
-                </Button>
-              </Link>
-              <Link to="/auth">
-                <Button className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-lg hover:shadow-xl transition-all">
-                  Começar Grátis
-                </Button>
-              </Link>
-            </div>
+        <div className="container mx-auto px-6 flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <img src={butterflyLogo} alt="Logo" className="w-10 h-10 drop-shadow-sm" />
+            <span className={`font-bold text-xl tracking-tight ${isScrolled ? 'text-slate-800' : 'text-slate-800'}`}>
+              Instituto dos Sonhos
+            </span>
+          </div>
+          
+          <div className="flex items-center gap-4">
+            <Link to="/auth" className="hidden sm:block font-medium text-slate-600 hover:text-emerald-600 transition-colors">
+              Entrar
+            </Link>
+            <Link to="/auth">
+              <Button className="rounded-full px-6 bg-emerald-600 hover:bg-emerald-700 text-white shadow-lg shadow-emerald-200 transition-all hover:scale-105">
+                Começar Agora
+              </Button>
+            </Link>
           </div>
         </div>
       </motion.header>
 
-      {/* Hero Section - Enhanced */}
-      <section className="pt-24 sm:pt-32 pb-16 sm:pb-24 px-4 sm:px-6 relative">
-        <div className="container mx-auto max-w-7xl">
-          <div className="grid lg:grid-cols-2 gap-8 sm:gap-12 items-center">
-            <motion.div
-              style={{ opacity, scale }}
-              className="space-y-6 sm:space-y-8"
-            >
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-                className="inline-flex items-center gap-2 bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20 rounded-full px-4 py-2 shadow-lg"
-              >
-                <Sparkles className="w-4 h-4 text-primary animate-pulse" />
-                <span className="text-sm font-medium bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                  +1.200 vidas transformadas
-                </span>
-              </motion.div>
-              
-              <motion.h1 
-                className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-bold leading-tight"
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.2 }}
-              >
-                Transforme seu corpo e sua{' '}
-                <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent animate-gradient bg-[length:200%_auto]">
-                  vida completa
-                </span>
-              </motion.h1>
-              
-              <motion.p 
-                className="text-lg sm:text-xl text-muted-foreground leading-relaxed max-w-2xl"
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.4 }}
-              >
-                Plataforma completa de emagrecimento integral com acompanhamento por IA, 
-                nutricionistas especializados, gamificação envolvente e comunidade inspiradora. 
-                Alcance seus objetivos com ciência, tecnologia e suporte 24/7.
-              </motion.p>
-              
-              <motion.div 
-                className="flex flex-col sm:flex-row gap-4"
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.6 }}
-              >
-                <Link to="/auth" className="flex-1 sm:flex-none">
-                  <Button size="lg" className="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground shadow-xl hover:shadow-2xl transition-all group">
-                    <Sparkles className="mr-2 h-5 w-5 group-hover:rotate-12 transition-transform" />
-                    Começar Transformação
-                    <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                  </Button>
-                </Link>
-                <Button size="lg" variant="outline" className="border-2 hover:bg-accent/5">
-                  <Activity className="mr-2 h-5 w-5" />
-                  Ver Como Funciona
-                </Button>
-              </motion.div>
+      {/* Hero Section Premium */}
+      <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
+        {/* Background Elements */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full -z-10 overflow-hidden pointer-events-none">
+          <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-emerald-100/50 rounded-full blur-[100px] mix-blend-multiply animate-blob" />
+          <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-amber-100/50 rounded-full blur-[100px] mix-blend-multiply animate-blob animation-delay-2000" />
+          <div className="absolute -bottom-32 left-1/2 w-[600px] h-[600px] bg-blue-50/50 rounded-full blur-[100px] mix-blend-multiply animate-blob animation-delay-4000" />
+        </div>
 
-              <motion.div 
-                className="flex flex-wrap items-center gap-6 pt-4"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.8, delay: 0.8 }}
-              >
-                <div className="flex -space-x-3">
-                  {[1, 2, 3, 4, 5].map((i) => (
-                    <div key={i} className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 border-2 border-background flex items-center justify-center shadow-lg hover:scale-110 transition-transform">
-                      <span className="text-lg">👤</span>
-                    </div>
-                  ))}
-                </div>
-                <div className="text-sm">
-                  <div className="flex items-center gap-1 text-primary font-semibold mb-1">
-                    {[1, 2, 3, 4, 5].map((i) => (
-                      <Star key={i} className="w-4 h-4 fill-current" />
-                    ))}
-                    <span className="ml-1">4.9/5</span>
-                  </div>
-                  <p className="text-muted-foreground">Baseado em 847 avaliações</p>
-                </div>
-              </motion.div>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, rotateY: -15 }}
-              animate={{ opacity: 1, scale: 1, rotateY: 0 }}
-              transition={{ duration: 1, delay: 0.3 }}
-              className="relative lg:h-[600px] flex items-center justify-center"
-            >
-              <div className="relative z-10">
-                <motion.img 
-                  src={butterflyLogo} 
-                  alt="Transformação" 
-                  className="w-full max-w-md mx-auto drop-shadow-2xl" 
-                  animate={{ 
-                    y: [0, -20, 0],
-                    rotate: [0, 5, 0]
-                  }}
-                  transition={{ 
-                    duration: 6, 
-                    repeat: Infinity,
-                    ease: "easeInOut" 
-                  }}
-                />
-              </div>
-              <div className="absolute inset-0 bg-gradient-to-r from-primary/30 via-accent/20 to-primary/30 blur-3xl animate-pulse" />
-              
-              {/* Floating Stats Cards */}
-              <motion.div
-                className="absolute top-8 -left-4 bg-card/90 backdrop-blur-lg p-4 rounded-2xl shadow-xl border border-border/50"
-                animate={{ y: [0, -10, 0] }}
-                transition={{ duration: 3, repeat: Infinity }}
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                    <TrendingUp className="w-6 h-6 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold text-primary">-18kg</p>
-                    <p className="text-xs text-muted-foreground">em 3 meses</p>
-                  </div>
-                </div>
-              </motion.div>
-
-              <motion.div
-                className="absolute bottom-8 -right-4 bg-card/90 backdrop-blur-lg p-4 rounded-2xl shadow-xl border border-border/50"
-                animate={{ y: [0, 10, 0] }}
-                transition={{ duration: 3, repeat: Infinity, delay: 1.5 }}
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-success/10 flex items-center justify-center">
-                    <Trophy className="w-6 h-6 text-success" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold text-success">92%</p>
-                    <p className="text-xs text-muted-foreground">Taxa sucesso</p>
-                  </div>
-                </div>
-              </motion.div>
-            </motion.div>
-          </div>
-
-          {/* Scroll Indicator */}
-          <motion.div 
-            className="flex justify-center mt-12 sm:mt-16"
-            animate={{ y: [0, 10, 0] }}
-            transition={{ duration: 2, repeat: Infinity }}
+        <div className="container mx-auto px-6 text-center relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm border border-emerald-100 rounded-full px-4 py-1.5 shadow-sm mb-8"
           >
-            <div className="text-center">
-              <p className="text-sm text-muted-foreground mb-2">Descubra mais</p>
-              <ChevronDown className="w-6 h-6 text-primary mx-auto" />
+            <div className="flex -space-x-2">
+               {[1,2,3].map(i => (
+                 <div key={i} className="w-6 h-6 rounded-full bg-gray-200 border-2 border-white" />
+               ))}
+            </div>
+            <span className="text-sm font-medium text-slate-600">
+              Junte-se a <span className="text-emerald-600 font-bold">+1.200</span> membros
+            </span>
+          </motion.div>
+
+          <motion.h1 
+            style={{ y, opacity }}
+            className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-slate-900 mb-8 max-w-4xl mx-auto leading-[1.1]"
+          >
+            Transforme seu corpo e <br className="hidden md:block" />
+            <span className="bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent">
+              sua vida por completo
+            </span>
+          </motion.h1>
+
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="text-lg md:text-xl text-slate-600 mb-10 max-w-2xl mx-auto leading-relaxed"
+          >
+            A primeira plataforma que une Inteligência Artificial, Nutricionistas especializados e Ciência Comportamental para um emagrecimento definitivo e saudável.
+          </motion.p>
+
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className="flex flex-col sm:flex-row gap-4 justify-center items-center"
+          >
+            <Link to="/auth" className="w-full sm:w-auto">
+              <Button size="lg" className="w-full h-14 px-8 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-lg shadow-xl shadow-emerald-200 transition-all hover:-translate-y-1">
+                Começar Transformação Grátis
+                <ArrowRight className="ml-2 w-5 h-5" />
+              </Button>
+            </Link>
+            <div className="flex items-center gap-2 text-sm text-slate-500 mt-2 sm:mt-0">
+              <CheckCircle className="w-4 h-4 text-emerald-500" />
+              <span>7 dias grátis</span>
+              <span className="mx-1">•</span>
+              <span>Sem cartão necessário</span>
             </div>
           </motion.div>
         </div>
+
+        {/* Floating Stats UI Mockup */}
+        <motion.div 
+          initial={{ opacity: 0, y: 100 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, delay: 0.6 }}
+          className="mt-20 container mx-auto px-4 max-w-5xl relative"
+        >
+          <div className="relative bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden aspect-[16/9] md:aspect-[21/9]">
+             <div className="absolute inset-0 bg-gradient-to-br from-slate-50 to-slate-100/50" />
+             <div className="absolute inset-0 flex items-center justify-center">
+                {/* Abstract Representation of the Dashboard */}
+                <div className="grid grid-cols-3 gap-4 w-3/4 opacity-90 transform scale-95 hover:scale-100 transition-transform duration-700">
+                   <div className="col-span-2 bg-white p-4 rounded-xl shadow-lg border border-slate-100 space-y-3">
+                      <div className="h-4 w-1/3 bg-slate-100 rounded animate-pulse" />
+                      <div className="h-32 bg-emerald-50/50 rounded-lg border border-emerald-100 flex items-end p-2 gap-2">
+                         {[40, 60, 50, 70, 55, 80, 75].map((h, i) => (
+                           <div key={i} className="w-full bg-emerald-200 rounded-t-sm" style={{ height: `${h}%` }} />
+                         ))}
+                      </div>
+                   </div>
+                   <div className="bg-white p-4 rounded-xl shadow-lg border border-slate-100 flex flex-col items-center justify-center gap-3">
+                      <div className="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center text-2xl">🏆</div>
+                      <div className="text-center">
+                        <div className="h-4 w-16 bg-slate-100 rounded mx-auto mb-1" />
+                        <div className="h-3 w-12 bg-slate-100 rounded mx-auto" />
+                      </div>
+                   </div>
+                </div>
+             </div>
+          </div>
+        </motion.div>
       </section>
 
-      {/* Stats Section */}
-      <section className="py-12 sm:py-16 px-4 sm:px-6 bg-gradient-to-r from-primary/5 via-accent/5 to-primary/5">
-        <div className="container mx-auto max-w-7xl">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
-            {[
-              { number: '1.200+', label: 'Vidas Transformadas', icon: Users, color: 'from-blue-500 to-cyan-500' },
-              { number: '92%', label: 'Taxa de Sucesso', icon: TrendingUp, color: 'from-green-500 to-emerald-500' },
-              { number: '4.9/5', label: 'Avaliação Média', icon: Star, color: 'from-yellow-500 to-orange-500' },
-              { number: '24/7', label: 'Suporte Disponível', icon: MessageCircle, color: 'from-purple-500 to-pink-500' }
-            ].map((stat, index) => (
-              <motion.div
-                key={stat.label}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className="text-center group"
-              >
-                <div className={`inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br ${stat.color} shadow-lg group-hover:scale-110 transition-transform mb-4`}>
-                  <stat.icon className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
-                </div>
-                <div className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-2">
-                  {stat.number}
-                </div>
-                <div className="text-sm sm:text-base text-muted-foreground font-medium">{stat.label}</div>
-              </motion.div>
-            ))}
+      {/* Social Proof */}
+      <section className="py-12 bg-white border-y border-slate-50">
+        <div className="container mx-auto px-6">
+          <p className="text-center text-sm font-medium text-slate-400 mb-8 uppercase tracking-wider">Resultados Comprovados</p>
+          <div className="flex flex-wrap justify-center gap-8 md:gap-16 opacity-70 grayscale hover:grayscale-0 transition-all duration-500">
+             {/* Logos fictícios ou placeholders elegantes */}
+             {["Vitalidade", "Saúde+", "BemEstar", "VidaLeve"].map((brand) => (
+               <span key={brand} className="text-xl md:text-2xl font-serif font-bold text-slate-300">{brand}</span>
+             ))}
           </div>
         </div>
       </section>
 
-      {/* How It Works Section */}
-      <section className="py-16 sm:py-24 px-4 sm:px-6">
-        <div className="container mx-auto max-w-7xl">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-12 sm:mb-16"
-          >
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6">
-              Como funciona a{' '}
-              <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                transformação
-              </span>
-            </h2>
-            <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto">
-              Um método científico e comprovado em 4 passos simples
-            </p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
-            {howItWorks.map((step, index) => (
-              <motion.div
-                key={step.step}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.15 }}
-                className="relative"
-              >
-                <Card className="h-full hover:shadow-2xl transition-all duration-300 border-2 hover:border-primary/50 group">
-                  <CardContent className="pt-6 text-center">
-                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-accent text-primary-foreground text-2xl font-bold flex items-center justify-center mx-auto mb-6 shadow-lg group-hover:scale-110 transition-transform">
-                      {step.step}
-                    </div>
-                    <h3 className="text-xl font-bold mb-3">{step.title}</h3>
-                    <p className="text-muted-foreground">{step.description}</p>
-                  </CardContent>
-                </Card>
-                
-                {index < howItWorks.length - 1 && (
-                  <div className="hidden lg:block absolute top-1/2 -right-4 z-10">
-                    <ArrowRight className="w-8 h-8 text-primary/30" />
-                  </div>
-                )}
-              </motion.div>
-            ))}
+      {/* Features Grid */}
+      <section className="py-20 md:py-32 bg-slate-50">
+        <div className="container mx-auto px-6">
+          <div className="text-center max-w-3xl mx-auto mb-20">
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">Tudo que você precisa para vencer</h2>
+            <p className="text-lg text-slate-600">Uma abordagem completa que integra todas as facetas do emagrecimento saudável em um só lugar.</p>
           </div>
-        </div>
-      </section>
 
-      {/* Benefits Section - Enhanced */}
-      <section className="py-16 sm:py-24 px-4 sm:px-6 bg-gradient-to-br from-card/30 to-accent/5">
-        <div className="container mx-auto max-w-7xl">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-12 sm:mb-16"
-          >
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6">
-              Tudo que você precisa para{' '}
-              <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                alcançar seus objetivos
-              </span>
-            </h2>
-            <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto">
-              Ferramentas profissionais e tecnologia de ponta ao seu alcance
-            </p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-3 gap-8">
             {benefits.map((benefit, index) => (
               <motion.div
-                key={benefit.title}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-              >
-                <Card className="h-full hover:shadow-2xl transition-all duration-300 border hover:border-primary/30 group overflow-hidden">
-                  <div className={`h-1 bg-gradient-to-r ${benefit.color}`} />
-                  <CardContent className="pt-6">
-                    <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${benefit.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg`}>
-                      <benefit.icon className="w-7 h-7 text-white" />
-                    </div>
-                    <h3 className="text-xl font-bold mb-3">{benefit.title}</h3>
-                    <p className="text-muted-foreground leading-relaxed">{benefit.description}</p>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials Section */}
-      <section className="py-16 sm:py-24 px-4 sm:px-6">
-        <div className="container mx-auto max-w-7xl">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-12 sm:mb-16"
-          >
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6">
-              Histórias de{' '}
-              <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                transformação real
-              </span>
-            </h2>
-            <p className="text-lg sm:text-xl text-muted-foreground max-w-3xl mx-auto">
-              Veja o que nossos membros têm a dizer sobre suas jornadas
-            </p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-3 gap-6">
-            {testimonials.map((testimonial, index) => (
-              <motion.div
-                key={testimonial.name}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.15 }}
-              >
-                <Card className="h-full hover:shadow-2xl transition-all duration-300 border hover:border-primary/30">
-                  <CardContent className="pt-6">
-                    <Quote className="w-10 h-10 text-primary/20 mb-4" />
-                    <p className="text-muted-foreground mb-6 leading-relaxed italic">
-                      "{testimonial.content}"
-                    </p>
-                    <div className="flex items-center gap-4">
-                      <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center text-2xl">
-                        {testimonial.image}
-                      </div>
-                      <div>
-                        <p className="font-bold">{testimonial.name}</p>
-                        <p className="text-sm text-primary font-medium">{testimonial.role}</p>
-                        <div className="flex gap-1 mt-1">
-                          {[...Array(testimonial.rating)].map((_, i) => (
-                            <Star key={i} className="w-4 h-4 fill-current text-yellow-500" />
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* FAQ Section */}
-      <section className="py-16 sm:py-24 px-4 sm:px-6 bg-gradient-to-br from-card/30 to-accent/5">
-        <div className="container mx-auto max-w-4xl">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-12"
-          >
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">
-              Perguntas{' '}
-              <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                Frequentes
-              </span>
-            </h2>
-          </motion.div>
-
-          <div className="space-y-4">
-            {faq.map((item, index) => (
-              <motion.div
-                key={item.question}
+                key={index}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
+                transition={{ delay: index * 0.2 }}
+                className="group bg-white rounded-2xl p-8 shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100"
               >
-                <Card className="hover:shadow-lg transition-all">
-                  <CardContent className="pt-6">
-                    <h3 className="font-bold text-lg mb-2">{item.question}</h3>
-                    <p className="text-muted-foreground">{item.answer}</p>
-                  </CardContent>
-                </Card>
+                <div className={`w-14 h-14 rounded-xl ${benefit.bg} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
+                  <benefit.icon className="w-7 h-7" />
+                </div>
+                <h3 className="text-xl font-bold text-slate-900 mb-3">{benefit.title}</h3>
+                <p className="text-slate-600 leading-relaxed">
+                  {benefit.description}
+                </p>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Final CTA Section */}
-      <section className="py-16 sm:py-24 px-4 sm:px-6">
-        <div className="container mx-auto max-w-5xl">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            className="relative bg-gradient-to-br from-primary via-primary/90 to-accent rounded-3xl p-8 sm:p-12 lg:p-16 text-center text-primary-foreground overflow-hidden shadow-2xl"
-          >
-            <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzBoLTJ2LTJoMnYyem0wLTRoLTJ2LTJoMnYyem0wLTRoLTJ2LTJoMnYyem0wLTRoLTJ2LTJoMnYyeiIvPjwvZz48L2c+PC9zdmc+')] opacity-20" />
-            
-            <div className="relative z-10">
-              <motion.div
-                animate={{ rotate: [0, 5, -5, 0] }}
-                transition={{ duration: 3, repeat: Infinity }}
-                className="inline-block mb-6"
-              >
-                <Sparkles className="w-16 h-16 mx-auto" />
-              </motion.div>
-              
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6">
-                Pronto para transformar sua vida?
+      {/* Testimonials Modern */}
+      <section className="py-20 md:py-32 overflow-hidden">
+        <div className="container mx-auto px-6">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            <div>
+              <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-6">
+                Histórias reais de <br />
+                <span className="text-emerald-600">transformação</span>
               </h2>
-              <p className="text-lg sm:text-xl mb-8 sm:mb-10 opacity-90 max-w-2xl mx-auto">
-                Junte-se a mais de 1.200 pessoas que já iniciaram sua jornada de transformação. 
-                Comece hoje mesmo, totalmente grátis por 7 dias.
+              <p className="text-lg text-slate-600 mb-8">
+                Não é mágica, é ciência e consistência. Veja o que acontece quando você tem as ferramentas certas.
               </p>
-              
-              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
-                <Link to="/auth">
-                  <Button size="lg" variant="secondary" className="bg-background text-foreground hover:bg-background/90 shadow-xl">
-                    <Sparkles className="mr-2 h-5 w-5" />
-                    Começar Agora Grátis
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </Button>
-                </Link>
-              </div>
-              
-              <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-8 text-sm">
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5" />
-                  <span>7 dias grátis</span>
+              <div className="flex gap-8">
+                <div>
+                  <p className="text-4xl font-bold text-slate-900">92%</p>
+                  <p className="text-sm text-slate-500">Taxa de Sucesso</p>
                 </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5" />
-                  <span>Sem cartão de crédito</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5" />
-                  <span>Cancele quando quiser</span>
+                <div>
+                  <p className="text-4xl font-bold text-slate-900">4.9/5</p>
+                  <p className="text-sm text-slate-500">Avaliação Média</p>
                 </div>
               </div>
             </div>
-          </motion.div>
-        </div>
-      </section>
 
-      {/* Footer */}
-      <footer className="py-12 px-4 sm:px-6 border-t border-border/40 bg-card/30">
-        <div className="container mx-auto max-w-7xl">
-          <div className="grid md:grid-cols-4 gap-8 mb-8">
-            <div className="md:col-span-2">
-              <div className="flex items-center gap-3 mb-4">
-                <img src={butterflyLogo} alt="Instituto dos Sonhos" className="w-10 h-10" />
-                <span className="font-bold text-lg">Instituto dos Sonhos</span>
-              </div>
-              <p className="text-muted-foreground mb-4">
-                Transformando vidas através de um método integral de emagrecimento com tecnologia, 
-                ciência e muito cuidado.
-              </p>
-            </div>
-            
-            <div>
-              <h4 className="font-bold mb-4">Links Rápidos</h4>
-              <div className="space-y-2">
-                <Link to="/auth" className="block text-muted-foreground hover:text-primary transition-colors">
-                  Começar Grátis
-                </Link>
-                <Link to="/terms" className="block text-muted-foreground hover:text-primary transition-colors">
-                  Termos de Uso
-                </Link>
-                <Link to="/privacidade" className="block text-muted-foreground hover:text-primary transition-colors">
-                  Privacidade
-                </Link>
-              </div>
-            </div>
-            
-            <div>
-              <h4 className="font-bold mb-4">Contato</h4>
-              <div className="space-y-2 text-muted-foreground">
-                <p>Suporte 24/7</p>
-                <p className="text-primary font-medium">contato@institutodossonhos.com</p>
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-r from-emerald-50 to-transparent rounded-3xl -rotate-6 -z-10" />
+              <div className="space-y-6">
+                {testimonials.map((t, i) => (
+                  <motion.div 
+                    key={i}
+                    initial={{ opacity: 0, x: 50 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: i * 0.1 }}
+                  >
+                    <Card className="border-none shadow-lg hover:shadow-xl transition-shadow bg-white/80 backdrop-blur">
+                      <CardContent className="p-6">
+                        <div className="flex gap-4 mb-4">
+                           <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-2xl">
+                             {t.image}
+                           </div>
+                           <div>
+                             <h4 className="font-bold text-slate-900">{t.name}</h4>
+                             <p className="text-xs text-emerald-600 font-bold uppercase tracking-wide">{t.result}</p>
+                           </div>
+                           <div className="ml-auto flex text-amber-400">
+                             {[...Array(5)].map((_, j) => <Star key={j} className="w-4 h-4 fill-current" />)}
+                           </div>
+                        </div>
+                        <p className="text-slate-600 text-sm leading-relaxed">"{t.content}"</p>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))}
               </div>
             </div>
           </div>
-          
-          <div className="pt-8 border-t border-border/40 flex flex-col sm:flex-row justify-between items-center gap-4">
-            <p className="text-sm text-muted-foreground text-center sm:text-left">
-              © 2025 Instituto dos Sonhos. Todos os direitos reservados.
-            </p>
-            <div className="flex gap-4">
-              <Shield className="w-5 h-5 text-muted-foreground" />
-              <span className="text-sm text-muted-foreground">Pagamento Seguro</span>
+        </div>
+      </section>
+
+      {/* Final CTA */}
+      <section className="py-20 px-6">
+        <div className="container mx-auto">
+          <div className="bg-slate-900 rounded-3xl p-12 md:p-24 text-center relative overflow-hidden">
+            {/* Decorative circles */}
+            <div className="absolute top-0 left-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl" />
+            <div className="absolute bottom-0 right-0 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl" />
+            
+            <div className="relative z-10 max-w-3xl mx-auto">
+              <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">
+                Comece sua jornada hoje
+              </h2>
+              <p className="text-slate-300 text-lg mb-10">
+                Experimente o método completo por 7 dias gratuitos. <br />
+                Sem compromisso, cancele quando quiser.
+              </p>
+              <Link to="/auth">
+                <Button className="h-16 px-10 rounded-full bg-white text-slate-900 hover:bg-slate-100 text-lg font-bold transition-all hover:scale-105 shadow-2xl">
+                  Criar Conta Gratuita
+                </Button>
+              </Link>
+              <p className="mt-6 text-sm text-slate-500">
+                Não requer cartão de crédito para iniciar
+              </p>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer Simples e Elegante */}
+      <footer className="bg-white py-12 border-t border-slate-100">
+        <div className="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
+          <div className="flex items-center gap-2 opacity-80">
+            <img src={butterflyLogo} alt="Logo" className="w-6 h-6 grayscale" />
+            <span className="font-semibold text-slate-700">Instituto dos Sonhos</span>
+          </div>
+          <div className="text-sm text-slate-500">
+            © 2025 Instituto dos Sonhos. Todos os direitos reservados.
+          </div>
+          <div className="flex gap-6 text-sm text-slate-500">
+            <Link to="/privacidade" className="hover:text-emerald-600">Privacidade</Link>
+            <Link to="/terms" className="hover:text-emerald-600">Termos</Link>
           </div>
         </div>
       </footer>

@@ -28,6 +28,7 @@ export interface UserPhysicalData {
   id: string;
   user_id: string;
   altura_cm: number;
+  peso_kg?: number;
   idade: number;
   sexo: string;
   nivel_atividade: string;
@@ -334,30 +335,81 @@ export const useWeightMeasurement = () => {
 
   // Estatísticas para UI
   const stats = useMemo(() => {
-    if (measurements.length === 0) return null;
+    // Se não houver medições, tentar usar peso de user_physical_data como fallback
+    if (measurements.length === 0) {
+      if (physicalData?.peso_kg) {
+        const peso = Number(physicalData.peso_kg);
+        const altura = Number(physicalData.altura_cm || 0);
+        const calculatedIMC = altura > 0 ? peso / Math.pow(altura / 100, 2) : 0;
+        
+        return {
+          currentWeight: parseFloat(peso.toFixed(1)),
+          currentIMC: parseFloat(calculatedIMC.toFixed(1)),
+          weightChange: 0,
+          trend: 'stable' as const,
+          riskLevel: null,
+          totalMeasurements: 0,
+          averageWeight: parseFloat(peso.toFixed(1)),
+          bodyFat: 0,
+          muscleMass: 0,
+          bodyWater: 0,
+          metabolism: 0,
+          metabolicAge: 0,
+          visceralFat: 0
+        };
+      }
+      return null;
+    }
+    
     const latest = measurements[0];
+    if (!latest || !latest.peso_kg) {
+      // Se a primeira medição não tiver peso, tentar fallback
+      if (physicalData?.peso_kg) {
+        const peso = Number(physicalData.peso_kg);
+        const altura = Number(physicalData.altura_cm || 0);
+        const calculatedIMC = altura > 0 ? peso / Math.pow(altura / 100, 2) : 0;
+        return {
+          currentWeight: parseFloat(peso.toFixed(1)),
+          currentIMC: parseFloat(calculatedIMC.toFixed(1)),
+          weightChange: 0,
+          trend: 'stable' as const,
+          riskLevel: null,
+          totalMeasurements: measurements.length,
+          averageWeight: parseFloat(peso.toFixed(1)),
+          bodyFat: 0,
+          muscleMass: 0,
+          bodyWater: 0,
+          metabolism: 0,
+          metabolicAge: 0,
+          visceralFat: 0
+        };
+      }
+      return null;
+    }
+    
     const previous = measurements[1];
-    const calculatedIMC = latest.imc || (physicalData ? (latest.peso_kg / Math.pow(physicalData.altura_cm / 100, 2)) : 0);
+    const pesoAtual = Number(latest.peso_kg) || 0;
+    const calculatedIMC = latest.imc || (physicalData && physicalData.altura_cm > 0 ? (pesoAtual / Math.pow(physicalData.altura_cm / 100, 2)) : 0);
     
     // CORREÇÃO: Cálculo de massa magra com limites realistas
     let leanMassFallback: number | undefined;
-    if (latest.gordura_corporal_percent != null && latest.peso_kg != null) {
+    if (latest.gordura_corporal_percent != null && pesoAtual > 0) {
       // Aplicar limites realistas para gordura corporal antes de calcular massa magra
       const gorduraRealista = Math.max(5, Math.min(50, latest.gordura_corporal_percent));
-      leanMassFallback = latest.peso_kg * (1 - (gorduraRealista / 100));
+      leanMassFallback = pesoAtual * (1 - (gorduraRealista / 100));
       // Garantir que a massa magra seja pelo menos 30% do peso corporal
-      const massaMagraMinima = latest.peso_kg * 0.3;
+      const massaMagraMinima = pesoAtual * 0.3;
       leanMassFallback = Math.max(massaMagraMinima, leanMassFallback);
     }
 
     return {
-      currentWeight: parseFloat(latest.peso_kg.toFixed(1)),
+      currentWeight: parseFloat(pesoAtual.toFixed(1)),
       currentIMC: parseFloat(calculatedIMC.toFixed(1)),
-      weightChange: previous ? parseFloat((latest.peso_kg - previous.peso_kg).toFixed(1)) : 0,
-      trend: previous ? (latest.peso_kg > previous.peso_kg ? 'increasing' : latest.peso_kg < previous.peso_kg ? 'decreasing' : 'stable') : 'stable',
+      weightChange: previous && previous.peso_kg ? parseFloat((pesoAtual - Number(previous.peso_kg)).toFixed(1)) : 0,
+      trend: previous && previous.peso_kg ? (pesoAtual > Number(previous.peso_kg) ? 'increasing' : pesoAtual < Number(previous.peso_kg) ? 'decreasing' : 'stable') : 'stable',
       riskLevel: latest.risco_metabolico,
       totalMeasurements: measurements.length,
-      averageWeight: parseFloat((measurements.reduce((sum, m) => sum + m.peso_kg, 0) / measurements.length).toFixed(1)),
+      averageWeight: parseFloat((measurements.reduce((sum, m) => sum + (Number(m.peso_kg) || 0), 0) / measurements.length).toFixed(1)),
       bodyFat: latest.gordura_corporal_percent ? parseFloat(latest.gordura_corporal_percent.toFixed(1)) : 0,
       muscleMass: latest.massa_muscular_kg != null
         ? parseFloat(latest.massa_muscular_kg.toFixed(1))

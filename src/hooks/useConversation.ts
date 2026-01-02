@@ -267,27 +267,45 @@ export const useConversation = (options: UseConversationOptions = {}) => {
   const stopSpeaking = useCallback(() => {
     console.log('🛑 Parando todas as vozes...');
     
-    // Parar áudio do Google TTS
+    // Parar áudio do Google TTS de forma segura
     if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current.currentTime = 0;
-      audioRef.current.src = '';
-      audioRef.current = null;
-      console.log('🛑 Áudio do Google TTS parado');
+      try {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+        // Limpar src de forma segura
+        if (audioRef.current.src && audioRef.current.src.startsWith('blob:')) {
+          URL.revokeObjectURL(audioRef.current.src);
+        }
+        audioRef.current.src = '';
+        audioRef.current = null;
+        console.log('🛑 Áudio do Google TTS parado');
+      } catch (error) {
+        console.warn('Erro ao parar áudio:', error);
+        audioRef.current = null;
+      }
     }
     
     // Parar síntese de fala do Web Speech API
-    if (window.speechSynthesis) {
-      window.speechSynthesis.cancel();
-      console.log('🛑 Web Speech API parado');
+    try {
+      if (window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+        console.log('🛑 Web Speech API parado');
+      }
+    } catch (error) {
+      console.warn('Erro ao parar Web Speech API:', error);
     }
     
-    // Limpar referências
+    // Limpar referências de forma segura
     if (speechSynthesisRef.current) {
-      speechSynthesisRef.current.onstart = null;
-      speechSynthesisRef.current.onend = null;
-      speechSynthesisRef.current.onerror = null;
-      speechSynthesisRef.current = null;
+      try {
+        speechSynthesisRef.current.onstart = null;
+        speechSynthesisRef.current.onend = null;
+        speechSynthesisRef.current.onerror = null;
+        speechSynthesisRef.current = null;
+      } catch (error) {
+        console.warn('Erro ao limpar referências de síntese:', error);
+        speechSynthesisRef.current = null;
+      }
     }
     
     setIsSpeaking(false);
@@ -334,21 +352,38 @@ export const useConversation = (options: UseConversationOptions = {}) => {
 
   // Limpar recursos
   const cleanup = useCallback(() => {
-    // Parar reconhecimento de fala
-    stopListening();
-    
-    // Parar fala
-    stopSpeaking();
-    
-    // Limpar URLs de áudio
-    if (audioRef.current) {
-      URL.revokeObjectURL(audioRef.current.src);
-      audioRef.current = null;
-    }
-    
-    // Limpar reconhecimento
-    if (recognitionRef.current) {
-      recognitionRef.current = null;
+    try {
+      // Parar reconhecimento de fala
+      stopListening();
+      
+      // Parar fala
+      stopSpeaking();
+      
+      // Limpar URLs de áudio de forma segura
+      if (audioRef.current) {
+        try {
+          if (audioRef.current.src && audioRef.current.src.startsWith('blob:')) {
+            URL.revokeObjectURL(audioRef.current.src);
+          }
+          audioRef.current.pause();
+          audioRef.current.src = '';
+        } catch (error) {
+          console.warn('Erro ao limpar áudio no cleanup:', error);
+        }
+        audioRef.current = null;
+      }
+      
+      // Limpar reconhecimento
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.stop();
+        } catch (error) {
+          // Ignorar erros se já foi parado
+        }
+        recognitionRef.current = null;
+      }
+    } catch (error) {
+      console.warn('Erro no cleanup do useConversation:', error);
     }
   }, [stopListening, stopSpeaking]);
 

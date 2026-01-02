@@ -980,17 +980,17 @@ const DesafiosSection: React.FC<DesafiosSectionProps> = ({
       </Card>;
   }
   return <div className="space-y-6">
-      <div className="text-center">
-        <h2 className="text-xl sm:text-2xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-violet-600 via-purple-600 to-pink-600 dark:from-violet-400 dark:via-purple-400 dark:to-pink-400">
-          🎯 Seus Desafios de Saúde
+      <div className="mb-6">
+        <h2 className="text-xl font-semibold text-gray-900 mb-2">
+          Seus Desafios de Saúde
         </h2>
-        <p className="text-muted-foreground">
-          ✨ Participe de desafios individuais ou comunitários e compete no ranking! 🏆
+        <p className="text-sm text-gray-600">
+          Participe de desafios individuais ou comunitários e compete no ranking
         </p>
       </div>
 
       <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3 bg-gradient-to-r from-violet-100 to-purple-100 dark:from-violet-900 dark:to-purple-900 p-1 rounded-xl border-2 border-violet-200 dark:border-violet-800">
+        <TabsList className="grid w-full grid-cols-3 bg-gray-100 p-1 rounded-lg">
           <TabsTrigger value="individuais" className="flex items-center gap-2">
             <Target className="w-4 h-4" />
             <span className="hidden sm:inline">Desafios</span>
@@ -1020,49 +1020,110 @@ const DesafiosSection: React.FC<DesafiosSectionProps> = ({
         </TabsContent>
 
         <TabsContent value="ranking" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Crown className="w-5 h-5 text-yellow-500" />
-                🏆 Ranking dos Desafios
+          <Card className="border-0 shadow-sm">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Trophy className="w-5 h-5 text-yellow-500" />
+                Ranking dos Desafios
               </CardTitle>
-              <CardDescription>
-                Competição saudável entre todos os participantes!
+              <CardDescription className="text-sm">
+                Competição saudável entre todos os participantes
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-3">
-              {rankingData.map((user, index) => <div key={user.id} className={`flex items-center justify-between p-4 rounded-xl transition-all duration-300 ${user.is_current_user ? 'bg-gradient-to-r from-indigo-100 via-purple-100 to-pink-100 dark:from-indigo-900 dark:via-purple-900 dark:to-pink-900 border-2 border-indigo-300 shadow-lg transform scale-105' : user.position <= 3 ? 'bg-gradient-to-r from-yellow-50 via-amber-50 to-orange-50 dark:from-yellow-900 dark:via-amber-900 dark:to-orange-900 border border-yellow-200 dark:border-yellow-700 shadow-md hover:shadow-lg' : 'bg-gradient-to-r from-slate-50 to-gray-50 dark:from-slate-800 dark:to-gray-800 border border-slate-200 dark:border-slate-700 hover:shadow-md hover:bg-gradient-to-r hover:from-slate-100 hover:to-gray-100'}`}>
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-sm">
-                      {user.position}
-                    </div>
-                    <Avatar className="w-10 h-10">
-                      <AvatarFallback className="text-lg">
-                        {user.avatar}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className={`font-medium ${user.is_current_user ? 'text-blue-700 dark:text-blue-300' : ''}`}>
-                          {user.name}
-                        </span>
-                        {user.position <= 3 && <span className="text-lg">
-                            {user.position === 1 ? '👑' : user.position === 2 ? '🥈' : '🥉'}
-                          </span>}
-                        <span className="text-sm">{user.badge}</span>
+            <CardContent className="p-0">
+              <div className="divide-y divide-gray-100">
+                {rankingData.map((user, index) => {
+                  const getRankIcon = (position: number) => {
+                    if (position === 1) {
+                      return <Crown className="w-5 h-5 text-yellow-600" />;
+                    }
+                    if (position === 2) {
+                      return <Medal className="w-5 h-5 text-gray-400" />;
+                    }
+                    if (position === 3) {
+                      return <Medal className="w-5 h-5 text-amber-600" />;
+                    }
+                    return (
+                      <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+                        <span className="text-sm font-bold text-gray-600">{position}</span>
                       </div>
-                      <div className="text-sm text-muted-foreground">
-                        {user.progress}% concluído • {user.points.toLocaleString()} pontos
+                    );
+                  };
+
+                  return (
+                    <div
+                      key={user.id}
+                      className={`px-4 py-3 hover:bg-gray-50 transition-colors ${
+                        user.is_current_user ? 'bg-blue-50 border-l-4 border-blue-500' : ''
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        {/* Posição */}
+                        <div className="flex-shrink-0 w-10">
+                          {user.position <= 3 ? (
+                            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                              user.position === 1 ? 'bg-yellow-100' :
+                              user.position === 2 ? 'bg-gray-100' :
+                              'bg-amber-100'
+                            }`}>
+                              {getRankIcon(user.position)}
+                            </div>
+                          ) : (
+                            <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+                              <span className="text-sm font-bold text-gray-600">{user.position}</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Avatar */}
+                        <Avatar className="h-10 w-10 flex-shrink-0">
+                          <AvatarFallback className="bg-emerald-100 text-emerald-700 font-semibold text-sm">
+                            {user.avatar || user.name.charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+
+                        {/* Nome e Info */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className={`font-medium text-sm truncate ${
+                              user.is_current_user ? 'text-blue-700' : 'text-gray-900'
+                            }`}>
+                              {user.name}
+                            </span>
+                            {user.is_current_user && (
+                              <Badge variant="default" className="text-xs px-1.5 py-0">Você</Badge>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-3 text-xs text-gray-600">
+                            <span>{user.progress}% concluído</span>
+                            <span>•</span>
+                            <span className="flex items-center gap-1">
+                              <Star className="w-3 h-3 text-yellow-500 fill-yellow-500" />
+                              {user.points.toLocaleString()} pontos
+                            </span>
+                          </div>
+                          <Progress value={user.progress} className="h-1.5 mt-2" />
+                        </div>
+
+                        {/* Badge de Posição */}
+                        <div className="flex-shrink-0">
+                          <Badge
+                            variant="secondary"
+                            className={`${
+                              user.position === 1 ? 'bg-yellow-100 text-yellow-700' :
+                              user.position === 2 ? 'bg-gray-100 text-gray-700' :
+                              user.position === 3 ? 'bg-amber-100 text-amber-700' :
+                              'bg-gray-100 text-gray-600'
+                            }`}
+                          >
+                            #{user.position}
+                          </Badge>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div className="text-right">
-                    <Progress value={user.progress} className="w-20 h-2 mb-1" />
-                    <Badge className={user.position === 1 ? 'bg-gradient-to-r from-yellow-400 to-yellow-600 text-white shadow-lg border border-yellow-300' : user.position === 2 ? 'bg-gradient-to-r from-gray-300 to-gray-500 text-white shadow-lg border border-gray-200' : user.position === 3 ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-lg border border-amber-400' : user.is_current_user ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-md border border-indigo-400' : 'bg-gradient-to-r from-slate-400 to-slate-600 text-white shadow-sm'}>
-                      #{user.position}
-                    </Badge>
-                  </div>
-                </div>)}
+                  );
+                })}
+              </div>
             </CardContent>
           </Card>
         </TabsContent>

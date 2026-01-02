@@ -80,7 +80,12 @@ const DrVitalPage: React.FC = () => {
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
+      // Usar setTimeout para garantir que o click foi processado antes de remover
+      setTimeout(() => {
+        if (a.parentNode === document.body) {
+          document.body.removeChild(a);
+        }
+      }, 100);
 
       toast({
         title: "Relatório exportado",

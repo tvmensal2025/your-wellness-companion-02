@@ -36,12 +36,12 @@
   backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 16px;
-  padding: 12px;
+  padding: 10px;
   max-width: 400px;
   min-width: 320px;
   width: 90vw;
-  max-height: 80vh;
-  overflow-y: auto;
+  max-height: 85vh;
+  overflow-y: hidden;
   box-shadow: 
     0 15px 30px rgba(0, 0, 0, 0.1),
     0 6px 20px rgba(0, 0, 0, 0.06),
@@ -50,6 +50,8 @@
   left: 50% !important;
   transform: translateX(-50%) !important;
   top: 20px !important;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Responsividade para dispositivos móveis */
@@ -58,10 +60,11 @@
     max-width: 350px;
     min-width: 300px;
     width: 95vw;
-    padding: 10px;
+    padding: 8px;
     border-radius: 14px;
     top: 16px !important;
-    max-height: 75vh;
+    max-height: 85vh;
+    overflow-y: hidden;
   }
 }
 
@@ -70,10 +73,11 @@
   .interactive-tutorial-popup {
     max-width: 320px;
     width: 98vw;
-    padding: 8px;
+    padding: 6px;
     border-radius: 12px;
     top: 12px !important;
-    max-height: 70vh;
+    max-height: 85vh;
+    overflow-y: hidden;
   }
 }
 
@@ -92,8 +96,9 @@
 .popup-sofia-avatar {
   display: flex;
   align-items: center;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
   animation: sofia-float 3s ease-in-out infinite;
+  flex-shrink: 0;
 }
 
 @keyframes sofia-float {
@@ -102,10 +107,10 @@
 }
 
 .sofia-avatar-image {
-  width: 60px;
-  height: 60px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
-  border: 3px solid rgba(59, 130, 246, 0.3);
+  border: 2px solid rgba(59, 130, 246, 0.3);
   box-shadow: 
     0 8px 24px rgba(59, 130, 246, 0.25),
     0 4px 12px rgba(59, 130, 246, 0.15),
@@ -117,13 +122,17 @@
 /* ===== BALÃO DE CONVERSA PREMIUM ===== */
 .popup-content {
   background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-  border-radius: 20px;
-  padding: 20px;
+  border-radius: 16px;
+  padding: 12px;
   border: 1px solid rgba(59, 130, 246, 0.1);
   box-shadow: 
     0 4px 16px rgba(0, 0, 0, 0.06),
     inset 0 1px 0 rgba(255, 255, 255, 0.9);
   position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .popup-content::before {
@@ -141,28 +150,30 @@
 
 /* ===== TIPOGRAFIA PREMIUM ===== */
 .popup-title {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 700;
   color: #1e293b;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
   word-wrap: break-word;
   overflow-wrap: break-word;
-  line-height: 1.3;
+  line-height: 1.2;
   background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  flex-shrink: 0;
 }
 
 .popup-description {
-  font-size: 15px;
-  line-height: 1.5;
+  font-size: 13px;
+  line-height: 1.4;
   color: #475569;
-  margin-bottom: 16px;
+  margin-bottom: 10px;
   font-weight: 500;
   word-wrap: break-word;
   overflow-wrap: break-word;
   max-width: 100%;
+  flex-shrink: 0;
 }
 
 /* ===== INSTRUÇÃO PREMIUM ===== */
@@ -181,23 +192,27 @@
 
 /* ===== CONTAINER DE VÍDEO PREMIUM - ESTILO CELULAR ===== */
 .popup-video-container {
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-  border-radius: 12px;
-  padding: 8px;
+  border-radius: 10px;
+  padding: 6px;
   border: 1px solid rgba(59, 130, 246, 0.1);
   box-shadow: 
     0 4px 12px rgba(0, 0, 0, 0.06),
     inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .video-wrapper {
   position: relative;
   width: 100%;
   height: 0;
-  padding-bottom: 45%; /* Aspect ratio mais compacto para mobile */
-  margin-bottom: 8px;
-  border-radius: 12px;
+  padding-bottom: 35%; /* Aspect ratio mais compacto para caber sem scroll */
+  margin-bottom: 6px;
+  border-radius: 10px;
   overflow: hidden;
   box-shadow: 
     0 8px 24px rgba(0, 0, 0, 0.15),
@@ -205,6 +220,7 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.8);
   border: 2px solid rgba(255, 255, 255, 0.9);
   background: #000;
+  flex-shrink: 0;
 }
 
 .video-wrapper::before {
@@ -238,25 +254,28 @@
 .video-header {
   display: flex;
   align-items: center;
-  margin-bottom: 12px;
-  padding: 10px 12px;
+  margin-bottom: 8px;
+  padding: 6px 10px;
   background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-  border-radius: 14px;
+  border-radius: 10px;
   color: white;
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+  flex-shrink: 0;
 }
 
 .video-header-icon {
-  width: 24px;
-  height: 24px;
-  margin-right: 12px;
+  width: 20px;
+  height: 20px;
+  margin-right: 8px;
   color: #3b82f6;
+  flex-shrink: 0;
 }
 
 .video-header-title {
-  font-size: 16px;
+  font-size: 13px;
   font-weight: 700;
   margin: 0;
+  line-height: 1.2;
 }
 
 .popup-instruction::before {
@@ -528,8 +547,8 @@
   padding: 1rem;
   max-width: 300px;
   width: 85vw;
-  max-height: 70vh;
-  overflow-y: auto;
+  max-height: 85vh;
+  overflow-y: hidden;
   text-align: center;
   box-shadow: 
     0 15px 30px -8px rgba(0, 0, 0, 0.15),
@@ -537,6 +556,8 @@
     0 2px 8px rgba(0, 0, 0, 0.04),
     inset 0 1px 0 rgba(255, 255, 255, 0.9);
   position: relative;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Responsividade para dispositivos móveis */
@@ -549,8 +570,9 @@
     max-width: 280px;
     width: 90vw;
     padding: 0.8rem;
-    max-height: 60vh;
+    max-height: 80vh;
     border-radius: 24px;
+    overflow-y: hidden;
   }
 }
 
@@ -560,18 +582,20 @@
     max-width: 260px;
     width: 95vw;
     padding: 0.7rem;
-    max-height: 50vh;
+    max-height: 85vh;
     border-radius: 12px;
+    overflow-y: hidden;
   }
   
   .welcome-title {
     font-size: 1rem;
-    margin-bottom: 0.6rem;
+    margin-bottom: 0.4rem;
   }
   
   .message-text {
-    font-size: 0.85rem;
-    margin-bottom: 0.5rem;
+    font-size: 0.8rem;
+    margin-bottom: 0.35rem;
+    line-height: 1.3;
   }
 }
 
@@ -594,15 +618,16 @@
 
 /* Sofia Avatar Premium */
 .sofia-welcome-avatar {
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.4rem;
   display: flex;
   justify-content: center;
   position: relative;
+  flex-shrink: 0;
 }
 
 .sofia-avatar-image {
-  width: 50px;
-  height: 50px;
+  width: 60px;
+  height: 60px;
   border-radius: 50%;
   border: 2px solid rgba(59, 130, 246, 0.3);
   box-shadow: 
@@ -634,22 +659,24 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  margin-bottom: 0.8rem;
-  line-height: 1.3;
+  margin-bottom: 0.5rem;
+  line-height: 1.2;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+  flex-shrink: 0;
 }
 
 /* Apresentação Premium */
 .sofia-introduction {
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
   text-align: center;
+  flex-shrink: 1;
 }
 
 .message-text {
-  font-size: 0.9rem;
-  line-height: 1.5;
+  font-size: 0.85rem;
+  line-height: 1.4;
   color: #475569;
-  margin-bottom: 0.6rem;
+  margin-bottom: 0.4rem;
   text-align: center;
   font-weight: 500;
 }
@@ -657,7 +684,7 @@
 .sofia-name {
   color: #3b82f6;
   font-weight: 700;
-  font-size: 1.3rem;
+  font-size: 1.1rem;
 }
 
 .sofia-role {
@@ -670,7 +697,8 @@
   color: #059669;
   font-weight: 600;
   text-align: center;
-  margin-top: 0.5rem;
+  margin-top: 0.3rem;
+  margin-bottom: 0.2rem;
 }
 
 /* Preview Premium */
@@ -737,9 +765,11 @@
 .welcome-buttons {
   display: flex;
   flex-direction: column;
-  gap: 1.2rem;
+  gap: 0.75rem;
   align-items: center;
-  margin-bottom: 2rem;
+  margin-bottom: 0;
+  margin-top: 0.5rem;
+  flex-shrink: 0;
 }
 
 .welcome-button {
@@ -841,16 +871,41 @@
   .interactive-tutorial-popup {
     max-width: 90vw;
     min-width: 280px;
-    padding: 20px;
-    margin: 20px;
+    padding: 8px;
+    margin: 0;
+    max-height: 85vh;
+    overflow-y: hidden;
   }
   
   .popup-title {
-    font-size: 16px;
+    font-size: 15px;
+    margin-bottom: 6px;
   }
   
   .popup-description {
-    font-size: 14px;
+    font-size: 12px;
+    margin-bottom: 8px;
+  }
+  
+  .popup-content {
+    padding: 10px;
+  }
+  
+  .popup-video-container {
+    padding: 5px;
+  }
+  
+  .video-wrapper {
+    padding-bottom: 30%;
+  }
+  
+  .video-header {
+    padding: 5px 8px;
+    margin-bottom: 6px;
+  }
+  
+  .video-header-title {
+    font-size: 12px;
   }
   
   .manual-advance-button {
@@ -892,16 +947,54 @@
 
 @media (max-width: 480px) {
   .interactive-tutorial-popup {
-    padding: 16px;
-    margin: 16px;
+    padding: 6px;
+    margin: 0;
+    max-height: 85vh;
+    overflow-y: hidden;
   }
   
   .popup-content {
-    padding: 16px;
+    padding: 8px;
   }
   
   .popup-instruction {
-    padding: 12px;
+    padding: 10px;
+  }
+  
+  .popup-video-container {
+    padding: 4px;
+  }
+  
+  .video-wrapper {
+    padding-bottom: 28%;
+  }
+  
+  .video-header {
+    padding: 4px 6px;
+    margin-bottom: 4px;
+  }
+  
+  .video-header-title {
+    font-size: 11px;
+  }
+  
+  .popup-title {
+    font-size: 14px;
+    margin-bottom: 5px;
+  }
+  
+  .popup-description {
+    font-size: 11px;
+    margin-bottom: 6px;
+  }
+  
+  .popup-sofia-avatar {
+    margin-bottom: 8px;
+  }
+  
+  .sofia-avatar-image {
+    width: 45px;
+    height: 45px;
   }
   
   .manual-advance-button {

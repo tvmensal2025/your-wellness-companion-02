@@ -38,7 +38,7 @@ const WeightChart = ({ data }: { data: any[] }) => {
   return (
     <div className="h-64 relative">
       {/* Eixo Y */}
-      <div className="absolute left-0 top-0 bottom-0 w-12 flex flex-col justify-between text-xs text-muted-foreground">
+      <div className="absolute left-0 top-0 bottom-0 w-12 flex flex-col justify-between text-sm text-muted-foreground">
         <span>{maxWeight.toFixed(1)}kg</span>
         <span>{((maxWeight + minWeight) / 2).toFixed(1)}kg</span>
         <span>{minWeight.toFixed(1)}kg</span>
@@ -59,7 +59,7 @@ const WeightChart = ({ data }: { data: any[] }) => {
                 style={{ height: `${height}%` }}
                 title={`${point.peso_kg}kg - ${new Date(point.measurement_date).toLocaleDateString()}`}
               />
-              <span className="text-xs text-muted-foreground mt-2">
+              <span className="text-sm text-muted-foreground mt-2">
                 {new Date(point.measurement_date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
               </span>
             </div>
@@ -364,30 +364,30 @@ const CompleteWeighingSystem: React.FC = () => {
       </div>
 
       {/* Conteúdo Principal para TV */}
-      <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 py-6 sm:py-8 lg:py-10 xl:py-12">
+      <div className="w-full px-2 sm:px-3 lg:px-4 xl:px-6 py-3 sm:py-4 lg:py-5 xl:py-6">
         
         {/* Card de Pesagem */}
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl lg:rounded-3xl shadow-2xl border-2 border-white/20 overflow-hidden mb-6 sm:mb-8 lg:mb-10 xl:mb-12">
-          <div className="bg-gradient-to-r from-blue-500/50 to-indigo-500/50 px-4 sm:px-6 lg:px-8 xl:px-12 py-4 sm:py-6 lg:py-8 border-b-2 border-white/20">
-            <h2 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold text-white flex items-center">
+        <div className="bg-white/10 backdrop-blur-md rounded-2xl lg:rounded-3xl shadow-2xl border-2 border-white/20 overflow-hidden mb-3 sm:mb-4 lg:mb-5 xl:mb-6">
+          <div className="bg-gradient-to-r from-blue-500/50 to-indigo-500/50 px-3 sm:px-4 lg:px-5 xl:px-6 py-2 sm:py-3 lg:py-4 border-b-2 border-white/20">
+            <h2 className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-white flex items-center">
               {activeWeighingType === 'manual' ? (
                 <>
-                  <Edit3 className="h-5 w-5 sm:h-6 sm:w-6 lg:h-8 lg:w-8 xl:h-10 xl:w-10 text-blue-300 mr-3 sm:mr-4 lg:mr-6" />
+                  <Edit3 className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 xl:h-8 xl:w-8 text-blue-300 mr-2 sm:mr-3 lg:mr-4" />
                   Nova Pesagem Manual
                 </>
               ) : (
                 <>
-                  <Scale className="h-5 w-5 sm:h-6 sm:w-6 lg:h-8 lg:w-8 xl:h-10 xl:w-10 text-blue-300 mr-3 sm:mr-4 lg:mr-6" />
+                  <Scale className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 xl:h-8 xl:w-8 text-blue-300 mr-2 sm:mr-3 lg:mr-4" />
                   Balança Xiaomi Mi Body Scale 2
                 </>
               )}
             </h2>
           </div>
-          <div className="p-4 sm:p-6 lg:p-8 xl:p-12">
+          <div className="p-3 sm:p-4 lg:p-5 xl:p-6">
             {activeWeighingType === 'manual' ? (
               <SimpleWeightForm />
             ) : (
-              <div className="space-y-4 sm:space-y-6 lg:space-y-8">
+              <div className="space-y-2 sm:space-y-3 lg:space-y-4">
                 <p className="text-sm sm:text-base lg:text-lg xl:text-2xl text-gray-200">
                   Conecte sua balança Xiaomi para pesagem automática e análise completa
                 </p>
@@ -404,22 +404,22 @@ const CompleteWeighingSystem: React.FC = () => {
         </div>
 
         {/* Grid Principal com Personagem 3D Central */}
-        <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 sm:gap-8 lg:gap-10 xl:gap-12">
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-3 sm:gap-4 lg:gap-5 xl:gap-6">
           
           {/* Coluna Esquerda - Gráficos */}
-          <div className="xl:col-span-3 space-y-6 sm:space-y-8">
+          <div className="xl:col-span-3 space-y-3 sm:space-y-4">
             
             {/* Resumo Corporal */}
             <div className="bg-white/10 backdrop-blur-md rounded-2xl lg:rounded-3xl shadow-2xl border-2 border-white/20 overflow-hidden">
-              <div className="bg-gradient-to-r from-blue-500/50 to-cyan-500/50 px-4 sm:px-6 lg:px-8 py-4 sm:py-6 border-b-2 border-white/20">
-                <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-white flex items-center">
-                  <Target className="h-5 w-5 sm:h-6 sm:w-6 lg:h-8 lg:w-8 text-blue-300 mr-2 sm:mr-3 lg:mr-4" />
+              <div className="bg-gradient-to-r from-blue-500/50 to-cyan-500/50 px-3 sm:px-4 lg:px-5 py-2 sm:py-3 border-b-2 border-white/20">
+                <h3 className="text-base sm:text-lg lg:text-xl font-bold text-white flex items-center">
+                  <Target className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-blue-300 mr-2 sm:mr-3" />
                   Resumo Corporal
                 </h3>
               </div>
-              <div className="p-4 sm:p-6 lg:p-8">
+              <div className="p-3 sm:p-4 lg:p-5">
                 {lastMeasurement ? (
-                  <div className="space-y-4 sm:space-y-6 lg:space-y-8">
+                  <div className="space-y-2 sm:space-y-3 lg:space-y-4">
                     {/* Peso Principal */}
                     <div className="text-center bg-gradient-to-r from-blue-500/30 to-indigo-500/30 rounded-xl lg:rounded-2xl p-4 sm:p-6 border-2 border-blue-400/30">
                       <div className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-blue-300 mb-2 sm:mb-4">
@@ -431,14 +431,14 @@ const CompleteWeighingSystem: React.FC = () => {
                     </div>
                     
                     {/* Métricas Principais */}
-                    <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                      <div className="bg-green-500/30 rounded-xl lg:rounded-2xl p-3 sm:p-4 text-center border-2 border-green-400/30">
+                    <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                      <div className="bg-green-500/30 rounded-xl lg:rounded-2xl p-2 sm:p-3 text-center border-2 border-green-400/30">
                         <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-green-300">
                           {lastMeasurement.imc?.toFixed(1) || '--'}
                         </div>
                         <div className="text-xs sm:text-sm text-gray-200">IMC</div>
                       </div>
-                      <div className="bg-purple-500/30 rounded-xl lg:rounded-2xl p-3 sm:p-4 text-center border-2 border-purple-400/30">
+                      <div className="bg-purple-500/30 rounded-xl lg:rounded-2xl p-2 sm:p-3 text-center border-2 border-purple-400/30">
                         <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-purple-300">
                           {lastMeasurement.body_fat?.toFixed(1) || '--'}%
                         </div>
@@ -448,7 +448,7 @@ const CompleteWeighingSystem: React.FC = () => {
 
                     {/* Variação de Peso */}
                     {weightData.length > 1 && (
-                      <div className="bg-gray-500/30 rounded-xl lg:rounded-2xl p-3 sm:p-4 border-2 border-gray-400/30">
+                      <div className="bg-gray-500/30 rounded-xl lg:rounded-2xl p-2 sm:p-3 border-2 border-gray-400/30">
                         <div className="text-center">
                           <div className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-200">
                             {weightData[0].peso_kg - weightData[1].peso_kg > 0 ? '+' : ''}
@@ -502,7 +502,7 @@ const CompleteWeighingSystem: React.FC = () => {
                         <span className="text-sm sm:text-base lg:text-lg font-bold text-white">
                           {metric.value ? `${metric.value}${metric.unit}` : 'N/A'}
                         </span>
-                        <div className="text-xs sm:text-sm text-gray-300">({metric.precision})</div>
+                        <div className="text-sm sm:text-base text-gray-300">({metric.precision})</div>
                       </div>
                     </div>
                   ))}

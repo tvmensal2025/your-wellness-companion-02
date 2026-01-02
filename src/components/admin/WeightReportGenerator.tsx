@@ -67,8 +67,13 @@ export const WeightReportGenerator = ({ userId, userName }: WeightReportGenerato
     a.download = `relatorio-pesagem-${userName || 'usuario'}-${new Date().toISOString().split('T')[0]}.html`;
     document.body.appendChild(a);
     a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    // Usar setTimeout para garantir que o click foi processado antes de remover
+    setTimeout(() => {
+      if (a.parentNode === document.body) {
+        document.body.removeChild(a);
+      }
+      URL.revokeObjectURL(url);
+    }, 100);
   };
 
   return (

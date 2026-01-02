@@ -137,9 +137,13 @@ O que você gostaria de conversar hoje? Pode me enviar uma foto da sua refeiçã
   // Cleanup apenas na desmontagem (evita cancelar voz a cada re-render)
   useEffect(() => {
     return () => {
-      cleanup();
+      try {
+        cleanup();
+      } catch (error) {
+        console.warn('Erro no cleanup do SofiaIntegratedChat:', error);
+      }
     };
-  }, []);
+  }, [cleanup]);
 
   const handleSendMessage = async (messageContent: string, imageFile?: File) => {
     if (!messageContent.trim() && !imageFile) return;

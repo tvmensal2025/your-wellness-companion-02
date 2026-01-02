@@ -529,7 +529,7 @@ export const InteractiveTutorialPopup: React.FC<InteractiveTutorialPopupProps> =
                   <div className="video-wrapper">
                     <iframe
                       width="100%"
-                      height="200"
+                      height="150"
                       src={(() => {
                         // Detectar dispositivo
                         const width = window.innerWidth;
@@ -560,7 +560,7 @@ export const InteractiveTutorialPopup: React.FC<InteractiveTutorialPopupProps> =
                   
                   {/* Botão Concluir Tutorial */}
                   <div className="video-actions" style={{
-                    marginTop: '12px',
+                    marginTop: '8px',
                     textAlign: 'center'
                   }}>
                     <button
@@ -574,10 +574,10 @@ export const InteractiveTutorialPopup: React.FC<InteractiveTutorialPopupProps> =
                         background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
                         color: 'white',
                         border: 'none',
-                        padding: '8px 16px',
+                        padding: '6px 12px',
                         borderRadius: '8px',
                         cursor: 'pointer',
-                        fontSize: '14px',
+                        fontSize: '13px',
                         fontWeight: '600',
                         boxShadow: '0 2px 8px rgba(16, 185, 129, 0.3)',
                         transition: 'all 0.3s ease',

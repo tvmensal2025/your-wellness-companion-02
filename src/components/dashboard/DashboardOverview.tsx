@@ -375,15 +375,15 @@ const DashboardOverview: React.FC = () => {
   };
 
   // Removed global error handler that was capturing external library errors
-  return <div className="w-full space-y-6 animate-fade-up p-4 md:p-6 lg:p-8">
+  return <div className="w-full space-y-3 animate-fade-up p-2 md:p-3 lg:p-4">
       {/* Header */}
-      <div className="flex flex-col xs:flex-row xs:items-center justify-between mb-6 gap-4">
+      <div className="flex flex-col xs:flex-row xs:items-center justify-between mb-3 gap-2">
         <div className="text-center xs:text-left">
-          <h1 className="text-3xl xs:text-4xl sm:text-5xl md:text-6xl font-bold text-foreground mb-2">Dashboard</h1>
-          <p className="text-lg xs:text-xl sm:text-2xl md:text-3xl text-muted-foreground">Acompanhe sua jornada de saúde</p>
+          <h1 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl font-bold text-foreground mb-1">Dashboard</h1>
+          <p className="text-base xs:text-lg sm:text-xl md:text-2xl text-muted-foreground">Acompanhe sua jornada de saúde</p>
         </div>
-        <Button className="btn-gradient h-12 xs:h-14 px-6 xs:px-8 text-base xs:text-lg text-slate-950 bg-[#a6a6ef]/35 w-full xs:w-auto">
-          <Calendar className="w-5 h-5 xs:w-6 xs:h-6 mr-2" />
+        <Button className="btn-gradient h-10 xs:h-12 px-4 xs:px-6 text-sm xs:text-base text-slate-950 bg-[#a6a6ef]/35 w-full xs:w-auto">
+          <Calendar className="w-4 h-4 xs:w-5 xs:h-5 mr-2" />
           Hoje
         </Button>
       </div>
@@ -408,20 +408,20 @@ const DashboardOverview: React.FC = () => {
       )}
 
       {/* Quick Stats - Layout responsivo melhorado */}
-      <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 xs:gap-4 sm:gap-5 md:gap-6">
-        <Card className="stat-card min-h-[140px] xs:min-h-[160px] sm:min-h-[180px] md:min-h-[200px] hover:shadow-lg transition-shadow duration-200">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm xs:text-base sm:text-lg font-medium text-muted-foreground">
+      <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 xs:gap-3 sm:gap-4">
+        <Card className="stat-card min-h-[140px] xs:min-h-[150px] sm:min-h-[160px] md:min-h-[170px] hover:shadow-lg transition-shadow duration-200">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1">
+            <CardTitle className="text-base xs:text-lg sm:text-xl font-medium text-muted-foreground">
               Peso Atual
             </CardTitle>
-            <Scale className="h-4 w-4 xs:h-5 xs:w-5 sm:h-6 sm:w-6 text-primary" />
+            <Scale className="h-5 w-5 xs:h-6 xs:w-6 sm:h-7 sm:w-7 text-primary" />
           </CardHeader>
           <CardContent className="p-3 xs:p-4">
-            <div className="text-2xl xs:text-3xl sm:text-4xl font-bold text-foreground text-center">
-              {stats?.currentWeight || 'N/A'}
-              <span className="text-sm xs:text-base sm:text-lg text-muted-foreground ml-2">kg</span>
+            <div className="text-4xl xs:text-5xl sm:text-6xl font-bold text-foreground text-center my-2">
+              {stats?.currentWeight || (measurements && measurements.length > 0 ? Number(measurements[0]?.peso_kg || 0).toFixed(1) : 'N/A')}
+              <span className="text-lg xs:text-xl sm:text-2xl text-muted-foreground ml-2">kg</span>
             </div>
-            {weightChange() && <p className="text-xs xs:text-sm sm:text-base text-muted-foreground text-center mt-2">
+            {weightChange() && <p className="text-sm xs:text-base sm:text-lg text-muted-foreground text-center mt-2">
               {weightChange()}
             </p>}
             
@@ -441,23 +441,23 @@ const DashboardOverview: React.FC = () => {
           </CardContent>
         </Card>
         
-        <Card className="stat-card min-h-[140px] xs:min-h-[160px] sm:min-h-[180px] md:min-h-[200px] hover:shadow-lg transition-shadow duration-200">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm xs:text-base sm:text-lg font-medium text-muted-foreground">
+        <Card className="stat-card min-h-[140px] xs:min-h-[150px] sm:min-h-[160px] md:min-h-[170px] hover:shadow-lg transition-shadow duration-200">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1">
+            <CardTitle className="text-base xs:text-lg sm:text-xl font-medium text-muted-foreground">
               Métricas Corporais
             </CardTitle>
-            <Target className="h-4 w-4 xs:h-5 xs:w-5 sm:h-6 sm:w-6 text-success" />
+            <Target className="h-5 w-5 xs:h-6 xs:w-6 sm:h-7 sm:w-7 text-success" />
           </CardHeader>
           <CardContent className="p-3 xs:p-4">
             <div className="flex flex-col gap-2">
               {/* IMC Principal */}
               <div className="text-center">
-                <div className="text-2xl xs:text-3xl sm:text-4xl font-bold text-slate-700 mb-2">
+                <div className="text-3xl xs:text-4xl sm:text-5xl font-bold text-slate-700 mb-1">
                   {stats?.currentIMC || 'N/A'}
                 </div>
                 <div className="text-xs xs:text-sm text-muted-foreground mb-2 font-medium">IMC</div>
                 {stats?.currentIMC && (
-                  <div className="px-2 py-1 bg-blue-100 text-blue-700 rounded-lg">
+                  <div className="px-2 py-1 bg-blue-100 text-blue-700 rounded-lg inline-block">
                     <span className="text-xs xs:text-sm font-semibold">
                       {getIMCClassification(stats.currentIMC)}
                     </span>
@@ -466,44 +466,44 @@ const DashboardOverview: React.FC = () => {
               </div>
               
               {/* Outras Métricas - Grid responsivo */}
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-x-2 gap-y-2 mt-1">
                 {/* Massa Magra */}
                 <div className="text-center">
-                  <div className="text-sm xs:text-base sm:text-lg font-bold text-blue-600 mb-1 whitespace-nowrap">
+                  <div className="text-lg xs:text-xl sm:text-2xl font-bold text-blue-600 mb-1">
                     {stats?.muscleMass ? `${stats.muscleMass.toFixed(1)}kg` : 'N/A'}
                   </div>
-                  <div className="text-xs xs:text-sm text-slate-600 font-medium">Massa Magra</div>
+                  <div className="text-sm xs:text-base text-slate-600 font-medium">Massa Magra</div>
                 </div>
                 
                 {/* Metabolismo */}
                 <div className="text-center">
-                  <div className="text-sm xs:text-base sm:text-lg font-bold text-orange-600 mb-1 whitespace-nowrap">
+                  <div className="text-lg xs:text-xl sm:text-2xl font-bold text-orange-600 mb-1">
                     {stats?.metabolism ? Math.round(stats.metabolism).toLocaleString() : 'N/A'}
                   </div>
-                  <div className="text-xs xs:text-sm text-slate-600 font-medium">Metabolismo</div>
+                  <div className="text-sm xs:text-base text-slate-600 font-medium">Metabolismo</div>
                 </div>
                 
                 {/* Gordura Corporal */}
                 <div className="text-center">
-                  <div className="text-sm xs:text-base sm:text-lg font-bold text-red-500 mb-1 whitespace-nowrap">
+                  <div className="text-lg xs:text-xl sm:text-2xl font-bold text-red-500 mb-1">
                     {stats?.bodyFat ? `${stats.bodyFat.toFixed(1)}%` : 'N/A'}
                   </div>
-                  <div className="text-xs xs:text-sm text-slate-600 font-medium">Gordura</div>
+                  <div className="text-sm xs:text-base text-slate-600 font-medium">Gordura</div>
                 </div>
                 
                 {/* Idade Metabólica */}
                 <div className="text-center">
-                  <div className="text-sm xs:text-base sm:text-lg font-bold text-purple-600 mb-1 whitespace-nowrap">
+                  <div className="text-lg xs:text-xl sm:text-2xl font-bold text-purple-600 mb-1">
                     {stats?.metabolicAge ? stats.metabolicAge : 'N/A'}
                   </div>
-                  <div className="text-xs xs:text-sm text-slate-600 font-medium">Idade Met.</div>
+                  <div className="text-sm xs:text-base text-slate-600 font-medium">Idade Met.</div>
                 </div>
               </div>
               
               {/* Gordura Visceral */}
-              <div className="pt-2 border-t border-slate-200">
+              <div className="pt-2 border-t border-slate-200 mt-1">
                 <div className="text-center">
-                  <div className="text-sm xs:text-base sm:text-lg font-bold text-red-600 mb-1">
+                  <div className="text-base xs:text-lg sm:text-xl font-bold text-red-600 mb-0.5">
                     {stats?.visceralFat ? stats.visceralFat : 'N/A'}
                   </div>
                   <div className="text-xs xs:text-sm text-slate-600 font-medium">Gordura Visceral</div>
@@ -513,37 +513,37 @@ const DashboardOverview: React.FC = () => {
           </CardContent>
         </Card>
         
-        <Card className="stat-card min-h-[140px] xs:min-h-[160px] sm:min-h-[180px] md:min-h-[200px] hover:shadow-lg transition-shadow duration-200">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm xs:text-base sm:text-lg font-medium text-muted-foreground text-center">
+        <Card className="stat-card min-h-[140px] xs:min-h-[150px] sm:min-h-[160px] md:min-h-[170px] hover:shadow-lg transition-shadow duration-200">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1">
+            <CardTitle className="text-base xs:text-lg sm:text-xl font-medium text-muted-foreground text-center">
               Progresso Semanal
             </CardTitle>
-            <Award className="h-4 w-4 xs:h-5 xs:w-5 sm:h-6 sm:w-6 text-yellow-500" />
+            <Award className="h-5 w-5 xs:h-6 xs:w-6 sm:h-7 sm:w-7 text-yellow-500" />
           </CardHeader>
           <CardContent className="p-3 xs:p-4">
-            <div className="text-2xl xs:text-3xl sm:text-4xl font-bold text-foreground text-center">
+            <div className="text-3xl xs:text-4xl sm:text-5xl font-bold text-foreground text-center my-1">
               {weeklyProgress.overallProgress}%
-              <span className="text-sm xs:text-base sm:text-lg text-muted-foreground ml-2">Meta</span>
+              <span className="text-base xs:text-lg sm:text-xl text-muted-foreground ml-2">Meta</span>
             </div>
             <div className="mt-2 space-y-1">
               {/* Resumo da semana */}
-              <div className="flex justify-between items-center text-xs xs:text-sm">
+              <div className="flex justify-between items-center text-sm xs:text-base">
                 <span className="text-muted-foreground">Peso:</span>
                 <span className={`font-medium ${weeklyProgress.weightChange <= 0 ? 'text-green-500' : 'text-red-500'}`}>
                   {weeklyProgress.weightChange > 0 ? '+' : ''}{weeklyProgress.weightChange}kg
                 </span>
               </div>
-              <div className="flex justify-between items-center text-xs xs:text-sm">
+              <div className="flex justify-between items-center text-sm xs:text-base">
                 <span className="text-muted-foreground">Exercícios:</span>
                 <span className="font-medium text-blue-500">{weeklyProgress.exerciseDays}/7 dias</span>
               </div>
-              <div className="flex justify-between items-center text-xs xs:text-sm">
+              <div className="flex justify-between items-center text-sm xs:text-base">
                 <span className="text-muted-foreground">Hidratação:</span>
                 <span className="font-medium text-cyan-500">{weeklyProgress.hydrationProgress}%</span>
               </div>
             </div>
             <div className="mt-2">
-              <div className="flex justify-between items-center text-xs xs:text-sm mb-2">
+              <div className="flex justify-between items-center text-xs xs:text-sm mb-1">
                 <span className="text-muted-foreground">Progresso Geral</span>
                 <span className="font-medium">{weeklyProgress.overallProgress}%</span>
               </div>
@@ -564,37 +564,37 @@ const DashboardOverview: React.FC = () => {
               <Button 
                 size="sm" 
                 variant="outline" 
-                className="text-xs xs:text-sm h-8 xs:h-10 px-3"
+                className="text-xs xs:text-sm h-8 xs:h-10 px-3 flex-1"
                 onClick={() => addExercise(30, 'caminhada')}
               >
-                + 30min Caminhada
+                +30min
               </Button>
               <Button 
                 size="sm" 
                 variant="outline" 
-                className="text-xs xs:text-sm h-8 xs:h-10 px-3"
+                className="text-xs xs:text-sm h-8 xs:h-10 px-3 flex-1"
                 onClick={() => addExercise(45, 'corrida')}
               >
-                + 45min Corrida
+                +45min
               </Button>
             </div>
           </CardContent>
         </Card>
         
-        <Card className="stat-card min-h-[120px] xs:min-h-[140px] sm:min-h-[160px] md:min-h-[180px] hover:shadow-lg transition-shadow duration-200">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1">
-            <CardTitle className="text-xs xs:text-sm sm:text-base font-medium text-muted-foreground text-center">
+        <Card className="stat-card min-h-[160px] xs:min-h-[180px] sm:min-h-[200px] md:min-h-[220px] hover:shadow-lg transition-shadow duration-200">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-base xs:text-lg sm:text-xl font-medium text-muted-foreground text-center">
               Pesagem
             </CardTitle>
-            <div className="flex items-center gap-2">
-              <Bluetooth className="h-4 w-4 xs:h-5 xs:w-5 sm:h-6 sm:w-6 text-blue-500" />
-              <MessageCircle className="h-4 w-4 xs:h-5 xs:w-5 sm:h-6 sm:w-6 text-purple-500" />
+            <div className="flex items-center gap-3">
+              <Bluetooth className="h-5 w-5 xs:h-6 xs:w-6 sm:h-7 sm:w-7 text-blue-500" />
+              <MessageCircle className="h-5 w-5 xs:h-6 xs:w-6 sm:h-7 sm:w-7 text-purple-500" />
             </div>
           </CardHeader>
-          <CardContent className="p-3 xs:p-4 pt-1">
-            <div className="text-center mb-2">
-              <Scale className="h-8 w-8 xs:h-10 xs:w-10 sm:h-12 sm:w-12 text-primary mx-auto mb-2" />
-              <p className="text-xs xs:text-sm text-muted-foreground">Balança Xiaomi</p>
+          <CardContent className="p-4 xs:p-5">
+            <div className="text-center mb-4">
+              <Scale className="h-10 w-10 xs:h-12 xs:w-12 sm:h-14 sm:w-14 text-primary mx-auto mb-3" />
+              <p className="text-sm xs:text-base text-muted-foreground">Balança Xiaomi</p>
             </div>
             <XiaomiScaleFlow />
           </CardContent>
@@ -720,68 +720,68 @@ const DashboardOverview: React.FC = () => {
       </Card>
 
       {/* Quick Access - Sofia */}
-      <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 gap-3 xs:gap-4 mb-3 xs:mb-4">
+      <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 gap-2 xs:gap-3 mb-2 xs:mb-3">
         <Card className="mission-card hover:shadow-lg transition-shadow cursor-pointer" onClick={() => window.location.href = '/sofia'}>
-          <CardHeader className="pb-2 p-3">
-            <CardTitle className="text-sm xs:text-base flex items-center space-x-2">
-              <MessageCircle className="w-4 h-4 xs:w-5 xs:h-5 text-green-600" />
+          <CardHeader className="pb-2 p-4">
+            <CardTitle className="text-base xs:text-lg flex items-center space-x-2">
+              <MessageCircle className="w-5 h-5 xs:w-6 xs:h-6 text-green-600" />
               <span>Sofia Chat</span>
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-3">
-            <div className="space-y-2">
+          <CardContent className="p-4">
+            <div className="space-y-3">
               <div className="flex items-center space-x-2">
-                <Bot className="w-5 h-5 xs:w-6 xs:h-6 text-green-500" />
-                <span className="text-sm xs:text-base font-medium">Assistente IA</span>
+                <Bot className="w-6 h-6 xs:w-7 xs:h-7 text-green-500" />
+                <span className="text-base xs:text-lg font-medium">Assistente IA</span>
               </div>
-              <p className="text-xs xs:text-sm text-muted-foreground">Converse com a Sofia sobre nutrição e saúde</p>
+              <p className="text-sm xs:text-base text-muted-foreground">Converse com a Sofia sobre nutrição e saúde</p>
               <div className="flex items-center space-x-2 mt-2">
-                <div className="w-2 h-2 xs:w-2.5 xs:h-2.5 bg-green-500 rounded-full animate-pulse"></div>
-                <span className="text-xs xs:text-sm text-green-600">Online</span>
+                <div className="w-2.5 h-2.5 xs:w-3 xs:h-3 bg-green-500 rounded-full animate-pulse"></div>
+                <span className="text-sm xs:text-base text-green-600">Online</span>
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card className="mission-card hover:shadow-lg transition-shadow cursor-pointer" onClick={() => window.location.href = '/sofia-nutricional'}>
-          <CardHeader className="pb-2 p-3">
-            <CardTitle className="text-sm xs:text-base flex items-center space-x-2">
-              <Utensils className="w-4 h-4 xs:w-5 xs:h-5 text-emerald-600" />
+          <CardHeader className="pb-2 p-4">
+            <CardTitle className="text-base xs:text-lg flex items-center space-x-2">
+              <Utensils className="w-5 h-5 xs:w-6 xs:h-6 text-emerald-600" />
               <span>Sofia Nutricional</span>
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-3">
-            <div className="space-y-2">
+          <CardContent className="p-4">
+            <div className="space-y-3">
               <div className="flex items-center space-x-2">
-                <Target className="w-5 h-5 xs:w-6 xs:h-6 text-emerald-500" />
-                <span className="text-sm xs:text-base font-medium">Planejamento</span>
+                <Target className="w-6 h-6 xs:w-7 xs:h-7 text-emerald-500" />
+                <span className="text-base xs:text-lg font-medium">Planejamento</span>
               </div>
-              <p className="text-xs xs:text-sm text-muted-foreground">Planeje suas refeições e acompanhe nutrição</p>
+              <p className="text-sm xs:text-base text-muted-foreground">Planeje suas refeições e acompanhe nutrição</p>
               <div className="flex items-center space-x-2 mt-2">
-                <div className="w-2 h-2 xs:w-2.5 xs:h-2.5 bg-emerald-500 rounded-full animate-pulse"></div>
-                <span className="text-xs xs:text-sm text-emerald-600">Disponível</span>
+                <div className="w-2.5 h-2.5 xs:w-3 xs:h-3 bg-emerald-500 rounded-full animate-pulse"></div>
+                <span className="text-sm xs:text-base text-emerald-600">Disponível</span>
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card className="mission-card hover:shadow-lg transition-shadow cursor-pointer" onClick={() => window.location.href = '/app/missions'}>
-          <CardHeader className="pb-2 p-3">
-            <CardTitle className="text-sm xs:text-base flex items-center space-x-2">
-              <Activity className="w-4 h-4 xs:w-5 xs:h-5 text-blue-600" />
+          <CardHeader className="pb-2 p-4">
+            <CardTitle className="text-base xs:text-lg flex items-center space-x-2">
+              <Activity className="w-5 h-5 xs:w-6 xs:h-6 text-blue-600" />
               <span>Missão do Dia</span>
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-3">
-            <div className="space-y-2">
+          <CardContent className="p-4">
+            <div className="space-y-3">
               <div className="flex items-center space-x-2">
-                <Award className="w-5 h-5 xs:w-6 xs:h-6 text-blue-500" />
-                <span className="text-sm xs:text-base font-medium">Gamificação</span>
+                <Award className="w-6 h-6 xs:w-7 xs:h-7 text-blue-500" />
+                <span className="text-base xs:text-lg font-medium">Gamificação</span>
               </div>
-              <p className="text-xs xs:text-sm text-muted-foreground">Complete missões e ganhe pontos</p>
+              <p className="text-sm xs:text-base text-muted-foreground">Complete missões e ganhe pontos</p>
               <div className="flex items-center space-x-2 mt-2">
-                <div className="w-2 h-2 xs:w-2.5 xs:h-2.5 bg-blue-500 rounded-full animate-pulse"></div>
-                <span className="text-xs xs:text-sm text-blue-600">Nova missão</span>
+                <div className="w-2.5 h-2.5 xs:w-3 xs:h-3 bg-blue-500 rounded-full animate-pulse"></div>
+                <span className="text-sm xs:text-base text-blue-600">Nova missão</span>
               </div>
             </div>
           </CardContent>
@@ -789,60 +789,60 @@ const DashboardOverview: React.FC = () => {
       </div>
 
       {/* Daily Goals Progress */}
-      <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 gap-3 xs:gap-4">
+      <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 gap-2 xs:gap-3">
         <Card className="mission-card">
-          <CardHeader className="pb-2 p-3">
-            <CardTitle className="text-sm xs:text-base flex items-center space-x-2">
-              <Heart className="w-4 h-4 xs:w-5 xs:h-5 text-health-heart" />
+          <CardHeader className="pb-2 p-4">
+            <CardTitle className="text-base xs:text-lg flex items-center space-x-2">
+              <Heart className="w-5 h-5 xs:w-6 xs:h-6 text-health-heart" />
               <span>Exercício Diário</span>
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-3">
-            <div className="space-y-2">
-              <div className="flex justify-between text-xs xs:text-sm">
+          <CardContent className="p-4">
+            <div className="space-y-3">
+              <div className="flex justify-between text-sm xs:text-base">
                 <span>45 min</span>
                 <span>Meta: 30 min</span>
               </div>
-              <Progress value={150} className="h-2" />
-              <p className="text-xs xs:text-sm text-success font-medium">Meta superada! 🎉</p>
+              <Progress value={150} className="h-3" />
+              <p className="text-sm xs:text-base text-success font-medium">Meta superada! 🎉</p>
             </div>
           </CardContent>
         </Card>
 
         <Card className="mission-card">
-          <CardHeader className="pb-2 p-3">
-            <CardTitle className="text-sm xs:text-base flex items-center space-x-2">
-              <Droplets className="w-4 h-4 xs:w-5 xs:h-5 text-health-hydration" />
+          <CardHeader className="pb-2 p-4">
+            <CardTitle className="text-base xs:text-lg flex items-center space-x-2">
+              <Droplets className="w-5 h-5 xs:w-6 xs:h-6 text-health-hydration" />
               <span>Hidratação</span>
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-3">
-            <div className="space-y-2">
-              <div className="flex justify-between text-xs xs:text-sm">
+          <CardContent className="p-4">
+            <div className="space-y-3">
+              <div className="flex justify-between text-sm xs:text-base">
                 <span>1.8 L</span>
                 <span>Meta: 2.0 L</span>
               </div>
-              <Progress value={90} className="h-2" />
-              <p className="text-xs xs:text-sm text-muted-foreground">Falta apenas 200ml</p>
+              <Progress value={90} className="h-3" />
+              <p className="text-sm xs:text-base text-muted-foreground">Falta apenas 200ml</p>
             </div>
           </CardContent>
         </Card>
 
         <Card className="mission-card">
-          <CardHeader className="pb-2 p-3">
-            <CardTitle className="text-sm xs:text-base flex items-center space-x-2">
-              <Timer className="w-4 h-4 xs:w-5 xs:h-5 text-accent" />
+          <CardHeader className="pb-2 p-4">
+            <CardTitle className="text-base xs:text-lg flex items-center space-x-2">
+              <Timer className="w-5 h-5 xs:w-6 xs:h-6 text-accent" />
               <span>Sono</span>
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-3">
-            <div className="space-y-2">
-              <div className="flex justify-between text-xs xs:text-sm">
+          <CardContent className="p-4">
+            <div className="space-y-3">
+              <div className="flex justify-between text-sm xs:text-base">
                 <span>7.5 h</span>
                 <span>Meta: 8.0 h</span>
               </div>
-              <Progress value={94} className="h-2" />
-              <p className="text-xs xs:text-sm text-muted-foreground">Quase na meta!</p>
+              <Progress value={94} className="h-3" />
+              <p className="text-sm xs:text-base text-muted-foreground">Quase na meta!</p>
             </div>
           </CardContent>
         </Card>

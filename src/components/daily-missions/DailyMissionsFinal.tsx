@@ -105,12 +105,12 @@ export const DailyMissionsFinal: React.FC<DailyMissionsFinalProps> = ({ user }) 
 
       case 'multiple_choice':
         return (
-          <div className="space-y-3">
+          <div className="space-y-2">
             {question.options?.map((option, index) => (
               <Button
                 key={index}
                 variant={answers[question.id] === option ? "default" : "outline"}
-                className={`w-full justify-start text-left h-14 sm:h-16 text-base sm:text-lg font-medium transition-all duration-200 ${
+                className={`w-full justify-start text-left h-12 sm:h-14 text-sm sm:text-base font-medium transition-all duration-200 ${
                   answers[question.id] === option 
                     ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg scale-[1.02] border-0' 
                     : 'bg-white dark:bg-gray-800 hover:bg-purple-50 dark:hover:bg-gray-700 hover:border-purple-300 hover:scale-[1.01] border-2'
@@ -118,7 +118,7 @@ export const DailyMissionsFinal: React.FC<DailyMissionsFinalProps> = ({ user }) 
                 onClick={() => handleMultipleChoice(option)}
                 disabled={isLoading}
               >
-                {answers[question.id] === option && <CheckCircle className="mr-3 h-5 w-5 animate-scale-in" />}
+                {answers[question.id] === option && <CheckCircle className="mr-2 h-4 w-4 animate-scale-in" />}
                 <span>{option}</span>
               </Button>
             ))}
@@ -214,26 +214,26 @@ export const DailyMissionsFinal: React.FC<DailyMissionsFinalProps> = ({ user }) 
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 dark:from-gray-900 dark:via-purple-900 dark:to-gray-900 p-4 sm:p-6">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 dark:from-gray-900 dark:via-purple-900 dark:to-gray-900 p-2 sm:p-3">
       <div className="max-w-3xl mx-auto">
         {/* Header com Design Premium */}
-        <div className="text-center mb-8 animate-fade-in">
-          <div className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-2 rounded-full mb-4 shadow-lg">
-            <Trophy className="h-5 w-5" />
-            <span className="font-semibold">Missão do Dia</span>
+        <div className="text-center mb-3 animate-fade-in">
+          <div className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-1.5 rounded-full mb-2 shadow-lg">
+            <Trophy className="h-4 w-4" />
+            <span className="font-semibold text-sm">Missão do Dia</span>
           </div>
           
-          <h1 className="text-3xl sm:text-4xl font-bold mb-2 bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 bg-clip-text text-transparent">
+          <h1 className="text-2xl sm:text-3xl font-bold mb-1 bg-gradient-to-r from-purple-600 via-pink-600 to-orange-600 bg-clip-text text-transparent">
             Continue sua Jornada
           </h1>
           
-          <p className="text-lg text-muted-foreground mb-6">
+          <p className="text-base text-muted-foreground mb-2">
             Pergunta <span className="font-bold text-purple-600">{currentQuestionIndex + 1}</span> de <span className="font-bold">{allQuestions.length}</span>
           </p>
           
           {/* Barra de Progresso Premium */}
           <div className="relative">
-            <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden shadow-inner">
+            <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden shadow-inner">
               <div 
                 className="h-full bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 rounded-full transition-all duration-500 ease-out relative"
                 style={{ width: `${progress}%` }}
@@ -241,7 +241,7 @@ export const DailyMissionsFinal: React.FC<DailyMissionsFinalProps> = ({ user }) 
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-pulse"></div>
               </div>
             </div>
-            <div className="flex justify-between mt-2 text-sm font-medium">
+            <div className="flex justify-between mt-1 text-xs font-medium">
               <span className="text-muted-foreground">{progress.toFixed(0)}% completo</span>
               <span className="text-purple-600">{allQuestions.length - currentQuestionIndex} restantes</span>
             </div>
@@ -249,54 +249,54 @@ export const DailyMissionsFinal: React.FC<DailyMissionsFinalProps> = ({ user }) 
         </div>
 
         {/* Question Card Premium */}
-        <Card className="mb-6 border-0 shadow-2xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm animate-scale-in">
-          <CardHeader className="border-b border-gray-100 dark:border-gray-700 pb-4">
-            <div className="flex flex-wrap items-center gap-3 mb-4">
-              <Badge className="bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900 dark:to-pink-900 text-purple-700 dark:text-purple-300 border-0 px-4 py-1.5 text-sm font-semibold">
+        <Card className="mb-3 border-0 shadow-2xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm animate-scale-in">
+          <CardHeader className="border-b border-gray-100 dark:border-gray-700 pb-2">
+            <div className="flex flex-wrap items-center gap-2 mb-2">
+              <Badge className="bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900 dark:to-pink-900 text-purple-700 dark:text-purple-300 border-0 px-3 py-1 text-xs font-semibold">
                 {getSectionTitleFinal(currentQuestion.section)}
               </Badge>
-              <div className="flex items-center gap-2 bg-gradient-to-r from-yellow-100 to-orange-100 dark:from-yellow-900 dark:to-orange-900 text-yellow-700 dark:text-yellow-300 px-4 py-1.5 rounded-full">
-                <Trophy className="h-4 w-4" />
-                <span className="text-sm font-bold">{currentQuestion.points} pontos</span>
+              <div className="flex items-center gap-1 bg-gradient-to-r from-yellow-100 to-orange-100 dark:from-yellow-900 dark:to-orange-900 text-yellow-700 dark:text-yellow-300 px-3 py-1 rounded-full">
+                <Trophy className="h-3 w-3" />
+                <span className="text-xs font-bold">{currentQuestion.points} pontos</span>
               </div>
               {currentQuestion.tracking && (
-                <Badge variant="secondary" className="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 border-0">
+                <Badge variant="secondary" className="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 border-0 text-xs">
                   📊 Tracking
                 </Badge>
               )}
             </div>
-            <CardTitle className="text-2xl sm:text-3xl font-bold leading-tight text-gray-900 dark:text-white">
+            <CardTitle className="text-xl sm:text-2xl font-bold leading-tight text-gray-900 dark:text-white">
               {currentQuestion.question}
             </CardTitle>
           </CardHeader>
           
-          <CardContent className="pt-6 pb-8">
+          <CardContent className="pt-3 pb-4">
             {renderQuestion(currentQuestion)}
             
             {isLoading && (
-              <div className="mt-6 flex items-center justify-center gap-3 text-purple-600 dark:text-purple-400 animate-pulse">
+              <div className="mt-3 flex items-center justify-center gap-2 text-purple-600 dark:text-purple-400 animate-pulse">
                 <div className="w-2 h-2 bg-purple-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
                 <div className="w-2 h-2 bg-pink-600 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
                 <div className="w-2 h-2 bg-orange-600 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
-                <span className="text-sm font-medium ml-2">Salvando resposta...</span>
+                <span className="text-xs font-medium ml-1">Salvando resposta...</span>
               </div>
             )}
           </CardContent>
         </Card>
 
         {/* Navigation Premium */}
-        <div className="flex justify-between items-center bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-2xl p-4 shadow-lg">
+        <div className="flex justify-between items-center bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-2xl p-2 shadow-lg">
           <Button
             variant="outline"
             onClick={() => window.history.back()}
             disabled={currentQuestionIndex === 0}
-            className="h-12 px-6 font-semibold border-2 hover:scale-105 transition-all duration-200"
+            className="h-10 px-4 font-semibold border-2 hover:scale-105 transition-all duration-200 text-sm"
           >
             ← Anterior
           </Button>
           
-          <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900 dark:to-pink-900 rounded-full">
-            <span className="text-sm font-bold text-purple-700 dark:text-purple-300">
+          <div className="flex items-center gap-2 px-3 py-1 bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900 dark:to-pink-900 rounded-full">
+            <span className="text-xs font-bold text-purple-700 dark:text-purple-300">
               {currentQuestionIndex + 1} / {allQuestions.length}
             </span>
           </div>

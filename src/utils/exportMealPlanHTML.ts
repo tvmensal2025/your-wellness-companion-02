@@ -204,8 +204,13 @@ export function downloadMealPlanHTML(plan: MealPlanForHTML) {
   link.download = `cardapio_${new Date().toISOString().split('T')[0]}.html`;
   document.body.appendChild(link);
   link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
+  // Usar setTimeout para garantir que o click foi processado antes de remover
+  setTimeout(() => {
+    if (link.parentNode === document.body) {
+      document.body.removeChild(link);
+    }
+    URL.revokeObjectURL(url);
+  }, 100);
 }
 
 export function openWeeklyMealPlanHTML(weeklyPlan: Array<any>, opts?: { userName?: string; targetCalories?: number; days?: number }) {

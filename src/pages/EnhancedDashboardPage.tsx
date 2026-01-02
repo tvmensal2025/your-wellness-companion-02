@@ -94,19 +94,19 @@ const EnhancedDashboardPage = () => {
             </div>
             <div>
               <h1 className="text-xl font-bold text-foreground">Instituto dos Sonhos</h1>
-              <p className="text-xs text-muted-foreground">Dashboard Melhorado</p>
+              <p className="text-sm text-muted-foreground">Dashboard Melhorado</p>
             </div>
           </div>
           
           <div className="flex items-center gap-4">
             <div className="text-right hidden sm:block">
-              <p className="text-sm font-medium">Olá, {userName}!</p>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-base font-medium">Olá, {userName}!</p>
+              <p className="text-sm text-muted-foreground">
                 Nível {gamificationData?.currentLevel || 1} • {gamificationData?.totalXP || 0} XP
               </p>
             </div>
             <NotificationBell />
-            <Button onClick={handleLogout} variant="outline" size="sm">
+            <Button onClick={handleLogout} variant="outline" size="sm" className="text-sm">
               <LogOut className="h-4 w-4 mr-2" />
               Sair
             </Button>
@@ -115,52 +115,52 @@ const EnhancedDashboardPage = () => {
       </header>
 
       {/* Hero Section */}
-      <section className="relative py-8 px-4">
+      <section className="relative py-3 px-4">
         <div className="container mx-auto text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-medium mb-4">
-            <TrendingUp className="w-4 h-4" />
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary/10 text-primary rounded-full text-xs font-medium mb-2">
+            <TrendingUp className="w-3 h-3" />
             Sistema Melhorado com Tracking Real
           </div>
           
-          <h1 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          <h1 className="text-2xl md:text-3xl font-bold mb-2 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
             Sua Jornada de Transformação
           </h1>
           
-          <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
+          <p className="text-sm text-muted-foreground mb-4 max-w-2xl mx-auto">
             Agora com sistema de gamificação real, tracking automático e desafios personalizados
           </p>
 
           {/* Quick Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-2 max-w-4xl mx-auto">
             <Card className="bg-gradient-to-br from-blue-500 to-blue-600 text-white border-0">
-              <CardContent className="p-4 text-center">
+              <CardContent className="p-3 text-center">
                 <Trophy className="w-6 h-6 mx-auto mb-2" />
                 <div className="text-2xl font-bold">{gamificationData?.currentLevel || 1}</div>
-                <div className="text-xs opacity-90">Nível Atual</div>
+                <div className="text-xs opacity-90 font-medium">Nível Atual</div>
               </CardContent>
             </Card>
 
             <Card className="bg-gradient-to-br from-green-500 to-green-600 text-white border-0">
-              <CardContent className="p-4 text-center">
+              <CardContent className="p-3 text-center">
                 <Target className="w-6 h-6 mx-auto mb-2" />
                 <div className="text-2xl font-bold">{gamificationData?.achievements || 0}</div>
-                <div className="text-xs opacity-90">Conquistas</div>
+                <div className="text-xs opacity-90 font-medium">Conquistas</div>
               </CardContent>
             </Card>
 
             <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white border-0">
-              <CardContent className="p-4 text-center">
+              <CardContent className="p-3 text-center">
                 <Droplets className="w-6 h-6 mx-auto mb-2" />
                 <div className="text-2xl font-bold">{trackingData?.water.todayTotal || 0}</div>
-                <div className="text-xs opacity-90">Copos de Água</div>
+                <div className="text-xs opacity-90 font-medium">Copos de Água</div>
               </CardContent>
             </Card>
 
             <Card className="bg-gradient-to-br from-orange-500 to-red-500 text-white border-0">
-              <CardContent className="p-4 text-center">
+              <CardContent className="p-3 text-center">
                 <Activity className="w-6 h-6 mx-auto mb-2" />
                 <div className="text-2xl font-bold">{gamificationData?.currentStreak || 0}</div>
-                <div className="text-xs opacity-90">Dias de Sequência</div>
+                <div className="text-xs opacity-90 font-medium">Dias de Sequência</div>
               </CardContent>
             </Card>
           </div>
@@ -168,21 +168,21 @@ const EnhancedDashboardPage = () => {
       </section>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 pb-8">
-        <Tabs defaultValue="gamification" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 max-w-md mx-auto">
-            <TabsTrigger value="gamification" className="flex items-center gap-2 text-xs sm:text-sm">
-              <Gamepad2 className="w-4 h-4" />
+      <main className="container mx-auto px-4 pb-4">
+        <Tabs defaultValue="gamification" className="space-y-3">
+          <TabsList className="grid w-full grid-cols-3 max-w-md mx-auto h-12">
+            <TabsTrigger value="gamification" className="flex items-center gap-2 text-sm sm:text-base">
+              <Gamepad2 className="w-5 h-5" />
               <span className="hidden sm:inline">Gamificação</span>
               <span className="sm:hidden">Game</span>
             </TabsTrigger>
-            <TabsTrigger value="tracking" className="flex items-center gap-2 text-xs sm:text-sm">
-              <BarChart3 className="w-4 h-4" />
+            <TabsTrigger value="tracking" className="flex items-center gap-2 text-sm sm:text-base">
+              <BarChart3 className="w-5 h-5" />
               <span className="hidden sm:inline">Tracking</span>
               <span className="sm:hidden">Track</span>
             </TabsTrigger>
-            <TabsTrigger value="quick" className="flex items-center gap-2 text-xs sm:text-sm">
-              <Target className="w-4 h-4" />
+            <TabsTrigger value="quick" className="flex items-center gap-2 text-sm sm:text-base">
+              <Target className="w-5 h-5" />
               <span className="hidden sm:inline">Rápido</span>
               <span className="sm:hidden">Quick</span>
             </TabsTrigger>
@@ -278,38 +278,38 @@ const EnhancedDashboardPage = () => {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <Button 
                     variant="outline" 
-                    className="h-20 flex flex-col gap-2"
+                    className="h-24 flex flex-col gap-2 p-4"
                     onClick={() => navigate('/dashboard')}
                   >
-                    <Heart className="h-6 w-6" />
-                    <span className="text-xs">Dashboard Original</span>
+                    <Heart className="h-8 w-8" />
+                    <span className="text-sm font-medium">Dashboard Original</span>
                   </Button>
                   
                   <Button 
                     variant="outline" 
-                    className="h-20 flex flex-col gap-2"
+                    className="h-24 flex flex-col gap-2 p-4"
                     onClick={() => navigate('/goals')}
                   >
-                    <Target className="h-6 w-6" />
-                    <span className="text-xs">Metas</span>
+                    <Target className="h-8 w-8" />
+                    <span className="text-sm font-medium">Metas</span>
                   </Button>
                   
                   <Button 
                     variant="outline" 
-                    className="h-20 flex flex-col gap-2"
+                    className="h-24 flex flex-col gap-2 p-4"
                     onClick={() => navigate('/progress')}
                   >
-                    <BarChart3 className="h-6 w-6" />
-                    <span className="text-xs">Progresso</span>
+                    <BarChart3 className="h-8 w-8" />
+                    <span className="text-sm font-medium">Progresso</span>
                   </Button>
                   
                   <Button 
                     variant="outline" 
-                    className="h-20 flex flex-col gap-2"
+                    className="h-24 flex flex-col gap-2 p-4"
                     onClick={() => navigate('/app/courses')}
                   >
-                    <Calendar className="h-6 w-6" />
-                    <span className="text-xs">Cursos</span>
+                    <Calendar className="h-8 w-8" />
+                    <span className="text-sm font-medium">Cursos</span>
                   </Button>
                 </div>
               </CardContent>
