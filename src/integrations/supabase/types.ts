@@ -14,6 +14,99 @@ export type Database = {
   }
   public: {
     Tables: {
+      achievement_tracking: {
+        Row: {
+          achievement_name: string | null
+          achievement_type: string | null
+          badge_icon: string | null
+          created_at: string | null
+          current_value: number | null
+          description: string | null
+          id: string
+          milestone_value: number | null
+          progress_percentage: number | null
+          target_value: number | null
+          unlocked_at: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          achievement_name?: string | null
+          achievement_type?: string | null
+          badge_icon?: string | null
+          created_at?: string | null
+          current_value?: number | null
+          description?: string | null
+          id?: string
+          milestone_value?: number | null
+          progress_percentage?: number | null
+          target_value?: number | null
+          unlocked_at?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          achievement_name?: string | null
+          achievement_type?: string | null
+          badge_icon?: string | null
+          created_at?: string | null
+          current_value?: number | null
+          description?: string | null
+          id?: string
+          milestone_value?: number | null
+          progress_percentage?: number | null
+          target_value?: number | null
+          unlocked_at?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      active_principles: {
+        Row: {
+          bioavailability: string | null
+          category: string | null
+          contraindications: string[] | null
+          created_at: string | null
+          description: string | null
+          food_sources: string[] | null
+          health_benefits: string[] | null
+          id: string
+          is_active: boolean | null
+          mechanism_of_action: string | null
+          principle_name: string
+          recommended_intake: string | null
+        }
+        Insert: {
+          bioavailability?: string | null
+          category?: string | null
+          contraindications?: string[] | null
+          created_at?: string | null
+          description?: string | null
+          food_sources?: string[] | null
+          health_benefits?: string[] | null
+          id?: string
+          is_active?: boolean | null
+          mechanism_of_action?: string | null
+          principle_name: string
+          recommended_intake?: string | null
+        }
+        Update: {
+          bioavailability?: string | null
+          category?: string | null
+          contraindications?: string[] | null
+          created_at?: string | null
+          description?: string | null
+          food_sources?: string[] | null
+          health_benefits?: string[] | null
+          id?: string
+          is_active?: boolean | null
+          mechanism_of_action?: string | null
+          principle_name?: string
+          recommended_intake?: string | null
+        }
+        Relationships: []
+      }
       activity_categories: {
         Row: {
           avg_score: number | null
@@ -122,6 +215,129 @@ export type Database = {
         }
         Relationships: []
       }
+      advanced_daily_tracking: {
+        Row: {
+          active_minutes: number | null
+          anxiety_level: number | null
+          bedtime: string | null
+          body_fat_percentage: number | null
+          calories_burned: number | null
+          calories_consumed: number | null
+          carbs_g: number | null
+          created_at: string | null
+          diastolic_bp: number | null
+          energy_level: number | null
+          exercise_duration_minutes: number | null
+          exercise_type: string | null
+          fats_g: number | null
+          focus_level: number | null
+          id: string
+          medications_taken: string[] | null
+          mood_rating: number | null
+          muscle_mass_kg: number | null
+          notes: string | null
+          pain_level: number | null
+          pain_location: string | null
+          photo_url: string | null
+          protein_g: number | null
+          resting_heart_rate: number | null
+          sleep_hours: number | null
+          sleep_quality: number | null
+          steps: number | null
+          stress_level: number | null
+          supplements_taken: string[] | null
+          symptoms: string[] | null
+          systolic_bp: number | null
+          tracking_date: string | null
+          updated_at: string | null
+          user_id: string | null
+          waist_cm: number | null
+          wake_time: string | null
+          water_ml: number | null
+          weight_kg: number | null
+        }
+        Insert: {
+          active_minutes?: number | null
+          anxiety_level?: number | null
+          bedtime?: string | null
+          body_fat_percentage?: number | null
+          calories_burned?: number | null
+          calories_consumed?: number | null
+          carbs_g?: number | null
+          created_at?: string | null
+          diastolic_bp?: number | null
+          energy_level?: number | null
+          exercise_duration_minutes?: number | null
+          exercise_type?: string | null
+          fats_g?: number | null
+          focus_level?: number | null
+          id?: string
+          medications_taken?: string[] | null
+          mood_rating?: number | null
+          muscle_mass_kg?: number | null
+          notes?: string | null
+          pain_level?: number | null
+          pain_location?: string | null
+          photo_url?: string | null
+          protein_g?: number | null
+          resting_heart_rate?: number | null
+          sleep_hours?: number | null
+          sleep_quality?: number | null
+          steps?: number | null
+          stress_level?: number | null
+          supplements_taken?: string[] | null
+          symptoms?: string[] | null
+          systolic_bp?: number | null
+          tracking_date?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          waist_cm?: number | null
+          wake_time?: string | null
+          water_ml?: number | null
+          weight_kg?: number | null
+        }
+        Update: {
+          active_minutes?: number | null
+          anxiety_level?: number | null
+          bedtime?: string | null
+          body_fat_percentage?: number | null
+          calories_burned?: number | null
+          calories_consumed?: number | null
+          carbs_g?: number | null
+          created_at?: string | null
+          diastolic_bp?: number | null
+          energy_level?: number | null
+          exercise_duration_minutes?: number | null
+          exercise_type?: string | null
+          fats_g?: number | null
+          focus_level?: number | null
+          id?: string
+          medications_taken?: string[] | null
+          mood_rating?: number | null
+          muscle_mass_kg?: number | null
+          notes?: string | null
+          pain_level?: number | null
+          pain_location?: string | null
+          photo_url?: string | null
+          protein_g?: number | null
+          resting_heart_rate?: number | null
+          sleep_hours?: number | null
+          sleep_quality?: number | null
+          steps?: number | null
+          stress_level?: number | null
+          supplements_taken?: string[] | null
+          symptoms?: string[] | null
+          systolic_bp?: number | null
+          tracking_date?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          waist_cm?: number | null
+          wake_time?: string | null
+          water_ml?: number | null
+          weight_kg?: number | null
+        }
+        Relationships: []
+      }
       ai_configurations: {
         Row: {
           cost_per_request: number | null
@@ -170,6 +386,36 @@ export type Database = {
           system_prompt?: string | null
           temperature?: number
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      ai_documents: {
+        Row: {
+          content: Json | null
+          created_at: string | null
+          document_type: string | null
+          id: string
+          metadata: Json | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          content?: Json | null
+          created_at?: string | null
+          document_type?: string | null
+          id?: string
+          metadata?: Json | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          content?: Json | null
+          created_at?: string | null
+          document_type?: string | null
+          id?: string
+          metadata?: Json | null
+          updated_at?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -239,6 +485,45 @@ export type Database = {
           preset_name?: string
           service?: string
           temperature?: number
+        }
+        Relationships: []
+      }
+      ai_system_logs: {
+        Row: {
+          created_at: string | null
+          details: Json | null
+          error_message: string | null
+          execution_time_ms: number | null
+          id: string
+          log_type: string | null
+          operation: string | null
+          service_name: string | null
+          status: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          details?: Json | null
+          error_message?: string | null
+          execution_time_ms?: number | null
+          id?: string
+          log_type?: string | null
+          operation?: string | null
+          service_name?: string | null
+          status?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          details?: Json | null
+          error_message?: string | null
+          execution_time_ms?: number | null
+          id?: string
+          log_type?: string | null
+          operation?: string | null
+          service_name?: string | null
+          status?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -314,6 +599,75 @@ export type Database = {
         }
         Relationships: []
       }
+      assessments: {
+        Row: {
+          assessment_name: string
+          assessment_type: string | null
+          created_at: string | null
+          description: string | null
+          duration_minutes: number | null
+          id: string
+          is_active: boolean | null
+          questions: Json | null
+          scoring_system: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          assessment_name: string
+          assessment_type?: string | null
+          created_at?: string | null
+          description?: string | null
+          duration_minutes?: number | null
+          id?: string
+          is_active?: boolean | null
+          questions?: Json | null
+          scoring_system?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          assessment_name?: string
+          assessment_type?: string | null
+          created_at?: string | null
+          description?: string | null
+          duration_minutes?: number | null
+          id?: string
+          is_active?: boolean | null
+          questions?: Json | null
+          scoring_system?: Json | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      bakery_pool: {
+        Row: {
+          category: string | null
+          food_name: string
+        }
+        Insert: {
+          category?: string | null
+          food_name: string
+        }
+        Update: {
+          category?: string | null
+          food_name?: string
+        }
+        Relationships: []
+      }
+      bean_pool: {
+        Row: {
+          category: string | null
+          food_name: string
+        }
+        Insert: {
+          category?: string | null
+          food_name: string
+        }
+        Update: {
+          category?: string | null
+          food_name?: string
+        }
+        Relationships: []
+      }
       bioimpedance_analysis: {
         Row: {
           analysis_result: Json | null
@@ -351,6 +705,21 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      carb_pool: {
+        Row: {
+          category: string | null
+          food_name: string
+        }
+        Insert: {
+          category?: string | null
+          food_name: string
+        }
+        Update: {
+          category?: string | null
+          food_name?: string
+        }
+        Relationships: []
       }
       challenge_daily_logs: {
         Row: {
@@ -417,6 +786,41 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      challenge_leaderboard: {
+        Row: {
+          challenge_id: string | null
+          id: string
+          rank: number | null
+          score: number | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          challenge_id?: string | null
+          id?: string
+          rank?: number | null
+          score?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          challenge_id?: string | null
+          id?: string
+          rank?: number | null
+          score?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "challenge_leaderboard_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "challenges"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       challenge_participations: {
         Row: {
@@ -921,6 +1325,150 @@ export type Database = {
         }
         Relationships: []
       }
+      content_access: {
+        Row: {
+          access_level: string | null
+          content_id: string | null
+          content_type: string | null
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          access_level?: string | null
+          content_id?: string | null
+          content_type?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          access_level?: string | null
+          content_id?: string | null
+          content_type?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      conversation_attachments: {
+        Row: {
+          created_at: string | null
+          file_name: string | null
+          file_size: number | null
+          file_type: string | null
+          file_url: string | null
+          id: string
+          message_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          file_name?: string | null
+          file_size?: number | null
+          file_type?: string | null
+          file_url?: string | null
+          id?: string
+          message_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          file_name?: string | null
+          file_size?: number | null
+          file_type?: string | null
+          file_url?: string | null
+          id?: string
+          message_id?: string | null
+        }
+        Relationships: []
+      }
+      conversation_facts: {
+        Row: {
+          created_at: string | null
+          fact_content: string | null
+          fact_type: string | null
+          id: string
+          importance_score: number | null
+          is_active: boolean | null
+          source_message_id: string | null
+          tags: string[] | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          fact_content?: string | null
+          fact_type?: string | null
+          id?: string
+          importance_score?: number | null
+          is_active?: boolean | null
+          source_message_id?: string | null
+          tags?: string[] | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          fact_content?: string | null
+          fact_type?: string | null
+          id?: string
+          importance_score?: number | null
+          is_active?: boolean | null
+          source_message_id?: string | null
+          tags?: string[] | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      conversation_messages: {
+        Row: {
+          attachments: Json | null
+          conversation_id: string | null
+          created_at: string | null
+          id: string
+          is_read: boolean | null
+          message_content: string | null
+          message_type: string | null
+          metadata: Json | null
+          sender_type: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          attachments?: Json | null
+          conversation_id?: string | null
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message_content?: string | null
+          message_type?: string | null
+          metadata?: Json | null
+          sender_type?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          attachments?: Json | null
+          conversation_id?: string | null
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message_content?: string | null
+          message_type?: string | null
+          metadata?: Json | null
+          sender_type?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       course_lessons: {
         Row: {
           content: string | null
@@ -1067,6 +1615,93 @@ export type Database = {
         }
         Relationships: []
       }
+      cultural_context: {
+        Row: {
+          celebration_foods: Json | null
+          country: string | null
+          created_at: string | null
+          cultural_practices: Json | null
+          dietary_customs: string[] | null
+          id: string
+          is_active: boolean | null
+          region: string | null
+          religious_considerations: string[] | null
+          traditional_foods: string[] | null
+        }
+        Insert: {
+          celebration_foods?: Json | null
+          country?: string | null
+          created_at?: string | null
+          cultural_practices?: Json | null
+          dietary_customs?: string[] | null
+          id?: string
+          is_active?: boolean | null
+          region?: string | null
+          religious_considerations?: string[] | null
+          traditional_foods?: string[] | null
+        }
+        Update: {
+          celebration_foods?: Json | null
+          country?: string | null
+          created_at?: string | null
+          cultural_practices?: Json | null
+          dietary_customs?: string[] | null
+          id?: string
+          is_active?: boolean | null
+          region?: string | null
+          religious_considerations?: string[] | null
+          traditional_foods?: string[] | null
+        }
+        Relationships: []
+      }
+      custom_saboteurs: {
+        Row: {
+          behavioral_patterns: string[] | null
+          category: string | null
+          common_triggers: string[] | null
+          coping_strategies: string[] | null
+          created_at: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          mental_patterns: string[] | null
+          physical_symptoms: string[] | null
+          related_saboteurs: string[] | null
+          saboteur_name: string
+          severity_levels: Json | null
+        }
+        Insert: {
+          behavioral_patterns?: string[] | null
+          category?: string | null
+          common_triggers?: string[] | null
+          coping_strategies?: string[] | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          mental_patterns?: string[] | null
+          physical_symptoms?: string[] | null
+          related_saboteurs?: string[] | null
+          saboteur_name: string
+          severity_levels?: Json | null
+        }
+        Update: {
+          behavioral_patterns?: string[] | null
+          category?: string | null
+          common_triggers?: string[] | null
+          coping_strategies?: string[] | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          mental_patterns?: string[] | null
+          physical_symptoms?: string[] | null
+          related_saboteurs?: string[] | null
+          saboteur_name?: string
+          severity_levels?: Json | null
+        }
+        Relationships: []
+      }
       daily_mission_sessions: {
         Row: {
           completed_sections: Json | null
@@ -1102,6 +1737,75 @@ export type Database = {
           session_date?: string | null
           streak_days?: number | null
           total_points?: number | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      daily_nutrition_summary: {
+        Row: {
+          adherence_to_plan_percentage: number | null
+          breakfast_calories: number | null
+          created_at: string | null
+          date: string | null
+          dinner_calories: number | null
+          goals_met: boolean | null
+          health_score: number | null
+          id: string
+          lunch_calories: number | null
+          meals_count: number | null
+          notes: string | null
+          snacks_calories: number | null
+          total_calories: number | null
+          total_carbs: number | null
+          total_fats: number | null
+          total_fiber: number | null
+          total_proteins: number | null
+          total_water_ml: number | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          adherence_to_plan_percentage?: number | null
+          breakfast_calories?: number | null
+          created_at?: string | null
+          date?: string | null
+          dinner_calories?: number | null
+          goals_met?: boolean | null
+          health_score?: number | null
+          id?: string
+          lunch_calories?: number | null
+          meals_count?: number | null
+          notes?: string | null
+          snacks_calories?: number | null
+          total_calories?: number | null
+          total_carbs?: number | null
+          total_fats?: number | null
+          total_fiber?: number | null
+          total_proteins?: number | null
+          total_water_ml?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          adherence_to_plan_percentage?: number | null
+          breakfast_calories?: number | null
+          created_at?: string | null
+          date?: string | null
+          dinner_calories?: number | null
+          goals_met?: boolean | null
+          health_score?: number | null
+          id?: string
+          lunch_calories?: number | null
+          meals_count?: number | null
+          notes?: string | null
+          snacks_calories?: number | null
+          total_calories?: number | null
+          total_carbs?: number | null
+          total_fats?: number | null
+          total_fiber?: number | null
+          total_proteins?: number | null
+          total_water_ml?: number | null
+          updated_at?: string | null
           user_id?: string | null
         }
         Relationships: []
@@ -1151,6 +1855,315 @@ export type Database = {
         }
         Relationships: []
       }
+      demographic_nutrition: {
+        Row: {
+          age_group: string | null
+          created_at: string | null
+          gender: string | null
+          id: string
+          life_stage: string | null
+          nutritional_needs: Json | null
+          recommended_intake: Json | null
+          special_considerations: string[] | null
+        }
+        Insert: {
+          age_group?: string | null
+          created_at?: string | null
+          gender?: string | null
+          id?: string
+          life_stage?: string | null
+          nutritional_needs?: Json | null
+          recommended_intake?: Json | null
+          special_considerations?: string[] | null
+        }
+        Update: {
+          age_group?: string | null
+          created_at?: string | null
+          gender?: string | null
+          id?: string
+          life_stage?: string | null
+          nutritional_needs?: Json | null
+          recommended_intake?: Json | null
+          special_considerations?: string[] | null
+        }
+        Relationships: []
+      }
+      device_sync_log: {
+        Row: {
+          created_at: string | null
+          data_synced: Json | null
+          device_id: string | null
+          device_type: string | null
+          error_message: string | null
+          id: string
+          records_synced: number | null
+          sync_status: string | null
+          sync_type: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          data_synced?: Json | null
+          device_id?: string | null
+          device_type?: string | null
+          error_message?: string | null
+          id?: string
+          records_synced?: number | null
+          sync_status?: string | null
+          sync_type?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          data_synced?: Json | null
+          device_id?: string | null
+          device_type?: string | null
+          error_message?: string | null
+          id?: string
+          records_synced?: number | null
+          sync_status?: string | null
+          sync_type?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      diseases_conditions: {
+        Row: {
+          category: string | null
+          condition_name: string
+          created_at: string | null
+          description: string | null
+          dietary_recommendations: string[] | null
+          exercise_recommendations: string[] | null
+          id: string
+          is_active: boolean | null
+          lifestyle_modifications: string[] | null
+          prevention_tips: string[] | null
+          related_conditions: string[] | null
+          risk_factors: string[] | null
+          severity_levels: Json | null
+          symptoms: string[] | null
+          treatment_approaches: string[] | null
+          updated_at: string | null
+        }
+        Insert: {
+          category?: string | null
+          condition_name: string
+          created_at?: string | null
+          description?: string | null
+          dietary_recommendations?: string[] | null
+          exercise_recommendations?: string[] | null
+          id?: string
+          is_active?: boolean | null
+          lifestyle_modifications?: string[] | null
+          prevention_tips?: string[] | null
+          related_conditions?: string[] | null
+          risk_factors?: string[] | null
+          severity_levels?: Json | null
+          symptoms?: string[] | null
+          treatment_approaches?: string[] | null
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string | null
+          condition_name?: string
+          created_at?: string | null
+          description?: string | null
+          dietary_recommendations?: string[] | null
+          exercise_recommendations?: string[] | null
+          id?: string
+          is_active?: boolean | null
+          lifestyle_modifications?: string[] | null
+          prevention_tips?: string[] | null
+          related_conditions?: string[] | null
+          risk_factors?: string[] | null
+          severity_levels?: Json | null
+          symptoms?: string[] | null
+          treatment_approaches?: string[] | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      dr_vital_memory: {
+        Row: {
+          created_at: string | null
+          id: string
+          memory_key: string
+          memory_value: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          memory_key: string
+          memory_value?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          memory_key?: string
+          memory_value?: Json | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      economic_information: {
+        Row: {
+          availability: string | null
+          average_price: number | null
+          currency: string | null
+          food_name: string | null
+          id: string
+          price_range_max: number | null
+          price_range_min: number | null
+          region: string | null
+          season: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          availability?: string | null
+          average_price?: number | null
+          currency?: string | null
+          food_name?: string | null
+          id?: string
+          price_range_max?: number | null
+          price_range_min?: number | null
+          region?: string | null
+          season?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          availability?: string | null
+          average_price?: number | null
+          currency?: string | null
+          food_name?: string | null
+          id?: string
+          price_range_max?: number | null
+          price_range_min?: number | null
+          region?: string | null
+          season?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      environmental_impact: {
+        Row: {
+          carbon_footprint_kg: number | null
+          created_at: string | null
+          eco_certifications: string[] | null
+          food_name: string
+          id: string
+          land_usage_sqm: number | null
+          local_production: boolean | null
+          seasonal_availability: string[] | null
+          sustainability_rating: string | null
+          water_usage_liters: number | null
+        }
+        Insert: {
+          carbon_footprint_kg?: number | null
+          created_at?: string | null
+          eco_certifications?: string[] | null
+          food_name: string
+          id?: string
+          land_usage_sqm?: number | null
+          local_production?: boolean | null
+          seasonal_availability?: string[] | null
+          sustainability_rating?: string | null
+          water_usage_liters?: number | null
+        }
+        Update: {
+          carbon_footprint_kg?: number | null
+          created_at?: string | null
+          eco_certifications?: string[] | null
+          food_name?: string
+          id?: string
+          land_usage_sqm?: number | null
+          local_production?: boolean | null
+          seasonal_availability?: string[] | null
+          sustainability_rating?: string | null
+          water_usage_liters?: number | null
+        }
+        Relationships: []
+      }
+      exercise_ai_recommendations: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_read: boolean | null
+          priority_level: string | null
+          reasoning: string | null
+          recommendation_text: string | null
+          recommendation_type: string | null
+          recommended_exercises: Json | null
+          updated_at: string | null
+          user_id: string | null
+          valid_until: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          priority_level?: string | null
+          reasoning?: string | null
+          recommendation_text?: string | null
+          recommendation_type?: string | null
+          recommended_exercises?: Json | null
+          updated_at?: string | null
+          user_id?: string | null
+          valid_until?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          priority_level?: string | null
+          reasoning?: string | null
+          recommendation_text?: string | null
+          recommendation_type?: string | null
+          recommended_exercises?: Json | null
+          updated_at?: string | null
+          user_id?: string | null
+          valid_until?: string | null
+        }
+        Relationships: []
+      }
+      exercise_nutrition: {
+        Row: {
+          created_at: string | null
+          exercise_type: string
+          hydration_guidelines: string | null
+          id: string
+          is_active: boolean | null
+          post_workout_recommendations: Json | null
+          pre_workout_recommendations: Json | null
+          supplement_suggestions: string[] | null
+          timing_guidelines: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          exercise_type: string
+          hydration_guidelines?: string | null
+          id?: string
+          is_active?: boolean | null
+          post_workout_recommendations?: Json | null
+          pre_workout_recommendations?: Json | null
+          supplement_suggestions?: string[] | null
+          timing_guidelines?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          exercise_type?: string
+          hydration_guidelines?: string | null
+          id?: string
+          is_active?: boolean | null
+          post_workout_recommendations?: Json | null
+          pre_workout_recommendations?: Json | null
+          supplement_suggestions?: string[] | null
+          timing_guidelines?: string | null
+        }
+        Relationships: []
+      }
       exercise_programs: {
         Row: {
           created_at: string | null
@@ -1190,6 +2203,111 @@ export type Database = {
           name?: string
           sessions_per_week?: number | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      exercise_progress_analysis: {
+        Row: {
+          analysis_period: string | null
+          avg_intensity: number | null
+          created_at: string | null
+          id: string
+          improvements: Json | null
+          next_goals: string[] | null
+          period_end: string | null
+          period_start: string | null
+          recommendations: string[] | null
+          total_duration_minutes: number | null
+          total_sessions: number | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          analysis_period?: string | null
+          avg_intensity?: number | null
+          created_at?: string | null
+          id?: string
+          improvements?: Json | null
+          next_goals?: string[] | null
+          period_end?: string | null
+          period_start?: string | null
+          recommendations?: string[] | null
+          total_duration_minutes?: number | null
+          total_sessions?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          analysis_period?: string | null
+          avg_intensity?: number | null
+          created_at?: string | null
+          id?: string
+          improvements?: Json | null
+          next_goals?: string[] | null
+          period_end?: string | null
+          period_start?: string | null
+          recommendations?: string[] | null
+          total_duration_minutes?: number | null
+          total_sessions?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      exercise_sessions: {
+        Row: {
+          calories_burned: number | null
+          created_at: string | null
+          duration_minutes: number | null
+          exercises: Json | null
+          heart_rate_avg: number | null
+          heart_rate_max: number | null
+          id: string
+          intensity_level: string | null
+          mood_after: string | null
+          mood_before: string | null
+          notes: string | null
+          performance_rating: number | null
+          session_date: string | null
+          session_type: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          calories_burned?: number | null
+          created_at?: string | null
+          duration_minutes?: number | null
+          exercises?: Json | null
+          heart_rate_avg?: number | null
+          heart_rate_max?: number | null
+          id?: string
+          intensity_level?: string | null
+          mood_after?: string | null
+          mood_before?: string | null
+          notes?: string | null
+          performance_rating?: number | null
+          session_date?: string | null
+          session_type?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          calories_burned?: number | null
+          created_at?: string | null
+          duration_minutes?: number | null
+          exercises?: Json | null
+          heart_rate_avg?: number | null
+          heart_rate_max?: number | null
+          id?: string
+          intensity_level?: string | null
+          mood_after?: string | null
+          mood_before?: string | null
+          notes?: string | null
+          performance_rating?: number | null
+          session_date?: string | null
+          session_type?: string | null
+          updated_at?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -1289,6 +2407,76 @@ export type Database = {
         }
         Relationships: []
       }
+      food_active_principles: {
+        Row: {
+          active_principle_name: string
+          concentration: string | null
+          created_at: string | null
+          food_id: string | null
+          health_benefit: string | null
+          id: string
+          is_verified: boolean | null
+          scientific_evidence: string | null
+        }
+        Insert: {
+          active_principle_name: string
+          concentration?: string | null
+          created_at?: string | null
+          food_id?: string | null
+          health_benefit?: string | null
+          id?: string
+          is_verified?: boolean | null
+          scientific_evidence?: string | null
+        }
+        Update: {
+          active_principle_name?: string
+          concentration?: string | null
+          created_at?: string | null
+          food_id?: string | null
+          health_benefit?: string | null
+          id?: string
+          is_verified?: boolean | null
+          scientific_evidence?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "food_active_principles_food_id_fkey"
+            columns: ["food_id"]
+            isOneToOne: false
+            referencedRelation: "nutrition_foods"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      food_aliases: {
+        Row: {
+          alias_name: string
+          food_id: string | null
+          id: string
+          language: string | null
+        }
+        Insert: {
+          alias_name: string
+          food_id?: string | null
+          id?: string
+          language?: string | null
+        }
+        Update: {
+          alias_name?: string
+          food_id?: string | null
+          id?: string
+          language?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "food_aliases_food_id_fkey"
+            columns: ["food_id"]
+            isOneToOne: false
+            referencedRelation: "nutrition_foods"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       food_analysis: {
         Row: {
           created_at: string | null
@@ -1337,6 +2525,287 @@ export type Database = {
         }
         Relationships: []
       }
+      food_contraindications: {
+        Row: {
+          alternative_suggestions: string[] | null
+          condition_name: string | null
+          contraindication_type: string | null
+          created_at: string | null
+          food_name: string
+          id: string
+          is_active: boolean | null
+          reason: string | null
+          scientific_reference: string | null
+          severity: string | null
+        }
+        Insert: {
+          alternative_suggestions?: string[] | null
+          condition_name?: string | null
+          contraindication_type?: string | null
+          created_at?: string | null
+          food_name: string
+          id?: string
+          is_active?: boolean | null
+          reason?: string | null
+          scientific_reference?: string | null
+          severity?: string | null
+        }
+        Update: {
+          alternative_suggestions?: string[] | null
+          condition_name?: string | null
+          contraindication_type?: string | null
+          created_at?: string | null
+          food_name?: string
+          id?: string
+          is_active?: boolean | null
+          reason?: string | null
+          scientific_reference?: string | null
+          severity?: string | null
+        }
+        Relationships: []
+      }
+      food_densities: {
+        Row: {
+          density_g_ml: number | null
+          food_name: string
+        }
+        Insert: {
+          density_g_ml?: number | null
+          food_name: string
+        }
+        Update: {
+          density_g_ml?: number | null
+          food_name?: string
+        }
+        Relationships: []
+      }
+      food_diseases: {
+        Row: {
+          benefit_level: string | null
+          created_at: string | null
+          disease_id: string | null
+          disease_name: string | null
+          dosage_recommendation: string | null
+          evidence_quality: string | null
+          food_id: string | null
+          food_name: string | null
+          id: string
+          is_active: boolean | null
+          mechanism: string | null
+          precautions: string[] | null
+          relationship_type: string | null
+        }
+        Insert: {
+          benefit_level?: string | null
+          created_at?: string | null
+          disease_id?: string | null
+          disease_name?: string | null
+          dosage_recommendation?: string | null
+          evidence_quality?: string | null
+          food_id?: string | null
+          food_name?: string | null
+          id?: string
+          is_active?: boolean | null
+          mechanism?: string | null
+          precautions?: string[] | null
+          relationship_type?: string | null
+        }
+        Update: {
+          benefit_level?: string | null
+          created_at?: string | null
+          disease_id?: string | null
+          disease_name?: string | null
+          dosage_recommendation?: string | null
+          evidence_quality?: string | null
+          food_id?: string | null
+          food_name?: string | null
+          id?: string
+          is_active?: boolean | null
+          mechanism?: string | null
+          precautions?: string[] | null
+          relationship_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "food_diseases_food_id_fkey"
+            columns: ["food_id"]
+            isOneToOne: false
+            referencedRelation: "nutrition_foods"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      food_preparation_preservation: {
+        Row: {
+          best_practices: string[] | null
+          common_mistakes: string[] | null
+          cooking_tips: string[] | null
+          created_at: string | null
+          food_name: string
+          food_safety_tips: string[] | null
+          id: string
+          is_active: boolean | null
+          nutritional_impact: Json | null
+          preparation_methods: Json | null
+          preservation_methods: Json | null
+          storage_conditions: string | null
+          storage_duration: string | null
+        }
+        Insert: {
+          best_practices?: string[] | null
+          common_mistakes?: string[] | null
+          cooking_tips?: string[] | null
+          created_at?: string | null
+          food_name: string
+          food_safety_tips?: string[] | null
+          id?: string
+          is_active?: boolean | null
+          nutritional_impact?: Json | null
+          preparation_methods?: Json | null
+          preservation_methods?: Json | null
+          storage_conditions?: string | null
+          storage_duration?: string | null
+        }
+        Update: {
+          best_practices?: string[] | null
+          common_mistakes?: string[] | null
+          cooking_tips?: string[] | null
+          created_at?: string | null
+          food_name?: string
+          food_safety_tips?: string[] | null
+          id?: string
+          is_active?: boolean | null
+          nutritional_impact?: Json | null
+          preparation_methods?: Json | null
+          preservation_methods?: Json | null
+          storage_conditions?: string | null
+          storage_duration?: string | null
+        }
+        Relationships: []
+      }
+      food_security: {
+        Row: {
+          allergen_info: string[] | null
+          created_at: string | null
+          cross_contamination_risks: string[] | null
+          expiration_guidelines: string | null
+          food_name: string
+          foodborne_illness_risks: string[] | null
+          handling_precautions: string[] | null
+          id: string
+          is_active: boolean | null
+          recall_history: Json | null
+          safe_temperature_range: string | null
+          storage_safety: string | null
+        }
+        Insert: {
+          allergen_info?: string[] | null
+          created_at?: string | null
+          cross_contamination_risks?: string[] | null
+          expiration_guidelines?: string | null
+          food_name: string
+          foodborne_illness_risks?: string[] | null
+          handling_precautions?: string[] | null
+          id?: string
+          is_active?: boolean | null
+          recall_history?: Json | null
+          safe_temperature_range?: string | null
+          storage_safety?: string | null
+        }
+        Update: {
+          allergen_info?: string[] | null
+          created_at?: string | null
+          cross_contamination_risks?: string[] | null
+          expiration_guidelines?: string | null
+          food_name?: string
+          foodborne_illness_risks?: string[] | null
+          handling_precautions?: string[] | null
+          id?: string
+          is_active?: boolean | null
+          recall_history?: Json | null
+          safe_temperature_range?: string | null
+          storage_safety?: string | null
+        }
+        Relationships: []
+      }
+      food_yields: {
+        Row: {
+          cooked_weight_g: number | null
+          food_name: string
+          id: string
+          raw_weight_g: number | null
+          yield_percentage: number | null
+        }
+        Insert: {
+          cooked_weight_g?: number | null
+          food_name: string
+          id?: string
+          raw_weight_g?: number | null
+          yield_percentage?: number | null
+        }
+        Update: {
+          cooked_weight_g?: number | null
+          food_name?: string
+          id?: string
+          raw_weight_g?: number | null
+          yield_percentage?: number | null
+        }
+        Relationships: []
+      }
+      fruit_pool: {
+        Row: {
+          category: string | null
+          food_name: string
+        }
+        Insert: {
+          category?: string | null
+          food_name: string
+        }
+        Update: {
+          category?: string | null
+          food_name?: string
+        }
+        Relationships: []
+      }
+      goal_benefits: {
+        Row: {
+          benefit_description: string | null
+          benefit_title: string | null
+          created_at: string | null
+          evidence_level: string | null
+          goal_type: string
+          health_impact: string | null
+          id: string
+          is_active: boolean | null
+          sustainability_level: string | null
+          time_to_benefit: string | null
+        }
+        Insert: {
+          benefit_description?: string | null
+          benefit_title?: string | null
+          created_at?: string | null
+          evidence_level?: string | null
+          goal_type: string
+          health_impact?: string | null
+          id?: string
+          is_active?: boolean | null
+          sustainability_level?: string | null
+          time_to_benefit?: string | null
+        }
+        Update: {
+          benefit_description?: string | null
+          benefit_title?: string | null
+          created_at?: string | null
+          evidence_level?: string | null
+          goal_type?: string
+          health_impact?: string | null
+          id?: string
+          is_active?: boolean | null
+          sustainability_level?: string | null
+          time_to_benefit?: string | null
+        }
+        Relationships: []
+      }
       goal_updates: {
         Row: {
           created_at: string | null
@@ -1374,6 +2843,81 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      google_fit_analysis: {
+        Row: {
+          activity_trend: string | null
+          analysis_date: string | null
+          avg_daily_steps: number | null
+          avg_heart_rate: number | null
+          avg_sleep_hours: number | null
+          created_at: string | null
+          data_quality_score: number | null
+          health_score: number | null
+          id: string
+          insights: string[] | null
+          period_end: string | null
+          period_start: string | null
+          period_type: string | null
+          recommendations: string[] | null
+          resting_heart_rate: number | null
+          sleep_quality_avg: number | null
+          total_active_minutes: number | null
+          total_calories: number | null
+          total_distance_km: number | null
+          total_steps: number | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          activity_trend?: string | null
+          analysis_date?: string | null
+          avg_daily_steps?: number | null
+          avg_heart_rate?: number | null
+          avg_sleep_hours?: number | null
+          created_at?: string | null
+          data_quality_score?: number | null
+          health_score?: number | null
+          id?: string
+          insights?: string[] | null
+          period_end?: string | null
+          period_start?: string | null
+          period_type?: string | null
+          recommendations?: string[] | null
+          resting_heart_rate?: number | null
+          sleep_quality_avg?: number | null
+          total_active_minutes?: number | null
+          total_calories?: number | null
+          total_distance_km?: number | null
+          total_steps?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          activity_trend?: string | null
+          analysis_date?: string | null
+          avg_daily_steps?: number | null
+          avg_heart_rate?: number | null
+          avg_sleep_hours?: number | null
+          created_at?: string | null
+          data_quality_score?: number | null
+          health_score?: number | null
+          id?: string
+          insights?: string[] | null
+          period_end?: string | null
+          period_start?: string | null
+          period_type?: string | null
+          recommendations?: string[] | null
+          resting_heart_rate?: number | null
+          sleep_quality_avg?: number | null
+          total_active_minutes?: number | null
+          total_calories?: number | null
+          total_distance_km?: number | null
+          total_steps?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
       }
       google_fit_data: {
         Row: {
@@ -1414,6 +2958,129 @@ export type Database = {
         }
         Relationships: []
       }
+      google_fit_data_extended: {
+        Row: {
+          active_minutes: number | null
+          awake_minutes: number | null
+          body_fat_percentage: number | null
+          calories_burned: number | null
+          created_at: string | null
+          data_source: string | null
+          data_type: string | null
+          deep_sleep_minutes: number | null
+          distance_meters: number | null
+          end_time: string | null
+          energy_level: number | null
+          heart_rate_avg: number | null
+          heart_rate_bpm: number | null
+          heart_rate_max: number | null
+          heart_rate_min: number | null
+          heart_rate_resting: number | null
+          height_cm: number | null
+          id: string
+          light_sleep_minutes: number | null
+          metadata: Json | null
+          mood_score: number | null
+          nutrition_calories: number | null
+          nutrition_carbs_g: number | null
+          nutrition_fat_g: number | null
+          nutrition_protein_g: number | null
+          raw_data: Json | null
+          rem_sleep_minutes: number | null
+          sleep_duration_minutes: number | null
+          sleep_quality_score: number | null
+          start_time: string | null
+          steps: number | null
+          stress_level: number | null
+          unit: string | null
+          updated_at: string | null
+          user_id: string | null
+          value: number | null
+          water_ml: number | null
+          weight_kg: number | null
+        }
+        Insert: {
+          active_minutes?: number | null
+          awake_minutes?: number | null
+          body_fat_percentage?: number | null
+          calories_burned?: number | null
+          created_at?: string | null
+          data_source?: string | null
+          data_type?: string | null
+          deep_sleep_minutes?: number | null
+          distance_meters?: number | null
+          end_time?: string | null
+          energy_level?: number | null
+          heart_rate_avg?: number | null
+          heart_rate_bpm?: number | null
+          heart_rate_max?: number | null
+          heart_rate_min?: number | null
+          heart_rate_resting?: number | null
+          height_cm?: number | null
+          id?: string
+          light_sleep_minutes?: number | null
+          metadata?: Json | null
+          mood_score?: number | null
+          nutrition_calories?: number | null
+          nutrition_carbs_g?: number | null
+          nutrition_fat_g?: number | null
+          nutrition_protein_g?: number | null
+          raw_data?: Json | null
+          rem_sleep_minutes?: number | null
+          sleep_duration_minutes?: number | null
+          sleep_quality_score?: number | null
+          start_time?: string | null
+          steps?: number | null
+          stress_level?: number | null
+          unit?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          value?: number | null
+          water_ml?: number | null
+          weight_kg?: number | null
+        }
+        Update: {
+          active_minutes?: number | null
+          awake_minutes?: number | null
+          body_fat_percentage?: number | null
+          calories_burned?: number | null
+          created_at?: string | null
+          data_source?: string | null
+          data_type?: string | null
+          deep_sleep_minutes?: number | null
+          distance_meters?: number | null
+          end_time?: string | null
+          energy_level?: number | null
+          heart_rate_avg?: number | null
+          heart_rate_bpm?: number | null
+          heart_rate_max?: number | null
+          heart_rate_min?: number | null
+          heart_rate_resting?: number | null
+          height_cm?: number | null
+          id?: string
+          light_sleep_minutes?: number | null
+          metadata?: Json | null
+          mood_score?: number | null
+          nutrition_calories?: number | null
+          nutrition_carbs_g?: number | null
+          nutrition_fat_g?: number | null
+          nutrition_protein_g?: number | null
+          raw_data?: Json | null
+          rem_sleep_minutes?: number | null
+          sleep_duration_minutes?: number | null
+          sleep_quality_score?: number | null
+          start_time?: string | null
+          steps?: number | null
+          stress_level?: number | null
+          unit?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          value?: number | null
+          water_ml?: number | null
+          weight_kg?: number | null
+        }
+        Relationships: []
+      }
       google_fit_tokens: {
         Row: {
           access_token: string | null
@@ -1446,6 +3113,51 @@ export type Database = {
           scope?: string | null
           token_type?: string | null
           updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      health_alerts: {
+        Row: {
+          acknowledged_at: string | null
+          action_required: boolean | null
+          alert_type: string | null
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          is_acknowledged: boolean | null
+          message: string | null
+          related_data: Json | null
+          severity: string | null
+          title: string | null
+          user_id: string | null
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          action_required?: boolean | null
+          alert_type?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          is_acknowledged?: boolean | null
+          message?: string | null
+          related_data?: Json | null
+          severity?: string | null
+          title?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          acknowledged_at?: string | null
+          action_required?: boolean | null
+          alert_type?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          is_acknowledged?: boolean | null
+          message?: string | null
+          related_data?: Json | null
+          severity?: string | null
+          title?: string | null
           user_id?: string | null
         }
         Relationships: []
@@ -1522,6 +3234,303 @@ export type Database = {
         }
         Relationships: []
       }
+      health_feed_comments: {
+        Row: {
+          comment_text: string | null
+          created_at: string | null
+          id: string
+          likes_count: number | null
+          parent_comment_id: string | null
+          post_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          comment_text?: string | null
+          created_at?: string | null
+          id?: string
+          likes_count?: number | null
+          parent_comment_id?: string | null
+          post_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          comment_text?: string | null
+          created_at?: string | null
+          id?: string
+          likes_count?: number | null
+          parent_comment_id?: string | null
+          post_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "health_feed_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "health_feed_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      health_feed_follows: {
+        Row: {
+          created_at: string | null
+          follower_id: string
+          following_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          follower_id: string
+          following_id: string
+        }
+        Update: {
+          created_at?: string | null
+          follower_id?: string
+          following_id?: string
+        }
+        Relationships: []
+      }
+      health_feed_group_members: {
+        Row: {
+          group_id: string | null
+          id: string
+          joined_at: string | null
+          role: string | null
+          user_id: string | null
+        }
+        Insert: {
+          group_id?: string | null
+          id?: string
+          joined_at?: string | null
+          role?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          group_id?: string | null
+          id?: string
+          joined_at?: string | null
+          role?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "health_feed_group_members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "health_feed_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      health_feed_groups: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          group_name: string
+          group_type: string | null
+          id: string
+          members_count: number | null
+          privacy_level: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          group_name: string
+          group_type?: string | null
+          id?: string
+          members_count?: number | null
+          privacy_level?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          group_name?: string
+          group_type?: string | null
+          id?: string
+          members_count?: number | null
+          privacy_level?: string | null
+        }
+        Relationships: []
+      }
+      health_feed_posts: {
+        Row: {
+          comments_count: number | null
+          content: string | null
+          created_at: string | null
+          id: string
+          is_pinned: boolean | null
+          likes_count: number | null
+          media_urls: string[] | null
+          metadata: Json | null
+          post_type: string | null
+          shares_count: number | null
+          tags: string[] | null
+          title: string | null
+          updated_at: string | null
+          user_id: string | null
+          visibility: string | null
+        }
+        Insert: {
+          comments_count?: number | null
+          content?: string | null
+          created_at?: string | null
+          id?: string
+          is_pinned?: boolean | null
+          likes_count?: number | null
+          media_urls?: string[] | null
+          metadata?: Json | null
+          post_type?: string | null
+          shares_count?: number | null
+          tags?: string[] | null
+          title?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          visibility?: string | null
+        }
+        Update: {
+          comments_count?: number | null
+          content?: string | null
+          created_at?: string | null
+          id?: string
+          is_pinned?: boolean | null
+          likes_count?: number | null
+          media_urls?: string[] | null
+          metadata?: Json | null
+          post_type?: string | null
+          shares_count?: number | null
+          tags?: string[] | null
+          title?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          visibility?: string | null
+        }
+        Relationships: []
+      }
+      health_feed_reactions: {
+        Row: {
+          created_at: string | null
+          id: string
+          post_id: string | null
+          reaction_type: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          post_id?: string | null
+          reaction_type?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          post_id?: string | null
+          reaction_type?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "health_feed_reactions_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "health_feed_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      health_integrations: {
+        Row: {
+          access_token: string | null
+          created_at: string | null
+          id: string
+          integration_type: string | null
+          is_active: boolean | null
+          last_sync_at: string | null
+          provider_name: string | null
+          refresh_token: string | null
+          token_expires_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          access_token?: string | null
+          created_at?: string | null
+          id?: string
+          integration_type?: string | null
+          is_active?: boolean | null
+          last_sync_at?: string | null
+          provider_name?: string | null
+          refresh_token?: string | null
+          token_expires_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          access_token?: string | null
+          created_at?: string | null
+          id?: string
+          integration_type?: string | null
+          is_active?: boolean | null
+          last_sync_at?: string | null
+          provider_name?: string | null
+          refresh_token?: string | null
+          token_expires_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      heart_rate_data: {
+        Row: {
+          activity_context: string | null
+          created_at: string | null
+          device_source: string | null
+          heart_rate_bpm: number
+          heart_rate_variability: number | null
+          id: string
+          max_heart_rate: number | null
+          measurement_time: string | null
+          measurement_type: string | null
+          notes: string | null
+          recovery_time_minutes: number | null
+          resting_heart_rate: number | null
+          stress_level: string | null
+          user_id: string | null
+        }
+        Insert: {
+          activity_context?: string | null
+          created_at?: string | null
+          device_source?: string | null
+          heart_rate_bpm: number
+          heart_rate_variability?: number | null
+          id?: string
+          max_heart_rate?: number | null
+          measurement_time?: string | null
+          measurement_type?: string | null
+          notes?: string | null
+          recovery_time_minutes?: number | null
+          resting_heart_rate?: number | null
+          stress_level?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          activity_context?: string | null
+          created_at?: string | null
+          device_source?: string | null
+          heart_rate_bpm?: number
+          heart_rate_variability?: number | null
+          id?: string
+          max_heart_rate?: number | null
+          measurement_time?: string | null
+          measurement_type?: string | null
+          notes?: string | null
+          recovery_time_minutes?: number | null
+          resting_heart_rate?: number | null
+          stress_level?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       image_cache: {
         Row: {
           access_count: number | null
@@ -1552,6 +3561,129 @@ export type Database = {
           id?: string
           mime_type?: string | null
           storage_path?: string
+        }
+        Relationships: []
+      }
+      information_feedback: {
+        Row: {
+          content_id: string | null
+          content_type: string | null
+          created_at: string | null
+          feedback_text: string | null
+          feedback_type: string | null
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          content_id?: string | null
+          content_type?: string | null
+          created_at?: string | null
+          feedback_text?: string | null
+          feedback_type?: string | null
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          content_id?: string | null
+          content_type?: string | null
+          created_at?: string | null
+          feedback_text?: string | null
+          feedback_type?: string | null
+          id?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      institute_nutritional_catalog: {
+        Row: {
+          bioactive_compounds: Json | null
+          category: string | null
+          certification_info: Json | null
+          contraindications: string[] | null
+          created_at: string | null
+          drug_interactions: string[] | null
+          food_code: string | null
+          food_name: string
+          health_benefits: string[] | null
+          id: string
+          is_verified: boolean | null
+          nutritional_data: Json | null
+          preparation_notes: string | null
+          quality_grade: string | null
+          recommended_portions: string | null
+          research_references: string[] | null
+          source: string | null
+          subcategory: string | null
+          therapeutic_uses: string[] | null
+        }
+        Insert: {
+          bioactive_compounds?: Json | null
+          category?: string | null
+          certification_info?: Json | null
+          contraindications?: string[] | null
+          created_at?: string | null
+          drug_interactions?: string[] | null
+          food_code?: string | null
+          food_name: string
+          health_benefits?: string[] | null
+          id?: string
+          is_verified?: boolean | null
+          nutritional_data?: Json | null
+          preparation_notes?: string | null
+          quality_grade?: string | null
+          recommended_portions?: string | null
+          research_references?: string[] | null
+          source?: string | null
+          subcategory?: string | null
+          therapeutic_uses?: string[] | null
+        }
+        Update: {
+          bioactive_compounds?: Json | null
+          category?: string | null
+          certification_info?: Json | null
+          contraindications?: string[] | null
+          created_at?: string | null
+          drug_interactions?: string[] | null
+          food_code?: string | null
+          food_name?: string
+          health_benefits?: string[] | null
+          id?: string
+          is_verified?: boolean | null
+          nutritional_data?: Json | null
+          preparation_notes?: string | null
+          quality_grade?: string | null
+          recommended_portions?: string | null
+          research_references?: string[] | null
+          source?: string | null
+          subcategory?: string | null
+          therapeutic_uses?: string[] | null
+        }
+        Relationships: []
+      }
+      layout_config: {
+        Row: {
+          config_key: string
+          config_value: Json | null
+          created_at: string | null
+          description: string | null
+          id: string
+          updated_at: string | null
+        }
+        Insert: {
+          config_key: string
+          config_value?: Json | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          updated_at?: string | null
+        }
+        Update: {
+          config_key?: string
+          config_value?: Json | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -1602,6 +3734,36 @@ export type Database = {
           },
         ]
       }
+      meal_feedback: {
+        Row: {
+          created_at: string | null
+          feedback_text: string | null
+          id: string
+          meal_id: string | null
+          rating: number | null
+          user_id: string | null
+          would_eat_again: boolean | null
+        }
+        Insert: {
+          created_at?: string | null
+          feedback_text?: string | null
+          id?: string
+          meal_id?: string | null
+          rating?: number | null
+          user_id?: string | null
+          would_eat_again?: boolean | null
+        }
+        Update: {
+          created_at?: string | null
+          feedback_text?: string | null
+          id?: string
+          meal_id?: string | null
+          rating?: number | null
+          user_id?: string | null
+          would_eat_again?: boolean | null
+        }
+        Relationships: []
+      }
       meal_plan_history: {
         Row: {
           created_at: string | null
@@ -1634,6 +3796,75 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      meal_plan_items: {
+        Row: {
+          calories: number | null
+          carbs: number | null
+          created_at: string | null
+          day_of_week: number | null
+          fats: number | null
+          food_items: Json | null
+          id: string
+          meal_name: string | null
+          meal_plan_id: string | null
+          meal_type: string | null
+          order_index: number | null
+          preparation_instructions: string | null
+          proteins: number | null
+          recipe_id: string | null
+          timing: string | null
+        }
+        Insert: {
+          calories?: number | null
+          carbs?: number | null
+          created_at?: string | null
+          day_of_week?: number | null
+          fats?: number | null
+          food_items?: Json | null
+          id?: string
+          meal_name?: string | null
+          meal_plan_id?: string | null
+          meal_type?: string | null
+          order_index?: number | null
+          preparation_instructions?: string | null
+          proteins?: number | null
+          recipe_id?: string | null
+          timing?: string | null
+        }
+        Update: {
+          calories?: number | null
+          carbs?: number | null
+          created_at?: string | null
+          day_of_week?: number | null
+          fats?: number | null
+          food_items?: Json | null
+          id?: string
+          meal_name?: string | null
+          meal_plan_id?: string | null
+          meal_type?: string | null
+          order_index?: number | null
+          preparation_instructions?: string | null
+          proteins?: number | null
+          recipe_id?: string | null
+          timing?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meal_plan_items_meal_plan_id_fkey"
+            columns: ["meal_plan_id"]
+            isOneToOne: false
+            referencedRelation: "meal_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meal_plan_items_recipe_id_fkey"
+            columns: ["recipe_id"]
+            isOneToOne: false
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       meal_plans: {
         Row: {
@@ -1678,6 +3909,48 @@ export type Database = {
           is_active?: boolean | null
           meals?: Json | null
           name?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      meal_suggestions: {
+        Row: {
+          created_at: string | null
+          date_suggested: string | null
+          health_score: number | null
+          id: string
+          is_favorite: boolean | null
+          meal_type: string | null
+          nutritional_values: Json | null
+          reason: string | null
+          suggestion_data: Json | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          date_suggested?: string | null
+          health_score?: number | null
+          id?: string
+          is_favorite?: boolean | null
+          meal_type?: string | null
+          nutritional_values?: Json | null
+          reason?: string | null
+          suggestion_data?: Json | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          date_suggested?: string | null
+          health_score?: number | null
+          id?: string
+          is_favorite?: boolean | null
+          meal_type?: string | null
+          nutritional_values?: Json | null
+          reason?: string | null
+          suggestion_data?: Json | null
           updated_at?: string | null
           user_id?: string | null
         }
@@ -1782,6 +4055,102 @@ export type Database = {
         }
         Relationships: []
       }
+      mock_users: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string
+          is_active: boolean | null
+          mock_data: Json | null
+          username: string
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id?: string
+          is_active?: boolean | null
+          mock_data?: Json | null
+          username: string
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string
+          is_active?: boolean | null
+          mock_data?: Json | null
+          username?: string
+        }
+        Relationships: []
+      }
+      mood_monitoring: {
+        Row: {
+          context: string | null
+          created_at: string | null
+          date: string | null
+          id: string
+          mood_rating: number | null
+          mood_tags: string[] | null
+          notes: string | null
+          time: string | null
+          triggers: string[] | null
+          user_id: string | null
+        }
+        Insert: {
+          context?: string | null
+          created_at?: string | null
+          date?: string | null
+          id?: string
+          mood_rating?: number | null
+          mood_tags?: string[] | null
+          notes?: string | null
+          time?: string | null
+          triggers?: string[] | null
+          user_id?: string | null
+        }
+        Update: {
+          context?: string | null
+          created_at?: string | null
+          date?: string | null
+          id?: string
+          mood_rating?: number | null
+          mood_tags?: string[] | null
+          notes?: string | null
+          time?: string | null
+          triggers?: string[] | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      notification_preferences: {
+        Row: {
+          channels: Json | null
+          created_at: string | null
+          frequency: string | null
+          id: string
+          preferences: Json | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          channels?: Json | null
+          created_at?: string | null
+          frequency?: string | null
+          id?: string
+          preferences?: Json | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          channels?: Json | null
+          created_at?: string | null
+          frequency?: string | null
+          id?: string
+          preferences?: Json | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           action_url: string | null
@@ -1863,6 +4232,488 @@ export type Database = {
         }
         Relationships: []
       }
+      nutrition_tracking: {
+        Row: {
+          created_at: string | null
+          date: string | null
+          food_items: Json | null
+          id: string
+          meal_type: string | null
+          notes: string | null
+          photo_url: string | null
+          total_calories: number | null
+          total_carbs: number | null
+          total_fats: number | null
+          total_fiber: number | null
+          total_proteins: number | null
+          updated_at: string | null
+          user_id: string | null
+          water_ml: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          date?: string | null
+          food_items?: Json | null
+          id?: string
+          meal_type?: string | null
+          notes?: string | null
+          photo_url?: string | null
+          total_calories?: number | null
+          total_carbs?: number | null
+          total_fats?: number | null
+          total_fiber?: number | null
+          total_proteins?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+          water_ml?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          date?: string | null
+          food_items?: Json | null
+          id?: string
+          meal_type?: string | null
+          notes?: string | null
+          photo_url?: string | null
+          total_calories?: number | null
+          total_carbs?: number | null
+          total_fats?: number | null
+          total_fiber?: number | null
+          total_proteins?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+          water_ml?: number | null
+        }
+        Relationships: []
+      }
+      nutritional_aliases: {
+        Row: {
+          alias: string
+          created_at: string | null
+          food_id: string | null
+          id: string
+        }
+        Insert: {
+          alias: string
+          created_at?: string | null
+          food_id?: string | null
+          id?: string
+        }
+        Update: {
+          alias?: string
+          created_at?: string | null
+          food_id?: string | null
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nutritional_aliases_food_id_fkey"
+            columns: ["food_id"]
+            isOneToOne: false
+            referencedRelation: "nutrition_foods"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      nutritional_food_patterns: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          food_combinations: Json | null
+          health_benefits: string[] | null
+          id: string
+          is_active: boolean | null
+          meal_examples: Json | null
+          pattern_name: string
+          pattern_type: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          food_combinations?: Json | null
+          health_benefits?: string[] | null
+          id?: string
+          is_active?: boolean | null
+          meal_examples?: Json | null
+          pattern_name: string
+          pattern_type?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          food_combinations?: Json | null
+          health_benefits?: string[] | null
+          id?: string
+          is_active?: boolean | null
+          meal_examples?: Json | null
+          pattern_name?: string
+          pattern_type?: string | null
+        }
+        Relationships: []
+      }
+      nutritional_goals: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          current_weight_kg: number | null
+          goal_name: string
+          goal_type: string | null
+          id: string
+          notes: string | null
+          progress_percentage: number | null
+          start_date: string | null
+          status: string | null
+          target_calories: number | null
+          target_carbs_g: number | null
+          target_date: string | null
+          target_fats_g: number | null
+          target_fiber_g: number | null
+          target_protein_g: number | null
+          target_water_ml: number | null
+          target_weight_kg: number | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          current_weight_kg?: number | null
+          goal_name: string
+          goal_type?: string | null
+          id?: string
+          notes?: string | null
+          progress_percentage?: number | null
+          start_date?: string | null
+          status?: string | null
+          target_calories?: number | null
+          target_carbs_g?: number | null
+          target_date?: string | null
+          target_fats_g?: number | null
+          target_fiber_g?: number | null
+          target_protein_g?: number | null
+          target_water_ml?: number | null
+          target_weight_kg?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          current_weight_kg?: number | null
+          goal_name?: string
+          goal_type?: string | null
+          id?: string
+          notes?: string | null
+          progress_percentage?: number | null
+          start_date?: string | null
+          status?: string | null
+          target_calories?: number | null
+          target_carbs_g?: number | null
+          target_date?: string | null
+          target_fats_g?: number | null
+          target_fiber_g?: number | null
+          target_protein_g?: number | null
+          target_water_ml?: number | null
+          target_weight_kg?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      nutritional_protocols: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          dietary_guidelines: Json | null
+          duration_weeks: number | null
+          evidence_level: string | null
+          expected_outcomes: string[] | null
+          health_condition: string | null
+          id: string
+          is_active: boolean | null
+          meal_timing: Json | null
+          monitoring_metrics: string[] | null
+          phases: Json | null
+          protocol_name: string
+          restrictions: string[] | null
+          supplement_recommendations: Json | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          dietary_guidelines?: Json | null
+          duration_weeks?: number | null
+          evidence_level?: string | null
+          expected_outcomes?: string[] | null
+          health_condition?: string | null
+          id?: string
+          is_active?: boolean | null
+          meal_timing?: Json | null
+          monitoring_metrics?: string[] | null
+          phases?: Json | null
+          protocol_name: string
+          restrictions?: string[] | null
+          supplement_recommendations?: Json | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          dietary_guidelines?: Json | null
+          duration_weeks?: number | null
+          evidence_level?: string | null
+          expected_outcomes?: string[] | null
+          health_condition?: string | null
+          id?: string
+          is_active?: boolean | null
+          meal_timing?: Json | null
+          monitoring_metrics?: string[] | null
+          phases?: Json | null
+          protocol_name?: string
+          restrictions?: string[] | null
+          supplement_recommendations?: Json | null
+        }
+        Relationships: []
+      }
+      nutritional_recommendations: {
+        Row: {
+          created_at: string | null
+          foods_to_avoid: string[] | null
+          foods_to_include: string[] | null
+          id: string
+          is_read: boolean | null
+          priority: string | null
+          recommendation_text: string | null
+          recommendation_type: string | null
+          user_id: string | null
+          valid_until: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          foods_to_avoid?: string[] | null
+          foods_to_include?: string[] | null
+          id?: string
+          is_read?: boolean | null
+          priority?: string | null
+          recommendation_text?: string | null
+          recommendation_type?: string | null
+          user_id?: string | null
+          valid_until?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          foods_to_avoid?: string[] | null
+          foods_to_include?: string[] | null
+          id?: string
+          is_read?: boolean | null
+          priority?: string | null
+          recommendation_text?: string | null
+          recommendation_type?: string | null
+          user_id?: string | null
+          valid_until?: string | null
+        }
+        Relationships: []
+      }
+      nutritional_yields: {
+        Row: {
+          created_at: string | null
+          food_name: string
+          id: string
+          notes: string | null
+          preparation_method: string | null
+          yield_factor: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          food_name: string
+          id?: string
+          notes?: string | null
+          preparation_method?: string | null
+          yield_factor?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          food_name?: string
+          id?: string
+          notes?: string | null
+          preparation_method?: string | null
+          yield_factor?: number | null
+        }
+        Relationships: []
+      }
+      offers: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          discount_amount: number | null
+          discount_percentage: number | null
+          id: string
+          is_active: boolean | null
+          offer_code: string | null
+          offer_title: string
+          valid_from: string | null
+          valid_until: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          discount_amount?: number | null
+          discount_percentage?: number | null
+          id?: string
+          is_active?: boolean | null
+          offer_code?: string | null
+          offer_title: string
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          discount_amount?: number | null
+          discount_percentage?: number | null
+          id?: string
+          is_active?: boolean | null
+          offer_code?: string | null
+          offer_title?: string
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Relationships: []
+      }
+      payment_records: {
+        Row: {
+          amount: number | null
+          created_at: string | null
+          currency: string | null
+          error_message: string | null
+          id: string
+          invoice_id: string | null
+          metadata: Json | null
+          payment_date: string | null
+          payment_method: string | null
+          payment_provider: string | null
+          refunded_at: string | null
+          status: string | null
+          subscription_id: string | null
+          transaction_id: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          amount?: number | null
+          created_at?: string | null
+          currency?: string | null
+          error_message?: string | null
+          id?: string
+          invoice_id?: string | null
+          metadata?: Json | null
+          payment_date?: string | null
+          payment_method?: string | null
+          payment_provider?: string | null
+          refunded_at?: string | null
+          status?: string | null
+          subscription_id?: string | null
+          transaction_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number | null
+          created_at?: string | null
+          currency?: string | null
+          error_message?: string | null
+          id?: string
+          invoice_id?: string | null
+          metadata?: Json | null
+          payment_date?: string | null
+          payment_method?: string | null
+          payment_provider?: string | null
+          refunded_at?: string | null
+          status?: string | null
+          subscription_id?: string | null
+          transaction_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_records_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "subscription_invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_records_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "user_subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pending_nutritional_aliases: {
+        Row: {
+          alias: string
+          created_at: string | null
+          food_name: string
+          id: string
+          status: string | null
+          submitted_by: string | null
+        }
+        Insert: {
+          alias: string
+          created_at?: string | null
+          food_name: string
+          id?: string
+          status?: string | null
+          submitted_by?: string | null
+        }
+        Update: {
+          alias?: string
+          created_at?: string | null
+          food_name?: string
+          id?: string
+          status?: string | null
+          submitted_by?: string | null
+        }
+        Relationships: []
+      }
+      pregnancy_nutrition: {
+        Row: {
+          benefits: string | null
+          created_at: string | null
+          food_sources: string[] | null
+          id: string
+          is_essential: boolean | null
+          nutrient_name: string | null
+          precautions: string[] | null
+          recommended_amount: string | null
+          trimester: string | null
+        }
+        Insert: {
+          benefits?: string | null
+          created_at?: string | null
+          food_sources?: string[] | null
+          id?: string
+          is_essential?: boolean | null
+          nutrient_name?: string | null
+          precautions?: string[] | null
+          recommended_amount?: string | null
+          trimester?: string | null
+        }
+        Update: {
+          benefits?: string | null
+          created_at?: string | null
+          food_sources?: string[] | null
+          id?: string
+          is_essential?: boolean | null
+          nutrient_name?: string | null
+          precautions?: string[] | null
+          recommended_amount?: string | null
+          trimester?: string | null
+        }
+        Relationships: []
+      }
       premium_medical_reports: {
         Row: {
           created_at: string | null
@@ -1907,6 +4758,47 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      premium_report_events: {
+        Row: {
+          created_at: string | null
+          event_data: Json | null
+          event_type: string | null
+          id: string
+          processed: boolean | null
+          processed_at: string | null
+          report_id: string | null
+          triggered_by: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          event_data?: Json | null
+          event_type?: string | null
+          id?: string
+          processed?: boolean | null
+          processed_at?: string | null
+          report_id?: string | null
+          triggered_by?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          event_data?: Json | null
+          event_type?: string | null
+          id?: string
+          processed?: boolean | null
+          processed_at?: string | null
+          report_id?: string | null
+          triggered_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "premium_report_events_report_id_fkey"
+            columns: ["report_id"]
+            isOneToOne: false
+            referencedRelation: "premium_medical_reports"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       preventive_health_analyses: {
         Row: {
@@ -2100,6 +4992,21 @@ export type Database = {
         }
         Relationships: []
       }
+      protein_pool: {
+        Row: {
+          category: string | null
+          food_name: string
+        }
+        Insert: {
+          category?: string | null
+          food_name: string
+        }
+        Update: {
+          category?: string | null
+          food_name?: string
+        }
+        Relationships: []
+      }
       protocol_supplements: {
         Row: {
           created_at: string | null
@@ -2143,6 +5050,379 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      recipe_components: {
+        Row: {
+          food_name: string | null
+          order_index: number | null
+          quantity_g: number | null
+          recipe_id: string | null
+        }
+        Insert: {
+          food_name?: string | null
+          order_index?: number | null
+          quantity_g?: number | null
+          recipe_id?: string | null
+        }
+        Update: {
+          food_name?: string | null
+          order_index?: number | null
+          quantity_g?: number | null
+          recipe_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recipe_components_recipe_id_fkey"
+            columns: ["recipe_id"]
+            isOneToOne: false
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      recipe_items: {
+        Row: {
+          food_id: string | null
+          id: string
+          notes: string | null
+          quantity_g: number | null
+          recipe_id: string | null
+        }
+        Insert: {
+          food_id?: string | null
+          id?: string
+          notes?: string | null
+          quantity_g?: number | null
+          recipe_id?: string | null
+        }
+        Update: {
+          food_id?: string | null
+          id?: string
+          notes?: string | null
+          quantity_g?: number | null
+          recipe_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recipe_items_food_id_fkey"
+            columns: ["food_id"]
+            isOneToOne: false
+            referencedRelation: "nutrition_foods"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recipe_items_recipe_id_fkey"
+            columns: ["recipe_id"]
+            isOneToOne: false
+            referencedRelation: "recipes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      recipe_templates: {
+        Row: {
+          base_ingredients: Json | null
+          category: string | null
+          created_at: string | null
+          id: string
+          instructions_template: string | null
+          tags: string[] | null
+          template_name: string
+        }
+        Insert: {
+          base_ingredients?: Json | null
+          category?: string | null
+          created_at?: string | null
+          id?: string
+          instructions_template?: string | null
+          tags?: string[] | null
+          template_name: string
+        }
+        Update: {
+          base_ingredients?: Json | null
+          category?: string | null
+          created_at?: string | null
+          id?: string
+          instructions_template?: string | null
+          tags?: string[] | null
+          template_name?: string
+        }
+        Relationships: []
+      }
+      recipes: {
+        Row: {
+          id: string
+          instructions: string | null
+          name: string
+        }
+        Insert: {
+          id?: string
+          instructions?: string | null
+          name: string
+        }
+        Update: {
+          id?: string
+          instructions?: string | null
+          name?: string
+        }
+        Relationships: []
+      }
+      saboteur_assessments: {
+        Row: {
+          assessment_date: string | null
+          created_at: string | null
+          id: string
+          impact_areas: string[] | null
+          intensity_score: number | null
+          notes: string | null
+          saboteur_type: string | null
+          trigger_situations: string[] | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          assessment_date?: string | null
+          created_at?: string | null
+          id?: string
+          impact_areas?: string[] | null
+          intensity_score?: number | null
+          notes?: string | null
+          saboteur_type?: string | null
+          trigger_situations?: string[] | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          assessment_date?: string | null
+          created_at?: string | null
+          id?: string
+          impact_areas?: string[] | null
+          intensity_score?: number | null
+          notes?: string | null
+          saboteur_type?: string | null
+          trigger_situations?: string[] | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      saboteur_responses: {
+        Row: {
+          assessment_id: string | null
+          created_at: string | null
+          id: string
+          question_id: string | null
+          question_text: string | null
+          response_text: string | null
+          response_value: number | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          assessment_id?: string | null
+          created_at?: string | null
+          id?: string
+          question_id?: string | null
+          question_text?: string | null
+          response_text?: string | null
+          response_value?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          assessment_id?: string | null
+          created_at?: string | null
+          id?: string
+          question_id?: string | null
+          question_text?: string | null
+          response_text?: string | null
+          response_value?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saboteur_responses_assessment_id_fkey"
+            columns: ["assessment_id"]
+            isOneToOne: false
+            referencedRelation: "saboteur_results"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      saboteur_results: {
+        Row: {
+          assessment_date: string | null
+          created_at: string | null
+          dominant_saboteurs: string[] | null
+          id: string
+          percentage: number | null
+          recommendations: string[] | null
+          saboteur_type: string | null
+          score: number | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          assessment_date?: string | null
+          created_at?: string | null
+          dominant_saboteurs?: string[] | null
+          id?: string
+          percentage?: number | null
+          recommendations?: string[] | null
+          saboteur_type?: string | null
+          score?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          assessment_date?: string | null
+          created_at?: string | null
+          dominant_saboteurs?: string[] | null
+          id?: string
+          percentage?: number | null
+          recommendations?: string[] | null
+          saboteur_type?: string | null
+          score?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      scheduled_analysis_records: {
+        Row: {
+          analysis_type: string | null
+          completed_at: string | null
+          created_at: string | null
+          id: string
+          result_data: Json | null
+          scheduled_for: string | null
+          status: string | null
+          user_id: string | null
+        }
+        Insert: {
+          analysis_type?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          result_data?: Json | null
+          scheduled_for?: string | null
+          status?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          analysis_type?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          result_data?: Json | null
+          scheduled_for?: string | null
+          status?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      sent_notifications: {
+        Row: {
+          channel: string | null
+          created_at: string | null
+          data: Json | null
+          id: string
+          is_read: boolean | null
+          message: string | null
+          notification_type: string | null
+          read_at: string | null
+          sent_at: string | null
+          status: string | null
+          title: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          channel?: string | null
+          created_at?: string | null
+          data?: Json | null
+          id?: string
+          is_read?: boolean | null
+          message?: string | null
+          notification_type?: string | null
+          read_at?: string | null
+          sent_at?: string | null
+          status?: string | null
+          title?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          channel?: string | null
+          created_at?: string | null
+          data?: Json | null
+          id?: string
+          is_read?: boolean | null
+          message?: string | null
+          notification_type?: string | null
+          read_at?: string | null
+          sent_at?: string | null
+          status?: string | null
+          title?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      session_templates: {
+        Row: {
+          activities: Json | null
+          benefits: string[] | null
+          category: string | null
+          created_at: string | null
+          description: string | null
+          difficulty_level: string | null
+          duration_minutes: number | null
+          goals: string[] | null
+          id: string
+          instructions: string | null
+          is_active: boolean | null
+          materials_needed: string[] | null
+          precautions: string[] | null
+          template_name: string
+          updated_at: string | null
+        }
+        Insert: {
+          activities?: Json | null
+          benefits?: string[] | null
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          difficulty_level?: string | null
+          duration_minutes?: number | null
+          goals?: string[] | null
+          id?: string
+          instructions?: string | null
+          is_active?: boolean | null
+          materials_needed?: string[] | null
+          precautions?: string[] | null
+          template_name: string
+          updated_at?: string | null
+        }
+        Update: {
+          activities?: Json | null
+          benefits?: string[] | null
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          difficulty_level?: string | null
+          duration_minutes?: number | null
+          goals?: string[] | null
+          id?: string
+          instructions?: string | null
+          is_active?: boolean | null
+          materials_needed?: string[] | null
+          precautions?: string[] | null
+          template_name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       sessions: {
         Row: {
@@ -2195,6 +5475,39 @@ export type Database = {
         }
         Relationships: []
       }
+      sleep_monitoring: {
+        Row: {
+          created_at: string | null
+          deep_sleep_hours: number | null
+          id: string
+          notes: string | null
+          sleep_date: string | null
+          sleep_duration_hours: number | null
+          sleep_quality_rating: number | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          deep_sleep_hours?: number | null
+          id?: string
+          notes?: string | null
+          sleep_date?: string | null
+          sleep_duration_hours?: number | null
+          sleep_quality_rating?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          deep_sleep_hours?: number | null
+          id?: string
+          notes?: string | null
+          sleep_date?: string | null
+          sleep_duration_hours?: number | null
+          sleep_quality_rating?: number | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       smart_notifications: {
         Row: {
           category: string | null
@@ -2236,6 +5549,72 @@ export type Database = {
           title?: string
           trigger_conditions?: Json | null
           type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      sofia_comprehensive_analyses: {
+        Row: {
+          analysis_data: Json | null
+          analysis_type: string | null
+          created_at: string | null
+          id: string
+          insights: string[] | null
+          priority_level: string | null
+          recommendations: string[] | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          analysis_data?: Json | null
+          analysis_type?: string | null
+          created_at?: string | null
+          id?: string
+          insights?: string[] | null
+          priority_level?: string | null
+          recommendations?: string[] | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          analysis_data?: Json | null
+          analysis_type?: string | null
+          created_at?: string | null
+          id?: string
+          insights?: string[] | null
+          priority_level?: string | null
+          recommendations?: string[] | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      sofia_conversation_context: {
+        Row: {
+          context_data: Json | null
+          context_type: string | null
+          created_at: string | null
+          id: string
+          relevance_score: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          context_data?: Json | null
+          context_type?: string | null
+          created_at?: string | null
+          id?: string
+          relevance_score?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          context_data?: Json | null
+          context_type?: string | null
+          created_at?: string | null
+          id?: string
+          relevance_score?: number | null
+          updated_at?: string | null
           user_id?: string
         }
         Relationships: []
@@ -2284,6 +5663,198 @@ export type Database = {
           id?: string
           proteins?: number | null
           recommendations?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      sofia_knowledge_base: {
+        Row: {
+          category: string | null
+          content: string | null
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          keywords: string[] | null
+          language: string | null
+          priority: number | null
+          title: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          category?: string | null
+          content?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          keywords?: string[] | null
+          language?: string | null
+          priority?: number | null
+          title?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string | null
+          content?: string | null
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          keywords?: string[] | null
+          language?: string | null
+          priority?: number | null
+          title?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      sofia_learning: {
+        Row: {
+          confidence_score: number | null
+          created_at: string | null
+          id: string
+          is_validated: boolean | null
+          learning_data: Json | null
+          learning_topic: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          confidence_score?: number | null
+          created_at?: string | null
+          id?: string
+          is_validated?: boolean | null
+          learning_data?: Json | null
+          learning_topic?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          confidence_score?: number | null
+          created_at?: string | null
+          id?: string
+          is_validated?: boolean | null
+          learning_data?: Json | null
+          learning_topic?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      sofia_memory: {
+        Row: {
+          access_count: number | null
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          importance_score: number | null
+          is_active: boolean | null
+          last_accessed_at: string | null
+          memory_key: string | null
+          memory_type: string | null
+          memory_value: Json | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          access_count?: number | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          importance_score?: number | null
+          is_active?: boolean | null
+          last_accessed_at?: string | null
+          memory_key?: string | null
+          memory_type?: string | null
+          memory_value?: Json | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          access_count?: number | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          importance_score?: number | null
+          is_active?: boolean | null
+          last_accessed_at?: string | null
+          memory_key?: string | null
+          memory_type?: string | null
+          memory_value?: Json | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      sofia_messages: {
+        Row: {
+          content: string | null
+          conversation_id: string | null
+          created_at: string | null
+          id: string
+          metadata: Json | null
+          role: string
+          tokens_used: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          content?: string | null
+          conversation_id?: string | null
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          role: string
+          tokens_used?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          content?: string | null
+          conversation_id?: string | null
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          role?: string
+          tokens_used?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      specific_health: {
+        Row: {
+          condition_name: string | null
+          created_at: string | null
+          current_treatment: string | null
+          diagnosis_date: string | null
+          health_category: string | null
+          id: string
+          notes: string | null
+          severity: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          condition_name?: string | null
+          created_at?: string | null
+          current_treatment?: string | null
+          diagnosis_date?: string | null
+          health_category?: string | null
+          id?: string
+          notes?: string | null
+          severity?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          condition_name?: string | null
+          created_at?: string | null
+          current_treatment?: string | null
+          diagnosis_date?: string | null
+          health_category?: string | null
+          id?: string
+          notes?: string | null
+          severity?: string | null
+          updated_at?: string | null
           user_id?: string | null
         }
         Relationships: []
@@ -2398,6 +5969,378 @@ export type Database = {
           },
         ]
       }
+      sports_achievements: {
+        Row: {
+          achievement_name: string
+          achievement_type: string | null
+          badge_icon: string | null
+          created_at: string | null
+          description: string | null
+          id: string
+          metadata: Json | null
+          points_earned: number | null
+          sport_type: string | null
+          unlocked_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          achievement_name: string
+          achievement_type?: string | null
+          badge_icon?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          metadata?: Json | null
+          points_earned?: number | null
+          sport_type?: string | null
+          unlocked_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          achievement_name?: string
+          achievement_type?: string | null
+          badge_icon?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          metadata?: Json | null
+          points_earned?: number | null
+          sport_type?: string | null
+          unlocked_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      sports_challenge_participations: {
+        Row: {
+          achievements: Json | null
+          challenge_id: string | null
+          completed_at: string | null
+          current_progress: number | null
+          id: string
+          joined_at: string | null
+          notes: string | null
+          rank: number | null
+          status: string | null
+          user_id: string | null
+        }
+        Insert: {
+          achievements?: Json | null
+          challenge_id?: string | null
+          completed_at?: string | null
+          current_progress?: number | null
+          id?: string
+          joined_at?: string | null
+          notes?: string | null
+          rank?: number | null
+          status?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          achievements?: Json | null
+          challenge_id?: string | null
+          completed_at?: string | null
+          current_progress?: number | null
+          id?: string
+          joined_at?: string | null
+          notes?: string | null
+          rank?: number | null
+          status?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sports_challenge_participations_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "sports_challenges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sports_challenges: {
+        Row: {
+          challenge_name: string
+          created_at: string | null
+          description: string | null
+          difficulty: string | null
+          duration_days: number | null
+          end_date: string | null
+          id: string
+          is_active: boolean | null
+          is_team_challenge: boolean | null
+          max_participants: number | null
+          rewards: Json | null
+          rules: Json | null
+          sport_type: string | null
+          start_date: string | null
+          target_metric: string | null
+          target_value: number | null
+          unit: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          challenge_name: string
+          created_at?: string | null
+          description?: string | null
+          difficulty?: string | null
+          duration_days?: number | null
+          end_date?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_team_challenge?: boolean | null
+          max_participants?: number | null
+          rewards?: Json | null
+          rules?: Json | null
+          sport_type?: string | null
+          start_date?: string | null
+          target_metric?: string | null
+          target_value?: number | null
+          unit?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          challenge_name?: string
+          created_at?: string | null
+          description?: string | null
+          difficulty?: string | null
+          duration_days?: number | null
+          end_date?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_team_challenge?: boolean | null
+          max_participants?: number | null
+          rewards?: Json | null
+          rules?: Json | null
+          sport_type?: string | null
+          start_date?: string | null
+          target_metric?: string | null
+          target_value?: number | null
+          unit?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      sports_training_plans: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          difficulty_level: string | null
+          duration_weeks: number | null
+          equipment_needed: string[] | null
+          exercises: Json | null
+          goal: string | null
+          id: string
+          is_active: boolean | null
+          is_public: boolean | null
+          nutrition_recommendations: string | null
+          performance_metrics: string[] | null
+          plan_name: string
+          progression_plan: Json | null
+          recovery_guidelines: string | null
+          sessions_per_week: number | null
+          sport_type: string | null
+          start_date: string | null
+          training_phases: Json | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          difficulty_level?: string | null
+          duration_weeks?: number | null
+          equipment_needed?: string[] | null
+          exercises?: Json | null
+          goal?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_public?: boolean | null
+          nutrition_recommendations?: string | null
+          performance_metrics?: string[] | null
+          plan_name: string
+          progression_plan?: Json | null
+          recovery_guidelines?: string | null
+          sessions_per_week?: number | null
+          sport_type?: string | null
+          start_date?: string | null
+          training_phases?: Json | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          difficulty_level?: string | null
+          duration_weeks?: number | null
+          equipment_needed?: string[] | null
+          exercises?: Json | null
+          goal?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_public?: boolean | null
+          nutrition_recommendations?: string | null
+          performance_metrics?: string[] | null
+          plan_name?: string
+          progression_plan?: Json | null
+          recovery_guidelines?: string | null
+          sessions_per_week?: number | null
+          sport_type?: string | null
+          start_date?: string | null
+          training_phases?: Json | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      sports_training_records: {
+        Row: {
+          created_at: string | null
+          duration_minutes: number | null
+          exercises_completed: Json | null
+          id: string
+          intensity_level: string | null
+          performance_notes: string | null
+          session_date: string | null
+          session_type: string | null
+          training_plan_id: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          duration_minutes?: number | null
+          exercises_completed?: Json | null
+          id?: string
+          intensity_level?: string | null
+          performance_notes?: string | null
+          session_date?: string | null
+          session_type?: string | null
+          training_plan_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          duration_minutes?: number | null
+          exercises_completed?: Json | null
+          id?: string
+          intensity_level?: string | null
+          performance_notes?: string | null
+          session_date?: string | null
+          session_type?: string | null
+          training_plan_id?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sports_training_records_training_plan_id_fkey"
+            columns: ["training_plan_id"]
+            isOneToOne: false
+            referencedRelation: "sports_training_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subscription_invoices: {
+        Row: {
+          amount: number | null
+          created_at: string | null
+          due_date: string | null
+          id: string
+          invoice_number: string | null
+          invoice_url: string | null
+          paid_at: string | null
+          status: string | null
+          subscription_id: string | null
+          tax: number | null
+          total: number | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          amount?: number | null
+          created_at?: string | null
+          due_date?: string | null
+          id?: string
+          invoice_number?: string | null
+          invoice_url?: string | null
+          paid_at?: string | null
+          status?: string | null
+          subscription_id?: string | null
+          tax?: number | null
+          total?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number | null
+          created_at?: string | null
+          due_date?: string | null
+          id?: string
+          invoice_number?: string | null
+          invoice_url?: string | null
+          paid_at?: string | null
+          status?: string | null
+          subscription_id?: string | null
+          tax?: number | null
+          total?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscription_invoices_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "user_subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subscription_plans: {
+        Row: {
+          billing_cycle: string | null
+          created_at: string | null
+          description: string | null
+          features: Json | null
+          id: string
+          is_active: boolean | null
+          max_users: number | null
+          plan_name: string
+          price: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          billing_cycle?: string | null
+          created_at?: string | null
+          description?: string | null
+          features?: Json | null
+          id?: string
+          is_active?: boolean | null
+          max_users?: number | null
+          plan_name: string
+          price?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          billing_cycle?: string | null
+          created_at?: string | null
+          description?: string | null
+          features?: Json | null
+          id?: string
+          is_active?: boolean | null
+          max_users?: number | null
+          plan_name?: string
+          price?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       supplement_protocols: {
         Row: {
           conditions: string[] | null
@@ -2509,6 +6452,267 @@ export type Database = {
           stock_quantity?: number | null
           tags?: string[] | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      taco_foods: {
+        Row: {
+          ash_g: number | null
+          calcium_mg: number | null
+          carbohydrate_g: number | null
+          category: string | null
+          cholesterol_mg: number | null
+          code: number | null
+          copper_mg: number | null
+          created_at: string | null
+          energy_kcal: number | null
+          energy_kj: number | null
+          fiber_g: number | null
+          food_name: string
+          id: string
+          iron_mg: number | null
+          is_verified: boolean | null
+          lipids_g: number | null
+          magnesium_mg: number | null
+          manganese_mg: number | null
+          monounsaturated_g: number | null
+          niacin_mg: number | null
+          phosphorus_mg: number | null
+          polyunsaturated_g: number | null
+          potassium_mg: number | null
+          protein_g: number | null
+          pyridoxine_mg: number | null
+          rae_mcg: number | null
+          re_mcg: number | null
+          retinol_mcg: number | null
+          riboflavin_mg: number | null
+          saturated_g: number | null
+          sodium_mg: number | null
+          thiamine_mg: number | null
+          updated_at: string | null
+          vitamin_c_mg: number | null
+          zinc_mg: number | null
+        }
+        Insert: {
+          ash_g?: number | null
+          calcium_mg?: number | null
+          carbohydrate_g?: number | null
+          category?: string | null
+          cholesterol_mg?: number | null
+          code?: number | null
+          copper_mg?: number | null
+          created_at?: string | null
+          energy_kcal?: number | null
+          energy_kj?: number | null
+          fiber_g?: number | null
+          food_name: string
+          id?: string
+          iron_mg?: number | null
+          is_verified?: boolean | null
+          lipids_g?: number | null
+          magnesium_mg?: number | null
+          manganese_mg?: number | null
+          monounsaturated_g?: number | null
+          niacin_mg?: number | null
+          phosphorus_mg?: number | null
+          polyunsaturated_g?: number | null
+          potassium_mg?: number | null
+          protein_g?: number | null
+          pyridoxine_mg?: number | null
+          rae_mcg?: number | null
+          re_mcg?: number | null
+          retinol_mcg?: number | null
+          riboflavin_mg?: number | null
+          saturated_g?: number | null
+          sodium_mg?: number | null
+          thiamine_mg?: number | null
+          updated_at?: string | null
+          vitamin_c_mg?: number | null
+          zinc_mg?: number | null
+        }
+        Update: {
+          ash_g?: number | null
+          calcium_mg?: number | null
+          carbohydrate_g?: number | null
+          category?: string | null
+          cholesterol_mg?: number | null
+          code?: number | null
+          copper_mg?: number | null
+          created_at?: string | null
+          energy_kcal?: number | null
+          energy_kj?: number | null
+          fiber_g?: number | null
+          food_name?: string
+          id?: string
+          iron_mg?: number | null
+          is_verified?: boolean | null
+          lipids_g?: number | null
+          magnesium_mg?: number | null
+          manganese_mg?: number | null
+          monounsaturated_g?: number | null
+          niacin_mg?: number | null
+          phosphorus_mg?: number | null
+          polyunsaturated_g?: number | null
+          potassium_mg?: number | null
+          protein_g?: number | null
+          pyridoxine_mg?: number | null
+          rae_mcg?: number | null
+          re_mcg?: number | null
+          retinol_mcg?: number | null
+          riboflavin_mg?: number | null
+          saturated_g?: number | null
+          sodium_mg?: number | null
+          thiamine_mg?: number | null
+          updated_at?: string | null
+          vitamin_c_mg?: number | null
+          zinc_mg?: number | null
+        }
+        Relationships: []
+      }
+      taco_stage: {
+        Row: {
+          acido_folico_mcg: number | null
+          alimento: string | null
+          calcio_mg: number | null
+          carboidrato_g: number | null
+          categoria: string | null
+          cobre_mg: number | null
+          colesterol_mg: number | null
+          created_at: string | null
+          energia_kcal: number | null
+          ferro_mg: number | null
+          fibra_g: number | null
+          fosforo_mg: number | null
+          id: string
+          lipidios_g: number | null
+          magnesio_mg: number | null
+          manganes_mg: number | null
+          numero: number | null
+          potassio_mg: number | null
+          proteina_g: number | null
+          selenio_mcg: number | null
+          sodio_mg: number | null
+          vitamina_a_rae_mcg: number | null
+          vitamina_b1_mg: number | null
+          vitamina_b12_mcg: number | null
+          vitamina_b2_mg: number | null
+          vitamina_b3_mg: number | null
+          vitamina_b6_mg: number | null
+          vitamina_c_mg: number | null
+          vitamina_d_mcg: number | null
+          vitamina_e_mg: number | null
+          zinco_mg: number | null
+        }
+        Insert: {
+          acido_folico_mcg?: number | null
+          alimento?: string | null
+          calcio_mg?: number | null
+          carboidrato_g?: number | null
+          categoria?: string | null
+          cobre_mg?: number | null
+          colesterol_mg?: number | null
+          created_at?: string | null
+          energia_kcal?: number | null
+          ferro_mg?: number | null
+          fibra_g?: number | null
+          fosforo_mg?: number | null
+          id?: string
+          lipidios_g?: number | null
+          magnesio_mg?: number | null
+          manganes_mg?: number | null
+          numero?: number | null
+          potassio_mg?: number | null
+          proteina_g?: number | null
+          selenio_mcg?: number | null
+          sodio_mg?: number | null
+          vitamina_a_rae_mcg?: number | null
+          vitamina_b1_mg?: number | null
+          vitamina_b12_mcg?: number | null
+          vitamina_b2_mg?: number | null
+          vitamina_b3_mg?: number | null
+          vitamina_b6_mg?: number | null
+          vitamina_c_mg?: number | null
+          vitamina_d_mcg?: number | null
+          vitamina_e_mg?: number | null
+          zinco_mg?: number | null
+        }
+        Update: {
+          acido_folico_mcg?: number | null
+          alimento?: string | null
+          calcio_mg?: number | null
+          carboidrato_g?: number | null
+          categoria?: string | null
+          cobre_mg?: number | null
+          colesterol_mg?: number | null
+          created_at?: string | null
+          energia_kcal?: number | null
+          ferro_mg?: number | null
+          fibra_g?: number | null
+          fosforo_mg?: number | null
+          id?: string
+          lipidios_g?: number | null
+          magnesio_mg?: number | null
+          manganes_mg?: number | null
+          numero?: number | null
+          potassio_mg?: number | null
+          proteina_g?: number | null
+          selenio_mcg?: number | null
+          sodio_mg?: number | null
+          vitamina_a_rae_mcg?: number | null
+          vitamina_b1_mg?: number | null
+          vitamina_b12_mcg?: number | null
+          vitamina_b2_mg?: number | null
+          vitamina_b3_mg?: number | null
+          vitamina_b6_mg?: number | null
+          vitamina_c_mg?: number | null
+          vitamina_d_mcg?: number | null
+          vitamina_e_mg?: number | null
+          zinco_mg?: number | null
+        }
+        Relationships: []
+      }
+      therapeutic_recipes: {
+        Row: {
+          created_at: string | null
+          health_condition: string | null
+          id: string
+          ingredients: Json | null
+          instructions: string | null
+          is_active: boolean | null
+          nutritional_info: Json | null
+          precautions: string[] | null
+          preparation_time_minutes: number | null
+          recipe_name: string
+          servings: number | null
+          therapeutic_benefits: string[] | null
+        }
+        Insert: {
+          created_at?: string | null
+          health_condition?: string | null
+          id?: string
+          ingredients?: Json | null
+          instructions?: string | null
+          is_active?: boolean | null
+          nutritional_info?: Json | null
+          precautions?: string[] | null
+          preparation_time_minutes?: number | null
+          recipe_name: string
+          servings?: number | null
+          therapeutic_benefits?: string[] | null
+        }
+        Update: {
+          created_at?: string | null
+          health_condition?: string | null
+          id?: string
+          ingredients?: Json | null
+          instructions?: string | null
+          is_active?: boolean | null
+          nutritional_info?: Json | null
+          precautions?: string[] | null
+          preparation_time_minutes?: number | null
+          recipe_name?: string
+          servings?: number | null
+          therapeutic_benefits?: string[] | null
         }
         Relationships: []
       }
@@ -2659,6 +6863,89 @@ export type Database = {
         }
         Relationships: []
       }
+      user_anamnesis_history: {
+        Row: {
+          anamnesis_id: string | null
+          change_type: string | null
+          changed_by: string | null
+          changes: Json | null
+          created_at: string | null
+          id: string
+          previous_data: Json | null
+          reason: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          anamnesis_id?: string | null
+          change_type?: string | null
+          changed_by?: string | null
+          changes?: Json | null
+          created_at?: string | null
+          id?: string
+          previous_data?: Json | null
+          reason?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          anamnesis_id?: string | null
+          change_type?: string | null
+          changed_by?: string | null
+          changes?: Json | null
+          created_at?: string | null
+          id?: string
+          previous_data?: Json | null
+          reason?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      user_assessments: {
+        Row: {
+          assessment_id: string | null
+          completed_at: string | null
+          created_at: string | null
+          id: string
+          responses: Json | null
+          result_data: Json | null
+          score: number | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          assessment_id?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          responses?: Json | null
+          result_data?: Json | null
+          score?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          assessment_id?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          id?: string
+          responses?: Json | null
+          result_data?: Json | null
+          score?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_assessments_assessment_id_fkey"
+            columns: ["assessment_id"]
+            isOneToOne: false
+            referencedRelation: "assessments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_challenges: {
         Row: {
           challenge_id: string | null
@@ -2696,6 +6983,38 @@ export type Database = {
             columns: ["challenge_id"]
             isOneToOne: false
             referencedRelation: "challenges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_custom_saboteurs: {
+        Row: {
+          created_at: string | null
+          id: string
+          intensity_level: string | null
+          saboteur_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          intensity_level?: string | null
+          saboteur_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          intensity_level?: string | null
+          saboteur_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_custom_saboteurs_saboteur_id_fkey"
+            columns: ["saboteur_id"]
+            isOneToOne: false
+            referencedRelation: "custom_saboteurs"
             referencedColumns: ["id"]
           },
         ]
@@ -2740,6 +7059,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_favorite_foods: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          food_id: string | null
+          food_name: string | null
+          id: string
+          notes: string | null
+          preference_level: number | null
+          user_id: string | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          food_id?: string | null
+          food_name?: string | null
+          id?: string
+          notes?: string | null
+          preference_level?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          food_id?: string | null
+          food_name?: string | null
+          id?: string
+          notes?: string | null
+          preference_level?: number | null
+          user_id?: string | null
+        }
+        Relationships: []
       }
       user_food_preferences: {
         Row: {
@@ -2815,6 +7167,82 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      user_goal_invites: {
+        Row: {
+          created_at: string | null
+          goal_id: string | null
+          id: string
+          invited_at: string | null
+          invitee_id: string | null
+          inviter_id: string | null
+          message: string | null
+          responded_at: string | null
+          status: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          goal_id?: string | null
+          id?: string
+          invited_at?: string | null
+          invitee_id?: string | null
+          inviter_id?: string | null
+          message?: string | null
+          responded_at?: string | null
+          status?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          goal_id?: string | null
+          id?: string
+          invited_at?: string | null
+          invitee_id?: string | null
+          inviter_id?: string | null
+          message?: string | null
+          responded_at?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_goal_invites_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "user_goals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_goal_participants: {
+        Row: {
+          goal_id: string | null
+          id: string
+          joined_at: string | null
+          role: string | null
+          user_id: string | null
+        }
+        Insert: {
+          goal_id?: string | null
+          id?: string
+          joined_at?: string | null
+          role?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          goal_id?: string | null
+          id?: string
+          joined_at?: string | null
+          role?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_goal_participants_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "user_goals"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_goals: {
         Row: {
@@ -2894,6 +7322,105 @@ export type Database = {
         }
         Relationships: []
       }
+      user_ingredient_history: {
+        Row: {
+          created_at: string | null
+          id: string
+          ingredient_name: string | null
+          is_favorite: boolean | null
+          last_used_at: string | null
+          usage_count: number | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          ingredient_name?: string | null
+          is_favorite?: boolean | null
+          last_used_at?: string | null
+          usage_count?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          ingredient_name?: string | null
+          is_favorite?: boolean | null
+          last_used_at?: string | null
+          usage_count?: number | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      user_medical_reports: {
+        Row: {
+          analysis_data: Json | null
+          created_at: string | null
+          description: string | null
+          doctor_name: string | null
+          file_name: string | null
+          file_type: string | null
+          file_url: string | null
+          follow_up_date: string | null
+          id: string
+          is_critical: boolean | null
+          key_findings: string[] | null
+          notes: string | null
+          recommendations: string[] | null
+          report_date: string | null
+          report_type: string | null
+          specialty: string | null
+          tags: string[] | null
+          title: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          analysis_data?: Json | null
+          created_at?: string | null
+          description?: string | null
+          doctor_name?: string | null
+          file_name?: string | null
+          file_type?: string | null
+          file_url?: string | null
+          follow_up_date?: string | null
+          id?: string
+          is_critical?: boolean | null
+          key_findings?: string[] | null
+          notes?: string | null
+          recommendations?: string[] | null
+          report_date?: string | null
+          report_type?: string | null
+          specialty?: string | null
+          tags?: string[] | null
+          title?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          analysis_data?: Json | null
+          created_at?: string | null
+          description?: string | null
+          doctor_name?: string | null
+          file_name?: string | null
+          file_type?: string | null
+          file_url?: string | null
+          follow_up_date?: string | null
+          id?: string
+          is_critical?: boolean | null
+          key_findings?: string[] | null
+          notes?: string | null
+          recommendations?: string[] | null
+          report_date?: string | null
+          report_type?: string | null
+          specialty?: string | null
+          tags?: string[] | null
+          title?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_missions: {
         Row: {
           completed_at: string | null
@@ -2928,6 +7455,114 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_notification_settings: {
+        Row: {
+          created_at: string | null
+          email_notifications: boolean | null
+          enabled_types: Json | null
+          id: string
+          notification_frequency: string | null
+          push_notifications: boolean | null
+          quiet_hours_end: string | null
+          quiet_hours_start: string | null
+          sms_notifications: boolean | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          email_notifications?: boolean | null
+          enabled_types?: Json | null
+          id?: string
+          notification_frequency?: string | null
+          push_notifications?: boolean | null
+          quiet_hours_end?: string | null
+          quiet_hours_start?: string | null
+          sms_notifications?: boolean | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          email_notifications?: boolean | null
+          enabled_types?: Json | null
+          id?: string
+          notification_frequency?: string | null
+          push_notifications?: boolean | null
+          quiet_hours_end?: string | null
+          quiet_hours_start?: string | null
+          sms_notifications?: boolean | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_nutraceutical_suggestions: {
+        Row: {
+          benefits: string[] | null
+          cost_estimate: number | null
+          created_at: string | null
+          dosage: string | null
+          duration_days: number | null
+          evidence_quality: string | null
+          frequency: string | null
+          health_goal: string | null
+          id: string
+          interactions: string[] | null
+          notes: string | null
+          precautions: string[] | null
+          priority_level: string | null
+          status: string | null
+          suggested_by: string | null
+          supplement_name: string
+          timing: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          benefits?: string[] | null
+          cost_estimate?: number | null
+          created_at?: string | null
+          dosage?: string | null
+          duration_days?: number | null
+          evidence_quality?: string | null
+          frequency?: string | null
+          health_goal?: string | null
+          id?: string
+          interactions?: string[] | null
+          notes?: string | null
+          precautions?: string[] | null
+          priority_level?: string | null
+          status?: string | null
+          suggested_by?: string | null
+          supplement_name: string
+          timing?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          benefits?: string[] | null
+          cost_estimate?: number | null
+          created_at?: string | null
+          dosage?: string | null
+          duration_days?: number | null
+          evidence_quality?: string | null
+          frequency?: string | null
+          health_goal?: string | null
+          id?: string
+          interactions?: string[] | null
+          notes?: string | null
+          precautions?: string[] | null
+          priority_level?: string | null
+          status?: string | null
+          suggested_by?: string | null
+          supplement_name?: string
+          timing?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
       }
       user_physical_data: {
         Row: {
@@ -3155,6 +7790,42 @@ export type Database = {
         }
         Relationships: []
       }
+      user_sports_modalities: {
+        Row: {
+          created_at: string | null
+          goals: string[] | null
+          id: string
+          is_primary: boolean | null
+          skill_level: string | null
+          sport_name: string
+          training_frequency: string | null
+          user_id: string | null
+          years_experience: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          goals?: string[] | null
+          id?: string
+          is_primary?: boolean | null
+          skill_level?: string | null
+          sport_name: string
+          training_frequency?: string | null
+          user_id?: string | null
+          years_experience?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          goals?: string[] | null
+          id?: string
+          is_primary?: boolean | null
+          skill_level?: string | null
+          sport_name?: string
+          training_frequency?: string | null
+          user_id?: string | null
+          years_experience?: number | null
+        }
+        Relationships: []
+      }
       user_subscriptions: {
         Row: {
           amount: number | null
@@ -3197,6 +7868,89 @@ export type Database = {
           subscription_type?: string
           updated_at?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      user_supplements: {
+        Row: {
+          created_at: string | null
+          dosage: string | null
+          end_date: string | null
+          frequency: string | null
+          id: string
+          is_active: boolean | null
+          notes: string | null
+          start_date: string | null
+          supplement_id: string | null
+          supplement_name: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          dosage?: string | null
+          end_date?: string | null
+          frequency?: string | null
+          id?: string
+          is_active?: boolean | null
+          notes?: string | null
+          start_date?: string | null
+          supplement_id?: string | null
+          supplement_name?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          dosage?: string | null
+          end_date?: string | null
+          frequency?: string | null
+          id?: string
+          is_active?: boolean | null
+          notes?: string | null
+          start_date?: string | null
+          supplement_id?: string | null
+          supplement_name?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_supplements_supplement_id_fkey"
+            columns: ["supplement_id"]
+            isOneToOne: false
+            referencedRelation: "supplements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      users_needing_analysis: {
+        Row: {
+          analysis_type: string | null
+          completed_at: string | null
+          id: string
+          notes: string | null
+          priority: number | null
+          requested_at: string | null
+          status: string | null
+          user_id: string | null
+        }
+        Insert: {
+          analysis_type?: string | null
+          completed_at?: string | null
+          id?: string
+          notes?: string | null
+          priority?: number | null
+          requested_at?: string | null
+          status?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          analysis_type?: string | null
+          completed_at?: string | null
+          id?: string
+          notes?: string | null
+          priority?: number | null
+          requested_at?: string | null
+          status?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -3246,6 +8000,21 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      vegetable_pool: {
+        Row: {
+          category: string | null
+          food_name: string
+        }
+        Insert: {
+          category?: string | null
+          food_name: string
+        }
+        Update: {
+          category?: string | null
+          food_name?: string
+        }
+        Relationships: []
       }
       water_tracking: {
         Row: {
@@ -3405,6 +8174,51 @@ export type Database = {
         }
         Relationships: []
       }
+      weighings: {
+        Row: {
+          bmi: number | null
+          body_fat_percentage: number | null
+          created_at: string | null
+          date: string | null
+          id: string
+          measurement_context: string | null
+          mood: string | null
+          notes: string | null
+          time: string | null
+          updated_at: string | null
+          user_id: string | null
+          weight_kg: number
+        }
+        Insert: {
+          bmi?: number | null
+          body_fat_percentage?: number | null
+          created_at?: string | null
+          date?: string | null
+          id?: string
+          measurement_context?: string | null
+          mood?: string | null
+          notes?: string | null
+          time?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          weight_kg: number
+        }
+        Update: {
+          bmi?: number | null
+          body_fat_percentage?: number | null
+          created_at?: string | null
+          date?: string | null
+          id?: string
+          measurement_context?: string | null
+          mood?: string | null
+          notes?: string | null
+          time?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          weight_kg?: number
+        }
+        Relationships: []
+      }
       weight_measurements: {
         Row: {
           agua_corporal_percent: number | null
@@ -3473,6 +8287,153 @@ export type Database = {
           peso_kg?: number
           risco_cardiometabolico?: string | null
           risco_metabolico?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      weight_measures: {
+        Row: {
+          arm_circumference_cm: number | null
+          basal_metabolic_rate: number | null
+          bmi: number | null
+          body_fat_percentage: number | null
+          body_type: string | null
+          bone_mass_kg: number | null
+          calf_circumference_cm: number | null
+          chest_circumference_cm: number | null
+          created_at: string | null
+          device_used: string | null
+          height_cm: number | null
+          hip_circumference_cm: number | null
+          id: string
+          measurement_conditions: string | null
+          measurement_date: string | null
+          measurement_method: string | null
+          metabolic_age: number | null
+          muscle_mass_kg: number | null
+          neck_circumference_cm: number | null
+          notes: string | null
+          photo_url: string | null
+          protein_percentage: number | null
+          thigh_circumference_cm: number | null
+          updated_at: string | null
+          user_id: string | null
+          visceral_fat_level: number | null
+          waist_circumference_cm: number | null
+          water_percentage: number | null
+          weight_kg: number | null
+        }
+        Insert: {
+          arm_circumference_cm?: number | null
+          basal_metabolic_rate?: number | null
+          bmi?: number | null
+          body_fat_percentage?: number | null
+          body_type?: string | null
+          bone_mass_kg?: number | null
+          calf_circumference_cm?: number | null
+          chest_circumference_cm?: number | null
+          created_at?: string | null
+          device_used?: string | null
+          height_cm?: number | null
+          hip_circumference_cm?: number | null
+          id?: string
+          measurement_conditions?: string | null
+          measurement_date?: string | null
+          measurement_method?: string | null
+          metabolic_age?: number | null
+          muscle_mass_kg?: number | null
+          neck_circumference_cm?: number | null
+          notes?: string | null
+          photo_url?: string | null
+          protein_percentage?: number | null
+          thigh_circumference_cm?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+          visceral_fat_level?: number | null
+          waist_circumference_cm?: number | null
+          water_percentage?: number | null
+          weight_kg?: number | null
+        }
+        Update: {
+          arm_circumference_cm?: number | null
+          basal_metabolic_rate?: number | null
+          bmi?: number | null
+          body_fat_percentage?: number | null
+          body_type?: string | null
+          bone_mass_kg?: number | null
+          calf_circumference_cm?: number | null
+          chest_circumference_cm?: number | null
+          created_at?: string | null
+          device_used?: string | null
+          height_cm?: number | null
+          hip_circumference_cm?: number | null
+          id?: string
+          measurement_conditions?: string | null
+          measurement_date?: string | null
+          measurement_method?: string | null
+          metabolic_age?: number | null
+          muscle_mass_kg?: number | null
+          neck_circumference_cm?: number | null
+          notes?: string | null
+          photo_url?: string | null
+          protein_percentage?: number | null
+          thigh_circumference_cm?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+          visceral_fat_level?: number | null
+          waist_circumference_cm?: number | null
+          water_percentage?: number | null
+          weight_kg?: number | null
+        }
+        Relationships: []
+      }
+      wheel_of_life: {
+        Row: {
+          assessment_date: string | null
+          career_score: number | null
+          created_at: string | null
+          environment_score: number | null
+          finances_score: number | null
+          fun_recreation_score: number | null
+          health_score: number | null
+          id: string
+          notes: string | null
+          overall_balance: number | null
+          personal_growth_score: number | null
+          relationships_score: number | null
+          spirituality_score: number | null
+          user_id: string | null
+        }
+        Insert: {
+          assessment_date?: string | null
+          career_score?: number | null
+          created_at?: string | null
+          environment_score?: number | null
+          finances_score?: number | null
+          fun_recreation_score?: number | null
+          health_score?: number | null
+          id?: string
+          notes?: string | null
+          overall_balance?: number | null
+          personal_growth_score?: number | null
+          relationships_score?: number | null
+          spirituality_score?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          assessment_date?: string | null
+          career_score?: number | null
+          created_at?: string | null
+          environment_score?: number | null
+          finances_score?: number | null
+          fun_recreation_score?: number | null
+          health_score?: number | null
+          id?: string
+          notes?: string | null
+          overall_balance?: number | null
+          personal_growth_score?: number | null
+          relationships_score?: number | null
+          spirituality_score?: number | null
           user_id?: string | null
         }
         Relationships: []
