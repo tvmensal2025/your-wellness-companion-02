@@ -45,11 +45,14 @@ export const NutritionAliasAdmin: React.FC = () => {
       if (!rows || rows.length === 0) {
         const { data } = await supabase
           .from('nutrition_foods')
-          .select('id, canonical_name, state')
-          .ilike('canonical_name', `%${q}%`)
-          .eq('locale', 'pt-BR')
+          .select('id, name, category')
+          .ilike('name', `%${q}%`)
           .limit(20);
-        rows = data || [];
+        rows = (data || []).map(item => ({
+          id: item.id,
+          canonical_name: item.name,
+          state: item.category || 'active'
+        }));
       }
       setResults(rows as FoodRow[]);
     } finally {
