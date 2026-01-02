@@ -60,7 +60,7 @@ interface AnamnesisData {
   // Qualidade de Vida
   sleep_hours_per_night: number | null;
   sleep_quality_score: number | null;
-  daily_stress_level: number | null;
+  daily_stress_level: string | null;
   physical_activity_type: string;
   physical_activity_frequency: string;
   daily_energy_level: number | null;
@@ -166,12 +166,12 @@ const SystemicAnamnesis = () => {
 
       const { error } = await supabase
         .from('user_anamnesis')
-        .upsert({
+        .upsert([{
           user_id: user.id,
           ...formData,
-          completed_at: new Date().toISOString(), // Marcar como completa
+          completed_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
-        }, {
+        }], {
           onConflict: 'user_id'
         });
 

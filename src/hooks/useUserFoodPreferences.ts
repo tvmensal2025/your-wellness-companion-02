@@ -7,11 +7,11 @@ export interface UserFoodPreference {
   user_id: string;
   food_name: string;
   preference_type: 'restriction' | 'preference' | 'allergy' | 'dislike';
-  severity_level: number;
+  severity_level: string | null;
   notes?: string;
   auto_detected: boolean;
   created_at: string;
-  updated_at: string;
+  updated_at?: string;
 }
 
 export const useUserFoodPreferences = () => {
@@ -35,8 +35,8 @@ export const useUserFoodPreferences = () => {
         return;
       }
 
-      const prefs = data?.filter(p => p.preference_type === 'preference').map(p => p as UserFoodPreference) || [];
-      const rests = data?.filter(p => ['restriction', 'allergy', 'dislike'].includes(p.preference_type)).map(p => p as UserFoodPreference) || [];
+      const prefs = (data?.filter(p => p.preference_type === 'preference') || []) as UserFoodPreference[];
+      const rests = (data?.filter(p => ['restriction', 'allergy', 'dislike'].includes(p.preference_type)) || []) as UserFoodPreference[];
 
       setPreferences(prefs);
       setRestrictions(rests);

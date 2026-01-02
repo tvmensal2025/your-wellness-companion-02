@@ -180,20 +180,20 @@ export const useExerciseProgram = (userId: string | undefined) => {
       console.log('💾 Inserindo novo programa no Supabase...');
       const { data, error } = await supabase
         .from('sport_training_plans')
-        .insert({
+        .insert([{
           user_id: userId,
-          plan_name: programData.title,
-          plan_type: 'custom',
+          name: programData.title,
+          sport_type: 'custom',
+          difficulty: programData.level,
           duration_weeks: durationWeeks,
           workouts_per_week: frequency,
           current_week: 1,
-          current_day: 1,
           status: 'active',
-          plan_data: planData,
+          exercises: planData,
           total_workouts: totalWorkouts,
           completed_workouts: 0,
-          completion_percentage: 0
-        })
+          goal: programData.goal
+        }])
         .select()
         .single();
 

@@ -48,18 +48,13 @@ interface AnamnesisData {
   emotional_events_during_weight_gain?: string;
   weight_fluctuation_classification?: string;
   
-  // Dados Físicos (da Anamnese, se houver)
-  current_weight?: number;
-  height_cm?: number;
-  current_bmi?: number;
-  
-  // Tratamentos
+  // Tratamentos Anteriores
   previous_weight_treatments?: any;
   most_effective_treatment?: string;
   least_effective_treatment?: string;
   had_rebound_effect?: boolean;
   
-  // Medicações
+  // Medicações e Saúde
   current_medications?: any;
   chronic_diseases?: any;
   supplements?: any;
@@ -78,21 +73,21 @@ interface AnamnesisData {
   // Qualidade de Vida
   sleep_hours_per_night?: number;
   sleep_quality_score?: number;
-  daily_stress_level?: number;
+  daily_stress_level?: string | null;
   physical_activity_type?: string;
   physical_activity_frequency?: string;
   daily_energy_level?: number;
   general_quality_of_life?: number;
-
-  // Objetivos e Motivação
+  
+  // Objetivos
   main_treatment_goals?: string;
-  motivation_for_seeking_treatment?: string;
-  treatment_success_definition?: string;
   ideal_weight_goal?: number;
   timeframe_to_achieve_goal?: string;
   biggest_weight_loss_challenge?: string;
+  treatment_success_definition?: string;
+  motivation_for_seeking_treatment?: string;
   
-  created_at: string;
+  created_at?: string;
   updated_at?: string;
 }
 
