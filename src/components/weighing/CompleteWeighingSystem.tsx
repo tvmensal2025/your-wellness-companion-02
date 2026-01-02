@@ -4,12 +4,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
-import { Scale, Edit3, Bluetooth, Zap, Shield, Github, Download, Activity, TrendingUp, Users, Code, Heart, LineChart, BarChart3, Target, RefreshCw, AlertCircle, CheckCircle } from 'lucide-react';
+import { Scale, Edit3, Activity, TrendingUp, Users, Code, Heart, LineChart, BarChart3, Target, RefreshCw, AlertCircle, CheckCircle } from 'lucide-react';
 import SimpleWeightForm from './SimpleWeightForm';
-import { XiaomiScaleFlow } from '../XiaomiScaleFlow';
-import { XiaomiScaleConnection } from '../XiaomiScaleConnection';
-import { XiaomiScaleTroubleshooter } from '../XiaomiScaleTroubleshooter';
-import { XiaomiScaleAdjuster } from '../XiaomiScaleAdjuster';
 import PersonagemCorporal3D from '../PersonagemCorporal3D';
 import { supabase } from '@/integrations/supabase/client';
 import { useUserGender } from '@/hooks/useUserGender';
@@ -139,12 +135,9 @@ const BodyCompositionCard = ({ data }: { data: any }) => {
 };
 
 const CompleteWeighingSystem: React.FC = () => {
-  const [activeWeighingType, setActiveWeighingType] = useState<'manual' | 'automatic'>('manual');
   const [user, setUser] = useState<User | null>(null);
   const [weightData, setWeightData] = useState<any[]>([]);
   const [lastMeasurement, setLastMeasurement] = useState<any>(null);
-  const [isConnecting, setIsConnecting] = useState(false);
-  const [isConnected, setIsConnected] = useState(false);
   const [loading, setLoading] = useState(true);
   const { gender } = useUserGender(user);
   const { toast } = useToast();
@@ -285,42 +278,6 @@ const CompleteWeighingSystem: React.FC = () => {
     }
   };
 
-  const connectToScale = async () => {
-    setIsConnecting(true);
-    
-    try {
-      // Simular conexão com balança
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      setIsConnected(true);
-      toast({
-        title: "Balança Conectada! 🎉",
-        description: "Xiaomi Mi Body Scale conectada com sucesso",
-      });
-      
-      // Recarregar dados após conexão
-      await loadWeightData();
-      
-    } catch (error) {
-      toast({
-        title: "Erro na Conexão",
-        description: "Não foi possível conectar com a balança",
-        variant: "destructive"
-      });
-    } finally {
-      setIsConnecting(false);
-    }
-  };
-
-  const disconnectScale = () => {
-    setIsConnected(false);
-    toast({
-      title: "Balança Desconectada",
-      description: "A balança foi desconectada",
-    });
-  };
-
-  return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 text-white">
       {/* Header Gigante para TV */}
       <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700 text-white shadow-2xl border-b-4 border-blue-400">
@@ -366,40 +323,15 @@ const CompleteWeighingSystem: React.FC = () => {
       {/* Conteúdo Principal para TV */}
       <div className="w-full px-2 sm:px-3 lg:px-4 xl:px-6 py-3 sm:py-4 lg:py-5 xl:py-6">
         
-        {/* Card de Pesagem */}
         <div className="bg-white/10 backdrop-blur-md rounded-2xl lg:rounded-3xl shadow-2xl border-2 border-white/20 overflow-hidden mb-3 sm:mb-4 lg:mb-5 xl:mb-6">
           <div className="bg-gradient-to-r from-blue-500/50 to-indigo-500/50 px-3 sm:px-4 lg:px-5 xl:px-6 py-2 sm:py-3 lg:py-4 border-b-2 border-white/20">
             <h2 className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-white flex items-center">
-              {activeWeighingType === 'manual' ? (
-                <>
-                  <Edit3 className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 xl:h-8 xl:w-8 text-blue-300 mr-2 sm:mr-3 lg:mr-4" />
-                  Nova Pesagem Manual
-                </>
-              ) : (
-                <>
-                  <Scale className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 xl:h-8 xl:w-8 text-blue-300 mr-2 sm:mr-3 lg:mr-4" />
-                  Balança Xiaomi Mi Body Scale 2
-                </>
-              )}
+              <Edit3 className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 xl:h-8 xl:w-8 text-blue-300 mr-2 sm:mr-3 lg:mr-4" />
+              Nova Pesagem Manual
             </h2>
           </div>
           <div className="p-3 sm:p-4 lg:p-5 xl:p-6">
-            {activeWeighingType === 'manual' ? (
-              <SimpleWeightForm />
-            ) : (
-              <div className="space-y-2 sm:space-y-3 lg:space-y-4">
-                <p className="text-sm sm:text-base lg:text-lg xl:text-2xl text-gray-200">
-                  Conecte sua balança Xiaomi para pesagem automática e análise completa
-                </p>
-                <div className="grid gap-4 sm:gap-6">
-                  <XiaomiScaleFlow />
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-                    <XiaomiScaleConnection />
-                    <XiaomiScaleTroubleshooter />
-                  </div>
-                </div>
-              </div>
-            )}
+            <SimpleWeightForm />
           </div>
         </div>
 
