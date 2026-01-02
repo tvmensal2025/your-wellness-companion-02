@@ -20,18 +20,22 @@ import { VisualEffectsManager, useAlternatingEffects } from '@/components/gamifi
 interface Desafio {
   id: string;
   title: string;
-  description: string;
-  category: string;
-  difficulty: string;
-  duration_days: number;
-  points_reward: number;
-  badge_icon: string;
-  badge_name: string;
-  instructions: string;
-  tips: string[];
-  daily_log_target: number;
-  daily_log_unit: string;
-  is_group_challenge: boolean;
+  description: string | null;
+  challenge_type: string | null;
+  difficulty: string | null;
+  duration_days: number | null;
+  xp_reward: number | null;
+  badge_reward: string | null;
+  requirements: any;
+  is_active: boolean | null;
+  created_at: string | null;
+  updated_at: string | null;
+  // Campos extras extraídos do requirements JSON
+  points_reward?: number;
+  badge_icon?: string;
+  badge_name?: string;
+  daily_log_target?: number;
+  daily_log_unit?: string;
   user_participation?: {
     id: string;
     progress: number;
@@ -106,8 +110,16 @@ export default function UpdateChallengeProgressPage({ user }: { user: User | nul
         console.error('Erro ao buscar participação:', participacaoError);
       }
 
+      const requirements = desafioData.requirements as Record<string, any> || {};
+      
       const desafioCompleto: Desafio = {
         ...desafioData,
+        // Extrair campos do requirements JSON se existirem
+        points_reward: requirements.points_reward || desafioData.xp_reward || 100,
+        badge_icon: requirements.badge_icon || desafioData.badge_reward || '🏆',
+        badge_name: requirements.badge_name || desafioData.title,
+        daily_log_target: requirements.daily_log_target || 100,
+        daily_log_unit: requirements.daily_log_unit || 'pontos',
         user_participation: participacaoData ? {
           id: participacaoData.id,
           progress: participacaoData.progress || 0,

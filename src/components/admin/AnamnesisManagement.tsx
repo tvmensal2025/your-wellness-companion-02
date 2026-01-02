@@ -87,6 +87,14 @@ interface AnamnesisData {
   treatment_success_definition?: string;
   motivation_for_seeking_treatment?: string;
   
+  // Medidas físicas
+  current_bmi?: number | null;
+  current_weight_kg?: number | null;
+  height_cm?: number | null;
+  waist_circumference_cm?: number | null;
+  hip_circumference_cm?: number | null;
+  body_fat_percentage?: number | null;
+  
   created_at?: string;
   updated_at?: string;
 }
@@ -177,7 +185,7 @@ const AnamnesisManagement: React.FC = () => {
     if (anamnesis.feels_guilt_after_eating) riskScore++;
     
     // Qualidade de vida
-    if (anamnesis.daily_stress_level && anamnesis.daily_stress_level >= 7) riskScore++;
+    if (anamnesis.daily_stress_level && parseFloat(anamnesis.daily_stress_level) >= 7) riskScore++;
     if (anamnesis.sleep_quality_score && anamnesis.sleep_quality_score <= 3) riskScore++;
 
     if (riskScore >= 5) return { level: 'Alto', color: 'bg-red-500' };
@@ -228,7 +236,7 @@ const AnamnesisManagement: React.FC = () => {
     }
 
     // Análise de qualidade de vida
-    if (anamnesis.daily_stress_level && anamnesis.daily_stress_level >= 7) {
+    if (anamnesis.daily_stress_level && parseFloat(anamnesis.daily_stress_level) >= 7) {
       risks.push('Nível alto de estresse');
       recommendations.push('Técnicas de manejo de estresse e relaxamento');
     }

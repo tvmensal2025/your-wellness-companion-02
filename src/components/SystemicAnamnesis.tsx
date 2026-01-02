@@ -169,7 +169,13 @@ const SystemicAnamnesis = () => {
         .upsert([{
           user_id: user.id,
           ...formData,
-          completed_at: new Date().toISOString(),
+          chronic_diseases: formData.chronic_diseases?.join(', ') || '',
+          current_medications: formData.current_medications?.join(', ') || '',
+          supplements: formData.supplements?.join(', ') || '',
+          herbal_medicines: formData.herbal_medicines?.join(', ') || '',
+          problematic_foods: formData.problematic_foods?.join(', ') || '',
+          forbidden_foods: formData.forbidden_foods?.join(', ') || '',
+          previous_weight_treatments: formData.previous_weight_treatments?.join(', ') || '',
           updated_at: new Date().toISOString()
         }], {
           onConflict: 'user_id'

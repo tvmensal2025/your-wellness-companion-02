@@ -139,18 +139,18 @@ export const useWorkoutPlanGenerator = () => {
         .from('sport_training_plans')
         .insert({
           user_id: user.id,
-          modality_id: modalityRecord?.id,
-          plan_name: getPlanName(params),
-          plan_type: 'progressive',
+          name: getPlanName(params),
+          modality: params.modality,
+          sport_type: params.modality,
+          goal: params.goal,
+          difficulty: params.level,
           duration_weeks: params.duration_weeks,
           workouts_per_week: params.workouts_per_week,
           current_week: 1,
-          current_day: 1,
           status: 'active',
-          plan_data: planData,
+          exercises: planData,
           total_workouts: totalWorkouts,
-          completed_workouts: 0,
-          completion_percentage: 0
+          completed_workouts: 0
         })
         .select()
         .single();

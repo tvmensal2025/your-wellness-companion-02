@@ -172,6 +172,59 @@ export type Database = {
           },
         ]
       }
+      challenge_participations: {
+        Row: {
+          best_streak: number | null
+          challenge_id: string
+          completed_at: string | null
+          created_at: string | null
+          current_streak: number | null
+          id: string
+          is_completed: boolean | null
+          points_earned: number | null
+          progress: number | null
+          started_at: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          best_streak?: number | null
+          challenge_id: string
+          completed_at?: string | null
+          created_at?: string | null
+          current_streak?: number | null
+          id?: string
+          is_completed?: boolean | null
+          points_earned?: number | null
+          progress?: number | null
+          started_at?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          best_streak?: number | null
+          challenge_id?: string
+          completed_at?: string | null
+          created_at?: string | null
+          current_streak?: number | null
+          id?: string
+          is_completed?: boolean | null
+          points_earned?: number | null
+          progress?: number | null
+          started_at?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "challenge_participations_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "challenges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       challenges: {
         Row: {
           badge_reward: string | null
@@ -1240,6 +1293,51 @@ export type Database = {
         }
         Relationships: []
       }
+      premium_medical_reports: {
+        Row: {
+          created_at: string | null
+          data: Json | null
+          description: string | null
+          generated_at: string | null
+          html_path: string | null
+          id: string
+          pdf_path: string | null
+          report_type: string
+          status: string | null
+          title: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          data?: Json | null
+          description?: string | null
+          generated_at?: string | null
+          html_path?: string | null
+          id?: string
+          pdf_path?: string | null
+          report_type: string
+          status?: string | null
+          title: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          data?: Json | null
+          description?: string | null
+          generated_at?: string | null
+          html_path?: string | null
+          id?: string
+          pdf_path?: string | null
+          report_type?: string
+          status?: string | null
+          title?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       preventive_health_analyses: {
         Row: {
           action_plan: string | null
@@ -1279,6 +1377,84 @@ export type Database = {
           risk_factors?: Json | null
           risk_score?: number | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      professional_evaluations: {
+        Row: {
+          abdominal_circumference_cm: number | null
+          bmi: number | null
+          bmr_kcal: number | null
+          body_fat_percentage: number | null
+          created_at: string | null
+          evaluation_date: string | null
+          evaluator_id: string | null
+          fat_mass_kg: number | null
+          height_cm: number | null
+          hip_circumference_cm: number | null
+          id: string
+          lean_mass_kg: number | null
+          muscle_mass_kg: number | null
+          muscle_to_fat_ratio: number | null
+          notes: string | null
+          recommendations: string | null
+          risk_level: string | null
+          updated_at: string | null
+          user_id: string
+          waist_circumference_cm: number | null
+          waist_to_height_ratio: number | null
+          waist_to_hip_ratio: number | null
+          weight_kg: number
+        }
+        Insert: {
+          abdominal_circumference_cm?: number | null
+          bmi?: number | null
+          bmr_kcal?: number | null
+          body_fat_percentage?: number | null
+          created_at?: string | null
+          evaluation_date?: string | null
+          evaluator_id?: string | null
+          fat_mass_kg?: number | null
+          height_cm?: number | null
+          hip_circumference_cm?: number | null
+          id?: string
+          lean_mass_kg?: number | null
+          muscle_mass_kg?: number | null
+          muscle_to_fat_ratio?: number | null
+          notes?: string | null
+          recommendations?: string | null
+          risk_level?: string | null
+          updated_at?: string | null
+          user_id: string
+          waist_circumference_cm?: number | null
+          waist_to_height_ratio?: number | null
+          waist_to_hip_ratio?: number | null
+          weight_kg: number
+        }
+        Update: {
+          abdominal_circumference_cm?: number | null
+          bmi?: number | null
+          bmr_kcal?: number | null
+          body_fat_percentage?: number | null
+          created_at?: string | null
+          evaluation_date?: string | null
+          evaluator_id?: string | null
+          fat_mass_kg?: number | null
+          height_cm?: number | null
+          hip_circumference_cm?: number | null
+          id?: string
+          lean_mass_kg?: number | null
+          muscle_mass_kg?: number | null
+          muscle_to_fat_ratio?: number | null
+          notes?: string | null
+          recommendations?: string | null
+          risk_level?: string | null
+          updated_at?: string | null
+          user_id?: string
+          waist_circumference_cm?: number | null
+          waist_to_height_ratio?: number | null
+          waist_to_hip_ratio?: number | null
+          weight_kg?: number
         }
         Relationships: []
       }
@@ -1502,6 +1678,7 @@ export type Database = {
           exercises: Json | null
           goal: string | null
           id: string
+          modality: string | null
           name: string
           sport_type: string | null
           started_at: string | null
@@ -1521,6 +1698,7 @@ export type Database = {
           exercises?: Json | null
           goal?: string | null
           id?: string
+          modality?: string | null
           name: string
           sport_type?: string | null
           started_at?: string | null
@@ -1540,6 +1718,7 @@ export type Database = {
           exercises?: Json | null
           goal?: string | null
           id?: string
+          modality?: string | null
           name?: string
           sport_type?: string | null
           started_at?: string | null
@@ -1752,9 +1931,12 @@ export type Database = {
         Row: {
           additional_notes: string | null
           alcohol_consumption: string | null
+          body_fat_percentage: number | null
           chronic_diseases: string | null
           created_at: string | null
+          current_bmi: number | null
           current_medications: string | null
+          current_weight_kg: number | null
           daily_stress_level: string | null
           digestive_issues: string | null
           eating_habits: string | null
@@ -1763,7 +1945,9 @@ export type Database = {
           food_intolerances: string | null
           forbidden_foods: string | null
           health_goals: string | null
+          height_cm: number | null
           herbal_medicines: string | null
+          hip_circumference_cm: number | null
           id: string
           main_treatment_goals: string | null
           physical_activity: string | null
@@ -1777,14 +1961,18 @@ export type Database = {
           supplements: string | null
           updated_at: string | null
           user_id: string | null
+          waist_circumference_cm: number | null
           water_intake: string | null
         }
         Insert: {
           additional_notes?: string | null
           alcohol_consumption?: string | null
+          body_fat_percentage?: number | null
           chronic_diseases?: string | null
           created_at?: string | null
+          current_bmi?: number | null
           current_medications?: string | null
+          current_weight_kg?: number | null
           daily_stress_level?: string | null
           digestive_issues?: string | null
           eating_habits?: string | null
@@ -1793,7 +1981,9 @@ export type Database = {
           food_intolerances?: string | null
           forbidden_foods?: string | null
           health_goals?: string | null
+          height_cm?: number | null
           herbal_medicines?: string | null
+          hip_circumference_cm?: number | null
           id?: string
           main_treatment_goals?: string | null
           physical_activity?: string | null
@@ -1807,14 +1997,18 @@ export type Database = {
           supplements?: string | null
           updated_at?: string | null
           user_id?: string | null
+          waist_circumference_cm?: number | null
           water_intake?: string | null
         }
         Update: {
           additional_notes?: string | null
           alcohol_consumption?: string | null
+          body_fat_percentage?: number | null
           chronic_diseases?: string | null
           created_at?: string | null
+          current_bmi?: number | null
           current_medications?: string | null
+          current_weight_kg?: number | null
           daily_stress_level?: string | null
           digestive_issues?: string | null
           eating_habits?: string | null
@@ -1823,7 +2017,9 @@ export type Database = {
           food_intolerances?: string | null
           forbidden_foods?: string | null
           health_goals?: string | null
+          height_cm?: number | null
           herbal_medicines?: string | null
+          hip_circumference_cm?: number | null
           id?: string
           main_treatment_goals?: string | null
           physical_activity?: string | null
@@ -1837,6 +2033,7 @@ export type Database = {
           supplements?: string | null
           updated_at?: string | null
           user_id?: string | null
+          waist_circumference_cm?: number | null
           water_intake?: string | null
         }
         Relationships: []
@@ -2276,6 +2473,87 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_sport_modalities: {
+        Row: {
+          created_at: string | null
+          experience_level: string | null
+          frequency_per_week: number | null
+          id: string
+          is_active: boolean | null
+          modality: string
+          preferred_time: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          experience_level?: string | null
+          frequency_per_week?: number | null
+          id?: string
+          is_active?: boolean | null
+          modality: string
+          preferred_time?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          experience_level?: string | null
+          frequency_per_week?: number | null
+          id?: string
+          is_active?: boolean | null
+          modality?: string
+          preferred_time?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_subscriptions: {
+        Row: {
+          amount: number | null
+          auto_renew: boolean | null
+          created_at: string | null
+          currency: string | null
+          expires_at: string | null
+          id: string
+          payment_method: string | null
+          started_at: string | null
+          status: string
+          subscription_type: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          amount?: number | null
+          auto_renew?: boolean | null
+          created_at?: string | null
+          currency?: string | null
+          expires_at?: string | null
+          id?: string
+          payment_method?: string | null
+          started_at?: string | null
+          status?: string
+          subscription_type: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number | null
+          auto_renew?: boolean | null
+          created_at?: string | null
+          currency?: string | null
+          expires_at?: string | null
+          id?: string
+          payment_method?: string | null
+          started_at?: string | null
+          status?: string
+          subscription_type?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       valores_nutricionais_completos: {
         Row: {
