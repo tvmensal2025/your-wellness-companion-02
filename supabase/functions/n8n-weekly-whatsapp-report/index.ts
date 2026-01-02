@@ -85,10 +85,11 @@ serve(async (req) => {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Erro no envio de relatórios WhatsApp:', error);
+    const message = error instanceof Error ? error.message : 'Erro interno do servidor';
     return new Response(JSON.stringify({ 
-      error: error.message || 'Erro interno do servidor' 
+      error: message
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

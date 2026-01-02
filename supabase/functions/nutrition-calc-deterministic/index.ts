@@ -84,7 +84,7 @@ serve(async (req) => {
 
     // Processar cada item
     for (const item of items) {
-      const itemResult = await processItem(supabase, item);
+      const itemResult: any = await processItem(supabase, item);
       
       if (itemResult.matched) {
         result.kcal += itemResult.kcal;
@@ -115,10 +115,11 @@ serve(async (req) => {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('❌ Erro nutrition-calc-deterministic:', error);
+    const message = error instanceof Error ? error.message : 'Erro interno do servidor';
     return new Response(JSON.stringify({ 
-      error: error.message,
+      error: message,
       kcal: 0,
       protein_g: 0,
       carbs_g: 0,
@@ -136,7 +137,7 @@ serve(async (req) => {
   }
 });
 
-async function processItem(supabase: any, item: FoodItem) {
+async function processItem(supabase: any, item: FoodItem): Promise<any> {
   const normalizedName = normalize(item.name);
   let grams = Number(item.grams || 0);
   
@@ -219,7 +220,7 @@ async function searchTabelaTaco(supabase: any, normalizedName: string, originalN
 
   if (similarMatch?.length > 0) {
     // Pegar o que tem mais macros preenchidos
-    const best = similarMatch.reduce((prev, curr) => {
+    const best = similarMatch.reduce((prev: any, curr: any) => {
       const prevScore = (prev.energia_kcal || 0) + (prev.proteina_g || 0) + (prev.carboidrato_g || 0);
       const currScore = (curr.energia_kcal || 0) + (curr.proteina_g || 0) + (curr.carboidrato_g || 0);
       return currScore > prevScore ? curr : prev;
@@ -231,7 +232,7 @@ async function searchTabelaTaco(supabase: any, normalizedName: string, originalN
     return {
       ...best,
       match_type: 'similar',
-      debug: { query: 'similar_name', candidates: similarMatch.map(s => s.descricao), selected: best.descricao }
+      debug: { query: 'similar_name', candidates: similarMatch.map((s: any) => s.descricao), selected: best.descricao }
     };
   }
 
@@ -272,7 +273,7 @@ async function searchNutritionFoods(supabase: any, normalizedName: string, origi
 
     if (similarFoods?.length > 0) {
       // Preferir comidas com macros não zerados
-      const nonZero = similarFoods.filter(f => (Number(f.kcal)||0) > 0 || (Number(f.protein_g)||0) > 0);
+      const nonZero = similarFoods.filter((f: any) => (Number(f.kcal)||0) > 0 || (Number(f.protein_g)||0) > 0);
       food = nonZero.length > 0 ? nonZero[0] : similarFoods[0];
       match_type = 'similar';
     }
