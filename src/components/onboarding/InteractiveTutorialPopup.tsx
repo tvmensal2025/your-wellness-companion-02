@@ -482,7 +482,7 @@ export const InteractiveTutorialPopup: React.FC<InteractiveTutorialPopupProps> =
                 animate={{ scale: 1 }}
                 transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
                 onError={(e) => {
-                  e.currentTarget.src = 'https://via.placeholder.com/60x60/3b82f6/ffffff?text=S';
+                  e.currentTarget.src = '/placeholder.svg';
                 }}
               />
             </div>
