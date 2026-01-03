@@ -938,7 +938,6 @@ serve(async (req) => {
           image_count: analysisResult.imageCount,
           tmp_paths: payload.tmpPaths
         },
-        processing_completed_at: new Date().toISOString()
       })
       .eq('id', actualDocumentId);
     
