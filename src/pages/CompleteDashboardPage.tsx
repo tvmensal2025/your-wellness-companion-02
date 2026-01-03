@@ -20,8 +20,9 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useSofiaAnalysis } from '@/hooks/useSofiaAnalysis';
+import { useExerciseProgram } from '@/hooks/useExerciseProgram';
 
-// Importações dos componentes
+
 import DashboardOverview from '@/components/dashboard/DashboardOverview';
 import { DailyMissionsFinal as DailyMissions } from '@/components/daily-missions/DailyMissionsFinal';
 import CoursePlatformNetflix from '@/components/dashboard/CoursePlatformNetflix';
@@ -77,6 +78,7 @@ const CompleteDashboardPage = () => {
   const { profileData, loading: profileLoading, loadProfile, uploadAvatar } = useUserProfile(user);
   const { performAnalysis } = useSofiaAnalysis();
   const hasAutoAnalyzedRef = useRef(false);
+  const { activeProgram } = useExerciseProgram(user?.id);
 
   useEffect(() => {
     // Get initial session
@@ -310,7 +312,7 @@ const CompleteDashboardPage = () => {
                   }`}
                   onClick={() => {
                     setActiveSection(item.id as DashboardSection);
-                    if (item.id === 'exercicios') {
+                    if (item.id === 'exercicios' && !activeProgram) {
                       setExerciseModalOpen(true);
                     }
                     if (isMobile) setSidebarOpen(false);
