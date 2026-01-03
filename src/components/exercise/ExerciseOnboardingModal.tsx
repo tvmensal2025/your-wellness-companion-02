@@ -383,25 +383,25 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
   };
 
   const renderWelcome = () => (
-    <div className="text-center py-8 space-y-8">
+    <div className="text-center py-6 space-y-6 md:py-8 md:space-y-8">
       {/* Hero Section com animação */}
       <div className="relative">
-        <div className="flex justify-center mb-6">
+        <div className="flex justify-center mb-4 md:mb-6">
           <div className="relative">
-            <div className="w-32 h-32 rounded-full bg-gradient-to-br from-orange-400 via-red-500 to-pink-500 flex items-center justify-center animate-pulse shadow-2xl">
-              <Sparkles className="w-16 h-16 text-white animate-spin" />
+            <div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-gradient-to-br from-orange-400 via-red-500 to-pink-500 flex items-center justify-center animate-pulse shadow-2xl">
+              <Sparkles className="w-10 h-10 md:w-16 md:h-16 text-white animate-spin" />
             </div>
-            <div className="absolute -top-2 -right-2 w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center animate-bounce">
-              <Star className="w-5 h-5 text-yellow-800" />
+            <div className="absolute -top-2 -right-2 w-7 h-7 md:w-8 md:h-8 bg-yellow-400 rounded-full flex items-center justify-center animate-bounce">
+              <Star className="w-4 h-4 md:w-5 md:h-5 text-yellow-800" />
             </div>
           </div>
         </div>
         
-        <div className="space-y-4">
-          <h2 className="text-4xl font-bold bg-gradient-to-r from-orange-600 via-red-600 to-pink-600 bg-clip-text text-transparent">
+        <div className="space-y-3 md:space-y-4">
+          <h2 className="text-2xl md:text-4xl font-bold bg-gradient-to-r from-orange-600 via-red-600 to-pink-600 bg-clip-text text-transparent">
             Bem-vindo ao seu Início Saudável! 👋
           </h2>
-          <p className="text-xl text-muted-foreground max-w-md mx-auto">
+          <p className="text-base md:text-xl text-muted-foreground max-w-md mx-auto">
             "Nunca é tarde para começar. Cada passo conta!"
           </p>
         </div>
@@ -409,28 +409,28 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
 
       {/* Card de apresentação melhorado */}
       <Card className="bg-gradient-to-br from-orange-50 via-red-50 to-pink-50 dark:from-orange-950 dark:via-red-950 dark:to-pink-950 border-2 border-orange-200 dark:border-orange-800 shadow-xl">
-        <CardContent className="p-8 space-y-4">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <Trophy className="w-6 h-6 text-orange-600" />
-            <h3 className="text-xl font-bold text-orange-800 dark:text-orange-200">
+        <CardContent className="p-4 md:p-8 space-y-3 md:space-y-4">
+          <div className="flex items-center justify-center gap-2 md:gap-3 mb-2 md:mb-4">
+            <Trophy className="w-5 h-5 md:w-6 md:h-6 text-orange-600" />
+            <h3 className="text-lg md:text-xl font-bold text-orange-800 dark:text-orange-200">
               Programa Personalizado
             </h3>
           </div>
           
-          <p className="font-medium text-center text-gray-700 dark:text-gray-300">
+          <p className="font-medium text-center text-gray-700 dark:text-gray-300 text-sm md:text-base">
             Vamos descobrir o melhor programa para você!
           </p>
-          <p className="text-sm text-muted-foreground text-center">
+          <p className="text-xs md:text-sm text-muted-foreground text-center">
             Responda 5 perguntas rápidas e criaremos um plano personalizado para o seu nível
           </p>
           
-          <div className="flex justify-center gap-4 pt-2">
-            <Badge variant="secondary" className="bg-orange-100 text-orange-800">
-              <Timer className="w-4 h-4 mr-1" />
+          <div className="flex justify-center gap-3 md:gap-4 pt-1 md:pt-2">
+            <Badge variant="secondary" className="bg-orange-100 text-orange-800 text-[11px] md:text-xs px-2 py-1">
+              <Timer className="w-3 h-3 md:w-4 md:h-4 mr-1" />
               2 minutos
             </Badge>
-            <Badge variant="secondary" className="bg-red-100 text-red-800">
-              <Users className="w-4 h-4 mr-1" />
+            <Badge variant="secondary" className="bg-red-100 text-red-800 text-[11px] md:text-xs px-2 py-1">
+              <Users className="w-3 h-3 md:w-4 md:h-4 mr-1" />
               Personalizado
             </Badge>
           </div>
@@ -438,15 +438,15 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
       </Card>
 
       {/* Botão principal com animação */}
-      <div className="pt-4">
+      <div className="pt-2 md:pt-4">
         <Button 
           size="lg" 
-          className="w-full max-w-md bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 hover:from-orange-600 hover:via-red-600 hover:to-pink-600 text-white font-bold py-6 text-lg shadow-2xl hover:shadow-orange-500/25 transition-all duration-300 transform hover:scale-105"
+          className="w-full max-w-md bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 hover:from-orange-600 hover:via-red-600 hover:to-pink-600 text-white font-bold py-4 md:py-6 text-base md:text-lg shadow-2xl hover:shadow-orange-500/25 transition-all duration-300 transform hover:scale-105"
           onClick={() => setStep('question1')}
         >
-          <Zap className="w-6 h-6 mr-3 animate-pulse" />
+          <Zap className="w-5 h-5 md:w-6 md:h-6 mr-2 md:mr-3 animate-pulse" />
           Começar minha jornada
-          <ArrowRight className="ml-3 w-6 h-6" />
+          <ArrowRight className="ml-2 md:ml-3 w-5 h-5 md:w-6 md:h-6" />
         </Button>
       </div>
     </div>
