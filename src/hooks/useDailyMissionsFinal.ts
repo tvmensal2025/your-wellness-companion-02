@@ -224,26 +224,34 @@ export const useDailyMissionsFinal = ({ user }: UseDailyMissionsFinalProps) => {
       // Verificar se sessão já existe
       const { data: existingSession } = await supabase
         .from('daily_mission_sessions')
-        .select('id')
+        .select('*')
         .eq('user_id', user.id)
         .eq('date', today)
         .maybeSingle();
 
+      let updatedSession: DailyMissionSession;
+
       if (existingSession) {
         // Atualizar sessão existente
-        const { error: sessionError } = await supabase
+        const { data, error: sessionError } = await supabase
           .from('daily_mission_sessions')
           .update({
             completed_sections: ['morning', 'habits', 'mindset'],
             total_points: totalPoints,
             is_completed: true
           })
-          .eq('id', existingSession.id);
+          .eq('id', existingSession.id)
+          .select('*')
+          .maybeSingle();
         
-        if (sessionError) throw sessionError;
+        if (sessionError || !data) throw sessionError;
+        updatedSession = {
+          ...data,
+          completed_sections: data.completed_sections as any[],
+        };
       } else {
         // Criar nova sessão
-        const { error: sessionError } = await supabase
+        const { data, error: sessionError } = await supabase
           .from('daily_mission_sessions')
           .insert({
             user_id: user.id,
@@ -251,11 +259,18 @@ export const useDailyMissionsFinal = ({ user }: UseDailyMissionsFinalProps) => {
             completed_sections: ['morning', 'habits', 'mindset'],
             total_points: totalPoints,
             is_completed: true
-          });
+          })
+          .select('*')
+          .maybeSingle();
         
-        if (sessionError) throw sessionError;
+        if (sessionError || !data) throw sessionError;
+        updatedSession = {
+          ...data,
+          completed_sections: data.completed_sections as any[],
+        };
       }
 
+      setSession(updatedSession);
       setIsCompleted(true);
       console.log('Missão completa!', { totalPoints, answers });
 
