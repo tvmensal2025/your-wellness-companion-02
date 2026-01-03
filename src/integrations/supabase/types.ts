@@ -4732,6 +4732,7 @@ export type Database = {
           file_type: string | null
           file_url: string | null
           id: string
+          idempotency_key: string | null
           images_processed: number | null
           images_total: number | null
           processing_stage: string | null
@@ -4753,6 +4754,7 @@ export type Database = {
           file_type?: string | null
           file_url?: string | null
           id?: string
+          idempotency_key?: string | null
           images_processed?: number | null
           images_total?: number | null
           processing_stage?: string | null
@@ -4774,6 +4776,7 @@ export type Database = {
           file_type?: string | null
           file_url?: string | null
           id?: string
+          idempotency_key?: string | null
           images_processed?: number | null
           images_total?: number | null
           processing_stage?: string | null
