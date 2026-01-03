@@ -174,8 +174,7 @@ const SessionTemplates: React.FC = () => {
               },
               target_saboteurs: [],
               difficulty: 'beginner',
-              estimated_time: 15,
-              tools_data: {}
+              estimated_time: 15
             } as const;
           }
         case '147-perguntas':
@@ -218,8 +217,7 @@ const SessionTemplates: React.FC = () => {
             },
             target_saboteurs: [],
             difficulty: 'intermediate',
-            estimated_time: 15,
-            tools_data: {}
+            estimated_time: 15
           } as const;
         case '8-pilares':
           return {
@@ -299,8 +297,7 @@ const SessionTemplates: React.FC = () => {
             },
             target_saboteurs: [],
             difficulty: 'beginner',
-            estimated_time: 15,
-            tools_data: {}
+            estimated_time: 15
           } as const;
         case '8-competencias':
           return {
@@ -380,8 +377,7 @@ const SessionTemplates: React.FC = () => {
             },
             target_saboteurs: [],
             difficulty: 'beginner',
-            estimated_time: 12,
-            tools_data: {}
+            estimated_time: 12
           } as const;
         default:
           return null;
