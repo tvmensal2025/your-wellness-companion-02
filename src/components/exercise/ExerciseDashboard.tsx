@@ -54,19 +54,26 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
 
   return (
     <div className="p-4 space-y-4">
-      {/* Cabeçalho simples mobile-first */}
-      <header className="space-y-1">
-        <p className="text-xs font-semibold tracking-[0.18em] uppercase text-muted-foreground">
-          Exercícios
-        </p>
-        <h2 className="text-2xl font-bold flex items-center gap-2">
-          <Dumbbell className="w-6 h-6 text-orange-600" />
-          Seu treino de hoje
-        </h2>
-        <p className="text-xs text-muted-foreground max-w-md">
-          Escolha um exercício para ver os detalhes, vídeo e instruções passo a passo.
-        </p>
-      </header>
+      {/* Hero motivacional compacto, mobile-first */}
+      <section className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary/15 via-primary/10 to-background border border-border/40 p-4 flex items-center gap-3">
+        <div className="absolute inset-y-0 right-[-40%] w-40 opacity-25 pointer-events-none bg-[radial-gradient(circle_at_center,hsl(var(--primary))/0.45,transparent_60%)]" />
+        <div className="relative z-10 flex items-start gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/15 text-primary">
+            <Dumbbell className="w-5 h-5" />
+          </div>
+          <div className="space-y-1">
+            <p className="text-[10px] font-semibold tracking-[0.22em] uppercase text-primary/80">
+              Treino focado em você
+            </p>
+            <h2 className="text-lg font-bold leading-snug">
+              Cada treino é um passo a mais na sua melhor versão.
+            </h2>
+            <p className="text-xs text-muted-foreground max-w-xs">
+              Mantenha o foco hoje. Um treino curto e bem feito vale mais do que a perfeição que nunca começa.
+            </p>
+          </div>
+        </div>
+      </section>
 
       {/* Ambiente definido automaticamente pelo programa salvo */}
       <section className="flex justify-between items-center">
