@@ -115,7 +115,6 @@ export const useWeightMeasurement = () => {
       massa_muscular_kg: calculatedMetrics.massa_muscular_kg,
       metabolismo_basal_kcal: calculatedMetrics.metabolismo_basal_kcal,
       idade_metabolica: calculatedMetrics.idade_metabolica,
-      rce: calculatedMetrics.rce,
       risco_cardiometabolico: calculatedMetrics.risco_cardiometabolico,
     };
   };
@@ -453,7 +452,6 @@ export const useWeightMeasurement = () => {
       if (isManual && derived.idade_metabolica != null && !almostEqual(latest.idade_metabolica, derived.idade_metabolica, 1)) {
         updates.idade_metabolica = derived.idade_metabolica;
       }
-      if (derived.rce != null && !almostEqual((latest as any).rce, derived.rce, 0.01)) (updates as any).rce = Number(derived.rce.toFixed(3));
       if (derived.risco_cardiometabolico && (latest as any).risco_cardiometabolico !== derived.risco_cardiometabolico) (updates as any).risco_cardiometabolico = derived.risco_cardiometabolico;
 
       if (Object.keys(updates).length === 0) return;
