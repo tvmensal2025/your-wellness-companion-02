@@ -329,7 +329,6 @@ const CompleteWeighingSystem: React.FC = () => {
         measurement_date: new Date().toISOString(),
         device_type: 'manual',
         imc,
-        rce,
         risco_cardiometabolico,
       });
 
