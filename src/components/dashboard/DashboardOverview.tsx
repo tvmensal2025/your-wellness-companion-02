@@ -911,11 +911,10 @@ const DashboardOverview: React.FC = () => {
                   peso_kg: weight,
                   circunferencia_abdominal_cm: waist,
                   measurement_date: new Date().toISOString(),
-                  measurement_type: 'manual',
+                  device_type: 'manual',
                   imc,
                   rce,
                   risco_cardiometabolico,
-                  device_type: 'manual',
                 });
 
                 if (error) {

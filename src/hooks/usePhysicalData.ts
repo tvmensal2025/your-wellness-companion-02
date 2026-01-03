@@ -36,7 +36,7 @@ export const usePhysicalData = (user: User | null) => {
         .from('user_physical_data')
         .select('*')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       if (error && error.code !== 'PGRST116') {
         console.error('Erro ao carregar dados físicos:', error);
