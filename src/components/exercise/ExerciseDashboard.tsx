@@ -129,6 +129,18 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
   if (activeProgram) {
     const progress = (activeProgram.completed_workouts / activeProgram.total_workouts) * 100;
     const currentWeekData = activeProgram.plan_data?.weeks?.[activeProgram.current_week - 1];
+    const nextWorkoutIndex = currentWeekData
+      ? currentWeekData.activities.findIndex((_: string, idx: number) =>
+          !workoutLogs.some(
+            (log) =>
+              log.week_number === activeProgram.current_week &&
+              log.day_number === idx + 1 &&
+              log.completed
+          )
+        )
+      : -1;
+    const nextWorkoutActivity =
+      nextWorkoutIndex >= 0 ? currentWeekData?.activities[nextWorkoutIndex] : null;
 
     return (
       <div className="p-6 space-y-6">
@@ -170,17 +182,54 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
         </div>
 
         {/* Programa Ativo */}
-        <div className="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950 dark:to-red-950 rounded-lg p-6 space-y-4">
-          <div className="flex items-start justify-between">
-          <div>
-            <h3 className="text-2xl font-bold">{activeProgram.plan_name}</h3>
-            <p className="text-muted-foreground">{activeProgram.plan_data?.description}</p>
-          </div>
-            <Badge className="bg-green-500">Ativo</Badge>
+        <div className="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950 dark:to-red-950 rounded-lg p-6 space-y-6">
+          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+            <div className="space-y-1">
+              <h3 className="text-2xl font-bold">{activeProgram.plan_name}</h3>
+              <p className="text-muted-foreground max-w-xl">
+                {activeProgram.plan_data?.description}
+              </p>
+            </div>
+            <Badge className="bg-green-500 self-start">Ativo</Badge>
           </div>
 
-          {/* Estatísticas */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4">
+          {/* Treino de hoje */}
+          {nextWorkoutActivity && (
+            <div className="rounded-xl bg-white/70 dark:bg-black/20 border border-orange-200/70 dark:border-orange-900 p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3 shadow-sm">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center flex-shrink-0">
+                  <Play className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <p className="text-xs uppercase tracking-wide text-orange-600 font-semibold mb-1">
+                    Treino de hoje
+                  </p>
+                  <p className="font-semibold text-sm md:text-base">
+                    {nextWorkoutActivity}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Semana {activeProgram.current_week} · {activeProgram.workouts_per_week}x/semana
+                  </p>
+                </div>
+              </div>
+              <div className="flex flex-col items-stretch md:items-end gap-1 text-xs md:text-sm">
+                <span className="text-muted-foreground">
+                  Próximo passo claro para você hoje.
+                </span>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  className="mt-1 md:mt-0 hover-scale"
+                  onClick={() => setViewMode('detailed')}
+                >
+                  Ver treino completo
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Estatísticas gerais do programa */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-2">
             <div className="bg-white/50 dark:bg-black/20 rounded-lg p-4 text-center">
               <div className="text-2xl font-bold text-orange-600">
                 Semana {activeProgram.current_week}
@@ -191,20 +240,22 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
               <div className="text-2xl font-bold text-orange-600">
                 {activeProgram.completed_workouts}
               </div>
-              <div className="text-sm text-muted-foreground">de {activeProgram.total_workouts} treinos</div>
+              <div className="text-sm text-muted-foreground">
+                de {activeProgram.total_workouts} treinos
+              </div>
             </div>
-          <div className="bg-white/50 dark:bg-black/20 rounded-lg p-4 text-center">
-            <div className="text-2xl font-bold text-orange-600">
-              {activeProgram.workouts_per_week}x
+            <div className="bg-white/50 dark:bg-black/20 rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-orange-600">
+                {activeProgram.workouts_per_week}x
+              </div>
+              <div className="text-sm text-muted-foreground">por semana</div>
             </div>
-            <div className="text-sm text-muted-foreground">por semana</div>
-          </div>
-          <div className="bg-white/50 dark:bg-black/20 rounded-lg p-4 text-center">
-            <div className="text-2xl font-bold text-orange-600">
-              {activeProgram.plan_data?.weeks?.[0]?.days || 'N/A'}
+            <div className="bg-white/50 dark:bg-black/20 rounded-lg p-4 text-center">
+              <div className="text-2xl font-bold text-orange-600">
+                {currentWeekData?.days || 'N/A'}
+              </div>
+              <div className="text-sm text-muted-foreground">dias/semana</div>
             </div>
-            <div className="text-sm text-muted-foreground">dias/semana</div>
-          </div>
           </div>
 
           {/* Progresso */}
