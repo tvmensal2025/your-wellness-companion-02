@@ -4739,6 +4739,7 @@ export type Database = {
           processing_started_at: string | null
           progress_pct: number | null
           report_meta: Json | null
+          report_path: string | null
           results: Json | null
           status: string | null
           title: string | null
@@ -4763,6 +4764,7 @@ export type Database = {
           processing_started_at?: string | null
           progress_pct?: number | null
           report_meta?: Json | null
+          report_path?: string | null
           results?: Json | null
           status?: string | null
           title?: string | null
@@ -4787,12 +4789,43 @@ export type Database = {
           processing_started_at?: string | null
           progress_pct?: number | null
           report_meta?: Json | null
+          report_path?: string | null
           results?: Json | null
           status?: string | null
           title?: string | null
           type?: string | null
           updated_at?: string | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      medical_exam_analyses: {
+        Row: {
+          analysis_result: string | null
+          created_at: string
+          document_id: string | null
+          exam_type: string
+          id: string
+          image_url: string | null
+          user_id: string
+        }
+        Insert: {
+          analysis_result?: string | null
+          created_at?: string
+          document_id?: string | null
+          exam_type?: string
+          id?: string
+          image_url?: string | null
+          user_id: string
+        }
+        Update: {
+          analysis_result?: string | null
+          created_at?: string
+          document_id?: string | null
+          exam_type?: string
+          id?: string
+          image_url?: string | null
+          user_id?: string
         }
         Relationships: []
       }
