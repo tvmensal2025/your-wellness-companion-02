@@ -10,6 +10,7 @@
   "environmentVariables": {
     "VITE_SUPABASE_URL": "https://yhyzvihztivqmygxbbwv.supabase.co",
     "VITE_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InloeXp2aWh6dGl2cW15Z3hiYnd2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0NDkxMzUsImV4cCI6MjA4MzAyNTEzNX0.YazKpD2apqgWqT0EVoecsf_3NpSowvKuMmCTzF0KQ8I",
+    "VITE_SUPABASE_PUBLISHABLE_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InloeXp2aWh6dGl2cW15Z3hiYnd2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0NDkxMzUsImV4cCI6MjA4MzAyNTEzNX0.YazKpD2apqgWqT0EVoecsf_3NpSowvKuMmCTzF0KQ8I",
     "VITE_OPENAI_API_KEY": ""
   },
   "domains": [
