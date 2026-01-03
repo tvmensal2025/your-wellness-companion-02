@@ -573,7 +573,6 @@ const MedicalDocumentsSection: React.FC = () => {
             service_used: payload.service,
             image_count: payload.imageCount,
           },
-          processing_completed_at: new Date().toISOString(),
         })
         .eq('id', doc.id);
 
