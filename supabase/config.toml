@@ -2,3 +2,6 @@ project_id = "dobzvllqpqabnrwvphym"
 
 [functions.sofia-enhanced-memory]
 verify_jwt = false
+
+[functions.check-user-data-completeness]
+verify_jwt = false
