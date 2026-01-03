@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions."mealie-real"]
 verify_jwt = false
+
+[functions."dr-vital-enhanced"]
+verify_jwt = false
