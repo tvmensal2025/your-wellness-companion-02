@@ -88,7 +88,7 @@ interface AnamnesisContext {
   };
 }
 
-export const useAnamnesisContext = (enabled: boolean = true) => {
+export const useAnamnesisContext = (enabled: boolean = false) => { // Desabilitado por padrão
   return useQuery<AnamnesisContext>({
     queryKey: ['anamnesis-context'],
     queryFn: async (): Promise<AnamnesisContext> => {
@@ -97,16 +97,24 @@ export const useAnamnesisContext = (enabled: boolean = true) => {
         throw new Error('Usuário não autenticado');
       }
 
-      const { data, error } = await supabase.functions.invoke('get-user-anamnesis');
-
-      if (error) {
-        console.error('Erro ao buscar contexto da anamnese:', error);
-        throw error;
-      }
-
-      return data as AnamnesisContext;
+      // TODO: Edge function 'get-user-anamnesis' não existe mais
+      // Retornar dados vazios temporariamente
+      console.warn('Edge function get-user-anamnesis não está mais disponível');
+      
+      return {
+        hasAnamnesis: false,
+        hasMinimumData: false,
+        completionPercentage: 0,
+        message: 'Funcionalidade temporariamente desabilitada',
+        insights: {
+          risk_factors: [],
+          strengths: [],
+          recommendations_focus: [],
+          personality_indicators: []
+        }
+      } as AnamnesisContext;
     },
-    enabled: enabled,
+    enabled: enabled && false, // Sempre desabilitado até a função ser recriada
     staleTime: 10 * 60 * 1000, // 10 minutos
     refetchOnWindowFocus: false,
   });

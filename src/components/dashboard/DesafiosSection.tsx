@@ -328,7 +328,7 @@ const DesafiosSection: React.FC<DesafiosSectionProps> = ({
     const insertPayload = {
       title: desafio.title,
       description: desafio.description,
-      category: mapCategoryToDb(desafio.category),
+      challenge_type: mapCategoryToDb(desafio.category), // Usar challenge_type em vez de category
       difficulty: desafio.difficulty,
       duration_days: desafio.duration_days,
       points_reward: desafio.points_reward,
@@ -340,7 +340,8 @@ const DesafiosSection: React.FC<DesafiosSectionProps> = ({
       is_featured: !!desafio.is_featured,
       is_group_challenge: !!desafio.is_group_challenge,
       daily_log_target: desafio.daily_log_target,
-      daily_log_unit: desafio.daily_log_unit
+      daily_log_unit: desafio.daily_log_unit,
+      daily_log_type: 'numeric' // Adicionar campo obrigatório
     } as const;
 
     const { data: created, error: insertError } = await supabase
