@@ -458,6 +458,8 @@ const MedicalDocumentsSection: React.FC = () => {
       } = await supabase.auth.getUser();
       if (!user) throw new Error('Usuário não autenticado');
 
+      const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
       console.log('🔍 Dados sendo enviados para analyze-medical-exam (trigger):', {
         documentId: doc.id,
         images: doc.report_meta?.image_paths || [],
@@ -466,22 +468,33 @@ const MedicalDocumentsSection: React.FC = () => {
         report_meta: doc.report_meta,
       });
 
-      const { data, error } = await supabase.functions.invoke('analyze-medical-exam', {
-        body: {
-          documentId: doc.id,
-          images: doc.report_meta?.image_paths || [],
-          userId: user.id,
-          examType: doc.type,
-          forcePremium: true, // 💎 Forçar modelo premium
-          generateReport: true, // 📊 Gerar relatório completo
-        },
-      });
+      const response = await fetch(
+        'https://dobzvllqpqabnrwvphym.supabase.co/functions/v1/analyze-medical-exam',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            apikey: anonKey,
+          },
+          body: JSON.stringify({
+            documentId: doc.id,
+            images: doc.report_meta?.image_paths || [],
+            userId: user.id,
+            examType: doc.type,
+            forcePremium: true, // 💎 Forçar modelo premium
+            generateReport: true, // 📊 Gerar relatório completo
+          }),
+        }
+      );
 
-      if (error) {
-        console.error('Erro na análise premium:', error);
-        throw new Error(error.message || 'Falha na análise premium');
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+          `Erro na análise premium (HTTP ${response.status}): ${errorText}`
+        );
       }
 
+      const data = await response.json();
       console.log('✅ Resposta da análise premium:', data);
 
       toast({
@@ -500,7 +513,6 @@ const MedicalDocumentsSection: React.FC = () => {
       setUploading(false);
     }
   };
-
   const forceRestartAnalysis = async (doc: MedicalDocument) => {
     try {
       setUploading(true);
@@ -508,6 +520,8 @@ const MedicalDocumentsSection: React.FC = () => {
         data: { user },
       } = await supabase.auth.getUser();
       if (!user) throw new Error('Usuário não autenticado');
+
+      const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
       console.log('🔄 Forçando restart da análise para documento:', doc.id);
 
@@ -536,20 +550,31 @@ const MedicalDocumentsSection: React.FC = () => {
         examType: doc.type,
       });
 
-      const { data, error } = await supabase.functions.invoke('analyze-medical-exam', {
-        body: {
-          documentId: doc.id,
-          images: doc.report_meta?.image_paths || [],
-          userId: user.id,
-          examType: doc.type,
-        },
-      });
+      const response = await fetch(
+        'https://dobzvllqpqabnrwvphym.supabase.co/functions/v1/analyze-medical-exam',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            apikey: anonKey,
+          },
+          body: JSON.stringify({
+            documentId: doc.id,
+            images: doc.report_meta?.image_paths || [],
+            userId: user.id,
+            examType: doc.type,
+          }),
+        }
+      );
 
-      if (error) {
-        console.error('Erro na função analyze-medical-exam:', error);
-        throw new Error(error.message || 'Falha ao reiniciar análise');
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+          `Erro na função analyze-medical-exam (HTTP ${response.status}): ${errorText}`
+        );
       }
 
+      const data = await response.json();
       console.log('✅ Resposta da análise médica (restart):', data);
 
       toast({
