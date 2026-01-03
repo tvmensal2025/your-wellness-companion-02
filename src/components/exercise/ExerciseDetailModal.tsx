@@ -144,7 +144,7 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
     return (
       <div className="rounded-xl overflow-hidden bg-black/80">
         {videoId ? (
-          <div className="relative w-full pt-[56.25%]">
+          <div className="relative w-full pt-[50%]">
             <iframe
               className="absolute inset-0 w-full h-full"
               src={`https://www.youtube.com/embed/${videoId}`}
@@ -154,9 +154,9 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
             />
           </div>
         ) : (
-          <div className="flex items-center justify-center min-h-[220px] bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950 dark:to-red-950">
-            <div className="w-32 h-32 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center">
-              <Dumbbell className="w-16 h-16 text-white" />
+          <div className="flex items-center justify-center min-h-[200px] bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950 dark:to-red-950">
+            <div className="w-28 h-28 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center">
+              <Dumbbell className="w-14 h-14 text-white" />
             </div>
           </div>
         )}
@@ -170,7 +170,7 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
     const [exerciseName, exerciseDetails] = currentExercise as [string, any];
 
     return (
-      <div className="space-y-6">
+      <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold text-primary">{exerciseName}</h2>
@@ -183,31 +183,31 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
 
         {renderVideoBlock()}
 
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-3 gap-3">
           <Card className="bg-white/50 dark:bg-black/20">
-            <CardContent className="p-4 text-center">
-              <Repeat className="w-6 h-6 mx-auto mb-2 text-orange-600" />
-              <div className="text-lg font-semibold">3-4</div>
+            <CardContent className="p-3 text-center">
+              <Repeat className="w-5 h-5 mx-auto mb-1 text-orange-600" />
+              <div className="text-base font-semibold">3-4</div>
               <div className="text-xs text-muted-foreground">Séries</div>
             </CardContent>
           </Card>
           <Card className="bg-white/50 dark:bg-black/20">
-            <CardContent className="p-4 text-center">
-              <Target className="w-6 h-6 mx-auto mb-2 text-orange-600" />
-              <div className="text-lg font-semibold">12-15</div>
+            <CardContent className="p-3 text-center">
+              <Target className="w-5 h-5 mx-auto mb-1 text-orange-600" />
+              <div className="text-base font-semibold">12-15</div>
               <div className="text-xs text-muted-foreground">Repetições</div>
             </CardContent>
           </Card>
           <Card className="bg-white/50 dark:bg-black/20">
-            <CardContent className="p-4 text-center">
-              <Clock className="w-6 h-6 mx-auto mb-2 text-orange-600" />
-              <div className="text-lg font-semibold">60s</div>
+            <CardContent className="p-3 text-center">
+              <Clock className="w-5 h-5 mx-auto mb-1 text-orange-600" />
+              <div className="text-base font-semibold">60s</div>
               <div className="text-xs text-muted-foreground">Descanso</div>
             </CardContent>
           </Card>
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-1">
           <div className="flex items-center justify-between text-sm">
             <span className="font-semibold">Dificuldade</span>
             <span className="text-muted-foreground">Intermediário</span>
@@ -215,7 +215,7 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
           <Progress value={60} className="h-2" />
         </div>
 
-        <div className="flex justify-between gap-4">
+        <div className="flex justify-between gap-3">
           <Button
             variant="outline"
             className="flex-1"
@@ -242,7 +242,7 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
     const [exerciseName, exerciseDetails] = currentExercise as [string, any];
 
     return (
-      <div className="space-y-6">
+      <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-bold text-primary">{exerciseName}</h2>
           <Button variant="ghost" size="sm" onClick={() => setCurrentStep('overview')}>
@@ -304,7 +304,7 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
     const [exerciseName] = currentExercise as [string, any];
 
     return (
-      <div className="space-y-6">
+      <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-bold text-primary">{exerciseName}</h2>
           <Button variant="ghost" size="sm" onClick={() => setCurrentStep('overview')}>
@@ -316,10 +316,10 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
         {renderVideoBlock()}
 
         <Card className="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950 dark:to-red-950 border-2 border-orange-200 dark:border-orange-800">
-          <CardContent className="p-6 text-center">
-            <Timer className="w-8 h-8 mx-auto mb-3 text-orange-600" />
-            <div className="text-4xl font-bold text-orange-600 mb-2">{formatTime(timerSeconds)}</div>
-            <div className="text-sm text-muted-foreground mb-4">Tempo de exercício</div>
+          <CardContent className="p-4 text-center">
+            <Timer className="w-8 h-8 mx-auto mb-2 text-orange-600" />
+            <div className="text-3xl font-bold text-orange-600 mb-1">{formatTime(timerSeconds)}</div>
+            <div className="text-xs text-muted-foreground mb-3">Tempo de exercício</div>
             <div className="flex gap-2 justify-center">
               <Button
                 onClick={toggleTimer}
@@ -352,7 +352,7 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
           </CardContent>
         </Card>
 
-        <div className="space-y-2">
+        <div className="space-y-1">
           <div className="flex items-center justify-between text-sm">
             <span className="font-semibold">Progresso da Série</span>
             <span className="text-muted-foreground">8/12 repetições</span>
@@ -360,7 +360,7 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
           <Progress value={66} className="h-2" />
         </div>
 
-        <div className="flex justify-between gap-4">
+        <div className="flex justify-between gap-3">
           <Button variant="outline" className="flex-1">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Anterior
