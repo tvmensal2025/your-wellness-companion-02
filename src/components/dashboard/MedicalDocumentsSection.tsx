@@ -253,36 +253,26 @@ const MedicalDocumentsSection: React.FC = () => {
 
       const idempotencyKey = crypto.randomUUID();
 
-      // Chamando a Edge Function via fetch direto para evitar o erro de JWT inválido
-      const response = await fetch(
-        'https://dobzvllqpqabnrwvphym.supabase.co/functions/v1/finalize-medical-document',
+      // Usar função de backend integrada do Lovable Cloud (sem chamar URL direta)
+      const { data, error } = await supabase.functions.invoke(
+        'finalize-medical-document',
         {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            apikey:
-              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvYnp2bGxxcHFhYm5yd3ZwaHltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0MDE4NjgsImV4cCI6MjA4Mjk3Nzg2OH0.YqiTOwdnbZGEc21z6Mg1f86bRHvcAl8gEz-YnLLrVuc',
-            Authorization:
-              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvYnp2bGxxcHFhYm5yd3ZwaHltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0MDE4NjgsImV4cCI6MjA4Mjk3Nzg2OH0.YqiTOwdnbZGEc21z6Mg1f86bRHvcAl8gEz-YnLLrVuc',
-          },
-          body: JSON.stringify({
+          body: {
             tmpPaths,
             title: newDocument.title || 'Exame',
             examType: newDocument.type,
             idempotencyKey,
             userId: user.id,
-          }),
+          },
         }
       );
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(
-          `Erro na finalização do documento (HTTP ${response.status}): ${errorText}`
-        );
+      if (error) {
+        console.error('Erro na finalização do documento:', error);
+        throw new Error(error.message || 'Falha ao finalizar documento');
       }
 
-      const { data: doc } = (await response.json()) as { data?: { id?: string } };
+      const doc = (data as { data?: { id?: string } } | null)?.data;
 
       // Registra o acesso somente após finalizar com sucesso
       await registerExamAccess().catch(() => {});
