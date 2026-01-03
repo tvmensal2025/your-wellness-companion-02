@@ -8,9 +8,9 @@
   "installCommand": "npm install",
   "devCommand": "npm run dev",
   "environmentVariables": {
-    "VITE_SUPABASE_URL": "sua_url_do_supabase",
-    "VITE_SUPABASE_ANON_KEY": "sua_chave_anonima_do_supabase",
-    "VITE_OPENAI_API_KEY": "sua_chave_da_openai"
+    "VITE_SUPABASE_URL": "https://yhyzvihztivqmygxbbwv.supabase.co",
+    "VITE_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InloeXp2aWh6dGl2cW15Z3hiYnd2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0NDkxMzUsImV4cCI6MjA4MzAyNTEzNX0.YazKpD2apqgWqT0EVoecsf_3NpSowvKuMmCTzF0KQ8I",
+    "VITE_OPENAI_API_KEY": ""
   },
   "domains": [
     "mission-health-nexus.lovable.dev"
