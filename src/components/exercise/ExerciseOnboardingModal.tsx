@@ -706,33 +706,6 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
 
         <Card 
           className={`cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-105 ${
-            answers.location === 'casa_com' 
-              ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white shadow-2xl scale-105' 
-              : 'hover:bg-gradient-to-r hover:from-green-50 hover:to-emerald-50 dark:hover:from-green-950 dark:hover:to-emerald-950'
-          }`}
-          onClick={() => {
-            handleAnswer('location', 'casa_com');
-            setTimeout(() => setStep('question4'), 300);
-          }}
-        >
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center">
-                <Dumbbell className="w-6 h-6" />
-              </div>
-              <div className="flex-1">
-                <h4 className="text-xl font-bold mb-1">Em casa (com equipamentos)</h4>
-                <p className="text-sm opacity-90">Tenho halteres, elásticos, etc</p>
-              </div>
-              {answers.location === 'casa_com' && (
-                <CheckCircle2 className="w-6 h-6 text-white animate-pulse" />
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card 
-          className={`cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-105 ${
             answers.location === 'academia' 
               ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-2xl scale-105' 
               : 'hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 dark:hover:from-blue-950 dark:hover:to-purple-950'
