@@ -8901,6 +8901,7 @@ export type Database = {
         Row: {
           admin_notes: string | null
           approved_at: string | null
+          approved_by: string | null
           category: string | null
           challenge_id: string | null
           created_at: string | null
@@ -8911,12 +8912,14 @@ export type Database = {
           difficulty: string | null
           estimated_points: number | null
           evidence_required: boolean | null
+          final_points: number | null
           goal_type: string | null
           gordura_corporal_meta_percent: number | null
           id: string
           imc_meta: number | null
           is_group_goal: boolean | null
           peso_meta_kg: number | null
+          rejection_reason: string | null
           status: string | null
           target_date: string | null
           target_value: number | null
@@ -8928,6 +8931,7 @@ export type Database = {
         Insert: {
           admin_notes?: string | null
           approved_at?: string | null
+          approved_by?: string | null
           category?: string | null
           challenge_id?: string | null
           created_at?: string | null
@@ -8938,12 +8942,14 @@ export type Database = {
           difficulty?: string | null
           estimated_points?: number | null
           evidence_required?: boolean | null
+          final_points?: number | null
           goal_type?: string | null
           gordura_corporal_meta_percent?: number | null
           id?: string
           imc_meta?: number | null
           is_group_goal?: boolean | null
           peso_meta_kg?: number | null
+          rejection_reason?: string | null
           status?: string | null
           target_date?: string | null
           target_value?: number | null
@@ -8955,6 +8961,7 @@ export type Database = {
         Update: {
           admin_notes?: string | null
           approved_at?: string | null
+          approved_by?: string | null
           category?: string | null
           challenge_id?: string | null
           created_at?: string | null
@@ -8965,12 +8972,14 @@ export type Database = {
           difficulty?: string | null
           estimated_points?: number | null
           evidence_required?: boolean | null
+          final_points?: number | null
           goal_type?: string | null
           gordura_corporal_meta_percent?: number | null
           id?: string
           imc_meta?: number | null
           is_group_goal?: boolean | null
           peso_meta_kg?: number | null
+          rejection_reason?: string | null
           status?: string | null
           target_date?: string | null
           target_value?: number | null
