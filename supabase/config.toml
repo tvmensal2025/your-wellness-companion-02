@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.analyze-medical-exam]
 verify_jwt = false
+
+[functions.sofia-image-analysis]
+verify_jwt = false
