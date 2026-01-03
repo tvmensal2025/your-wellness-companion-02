@@ -2359,7 +2359,26 @@ CREATE TABLE public.medical_documents (
     processing_stage text,
     progress_pct integer DEFAULT 0,
     images_processed integer DEFAULT 0,
-    images_total integer DEFAULT 0
+    images_total integer DEFAULT 0,
+    idempotency_key text,
+    report_meta jsonb DEFAULT '{}'::jsonb,
+    processing_started_at timestamp with time zone,
+    report_path text
+);
+
+
+--
+-- Name: medical_exam_analyses; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.medical_exam_analyses (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    user_id uuid NOT NULL,
+    document_id uuid,
+    exam_type text DEFAULT 'exame_laboratorial'::text NOT NULL,
+    analysis_result text,
+    image_url text,
+    created_at timestamp with time zone DEFAULT now() NOT NULL
 );
 
 
@@ -5675,6 +5694,14 @@ ALTER TABLE ONLY public.medical_documents
 
 
 --
+-- Name: medical_exam_analyses medical_exam_analyses_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.medical_exam_analyses
+    ADD CONSTRAINT medical_exam_analyses_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: medidas_de_peso medidas_de_peso_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -6384,6 +6411,14 @@ ALTER TABLE ONLY public.user_favorite_foods
 
 ALTER TABLE ONLY public.user_food_preferences
     ADD CONSTRAINT user_food_preferences_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: user_food_preferences user_food_preferences_unique; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.user_food_preferences
+    ADD CONSTRAINT user_food_preferences_unique UNIQUE (user_id, food_name, preference_type);
 
 
 --
@@ -7222,10 +7257,38 @@ CREATE INDEX idx_meal_suggestions_user_id ON public.meal_suggestions USING btree
 
 
 --
+-- Name: idx_medical_documents_analysis_status; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_medical_documents_analysis_status ON public.medical_documents USING btree (analysis_status);
+
+
+--
+-- Name: idx_medical_documents_idempotency_key; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_medical_documents_idempotency_key ON public.medical_documents USING btree (idempotency_key);
+
+
+--
 -- Name: idx_medical_documents_user; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX idx_medical_documents_user ON public.medical_documents USING btree (user_id);
+
+
+--
+-- Name: idx_medical_exam_analyses_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_medical_exam_analyses_created_at ON public.medical_exam_analyses USING btree (created_at DESC);
+
+
+--
+-- Name: idx_medical_exam_analyses_user_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX idx_medical_exam_analyses_user_id ON public.medical_exam_analyses USING btree (user_id);
 
 
 --
@@ -10402,6 +10465,13 @@ CREATE POLICY "Users can insert own medical docs" ON public.medical_documents FO
 
 
 --
+-- Name: medical_exam_analyses Users can insert own medical exams; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Users can insert own medical exams" ON public.medical_exam_analyses FOR INSERT WITH CHECK ((auth.uid() = user_id));
+
+
+--
 -- Name: premium_medical_reports Users can insert own medical reports; Type: POLICY; Schema: public; Owner: -
 --
 
@@ -11371,6 +11441,13 @@ CREATE POLICY "Users can view own meal plans" ON public.meal_plans FOR SELECT US
 --
 
 CREATE POLICY "Users can view own medical docs" ON public.medical_documents FOR SELECT USING ((auth.uid() = user_id));
+
+
+--
+-- Name: medical_exam_analyses Users can view own medical exams; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Users can view own medical exams" ON public.medical_exam_analyses FOR SELECT USING ((auth.uid() = user_id));
 
 
 --
@@ -12423,6 +12500,12 @@ ALTER TABLE public.meal_suggestions ENABLE ROW LEVEL SECURITY;
 --
 
 ALTER TABLE public.medical_documents ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: medical_exam_analyses; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.medical_exam_analyses ENABLE ROW LEVEL SECURITY;
 
 --
 -- Name: medidas_de_peso; Type: ROW SECURITY; Schema: public; Owner: -
