@@ -78,7 +78,7 @@ const CompleteDashboardPage = () => {
   const { profileData, loading: profileLoading, loadProfile, uploadAvatar } = useUserProfile(user);
   const { performAnalysis } = useSofiaAnalysis();
   const hasAutoAnalyzedRef = useRef(false);
-  const { activeProgram } = useExerciseProgram(user?.id);
+  const { programs, activeProgram } = useExerciseProgram(user?.id);
 
   useEffect(() => {
     // Get initial session
@@ -312,7 +312,7 @@ const CompleteDashboardPage = () => {
                   }`}
                   onClick={() => {
                     setActiveSection(item.id as DashboardSection);
-                    if (item.id === 'exercicios' && !activeProgram) {
+                    if (item.id === 'exercicios' && programs.length === 0) {
                       setExerciseModalOpen(true);
                     }
                     if (isMobile) setSidebarOpen(false);
