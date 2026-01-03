@@ -402,114 +402,172 @@ const SaboteurTest: React.FC = () => {
     const topSaboteurs = getTopSaboteurs();
     const overallScore = getOverallScore();
     const overallLevel = getScoreLevel(overallScore);
+    const totalAnswered = Object.keys(answers).length;
 
     return (
-      <div className="p-6 space-y-6">
-        {/* Header */}
-        <div className="text-center space-y-4">
-          <div className="flex items-center justify-center gap-3">
-            <Brain className="h-10 w-10 text-primary" />
-            <h1 className="text-4xl font-bold">Relatório de Sabotadores</h1>
+      <div className="p-4 md:p-6 space-y-6 max-w-6xl mx-auto">
+        {/* Hero Header com Gradiente */}
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/20 via-primary/10 to-background p-8 md:p-12 text-center space-y-6 border border-primary/20">
+          <div className="absolute inset-0 bg-grid-white/5 [mask-image:radial-gradient(white,transparent_70%)]" />
+          <div className="relative">
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <div className="relative">
+                <Brain className="h-16 w-16 md:h-20 md:w-20 text-primary animate-pulse" />
+                <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full" />
+              </div>
+            </div>
+            <h1 className="text-3xl md:text-5xl font-bold bg-gradient-to-r from-primary via-primary/80 to-primary bg-clip-text text-transparent mb-4">
+              Parabéns! Teste Concluído! 🎉
+            </h1>
+            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
+              Você completou {totalAnswered} perguntas e deu um passo importante para o autoconhecimento
+            </p>
           </div>
-          <p className="text-muted-foreground text-lg">
-            Análise completa dos seus padrões de sabotagem interna
-          </p>
         </div>
 
-        {/* Overall Score */}
-        <Card className="health-card">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="h-6 w-6" />
-              Score Geral de Sabotadores
+        {/* Score Geral com Animação */}
+        <Card className="health-card border-2">
+          <CardHeader className="text-center">
+            <CardTitle className="flex items-center justify-center gap-2 text-2xl">
+              <BarChart3 className="h-7 w-7 text-primary" />
+              Seu Score Geral de Sabotadores
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-center space-y-4">
-              <div className={`text-6xl font-bold ${overallLevel.color}`}>
-                {overallScore.toFixed(0)}%
+            <div className="text-center space-y-6">
+              <div className="relative inline-block">
+                <div className={`text-7xl md:text-8xl font-bold ${overallLevel.color} drop-shadow-lg`}>
+                  {overallScore.toFixed(0)}%
+                </div>
+                <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-transparent blur-2xl" />
               </div>
-              <Badge className={`text-lg px-4 py-2 ${overallLevel.bgColor} ${overallLevel.color}`}>
-                Nível {overallLevel.level}
-              </Badge>
-              <p className="text-muted-foreground">
-                {overallScore < 30 
-                  ? "Excelente! Você tem boa consciência dos seus padrões."
-                  : overallScore < 60
-                  ? "Atenção! Alguns sabotadores podem estar afetando seu progresso."
-                  : "Alerta! Seus sabotadores estão significativamente impactando sua vida."
-                }
-              </p>
+              
+              <div className="flex flex-col items-center gap-4">
+                <Badge className={`text-xl px-6 py-3 ${overallLevel.bgColor} ${overallLevel.color} shadow-lg`}>
+                  Nível {overallLevel.level}
+                </Badge>
+                
+                <div className="max-w-xl space-y-3">
+                  {overallScore < 30 ? (
+                    <>
+                      <p className="text-lg font-semibold text-green-600">🌟 Resultado Excepcional!</p>
+                      <p className="text-muted-foreground">
+                        Você demonstra excelente consciência dos seus padrões mentais. Continue cultivando
+                        essa autoconsciência e use-a para alcançar seus objetivos com mais facilidade.
+                      </p>
+                    </>
+                  ) : overallScore < 60 ? (
+                    <>
+                      <p className="text-lg font-semibold text-yellow-600">⚡ Momento de Transformação!</p>
+                      <p className="text-muted-foreground">
+                        Você identificou alguns sabotadores que podem estar limitando seu potencial. 
+                        A boa notícia? Agora você tem clareza sobre onde focar sua energia para crescer ainda mais!
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-lg font-semibold text-orange-600">🎯 Grande Oportunidade de Crescimento!</p>
+                      <p className="text-muted-foreground">
+                        Seus sabotadores estão bastante ativos, mas isso significa que você tem um 
+                        enorme potencial de transformação à sua frente. Cada insight é um passo rumo à sua melhor versão!
+                      </p>
+                    </>
+                  )}
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Top Saboteurs */}
-        <div className="space-y-4">
-          <h2 className="text-2xl font-bold flex items-center gap-2">
-            <AlertTriangle className="h-6 w-6 text-orange-500" />
-            Seus Principais Sabotadores
-          </h2>
+        {/* Top Sabotadores com Design Melhorado */}
+        <div className="space-y-6">
+          <div className="text-center space-y-2">
+            <h2 className="text-2xl md:text-3xl font-bold flex items-center justify-center gap-2">
+              <AlertTriangle className="h-7 w-7 text-orange-500" />
+              Seus 3 Principais Sabotadores
+            </h2>
+            <p className="text-muted-foreground">
+              Conheça os padrões que mais impactam sua jornada e como superá-los
+            </p>
+          </div>
           
           {topSaboteurs.map(([category, score], index) => {
             const saboteur = saboteurTypes[category];
             const Icon = saboteur.icon;
             const level = getScoreLevel(score);
+            const medals = ['🥇', '🥈', '🥉'];
             
             return (
-              <Card key={category} className="health-card">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <Icon className={`h-8 w-8 ${saboteur.color}`} />
-                      <div>
-                        <CardTitle className="flex items-center gap-2">
-                          #{index + 1} {saboteur.name}
-                          <Badge className={`${level.bgColor} ${level.color}`}>
+              <Card key={category} className="health-card border-2 hover:shadow-xl transition-all duration-300">
+                <CardHeader className="bg-gradient-to-r from-muted/30 to-transparent">
+                  <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                    <div className="flex items-start gap-4 flex-1">
+                      <div className="relative">
+                        <div className={`p-3 rounded-xl bg-gradient-to-br ${saboteur.color.replace('text-', 'from-')}/20 to-transparent border-2 ${saboteur.color.replace('text-', 'border-')}/30`}>
+                          <Icon className={`h-8 w-8 ${saboteur.color}`} />
+                        </div>
+                        <span className="absolute -top-2 -right-2 text-2xl">{medals[index]}</span>
+                      </div>
+                      <div className="flex-1 space-y-2">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <CardTitle className="text-xl">
+                            {saboteur.name}
+                          </CardTitle>
+                          <Badge className={`${level.bgColor} ${level.color} text-sm`}>
                             {level.level}
                           </Badge>
-                        </CardTitle>
-                        <p className="text-muted-foreground">{saboteur.description}</p>
+                        </div>
+                        <p className="text-muted-foreground text-sm">{saboteur.description}</p>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <div className={`text-3xl font-bold ${saboteur.color}`}>
+                    <div className="text-center md:text-right">
+                      <div className={`text-4xl md:text-5xl font-bold ${saboteur.color}`}>
                         {score.toFixed(0)}%
                       </div>
+                      <p className="text-xs text-muted-foreground mt-1">intensidade</p>
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <h4 className="font-semibold mb-2">Características:</h4>
-                    <ul className="space-y-1 text-sm text-muted-foreground">
-                      {saboteur.characteristics.map((char, i) => (
-                        <li key={i} className="flex items-center gap-2">
-                          <div className="w-1 h-1 bg-muted-foreground rounded-full" />
-                          {char}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  
-                  <div>
-                    <h4 className="font-semibold mb-2">Impacto:</h4>
-                    <p className="text-sm text-muted-foreground">{saboteur.impact}</p>
-                  </div>
-                  
-                  <div>
-                    <h4 className="font-semibold mb-2 flex items-center gap-2">
-                      <Lightbulb className="h-4 w-4 text-yellow-500" />
-                      Estratégias de Superação:
+                <CardContent className="space-y-6 pt-6">
+                  {/* Características */}
+                  <div className="space-y-3">
+                    <h4 className="font-semibold flex items-center gap-2 text-base">
+                      <Eye className="h-4 w-4 text-blue-500" />
+                      Como ele se manifesta:
                     </h4>
-                    <ul className="space-y-1 text-sm text-muted-foreground">
-                      {saboteur.strategies.map((strategy, i) => (
-                        <li key={i} className="flex items-center gap-2">
-                          <CheckCircle className="h-3 w-3 text-green-500" />
-                          {strategy}
-                        </li>
+                    <div className="grid gap-2">
+                      {saboteur.characteristics.slice(0, 3).map((char, i) => (
+                        <div key={i} className="flex items-start gap-2 text-sm text-muted-foreground bg-muted/30 p-2 rounded-lg">
+                          <div className={`w-1.5 h-1.5 rounded-full mt-1.5 ${saboteur.color.replace('text-', 'bg-')}`} />
+                          {char}
+                        </div>
                       ))}
-                    </ul>
+                    </div>
+                  </div>
+                  
+                  {/* Impacto */}
+                  <div className="space-y-2 bg-orange-50 dark:bg-orange-950/20 p-4 rounded-lg border border-orange-200 dark:border-orange-800">
+                    <h4 className="font-semibold flex items-center gap-2 text-base text-orange-700 dark:text-orange-400">
+                      <AlertTriangle className="h-4 w-4" />
+                      Impacto na sua vida:
+                    </h4>
+                    <p className="text-sm text-orange-800 dark:text-orange-300">{saboteur.impact}</p>
+                  </div>
+                  
+                  {/* Estratégias */}
+                  <div className="space-y-3">
+                    <h4 className="font-semibold flex items-center gap-2 text-base">
+                      <Lightbulb className="h-4 w-4 text-yellow-500" />
+                      Estratégias Práticas de Transformação:
+                    </h4>
+                    <div className="space-y-2">
+                      {saboteur.strategies.map((strategy, i) => (
+                        <div key={i} className="flex items-start gap-2 text-sm p-3 rounded-lg bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800">
+                          <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400 mt-0.5 shrink-0" />
+                          <span className="text-green-800 dark:text-green-300">{strategy}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -548,15 +606,185 @@ const SaboteurTest: React.FC = () => {
           </CardContent>
         </Card>
 
+
+        {/* Plano de Ação Personalizado */}
+        <Card className="health-card bg-gradient-to-br from-primary/5 to-primary/10 border-2 border-primary/20">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-2xl">
+              <Target className="h-7 w-7 text-primary" />
+              Seu Plano de Ação Personalizado
+            </CardTitle>
+            <p className="text-muted-foreground">Comece sua transformação hoje mesmo com estes passos práticos</p>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-2">
+              {/* Ação Imediata */}
+              <div className="space-y-3 p-4 rounded-lg bg-card border-2 border-primary/30">
+                <div className="flex items-center gap-2">
+                  <Zap className="h-5 w-5 text-yellow-500" />
+                  <h4 className="font-semibold">Ação Imediata (Esta Semana)</h4>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Escolha UMA estratégia do seu sabotador #1 e pratique por 7 dias consecutivos. 
+                  Pequenas ações consistentes geram grandes transformações!
+                </p>
+              </div>
+
+              {/* Prática Diária */}
+              <div className="space-y-3 p-4 rounded-lg bg-card border-2 border-blue-500/30">
+                <div className="flex items-center gap-2">
+                  <Heart className="h-5 w-5 text-pink-500" />
+                  <h4 className="font-semibold">Prática Diária</h4>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Reserve 5 minutos pela manhã para identificar quando seus sabotadores aparecem. 
+                  A consciência é o primeiro passo para a mudança!
+                </p>
+              </div>
+
+              {/* Apoio */}
+              <div className="space-y-3 p-4 rounded-lg bg-card border-2 border-green-500/30">
+                <div className="flex items-center gap-2">
+                  <Users className="h-5 w-5 text-green-500" />
+                  <h4 className="font-semibold">Busque Apoio</h4>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Compartilhe seus insights com alguém de confiança. O apoio social 
+                  potencializa sua jornada de transformação!
+                </p>
+              </div>
+
+              {/* Acompanhamento */}
+              <div className="space-y-3 p-4 rounded-lg bg-card border-2 border-purple-500/30">
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5 text-purple-500" />
+                  <h4 className="font-semibold">Acompanhe Sua Evolução</h4>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Refaça este teste mensalmente para acompanhar seu progresso e 
+                  celebrar suas conquistas!
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Insights e Estatísticas */}
+        <div className="grid md:grid-cols-3 gap-4">
+          <Card className="health-card text-center">
+            <CardContent className="pt-6">
+              <Award className="h-12 w-12 text-primary mx-auto mb-3" />
+              <div className="text-3xl font-bold text-primary mb-2">{totalAnswered}</div>
+              <p className="text-sm text-muted-foreground">Perguntas Respondidas</p>
+            </CardContent>
+          </Card>
+
+          <Card className="health-card text-center">
+            <CardContent className="pt-6">
+              <Brain className="h-12 w-12 text-purple-500 mx-auto mb-3" />
+              <div className="text-3xl font-bold text-purple-500 mb-2">{Object.keys(saboteurTypes).length}</div>
+              <p className="text-sm text-muted-foreground">Sabotadores Analisados</p>
+            </CardContent>
+          </Card>
+
+          <Card className="health-card text-center">
+            <CardContent className="pt-6">
+              <Star className="h-12 w-12 text-yellow-500 mx-auto mb-3" />
+              <div className="text-3xl font-bold text-yellow-500 mb-2">
+                {topSaboteurs.filter(([_, score]) => score < 30).length}
+              </div>
+              <p className="text-sm text-muted-foreground">Áreas de Força</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* All Scores - Análise Completa */}
+        <Card className="health-card">
+          <CardHeader>
+            <CardTitle className="text-xl">Análise Completa por Categoria</CardTitle>
+            <p className="text-muted-foreground">Veja seu desempenho em todas as áreas avaliadas</p>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {Object.entries(scores)
+                .sort(([,a], [,b]) => b - a)
+                .map(([category, score]) => {
+                  const saboteur = saboteurTypes[category];
+                  const Icon = saboteur.icon;
+                  const level = getScoreLevel(score);
+                  
+                  return (
+                    <div key={category} className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/20 transition-colors">
+                      <div className="flex items-center gap-3 flex-1">
+                        <Icon className={`h-5 w-5 ${saboteur.color} shrink-0`} />
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium truncate">{saboteur.name}</p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                              <div 
+                                className={`h-full ${saboteur.color.replace('text-', 'bg-')}/50 transition-all duration-500`}
+                                style={{ width: `${score}%` }}
+                              />
+                            </div>
+                            <span className="text-xs text-muted-foreground w-10 text-right">{score.toFixed(0)}%</span>
+                          </div>
+                        </div>
+                      </div>
+                      <Badge className={`${level.bgColor} ${level.color} ml-2 shrink-0`}>
+                        {level.level}
+                      </Badge>
+                    </div>
+                  );
+                })}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Mensagem Final Motivacional */}
+        <Card className="health-card bg-gradient-to-r from-primary/10 via-primary/5 to-background border-2 border-primary/20">
+          <CardContent className="pt-6 text-center space-y-4">
+            <div className="flex justify-center">
+              <div className="relative">
+                <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full" />
+                <div className="relative bg-primary/10 p-4 rounded-full">
+                  <Zap className="h-12 w-12 text-primary" />
+                </div>
+              </div>
+            </div>
+            <div className="space-y-2 max-w-2xl mx-auto">
+              <h3 className="text-2xl font-bold">
+                Lembre-se: Consciência é o Primeiro Passo!
+              </h3>
+              <p className="text-muted-foreground text-lg">
+                Você acabou de dar um passo corajoso em direção ao autoconhecimento. 
+                Cada sabotador identificado é uma oportunidade de crescimento e transformação.
+              </p>
+              <p className="text-primary font-semibold text-lg">
+                Continue investindo em si mesmo - você merece! 💪✨
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Action Buttons */}
-        <div className="flex gap-4 justify-center">
-          <Button onClick={handleRestart} variant="outline">
+        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+          <Button onClick={handleRestart} variant="outline" size="lg" className="w-full sm:w-auto">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Refazer Teste
           </Button>
-          <Button className="btn-gradient">
+          <Button 
+            className="btn-gradient w-full sm:w-auto" 
+            size="lg"
+            onClick={() => {
+              toast({
+                title: "Em breve! 📚",
+                description: "Estamos preparando conteúdos exclusivos para você!",
+                duration: 3000
+              });
+            }}
+          >
             <BookOpen className="h-4 w-4 mr-2" />
-            Ver Estratégias Detalhadas
+            Explorar Estratégias
           </Button>
         </div>
       </div>
