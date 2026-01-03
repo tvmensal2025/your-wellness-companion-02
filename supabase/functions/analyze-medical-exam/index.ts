@@ -3387,18 +3387,14 @@ Por favor, analise as imagens dos exames médicos e extraia todos os valores enc
         .update({
           analysis_status: 'ready',
           report_path: reportsPath,
-          report_content: structuredExams.length > 0 ? { 
-            exams: structuredExams,
-            analysis_text: analysis.substring(0, 5000),
-            generated_at: new Date().toISOString()
-          } : null,
           report_meta: {
             generated_at: new Date().toISOString(),
             service_used: 'openai-gpt-4o',
             image_count: imagesLimited.length,
             image_paths: resolvedPaths || (storagePath ? [storagePath] : []),
             exam_type: examTypeEffective,
-            exams_found: structuredExams.length
+            exams_found: structuredExams.length,
+            analysis_text_preview: analysis.substring(0, 5000),
           },
           processing_stage: 'finalizado',
           progress_pct: 100
