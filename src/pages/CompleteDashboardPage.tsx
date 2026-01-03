@@ -221,10 +221,23 @@ const CompleteDashboardPage = () => {
         );
       case 'sofia-nutricional':
         return <SofiaNutricionalPage key="sofia-nutricional" />;
-      case 'dr-vital':
+       case 'dr-vital':
         return <UserDrVitalPage key="dr-vital" />;
       case 'exercicios':
-        return <ExerciseDashboard key="exercicios" user={user} />;
+        return (
+          <div key="exercicios" className="p-4 space-y-4">
+            <div className="flex justify-end">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setExerciseModalOpen(true)}
+              >
+                Criar outro treino
+              </Button>
+            </div>
+            <ExerciseDashboard user={user} />
+          </div>
+        );
       case 'profile':
         return (
           <div key="profile" className="p-6">
