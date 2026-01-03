@@ -3,9 +3,10 @@ import { User } from '@supabase/supabase-js';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
-import { Dumbbell, Home, Building2, Info, Play } from 'lucide-react';
+import { Dumbbell, Info, Play } from 'lucide-react';
 import { ExerciseDetailModal } from './ExerciseDetailModal';
 import { exerciseInstructions } from '@/data/exercise-instructions';
+import { useExerciseProgram } from '@/hooks/useExerciseProgram';
 
 interface ExerciseDashboardProps {
   user: User | null;
@@ -13,10 +14,23 @@ interface ExerciseDashboardProps {
 
 // Novo dashboard de exercícios
 // Foco: lista simples de exercícios + modal detalhado individual (estilo print)
-export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = () => {
+export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) => {
+  const { activeProgram } = useExerciseProgram(user?.id);
   const [location, setLocation] = useState<'casa' | 'academia'>('casa');
   const [selectedExercise, setSelectedExercise] = useState<any | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Define a localização com base no programa ativo salvo
+  React.useEffect(() => {
+    if (activeProgram && (activeProgram as any).exercises?.location) {
+      const loc = (activeProgram as any).exercises.location;
+      if (loc === 'academia') {
+        setLocation('academia');
+      } else {
+        setLocation('casa');
+      }
+    }
+  }, [activeProgram]);
 
   const exerciseList =
     location === 'casa'
@@ -44,26 +58,11 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = () => {
         </p>
       </header>
 
-      {/* Filtro de localização (Em casa / Academia) */}
-      <section className="flex gap-2">
-        <Button
-          size="sm"
-          variant={location === 'casa' ? 'default' : 'outline'}
-          className="flex-1 flex items-center justify-center gap-2"
-          onClick={() => setLocation('casa')}
-        >
-          <Home className="w-4 h-4" />
-          Em casa
-        </Button>
-        <Button
-          size="sm"
-          variant={location === 'academia' ? 'default' : 'outline'}
-          className="flex-1 flex items-center justify-center gap-2"
-          onClick={() => setLocation('academia')}
-        >
-          <Building2 className="w-4 h-4" />
-          Academia
-        </Button>
+      {/* Ambiente definido automaticamente pelo programa salvo */}
+      <section className="flex justify-between items-center">
+        <Badge variant="outline" className="text-primary text-xs">
+          {location === 'casa' ? '🏠 Em casa' : '🏋️ Academia'}
+        </Badge>
       </section>
 
       {/* Lista compacta de exercícios (mobile-first) */}
