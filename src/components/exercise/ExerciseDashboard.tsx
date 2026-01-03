@@ -44,6 +44,7 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
 
   const [showModal, setShowModal] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [showPlanDetails, setShowPlanDetails] = useState(false);
   const [aiRecommendation, setAiRecommendation] = useState<any>(null);
   const [dailyMotivation, setDailyMotivation] = useState<string>('');
 
@@ -191,9 +192,12 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
           </button>
         </section>
 
-        {/* Bloco 1 – Programa ativo resumido abaixo do hero */}
-        <section className="bg-card rounded-xl border p-6 space-y-4">
-          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+        {/* Bloco 1 – Programa ativo resumido abaixo do hero (accordion) */}
+        <section
+          className="bg-card rounded-xl border p-6 space-y-4 cursor-pointer hover-scale transition"
+          onClick={() => setShowPlanDetails((prev) => !prev)}
+        >
+          <div className="flex items-start justify-between gap-4">
             <div className="space-y-1">
               <p className="text-xs uppercase tracking-wide text-muted-foreground font-semibold">
                 Seu programa atual
@@ -232,7 +236,10 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => pauseProgram(activeProgram.id)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  pauseProgram(activeProgram.id);
+                }}
                 className="w-full mt-2"
               >
                 <Pause className="w-4 h-4 mr-1" />
@@ -343,19 +350,21 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
           </section>
         )}
 
-        {/* Bloco 5 – Visualização detalhada do programa */}
-        <ExerciseDetailView
-          workoutData={{
-            title: activeProgram.plan_name,
-            description: activeProgram.plan_data?.description || '',
-            location: activeProgram.plan_data?.location || 'casa',
-            duration: activeProgram.plan_data?.weeks?.[0]?.days || 'N/A',
-            frequency: `${activeProgram.workouts_per_week}x por semana`,
-            goal: activeProgram.plan_data?.goal || '',
-            weekPlan: transformWeeksToWeekPlan(activeProgram.plan_data?.weeks || []),
-          }}
-          location={activeProgram.plan_data?.location === 'academia' ? 'academia' : 'casa'}
-        />
+        {/* Bloco 5 – Visualização detalhada do programa (só quando abrir o card) */}
+        {showPlanDetails && (
+          <ExerciseDetailView
+            workoutData={{
+              title: activeProgram.plan_name,
+              description: activeProgram.plan_data?.description || '',
+              location: activeProgram.plan_data?.location || 'casa',
+              duration: activeProgram.plan_data?.weeks?.[0]?.days || 'N/A',
+              frequency: `${activeProgram.workouts_per_week}x por semana`,
+              goal: activeProgram.plan_data?.goal || '',
+              weekPlan: transformWeeksToWeekPlan(activeProgram.plan_data?.weeks || []),
+            }}
+            location={activeProgram.plan_data?.location === 'academia' ? 'academia' : 'casa'}
+          />
+        )}
 
         {/* Modal passo a passo do treino */}
         {activeProgram &&
