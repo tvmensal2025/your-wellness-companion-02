@@ -50,7 +50,6 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
   const [stepModalOpen, setStepModalOpen] = useState(false);
   const [stepDayIndex, setStepDayIndex] = useState<number | null>(null);
 
-  // Buscar motivação diária ao carregar
   useEffect(() => {
     if (user?.id) {
       const fetchMotivation = async () => {
@@ -61,7 +60,6 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
     }
   }, [user?.id]);
 
-  // Analisar progresso automaticamente quando tiver 3+ treinos
   useEffect(() => {
     if (activeProgram && workoutLogs.length >= 3 && !aiRecommendation && user?.id) {
       const analyze = async () => {
@@ -83,39 +81,42 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
     );
   }
 
-  // Não tem programas ainda
   if (programs.length === 0) {
     return (
       <div className="p-6 space-y-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-3xl font-bold flex items-center gap-2">
-            <Dumbbell className="w-8 h-8 text-orange-600" />
-            Exercícios Recomendados
-          </h2>
-        </div>
-
-        <div className="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950 dark:to-red-950 rounded-lg p-8 text-center space-y-6">
-          <div className="flex justify-center">
-            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center">
-              <Dumbbell className="w-12 h-12 text-white" />
-            </div>
-          </div>
-
-          <div>
-            <h3 className="text-2xl font-bold mb-2">Comece sua Jornada Fitness!</h3>
-            <p className="text-muted-foreground">
-              Crie seu primeiro programa personalizado em menos de 2 minutos
+        <section className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-orange-500 to-red-500 text-white p-8 flex flex-col md:flex-row items-center gap-6">
+          <div className="flex-1 space-y-3">
+            <p className="text-xs uppercase tracking-[0.18em] font-semibold opacity-80">
+              Exercícios Recomendados
+            </p>
+            <h2 className="text-3xl md:text-4xl font-bold leading-tight">
+              Comece sua jornada em movimento
+            </h2>
+            <p className="text-sm md:text-base text-white/90 max-w-xl">
+              Crie um programa de treinos simples, pensado para o seu ritmo, e receba um treino de hoje todos os dias.
             </p>
           </div>
+          <div className="w-full md:w-64 h-40 rounded-2xl bg-white/10 shadow-lg overflow-hidden flex items-center justify-center">
+            <img
+              src="/placeholder.svg"
+              alt="Ilustração de treino"
+              className="w-full h-full object-cover opacity-95"
+            />
+          </div>
+        </section>
 
+        <section className="bg-card rounded-xl p-6 border space-y-3">
+          <p className="text-muted-foreground text-sm">
+            Você não tem programas ativos no momento.
+          </p>
           <Button
             size="lg"
-            className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
             onClick={() => setShowModal(true)}
+            className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
           >
             Criar Meu Programa
           </Button>
-        </div>
+        </section>
 
         <ExerciseOnboardingModal
           isOpen={showModal}
@@ -126,7 +127,6 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
     );
   }
 
-  // Tem programa ativo
   if (activeProgram) {
     const progress = (activeProgram.completed_workouts / activeProgram.total_workouts) * 100;
     const currentWeekData = activeProgram.plan_data?.weeks?.[activeProgram.current_week - 1];
@@ -145,51 +145,63 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
 
     return (
       <div className="p-6 space-y-6">
-        {/* Header principal */}
-        <div className="flex items-center justify-between flex-wrap gap-2">
-          <div>
-            <h2 className="text-3xl font-bold flex items-center gap-2">
-              <Dumbbell className="w-8 h-8 text-orange-600" />
+        {/* Hero de treino com imagem */}
+        <section className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-orange-500 to-red-500 text-white p-6 flex flex-col md:flex-row items-center gap-6">
+          <div className="flex-1 space-y-2">
+            <p className="text-xs uppercase tracking-[0.18em] font-semibold opacity-80">
               Exercícios Recomendados
-            </h2>
-            <p className="text-sm text-muted-foreground mt-1">
-              Seu programa atual e o treino de hoje em um só lugar.
             </p>
+            <h2 className="text-3xl md:text-4xl font-bold leading-tight">
+              {activeProgram.plan_name}
+            </h2>
+            <p className="text-sm md:text-base text-white/90 max-w-xl">
+              {activeProgram.plan_data?.description}
+            </p>
+            <div className="flex flex-wrap gap-2 pt-1 text-[11px]">
+              <Badge variant="outline" className="border-white/40 bg-white/10 text-white flex items-center gap-1">
+                <Dumbbell className="w-3 h-3" />
+                {activeProgram.plan_data?.location === 'academia' ? 'Academia' : 'Em casa'}
+              </Badge>
+              <Badge variant="outline" className="border-white/40 bg-white/10 text-white">
+                {activeProgram.workouts_per_week}x por semana
+              </Badge>
+              {activeProgram.plan_data?.goal && (
+                <Badge variant="outline" className="border-white/40 bg-white/10 text-white">
+                  {activeProgram.plan_data.goal}
+                </Badge>
+              )}
+            </div>
           </div>
-          <div className="flex items-center gap-3">
-            <Button variant="outline" size="sm" onClick={() => setShowHistory(!showHistory)}>
-              <History className="w-4 h-4 mr-2" />
-              {showHistory ? 'Ocultar histórico' : 'Ver histórico'}
-            </Button>
-          </div>
-        </div>
 
-        {/* Bloco 1 – Programa ativo (estilo dashboard em bloco) */}
+          <div className="w-full md:w-64 h-36 md:h-40 rounded-2xl bg-white/10 shadow-lg overflow-hidden flex items-center justify-center">
+            <img
+              src="/placeholder.svg"
+              alt="Ilustração de treino"
+              className="w-full h-full object-cover opacity-95"
+            />
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setShowHistory(!showHistory)}
+            className="absolute top-4 right-4 inline-flex items-center gap-1 rounded-full bg-white/15 px-3 py-1 text-xs font-medium backdrop-blur-sm hover:bg-white/25 transition-colors"
+          >
+            <History className="w-3 h-3" />
+            {showHistory ? 'Ocultar histórico' : 'Ver histórico'}
+          </button>
+        </section>
+
+        {/* Bloco 1 – Programa ativo resumido abaixo do hero */}
         <section className="bg-card rounded-xl border p-6 space-y-4">
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
             <div className="space-y-1">
               <p className="text-xs uppercase tracking-wide text-muted-foreground font-semibold">
                 Seu programa atual
               </p>
-              <h3 className="text-2xl font-bold">{activeProgram.plan_name}</h3>
-              <p className="text-muted-foreground max-w-xl text-sm">
-                {activeProgram.plan_data?.description}
-              </p>
-
-              <div className="flex flex-wrap gap-2 pt-2 text-xs">
-                <Badge variant="outline" className="flex items-center gap-1">
-                  <Dumbbell className="w-3 h-3" />
-                  {activeProgram.plan_data?.location === 'academia' ? 'Academia' : 'Em casa'}
-                </Badge>
-                <Badge variant="secondary">{activeProgram.workouts_per_week}x por semana</Badge>
-                {activeProgram.plan_data?.goal && (
-                  <Badge variant="secondary">{activeProgram.plan_data.goal}</Badge>
-                )}
-                <Badge className="bg-green-500/90 text-white">Ativo</Badge>
-              </div>
+              <h3 className="text-xl font-bold">Resumo do progresso</h3>
             </div>
 
-            <div className="w-full md:w-64 space-y-2">
+            <div className="w-full md:w-72 space-y-2">
               <div className="flex items-center justify-between text-xs font-medium">
                 <span>Progresso do programa</span>
                 <span className="text-muted-foreground">{Math.round(progress)}%</span>
@@ -252,7 +264,6 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
               size="sm"
               className="bg-blue-600 hover:bg-blue-700 text-white px-4"
               onClick={() => {
-                // Abre a visualização detalhada no dia correspondente, se existir
                 const dayIndex = nextWorkoutIndex >= 0 ? nextWorkoutIndex : 0;
                 setStepDayIndex(dayIndex);
                 setStepModalOpen(true);
@@ -264,27 +275,27 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
           </section>
         )}
 
-        {/* Motivação Diária da IA */}
+        {/* Bloco 3 – Motivação diária da IA */}
         {dailyMotivation && (
-          <div className="bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-950 dark:to-blue-950 rounded-lg p-6 border-2 border-purple-200 dark:border-purple-800">
-            <div className="flex items-start gap-4">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-400 to-blue-500 flex items-center justify-center flex-shrink-0">
-                <Sparkles className="w-6 h-6 text-white" />
+          <section className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950 dark:to-pink-950 rounded-xl p-5 border border-purple-200/70 dark:border-purple-800/70">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
+                <Sparkles className="w-5 h-5 text-white" />
               </div>
               <div className="flex-1">
-                <h3 className="font-bold text-lg mb-2 flex items-center gap-2">
-                  <Brain className="w-5 h-5 text-purple-600" />
+                <h3 className="font-semibold text-sm mb-1 flex items-center gap-2">
+                  <Brain className="w-4 h-4 text-purple-600" />
                   Motivação do Dia
                 </h3>
-                <p className="text-lg italic">{dailyMotivation}</p>
+                <p className="text-sm italic">{dailyMotivation}</p>
               </div>
             </div>
-          </div>
+          </section>
         )}
 
-        {/* Recomendações da IA */}
+        {/* Bloco 4 – Recomendações da IA */}
         {aiRecommendation && (
-          <div className="bg-gradient-to-br from-cyan-50 to-teal-50 dark:from-cyan-950 dark:to-teal-950 rounded-lg p-6 border-2 border-cyan-200 dark:border-cyan-800">
+          <section className="bg-gradient-to-br from-cyan-50 to-teal-50 dark:from-cyan-950 dark:to-teal-950 rounded-lg p-6 border-2 border-cyan-200 dark:border-cyan-800">
             <div className="space-y-4">
               <div className="flex items-center gap-2">
                 <Lightbulb className="w-6 h-6 text-cyan-600" />
@@ -329,10 +340,10 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
                 {aiLoading ? 'Analisando...' : 'Analisar Novamente'}
               </Button>
             </div>
-          </div>
+          </section>
         )}
 
-        {/* Visualização do Programa - sempre detalhada */}
+        {/* Bloco 5 – Visualização detalhada do programa */}
         <ExerciseDetailView
           workoutData={{
             title: activeProgram.plan_name,
@@ -374,7 +385,7 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
 
         {/* Histórico */}
         {showHistory && (
-          <div className="bg-card rounded-lg p-6 border space-y-4">
+          <section className="bg-card rounded-lg p-6 border space-y-4">
             <h3 className="text-xl font-bold flex items-center gap-2">
               <History className="w-5 h-5" />
               Histórico de Programas
@@ -433,7 +444,7 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
                 );
               })}
             </div>
-          </div>
+          </section>
         )}
 
         {/* Botão Novo Programa */}
@@ -458,82 +469,49 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
   // Tem programas mas nenhum ativo
   return (
     <div className="p-6 space-y-6">
-      {/* Header principal */}
-      <div className="flex items-center justify-between flex-wrap gap-2">
+      <div className="flex items-center justify-between flex-wrap gap-4">
         <h2 className="text-3xl font-bold flex items-center gap-2">
           <Dumbbell className="w-8 h-8 text-orange-600" />
           Exercícios Recomendados
         </h2>
       </div>
 
-      {/* Bloco 1 – Aviso de nenhum programa ativo */}
-      <section className="bg-card rounded-xl p-6 border space-y-3">
-        <p className="text-muted-foreground text-sm">
-          Você não tem programas ativos no momento.
-        </p>
+      <div className="bg-card rounded-lg p-6 border space-y-4">
+        <p className="text-muted-foreground">Você não tem programas ativos no momento</p>
         <Button
           onClick={() => setShowModal(true)}
           className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
         >
           Criar Novo Programa
         </Button>
-      </section>
+      </div>
 
-      {/* Bloco 2 – Lista de programas pausados (estilo dashboard em blocos) */}
-      <section className="space-y-4">
-        {programs.map((program) => {
-          const programProgress =
-            (program.completed_workouts / program.total_workouts) * 100;
-
-          return (
-            <div key={program.id} className="bg-card rounded-xl border p-5 space-y-3">
-              <div className="flex items-start justify-between gap-3">
-                <div className="space-y-1">
-                  <h3 className="text-lg font-bold flex items-center gap-2">
-                    {program.plan_name}
-                  </h3>
-                  <p className="text-sm text-muted-foreground max-w-xl">
-                    {program.plan_data?.description}
-                  </p>
-
-                  <div className="flex flex-wrap gap-2 pt-1 text-xs">
-                    <Badge variant="outline" className="flex items-center gap-1">
-                      {program.plan_data?.location === 'academia' ? '🏋️ Academia' : '🏠 Em casa'}
-                    </Badge>
-                    <Badge variant="secondary">{program.workouts_per_week}x por semana</Badge>
-                    {program.plan_data?.goal && (
-                      <Badge variant="secondary">{program.plan_data.goal}</Badge>
-                    )}
-                  </div>
-                </div>
-
-                <Badge variant="secondary">Pausado</Badge>
+      <div className="space-y-4">
+        {programs.map((program) => (
+          <div key={program.id} className="bg-card rounded-lg p-6 border">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="text-xl font-bold">{program.plan_name}</h3>
+                <p className="text-muted-foreground">{program.plan_data?.description}</p>
               </div>
-
-              <div className="space-y-1">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-muted-foreground">
-                    {program.completed_workouts}/{program.total_workouts} treinos
-                  </span>
-                  <span className="text-muted-foreground">{Math.round(programProgress)}%</span>
-                </div>
-                <Progress value={programProgress} className="h-1.5" />
-              </div>
-
-              <div className="flex gap-2 justify-end">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => resumeProgram(program.id)}
-                >
-                  <Play className="w-4 h-4 mr-1" />
-                  Ativar programa
-                </Button>
-              </div>
+              <Badge variant="secondary">Pausado</Badge>
             </div>
-          );
-        })}
-      </section>
+
+            <ExerciseDetailView
+              workoutData={{
+                title: program.plan_name,
+                description: program.plan_data?.description || '',
+                location: program.plan_data?.location || 'casa',
+                duration: program.plan_data?.weeks?.[0]?.days || 'N/A',
+                frequency: `${program.workouts_per_week}x por semana`,
+                goal: program.plan_data?.goal || '',
+                weekPlan: transformWeeksToWeekPlan(program.plan_data?.weeks || []),
+              }}
+              location={program.plan_data?.location === 'academia' ? 'academia' : 'casa'}
+            />
+          </div>
+        ))}
+      </div>
 
       <ExerciseOnboardingModal
         isOpen={showModal}
