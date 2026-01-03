@@ -186,7 +186,7 @@ Agora posso falar com você! 🎤 Use o microfone para conversar ou digite suas 
         formData.append('userId', user.id);
         formData.append('userName', user.user_metadata?.full_name || user.email?.split('@')[0] || 'usuário');
 
-        const response = await fetch('https://hlrkoyywjpckdotimtik.supabase.co/functions/v1/sofia-image-analysis', {
+        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sofia-image-analysis`, {
           method: 'POST',
           body: formData
         });

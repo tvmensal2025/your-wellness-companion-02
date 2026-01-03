@@ -35,7 +35,7 @@ export const SofiaIntegratedSystem: React.FC<SofiaIntegratedSystemProps> = ({
       <div className="text-center space-y-4">
         <div className="flex justify-center">
           <img 
-            src="https://hlrkoyywjpckdotimtik.supabase.co/storage/v1/object/sign/institutodossonhos/LOGO-IDS%202026.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV82YjhjMmVkMC1jOTFhLTQwMWQtOTNkNS02NDRlZDY0MWVkODMiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJpbnN0aXR1dG9kb3Nzb25ob3MvTE9HTy1JRFMgMjAyNi5wbmciLCJpYXQiOjE3NTQzNjkyMjQsImV4cCI6MjA2OTcyOTIyNH0.1VBl9bZ5qFlSVIEnxPqFq2lfi6CMb1oFlYGyGXaWm-8"
+            src={`${import.meta.env.VITE_SUPABASE_URL}/storage/v1/object/sign/institutodossonhos/LOGO-IDS%202026.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV82YjhjMmVkMC1jOTFhLTQwMWQtOTNkNS02NDRlZDY0MWVkODMiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJpbnN0aXR1dG9kb3Nzb25ob3MvTE9HTy1JRFMgMjAyNi5wbmciLCJpYXQiOjE3NTQzNjkyMjQsImV4cCI6MjA2OTcyOTIyNH0.1VBl9bZ5qFlSVIEnxPqFq2lfi6CMb1oFlYGyGXaWm-8`}
             alt="Instituto dos Sonhos 2026"
             className="h-16 w-auto"
           />

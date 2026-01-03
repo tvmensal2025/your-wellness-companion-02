@@ -39,7 +39,7 @@ export const GoogleFitPage: React.FC = () => {
             className="h-10 xs:h-12 px-4 xs:px-6 text-base xs:text-lg"
             onClick={async () => {
               try {
-                const response = await fetch('https://hlrkoyywjpckdotimtik.supabase.co/functions/v1/test-google-fit-config', {
+                const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/test-google-fit-config`, {
                   method: 'POST',
                   headers: {
                     'Content-Type': 'application/json',

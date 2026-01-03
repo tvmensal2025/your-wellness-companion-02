@@ -2,9 +2,10 @@
 // Sistema híbrido: imagens locais + URLs do Supabase quando disponíveis
 
 // URLs do Supabase (quando disponíveis)
+const SUPABASE_BASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://vgmqcodfdslyculfaknx.supabase.co';
 const SUPABASE_URLS = {
-  DR_VITAL: 'https://hlrkoyywjpckdotimtik.supabase.co/storage/v1/object/public/course-thumbnails/Dr.Vital%20sem%20fundo.png',
-  SOFIA: 'https://hlrkoyywjpckdotimtik.supabase.co/storage/v1/object/public/course-thumbnails/Sofia%20sem%20fundo.png'
+  DR_VITAL: `${SUPABASE_BASE_URL}/storage/v1/object/public/course-thumbnails/Dr.Vital%20sem%20fundo.png`,
+  SOFIA: `${SUPABASE_BASE_URL}/storage/v1/object/public/course-thumbnails/Sofia%20sem%20fundo.png`
 };
 
 // URLs locais (fallback)

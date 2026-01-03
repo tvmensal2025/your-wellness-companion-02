@@ -1997,7 +1997,7 @@ ANTES DO JSON, escreva uma análise clínica objetiva baseada APENAS nos dados l
         
         // Chamar nossa função vision-api
         const visionResponse = await fetch(
-          'https://hlrkoyywjpckdotimtik.supabase.co/functions/v1/vision-api',
+          `${Deno.env.get('SUPABASE_URL')}/functions/v1/vision-api`,
           {
             method: 'POST',
             headers: {
