@@ -5,6 +5,7 @@ export const exerciseInstructions = {
   casa: {
     'Agachamento na cadeira': {
       descricao: 'Sente e levante usando uma cadeira como referência',
+      video_url: 'https://www.youtube.com/watch?v=aclHkVaku9U',
       passos: [
         '1. Fique de frente para cadeira, pés na largura dos ombros',
         '2. Desça controladamente até quase sentar',
@@ -16,6 +17,7 @@ export const exerciseInstructions = {
     },
     'Flexão na mesa': {
       descricao: 'Flexão inclinada usando a mesa como apoio',
+      video_url: 'https://www.youtube.com/watch?v=IODxDxX7oi4',
       passos: [
         '1. Mãos na borda da mesa, largura dos ombros',
         '2. Corpo reto da cabeça aos pés',
@@ -27,6 +29,7 @@ export const exerciseInstructions = {
     },
     'Subida no banco': {
       descricao: 'Step up usando banco ou degrau da escada',
+      video_url: 'https://www.youtube.com/watch?v=Z2F0b0c5xV8',
       passos: [
         '1. Coloque um pé completamente sobre o banco',
         '2. Empurre pelo calcanhar para subir',
@@ -38,6 +41,7 @@ export const exerciseInstructions = {
     },
     'Mergulho na cadeira': {
       descricao: 'Tríceps dip usando cadeira',
+      video_url: 'https://www.youtube.com/watch?v=0326dy_-CzM',
       passos: [
         '1. Mãos na borda da cadeira, dedos para frente',
         '2. Pés no chão, joelhos dobrados (iniciante) ou esticados (avançado)',
@@ -49,6 +53,7 @@ export const exerciseInstructions = {
     },
     'Remada na mesa': {
       descricao: 'Remada invertida usando mesa resistente',
+      video_url: 'https://www.youtube.com/watch?v=GZpWaKW9nDU',
       passos: [
         '1. Deite sob a mesa, segure a borda',
         '2. Corpo reto, apenas calcanhares no chão',
@@ -60,6 +65,7 @@ export const exerciseInstructions = {
     },
     'Panturrilha na escada': {
       descricao: 'Elevação de panturrilha usando degrau',
+      video_url: 'https://www.youtube.com/watch?v=YMmgqO8Jo-k',
       passos: [
         '1. Pontas dos pés no degrau, calcanhares fora',
         '2. Segure no corrimão para equilíbrio',
@@ -71,6 +77,7 @@ export const exerciseInstructions = {
     },
     'Agachamento búlgaro': {
       descricao: 'Split squat com pé traseiro elevado',
+      video_url: 'https://www.youtube.com/watch?v=2C-uNgKwPLE',
       passos: [
         '1. Pé traseiro apoiado em cadeira/banco',
         '2. Pé da frente afastado (1 passo)',
@@ -82,6 +89,7 @@ export const exerciseInstructions = {
     },
     'Flexão declinada': {
       descricao: 'Flexão com pés elevados no banco',
+      video_url: 'https://www.youtube.com/watch?v=IODxDxX7oi4',
       passos: [
         '1. Pés no banco, mãos no chão',
         '2. Corpo reto, core contraído',
@@ -97,6 +105,7 @@ export const exerciseInstructions = {
   academia: {
     'Supino reto': {
       descricao: 'Exercício principal para peito',
+      video_url: 'https://www.youtube.com/watch?v=rT7DgCr-3pg',
       passos: [
         '1. Deite no banco, pés firmes no chão',
         '2. Pegada na largura dos ombros + 10cm',
@@ -108,6 +117,7 @@ export const exerciseInstructions = {
     },
     'Agachamento livre': {
       descricao: 'Rei dos exercícios para pernas',
+      video_url: 'https://www.youtube.com/watch?v=1xMaFs0L3ao',
       passos: [
         '1. Barra nas costas (trapézio superior)',
         '2. Pés largura dos ombros, pontas levemente para fora',
@@ -119,6 +129,7 @@ export const exerciseInstructions = {
     },
     'Levantamento terra': {
       descricao: 'Exercício completo de força',
+      video_url: 'https://www.youtube.com/watch?v=apzFT8P9A5c',
       passos: [
         '1. Barra no chão, sobre a linha dos pés',
         '2. Pés largura do quadril',
@@ -130,6 +141,7 @@ export const exerciseInstructions = {
     },
     'Desenvolvimento': {
       descricao: 'Principal exercício para ombros',
+      video_url: 'https://www.youtube.com/watch?v=qEwKCR5JCog',
       passos: [
         '1. Sentado com costas apoiadas',
         '2. Halteres na altura dos ombros',

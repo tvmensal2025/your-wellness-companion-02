@@ -103,10 +103,20 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
     }
   };
 
-  // Helper para extrair ID do YouTube a partir dos dados do exercício
+  // Helper para extrair ID do YouTube a partir dos dados do exercício ou da base de instruções
   const getVideoId = () => {
-    if (!exerciseData) return null;
-    const raw = (exerciseData.video_url || exerciseData.youtube_url || '') as string;
+    let raw = '';
+
+    // 1) Tenta usar o vídeo associado ao exercício atual da base (casa/academia)
+    if (currentExercise && currentExercise[1] && (currentExercise[1] as any).video_url) {
+      raw = (currentExercise[1] as any).video_url as string;
+    }
+
+    // 2) Se não houver na base, tenta vir do exerciseData (ex.: programas salvos do admin)
+    if (!raw && exerciseData) {
+      raw = (exerciseData.video_url || exerciseData.youtube_url || '') as string;
+    }
+
     if (!raw) return null;
     const match = raw.match(/https?:\/\/[\w./?=&%-]+/i);
     if (!match) return null;
