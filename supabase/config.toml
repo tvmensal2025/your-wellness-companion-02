@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions."dr-vital-enhanced"]
 verify_jwt = false
+
+[functions."finalize-medical-document"]
+verify_jwt = false
