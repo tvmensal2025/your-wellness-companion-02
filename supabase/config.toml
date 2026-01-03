@@ -1,1 +1,7 @@
 project_id = "yhyzvihztivqmygxbbwv"
+
+[functions.sofia-image-analysis]
+verify_jwt = false
+
+[functions.sofia-deterministic]
+verify_jwt = false
