@@ -65,7 +65,7 @@ export const GoogleSignupForm: React.FC<GoogleSignupFormProps> = ({ onComplete }
       };
 
       // Salvar no Supabase
-      const { supabase } = await import('@/integrations/supabase/client');
+      const { supabase } = await import('@/integrations/supabase/client-fixed');
       const { error } = await supabase
         .from('profiles')
         .upsert({
