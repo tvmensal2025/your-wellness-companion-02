@@ -41,6 +41,7 @@ import { SofiaNutricionalPage } from '@/pages/SofiaNutricionalPage';
 import UserProfile from '@/components/UserProfile';
 import MyProgress from '@/components/MyProgress';
 import SaboteurTest from '@/components/SaboteurTest';
+import { cn } from '@/lib/utils';
 
 // Core dashboard components
 import LockedMenuItem from '@/components/LockedMenuItem';
@@ -376,10 +377,40 @@ const CompleteDashboardPage = () => {
           </div>
 
           {/* Content */}
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto pb-16 lg:pb-0">
             {renderContent()}
           </div>
         </div>
+      </div>
+
+      {/* Mobile bottom navigation */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 border-t bg-card/95 backdrop-blur">
+        <nav className="max-w-3xl mx-auto flex items-stretch justify-between px-2 py-1">
+          {[
+            { id: 'dashboard', icon: Home, label: 'Início' },
+            { id: 'missions', icon: Activity, label: 'Missão' },
+            { id: 'progress', icon: TrendingUp, label: 'Progresso' },
+            { id: 'courses', icon: GraduationCap, label: 'Cursos' },
+            { id: 'profile', icon: UserIcon, label: 'Perfil' },
+          ].map((item) => {
+            const Icon = item.icon;
+            const isActive = activeSection === item.id;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => setActiveSection(item.id as DashboardSection)}
+                className={cn(
+                  'flex flex-1 flex-col items-center justify-center gap-0.5 py-1 text-[10px] transition-colors',
+                  isActive ? 'text-primary' : 'text-muted-foreground'
+                )}
+              >
+                <Icon className={cn('w-5 h-5', isActive ? 'text-primary' : 'text-muted-foreground')} />
+                <span className={cn('leading-none', isActive && 'font-medium')}>{item.label}</span>
+              </button>
+            );
+          })}
+        </nav>
       </div>
 
       {/* Modal de Exercícios */}
