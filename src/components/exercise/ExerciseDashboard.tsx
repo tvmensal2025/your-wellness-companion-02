@@ -390,6 +390,14 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
             title={`Treino ${stepDayIndex + 1}`}
             description={activeProgram.plan_data?.description}
             activity={currentWeekData.activities[stepDayIndex]}
+            currentIndex={stepDayIndex}
+            totalWorkouts={currentWeekData.activities.length}
+            onPrev={() => {
+              if (stepDayIndex > 0) setStepDayIndex(stepDayIndex - 1);
+            }}
+            onNext={() => {
+              if (stepDayIndex < currentWeekData.activities.length - 1) setStepDayIndex(stepDayIndex + 1);
+            }}
             onCompleteWorkout={async () => {
               await completeWorkout(
                 activeProgram.id,

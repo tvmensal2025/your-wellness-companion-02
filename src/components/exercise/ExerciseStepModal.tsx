@@ -12,6 +12,11 @@ interface ExerciseStepModalProps {
   title: string;
   description?: string;
   activity: string;
+  currentIndex: number;
+  totalWorkouts: number;
+  onPrev: () => void;
+  onNext: () => void;
+  onOpenDetailed?: () => void;
   onCompleteWorkout: () => Promise<void>;
 }
 
@@ -34,6 +39,11 @@ export const ExerciseStepModal: React.FC<ExerciseStepModalProps> = ({
   title,
   description,
   activity,
+  currentIndex,
+  totalWorkouts,
+  onPrev,
+  onNext,
+  onOpenDetailed,
   onCompleteWorkout,
 }) => {
   const videoId = extractYouTubeId(activity + ' ' + (description || ''));
@@ -73,9 +83,38 @@ export const ExerciseStepModal: React.FC<ExerciseStepModalProps> = ({
         <div className="grid md:grid-cols-[3fr,2fr] bg-gradient-to-br from-background via-background to-muted/60">
           <div className="p-6 space-y-4">
             <DialogHeader className="space-y-2">
-              <DialogTitle className="text-2xl md:text-3xl font-bold tracking-tight">
-                {title}
-              </DialogTitle>
+              <div className="flex items-center justify-between gap-2">
+                <DialogTitle className="text-2xl md:text-3xl font-bold tracking-tight">
+                  {title}
+                </DialogTitle>
+                <div className="flex items-center gap-2 text-xs md:text-sm">
+                  <span className="text-muted-foreground">
+                    {currentIndex + 1} de {totalWorkouts}
+                  </span>
+                  <div className="flex gap-1">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      className="h-7 w-7"
+                      disabled={currentIndex === 0}
+                      onClick={onPrev}
+                    >
+                      ‹
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      className="h-7 w-7"
+                      disabled={currentIndex === totalWorkouts - 1}
+                      onClick={onNext}
+                    >
+                      ›
+                    </Button>
+                  </div>
+                </div>
+              </div>
               <p className="text-sm text-muted-foreground">
                 Vamos fazer este treino com calma, no seu ritmo. Você pode pausar sempre que precisar.
               </p>
