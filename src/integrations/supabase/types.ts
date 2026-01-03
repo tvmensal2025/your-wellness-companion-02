@@ -4736,6 +4736,7 @@ export type Database = {
           images_processed: number | null
           images_total: number | null
           processing_stage: string | null
+          processing_started_at: string | null
           progress_pct: number | null
           report_meta: Json | null
           results: Json | null
@@ -4759,6 +4760,7 @@ export type Database = {
           images_processed?: number | null
           images_total?: number | null
           processing_stage?: string | null
+          processing_started_at?: string | null
           progress_pct?: number | null
           report_meta?: Json | null
           results?: Json | null
@@ -4782,6 +4784,7 @@ export type Database = {
           images_processed?: number | null
           images_total?: number | null
           processing_stage?: string | null
+          processing_started_at?: string | null
           progress_pct?: number | null
           report_meta?: Json | null
           results?: Json | null
