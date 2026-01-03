@@ -128,11 +128,15 @@
   .bg-gradient-accent {
     background: var(--gradient-accent);
   }
+
+  .bg-gradient-mission {
+    background: linear-gradient(135deg, hsl(292 84% 61%), hsl(330 81% 60%), hsl(23 96% 62%));
+  }
   
   .shadow-hero {
     box-shadow: var(--shadow-hero);
   }
-  
+
   /* Animações modernas e micro-interações */
   @keyframes fadeInUp {
     from {
@@ -142,6 +146,28 @@
     to {
       opacity: 1;
       transform: translateY(0);
+    }
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes scaleIn {
+    from {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
     }
   }
 
@@ -191,6 +217,14 @@
   /* Classes de animação */
   .animate-fade-in-up {
     animation: fadeInUp 0.6s ease-out;
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.45s ease-out;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.35s ease-out;
   }
 
   .animate-gentle-pulse {
