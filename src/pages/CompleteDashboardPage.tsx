@@ -297,6 +297,9 @@ const CompleteDashboardPage = () => {
                   }`}
                   onClick={() => {
                     setActiveSection(item.id as DashboardSection);
+                    if (item.id === 'exercicios') {
+                      setExerciseModalOpen(true);
+                    }
                     if (isMobile) setSidebarOpen(false);
                   }}
                 >
