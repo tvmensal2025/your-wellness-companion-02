@@ -555,31 +555,9 @@ const MedicalDocumentsSection: React.FC = () => {
 
     console.log('✅ Resposta da análise médica (restart):', data);
 
-    // Garantir que o documento não fique travado em 95% / "gerando_html"
-    try {
-      const payload = data as { reportPath?: string; service?: string; imageCount?: number };
-
-      await supabase
-        .from('medical_documents')
-        .update({
-          analysis_status: 'ready',
-          status: 'normal',
-          processing_stage: 'finalizado',
-          progress_pct: 100,
-          report_path: payload.reportPath || doc.report_path || null,
-          report_meta: {
-            ...(doc.report_meta || {}),
-            generated_at: new Date().toISOString(),
-            service_used: payload.service,
-            image_count: payload.imageCount,
-          },
-        })
-        .eq('id', doc.id);
-
-      console.log('✅ Documento atualizado para FINALIZADO após reinício');
-    } catch (updateFinalError) {
-      console.warn('⚠️ Falha ao atualizar documento como finalizado após reinício:', updateFinalError);
-    }
+    // A função analyze-medical-exam já atualiza o documento para 100%/finalizado.
+    // Mantemos apenas o log e recarregamos os dados depois.
+    console.log('ℹ️ Análise reiniciada com sucesso. Aguardando atualização do documento pelo backend...');
 
     toast({
       title: '🔄 Análise reiniciada',
