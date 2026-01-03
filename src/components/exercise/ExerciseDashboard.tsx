@@ -506,18 +506,21 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
               <Badge variant="secondary">Pausado</Badge>
             </div>
 
-            <ExerciseDetailView
-              workoutData={{
-                title: program.plan_name,
-                description: program.plan_data?.description || '',
-                location: program.plan_data?.location || 'casa',
-                duration: program.plan_data?.weeks?.[0]?.days || 'N/A',
-                frequency: `${program.workouts_per_week}x por semana`,
-                goal: program.plan_data?.goal || '',
-                weekPlan: transformWeeksToWeekPlan(program.plan_data?.weeks || []),
-              }}
-              location={program.plan_data?.location === 'academia' ? 'academia' : 'casa'}
-            />
+            {/* Detalhe visual do programa pausado desativado para manter só o modelo detalhado */}
+            {false && (
+              <ExerciseDetailView
+                workoutData={{
+                  title: program.plan_name,
+                  description: program.plan_data?.description || '',
+                  location: program.plan_data?.location || 'casa',
+                  duration: program.plan_data?.weeks?.[0]?.days || 'N/A',
+                  frequency: `${program.workouts_per_week}x por semana`,
+                  goal: program.plan_data?.goal || '',
+                  weekPlan: transformWeeksToWeekPlan(program.plan_data?.weeks || []),
+                }}
+                location={program.plan_data?.location === 'academia' ? 'academia' : 'casa'}
+              />
+            )}
           </div>
         ))}
       </div>
