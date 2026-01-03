@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Heart, ArrowLeft, User, Phone, Calendar, MapPin, Ruler, Star } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/client-fixed";
 import { useToast } from "@/hooks/use-toast";
 import { useGoogleAuth } from "@/hooks/useGoogleAuth";
 import { GoogleSignupModal } from "@/components/GoogleSignupModal";
