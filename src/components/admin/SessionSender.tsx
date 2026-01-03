@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,45 +10,31 @@ interface SessionSenderProps {
   sessionTitle: string;
   userIds?: string[];
   onSuccess?: () => void;
-  isTemplate?: boolean;
 }
 
 export const SessionSender: React.FC<SessionSenderProps> = ({
   sessionId,
   sessionTitle,
   userIds = [],
-  onSuccess,
-  isTemplate = false
+  onSuccess
 }) => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
 
-  const getCurrentUser = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    return user;
-  };
-
   const sendToAllUsers = async () => {
     setLoading(true);
     try {
-      const currentUser = await getCurrentUser();
       const { data, error } = await supabase.rpc('assign_session_to_all_users', {
         session_id_param: sessionId
       });
 
       if (error) throw error;
 
-      const result = { success: data as boolean, message: 'Sessão enviada para todos os usuários' };
-      
-      if (result?.success) {
-        toast({
-          title: "✅ Sucesso!",
-          description: result.message || "Sessão enviada para todos os usuários"
-        });
-        onSuccess?.();
-      } else {
-        throw new Error("Erro desconhecido");
-      }
+      toast({
+        title: "✅ Sucesso!",
+        description: `Sessão "${sessionTitle}" enviada para todos os usuários`
+      });
+      onSuccess?.();
     } catch (error: any) {
       console.error('Error sending session to all users:', error);
       toast({
@@ -74,37 +59,18 @@ export const SessionSender: React.FC<SessionSenderProps> = ({
 
     setLoading(true);
     try {
-      const currentUser = await getCurrentUser();
-      
-      if (isTemplate) {
-        // Handle template: show message that this needs manual implementation
-        toast({
-          title: "⚠️ Funcionalidade em Desenvolvimento",
-          description: "Envio de templates para usuários selecionados precisa ser implementado",
-          variant: "destructive"
-        });
-        return;
-      } else {
-        // Handle existing session assignment
-        const { data, error } = await supabase.rpc('assign_session_to_users', {
-          session_id_param: sessionId,
-          user_ids_param: userIds
-        });
+      const { data, error } = await supabase.rpc('assign_session_to_users', {
+        session_id_param: sessionId,
+        user_ids_param: userIds
+      });
 
-        if (error) throw error;
+      if (error) throw error;
 
-        const result = { success: data as boolean, message: `Sessão enviada para ${userIds.length} usuários` };
-        
-        if (result?.success) {
-          toast({
-            title: "✅ Sucesso!",
-            description: result.message || `Sessão enviada para ${userIds.length} usuários`
-          });
-          onSuccess?.();
-        } else {
-          throw new Error("Erro desconhecido");
-        }
-      }
+      toast({
+        title: "✅ Sucesso!",
+        description: `Sessão "${sessionTitle}" enviada para ${userIds.length} usuário(s)`
+      });
+      onSuccess?.();
     } catch (error: any) {
       console.error('Error sending session to selected users:', error);
       toast({
