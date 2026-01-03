@@ -54,21 +54,22 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
 
   return (
     <div className="p-4 space-y-4">
-      {/* Hero motivacional compacto, mobile-first */}
-      <section className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary/15 via-primary/10 to-background border border-border/40 p-4 flex items-center gap-3">
-        <div className="absolute inset-y-0 right-[-40%] w-40 opacity-25 pointer-events-none bg-[radial-gradient(circle_at_center,hsl(var(--primary))/0.45,transparent_60%)]" />
-        <div className="relative z-10 flex items-start gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/15 text-primary">
-            <Dumbbell className="w-5 h-5" />
+      <section className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-primary/20 via-primary/10 to-background border border-border/40 px-4 py-6 md:py-8 flex items-center gap-4 md:gap-6 animate-fade-in">
+        {/* Camadas de fundo para dar sensação de imagem/padrão */}
+        <div className="absolute inset-y-0 right-[-30%] w-56 opacity-25 pointer-events-none bg-[radial-gradient(circle_at_center,hsl(var(--primary))/0.45,transparent_60%)]" />
+        <div className="absolute inset-0 opacity-[0.07] bg-[radial-gradient(circle_at_0%_0%,hsl(var(--primary))/0.35,transparent_55%),radial-gradient(circle_at_100%_100%,hsl(var(--primary))/0.25,transparent_55%)]" />
+        <div className="relative z-10 flex items-center md:items-start gap-3 md:gap-4 w-full">
+          <div className="flex h-12 w-12 md:h-14 md:w-14 items-center justify-center rounded-full bg-primary/15 text-primary shadow-sm">
+            <Dumbbell className="w-6 h-6" />
           </div>
-          <div className="space-y-1">
-            <p className="text-[10px] font-semibold tracking-[0.22em] uppercase text-primary/80">
+          <div className="space-y-1 md:space-y-2 max-w-xl">
+            <p className="text-[10px] md:text-[11px] font-semibold tracking-[0.22em] uppercase text-primary/80">
               Treino focado em você
             </p>
-            <h2 className="text-lg font-bold leading-snug">
+            <h2 className="text-lg md:text-2xl font-bold leading-snug md:leading-snug">
               Cada treino é um passo a mais na sua melhor versão.
             </h2>
-            <p className="text-xs text-muted-foreground max-w-xs">
+            <p className="text-xs md:text-sm text-muted-foreground max-w-xl">
               Mantenha o foco hoje. Um treino curto e bem feito vale mais do que a perfeição que nunca começa.
             </p>
           </div>
