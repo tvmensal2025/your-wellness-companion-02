@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { User } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/supabase/client-fixed';
 import { useEnhancedGamification } from '@/hooks/useEnhancedGamification';
 import { dailyQuestionsFinal } from '@/data/daily-questions-final';
 import { calculateWaterIntake, calculateSleepHours } from '@/data/daily-questions-final';
