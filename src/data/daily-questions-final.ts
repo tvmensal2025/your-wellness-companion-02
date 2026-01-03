@@ -201,11 +201,12 @@ export const getSectionTitleFinal = (section: 'morning' | 'habits' | 'mindset') 
 
 // Funções para calcular dados de tracking
 export const calculateWaterIntake = (answer: string): number => {
+  // Retornamos sempre em LITROS, para bater com o campo numeric(4,1) da tabela health_diary
   switch (answer) {
-    case 'Menos de 500ml': return 250;
-    case '1L': return 1000;
-    case '2L': return 2000;
-    case '3L ou mais': return 3000;
+    case 'Menos de 500ml': return 0.5; // 0.5L
+    case '1L': return 1.0;
+    case '2L': return 2.0;
+    case '3L ou mais': return 3.0;
     default: return 0;
   }
 };
