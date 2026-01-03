@@ -340,7 +340,7 @@ const AcompanhamentoPage: React.FC = () => {
            imc: dadosCalculados.imc,
            circunferencia_abdominal_cm: perimetroAbdominal,
           measurement_date: new Date().toISOString(),
-          measurement_type: 'manual'
+          device_type: 'manual'
         });
 
       if (error) throw error;
