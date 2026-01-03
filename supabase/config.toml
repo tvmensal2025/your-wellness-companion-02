@@ -1,4 +1,1 @@
-project_id = "vgmqcodfdslyculfaknx"
-
-[functions.check-user-data-completeness]
-verify_jwt = false
+project_id = "dobzvllqpqabnrwvphym"
