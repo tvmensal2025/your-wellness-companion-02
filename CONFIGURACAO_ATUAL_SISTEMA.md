@@ -99,11 +99,12 @@ const corsHeaders = {
 };
 ```
 
-### 6. CHAVES DE API (NÃO ALTERAR)
+### 6. CHAVES DE API (LOVABLE CLOUD)
 
-#### Supabase:
-- **URL**: `https://hlrkoyywjpckdotimtik.supabase.co`
-- **Anon Key**: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhscmtveXl3anBja2RvdGltdGlrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMxNTMwNDcsImV4cCI6MjA2ODcyOTA0N30.kYEtg1hYG2pmcyIeXRs-vgNIVOD76Yu7KPlyFN0vdUI`
+#### Lovable Cloud (Supabase):
+- **URL**: Gerenciada automaticamente via variáveis de ambiente
+- **Project ID**: Gerenciado automaticamente via Lovable Cloud
+- **Uso**: Sempre usar `import.meta.env.VITE_SUPABASE_URL` e `import.meta.env.VITE_SUPABASE_ANON_KEY`
 
 ### 7. ESTRUTURA DE CAMINHOS (NÃO ALTERAR)
 
@@ -136,16 +137,17 @@ tmp/{userId}/{uuid}.{ext}
 - **"🔄 Reiniciar"**: Force restart da análise
 - **Logs**: Console do navegador
 
-### 10. COMANDOS DE DEPLOY (NÃO ALTERAR)
+### 10. COMANDOS DE DEPLOY (AUTOMÁTICO)
 
 ```bash
-# Deploy das funções
-npx supabase functions deploy finalize-medical-document --project-ref hlrkoyywjpckdotimtik
-npx supabase functions deploy analyze-medical-exam --project-ref hlrkoyywjpckdotimtik
+# Deploy das funções (AUTOMÁTICO no Lovable Cloud)
+# As edge functions são deployadas automaticamente ao fazer commit
 
-# Aplicar políticas RLS (se necessário)
-# Executar fix-storage-rls-public.sql no Console SQL do Supabase
+# Aplicar políticas RLS (se necessário - via migrations)
+# As migrations são aplicadas automaticamente
 ```
+
+**IMPORTANTE**: No Lovable Cloud, todos os deploys são automáticos. Não é necessário rodar comandos manualmente.
 
 ---
 

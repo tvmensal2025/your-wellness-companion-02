@@ -3,9 +3,9 @@
 export const config = {
   // Supabase Configuration
   supabase: {
-    url: import.meta.env.VITE_SUPABASE_URL || "https://hlrkoyywjpckdotimtik.supabase.co",
-    anonKey: import.meta.env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhscmtveXl3anBja2RvdGltdGlrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMxNTMwNDcsImV4cCI6MjA2ODcyOTA0N30.kYEtg1hYG2pmcyIeXRs-vgNIVOD76Yu7KPlyFN0vdUI",
-    projectId: "hlrkoyywjpckdotimtik"
+    url: import.meta.env.VITE_SUPABASE_URL || "https://vgmqcodfdslyculfaknx.supabase.co",
+    anonKey: import.meta.env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZnbXFjb2RmZHNseWN1bGZha254Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczODM3NzMsImV4cCI6MjA4Mjk1OTc3M30.NMM2EGBLJ7Unht4ZY4RY-_Lg9YPvZ5kfKWoyglBOLiw",
+    projectId: import.meta.env.VITE_SUPABASE_PROJECT_ID || "vgmqcodfdslyculfaknx"
   },
   
   // GitHub Configuration

@@ -186,7 +186,7 @@ export const useConversation = (options: UseConversationOptions = {}) => {
 
       // Chamar Edge Function do Google TTS (seguro - API key no backend)
       const response = await fetch(
-        `https://hlrkoyywjpckdotimtik.supabase.co/functions/v1/google-tts`,
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/google-tts`,
         {
           method: 'POST',
           headers: {

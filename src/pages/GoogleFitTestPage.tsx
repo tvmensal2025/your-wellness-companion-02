@@ -15,7 +15,7 @@ export default function GoogleFitTestPage() {
   const { user, loading } = useAuth();
 
   const clientId = '705908448787-so9cco4hkduhmr0lq4ftkng10hjcj1is.apps.googleusercontent.com';
-  const redirectUri = 'https://hlrkoyywjpckdotimtik.supabase.co/functions/v1/google-fit-callback';
+  const redirectUri = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/google-fit-callback`;
 
   // Teste automático ao carregar a página
   useEffect(() => {
