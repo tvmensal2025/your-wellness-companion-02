@@ -376,9 +376,9 @@ const CompleteDashboardPage = () => {
         </Sheet>
 
         {/* Main Content */}
-        <div className="flex-1 flex flex-col min-w-0">
+        <div className="flex-1 flex flex-col min-w-0 bg-gradient-to-b from-background via-background to-muted/40">
           {/* Mobile Header */}
-          <div className="lg:hidden flex items-center justify-between p-4 border-b bg-card">
+          <div className="lg:hidden flex items-center justify-between px-4 py-3 border-b bg-card/95 backdrop-blur-sm">
             <Button 
               variant="ghost" 
               size="icon"
@@ -387,7 +387,7 @@ const CompleteDashboardPage = () => {
               <Menu className="w-5 h-5" />
             </Button>
             
-            <h1 className="text-lg font-semibold">
+            <h1 className="text-base font-semibold">
               {menuItems.find(item => item.id === activeSection)?.label || 'Dashboard'}
             </h1>
             
@@ -395,8 +395,10 @@ const CompleteDashboardPage = () => {
           </div>
 
           {/* Content */}
-          <div className="flex-1 overflow-y-auto pb-16 lg:pb-0">
-            {renderContent()}
+          <div className="flex-1 overflow-y-auto pb-16 lg:pb-6">
+            <main className="w-full max-w-6xl mx-auto px-4 pt-4 pb-6 lg:px-6 lg:pt-6 space-y-4 animate-fade-in">
+              {renderContent()}
+            </main>
           </div>
         </div>
       </div>
