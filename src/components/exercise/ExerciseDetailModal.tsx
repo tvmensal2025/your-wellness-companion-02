@@ -183,52 +183,52 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
 
         {renderVideoBlock()}
 
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-3 gap-2 mt-2">
           <Card className="bg-white/50 dark:bg-black/20">
-            <CardContent className="p-3 text-center">
+            <CardContent className="p-2.5 text-center">
               <Repeat className="w-5 h-5 mx-auto mb-1 text-orange-600" />
-              <div className="text-base font-semibold">3-4</div>
-              <div className="text-xs text-muted-foreground">Séries</div>
+              <div className="text-sm font-semibold">3-4</div>
+              <div className="text-[10px] text-muted-foreground">Séries</div>
             </CardContent>
           </Card>
           <Card className="bg-white/50 dark:bg-black/20">
-            <CardContent className="p-3 text-center">
+            <CardContent className="p-2.5 text-center">
               <Target className="w-5 h-5 mx-auto mb-1 text-orange-600" />
-              <div className="text-base font-semibold">12-15</div>
-              <div className="text-xs text-muted-foreground">Repetições</div>
+              <div className="text-sm font-semibold">12-15</div>
+              <div className="text-[10px] text-muted-foreground">Repetições</div>
             </CardContent>
           </Card>
           <Card className="bg-white/50 dark:bg-black/20">
-            <CardContent className="p-3 text-center">
+            <CardContent className="p-2.5 text-center">
               <Clock className="w-5 h-5 mx-auto mb-1 text-orange-600" />
-              <div className="text-base font-semibold">60s</div>
-              <div className="text-xs text-muted-foreground">Descanso</div>
+              <div className="text-sm font-semibold">60s</div>
+              <div className="text-[10px] text-muted-foreground">Descanso</div>
             </CardContent>
           </Card>
         </div>
 
-        <div className="space-y-1">
-          <div className="flex items-center justify-between text-sm">
+        <div className="space-y-1 mt-1">
+          <div className="flex items-center justify-between text-xs">
             <span className="font-semibold">Dificuldade</span>
             <span className="text-muted-foreground">Intermediário</span>
           </div>
-          <Progress value={60} className="h-2" />
+          <Progress value={60} className="h-1.5" />
         </div>
 
-        <div className="flex justify-between gap-3">
+        <div className="flex justify-between gap-2 mt-2">
           <Button
             variant="outline"
-            className="flex-1"
+            className="flex-1 py-2"
             onClick={() => setCurrentStep('instructions')}
           >
-            <Info className="w-4 h-4 mr-2" />
+            <Info className="w-4 h-4 mr-1" />
             Instruções
           </Button>
           <Button
-            className="flex-1 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
+            className="flex-1 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 py-2"
             onClick={startExecution}
           >
-            <Play className="w-4 h-4 mr-2" />
+            <Play className="w-4 h-4 mr-1" />
             Começar
           </Button>
         </div>
