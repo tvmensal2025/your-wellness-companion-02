@@ -517,62 +517,89 @@ const MedicalDocumentsSection: React.FC = () => {
       // Reset do status no banco
       const { error: updateError } = await supabase
         .from('medical_documents')
-        .update({
-          analysis_status: 'pending',
-          processing_stage: null,
-          progress_pct: 0,
-          images_processed: 0,
-          processing_started_at: null,
-        })
-        .eq('id', doc.id);
+      .update({
+        analysis_status: 'pending',
+        processing_stage: null,
+        progress_pct: 0,
+        images_processed: 0,
+        processing_started_at: null,
+      })
+      .eq('id', doc.id);
 
-      if (updateError) {
-        console.error('Erro ao resetar status:', updateError);
-        throw updateError;
-      }
+    if (updateError) {
+      console.error('Erro ao resetar status:', updateError);
+      throw updateError;
+    }
 
-      // Disparar nova análise
-      console.log('🔍 Dados sendo enviados para analyze-medical-exam:', {
+    // Disparar nova análise (função legada ainda usada apenas no reinício)
+    console.log('🔍 Dados sendo enviados para analyze-medical-exam:', {
+      documentId: doc.id,
+      images: doc.report_meta?.image_paths || [],
+      userId: user.id,
+      examType: doc.type,
+    });
+
+    const { data, error } = await supabase.functions.invoke('analyze-medical-exam', {
+      body: {
         documentId: doc.id,
         images: doc.report_meta?.image_paths || [],
         userId: user.id,
         examType: doc.type,
-      });
+      },
+    });
 
-      const { data, error } = await supabase.functions.invoke('analyze-medical-exam', {
-        body: {
-          documentId: doc.id,
-          images: doc.report_meta?.image_paths || [],
-          userId: user.id,
-          examType: doc.type,
-        },
-      });
-
-      if (error) {
-        console.error('Erro na função analyze-medical-exam:', error);
-        throw new Error(error.message || 'Falha ao reiniciar análise');
-      }
-
-      console.log('✅ Resposta da análise médica (restart):', data);
-
-      toast({
-        title: '🔄 Análise reiniciada',
-        description: 'O processamento foi reiniciado. Aguarde alguns minutos.',
-        duration: 3000,
-      });
-
-      setTimeout(() => loadDocuments(), 2000);
-    } catch (err: any) {
-      console.error(err);
-      toast({
-        title: 'Falha ao reiniciar análise',
-        description: err?.message || 'Tente novamente',
-        variant: 'destructive',
-      });
-    } finally {
-      setUploading(false);
+    if (error) {
+      console.error('Erro na função analyze-medical-exam:', error);
+      throw new Error(error.message || 'Falha ao reiniciar análise');
     }
-  };
+
+    console.log('✅ Resposta da análise médica (restart):', data);
+
+    // Garantir que o documento não fique travado em 95% / "gerando_html"
+    try {
+      const payload = data as { reportPath?: string; service?: string; imageCount?: number };
+
+      await supabase
+        .from('medical_documents')
+        .update({
+          analysis_status: 'ready',
+          status: 'normal',
+          processing_stage: 'finalizado',
+          progress_pct: 100,
+          report_path: payload.reportPath || doc.report_path || null,
+          report_meta: {
+            ...(doc.report_meta || {}),
+            generated_at: new Date().toISOString(),
+            service_used: payload.service,
+            image_count: payload.imageCount,
+          },
+          processing_completed_at: new Date().toISOString(),
+        })
+        .eq('id', doc.id);
+
+      console.log('✅ Documento atualizado para FINALIZADO após reinício');
+    } catch (updateFinalError) {
+      console.warn('⚠️ Falha ao atualizar documento como finalizado após reinício:', updateFinalError);
+    }
+
+    toast({
+      title: '🔄 Análise reiniciada',
+      description: 'O processamento foi reiniciado. Aguarde alguns minutos.',
+      duration: 3000,
+    });
+
+    setTimeout(() => loadDocuments(), 2000);
+  } catch (err: any) {
+    console.error(err);
+    toast({
+      title: 'Falha ao reiniciar análise',
+      description: err?.message || 'Tente novamente',
+      variant: 'destructive',
+    });
+  } finally {
+    setUploading(false);
+  }
+};
 
   // ---- Relatório Premium (GPT-5 Thinking) com VisitData ----
   type Exam = { name: string; value: number | string; unit?: string; reference?: { low?: number; high?: number; note?: string }; date?: string };
