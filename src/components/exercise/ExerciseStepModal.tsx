@@ -79,9 +79,10 @@ export const ExerciseStepModal: React.FC<ExerciseStepModalProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={(value) => !value && onClose()}>
-      <DialogContent className="max-w-4xl p-0 overflow-hidden">
-        <div className="grid md:grid-cols-[3fr,2fr] bg-gradient-to-br from-background via-background to-muted/60">
-          <div className="p-6 space-y-4">
+      <DialogContent className="max-w-3xl p-0 overflow-hidden">
+        <div className="flex flex-col bg-gradient-to-br from-background via-background to-muted/60">
+          {/* Cabeçalho + navegação entre treinos */}
+          <div className="px-6 pt-5 pb-3 border-b">
             <DialogHeader className="space-y-2">
               <div className="flex items-center justify-between gap-2">
                 <DialogTitle className="text-2xl md:text-3xl font-bold tracking-tight">
@@ -119,9 +120,32 @@ export const ExerciseStepModal: React.FC<ExerciseStepModalProps> = ({
                 Vamos fazer este treino com calma, no seu ritmo. Você pode pausar sempre que precisar.
               </p>
             </DialogHeader>
+          </div>
 
+          {/* Player de vídeo no topo */}
+          <div className="w-full border-b bg-muted/60 px-6 pt-4 pb-5">
+            <p className="text-sm font-medium mb-2">Vídeo do exercício</p>
+            {videoId ? (
+              <div className="relative w-full pt-[56.25%] rounded-xl overflow-hidden bg-black/80 shadow-md">
+                <iframe
+                  className="absolute inset-0 w-full h-full"
+                  src={`https://www.youtube.com/embed/${videoId}`}
+                  title="Vídeo do treino"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                />
+              </div>
+            ) : (
+              <div className="rounded-xl border border-dashed flex items-center justify-center text-xs text-muted-foreground p-4 text-center bg-background/60">
+                Adicione um link do YouTube na descrição do treino para exibir o vídeo aqui.
+              </div>
+            )}
+          </div>
+
+          {/* Conteúdo do exercício, cuidados e timer */}
+          <div className="px-6 py-4 space-y-4">
             {/* Bloco principal do exercício */}
-            <div className="space-y-4 mt-2">
+            <div className="space-y-4">
               <p className="text-xs uppercase tracking-wide text-muted-foreground font-semibold">
                 Exercício de hoje
               </p>
@@ -150,7 +174,7 @@ export const ExerciseStepModal: React.FC<ExerciseStepModalProps> = ({
               </div>
 
               {/* Timer elegante */}
-              <div className="mt-4 flex flex-col md:flex-row items-center gap-4 p-3 rounded-2xl border bg-background/80">
+              <div className="mt-2 flex flex-col md:flex-row items-center gap-4 p-3 rounded-2xl border bg-background/80">
                 <div className="flex-1 flex flex-col items-center md:items-start gap-1">
                   <span className="text-xs uppercase tracking-wide text-muted-foreground">Tempo de treino</span>
                   <span className="font-mono text-3xl md:text-4xl font-semibold">
@@ -200,26 +224,6 @@ export const ExerciseStepModal: React.FC<ExerciseStepModalProps> = ({
                 </Button>
               </div>
             </div>
-          </div>
-
-          {/* Lado do vídeo */}
-          <div className="bg-muted/60 border-l p-4 flex flex-col gap-3">
-            <p className="text-sm font-medium">Vídeo de apoio</p>
-            {videoId ? (
-              <div className="relative w-full pt-[56.25%] rounded-xl overflow-hidden bg-black/80 shadow-md">
-                <iframe
-                  className="absolute inset-0 w-full h-full"
-                  src={`https://www.youtube.com/embed/${videoId}`}
-                  title="Vídeo do treino"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                  allowFullScreen
-                />
-              </div>
-            ) : (
-              <div className="flex-1 rounded-xl border border-dashed flex items-center justify-center text-xs text-muted-foreground p-4 text-center bg-background/60">
-                Adicione um link do YouTube na descrição do treino para exibir o vídeo aqui.
-              </div>
-            )}
           </div>
         </div>
       </DialogContent>
