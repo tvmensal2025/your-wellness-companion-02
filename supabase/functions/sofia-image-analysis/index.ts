@@ -1548,9 +1548,9 @@ serve(async (req) => {
 
     console.log('🔍 Verificando se detectou comida...');
     
-    // Se não detectou comida ou confiança baixa
-    if (!isFood || confidence < 0.5) {
-      console.log('❌ Comida não detectada ou confiança baixa');
+    // Se não detectou comida ou confiança MUITO baixa (deixa passar casos médios)
+    if (!isFood || confidence < 0.2) {
+      console.log('❌ Comida não detectada ou confiança muito baixa');
       
       return new Response(JSON.stringify({
         success: false,
