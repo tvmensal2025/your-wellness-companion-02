@@ -246,30 +246,52 @@ const MedicalDocumentsSection: React.FC = () => {
   const finalizeSubmission = async (tmpPaths: string[]) => {
     try {
       setUploading(true);
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) return;
 
       const idempotencyKey = crypto.randomUUID();
 
-      const { data: doc, error } = await supabase.functions.invoke('finalize-medical-document', {
-        body: {
-          tmpPaths,
-          title: newDocument.title || 'Exame',
-          examType: newDocument.type,
-          idempotencyKey,
-          userId: user.id // Adicionar o ID do usuário explicitamente
+      // Chamando a Edge Function via fetch direto para evitar o erro de JWT inválido
+      const response = await fetch(
+        'https://dobzvllqpqabnrwvphym.supabase.co/functions/v1/finalize-medical-document',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            apikey:
+              'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvYnp2bGxxcHFhYm5yd3ZwaHltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0MDE4NjgsImV4cCI6MjA4Mjk3Nzg2OH0.YqiTOwdnbZGEc21z6Mg1f86bRHvcAl8gEz-YnLLrVuc',
+            Authorization:
+              'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvYnp2bGxxcHFhYm5yd3ZwaHltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0MDE4NjgsImV4cCI6MjA4Mjk3Nzg2OH0.YqiTOwdnbZGEc21z6Mg1f86bRHvcAl8gEz-YnLLrVuc',
+          },
+          body: JSON.stringify({
+            tmpPaths,
+            title: newDocument.title || 'Exame',
+            examType: newDocument.type,
+            idempotencyKey,
+            userId: user.id,
+          }),
         }
-      });
+      );
 
-      if (error) throw error;
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+          `Erro na finalização do documento (HTTP ${response.status}): ${errorText}`
+        );
+      }
+
+      const { data: doc } = (await response.json()) as { data?: { id?: string } };
 
       // Registra o acesso somente após finalizar com sucesso
-      await registerExamAccess().catch(()=>{});
+      await registerExamAccess().catch(() => {});
 
       toast({
         title: '✅ Exame enviado com sucesso!',
-        description: 'O Dr. Vital está analisando seu exame. Você pode navegar livremente pela plataforma. O relatório ficará pronto em até 5 minutos.',
-        duration: 5000
+        description:
+          'O Dr. Vital está analisando seu exame. Você pode navegar livremente pela plataforma. O relatório ficará pronto em até 5 minutos.',
+        duration: 5000,
       });
 
       // Fecha o modal imediatamente após envio bem-sucedido
@@ -282,7 +304,7 @@ const MedicalDocumentsSection: React.FC = () => {
         clinic_name: '',
         exam_date: '',
         results: '',
-        status: 'normal'
+        status: 'normal',
       });
       setPendingTmpPaths([]);
       setPendingFiles([]);
@@ -291,24 +313,25 @@ const MedicalDocumentsSection: React.FC = () => {
       loadDocuments();
       if (doc?.id) {
         pollReportReady(doc.id);
-        
+
         // Mostra notificação quando o relatório estiver pronto
         setTimeout(() => {
           toast({
             title: '🔍 Verificando status...',
-            description: 'O Dr. Vital pode ter terminado a análise. Verifique a seção de documentos.',
-            duration: 3000
+            description:
+              'O Dr. Vital pode ter terminado a análise. Verifique a seção de documentos.',
+            duration: 3000,
           });
         }, 120000); // 2 minutos
       }
-      
+
       return doc;
     } catch (e: any) {
       console.error(e);
-      toast({ 
-        title: '❌ Erro ao enviar exame', 
-        description: e.message || 'Tente novamente em alguns instantes', 
-        variant: 'destructive' 
+      toast({
+        title: '❌ Erro ao enviar exame',
+        description: e.message || 'Tente novamente em alguns instantes',
+        variant: 'destructive',
       });
     } finally {
       setUploading(false);
