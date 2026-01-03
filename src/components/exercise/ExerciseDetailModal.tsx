@@ -85,6 +85,17 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
   // Obter o exercício atual
   const currentExercise = exerciseList[currentExerciseIndex];
 
+  // Sempre que abrir ou mudar o exercício selecionado, alinhar com a lista
+  useEffect(() => {
+    if (!exerciseData || exerciseList.length === 0) return;
+
+    const names = exerciseList.map(([name]) => name);
+    const idx = exerciseData.name ? names.indexOf(exerciseData.name) : -1;
+    if (idx >= 0) {
+      setCurrentExerciseIndex(idx);
+    }
+  }, [exerciseData, location]);
+
   // Navegar para o próximo exercício
   const nextExercise = () => {
     if (currentExerciseIndex < exerciseList.length - 1) {
@@ -112,7 +123,16 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
       raw = (currentExercise[1] as any).video_url as string;
     }
 
-    // 2) Se não houver na base, tenta vir do exerciseData (ex.: programas salvos do admin)
+    // 2) Se ainda não tiver, tenta buscar pela combinação nome + local na base
+    if (!raw && exerciseData && exerciseData.name) {
+      const dict = location === 'casa' ? exerciseInstructions.casa : exerciseInstructions.academia;
+      const fromDict = (dict as any)[exerciseData.name];
+      if (fromDict && fromDict.video_url) {
+        raw = fromDict.video_url as string;
+      }
+    }
+
+    // 3) Por fim, tenta vir diretamente de campos de vídeo do exerciseData (vindo do admin)
     if (!raw && exerciseData) {
       raw = (exerciseData.video_url || exerciseData.youtube_url || '') as string;
     }
