@@ -25,6 +25,7 @@ import {
 import { ExerciseOnboardingModal } from './ExerciseOnboardingModal';
 import { ExerciseDetailView } from './ExerciseDetailView';
 import { transformWeeksToWeekPlan } from '@/utils/workoutParser';
+import { ExerciseStepModal } from './ExerciseStepModal';
 
 interface ExerciseDashboardProps {
   user: User | null;
@@ -48,6 +49,8 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
   const [aiRecommendation, setAiRecommendation] = useState<any>(null);
   const [dailyMotivation, setDailyMotivation] = useState<string>('');
   const [viewMode, setViewMode] = useState<'summary' | 'detailed'>('summary');
+  const [stepModalOpen, setStepModalOpen] = useState(false);
+  const [stepDayIndex, setStepDayIndex] = useState<number | null>(null);
 
   // Buscar motivação diária ao carregar
   useEffect(() => {
@@ -379,16 +382,13 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
                       {!isCompleted && (
                         <Button
                           size="sm"
-                          onClick={() => completeWorkout(
-                            activeProgram.id,
-                            activeProgram.current_week,
-                            idx + 1,
-                            `Treino ${idx + 1}`,
-                            { activity }
-                          )}
+                          onClick={() => {
+                            setStepDayIndex(idx);
+                            setStepModalOpen(true);
+                          }}
                         >
-                          <CheckCircle2 className="w-4 h-4 mr-1" />
-                          Completo
+                          <Play className="w-4 h-4 mr-1" />
+                          Iniciar treino
                         </Button>
                       )}
                     </div>
@@ -412,6 +412,29 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
               weekPlan: transformWeeksToWeekPlan(activeProgram.plan_data?.weeks || [])
             }}
             location={activeProgram.plan_data?.location === 'academia' ? 'academia' : 'casa'}
+          />
+        )}
+
+        {/* Modal passo a passo do treino */}
+        {activeProgram && currentWeekData && stepDayIndex !== null && stepDayIndex >= 0 && (
+          <ExerciseStepModal
+            open={stepModalOpen}
+            onClose={() => setStepModalOpen(false)}
+            planId={activeProgram.id}
+            weekNumber={activeProgram.current_week}
+            dayNumber={stepDayIndex + 1}
+            title={`Treino ${stepDayIndex + 1}`}
+            description={activeProgram.plan_data?.description}
+            activity={currentWeekData.activities[stepDayIndex]}
+            onCompleteWorkout={async () => {
+              await completeWorkout(
+                activeProgram.id,
+                activeProgram.current_week,
+                stepDayIndex + 1,
+                `Treino ${stepDayIndex + 1}`,
+                { activity: currentWeekData.activities[stepDayIndex] }
+              );
+            }}
           />
         )}
 
