@@ -70,8 +70,29 @@ export const ExerciseStepModal: React.FC<ExerciseStepModalProps> = ({
   return (
     <Dialog open={open} onOpenChange={(value) => !value && onClose()}>
       <DialogContent className="max-w-4xl p-0 overflow-hidden">
-        <div className="grid md:grid-cols-[3fr,2fr] bg-gradient-to-br from-background via-background to-muted/60">
-          <div className="p-6 space-y-4">
+        <div className="flex flex-col bg-gradient-to-br from-background via-background to-muted/60 md:grid md:grid-cols-[2fr,3fr]">
+          {/* Bloco do vídeo (no topo no mobile) */}
+          <div className="order-1 md:order-none bg-muted/60 border-b md:border-b-0 md:border-r p-4 flex flex-col gap-3">
+            <p className="text-sm font-medium">Vídeo de apoio</p>
+            {videoId ? (
+              <div className="relative w-full pt-[56.25%] rounded-xl overflow-hidden bg-black/80 shadow-md">
+                <iframe
+                  className="absolute inset-0 w-full h-full"
+                  src={`https://www.youtube.com/embed/${videoId}`}
+                  title="Vídeo do treino"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                />
+              </div>
+            ) : (
+              <div className="flex-1 rounded-xl border border-dashed flex items-center justify-center text-xs text-muted-foreground p-4 text-center bg-background/60">
+                Adicione um link do YouTube na descrição do treino para exibir o vídeo aqui.
+              </div>
+            )}
+          </div>
+
+          {/* Bloco de informações e timer */}
+          <div className="order-0 md:order-none p-6 space-y-4">
             <DialogHeader className="space-y-2">
               <DialogTitle className="text-2xl md:text-3xl font-bold tracking-tight">
                 {title}
@@ -161,26 +182,6 @@ export const ExerciseStepModal: React.FC<ExerciseStepModalProps> = ({
                 </Button>
               </div>
             </div>
-          </div>
-
-          {/* Lado do vídeo */}
-          <div className="bg-muted/60 border-l p-4 flex flex-col gap-3">
-            <p className="text-sm font-medium">Vídeo de apoio</p>
-            {videoId ? (
-              <div className="relative w-full pt-[56.25%] rounded-xl overflow-hidden bg-black/80 shadow-md">
-                <iframe
-                  className="absolute inset-0 w-full h-full"
-                  src={`https://www.youtube.com/embed/${videoId}`}
-                  title="Vídeo do treino"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                  allowFullScreen
-                />
-              </div>
-            ) : (
-              <div className="flex-1 rounded-xl border border-dashed flex items-center justify-center text-xs text-muted-foreground p-4 text-center bg-background/60">
-                Adicione um link do YouTube na descrição do treino para exibir o vídeo aqui.
-              </div>
-            )}
           </div>
         </div>
       </DialogContent>
