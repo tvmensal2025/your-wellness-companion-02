@@ -48,6 +48,15 @@ export const ExerciseStepModal: React.FC<ExerciseStepModalProps> = ({
 }) => {
   const videoId = extractYouTubeId(activity + ' ' + (description || ''));
 
+  const [mainTitle, stepDetails] = React.useMemo(() => {
+    const parts = activity
+      .split(/[|→]/)
+      .map((p) => p.trim())
+      .filter(Boolean);
+    if (parts.length === 0) return ['', [] as string[]];
+    return [parts[0], parts.slice(1)];
+  }, [activity]);
+
   const [seconds, setSeconds] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
 
@@ -79,14 +88,14 @@ export const ExerciseStepModal: React.FC<ExerciseStepModalProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={(value) => !value && onClose()}>
-      <DialogContent className="max-w-3xl p-0 overflow-hidden">
+      <DialogContent className="max-w-2xl p-0 overflow-hidden">
         <div className="flex flex-col bg-gradient-to-br from-background via-background to-muted/60">
           {/* Cabeçalho + navegação entre treinos */}
           <div className="px-6 pt-5 pb-3 border-b">
             <DialogHeader className="space-y-2">
               <div className="flex items-center justify-between gap-2">
                 <DialogTitle className="text-2xl md:text-3xl font-bold tracking-tight">
-                  {title}
+                  {mainTitle || title}
                 </DialogTitle>
                 <div className="flex items-center gap-2 text-xs md:text-sm">
                   <span className="text-muted-foreground">
@@ -153,10 +162,17 @@ export const ExerciseStepModal: React.FC<ExerciseStepModalProps> = ({
                 <div className="w-11 h-11 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                   <Play className="w-5 h-5 text-primary" />
                 </div>
-                <div className="space-y-1">
-                  <p className="font-semibold text-base md:text-lg leading-snug">{activity}</p>
+                <div className="space-y-2">
+                  <p className="font-semibold text-base md:text-lg leading-snug">{mainTitle || activity}</p>
+                  {stepDetails.length > 0 && (
+                    <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
+                      {stepDetails.map((step, idx) => (
+                        <li key={idx}>{step}</li>
+                      ))}
+                    </ul>
+                  )}
                   {description && (
-                    <p className="text-sm text-muted-foreground whitespace-pre-line">
+                    <p className="text-xs text-muted-foreground whitespace-pre-line">
                       {description}
                     </p>
                   )}
