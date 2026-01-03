@@ -83,8 +83,10 @@ export const useWeightMeasurement = () => {
 
   // Usa o novo serviço centralizado para cálculos padronizados
   const computeDerivedMetrics = (measurement: WeightMeasurement, physical: UserPhysicalData): DerivedMetrics => {
+    // Sempre permitimos estimativas científicas para preencher métricas ausentes
+    // (IMC, gordura, água, metabolismo, etc.), independentemente do tipo de dispositivo.
     const device = (measurement.device_type || '').toLowerCase();
-    const isManual = ['manual', 'digital_scale', 'professional_evaluation'].includes(device) || ((measurement as any).measurement_type === 'manual');
+    const isManualDevice = ['manual', 'digital_scale', 'professional_evaluation'].includes(device) || ((measurement as any).measurement_type === 'manual');
 
     // Converter dados para o formato do calculador
     const physicalData = {
@@ -103,8 +105,10 @@ export const useWeightMeasurement = () => {
       metabolismo_basal_kcal: measurement.metabolismo_basal_kcal ? Number(measurement.metabolismo_basal_kcal) : undefined
     };
 
-    // Calcular métricas usando o serviço padronizado
-    const calculatedMetrics = BodyMetricsCalculator.calculateMetrics(bodyMeasurement, physicalData, isManual);
+    // Calcular métricas usando o serviço padronizado.
+    // Passamos "true" para permitir que o serviço estime métricas ausentes
+    // com fórmulas validadas, garantindo valores mais completos para a UI.
+    const calculatedMetrics = BodyMetricsCalculator.calculateMetrics(bodyMeasurement, physicalData, true);
 
     return {
       imc: calculatedMetrics.imc,
