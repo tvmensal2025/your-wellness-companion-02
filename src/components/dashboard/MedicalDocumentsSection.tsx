@@ -453,42 +453,62 @@ const MedicalDocumentsSection: React.FC = () => {
   const triggerAnalyze = async (doc: MedicalDocument) => {
     try {
       setUploading(true);
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) throw new Error('Usuário não autenticado');
+
+      const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
       console.log('🔍 Dados sendo enviados para analyze-medical-exam (trigger):', {
         documentId: doc.id,
         images: doc.report_meta?.image_paths || [],
         userId: user.id,
         examType: doc.type,
-        report_meta: doc.report_meta
+        report_meta: doc.report_meta,
       });
 
-      // 🚀 Disparar análise premium com GPT-5
-      const { data, error } = await supabase.functions.invoke('analyze-medical-exam', {
-        body: {
-          documentId: doc.id,
-          images: doc.report_meta?.image_paths || [],
-          userId: user.id,
-          examType: doc.type,
-          forcePremium: true, // 💎 Forçar modelo premium
-          generateReport: true // 📊 Gerar relatório completo
+      const response = await fetch(
+        'https://dobzvllqpqabnrwvphym.supabase.co/functions/v1/analyze-medical-exam',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            apikey: anonKey,
+            Authorization: `Bearer ${anonKey}`,
+          },
+          body: JSON.stringify({
+            documentId: doc.id,
+            images: doc.report_meta?.image_paths || [],
+            userId: user.id,
+            examType: doc.type,
+            forcePremium: true, // 💎 Forçar modelo premium
+            generateReport: true, // 📊 Gerar relatório completo
+          }),
         }
-      });
+      );
 
-      if (error) {
-        console.error('❌ Erro na análise premium:', error);
-        throw error;
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+          `Erro na análise premium (HTTP ${response.status}): ${errorText}`
+        );
       }
 
-      toast({ 
-        title: '🚀 Análise Premium Iniciada', 
-        description: 'Processando com GPT-5. Aguarde 30-60s para o relatório completo.' 
+      const data = await response.json();
+
+      toast({
+        title: '🚀 Análise Premium Iniciada',
+        description: 'Processando com GPT-5. Aguarde 30-60s para o relatório completo.',
       });
       setTimeout(() => loadDocuments(), 1500);
     } catch (err: any) {
       console.error(err);
-      toast({ title: 'Falha ao iniciar análise', description: err?.message || 'Tente novamente', variant: 'destructive' });
+      toast({
+        title: 'Falha ao iniciar análise',
+        description: err?.message || 'Tente novamente',
+        variant: 'destructive',
+      });
     } finally {
       setUploading(false);
     }
@@ -497,8 +517,12 @@ const MedicalDocumentsSection: React.FC = () => {
   const forceRestartAnalysis = async (doc: MedicalDocument) => {
     try {
       setUploading(true);
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) throw new Error('Usuário não autenticado');
+
+      const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
       console.log('🔄 Forçando restart da análise para documento:', doc.id);
 
@@ -510,7 +534,7 @@ const MedicalDocumentsSection: React.FC = () => {
           processing_stage: null,
           progress_pct: 0,
           images_processed: 0,
-          processing_started_at: null
+          processing_started_at: null,
         })
         .eq('id', doc.id);
 
@@ -526,33 +550,49 @@ const MedicalDocumentsSection: React.FC = () => {
         userId: user.id,
         examType: doc.type,
       });
-      
-      const { data, error } = await supabase.functions.invoke('analyze-medical-exam', {
-        body: {
-          documentId: doc.id,
-          images: doc.report_meta?.image_paths || [],
-          userId: user.id,
-          examType: doc.type
-        }
-      });
 
-      if (error) {
-        console.error('❌ Erro na função analyze-medical-exam:', error);
-        throw error;
+      const response = await fetch(
+        'https://dobzvllqpqabnrwvphym.supabase.co/functions/v1/analyze-medical-exam',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            apikey: anonKey,
+            Authorization: `Bearer ${anonKey}`,
+          },
+          body: JSON.stringify({
+            documentId: doc.id,
+            images: doc.report_meta?.image_paths || [],
+            userId: user.id,
+            examType: doc.type,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+          `Erro na função analyze-medical-exam (HTTP ${response.status}): ${errorText}`
+        );
       }
 
+      const data = await response.json();
       console.log('✅ Resposta da análise médica:', data);
 
-      toast({ 
-        title: '🔄 Análise reiniciada', 
+      toast({
+        title: '🔄 Análise reiniciada',
         description: 'O processamento foi reiniciado. Aguarde alguns minutos.',
-        duration: 3000
+        duration: 3000,
       });
-      
+
       setTimeout(() => loadDocuments(), 2000);
     } catch (err: any) {
       console.error(err);
-      toast({ title: 'Falha ao reiniciar análise', description: err?.message || 'Tente novamente', variant: 'destructive' });
+      toast({
+        title: 'Falha ao reiniciar análise',
+        description: err?.message || 'Tente novamente',
+        variant: 'destructive',
+      });
     } finally {
       setUploading(false);
     }
