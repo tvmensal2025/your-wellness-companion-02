@@ -236,8 +236,7 @@ export const useDailyMissionsFinal = ({ user }: UseDailyMissionsFinalProps) => {
           .update({
             completed_sections: ['morning', 'habits', 'mindset'],
             total_points: totalPoints,
-            is_completed: true,
-            updated_at: new Date().toISOString()
+            is_completed: true
           })
           .eq('id', existingSession.id);
         
@@ -251,8 +250,7 @@ export const useDailyMissionsFinal = ({ user }: UseDailyMissionsFinalProps) => {
             date: today,
             completed_sections: ['morning', 'habits', 'mindset'],
             total_points: totalPoints,
-            is_completed: true,
-            updated_at: new Date().toISOString()
+            is_completed: true
           });
         
         if (sessionError) throw sessionError;
