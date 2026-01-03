@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/supabase/client-fixed';
 
 export const useAdminPermissions = () => {
   const [isAdmin, setIsAdmin] = useState(false);
