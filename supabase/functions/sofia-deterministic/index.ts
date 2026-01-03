@@ -123,38 +123,37 @@ async function calculateDeterministicNutrition(supabase: any, foods: DetectedFoo
     const grams = Number(food.grams) || 100;
     console.log(`🔍 Buscando na TACO: ${food.name} (${grams}g)`);
 
-    const normalizedName = normalizeText(food.name);
     const { data: tacoData } = await supabase
       .from('taco_foods')
-      .select('nome_alimento, energia_kcal, proteina_g, carboidratos_g, lipidios_g, fibra_alimentar_g, sodio_mg')
+      .select('food_name, energy_kcal, protein_g, carbohydrate_g, lipids_g, fiber_g, sodium_mg')
       .order('id');
-
-    let selectedFood = null;
+ 
+    let selectedFood: any = null;
     
     if (tacoData && tacoData.length > 0) {
       selectedFood = tacoData.find((item: any) => {
-        const itemName = normalizeText(item.nome_alimento);
+        const itemName = normalizeText(item.food_name);
         return itemName.includes(normalizedName) || normalizedName.includes(itemName);
       });
       
       if (!selectedFood) {
         const keywords = normalizedName.split(' ').filter(w => w.length > 2);
         selectedFood = tacoData.find((item: any) => {
-          const itemName = normalizeText(item.nome_alimento);
+          const itemName = normalizeText(item.food_name);
           return keywords.some(keyword => itemName.includes(keyword));
         });
       }
     }
-
+ 
     if (selectedFood) {
       const factor = grams / 100.0;
       
-      const item_kcal = Number(selectedFood.energia_kcal || 0) * factor;
-      const item_protein = Number(selectedFood.proteina_g || 0) * factor;
-      const item_carbs = Number(selectedFood.carboidratos_g || 0) * factor;
-      const item_fat = Number(selectedFood.lipidios_g || 0) * factor;
-      const item_fiber = Number(selectedFood.fibra_alimentar_g || 0) * factor;
-      const item_sodium = Number(selectedFood.sodio_mg || 0) * factor;
+      const item_kcal = Number(selectedFood.energy_kcal || 0) * factor;
+      const item_protein = Number(selectedFood.protein_g || 0) * factor;
+      const item_carbs = Number(selectedFood.carbohydrate_g || 0) * factor;
+      const item_fat = Number(selectedFood.lipids_g || 0) * factor;
+      const item_fiber = Number(selectedFood.fiber_g || 0) * factor;
+      const item_sodium = Number(selectedFood.sodium_mg || 0) * factor;
       
       result.total_kcal += item_kcal;
       result.total_proteina += item_protein;
@@ -166,7 +165,7 @@ async function calculateDeterministicNutrition(supabase: any, foods: DetectedFoo
       result.matched_count++;
       
       if (NUTRITION_DEBUG) {
-        console.log(`✅ TACO: ${selectedFood.nome_alimento}`);
+        console.log(`✅ TACO: ${selectedFood.food_name}`);
         console.log(`   ${grams}g = ${Math.round(item_kcal)} kcal, ${item_protein.toFixed(1)}g prot, ${item_carbs.toFixed(1)}g carb, ${item_fat.toFixed(1)}g gord`);
       }
     } else {
