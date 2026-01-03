@@ -4,19 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
-import { 
-  Calendar, 
-  Target, 
-  TrendingUp, 
-  BarChart3,
-  ChefHat,
-  Lightbulb,
-  Zap,
-  Sparkles,
-  Clock,
-  History
-} from 'lucide-react';
-
+import { Calendar, Target, TrendingUp, BarChart3, ChefHat, Lightbulb, Zap, Sparkles, Clock, History } from 'lucide-react';
 import { MealPlanGeneratorModalV2 } from '@/components/nutrition-tracking/MealPlanGeneratorModalV2';
 import { useNutritionTracking } from '@/hooks/useNutritionTracking';
 import { SofiaNutritionInsights } from '@/components/sofia/SofiaNutritionInsights';
@@ -28,15 +16,26 @@ import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
 import { AnamnesisStatusCard } from '@/components/sofia/AnamnesisStatusCard';
 import { PersonalizedSupplementsCard } from '@/components/sofia/PersonalizedSupplementsCard';
-
 export const SofiaNutricionalPage: React.FC = () => {
-  const { meals, goals, loading, error, getDailyNutrition, getNutritionStats, updateGoals } = useNutritionTracking();
+  const {
+    meals,
+    goals,
+    loading,
+    error,
+    getDailyNutrition,
+    getNutritionStats,
+    updateGoals
+  } = useNutritionTracking();
   const [user, setUser] = useState<User | null>(null);
-  const { showSuccessEffect, setShowSuccessEffect, generatedPlan } = useMealPlanGeneratorV2();
+  const {
+    showSuccessEffect,
+    setShowSuccessEffect,
+    generatedPlan
+  } = useMealPlanGeneratorV2();
   const [selectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [activeTab, setActiveTab] = useState('tracker');
   const [showMealPlanGenerator, setShowMealPlanGenerator] = useState(false);
-  
+
   // Estado para controlar quais refeições incluir no cardápio
   const [selectedMeals, setSelectedMeals] = useState({
     'café da manhã': true,
@@ -57,10 +56,13 @@ export const SofiaNutricionalPage: React.FC = () => {
   // Buscar usuário atual
   useEffect(() => {
     const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: {
+          user
+        }
+      } = await supabase.auth.getUser();
       setUser(user);
     };
-    
     getUser();
   }, []);
 
@@ -68,7 +70,6 @@ export const SofiaNutricionalPage: React.FC = () => {
   const handleGenerateMealPlan = () => {
     // Verificar se pelo menos uma refeição está selecionada
     const hasSelectedMeals = Object.values(selectedMeals).some(selected => selected);
-    
     if (!hasSelectedMeals) {
       // Mostrar erro se nenhuma refeição estiver selecionada
       alert('Selecione pelo menos uma refeição para gerar o cardápio.');
@@ -78,23 +79,17 @@ export const SofiaNutricionalPage: React.FC = () => {
     // Abrir modal de geração com as refeições selecionadas
     setShowMealPlanGenerator(true);
   };
-
   const currentNutrition = getDailyNutrition(selectedDate);
   const stats = getNutritionStats();
-
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
+    return <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-muted-foreground">Carregando dados nutricionais...</p>
         </div>
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div className="container mx-auto p-4 sm:p-6 space-y-6 max-w-7xl">
+  return <div className="container mx-auto p-4 sm:p-6 space-y-6 max-w-7xl">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
         <div className="space-y-1">
           <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-emerald-600 via-teal-500 to-emerald-600 bg-clip-text text-transparent animate-gradient">
@@ -102,10 +97,7 @@ export const SofiaNutricionalPage: React.FC = () => {
           </h1>
           <p className="text-sm sm:text-base text-muted-foreground">Seu assistente inteligente para nutrição e bem-estar</p>
         </div>
-        <Badge variant="secondary" className="bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-800 border border-emerald-200 shadow-sm px-3 py-1.5">
-          <Sparkles className="w-4 h-4 mr-1.5 animate-pulse" />
-          IA Ativa
-        </Badge>
+        
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -140,10 +132,7 @@ export const SofiaNutricionalPage: React.FC = () => {
                       {currentNutrition.totalCalories.toFixed(0)}/{goals.calories}
                     </span>
                   </div>
-                  <Progress 
-                    value={(currentNutrition.totalCalories / goals.calories) * 100} 
-                    className="h-2" 
-                  />
+                  <Progress value={currentNutrition.totalCalories / goals.calories * 100} className="h-2" />
                   
                   <div className="grid grid-cols-3 gap-2 text-sm">
                     <div className="text-center">
@@ -184,7 +173,7 @@ export const SofiaNutricionalPage: React.FC = () => {
                   <div className="flex justify-between">
                     <span className="text-sm">Aderência à meta</span>
                     <span className="font-semibold text-emerald-600">
-                      {((stats.averageCalories / goals.calories) * 100).toFixed(0)}%
+                      {(stats.averageCalories / goals.calories * 100).toFixed(0)}%
                     </span>
                   </div>
                 </div>
@@ -213,132 +202,47 @@ export const SofiaNutricionalPage: React.FC = () => {
                 <div className="space-y-3">
                   <h3 className="text-sm font-medium text-gray-700">Refeições incluídas:</h3>
                   <div className="grid grid-cols-2 gap-2">
-                    <div 
-                      className={`flex items-center space-x-2 p-2 rounded-md cursor-pointer transition-all duration-200 ${
-                        selectedMeals['café da manhã'] 
-                          ? 'bg-emerald-50 border border-emerald-200 shadow-sm' 
-                          : 'bg-gray-50 border border-gray-100 hover:bg-gray-100'
-                      }`}
-                      onClick={() => toggleMealSelection('café da manhã')}
-                    >
-                      <div className={`w-3 h-3 rounded-full flex items-center justify-center transition-colors ${
-                        selectedMeals['café da manhã'] 
-                          ? 'bg-emerald-500' 
-                          : 'bg-gray-300'
-                      }`}>
-                        {selectedMeals['café da manhã'] && (
-                          <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
-                        )}
+                    <div className={`flex items-center space-x-2 p-2 rounded-md cursor-pointer transition-all duration-200 ${selectedMeals['café da manhã'] ? 'bg-emerald-50 border border-emerald-200 shadow-sm' : 'bg-gray-50 border border-gray-100 hover:bg-gray-100'}`} onClick={() => toggleMealSelection('café da manhã')}>
+                      <div className={`w-3 h-3 rounded-full flex items-center justify-center transition-colors ${selectedMeals['café da manhã'] ? 'bg-emerald-500' : 'bg-gray-300'}`}>
+                        {selectedMeals['café da manhã'] && <div className="w-1.5 h-1.5 bg-white rounded-full"></div>}
                       </div>
-                      <span className={`text-xs font-medium ${
-                        selectedMeals['café da manhã'] 
-                          ? 'text-emerald-700' 
-                          : 'text-gray-600'
-                      }`}>
+                      <span className={`text-xs font-medium ${selectedMeals['café da manhã'] ? 'text-emerald-700' : 'text-gray-600'}`}>
                         Café da manhã
                       </span>
                     </div>
 
-                    <div 
-                      className={`flex items-center space-x-2 p-2 rounded-md cursor-pointer transition-all duration-200 ${
-                        selectedMeals['almoço'] 
-                          ? 'bg-emerald-50 border border-emerald-200 shadow-sm' 
-                          : 'bg-gray-50 border border-gray-100 hover:bg-gray-100'
-                      }`}
-                      onClick={() => toggleMealSelection('almoço')}
-                    >
-                      <div className={`w-3 h-3 rounded-full flex items-center justify-center transition-colors ${
-                        selectedMeals['almoço'] 
-                          ? 'bg-emerald-500' 
-                          : 'bg-gray-300'
-                      }`}>
-                        {selectedMeals['almoço'] && (
-                          <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
-                        )}
+                    <div className={`flex items-center space-x-2 p-2 rounded-md cursor-pointer transition-all duration-200 ${selectedMeals['almoço'] ? 'bg-emerald-50 border border-emerald-200 shadow-sm' : 'bg-gray-50 border border-gray-100 hover:bg-gray-100'}`} onClick={() => toggleMealSelection('almoço')}>
+                      <div className={`w-3 h-3 rounded-full flex items-center justify-center transition-colors ${selectedMeals['almoço'] ? 'bg-emerald-500' : 'bg-gray-300'}`}>
+                        {selectedMeals['almoço'] && <div className="w-1.5 h-1.5 bg-white rounded-full"></div>}
                       </div>
-                      <span className={`text-xs font-medium ${
-                        selectedMeals['almoço'] 
-                          ? 'text-emerald-700' 
-                          : 'text-gray-600'
-                      }`}>
+                      <span className={`text-xs font-medium ${selectedMeals['almoço'] ? 'text-emerald-700' : 'text-gray-600'}`}>
                         Almoço
                       </span>
                     </div>
 
-                    <div 
-                      className={`flex items-center space-x-2 p-2 rounded-md cursor-pointer transition-all duration-200 ${
-                        selectedMeals['lanche'] 
-                          ? 'bg-emerald-50 border border-emerald-200 shadow-sm' 
-                          : 'bg-gray-50 border border-gray-100 hover:bg-gray-100'
-                      }`}
-                      onClick={() => toggleMealSelection('lanche')}
-                    >
-                      <div className={`w-3 h-3 rounded-full flex items-center justify-center transition-colors ${
-                        selectedMeals['lanche'] 
-                          ? 'bg-emerald-500' 
-                          : 'bg-gray-300'
-                      }`}>
-                        {selectedMeals['lanche'] && (
-                          <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
-                        )}
+                    <div className={`flex items-center space-x-2 p-2 rounded-md cursor-pointer transition-all duration-200 ${selectedMeals['lanche'] ? 'bg-emerald-50 border border-emerald-200 shadow-sm' : 'bg-gray-50 border border-gray-100 hover:bg-gray-100'}`} onClick={() => toggleMealSelection('lanche')}>
+                      <div className={`w-3 h-3 rounded-full flex items-center justify-center transition-colors ${selectedMeals['lanche'] ? 'bg-emerald-500' : 'bg-gray-300'}`}>
+                        {selectedMeals['lanche'] && <div className="w-1.5 h-1.5 bg-white rounded-full"></div>}
                       </div>
-                      <span className={`text-xs font-medium ${
-                        selectedMeals['lanche'] 
-                          ? 'text-emerald-700' 
-                          : 'text-gray-600'
-                      }`}>
+                      <span className={`text-xs font-medium ${selectedMeals['lanche'] ? 'text-emerald-700' : 'text-gray-600'}`}>
                         Lanche
                       </span>
                     </div>
 
-                    <div 
-                      className={`flex items-center space-x-2 p-2 rounded-md cursor-pointer transition-all duration-200 ${
-                        selectedMeals['jantar'] 
-                          ? 'bg-emerald-50 border border-emerald-200 shadow-sm' 
-                          : 'bg-gray-50 border border-gray-100 hover:bg-gray-100'
-                      }`}
-                      onClick={() => toggleMealSelection('jantar')}
-                    >
-                      <div className={`w-3 h-3 rounded-full flex items-center justify-center transition-colors ${
-                        selectedMeals['jantar'] 
-                          ? 'bg-emerald-500' 
-                          : 'bg-gray-300'
-                      }`}>
-                        {selectedMeals['jantar'] && (
-                          <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
-                        )}
+                    <div className={`flex items-center space-x-2 p-2 rounded-md cursor-pointer transition-all duration-200 ${selectedMeals['jantar'] ? 'bg-emerald-50 border border-emerald-200 shadow-sm' : 'bg-gray-50 border border-gray-100 hover:bg-gray-100'}`} onClick={() => toggleMealSelection('jantar')}>
+                      <div className={`w-3 h-3 rounded-full flex items-center justify-center transition-colors ${selectedMeals['jantar'] ? 'bg-emerald-500' : 'bg-gray-300'}`}>
+                        {selectedMeals['jantar'] && <div className="w-1.5 h-1.5 bg-white rounded-full"></div>}
                       </div>
-                      <span className={`text-xs font-medium ${
-                        selectedMeals['jantar'] 
-                          ? 'text-emerald-700' 
-                          : 'text-gray-600'
-                      }`}>
+                      <span className={`text-xs font-medium ${selectedMeals['jantar'] ? 'text-emerald-700' : 'text-gray-600'}`}>
                         Jantar
                       </span>
                     </div>
 
-                    <div 
-                      className={`flex items-center space-x-2 p-2 rounded-md cursor-pointer transition-all duration-200 ${
-                        selectedMeals['ceia'] 
-                          ? 'bg-emerald-50 border border-emerald-200 shadow-sm' 
-                          : 'bg-gray-50 border border-gray-100 hover:bg-gray-100'
-                      }`}
-                      onClick={() => toggleMealSelection('ceia')}
-                    >
-                      <div className={`w-3 h-3 rounded-full flex items-center justify-center transition-colors ${
-                        selectedMeals['ceia'] 
-                          ? 'bg-emerald-500' 
-                          : 'bg-gray-300'
-                      }`}>
-                        {selectedMeals['ceia'] && (
-                          <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
-                        )}
+                    <div className={`flex items-center space-x-2 p-2 rounded-md cursor-pointer transition-all duration-200 ${selectedMeals['ceia'] ? 'bg-emerald-50 border border-emerald-200 shadow-sm' : 'bg-gray-50 border border-gray-100 hover:bg-gray-100'}`} onClick={() => toggleMealSelection('ceia')}>
+                      <div className={`w-3 h-3 rounded-full flex items-center justify-center transition-colors ${selectedMeals['ceia'] ? 'bg-emerald-500' : 'bg-gray-300'}`}>
+                        {selectedMeals['ceia'] && <div className="w-1.5 h-1.5 bg-white rounded-full"></div>}
                       </div>
-                      <span className={`text-xs font-medium ${
-                        selectedMeals['ceia'] 
-                          ? 'text-emerald-700' 
-                          : 'text-gray-600'
-                      }`}>
+                      <span className={`text-xs font-medium ${selectedMeals['ceia'] ? 'text-emerald-700' : 'text-gray-600'}`}>
                         Ceia
                       </span>
                     </div>
@@ -346,10 +250,7 @@ export const SofiaNutricionalPage: React.FC = () => {
                 </div>
                 
                 <div className="flex gap-2">
-                  <Button 
-                    onClick={handleGenerateMealPlan}
-                    className="bg-emerald-600 hover:bg-emerald-700 text-sm py-2 px-4"
-                  >
+                  <Button onClick={handleGenerateMealPlan} className="bg-emerald-600 hover:bg-emerald-700 text-sm py-2 px-4">
                     <Zap className="w-4 h-4 mr-2" />
                     Gerar Cardápio
                   </Button>
@@ -382,31 +283,22 @@ export const SofiaNutricionalPage: React.FC = () => {
       </Tabs>
 
       {/* Modal do Gerador de Cardápio */}
-      <MealPlanGeneratorModalV2 
-        open={showMealPlanGenerator} 
-        onOpenChange={setShowMealPlanGenerator}
-        selectedMeals={selectedMeals}
-      />
+      <MealPlanGeneratorModalV2 open={showMealPlanGenerator} onOpenChange={setShowMealPlanGenerator} selectedMeals={selectedMeals} />
 
       {/* Success Effect */}
-      <MealPlanSuccessEffect
-        isVisible={showSuccessEffect}
-        onClose={() => {
-          setShowSuccessEffect(false);
-          setActiveTab('generator');
-        }}
-        mealPlanData={generatedPlan.length > 0 ? {
-          type: generatedPlan.length > 1 ? 'weekly' : 'daily',
-          title: `Cardápio ${generatedPlan.length > 1 ? 'Semanal' : 'Diário'} - ${new Date().toLocaleDateString('pt-BR')}`,
-          summary: {
-            calories: Math.round(generatedPlan.reduce((acc, day) => acc + day.dailyTotals.calories, 0) / generatedPlan.length),
-            protein: Math.round(generatedPlan.reduce((acc, day) => acc + day.dailyTotals.protein, 0) / generatedPlan.length),
-            carbs: Math.round(generatedPlan.reduce((acc, day) => acc + day.dailyTotals.carbs, 0) / generatedPlan.length),
-            fat: Math.round(generatedPlan.reduce((acc, day) => acc + day.dailyTotals.fat, 0) / generatedPlan.length),
-            fiber: Math.round(generatedPlan.reduce((acc, day) => acc + day.dailyTotals.fiber, 0) / generatedPlan.length)
-          }
-        } : undefined}
-      />
-    </div>
-  );
+      <MealPlanSuccessEffect isVisible={showSuccessEffect} onClose={() => {
+      setShowSuccessEffect(false);
+      setActiveTab('generator');
+    }} mealPlanData={generatedPlan.length > 0 ? {
+      type: generatedPlan.length > 1 ? 'weekly' : 'daily',
+      title: `Cardápio ${generatedPlan.length > 1 ? 'Semanal' : 'Diário'} - ${new Date().toLocaleDateString('pt-BR')}`,
+      summary: {
+        calories: Math.round(generatedPlan.reduce((acc, day) => acc + day.dailyTotals.calories, 0) / generatedPlan.length),
+        protein: Math.round(generatedPlan.reduce((acc, day) => acc + day.dailyTotals.protein, 0) / generatedPlan.length),
+        carbs: Math.round(generatedPlan.reduce((acc, day) => acc + day.dailyTotals.carbs, 0) / generatedPlan.length),
+        fat: Math.round(generatedPlan.reduce((acc, day) => acc + day.dailyTotals.fat, 0) / generatedPlan.length),
+        fiber: Math.round(generatedPlan.reduce((acc, day) => acc + day.dailyTotals.fiber, 0) / generatedPlan.length)
+      }
+    } : undefined} />
+    </div>;
 };
