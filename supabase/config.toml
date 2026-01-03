@@ -1,1 +1,4 @@
 project_id = "dobzvllqpqabnrwvphym"
+
+[functions.sofia-enhanced-memory]
+verify_jwt = false
