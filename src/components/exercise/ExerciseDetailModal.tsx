@@ -245,11 +245,8 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-bold text-primary">{exerciseName}</h2>
-          <Button variant="ghost" size="sm" onClick={() => setCurrentStep('overview')}>
-            <ArrowLeft className="w-4 h-4 mr-1" />
-            Voltar
-          </Button>
         </div>
+
 
         <div className="space-y-4">
           <div>
@@ -307,11 +304,8 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-bold text-primary">{exerciseName}</h2>
-          <Button variant="ghost" size="sm" onClick={() => setCurrentStep('overview')}>
-            <ArrowLeft className="w-4 h-4 mr-1" />
-            Voltar
-          </Button>
         </div>
+
 
         {renderVideoBlock()}
 
@@ -384,30 +378,51 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
       <DialogContent className="w-full max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            <div className="flex items-center justify-between">
-              <div className="flex-1 text-center">
-                <p className="text-sm font-medium text-muted-foreground">Detalhes do</p>
-                <p className="text-2xl font-bold leading-tight">Exercício</p>
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex-1">
+                <div className="text-center">
+                  <p className="text-sm font-medium text-muted-foreground">Detalhes do</p>
+                  <p className="text-2xl font-bold leading-tight">Exercício</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="mt-2 inline-flex items-center gap-1 text-sm text-foreground"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  Voltar
+                </button>
               </div>
 
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-1 rounded-full border px-2 py-1">
+              <div className="flex items-center">
+                <div className="flex flex-col items-center justify-center rounded-full border px-3 py-2 gap-1">
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={prevExercise}
-                    className="h-8 w-8 rounded-full"
+                    onClick={onClose}
+                    className="h-7 w-7 rounded-full"
                   >
-                    <ArrowLeft className="w-4 h-4" />
+                    <span className="sr-only">Fechar</span>
+                    ✕
                   </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={nextExercise}
-                    className="h-8 w-8 rounded-full"
-                  >
-                    <ArrowRight className="w-4 h-4" />
-                  </Button>
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={prevExercise}
+                      className="h-7 w-7 rounded-full"
+                    >
+                      <ArrowLeft className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={nextExercise}
+                      className="h-7 w-7 rounded-full"
+                    >
+                      <ArrowRight className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>
