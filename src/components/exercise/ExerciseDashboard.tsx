@@ -18,9 +18,13 @@ import {
   History,
   Sparkles,
   Brain,
-  Lightbulb
+  Lightbulb,
+  List,
+  LayoutGrid
 } from 'lucide-react';
 import { ExerciseOnboardingModal } from './ExerciseOnboardingModal';
+import { ExerciseDetailView } from './ExerciseDetailView';
+import { transformWeeksToWeekPlan } from '@/utils/workoutParser';
 import { ExerciseStepModal } from './ExerciseStepModal';
 
 interface ExerciseDashboardProps {
@@ -44,6 +48,7 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
   const [showHistory, setShowHistory] = useState(false);
   const [aiRecommendation, setAiRecommendation] = useState<any>(null);
   const [dailyMotivation, setDailyMotivation] = useState<string>('');
+  const [viewMode, setViewMode] = useState<'summary' | 'detailed'>('summary');
   const [stepModalOpen, setStepModalOpen] = useState(false);
   const [stepDayIndex, setStepDayIndex] = useState<number | null>(null);
 
@@ -149,6 +154,26 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
             Meu Programa Ativo
           </h2>
           <div className="flex items-center gap-3">
+            <div className="flex items-center bg-muted rounded-lg p-1">
+              <Button
+                variant={viewMode === 'summary' ? 'secondary' : 'ghost'}
+                size="sm"
+                className="flex items-center gap-1"
+                onClick={() => setViewMode('summary')}
+              >
+                <LayoutGrid className="w-4 h-4" />
+                <span className="hidden sm:inline">Resumo</span>
+              </Button>
+              <Button
+                variant={viewMode === 'detailed' ? 'secondary' : 'ghost'}
+                size="sm"
+                className="flex items-center gap-1"
+                onClick={() => setViewMode('detailed')}
+              >
+                <List className="w-4 h-4" />
+                <span className="hidden sm:inline">Detalhado</span>
+              </Button>
+            </div>
             <Button
               variant="outline"
               onClick={() => setShowHistory(!showHistory)}
@@ -198,14 +223,9 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
                   size="sm"
                   variant="secondary"
                   className="mt-1 md:mt-0 hover-scale"
-                  onClick={() => {
-                    if (nextWorkoutIndex >= 0) {
-                      setStepDayIndex(nextWorkoutIndex);
-                      setStepModalOpen(true);
-                    }
-                  }}
+                  onClick={() => setViewMode('detailed')}
                 >
-                  Iniciar treino agora
+                  Ver treino completo
                 </Button>
               </div>
             </div>
@@ -327,57 +347,73 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
           </div>
         )}
 
-        {/* Visualização do Programa - sempre em modo de lista da semana */}
-        <div className="bg-card rounded-lg p-6 border space-y-4">
-          <div className="flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-orange-600" />
-            <h3 className="text-xl font-bold">Treinos desta Semana (Semana {activeProgram.current_week})</h3>
-          </div>
-
-          {currentWeekData ? (
-            <div className="space-y-3">
-              <div className="flex items-center justify-between text-sm text-muted-foreground">
-                <span>{currentWeekData.days}</span>
-              </div>
-              {currentWeekData.activities.map((activity: string, idx: number) => {
-                const isCompleted = workoutLogs.some(
-                  log => log.week_number === activeProgram.current_week && log.day_number === idx + 1 && log.completed
-                );
-
-                return (
-                  <div
-                    key={idx}
-                    className={`flex items-start justify-between p-4 rounded-lg border ${
-                      isCompleted ? 'bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800' : 'bg-muted/30'
-                    }`}
-                  >
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        {isCompleted && <CheckCircle2 className="w-5 h-5 text-green-500" />}
-                        <span className="font-semibold">Treino {idx + 1}</span>
-                      </div>
-                      <p className="text-sm text-muted-foreground">{activity}</p>
-                    </div>
-                    {!isCompleted && (
-                      <Button
-                        size="sm"
-                        onClick={() => {
-                          setStepDayIndex(idx);
-                          setStepModalOpen(true);
-                        }}
-                      >
-                        <Play className="w-4 h-4 mr-1" />
-                        Iniciar treino
-                      </Button>
-                    )}
-                  </div>
-                );
-              })}
+        {/* Visualização do Programa */}
+        {viewMode === 'summary' ? (
+          <div className="bg-card rounded-lg p-6 border space-y-4">
+            <div className="flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-orange-600" />
+              <h3 className="text-xl font-bold">Treinos desta Semana (Semana {activeProgram.current_week})</h3>
             </div>
-          ) : (
-            <p className="text-muted-foreground">Nenhum treino programado para esta semana</p>
-          )}
-        </div>
+
+            {currentWeekData ? (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between text-sm text-muted-foreground">
+                  <span>{currentWeekData.days}</span>
+                </div>
+                {currentWeekData.activities.map((activity: string, idx: number) => {
+                  const isCompleted = workoutLogs.some(
+                    log => log.week_number === activeProgram.current_week && log.day_number === idx + 1 && log.completed
+                  );
+
+                  return (
+                    <div
+                      key={idx}
+                      className={`flex items-start justify-between p-4 rounded-lg border ${
+                        isCompleted ? 'bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800' : 'bg-muted/30'
+                      }`}
+                    >
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          {isCompleted && <CheckCircle2 className="w-5 h-5 text-green-500" />}
+                          <span className="font-semibold">Treino {idx + 1}</span>
+                        </div>
+                        <p className="text-sm text-muted-foreground">{activity}</p>
+                      </div>
+                      {!isCompleted && (
+                        <Button
+                          size="sm"
+                          onClick={() => {
+                            setStepDayIndex(idx);
+                            setStepModalOpen(true);
+                          }}
+                        >
+                          <Play className="w-4 h-4 mr-1" />
+                          Iniciar treino
+                        </Button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="text-muted-foreground">Nenhum treino programado para esta semana</p>
+            )}
+          </div>
+        ) : (
+          // Visualização detalhada
+          <ExerciseDetailView 
+            workoutData={{
+              title: activeProgram.plan_name,
+              description: activeProgram.plan_data?.description || '',
+              location: activeProgram.plan_data?.location || 'casa',
+              duration: activeProgram.plan_data?.weeks?.[0]?.days || 'N/A',
+              frequency: `${activeProgram.workouts_per_week}x por semana`,
+              goal: activeProgram.plan_data?.goal || '',
+              weekPlan: transformWeeksToWeekPlan(activeProgram.plan_data?.weeks || [])
+            }}
+            location={activeProgram.plan_data?.location === 'academia' ? 'academia' : 'casa'}
+          />
+        )}
 
         {/* Modal passo a passo do treino */}
         {activeProgram && currentWeekData && stepDayIndex !== null && stepDayIndex >= 0 && (
@@ -387,23 +423,15 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
             planId={activeProgram.id}
             weekNumber={activeProgram.current_week}
             dayNumber={stepDayIndex + 1}
-            title={currentWeekData.activities[stepDayIndex]}
+            title={`Treino ${stepDayIndex + 1}`}
             description={activeProgram.plan_data?.description}
             activity={currentWeekData.activities[stepDayIndex]}
-            currentIndex={stepDayIndex}
-            totalWorkouts={currentWeekData.activities.length}
-            onPrev={() => {
-              if (stepDayIndex > 0) setStepDayIndex(stepDayIndex - 1);
-            }}
-            onNext={() => {
-              if (stepDayIndex < currentWeekData.activities.length - 1) setStepDayIndex(stepDayIndex + 1);
-            }}
             onCompleteWorkout={async () => {
               await completeWorkout(
                 activeProgram.id,
                 activeProgram.current_week,
                 stepDayIndex + 1,
-                currentWeekData.activities[stepDayIndex],
+                `Treino ${stepDayIndex + 1}`,
                 { activity: currentWeekData.activities[stepDayIndex] }
               );
             }}
@@ -490,6 +518,26 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
           <Dumbbell className="w-8 h-8 text-orange-600" />
           Exercícios Recomendados
         </h2>
+        <div className="flex items-center bg-muted rounded-lg p-1">
+          <Button
+            variant={viewMode === 'summary' ? 'secondary' : 'ghost'}
+            size="sm"
+            className="flex items-center gap-1"
+            onClick={() => setViewMode('summary')}
+          >
+            <LayoutGrid className="w-4 h-4" />
+            <span className="hidden sm:inline">Resumo</span>
+          </Button>
+          <Button
+            variant={viewMode === 'detailed' ? 'secondary' : 'ghost'}
+            size="sm"
+            className="flex items-center gap-1"
+            onClick={() => setViewMode('detailed')}
+          >
+            <List className="w-4 h-4" />
+            <span className="hidden sm:inline">Detalhado</span>
+          </Button>
+        </div>
       </div>
 
       <div className="bg-card rounded-lg p-6 border space-y-4">
@@ -503,55 +551,95 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
       </div>
 
       {/* Visualização dos Programas */}
-      <div className="bg-card rounded-lg p-6 border space-y-4">
-        <h3 className="text-xl font-bold flex items-center gap-2">
-          <History className="w-5 h-5" />
-          Programas Anteriores
-        </h3>
+      {viewMode === 'summary' ? (
+        <div className="bg-card rounded-lg p-6 border space-y-4">
+          <h3 className="text-xl font-bold flex items-center gap-2">
+            <History className="w-5 h-5" />
+            Programas Anteriores
+          </h3>
 
-        <div className="space-y-3">
-          {programs.map((program) => {
-            const programProgress = (program.completed_workouts / program.total_workouts) * 100;
+          <div className="space-y-3">
+            {programs.map((program) => {
+              const programProgress = (program.completed_workouts / program.total_workouts) * 100;
 
-            return (
-              <div
-                key={program.id}
-                className="border rounded-lg p-4 space-y-3"
-              >
-                <div className="flex items-start justify-between">
+              return (
+                <div
+                  key={program.id}
+                  className="border rounded-lg p-4 space-y-3"
+                >
+                  <div className="flex items-start justify-between">
                   <div>
                     <h4 className="font-semibold">{program.plan_name}</h4>
                     <p className="text-sm text-muted-foreground">
                       {program.duration_weeks} semanas • {program.workouts_per_week}x/semana
                     </p>
                   </div>
-                  <Badge variant={program.status === 'completed' ? 'default' : 'secondary'}>
-                    {program.status === 'completed' ? 'Concluído' : 'Pausado'}
-                  </Badge>
-                </div>
+                    <Badge variant={program.status === 'completed' ? 'default' : 'secondary'}>
+                      {program.status === 'completed' ? 'Concluído' : 'Pausado'}
+                    </Badge>
+                  </div>
 
-                <Progress value={programProgress} className="h-2" />
+                  <Progress value={programProgress} className="h-2" />
 
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">
-                    {program.completed_workouts}/{program.total_workouts} treinos ({Math.round(programProgress)}%)
-                  </span>
-                  {program.status === 'paused' && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => resumeProgram(program.id)}
-                    >
-                      <Play className="w-4 h-4 mr-1" />
-                      Retomar
-                    </Button>
-                  )}
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">
+                      {program.completed_workouts}/{program.total_workouts} treinos ({Math.round(programProgress)}%)
+                    </span>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setViewMode('detailed')}
+                      >
+                        <List className="w-4 h-4 mr-1" />
+                        Detalhado
+                      </Button>
+                      {program.status === 'paused' && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => resumeProgram(program.id)}
+                        >
+                          <Play className="w-4 h-4 mr-1" />
+                          Retomar
+                        </Button>
+                      )}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
-      </div>
+      ) : (
+        // Visualização detalhada dos programas pausados
+        <div className="space-y-4">
+          {programs.map((program) => (
+            <div key={program.id} className="bg-card rounded-lg p-6 border">
+              <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="text-xl font-bold">{program.plan_name}</h3>
+                <p className="text-muted-foreground">{program.plan_data?.description}</p>
+              </div>
+              <Badge variant="secondary">Pausado</Badge>
+            </div>
+            
+            <ExerciseDetailView 
+              workoutData={{
+                title: program.plan_name,
+                description: program.plan_data?.description || '',
+                location: program.plan_data?.location || 'casa',
+                duration: program.plan_data?.weeks?.[0]?.days || 'N/A',
+                frequency: `${program.workouts_per_week}x por semana`,
+                goal: program.plan_data?.goal || '',
+                weekPlan: transformWeeksToWeekPlan(program.plan_data?.weeks || [])
+              }}
+              location={program.plan_data?.location === 'academia' ? 'academia' : 'casa'}
+            />
+            </div>
+          ))}
+        </div>
+      )}
 
       <ExerciseOnboardingModal
         isOpen={showModal}

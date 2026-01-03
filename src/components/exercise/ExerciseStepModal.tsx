@@ -12,11 +12,6 @@ interface ExerciseStepModalProps {
   title: string;
   description?: string;
   activity: string;
-  currentIndex: number;
-  totalWorkouts: number;
-  onPrev: () => void;
-  onNext: () => void;
-  onOpenDetailed?: () => void;
   onCompleteWorkout: () => Promise<void>;
 }
 
@@ -39,23 +34,9 @@ export const ExerciseStepModal: React.FC<ExerciseStepModalProps> = ({
   title,
   description,
   activity,
-  currentIndex,
-  totalWorkouts,
-  onPrev,
-  onNext,
-  onOpenDetailed,
   onCompleteWorkout,
 }) => {
   const videoId = extractYouTubeId(activity + ' ' + (description || ''));
-
-  const [mainTitle, stepDetails] = React.useMemo(() => {
-    const parts = activity
-      .split(/[|→]/)
-      .map((p) => p.trim())
-      .filter(Boolean);
-    if (parts.length === 0) return ['', [] as string[]];
-    return [parts[0], parts.slice(1)];
-  }, [activity]);
 
   const [seconds, setSeconds] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
@@ -88,73 +69,20 @@ export const ExerciseStepModal: React.FC<ExerciseStepModalProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={(value) => !value && onClose()}>
-      <DialogContent className="max-w-2xl p-0 overflow-hidden">
-        <div className="flex flex-col bg-gradient-to-br from-background via-background to-muted/60">
-          {/* Cabeçalho + navegação entre treinos */}
-          <div className="px-6 pt-5 pb-3 border-b">
+      <DialogContent className="max-w-4xl p-0 overflow-hidden">
+        <div className="grid md:grid-cols-[3fr,2fr] bg-gradient-to-br from-background via-background to-muted/60">
+          <div className="p-6 space-y-4">
             <DialogHeader className="space-y-2">
-              <div className="flex items-center justify-between gap-2">
-                <DialogTitle className="text-2xl md:text-3xl font-bold tracking-tight">
-                  {mainTitle || title}
-                </DialogTitle>
-                <div className="flex items-center gap-2 text-xs md:text-sm">
-                  <span className="text-muted-foreground">
-                    {currentIndex + 1} de {totalWorkouts}
-                  </span>
-                  <div className="flex gap-1">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      className="h-7 w-7"
-                      disabled={currentIndex === 0}
-                      onClick={onPrev}
-                    >
-                      ‹
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      className="h-7 w-7"
-                      disabled={currentIndex === totalWorkouts - 1}
-                      onClick={onNext}
-                    >
-                      ›
-                    </Button>
-                  </div>
-                </div>
-              </div>
+              <DialogTitle className="text-2xl md:text-3xl font-bold tracking-tight">
+                {title}
+              </DialogTitle>
               <p className="text-sm text-muted-foreground">
                 Vamos fazer este treino com calma, no seu ritmo. Você pode pausar sempre que precisar.
               </p>
             </DialogHeader>
-          </div>
 
-          {/* Player de vídeo no topo */}
-          <div className="w-full border-b bg-muted/60 px-6 pt-4 pb-5">
-            <p className="text-sm font-medium mb-2">Vídeo do exercício</p>
-            {videoId ? (
-              <div className="relative w-full pt-[56.25%] rounded-xl overflow-hidden bg-black/80 shadow-md">
-                <iframe
-                  className="absolute inset-0 w-full h-full"
-                  src={`https://www.youtube.com/embed/${videoId}`}
-                  title="Vídeo do treino"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                  allowFullScreen
-                />
-              </div>
-            ) : (
-              <div className="rounded-xl border border-dashed flex items-center justify-center text-xs text-muted-foreground p-4 text-center bg-background/60">
-                Adicione um link do YouTube na descrição do treino para exibir o vídeo aqui.
-              </div>
-            )}
-          </div>
-
-          {/* Conteúdo do exercício, cuidados e timer */}
-          <div className="px-6 py-4 space-y-4">
             {/* Bloco principal do exercício */}
-            <div className="space-y-4">
+            <div className="space-y-4 mt-2">
               <p className="text-xs uppercase tracking-wide text-muted-foreground font-semibold">
                 Exercício de hoje
               </p>
@@ -162,17 +90,10 @@ export const ExerciseStepModal: React.FC<ExerciseStepModalProps> = ({
                 <div className="w-11 h-11 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                   <Play className="w-5 h-5 text-primary" />
                 </div>
-                <div className="space-y-2">
-                  <p className="font-semibold text-base md:text-lg leading-snug">{mainTitle || activity}</p>
-                  {stepDetails.length > 0 && (
-                    <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside">
-                      {stepDetails.map((step, idx) => (
-                        <li key={idx}>{step}</li>
-                      ))}
-                    </ul>
-                  )}
+                <div className="space-y-1">
+                  <p className="font-semibold text-base md:text-lg leading-snug">{activity}</p>
                   {description && (
-                    <p className="text-xs text-muted-foreground whitespace-pre-line">
+                    <p className="text-sm text-muted-foreground whitespace-pre-line">
                       {description}
                     </p>
                   )}
@@ -190,7 +111,7 @@ export const ExerciseStepModal: React.FC<ExerciseStepModalProps> = ({
               </div>
 
               {/* Timer elegante */}
-              <div className="mt-2 flex flex-col md:flex-row items-center gap-4 p-3 rounded-2xl border bg-background/80">
+              <div className="mt-4 flex flex-col md:flex-row items-center gap-4 p-3 rounded-2xl border bg-background/80">
                 <div className="flex-1 flex flex-col items-center md:items-start gap-1">
                   <span className="text-xs uppercase tracking-wide text-muted-foreground">Tempo de treino</span>
                   <span className="font-mono text-3xl md:text-4xl font-semibold">
@@ -240,6 +161,26 @@ export const ExerciseStepModal: React.FC<ExerciseStepModalProps> = ({
                 </Button>
               </div>
             </div>
+          </div>
+
+          {/* Lado do vídeo */}
+          <div className="bg-muted/60 border-l p-4 flex flex-col gap-3">
+            <p className="text-sm font-medium">Vídeo de apoio</p>
+            {videoId ? (
+              <div className="relative w-full pt-[56.25%] rounded-xl overflow-hidden bg-black/80 shadow-md">
+                <iframe
+                  className="absolute inset-0 w-full h-full"
+                  src={`https://www.youtube.com/embed/${videoId}`}
+                  title="Vídeo do treino"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                />
+              </div>
+            ) : (
+              <div className="flex-1 rounded-xl border border-dashed flex items-center justify-center text-xs text-muted-foreground p-4 text-center bg-background/60">
+                Adicione um link do YouTube na descrição do treino para exibir o vídeo aqui.
+              </div>
+            )}
           </div>
         </div>
       </DialogContent>
