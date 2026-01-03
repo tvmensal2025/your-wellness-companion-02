@@ -253,26 +253,41 @@ const MedicalDocumentsSection: React.FC = () => {
 
       const idempotencyKey = crypto.randomUUID();
 
-      // Usar função de backend integrada do Lovable Cloud (sem chamar URL direta)
-      const { data, error } = await supabase.functions.invoke(
-        'finalize-medical-document',
+      // Chamada direta ao endpoint da função usando apenas a API key pública,
+      // evitando problemas com JWT inválido do usuário
+      const response = await fetch(
+        'https://dobzvllqpqabnrwvphym.supabase.co/functions/v1/finalize-medical-document',
         {
-          body: {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({
             tmpPaths,
             title: newDocument.title || 'Exame',
             examType: newDocument.type,
             idempotencyKey,
             userId: user.id,
-          },
+          }),
         }
       );
 
-      if (error) {
-        console.error('Erro na finalização do documento:', error);
-        throw new Error(error.message || 'Falha ao finalizar documento');
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Erro na finalização do documento (HTTP):', response.status, errorText);
+        throw new Error('Falha ao finalizar documento');
       }
 
-      const doc = (data as { data?: { id?: string } } | null)?.data;
+      const result: any = await response.json();
+
+      if (!result?.success) {
+        console.error('Erro na finalização do documento (payload):', result);
+        throw new Error(result?.details || 'Falha ao finalizar documento');
+      }
+
+      const documentId: string | undefined = result?.data?.documentId;
 
       // Registra o acesso somente após finalizar com sucesso
       await registerExamAccess().catch(() => {});
@@ -301,8 +316,8 @@ const MedicalDocumentsSection: React.FC = () => {
 
       // Recarrega documentos e inicia polling em background
       loadDocuments();
-      if (doc?.id) {
-        pollReportReady(doc.id);
+      if (documentId) {
+        pollReportReady(documentId);
 
         // Mostra notificação quando o relatório estiver pronto
         setTimeout(() => {
@@ -315,21 +330,12 @@ const MedicalDocumentsSection: React.FC = () => {
         }, 120000); // 2 minutos
       }
 
-      return doc;
+      return documentId;
     } catch (e: any) {
       console.error('Erro na finalização do documento:', e);
-      if (e?.context) {
-        console.error('Detalhes da Edge Function:', {
-          status: e.context.status,
-          body: e.context.body,
-        });
-      }
       toast({
-        title: '❌ Erro ao enviar exame',
-        description:
-          e?.context?.body?.details ||
-          e?.message ||
-          'Tente novamente em alguns instantes',
+        title: 'Erro ao finalizar documento',
+        description: e.message || 'Tente novamente em alguns instantes.',
         variant: 'destructive',
       });
     } finally {
