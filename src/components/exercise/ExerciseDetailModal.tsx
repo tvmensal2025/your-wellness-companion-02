@@ -235,7 +235,7 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-bold text-primary">{exerciseName}</h2>
           <Button variant="ghost" size="sm" onClick={() => setCurrentStep('overview')}>
-            <ArrowLeft className="w-4 h-4 mr-1" />
+            
             Voltar
           </Button>
         </div>
