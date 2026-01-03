@@ -458,7 +458,12 @@ const MedicalDocumentsSection: React.FC = () => {
       } = await supabase.auth.getUser();
       if (!user) throw new Error('Usuário não autenticado');
 
-      const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+      // Usar chave pública fixa (segura para frontend) + JWT do usuário
+      const anonKey =
+        import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvYnp2bGxxcHFhYm5yd3ZwaHltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0MDE4NjgsImV4cCI6MjA4Mjk3Nzg2OH0.YqiTOwdnbZGEc21z6Mg1f86bRHvcAl8gEz-YnLLrVuc';
+      const { data: sessionData } = await supabase.auth.getSession();
+      const jwt = sessionData.session?.access_token;
 
       console.log('🔍 Dados sendo enviados para analyze-medical-exam (trigger):', {
         documentId: doc.id,
@@ -475,6 +480,7 @@ const MedicalDocumentsSection: React.FC = () => {
           headers: {
             'Content-Type': 'application/json',
             apikey: anonKey,
+            ...(jwt ? { Authorization: `Bearer ${jwt}` } : {}),
           },
           body: JSON.stringify({
             documentId: doc.id,
@@ -521,7 +527,11 @@ const MedicalDocumentsSection: React.FC = () => {
       } = await supabase.auth.getUser();
       if (!user) throw new Error('Usuário não autenticado');
 
-      const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+      const anonKey =
+        import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRvYnp2bGxxcHFhYm5yd3ZwaHltIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0MDE4NjgsImV4cCI6MjA4Mjk3Nzg2OH0.YqiTOwdnbZGEc21z6Mg1f86bRHvcAl8gEz-YnLLrVuc';
+      const { data: sessionData } = await supabase.auth.getSession();
+      const jwt = sessionData.session?.access_token;
 
       console.log('🔄 Forçando restart da análise para documento:', doc.id);
 
@@ -557,6 +567,7 @@ const MedicalDocumentsSection: React.FC = () => {
           headers: {
             'Content-Type': 'application/json',
             apikey: anonKey,
+            ...(jwt ? { Authorization: `Bearer ${jwt}` } : {}),
           },
           body: JSON.stringify({
             documentId: doc.id,
