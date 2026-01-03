@@ -5,8 +5,8 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type'
 };
 
-const MEALIE_BASE_URL = 'https://ids-mealie.ifrhb3.easypanel.host';
-const MEALIE_API_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJsb25nX3Rva2VuIjp0cnVlLCJpZCI6IjdmZTQxYmFjLWQ4NTUtNDg0Yy1hODMyLTU4NzAyMTE2MmQ1OSIsIm5hbWUiOiJtZWxhaWVvZmljaWFsc2EiLCJpbnRlZ3JhdGlvbl9pZCI6ImdlbmVyaWMiLCJleHAiOjE5MTM0NzU5NTN9.ry_UNZ6l2DIXvQeAKA8IXOmD2H3xkr7rmgcZWaqWRTQ';
+const MEALIE_BASE_URL = Deno.env.get('MEALIE_BASE_URL') || '';
+const MEALIE_API_TOKEN = Deno.env.get('MEALIE_API_TOKEN') || '';
 
 let recipeCache: any[] = [];
 let cacheTimestamp = 0;
