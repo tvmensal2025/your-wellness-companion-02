@@ -462,51 +462,30 @@ const SessionTemplates: React.FC = () => {
     try {
       setIsCreating(templateId);
 
-      // 1) Criar a sessão a partir do template
-      const {
-        data: auth
-      } = await supabase.auth.getUser();
-      const currentUser = auth?.user;
-      if (!currentUser) {
-        toast({
-          title: 'Autenticação necessária',
-          description: 'Faça login como admin.',
-          variant: 'destructive'
-        });
-        return;
-      }
       const payload = buildSessionPayload(templateId);
       if (!payload) return;
+      
       const {
         data: createdSession,
         error: createError
       } = await supabase.from('sessions').insert({
         ...payload,
-        created_by: currentUser.id,
         is_active: true
       } as any).select().single();
+      
       if (createError) throw createError;
 
-      // 2) Tentar usar a função RPC (se existir) para atribuição em massa
       const {
         error: rpcError
-      } = await supabase.rpc('assign_session_to_users', {
-        session_id_param: createdSession.id,
-        user_ids_param: null,
-        admin_user_id: currentUser.id
+      } = await supabase.rpc('assign_session_to_all_users', {
+        session_id_param: createdSession.id
       });
-      if (rpcError) {
-        // Fallback: apenas informa que é necessário configurar função/credenciais
-        console.warn('RPC assign_session_to_users falhou:', rpcError);
-        toast({
-          title: 'Sessão criada',
-          description: 'Para enviar a todos, habilite a função assign_session_to_users no banco.'
-        });
-        return;
-      }
+      
+      if (rpcError) throw rpcError;
+      
       toast({
-        title: 'Sessão enviada!',
-        description: 'Template aplicado e enviado para todos os usuários.'
+        title: '✅ Sucesso!',
+        description: 'Sessão criada e enviada para todos os usuários.'
       });
     } catch (error: any) {
       console.error('Erro ao enviar para todos:', error);
@@ -514,6 +493,60 @@ const SessionTemplates: React.FC = () => {
         title: 'Erro ao enviar',
         description: error?.message || 'Tente novamente.',
         variant: 'destructive'
+      });
+    } finally {
+      setIsCreating(null);
+    }
+  };
+
+  const handleSendToSelected = async () => {
+    if (!selectedTemplate || selectedUsers.length === 0) {
+      toast({
+        title: "⚠️ Atenção",
+        description: "Selecione pelo menos um usuário",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      setIsCreating(selectedTemplate);
+
+      const payload = buildSessionPayload(selectedTemplate);
+      if (!payload) return;
+      
+      const {
+        data: createdSession,
+        error: createError
+      } = await supabase.from('sessions').insert({
+        ...payload,
+        is_active: true
+      } as any).select().single();
+      
+      if (createError) throw createError;
+
+      const {
+        error: rpcError
+      } = await supabase.rpc('assign_session_to_users', {
+        session_id_param: createdSession.id,
+        user_ids_param: selectedUsers
+      });
+      
+      if (rpcError) throw rpcError;
+      
+      toast({
+        title: "✅ Sucesso!",
+        description: `Sessão criada e enviada para ${selectedUsers.length} usuário(s)`
+      });
+      
+      setSelectedTemplate(null);
+      setSelectedUsers([]);
+    } catch (error: any) {
+      console.error('Erro ao enviar para selecionados:', error);
+      toast({
+        title: "❌ Erro",
+        description: error.message || "Não foi possível enviar a sessão",
+        variant: "destructive"
       });
     } finally {
       setIsCreating(null);
@@ -673,18 +706,30 @@ const SessionTemplates: React.FC = () => {
           </DialogHeader>
           
           <div className="space-y-6">
-            {selectedTemplate && <div className="grid gap-6 lg:grid-cols-2">
+            {selectedTemplate && (
+              <div className="space-y-4">
                 <UserSelector selectedUsers={selectedUsers} onSelectionChange={setSelectedUsers} />
                 
-                <SessionSender sessionId={selectedTemplate} sessionTitle={templates.find(t => t.id === selectedTemplate)?.title || ''} userIds={selectedUsers} isTemplate={true} onSuccess={() => {
-              setSelectedTemplate(null);
-              setSelectedUsers([]);
-              toast({
-                title: "✅ Sucesso!",
-                description: "Template enviado com sucesso!"
-              });
-            }} />
-              </div>}
+                <div className="flex gap-3 justify-end">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setSelectedTemplate(null);
+                      setSelectedUsers([]);
+                    }}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    onClick={handleSendToSelected}
+                    disabled={isCreating === selectedTemplate || selectedUsers.length === 0}
+                  >
+                    <Send className="w-4 h-4 mr-2" />
+                    {isCreating === selectedTemplate ? 'Enviando...' : `Enviar para ${selectedUsers.length} usuário(s)`}
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         </DialogContent>
       </Dialog>
