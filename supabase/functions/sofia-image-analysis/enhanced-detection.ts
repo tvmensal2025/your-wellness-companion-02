@@ -3,6 +3,7 @@
 // ========================================
 
 const GOOGLE_AI_API_KEY = Deno.env.get('GOOGLE_AI_API_KEY');
+const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
 const RATE_LIMIT_DELAY = 2000; // 2 segundos entre requests
 const MAX_RETRIES = 3;
 
@@ -179,11 +180,13 @@ ALIMENTOS BRASILEIROS PARA ASSUMIR POR FORMA/COR:
 // ========================================
 
 export async function analyzeWithEnhancedAI(imageUrl: string, attempt = 1) {
-  if (!GOOGLE_AI_API_KEY) {
-    throw new Error('Google AI API key não configurada');
+  const useLovableAI = !!LOVABLE_API_KEY;
+
+  if (!useLovableAI && !GOOGLE_AI_API_KEY) {
+    throw new Error('Nenhuma IA configurada: defina LOVABLE_API_KEY ou GOOGLE_AI_API_KEY');
   }
 
-  console.log(`🤖 Análise aprimorada - Tentativa ${attempt}/${MAX_RETRIES}`);
+  console.log(`🤖 Análise aprimorada - Tentativa ${attempt}/${MAX_RETRIES} | Provider: ${useLovableAI ? 'Lovable AI (Gemini 2.5 Flash)' : 'Google Gemini API'}`);
   
   // Escolher estratégia baseada na tentativa
   let prompt = ENHANCED_FOOD_PROMPTS.aggressive;
@@ -201,67 +204,88 @@ export async function analyzeWithEnhancedAI(imageUrl: string, attempt = 1) {
       await new Promise(resolve => setTimeout(resolve, delay));
     }
 
-    const requestBody = {
-      contents: [{
-        parts: [
-          { text: prompt },
-          { 
-            inline_data: {
-              mime_type: "image/jpeg",
-              data: await fetchImageAsBase64(imageUrl)
-            }
-          }
-        ]
-      }],
-      generationConfig: {
-        temperature: attempt >= 3 ? 0.8 : 0.2, // Mais criativo no fallback
-        maxOutputTokens: 1000,
-      }
-    };
+    let responseText: string;
 
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GOOGLE_AI_API_KEY}`,
-      {
+    if (useLovableAI) {
+      // ===============================
+      // 🔗 MODO LOVABLE AI (RECOMENDADO)
+      // ===============================
+      const body = {
+        model: 'google/gemini-2.5-flash',
+        messages: [
+          {
+            role: 'system',
+            content:
+              'Você é uma IA nutricional especialista em alimentos brasileiros. Sempre responda APENAS com JSON válido, sem explicações adicionais.',
+          },
+          {
+            role: 'user',
+            content: [
+              { type: 'text', text: prompt },
+              {
+                type: 'image_url',
+                image_url: { url: imageUrl },
+              },
+            ],
+          },
+        ],
+      } as const;
+
+      const resp = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody),
-      }
-    );
+        headers: {
+          'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`❌ Google AI Error (tentativa ${attempt}):`, response.status, errorText);
-      
-      // Rate limit handling
-      if (response.status === 429 && attempt < MAX_RETRIES) {
-        const backoffDelay = RATE_LIMIT_DELAY * Math.pow(2, attempt); // Exponential backoff
-        console.log(`⏳ Rate limit! Aguardando ${backoffDelay}ms...`);
-        await new Promise(resolve => setTimeout(resolve, backoffDelay));
-        return analyzeWithEnhancedAI(imageUrl, attempt + 1);
+      if (!resp.ok) {
+        const errorText = await resp.text();
+        console.error(`❌ Lovable AI error (tentativa ${attempt}):`, resp.status, errorText);
+
+        if ((resp.status === 429 || resp.status === 402) && attempt < MAX_RETRIES) {
+          const backoffDelay = RATE_LIMIT_DELAY * Math.pow(2, attempt);
+          console.log(`⏳ Backoff Lovable AI ${backoffDelay}ms...`);
+          await new Promise(resolve => setTimeout(resolve, backoffDelay));
+          return analyzeWithEnhancedAI(imageUrl, attempt + 1);
+        }
+
+        // Se Lovable falhar completamente, tentar fallback para Google, se existir
+        if (GOOGLE_AI_API_KEY) {
+          console.log('🔁 Falha Lovable AI, tentando Google Gemini direto...');
+          return analyzeWithEnhancedAIWithGoogle(imageUrl, attempt);
+        }
+
+        throw new Error(`Lovable AI error: ${resp.status}`);
       }
-      
-      throw new Error(`Google AI error: ${response.status} - ${errorText}`);
+
+      const data = await resp.json();
+      responseText = data.choices?.[0]?.message?.content ?? '';
+    } else {
+      // ===============================
+      // 🌐 MODO GOOGLE GEMINI DIRETO (LEGADO)
+      // ===============================
+      const result = await analyzeWithEnhancedAIWithGoogle(imageUrl, attempt);
+      return result;
     }
 
-    const data = await response.json();
-    
-    if (!data.candidates?.[0]?.content?.parts?.[0]?.text) {
+    if (!responseText) {
       if (attempt < MAX_RETRIES) {
-        console.log(`⚠️ Resposta inválida na tentativa ${attempt}, tentando novamente...`);
+        console.log(`⚠️ Resposta vazia na tentativa ${attempt}, tentando novamente...`);
         return analyzeWithEnhancedAI(imageUrl, attempt + 1);
       }
-      throw new Error('Resposta inválida da Google AI após múltiplas tentativas');
+      throw new Error('Resposta vazia da IA após múltiplas tentativas');
     }
 
-    const responseText = data.candidates[0].content.parts[0].text;
-    console.log(`🤖 Resposta Gemini (tentativa ${attempt}):`, responseText.substring(0, 200) + '...');
+    console.log(`🤖 Resposta IA (tentativa ${attempt}):`, responseText.substring(0, 200) + '...');
 
     try {
       // Limpar e parsear JSON
       let cleanJson = responseText.replace(/```json|```/g, '').trim();
       
       // Tentar extrair JSON se estiver misturado com texto
-      const jsonMatch = cleanJson.match(/\{[^{}]*"foods"[^{}]*\}/);
+      const jsonMatch = cleanJson.match(/\{[^{}]*"foods"[^{}]*\}/s);
       if (jsonMatch) {
         cleanJson = jsonMatch[0];
       }
@@ -329,6 +353,142 @@ export async function analyzeWithEnhancedAI(imageUrl: string, attempt = 1) {
     // Último recurso: análise genérica
     console.log('🆘 Todas as tentativas falharam, criando análise genérica...');
     return createFallbackAnalysis();
+  }
+}
+
+// Implementação legado isolada para reuso quando Lovable AI não estiver disponível
+async function analyzeWithEnhancedAIWithGoogle(imageUrl: string, attempt = 1) {
+  if (!GOOGLE_AI_API_KEY) {
+    throw new Error('Google AI API key não configurada');
+  }
+
+  console.log(`🌐 Google Gemini direto - Tentativa ${attempt}/${MAX_RETRIES}`);
+
+  // Escolher estratégia baseada na tentativa
+  let prompt = ENHANCED_FOOD_PROMPTS.aggressive;
+  if (attempt === 2) {
+    prompt = ENHANCED_FOOD_PROMPTS.contextual;
+  } else if (attempt >= 3) {
+    prompt = ENHANCED_FOOD_PROMPTS.fallback;
+  }
+
+  // Delay anti-rate-limit
+  if (attempt > 1) {
+    const delay = RATE_LIMIT_DELAY * attempt;
+    console.log(`⏳ Aguardando ${delay}ms para evitar rate limit (Google)...`);
+    await new Promise(resolve => setTimeout(resolve, delay));
+  }
+
+  const requestBody = {
+    contents: [{
+      parts: [
+        { text: prompt },
+        { 
+          inline_data: {
+            mime_type: "image/jpeg",
+            data: await fetchImageAsBase64(imageUrl)
+          }
+        }
+      ]
+    }],
+    generationConfig: {
+      temperature: attempt >= 3 ? 0.8 : 0.2, // Mais criativo no fallback
+      maxOutputTokens: 1000,
+    }
+  };
+
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GOOGLE_AI_API_KEY}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(requestBody),
+    }
+  );
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error(`❌ Google AI Error (tentativa ${attempt}):`, response.status, errorText);
+    
+    // Rate limit handling
+    if (response.status === 429 && attempt < MAX_RETRIES) {
+      const backoffDelay = RATE_LIMIT_DELAY * Math.pow(2, attempt); // Exponential backoff
+      console.log(`⏳ Rate limit Google! Aguardando ${backoffDelay}ms...`);
+      await new Promise(resolve => setTimeout(resolve, backoffDelay));
+      return analyzeWithEnhancedAIWithGoogle(imageUrl, attempt + 1);
+    }
+    
+    throw new Error(`Google AI error: ${response.status} - ${errorText}`);
+  }
+
+  const data = await response.json();
+  if (!data.candidates?.[0]?.content?.parts?.[0]?.text) {
+    if (attempt < MAX_RETRIES) {
+      console.log(`⚠️ Resposta inválida na tentativa ${attempt}, tentando novamente (Google)...`);
+      return analyzeWithEnhancedAIWithGoogle(imageUrl, attempt + 1);
+    }
+    throw new Error('Resposta inválida da Google AI após múltiplas tentativas');
+  }
+
+  const responseText = data.candidates[0].content.parts[0].text as string;
+  console.log(`🤖 Resposta Gemini (tentativa ${attempt}):`, responseText.substring(0, 200) + '...');
+
+  try {
+    // Limpar e parsear JSON
+    let cleanJson = responseText.replace(/```json|```/g, '').trim();
+    
+    // Tentar extrair JSON se estiver misturado com texto
+    const jsonMatch = cleanJson.match(/\{[^{}]*"foods"[^{}]*\}/s);
+    if (jsonMatch) {
+      cleanJson = jsonMatch[0];
+    }
+    
+    const parsed = JSON.parse(cleanJson);
+    
+    // Validar resultado
+    if (!parsed.foods || !Array.isArray(parsed.foods) || parsed.foods.length === 0) {
+      if (attempt < MAX_RETRIES) {
+        console.log(`⚠️ Nenhum alimento detectado na tentativa ${attempt}, forçando nova análise (Google)...`);
+        return analyzeWithEnhancedAIWithGoogle(imageUrl, attempt + 1);
+      }
+      
+      // Último recurso: criar análise genérica
+      return createFallbackAnalysis();
+    }
+    
+    // Melhorar dados detectados
+    const enhancedFoods = (parsed.foods as any[]).map((food: any) => ({
+      name: food.name || 'alimento não identificado',
+      grams: Math.max(Number(food.grams) || 50, 30), // Mínimo 30g
+      confidence: Math.max(Number(food.confidence) || 0.3, 0.1) // Mínimo 0.1
+    }));
+    
+    console.log(`✅ Análise bem-sucedida na tentativa ${attempt}:`, enhancedFoods.length, 'alimentos detectados (Google)');
+    
+    return {
+      foods: enhancedFoods,
+      total_calories: enhancedFoods.reduce((sum: number, food: any) => sum + (food.grams * 2.5), 0),
+      attempt_used: attempt,
+      detection_method: attempt === 1 ? 'aggressive' : attempt === 2 ? 'contextual' : 'fallback',
+      success: true
+    };
+    
+  } catch (parseError) {
+    console.error(`❌ Erro ao parsear JSON (tentativa ${attempt}, Google):`, parseError);
+    
+    if (attempt < MAX_RETRIES) {
+      return analyzeWithEnhancedAIWithGoogle(imageUrl, attempt + 1);
+    }
+    
+    // Extrair alimentos do texto como último recurso
+    const extractedFoods = extractFoodsFromText(responseText);
+    return {
+      foods: extractedFoods,
+      total_calories: extractedFoods.reduce((sum: number, food: any) => sum + (food.grams * 2), 0),
+      parsing_error: true,
+      fallback_used: true,
+      attempt_used: attempt
+    };
   }
 }
 
