@@ -76,7 +76,7 @@ export const MissionCompletePage: React.FC<MissionCompletePageProps> = ({
                       <h3 className="text-sm font-semibold leading-snug text-foreground">
                         {question.question}
                       </h3>
-                      <Badge className="inline-flex max-w-full items-center justify-center rounded-full bg-gradient-mission text-primary-foreground text-xs px-3 py-1 border-none">
+                      <Badge className="inline-flex max-w-full items-center justify-center rounded-full bg-secondary/80 text-secondary-foreground text-[11px] px-3 py-1 border border-border/40">
                         <span className="truncate">
                           {answers[question.id] || 'Não respondido'}
                         </span>
