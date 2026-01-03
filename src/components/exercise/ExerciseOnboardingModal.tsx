@@ -233,20 +233,20 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
           { 
             week: 1, 
             activities: [
-              'SEG - PEITO/TRÍCEPS: Supino reto 4x10 | Supino inclinado halter 3x12 | Crucifixo 3x12 | Tríceps pulley 3x12 | Tríceps francês 3x12 | Abdominal 3x20',
-              'QUA - COSTAS/BÍCEPS: Barra fixa 4x8 | Puxada frontal 3x12 | Remada curvada 4x10 | Remada baixa 3x12 | Rosca direta 3x12 | Rosca martelo 3x12',
-              'QUI - PERNAS: Agachamento livre 4x12 | Leg press 4x15 | Stiff 3x12 | Cadeira extensora 3x15 | Cadeira flexora 3x15 | Panturrilha 4x20',
-              'SEX - OMBRO/CORE: Desenvolvimento 4x10 | Elevação lateral 3x12 | Elevação frontal 3x12 | Crucifixo inverso 3x15 | Prancha 4x45seg | Russian twist 3x30'
+              'SEG - PEITO/TRÍCEPS: Supino reto 4x10 | Supino inclinado halter 3x12 | Crucifixo 3x12 | Tríceps pulley 3x12 | Tríceps francês 3x12 | Abdominal 3x20 https://www.youtube.com/watch?v=rT7DgCr-3pg',
+              'QUA - COSTAS/BÍCEPS: Barra fixa 4x8 | Puxada frontal 3x12 | Remada curvada 4x10 | Remada baixa 3x12 | Rosca direta 3x12 | Rosca martelo 3x12 https://www.youtube.com/watch?v=apzFT8P9A5c',
+              'QUI - PERNAS: Agachamento livre 4x12 | Leg press 4x15 | Stiff 3x12 | Cadeira extensora 3x15 | Cadeira flexora 3x15 | Panturrilha 4x20 https://www.youtube.com/watch?v=1xMaFs0L3ao',
+              'SEX - OMBRO/CORE: Desenvolvimento 4x10 | Elevação lateral 3x12 | Elevação frontal 3x12 | Crucifixo inverso 3x15 | Prancha 4x45seg | Russian twist 3x30 https://www.youtube.com/watch?v=qEwKCR5JCog'
             ], 
             days: 'Seg, Qua, Qui, Sex' 
           },
           { 
             week: 2, 
             activities: [
-              'SEG - PEITO/FORÇA: Supino reto 5x8 | Supino declinado 3x10 | Crossover 3x15 | Tríceps corda 4x12 | Mergulho 3x12 | Abdominal bicicleta 3x30',
-              'QUA - COSTAS/VOLUME: Levantamento terra 4x10 | Puxada pegada aberta 4x10 | Remada T 3x12 | Serrote 3x12 | Rosca scott 3x12 | Rosca inversa 3x15',
-              'QUI - PERNAS/EXPLOSÃO: Agachamento 4x10 | Leg press unilateral 3x12 | Afundo caminhando 3x15 | Bulgarian split 3x12 | Mesa flexora 3x15 | Panturrilha saltando 4x15',
-              'SEX - OMBRO/ESTABILIDADE: Arnold press 4x10 | Elevação lateral cabo 4x12 | Face pull 4x15 | Rotação externa 3x15 | Prancha lateral 3x30seg | Hollow hold 3x30seg'
+              'SEG - PEITO/FORÇA: Supino reto 5x8 | Supino declinado 3x10 | Crossover 3x15 | Tríceps corda 4x12 | Mergulho 3x12 | Abdominal bicicleta 3x30 https://www.youtube.com/watch?v=rT7DgCr-3pg',
+              'QUA - COSTAS/VOLUME: Levantamento terra 4x10 | Puxada pegada aberta 4x10 | Remada T 3x12 | Serrote 3x12 | Rosca scott 3x12 | Rosca inversa 3x15 https://www.youtube.com/watch?v=apzFT8P9A5c',
+              'QUI - PERNAS/EXPLOSÃO: Agachamento 4x10 | Leg press unilateral 3x12 | Afundo caminhando 3x15 | Bulgarian split 3x12 | Mesa flexora 3x15 | Panturrilha saltando 4x15 https://www.youtube.com/watch?v=1xMaFs0L3ao',
+              'SEX - OMBRO/ESTABILIDADE: Arnold press 4x10 | Elevação lateral cabo 4x12 | Face pull 4x15 | Rotação externa 3x15 | Prancha lateral 3x30seg | Hollow hold 3x30seg https://www.youtube.com/watch?v=qEwKCR5JCog'
             ], 
             days: 'Seg, Qua, Qui, Sex' 
           },
@@ -267,40 +267,40 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
           { 
             week: 1, 
             activities: [
-              'SEG - PERNAS: Agachamento (pés na largura do ombro) 3x15 | Subida no banco 3x10 cada perna | Afundo usando cadeira 3x12 cada | Panturrilha na escada 3x20',
-              'TER - PEITO/TRÍCEPS: Flexão na parede 3x12 | Mergulho na cadeira (tríceps) 3x10 | Flexão inclinada (mãos na mesa) 3x10 | Prancha 3x30seg',
-              'QUI - COSTAS/BÍCEPS: Remada na mesa (corpo sob mesa, puxa) 3x12 | Superman (no chão) 3x15 | Rosca de bíceps isométrica na mesa 3x20seg | Prancha reversa 3x20seg',
-              'SEX - FULL BODY: Circuito 3x: Agachamento 15x + Flexão mesa 10x + Subida banco 10x cada + Abdominal 15x'
+              'SEG - PERNAS: Agachamento (pés na largura do ombro) 3x15 | Subida no banco 3x10 cada perna | Afundo usando cadeira 3x12 cada | Panturrilha na escada 3x20 https://www.youtube.com/watch?v=Z2F0b0c5xV8',
+              'TER - PEITO/TRÍCEPS: Flexão na parede 3x12 | Mergulho na cadeira (tríceps) 3x10 | Flexão inclinada (mãos na mesa) 3x10 | Prancha 3x30seg https://www.youtube.com/watch?v=IODxDxX7oi4',
+              'QUI - COSTAS/BÍCEPS: Remada na mesa (corpo sob mesa, puxa) 3x12 | Superman (no chão) 3x15 | Rosca de bíceps isométrica na mesa 3x20seg | Prancha reversa 3x20seg https://www.youtube.com/watch?v=7Qqsmc5vK40',
+              'SEX - FULL BODY: Circuito 3x: Agachamento 15x + Flexão mesa 10x + Subida banco 10x cada + Abdominal 15x https://www.youtube.com/watch?v=UItWltVZZmE'
             ], 
             days: 'Seg, Ter, Qui, Sex' 
           },
           { 
             week: 2, 
             activities: [
-              'SEG - PERNAS: Agachamento búlgaro (pé traseiro na cadeira) 3x12 | Agachamento sumô 3x15 | Subida lateral na escada 3x10 cada | Ponte glúteo (pés no banco) 3x15',
-              'TER - PEITO/TRÍCEPS: Flexão declinada (pés no banco) 3x10 | Mergulho entre 2 cadeiras 3x12 | Flexão diamante 3x8 | Prancha lateral 3x25seg cada',
-              'QUI - COSTAS/OMBRO: Remada invertida mesa 3x15 | Elevação Y na parede 3x12 | Face pull na toalha/porta 3x15 | Prancha comando 3x10',
-              'SEX - CARDIO/CORE: Subir e descer escada 5min | Burpees 3x10 | Mountain climber 3x20 | Abdominal bike 3x30 | Prancha 3x45seg'
+              'SEG - PERNAS: Agachamento búlgaro (pé traseiro na cadeira) 3x12 | Agachamento sumô 3x15 | Subida lateral na escada 3x10 cada | Ponte glúteo (pés no banco) 3x15 https://www.youtube.com/watch?v=2C-uNgKwPLE',
+              'TER - PEITO/TRÍCEPS: Flexão declinada (pés no banco) 3x10 | Mergulho entre 2 cadeiras 3x12 | Flexão diamante 3x8 | Prancha lateral 3x25seg cada https://www.youtube.com/watch?v=IODxDxX7oi4',
+              'QUI - COSTAS/OMBRO: Remada invertida mesa 3x15 | Elevação Y na parede 3x12 | Face pull na toalha/porta 3x15 | Prancha comando 3x10 https://www.youtube.com/watch?v=8Q5QG9nbRMI',
+              'SEX - CARDIO/CORE: Subir e descer escada 5min | Burpees 3x10 | Mountain climber 3x20 | Abdominal bike 3x30 | Prancha 3x45seg https://www.youtube.com/watch?v=ml6cT4AZdqI'
             ], 
             days: 'Seg, Ter, Qui, Sex' 
           },
           { 
             week: 3, 
             activities: [
-              'SEG - PERNAS INTENSO: Agachamento pistol (assist na parede) 3x6 cada | Jump squat 3x12 | Afundo caminhando 3x15 cada | Panturrilha unilateral escada 3x15',
-              'TER - PEITO/TRÍCEPS INTENSO: Flexão archer (alternada) 3x8 cada | Mergulho declinado (pés elevados) 3x12 | Flexão explosiva 3x8 | Prancha toca ombro 3x20',
-              'QUI - COSTAS/FORÇA: Remada australiana (pés elevados) 3x12 | Pullover com toalha 3x15 | Remada unilateral mesa 3x12 cada | Hollow hold 3x30seg',
-              'SEX - HIIT: Circuito 4x: Burpees 10x + Escada corrida 20x + Flexão 10x + Jump squat 10x + Prancha 30seg (desc 30seg)'
+              'SEG - PERNAS INTENSO: Agachamento pistol (assist na parede) 3x6 cada | Jump squat 3x12 | Afundo caminhando 3x15 cada | Panturrilha unilateral escada 3x15 https://www.youtube.com/watch?v=aclHkVaku9U',
+              'TER - PEITO/TRÍCEPS INTENSO: Flexão archer (alternada) 3x8 cada | Mergulho declinado (pés elevados) 3x12 | Flexão explosiva 3x8 | Prancha toca ombro 3x20 https://www.youtube.com/watch?v=IODxDxX7oi4',
+              'QUI - COSTAS/FORÇA: Remada australiana (pés elevados) 3x12 | Pullover com toalha 3x15 | Remada unilateral mesa 3x12 cada | Hollow hold 3x30seg https://www.youtube.com/watch?v=GZpWaKW9nDU',
+              'SEX - HIIT: Circuito 4x: Burpees 10x + Escada corrida 20x + Flexão 10x + Jump squat 10x + Prancha 30seg (desc 30seg) https://www.youtube.com/watch?v=ml6cT4AZdqI'
             ], 
             days: 'Seg, Ter, Qui, Sex' 
           },
           { 
             week: 4, 
             activities: [
-              'SEG - PERNAS AVANÇADO: Pistol squat completo 3x8 | Afundo búlgaro saltando 3x10 | Agachamento isométrico parede 3x45seg | Single leg deadlift 3x12',
-              'TER - UPPER AVANÇADO: Flexão pseudo planche 3x8 | Dips bancada profundo 3x15 | Pike push up 3x12 | L-sit na cadeira 3x20seg',
-              'QUI - PULL/CORE: Typewriter pull (na mesa) 3x6 cada | Face pull avançado 3x15 | Hollow body rocks 3x15 | Dragon flag negativa 3x5',
-              'SEX - CHALLENGE: 100 burpees + 100 agachamentos + 100 flexões + 100 abdominais (menor tempo possível)'
+              'SEG - PERNAS AVANÇADO: Pistol squat completo 3x8 | Afundo búlgaro saltando 3x10 | Agachamento isométrico parede 3x45seg | Single leg deadlift 3x12 https://www.youtube.com/watch?v=aclHkVaku9U',
+              'TER - UPPER AVANÇADO: Flexão pseudo planche 3x8 | Dips bancada profundo 3x15 | Pike push up 3x12 | L-sit na cadeira 3x20seg https://www.youtube.com/watch?v=IODxDxX7oi4',
+              'QUI - PULL/CORE: Typewriter pull (na mesa) 3x6 cada | Face pull avançado 3x15 | Hollow body rocks 3x15 | Dragon flag negativa 3x5 https://www.youtube.com/watch?v=GZpWaKW9nDU',
+              'SEX - CHALLENGE: 100 burpees + 100 agachamentos + 100 flexões + 100 abdominais (menor tempo possível) https://www.youtube.com/watch?v=ml6cT4AZdqI'
             ], 
             days: 'Seg, Ter, Qui, Sex' 
           },
