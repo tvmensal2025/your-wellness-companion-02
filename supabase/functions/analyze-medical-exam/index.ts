@@ -2002,7 +2002,8 @@ ANTES DO JSON, escreva uma análise clínica objetiva baseada APENAS nos dados l
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+              // Usar a chave pública da Lovable Cloud apenas como apikey, sem JWT
+              apikey: SUPABASE_ANON_KEY || '',
             },
             body: JSON.stringify({
               image: img.data,
