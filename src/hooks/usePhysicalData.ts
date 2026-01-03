@@ -36,18 +36,20 @@ export const usePhysicalData = (user: User | null) => {
         .from('user_physical_data')
         .select('*')
         .eq('user_id', user.id)
-        .maybeSingle();
+        .limit(1);
 
-      if (error && error.code !== 'PGRST116') {
+      if (error) {
         console.error('Erro ao carregar dados físicos:', error);
       }
 
-      if (data) {
+      const row = data?.[0];
+
+      if (row) {
         setPhysicalData({
-          altura_cm: data.altura_cm,
-          idade: data.idade,
-          sexo: data.sexo as 'Masculino' | 'Feminino' | null,
-          nivel_atividade: data.nivel_atividade as 'Sedentário' | 'Leve' | 'Moderado' | 'Intenso' | null
+          altura_cm: row.altura_cm,
+          idade: row.idade,
+          sexo: row.sexo as 'Masculino' | 'Feminino' | null,
+          nivel_atividade: row.nivel_atividade as 'Sedentário' | 'Leve' | 'Moderado' | 'Intenso' | null
         });
       }
     } catch (error) {
