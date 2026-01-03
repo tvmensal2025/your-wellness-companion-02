@@ -351,7 +351,7 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
         )}
 
         {/* Bloco 5 – Visualização detalhada do programa (só quando abrir o card) */}
-        {showPlanDetails && (
+        {false && showPlanDetails && (
           <ExerciseDetailView
             workoutData={{
               title: activeProgram.plan_name,
