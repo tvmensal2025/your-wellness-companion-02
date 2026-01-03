@@ -10180,6 +10180,14 @@ export type Database = {
       }
     }
     Functions: {
+      assign_session_to_all_users: {
+        Args: { session_id_param: string }
+        Returns: boolean
+      }
+      assign_session_to_users: {
+        Args: { session_id_param: string; user_ids_param: string[] }
+        Returns: boolean
+      }
       has_role: { Args: { _role: string; _user_id: string }; Returns: boolean }
       is_admin_user: { Args: never; Returns: boolean }
     }
