@@ -1,10 +1,18 @@
-import { supabase as baseSupabase } from './client';
+import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-// Wrapper de compatibilidade: reexporta o client oficial baseado
-// nas variáveis de ambiente do Lovable Cloud.
-// Assim, qualquer código que ainda importe
-// `@/integrations/supabase/client-fixed` usará o backend novo.
+// Client fixo usando o backend NOVO do Lovable Cloud,
+// independente das variáveis de ambiente do Vite.
+// Assim evitamos o erro "supabaseUrl is required".
 
-export const supabase = baseSupabase as unknown as ReturnType<typeof import('@supabase/supabase-js').createClient<Database>>;
+const SUPABASE_URL = 'https://bstkhoxhxitfjbwudthq.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJzdGtob3hoeGl0Zmpid3VkdGhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0NjI2NzIsImV4cCI6MjA4MzAzODY3Mn0.nU0R0yF7YynnPwDV8MuF_wmpcKX1swYERdE6lW-saOA';
+
+export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_KEY, {
+  auth: {
+    storage: localStorage,
+    persistSession: true,
+    autoRefreshToken: true,
+  },
+});
 
