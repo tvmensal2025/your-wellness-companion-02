@@ -128,8 +128,7 @@ export function GoalManagement() {
       const challengeData = {
         title: goal.title,
         description: goal.description || `Desafio criado a partir da meta: ${goal.title}`,
-        category: 'meta_transformada',
-        challenge_type: 'general', // Adding the required field
+        challenge_type: 'meta_transformada', // Usar challenge_type em vez de category
         difficulty: goal.difficulty || 'medio',
         duration_days: goal.data_fim ? Math.ceil((new Date(goal.data_fim).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : 30,
         points_reward: goal.estimated_points || 100,
