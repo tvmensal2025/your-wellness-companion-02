@@ -123,6 +123,7 @@ async function calculateDeterministicNutrition(supabase: any, foods: DetectedFoo
     const grams = Number(food.grams) || 100;
     console.log(`🔍 Buscando na TACO: ${food.name} (${grams}g)`);
 
+    const normalizedName = normalizeText(food.name);
     const { data: tacoData } = await supabase
       .from('taco_foods')
       .select('food_name, energy_kcal, protein_g, carbohydrate_g, lipids_g, fiber_g, sodium_mg')
@@ -137,10 +138,10 @@ async function calculateDeterministicNutrition(supabase: any, foods: DetectedFoo
       });
       
       if (!selectedFood) {
-        const keywords = normalizedName.split(' ').filter(w => w.length > 2);
+        const keywords = normalizedName.split(' ').filter((w: string) => w.length > 2);
         selectedFood = tacoData.find((item: any) => {
           const itemName = normalizeText(item.food_name);
-          return keywords.some(keyword => itemName.includes(keyword));
+          return keywords.some((keyword: string) => itemName.includes(keyword));
         });
       }
     }
