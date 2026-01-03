@@ -317,17 +317,25 @@ const MedicalDocumentsSection: React.FC = () => {
 
       return doc;
     } catch (e: any) {
-      console.error(e);
+      console.error('Erro na finalização do documento:', e);
+      if (e?.context) {
+        console.error('Detalhes da Edge Function:', {
+          status: e.context.status,
+          body: e.context.body,
+        });
+      }
       toast({
         title: '❌ Erro ao enviar exame',
-        description: e.message || 'Tente novamente em alguns instantes',
+        description:
+          e?.context?.body?.details ||
+          e?.message ||
+          'Tente novamente em alguns instantes',
         variant: 'destructive',
       });
     } finally {
       setUploading(false);
     }
   };
-
   const pollReportReady = (docId: string) => {
     let attempts = 0;
     const maxAttempts = 20;
