@@ -269,8 +269,8 @@ export const ExerciseDetailView: React.FC<ExerciseDetailViewProps> = ({
                                 size="sm"
                                 onClick={() => openExerciseDetails(exercise)}
                               >
-                                <Info className="w-4 h-4 mr-1" />
-                                Detalhes
+                                <Play className="w-4 h-4 mr-1" />
+                                Começar
                               </Button>
                               <Button 
                                 size="sm"

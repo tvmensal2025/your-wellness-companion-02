@@ -103,12 +103,25 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
     }
   };
 
+  // Helper para extrair ID do YouTube a partir dos dados do exercício
+  const getVideoId = () => {
+    if (!exerciseData) return null;
+    const raw = (exerciseData.video_url || exerciseData.youtube_url || '') as string;
+    if (!raw) return null;
+    const match = raw.match(/https?:\/\/[\w./?=&%-]+/i);
+    if (!match) return null;
+    const url = new URL(match[0]);
+    if (url.hostname.includes('youtube.com')) return url.searchParams.get('v');
+    if (url.hostname.includes('youtu.be')) return url.pathname.replace('/', '');
+    return null;
+  };
+
   // Renderizar a visão geral do exercício
   const renderOverview = () => {
     if (!currentExercise) return <div>Carregando...</div>;
-    
     const [exerciseName, exerciseDetails] = currentExercise;
-    
+    const videoId = getVideoId();
+
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-between">
@@ -121,10 +134,25 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
           </Badge>
         </div>
 
-        <div className="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950 dark:to-red-950 rounded-lg p-6 flex items-center justify-center">
-          <div className="w-32 h-32 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center">
-            <Dumbbell className="w-16 h-16 text-white" />
-          </div>
+        {/* Vídeo do exercício */}
+        <div className="rounded-xl overflow-hidden bg-black/80">
+          {videoId ? (
+            <div className="relative w-full pt-[56.25%]">
+              <iframe
+                className="absolute inset-0 w-full h-full"
+                src={`https://www.youtube.com/embed/${videoId}`}
+                title="Vídeo do exercício"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+              />
+            </div>
+          ) : (
+            <div className="flex items-center justify-center min-h-[220px] bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950 dark:to-red-950">
+              <div className="w-32 h-32 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center">
+                <Dumbbell className="w-16 h-16 text-white" />
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-3 gap-4">
@@ -173,7 +201,7 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
             onClick={() => setCurrentStep('execution')}
           >
             <Play className="w-4 h-4 mr-2" />
-            Execução
+            Começar
           </Button>
         </div>
       </div>
@@ -234,7 +262,7 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
           onClick={() => setCurrentStep('execution')}
         >
           <Play className="w-4 h-4 mr-2" />
-          Ver Execução
+          Começar
         </Button>
       </div>
     );
