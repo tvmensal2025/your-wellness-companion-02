@@ -145,103 +145,124 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
 
     return (
       <div className="p-6 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between flex-wrap gap-4">
-          <h2 className="text-3xl font-bold flex items-center gap-2">
-            <Dumbbell className="w-8 h-8 text-orange-600" />
-            Meu Programa Ativo
-          </h2>
+        {/* Header principal */}
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <div>
+            <h2 className="text-3xl font-bold flex items-center gap-2">
+              <Dumbbell className="w-8 h-8 text-orange-600" />
+              Exercícios Recomendados
+            </h2>
+            <p className="text-sm text-muted-foreground mt-1">
+              Seu programa atual e o treino de hoje em um só lugar.
+            </p>
+          </div>
           <div className="flex items-center gap-3">
-            <Button variant="outline" onClick={() => setShowHistory(!showHistory)}>
+            <Button variant="outline" size="sm" onClick={() => setShowHistory(!showHistory)}>
               <History className="w-4 h-4 mr-2" />
-              {showHistory ? 'Ocultar' : 'Ver'} Histórico
+              {showHistory ? 'Ocultar histórico' : 'Ver histórico'}
             </Button>
           </div>
         </div>
 
-        {/* Programa Ativo */}
-        <div className="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950 dark:to-red-950 rounded-lg p-6 space-y-6">
+        {/* Bloco 1 – Programa ativo (estilo dashboard em bloco) */}
+        <section className="bg-card rounded-xl border p-6 space-y-4">
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
             <div className="space-y-1">
+              <p className="text-xs uppercase tracking-wide text-muted-foreground font-semibold">
+                Seu programa atual
+              </p>
               <h3 className="text-2xl font-bold">{activeProgram.plan_name}</h3>
-              <p className="text-muted-foreground max-w-xl">
+              <p className="text-muted-foreground max-w-xl text-sm">
                 {activeProgram.plan_data?.description}
               </p>
-            </div>
-            <Badge className="bg-green-500 self-start">Ativo</Badge>
-          </div>
 
-          {/* Treino de hoje */}
-          {nextWorkoutActivity && (
-            <div className="rounded-xl bg-white/70 dark:bg-black/20 border border-orange-200/70 dark:border-orange-900 p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3 shadow-sm">
-              <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center flex-shrink-0">
-                  <Play className="w-5 h-5 text-white" />
+              <div className="flex flex-wrap gap-2 pt-2 text-xs">
+                <Badge variant="outline" className="flex items-center gap-1">
+                  <Dumbbell className="w-3 h-3" />
+                  {activeProgram.plan_data?.location === 'academia' ? 'Academia' : 'Em casa'}
+                </Badge>
+                <Badge variant="secondary">{activeProgram.workouts_per_week}x por semana</Badge>
+                {activeProgram.plan_data?.goal && (
+                  <Badge variant="secondary">{activeProgram.plan_data.goal}</Badge>
+                )}
+                <Badge className="bg-green-500/90 text-white">Ativo</Badge>
+              </div>
+            </div>
+
+            <div className="w-full md:w-64 space-y-2">
+              <div className="flex items-center justify-between text-xs font-medium">
+                <span>Progresso do programa</span>
+                <span className="text-muted-foreground">{Math.round(progress)}%</span>
+              </div>
+              <Progress value={progress} className="h-2" />
+
+              <div className="grid grid-cols-3 gap-2 text-center text-xs mt-2">
+                <div className="bg-muted rounded-lg p-2">
+                  <div className="font-semibold text-orange-600">
+                    {activeProgram.current_week}/{activeProgram.duration_weeks}
+                  </div>
+                  <div className="text-[11px] text-muted-foreground">Semanas</div>
                 </div>
-                <div>
-                  <p className="text-xs uppercase tracking-wide text-orange-600 font-semibold mb-1">
-                    Treino de hoje
-                  </p>
-                  <p className="font-semibold text-sm md:text-base">{nextWorkoutActivity}</p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Semana {activeProgram.current_week} · {activeProgram.workouts_per_week}x/semana
-                  </p>
+                <div className="bg-muted rounded-lg p-2">
+                  <div className="font-semibold text-orange-600">
+                    {activeProgram.completed_workouts}
+                  </div>
+                  <div className="text-[11px] text-muted-foreground">Treinos feitos</div>
+                </div>
+                <div className="bg-muted rounded-lg p-2">
+                  <div className="font-semibold text-orange-600">
+                    {activeProgram.workouts_per_week}x
+                  </div>
+                  <div className="text-[11px] text-muted-foreground">por semana</div>
                 </div>
               </div>
-            </div>
-          )}
 
-          {/* Estatísticas gerais do programa */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-2">
-            <div className="bg-white/50 dark:bg-black/20 rounded-lg p-4 text-center">
-              <div className="text-2xl font-bold text-orange-600">
-                Semana {activeProgram.current_week}
-              </div>
-              <div className="text-sm text-muted-foreground">
-                de {activeProgram.duration_weeks}
-              </div>
-            </div>
-            <div className="bg-white/50 dark:bg-black/20 rounded-lg p-4 text-center">
-              <div className="text-2xl font-bold text-orange-600">
-                {activeProgram.completed_workouts}
-              </div>
-              <div className="text-sm text-muted-foreground">
-                de {activeProgram.total_workouts} treinos
-              </div>
-            </div>
-            <div className="bg-white/50 dark:bg-black/20 rounded-lg p-4 text-center">
-              <div className="text-2xl font-bold text-orange-600">
-                {activeProgram.workouts_per_week}x
-              </div>
-              <div className="text-sm text-muted-foreground">por semana</div>
-            </div>
-            <div className="bg-white/50 dark:bg-black/20 rounded-lg p-4 text-center">
-              <div className="text-2xl font-bold text-orange-600">
-                {currentWeekData?.days || 'N/A'}
-              </div>
-              <div className="text-sm text-muted-foreground">dias/semana</div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => pauseProgram(activeProgram.id)}
+                className="w-full mt-2"
+              >
+                <Pause className="w-4 h-4 mr-1" />
+                Pausar programa
+              </Button>
             </div>
           </div>
+        </section>
 
-          {/* Progresso */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-sm">
-              <span className="font-semibold">Progresso Geral</span>
-              <span className="text-muted-foreground">{Math.round(progress)}%</span>
+        {/* Bloco 2 – Treino de hoje em destaque */}
+        {nextWorkoutActivity && (
+          <section className="rounded-xl bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3 shadow-sm">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0">
+                <Calendar className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-wide text-blue-700 dark:text-blue-300 font-semibold mb-1">
+                  Treino de hoje
+                </p>
+                <p className="font-semibold text-sm md:text-base">{nextWorkoutActivity}</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Semana {activeProgram.current_week} · {activeProgram.workouts_per_week}x/semana
+                </p>
+              </div>
             </div>
-            <Progress value={progress} className="h-3" />
-          </div>
 
-          {/* Botão Pausar */}
-          <Button
-            variant="outline"
-            onClick={() => pauseProgram(activeProgram.id)}
-            className="w-full"
-          >
-            <Pause className="w-4 h-4 mr-2" />
-            Pausar Programa
-          </Button>
-        </div>
+            <Button
+              size="sm"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4"
+              onClick={() => {
+                // Abre a visualização detalhada no dia correspondente, se existir
+                const dayIndex = nextWorkoutIndex >= 0 ? nextWorkoutIndex : 0;
+                setStepDayIndex(dayIndex);
+                setStepModalOpen(true);
+              }}
+            >
+              <Play className="w-4 h-4 mr-1" />
+              Começar treino
+            </Button>
+          </section>
+        )}
 
         {/* Motivação Diária da IA */}
         {dailyMotivation && (
