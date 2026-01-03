@@ -687,11 +687,6 @@ export const ClientSessions: React.FC = () => {
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         Salvando...
                       </>
-                    ) : currentStep === getTotalSteps() - 1 ? (
-                      <>
-                        <CheckCircle className="mr-2 h-4 w-4" />
-                        Concluir Sessão
-                      </>
                     ) : (
                       <>
                         Próximo
