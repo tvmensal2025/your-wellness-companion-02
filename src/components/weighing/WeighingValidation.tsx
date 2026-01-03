@@ -41,7 +41,7 @@ const WeighingValidation: React.FC = () => {
         .from('user_physical_data')
         .select('*')
         .eq('user_id', user.id)
-        .single();
+        .limit(1);
 
       if (physicalError && physicalError.code !== 'PGRST116') {
         results.push({

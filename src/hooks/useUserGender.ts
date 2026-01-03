@@ -30,11 +30,13 @@ export const useUserGender = (user: User | null) => {
         .from('profiles')
         .select('gender')
         .eq('user_id', user.id)
-        .single();
+        .limit(1);
 
-      if (!profileError && profileData?.gender) {
-        console.log('Gênero encontrado no perfil:', profileData.gender);
-        setGender(profileData.gender);
+      const profile = profileData?.[0];
+
+      if (!profileError && profile?.gender) {
+        console.log('Gênero encontrado no perfil:', profile.gender);
+        setGender(profile.gender);
         return;
       }
 
@@ -43,11 +45,13 @@ export const useUserGender = (user: User | null) => {
         .from('user_physical_data')
         .select('sexo')
         .eq('user_id', user.id)
-        .single();
+        .limit(1);
 
-      if (!physicalError && physicalData?.sexo) {
-        console.log('Gênero encontrado em user_physical_data:', physicalData.sexo);
-        setGender(physicalData.sexo);
+      const physical = physicalData?.[0];
+
+      if (!physicalError && physical?.sexo) {
+        console.log('Gênero encontrado em user_physical_data:', physical.sexo);
+        setGender(physical.sexo);
         return;
       }
 
