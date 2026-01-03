@@ -387,7 +387,7 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
             planId={activeProgram.id}
             weekNumber={activeProgram.current_week}
             dayNumber={stepDayIndex + 1}
-            title={`Treino ${stepDayIndex + 1}`}
+            title={currentWeekData.activities[stepDayIndex]}
             description={activeProgram.plan_data?.description}
             activity={currentWeekData.activities[stepDayIndex]}
             currentIndex={stepDayIndex}
@@ -403,7 +403,7 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
                 activeProgram.id,
                 activeProgram.current_week,
                 stepDayIndex + 1,
-                `Treino ${stepDayIndex + 1}`,
+                currentWeekData.activities[stepDayIndex],
                 { activity: currentWeekData.activities[stepDayIndex] }
               );
             }}
