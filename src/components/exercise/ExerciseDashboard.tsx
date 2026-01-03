@@ -22,13 +22,23 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
 
   // Define a localização com base no programa ativo salvo
   React.useEffect(() => {
-    if (activeProgram && (activeProgram as any).exercises?.location) {
-      const loc = (activeProgram as any).exercises.location;
-      if (loc === 'academia') {
-        setLocation('academia');
-      } else {
-        setLocation('casa');
-      }
+    if (!activeProgram) return;
+
+    // Alguns programas usam `exercises.location`, outros `plan_data.location`
+    const rawLocation =
+      (activeProgram as any).exercises?.location ||
+      (activeProgram as any).plan_data?.location ||
+      (activeProgram as any).planData?.location;
+
+    if (!rawLocation) return;
+
+    const loc = String(rawLocation).toLowerCase();
+
+    // Qualquer coisa que comece com "casa" vira treino em casa (casa_sem, casa_equip, etc.)
+    if (loc.startsWith('casa')) {
+      setLocation('casa');
+    } else if (loc.includes('academia')) {
+      setLocation('academia');
     }
   }, [activeProgram]);
 
