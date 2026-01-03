@@ -383,28 +383,33 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="w-full max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center justify-between">
-            <span className="flex items-center gap-2">
-              <Dumbbell className="w-5 h-5 text-orange-600" />
-              Detalhes do Exercício
-            </span>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={prevExercise}
-                className="h-10 w-10"
-              >
-                <ArrowLeft className="w-6 h-6" />
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={nextExercise}
-                className="h-10 w-10"
-              >
-                <ArrowRight className="w-6 h-6" />
-              </Button>
+          <DialogTitle>
+            <div className="flex items-center justify-between">
+              <div className="flex-1 text-center">
+                <p className="text-sm font-medium text-muted-foreground">Detalhes do</p>
+                <p className="text-2xl font-bold leading-tight">Exercício</p>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1 rounded-full border px-2 py-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={prevExercise}
+                    className="h-8 w-8 rounded-full"
+                  >
+                    <ArrowLeft className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={nextExercise}
+                    className="h-8 w-8 rounded-full"
+                  >
+                    <ArrowRight className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
             </div>
           </DialogTitle>
         </DialogHeader>
