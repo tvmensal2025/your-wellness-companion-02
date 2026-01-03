@@ -416,14 +416,15 @@ export const InteractiveTutorialPopup: React.FC<InteractiveTutorialPopupProps> =
     };
   }, [currentStep, position]);
 
-  if (!tutorialState.isActive || !currentStep) {
+  const shouldRenderPopup = currentStep && (tutorialState.isActive || currentStep.id === 'welcome');
+
+  if (!shouldRenderPopup) {
     if (IS_DEVELOPMENT) {
-      console.log('🎯 Popup não renderizado:', { 
-        isActive: tutorialState.isActive, 
+      console.log('🎯 Popup não renderizado:', {
+        isActive: tutorialState.isActive,
         currentStep: currentStep?.id,
-        tutorialState: tutorialState,
-        showTutorial: tutorialState.isActive,
-        currentStepIndex: tutorialState.currentStep
+        tutorialState,
+        currentStepIndex: tutorialState.currentStep,
       });
     }
     return null;
