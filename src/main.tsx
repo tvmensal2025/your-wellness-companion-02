@@ -2,7 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
-import { supabase } from './integrations/supabase/client'
+import { supabase } from './integrations/supabase/client-fixed'
 
 // Configurar Supabase globalmente para os testes
 if (typeof window !== 'undefined') {

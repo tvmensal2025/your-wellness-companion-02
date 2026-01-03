@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/integrations/supabase/client-fixed';
 import { useToast } from '@/hooks/use-toast';
 
 export function useAsaasPayment() {
