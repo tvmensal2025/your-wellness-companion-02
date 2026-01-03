@@ -223,37 +223,45 @@ const MyProgress: React.FC = () => {
       </div>;
   }
   return <motion.div initial="hidden" animate="visible" variants={cardVariants} className="space-y-3">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" onClick={() => window.history.back()} className="flex items-center gap-2">
-            <ArrowLeft className="w-4 h-4" />
-            Voltar
-          </Button>
-          <h1 className="text-2xl font-bold">Meu Progresso</h1>
+      {/* Header compacto de ações, sem repetir o título da página */}
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          {fmtLastSync && (
+            <>
+              <Clock className="w-3 h-3" />
+              <span>Última sincronização: {fmtLastSync}</span>
+            </>
+          )}
         </div>
-        <div className="flex items-center gap-3">
-          {fmtLastSync && <div className="hidden md:flex items-center gap-2 text-sm text-muted-foreground">
-              <Clock className="w-4 h-4" /> Última sincronização: {fmtLastSync}
-            </div>}
-          <Button variant="outline" size="sm" onClick={async () => {
-          try {
-            await syncData();
-          } catch (e) {
-            console.error(e);
-          }
-        }} className="flex items-center gap-2">
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={async () => {
+              try {
+                await syncData();
+              } catch (e) {
+                console.error(e);
+              }
+            }}
+            className="flex items-center gap-2"
+          >
             <RefreshCw className="w-4 h-4" />
             Sincronizar
           </Button>
-          <Button variant="default" size="sm" onClick={() => setGoalsOpen(true)} className="flex items-center gap-2">
+          <Button
+            variant="default"
+            size="sm"
+            onClick={() => setGoalsOpen(true)}
+            className="flex items-center gap-2"
+          >
             <Target className="w-4 h-4" />
-            Definir metas
+            Metas
           </Button>
-          <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-green-50 dark:bg-green-900/20 rounded-full">
-            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-            <span className="text-sm text-green-700 dark:text-green-400 font-medium">
-              {isConnected ? 'Google Fit Conectado' : 'Google Fit Desconectado'}
+          <div className="hidden md:flex items-center gap-1 px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-900/20">
+            <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+            <span className="text-xs font-medium text-emerald-700 dark:text-emerald-400">
+              {isConnected ? 'Google Fit conectado' : 'Google Fit desconectado'}
             </span>
           </div>
         </div>
