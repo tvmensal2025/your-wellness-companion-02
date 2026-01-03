@@ -3401,8 +3401,7 @@ Por favor, analise as imagens dos exames médicos e extraia todos os valores enc
             exams_found: structuredExams.length
           },
           processing_stage: 'finalizado',
-          progress_pct: 100,
-          estimated_minutes: null
+          progress_pct: 100
         })
         .eq('id', documentId)
         .eq('user_id', userIdEffective ?? '');
