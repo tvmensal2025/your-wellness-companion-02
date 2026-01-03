@@ -371,8 +371,15 @@ Clique no botão abaixo para começar! ⬇️`,
     setIsLoading(true);
 
     try {
-      // Upload da imagem
-      const fileName = `${Date.now()}-${file.name}`;
+      // Upload da imagem - normalizando o nome do arquivo para evitar erros de chave inválida
+      const originalName = file.name || 'imagem.png';
+      const safeBaseName = originalName
+        .normalize('NFD') // remove acentos
+        .replace(/[^a-zA-Z0-9.]+/g, '-') // troca espaços e caracteres especiais por '-'
+        .replace(/-+/g, '-') // compacta múltiplos '-'
+        .toLowerCase();
+      const fileName = `${Date.now()}-${safeBaseName}`;
+
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('chat-images')
         .upload(fileName, file);
