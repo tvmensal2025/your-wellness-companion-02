@@ -304,9 +304,9 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
     const [exerciseName] = currentExercise as [string, any];
 
     return (
-      <div className="space-y-4">
+      <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-primary">{exerciseName}</h2>
+          <h2 className="text-xl font-bold text-primary">{exerciseName}</h2>
           <Button variant="ghost" size="sm" onClick={() => setCurrentStep('overview')}>
             <ArrowLeft className="w-4 h-4 mr-1" />
             Voltar
@@ -315,29 +315,30 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
 
         {renderVideoBlock()}
 
-        <Card className="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950 dark:to-red-950 border-2 border-orange-200 dark:border-orange-800">
-          <CardContent className="p-4 text-center">
-            <Timer className="w-8 h-8 mx-auto mb-2 text-orange-600" />
-            <div className="text-3xl font-bold text-orange-600 mb-1">{formatTime(timerSeconds)}</div>
-            <div className="text-xs text-muted-foreground mb-3">Tempo de exercício</div>
+        <Card className="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950 dark:to-red-950 border border-orange-200 dark:border-orange-800">
+          <CardContent className="p-3 text-center space-y-2">
+            <Timer className="w-6 h-6 mx-auto text-orange-600" />
+            <div className="text-2xl font-bold text-orange-600">{formatTime(timerSeconds)}</div>
+            <div className="text-[11px] text-muted-foreground">Tempo de exercício</div>
             <div className="flex gap-2 justify-center">
               <Button
+                size="sm"
                 onClick={toggleTimer}
-                className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
+                className="px-3 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
               >
                 {isTimerRunning ? (
                   <>
-                    <Pause className="w-4 h-4 mr-2" />
+                    <Pause className="w-3 h-3 mr-1" />
                     Pausar
                   </>
                 ) : (
                   <>
-                    <Play className="w-4 h-4 mr-2" />
+                    <Play className="w-3 h-3 mr-1" />
                     Iniciar
                   </>
                 )}
               </Button>
-              <Button onClick={resetTimer} variant="outline">
+              <Button size="sm" onClick={resetTimer} variant="outline" className="px-3">
                 Resetar
               </Button>
             </div>
@@ -345,33 +346,33 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
         </Card>
 
         <Card className="bg-white/50 dark:bg-black/20">
-          <CardContent className="p-4 text-center">
-            <Heart className="w-6 h-6 mx-auto mb-2 text-orange-600" />
-            <div className="text-lg font-semibold">120 bpm</div>
-            <div className="text-xs text-muted-foreground">Frequência Cardíaca</div>
+          <CardContent className="p-3 text-center space-y-1">
+            <Heart className="w-5 h-5 mx-auto text-orange-600" />
+            <div className="text-base font-semibold">120 bpm</div>
+            <div className="text-[11px] text-muted-foreground">Frequência Cardíaca</div>
           </CardContent>
         </Card>
 
         <div className="space-y-1">
-          <div className="flex items-center justify-between text-sm">
+          <div className="flex items-center justify-between text-xs">
             <span className="font-semibold">Progresso da Série</span>
             <span className="text-muted-foreground">8/12 repetições</span>
           </div>
-          <Progress value={66} className="h-2" />
+          <Progress value={66} className="h-1.5" />
         </div>
 
-        <div className="flex justify-between gap-3">
-          <Button variant="outline" className="flex-1">
-            <ArrowLeft className="w-4 h-4 mr-2" />
+        <div className="flex justify-between gap-2">
+          <Button variant="outline" className="flex-1 py-2 text-xs">
+            <ArrowLeft className="w-4 h-4 mr-1" />
             Anterior
           </Button>
-          <Button className="flex-1 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600">
-            <CheckCircle2 className="w-4 h-4 mr-2" />
+          <Button className="flex-1 py-2 text-xs bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600">
+            <CheckCircle2 className="w-4 h-4 mr-1" />
             Concluído
           </Button>
-          <Button variant="outline" className="flex-1">
-            <ArrowRight className="w-4 h-4 ml-2 order-2" />
-            <span className="order-1">Próximo</span>
+          <Button variant="outline" className="flex-1 py-2 text-xs">
+            <ArrowRight className="w-4 h-4 ml-1" />
+            Próximo
           </Button>
         </div>
       </div>
