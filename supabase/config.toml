@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.check-user-data-completeness]
 verify_jwt = false
+
+[functions.mealie-real]
+verify_jwt = false
