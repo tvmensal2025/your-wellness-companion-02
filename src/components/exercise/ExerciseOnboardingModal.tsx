@@ -877,54 +877,66 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
     const recommendation = generateRecommendation();
     
     return (
-      <div className="space-y-8 py-6">
+      <div className="space-y-6 py-4">
         {/* Hero Section do resultado */}
-        <div className="text-center space-y-6">
+        <div className="text-center space-y-4">
           <div className="flex justify-center">
             <div className="relative">
-              <div className="w-24 h-24 rounded-full bg-gradient-to-br from-green-400 via-emerald-500 to-teal-500 flex items-center justify-center shadow-2xl animate-pulse">
-                <Trophy className="w-12 h-12 text-white" />
+              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-green-400 via-emerald-500 to-teal-500 flex items-center justify-center shadow-2xl animate-pulse">
+                <Trophy className="w-10 h-10 text-white" />
               </div>
-              <div className="absolute -top-2 -right-2 w-8 h-8 bg-yellow-400 rounded-full flex items-center justify-center animate-bounce">
-                <Star className="w-5 h-5 text-yellow-800" />
+              <div className="absolute -top-2 -right-2 w-7 h-7 bg-yellow-400 rounded-full flex items-center justify-center animate-bounce">
+                <Star className="w-4 h-4 text-yellow-800" />
               </div>
             </div>
           </div>
           
-          <div className="space-y-3">
-            <h2 className="text-4xl font-bold bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 bg-clip-text text-transparent">
+          <div className="space-y-2">
+            <h2 className="text-2xl font-bold bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 bg-clip-text text-transparent sm:text-3xl">
               Seu Programa Personalizado!
             </h2>
-            <p className="text-xl text-muted-foreground">Criado especialmente para você</p>
+            <p className="text-base text-muted-foreground sm:text-lg">Criado especialmente para você</p>
           </div>
         </div>
 
         {/* Card principal do programa */}
         <Card className="bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 dark:from-green-950 dark:via-emerald-950 dark:to-teal-950 border-2 border-green-200 dark:border-green-800 shadow-2xl">
-          <CardContent className="p-8 space-y-6">
-            <div className="text-center space-y-4">
-              <h3 className="text-3xl font-bold text-green-800 dark:text-green-200">{recommendation.title}</h3>
-              <p className="text-xl text-green-700 dark:text-green-300">{recommendation.subtitle}</p>
+          <CardContent className="p-5 space-y-5 sm:p-8 sm:space-y-6">
+            <div className="text-center space-y-2">
+              <h3 className="text-2xl font-bold text-green-800 dark:text-green-200 sm:text-3xl">
+                {recommendation.title}
+              </h3>
+              <p className="text-base text-green-700 dark:text-green-300 sm:text-xl">
+                {recommendation.subtitle}
+              </p>
             </div>
 
             {/* Métricas do programa */}
-            <div className="grid grid-cols-3 gap-6 pt-6">
-              <div className="text-center p-4 bg-white/50 dark:bg-black/20 rounded-xl">
-                <div className="text-3xl font-bold text-green-600 mb-2">{recommendation.duration}</div>
-                <div className="text-sm text-muted-foreground font-medium">Duração</div>
+            <div className="grid grid-cols-1 gap-3 pt-4 sm:grid-cols-3 sm:gap-6 sm:pt-6">
+              <div className="text-center p-3 bg-white/50 dark:bg-black/20 rounded-xl sm:p-4">
+                <div className="text-2xl font-bold text-green-600 mb-1 sm:text-3xl sm:mb-2 break-words">
+                  {recommendation.duration}
+                </div>
+                <div className="text-xs text-muted-foreground font-medium sm:text-sm">Duração</div>
               </div>
-              <div className="text-center p-4 bg-white/50 dark:bg-black/20 rounded-xl">
-                <div className="text-3xl font-bold text-emerald-600 mb-2">{recommendation.frequency}</div>
-                <div className="text-sm text-muted-foreground font-medium">Frequência</div>
+              <div className="text-center p-3 bg-white/50 dark:bg-black/20 rounded-xl sm:p-4">
+                <div className="text-2xl font-bold text-emerald-600 mb-1 sm:text-3xl sm:mb-2 break-words">
+                  {recommendation.frequency}
+                </div>
+                <div className="text-xs text-muted-foreground font-medium sm:text-sm">Frequência</div>
               </div>
-              <div className="text-center p-4 bg-white/50 dark:bg-black/20 rounded-xl">
-                <div className="text-3xl font-bold text-teal-600 mb-2">{recommendation.time}</div>
-                <div className="text-sm text-muted-foreground font-medium">Por treino</div>
+              <div className="text-center p-3 bg-white/50 dark:bg-black/20 rounded-xl sm:p-4">
+                <div className="text-2xl font-bold text-teal-600 mb-1 sm:text-3xl sm:mb-2 break-words">
+                  {recommendation.time}
+                </div>
+                <div className="text-xs text-muted-foreground font-medium sm:text-sm">Por treino</div>
               </div>
             </div>
 
-            <div className="text-center pt-4">
-              <p className="text-lg text-gray-700 dark:text-gray-300 leading-relaxed">{recommendation.description}</p>
+            <div className="text-center pt-3 sm:pt-4">
+              <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed sm:text-lg">
+                {recommendation.description}
+              </p>
             </div>
           </CardContent>
         </Card>
