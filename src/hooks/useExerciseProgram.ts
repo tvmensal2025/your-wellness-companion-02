@@ -84,10 +84,17 @@ export const useExerciseProgram = (userId: string | undefined) => {
 
       if (error) throw error;
 
-      setPrograms(data as any || []);
+      const normalized = (data as any[] | null)?.map((p: any) => ({
+        ...p,
+        // Garantir compatibilidade entre colunas antigas e novas
+        plan_name: p.plan_name || p.name,
+        plan_data: p.plan_data || p.exercises || p.planData,
+      })) || [];
+
+      setPrograms(normalized as any);
       
       // Buscar programa ativo (status === 'active')
-      const active = (data as any)?.find((p: any) => p.status === 'active');
+      const active = normalized.find((p: any) => p.status === 'active');
       setActiveProgram(active || null);
     } catch (error) {
       console.error('Erro ao buscar programas:', error);
