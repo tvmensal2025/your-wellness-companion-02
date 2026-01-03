@@ -171,9 +171,6 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
 
     return (
       <div className="space-y-4">
-        {/* Vídeo sempre no topo para um visual mais profissional */}
-        {renderVideoBlock()}
-
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold text-primary">{exerciseName}</h2>
@@ -183,6 +180,8 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
             {location === 'casa' ? '🏠 Em Casa' : '🏋️ Academia'}
           </Badge>
         </div>
+
+        {renderVideoBlock()}
 
         <div className="grid grid-cols-3 gap-2 mt-2">
           <Card className="bg-white/50 dark:bg-black/20">
