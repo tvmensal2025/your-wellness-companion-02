@@ -13,7 +13,7 @@ import { toast } from 'sonner';
 // New clean components
 import { AppleHealthHeroCard } from './AppleHealthHeroCard';
 import { CleanEvolutionChart } from './CleanEvolutionChart';
-
+import { SofiaTipCard } from './SofiaTipCard';
 import { QuickActionsGrid } from './QuickActionsGrid';
 
 const DashboardOverview: React.FC = () => {
@@ -201,17 +201,22 @@ const DashboardOverview: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="mx-auto max-w-lg space-y-4 px-4 pb-28 pt-4">
-        
-        {/* 1. Apple Health Style Hero Card */}
-        <AppleHealthHeroCard
-          currentWeight={typeof currentWeight === 'number' ? currentWeight : parseFloat(String(currentWeight)) || 0}
-          targetWeight={targetWeight}
-          weightChange={weightChange()}
-          healthScore={healthScore}
-          currentStreak={currentStreak}
-          userName={userName || 'Usuário'}
-        />
+      <div className="mx-auto max-w-3xl space-y-4 px-4 pb-28 pt-4">
+        {/* Hero Section - 2 column grid on larger screens */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* 1. Apple Health Style Hero Card */}
+          <AppleHealthHeroCard
+            currentWeight={typeof currentWeight === 'number' ? currentWeight : parseFloat(String(currentWeight)) || 0}
+            targetWeight={targetWeight}
+            weightChange={weightChange()}
+            healthScore={healthScore}
+            currentStreak={currentStreak}
+            userName={userName || 'Usuário'}
+          />
+
+          {/* 2. Sofia Tip Card */}
+          <SofiaTipCard />
+        </div>
 
 
         {/* 3. Clean Evolution Chart */}
