@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
-import mascotImage from '@/assets/wellness-mascot.png';
+import mascotImage from '@/assets/butterfly-mascot.png';
 
 interface ActivityStats {
   hasWeighedToday: boolean;
