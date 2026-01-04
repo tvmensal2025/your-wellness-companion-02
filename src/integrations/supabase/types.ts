@@ -9400,6 +9400,54 @@ export type Database = {
         }
         Relationships: []
       }
+      user_points: {
+        Row: {
+          best_streak: number | null
+          completed_challenges: number | null
+          created_at: string | null
+          current_streak: number | null
+          daily_points: number | null
+          id: string
+          last_activity_date: string | null
+          level: number | null
+          monthly_points: number | null
+          total_points: number | null
+          updated_at: string | null
+          user_id: string
+          weekly_points: number | null
+        }
+        Insert: {
+          best_streak?: number | null
+          completed_challenges?: number | null
+          created_at?: string | null
+          current_streak?: number | null
+          daily_points?: number | null
+          id?: string
+          last_activity_date?: string | null
+          level?: number | null
+          monthly_points?: number | null
+          total_points?: number | null
+          updated_at?: string | null
+          user_id: string
+          weekly_points?: number | null
+        }
+        Update: {
+          best_streak?: number | null
+          completed_challenges?: number | null
+          created_at?: string | null
+          current_streak?: number | null
+          daily_points?: number | null
+          id?: string
+          last_activity_date?: string | null
+          level?: number | null
+          monthly_points?: number | null
+          total_points?: number | null
+          updated_at?: string | null
+          user_id?: string
+          weekly_points?: number | null
+        }
+        Relationships: []
+      }
       user_progress: {
         Row: {
           completed_at: string | null
