@@ -6,11 +6,11 @@ import { componentTagger } from "lovable-tagger";
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   server: {
-    host: "localhost", // Mudado de "::" para "localhost" para evitar problemas de rede
-    port: 8080, // Voltando para a porta original 8080
-    strictPort: true, // Falhar se a porta estiver ocupada
+    host: "localhost",
+    port: 8080,
+    strictPort: true,
     watch: {
-      usePolling: false, // Desabilitar polling para melhor performance
+      usePolling: false,
       ignored: ['**/node_modules/**', '**/.git/**']
     }
   },
@@ -18,13 +18,21 @@ export default defineConfig(({ mode }) => ({
     outDir: 'dist',
     target: 'esnext',
     sourcemap: false,
+    minify: 'esbuild',
+    cssMinify: true,
+    cssCodeSplit: true,
+    chunkSizeWarningLimit: 500,
     rollupOptions: {
       output: {
         manualChunks: {
-          vendor: ['react', 'react-dom'],
-          router: ['react-router-dom'],
-          supabase: ['@supabase/supabase-js']
-        }
+          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+          'vendor-supabase': ['@supabase/supabase-js'],
+          'vendor-ui': ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-tabs', '@radix-ui/react-tooltip'],
+          'vendor-query': ['@tanstack/react-query'],
+          'vendor-motion': ['framer-motion'],
+          'vendor-charts': ['recharts', 'chart.js', 'react-chartjs-2'],
+        },
+        compact: true
       }
     }
   },
@@ -32,9 +40,9 @@ export default defineConfig(({ mode }) => ({
     react(),
     mode === 'development' && componentTagger(),
   ].filter(Boolean),
-  // Configurações adicionais para estabilidade
   optimizeDeps: {
-    exclude: ['@lovable/tagger']
+    exclude: ['@lovable/tagger'],
+    include: ['react', 'react-dom', 'react-router-dom', '@supabase/supabase-js']
   },
   resolve: {
     alias: {
@@ -44,5 +52,9 @@ export default defineConfig(({ mode }) => ({
   define: {
     global: 'globalThis',
     'process.env.NODE_ENV': JSON.stringify(mode),
+  },
+  esbuild: {
+    drop: mode === 'production' ? ['console', 'debugger'] : [],
+    legalComments: 'none'
   }
 }));
