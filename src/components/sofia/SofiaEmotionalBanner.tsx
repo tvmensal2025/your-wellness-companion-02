@@ -43,8 +43,11 @@ export const SofiaEmotionalBanner: React.FC = () => {
 
         {/* Dismiss button */}
         <button
-          onClick={dismiss}
-          className="absolute right-2 top-2 p-1.5 rounded-full bg-background/50 hover:bg-background/80 transition-colors"
+          onClick={(e) => {
+            e.stopPropagation();
+            dismiss();
+          }}
+          className="absolute right-2 top-2 z-20 p-1.5 rounded-full bg-background/50 hover:bg-background/80 transition-colors cursor-pointer"
         >
           <X className="h-4 w-4 text-muted-foreground" />
         </button>
