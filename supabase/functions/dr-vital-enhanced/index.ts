@@ -1,6 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
+import { getUserCompleteContext, generateUserContextSummary, type UserCompleteContext } from '../_shared/user-complete-context.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -664,7 +665,7 @@ function calculateDataCompleteness(profile: UserCompleteProfile) {
   };
 }
 
-function createDrVitalSystemPrompt(profile: UserCompleteProfile): string {
+function createDrVitalSystemPrompt(profile: UserCompleteProfile, contextSummary?: string): string {
   const dataCompleteness = calculateDataCompleteness(profile);
   profile.dataCompleteness = dataCompleteness;
 
@@ -695,12 +696,17 @@ function createDrVitalSystemPrompt(profile: UserCompleteProfile): string {
   // Refuerzo de idioma
   const idioma = `Responda SEMPRE em português do Brasil (pt-BR). Nunca mude de idioma, mesmo com temperatura alta. Evite jargões excessivos e mantenha tom elegante e profissional.`;
 
-  return `${idioma}\n\nVocê é o Dr. Vital, médico virtual do Instituto dos Sonhos. Fundado por Rafael Ferreira e Sirlene Freitas, oferecemos atendimento multidisciplinar com nutricionistas, biomédicos e fisioterapeutas.
+  // Usar contexto resumido se disponível
+  const contextBlock = contextSummary || `DADOS COMPLETOS DO PACIENTE:\n${JSON.stringify(profile, null, 2)}`;
 
-DADOS COMPLETOS DO PACIENTE:
-${JSON.stringify(profile, null, 2)}
+  return `${idioma}
 
-ANÁLISE RÁPIDA DOS DADOS:
+Você é o Dr. Vital, médico virtual do Instituto dos Sonhos. Fundado por Rafael Ferreira e Sirlene Freitas, oferecemos atendimento multidisciplinar com nutricionistas, biomédicos e fisioterapeutas.
+
+=== DADOS DO PACIENTE ===
+${contextBlock}
+
+=== ANÁLISE RÁPIDA DOS DADOS ===
 - Completude dos dados: ${dataCompleteness.completionPercentage}% (${dataCompleteness.canReceiveAnalysis ? 'SUFICIENTE' : 'INSUFICIENTE'} para análise completa)
 - Peso atual: ${currentWeight ? `${currentWeight} kg` : 'não informado'}
 - Tendência de peso: ${weightTrend}
@@ -710,7 +716,7 @@ ANÁLISE RÁPIDA DOS DADOS:
 - Nível de estresse médio (14 dias): ${avgStress || 'não registrado'}/10
 - Energia matinal média (14 dias): ${avgEnergy || 'não registrado'}/10
 
-DIRETRIZES PARA SUAS RESPOSTAS:
+=== DIRETRIZES PARA SUAS RESPOSTAS ===
 1. Seja DIRETO, PROFISSIONAL e CONCISO
 2. Use linguagem simples, evite textos longos
 3. Foque em recomendações práticas e seguras baseadas nos dados reais
@@ -720,7 +726,9 @@ DIRETRIZES PARA SUAS RESPOSTAS:
 7. Sugira ações concretas baseadas no perfil completo
 8. Mencione quando dados importantes estão faltando
 9. Se completude < 60%, oriente sobre coleta de mais dados
-10. Sempre considere histórico familiar e anamnese nas recomendações`;
+10. Sempre considere histórico familiar e anamnese nas recomendações
+11. Use os dados do histórico para dar respostas PERSONALIZADAS
+12. Lembre que você tem acesso a TODO o histórico do paciente - USE-O!`;
 }
 
 // Heurística simples para checar se o texto parece português
