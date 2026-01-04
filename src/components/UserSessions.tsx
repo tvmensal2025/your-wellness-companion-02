@@ -139,7 +139,7 @@ export default function UserSessions({ user }: UserSessionsProps) {
           *,
           sessions (
             id, title, description, type, difficulty, 
-            estimated_time, content, target_saboteurs, tools_data
+            estimated_time, content, target_saboteurs
           )
         `, { count: 'exact' })
         .eq('user_id', currentUser.id)
@@ -169,7 +169,7 @@ export default function UserSessions({ user }: UserSessionsProps) {
         review_count: session.review_count || 0,
         sessions: {
           ...session.sessions,
-          tools: session.sessions?.tools_data ? Object.keys(session.sessions.tools_data) : []
+          tools: []
         }
       }));
       
