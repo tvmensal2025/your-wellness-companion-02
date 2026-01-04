@@ -56,40 +56,40 @@ export const PremiumMetricCard: React.FC<PremiumMetricCardProps> = ({
           </motion.div>
         )}
 
-        <CardContent className="p-5">
-          <div className="flex items-start justify-between mb-3">
-            <div className={`p-3 rounded-xl bg-gradient-to-br ${gradient}`}>
-              <Icon className="w-6 h-6 text-white" />
+        <CardContent className="p-3 sm:p-4">
+          <div className="flex items-start justify-between mb-2">
+            <div className={`p-2 sm:p-2.5 rounded-lg sm:rounded-xl bg-gradient-to-br ${gradient}`}>
+              <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </div>
             
             {previousValue !== undefined && (
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-0.5">
                 {variation > 0 ? (
                   <>
-                    <TrendingUp className="w-4 h-4 text-success" />
-                    <span className="text-xs font-medium text-success">
-                      +{variation.toFixed(1)}%
+                    <TrendingUp className="w-3 h-3 text-success" />
+                    <span className="text-[10px] sm:text-xs font-medium text-success">
+                      +{variation.toFixed(0)}%
                     </span>
                   </>
                 ) : variation < 0 ? (
                   <>
-                    <TrendingDown className="w-4 h-4 text-destructive" />
-                    <span className="text-xs font-medium text-destructive">
-                      {variation.toFixed(1)}%
+                    <TrendingDown className="w-3 h-3 text-destructive" />
+                    <span className="text-[10px] sm:text-xs font-medium text-destructive">
+                      {variation.toFixed(0)}%
                     </span>
                   </>
                 ) : (
-                  <Minus className="w-4 h-4 text-muted-foreground" />
+                  <Minus className="w-3 h-3 text-muted-foreground" />
                 )}
               </div>
             )}
           </div>
 
-          <div className="space-y-1 mb-4">
-            <p className="text-sm text-muted-foreground font-medium">{title}</p>
-            <div className="flex items-baseline gap-1">
+          <div className="space-y-0.5 mb-2 sm:mb-3">
+            <p className="text-xs sm:text-sm text-muted-foreground font-medium truncate">{title}</p>
+            <div className="flex items-baseline gap-0.5 sm:gap-1">
               <motion.span
-                className="text-3xl font-bold"
+                className="text-xl sm:text-2xl lg:text-3xl font-bold"
                 style={{ color }}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -97,25 +97,25 @@ export const PremiumMetricCard: React.FC<PremiumMetricCardProps> = ({
               >
                 {value.toLocaleString('pt-BR')}
               </motion.span>
-              <span className="text-sm text-muted-foreground">{unit}</span>
+              <span className="text-[10px] sm:text-xs text-muted-foreground">{unit}</span>
             </div>
           </div>
 
           {goal && (
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-xs">
-                <div className="flex items-center gap-1 text-muted-foreground">
-                  <Target className="w-3 h-3" />
-                  <span>Meta: {goal.toLocaleString('pt-BR')} {unit}</span>
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between text-[10px] sm:text-xs">
+                <div className="flex items-center gap-0.5 text-muted-foreground">
+                  <Target className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                  <span className="truncate">Meta: {goal.toLocaleString('pt-BR')} {unit}</span>
                 </div>
                 <span className="font-medium" style={{ color }}>
                   {progress.toFixed(0)}%
                 </span>
               </div>
               <div className="relative">
-                <Progress value={progress} className="h-2" />
+                <Progress value={progress} className="h-1.5 sm:h-2" />
                 <motion.div
-                  className="absolute top-0 left-0 h-2 rounded-full"
+                  className="absolute top-0 left-0 h-1.5 sm:h-2 rounded-full"
                   style={{ background: `linear-gradient(90deg, ${color}, ${color}dd)` }}
                   initial={{ width: 0 }}
                   animate={{ width: `${progress}%` }}

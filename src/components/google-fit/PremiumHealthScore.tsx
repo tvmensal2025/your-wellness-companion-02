@@ -70,16 +70,16 @@ export const PremiumHealthScore: React.FC<PremiumHealthScoreProps> = ({
           </CardTitle>
         </CardHeader>
 
-        <CardContent className="pt-0">
+        <CardContent className="pt-0 px-3 sm:px-6">
           <div className="flex items-center justify-center">
-            <div className="relative w-48 h-48">
+            <div className="relative w-36 h-36 sm:w-44 sm:h-44 lg:w-48 lg:h-48">
               <ResponsiveContainer width="100%" height="100%">
                 <RadialBarChart
                   cx="50%"
                   cy="50%"
                   innerRadius="70%"
                   outerRadius="100%"
-                  barSize={12}
+                  barSize={10}
                   data={data}
                   startAngle={90}
                   endAngle={-270}
@@ -102,7 +102,7 @@ export const PremiumHealthScore: React.FC<PremiumHealthScoreProps> = ({
               {/* Center content */}
               <div className="absolute inset-0 flex flex-col items-center justify-center">
                 <motion.span
-                  className="text-4xl font-bold"
+                  className="text-3xl sm:text-4xl font-bold"
                   style={{ color: scoreStyle.color }}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -110,7 +110,7 @@ export const PremiumHealthScore: React.FC<PremiumHealthScoreProps> = ({
                 >
                   {score}
                 </motion.span>
-                <span className="text-sm text-muted-foreground">de 100</span>
+                <span className="text-xs sm:text-sm text-muted-foreground">de 100</span>
               </div>
             </div>
           </div>

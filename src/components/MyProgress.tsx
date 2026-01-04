@@ -226,57 +226,44 @@ const MyProgress: React.FC = () => {
         <Button onClick={() => window.location.reload()}>Tentar novamente</Button>
       </div>;
   }
-  return <motion.div initial="hidden" animate="visible" variants={cardVariants} className="space-y-3">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" onClick={() => window.history.back()} className="flex items-center gap-2">
+  return <motion.div initial="hidden" animate="visible" variants={cardVariants} className="w-full max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 space-y-4">
+      {/* Header Mobile Otimizado */}
+      <div className="flex flex-col gap-3">
+        {/* Linha 1: Voltar + Ações */}
+        <div className="flex items-center justify-between">
+          <Button variant="ghost" size="sm" onClick={() => window.history.back()} className="flex items-center gap-1.5 px-2">
             <ArrowLeft className="w-4 h-4" />
-            Voltar
+            <span className="hidden sm:inline">Voltar</span>
           </Button>
-          <h1 className="text-2xl font-bold">Meu Progresso</h1>
-        </div>
-        <div className="flex items-center gap-3">
-          {fmtLastSync && <div className="hidden md:flex items-center gap-2 text-sm text-muted-foreground">
-              <Clock className="w-4 h-4" /> Última sincronização: {fmtLastSync}
-            </div>}
-          <Button variant="outline" size="sm" onClick={async () => {
-          try {
-            await syncData();
-          } catch (e) {
-            console.error(e);
-          }
-        }} className="flex items-center gap-2">
-            <RefreshCw className="w-4 h-4" />
-            Sincronizar
-          </Button>
-          <Button variant="default" size="sm" onClick={() => setGoalsOpen(true)} className="flex items-center gap-2">
-            <Target className="w-4 h-4" />
-            Definir metas
-          </Button>
-          <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-green-50 dark:bg-green-900/20 rounded-full">
-            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-            <span className="text-sm text-green-700 dark:text-green-400 font-medium">
-              {isConnected ? 'Google Fit Conectado' : 'Google Fit Desconectado'}
-            </span>
+          
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={async () => {
+              try { await syncData(); } catch (e) { console.error(e); }
+            }} className="flex items-center gap-1.5 px-2 sm:px-3">
+              <RefreshCw className="w-4 h-4" />
+              <span className="hidden sm:inline">Sincronizar</span>
+            </Button>
+            <Button variant="default" size="sm" onClick={() => setGoalsOpen(true)} className="flex items-center gap-1.5 px-2 sm:px-3">
+              <Target className="w-4 h-4" />
+              <span className="hidden sm:inline">Definir</span>
+            </Button>
           </div>
         </div>
+
+        {/* Período - Centralizado */}
+        <div className="flex items-center justify-center gap-2 sm:gap-4">
+          <span className="text-xs sm:text-sm font-medium text-muted-foreground">Período:</span>
+          <ToggleGroup type="single" value={period} onValueChange={(value: Period) => setPeriod(value)} className="bg-muted rounded-lg p-1">
+            <ToggleGroupItem value="day" className="text-xs sm:text-sm px-3 sm:px-4 data-[state=on]:bg-background data-[state=on]:shadow-sm">Dia</ToggleGroupItem>
+            <ToggleGroupItem value="week" className="text-xs sm:text-sm px-3 sm:px-4 data-[state=on]:bg-background data-[state=on]:shadow-sm">Semana</ToggleGroupItem>
+            <ToggleGroupItem value="month" className="text-xs sm:text-sm px-3 sm:px-4 data-[state=on]:bg-background data-[state=on]:shadow-sm">Mês</ToggleGroupItem>
+          </ToggleGroup>
+        </div>
       </div>
 
-      {/* Período */}
-      <div className="flex items-center gap-4">
-        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Período:</span>
-        <ToggleGroup type="single" value={period} onValueChange={(value: Period) => setPeriod(value)} className="bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
-          <ToggleGroupItem value="day" className="data-[state=on]:bg-white dark:data-[state=on]:bg-gray-700 data-[state=on]:text-gray-900 dark:data-[state=on]:text-white">Dia</ToggleGroupItem>
-          <ToggleGroupItem value="week" className="data-[state=on]:bg-white dark:data-[state=on]:bg-gray-700 data-[state=on]:text-gray-900 dark:data-[state=on]:text-white">Semana</ToggleGroupItem>
-          <ToggleGroupItem value="month" className="data-[state=on]:bg-white dark:data-[state=on]:bg-gray-700 data-[state=on]:text-gray-900 dark:data-[state=on]:text-white">Mês</ToggleGroupItem>
-        </ToggleGroup>
-      </div>
-
-      {/* Score de Saúde Premium + Cards Premium */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        {/* Score de Saúde */}
-        <div className="lg:col-span-4">
+      {/* Score de Saúde - Centralizado */}
+      <div className="flex justify-center">
+        <div className="w-full max-w-sm">
           <PremiumHealthScore 
             score={currentScore} 
             previousScore={comparisonStats ? computeScoreForPeriod(comparisonData) : undefined}
@@ -284,74 +271,74 @@ const MyProgress: React.FC = () => {
             description={`Baseado em ${filteredData.length} dia(s) de dados`}
           />
         </div>
+      </div>
 
-        {/* Cards Premium KPIs */}
-        <div className="lg:col-span-8 grid grid-cols-2 md:grid-cols-3 gap-3">
-          <PremiumMetricCard
-            title="Passos"
-            value={filteredData.length ? currentStats.totalSteps : 0}
-            unit="passos"
-            goal={stepsGoal}
-            previousValue={comparisonStats?.totalSteps}
-            icon={Footprints}
-            color="hsl(142, 76%, 36%)"
-            gradient="from-emerald-500 to-green-600"
-            delay={0}
-          />
-          <PremiumMetricCard
-            title="Calorias Ativas"
-            value={filteredData.length ? currentStats.totalCalories : 0}
-            unit="kcal"
-            goal={caloriesGoal}
-            previousValue={comparisonStats?.totalCalories}
-            icon={Flame}
-            color="hsl(25, 95%, 53%)"
-            gradient="from-orange-500 to-red-500"
-            delay={0.1}
-          />
-          <PremiumMetricCard
-            title="Minutos Ativos"
-            value={filteredData.length ? currentStats.totalActiveMinutes : 0}
-            unit="min"
-            goal={activeMinutesGoal}
-            previousValue={comparisonStats?.totalActiveMinutes}
-            icon={Zap}
-            color="hsl(48, 96%, 53%)"
-            gradient="from-yellow-500 to-amber-500"
-            delay={0.2}
-          />
-          <PremiumMetricCard
-            title="Freq. Cardíaca"
-            value={filteredData.length ? currentStats.avgHeartRate : 0}
-            unit="bpm"
-            previousValue={comparisonStats?.avgHeartRate}
-            icon={Heart}
-            color="hsl(0, 84%, 60%)"
-            gradient="from-red-500 to-rose-600"
-            delay={0.3}
-          />
-          <PremiumMetricCard
-            title="Sono"
-            value={filteredData.length ? currentStats.avgSleepHours : 0}
-            unit="horas"
-            goal={sleepGoal}
-            previousValue={comparisonStats?.avgSleepHours}
-            icon={Moon}
-            color="hsl(263, 70%, 50%)"
-            gradient="from-violet-500 to-purple-600"
-            delay={0.4}
-          />
-          <PremiumMetricCard
-            title="Distância"
-            value={filteredData.length ? parseFloat(currentStats.totalDistance.toFixed(1)) : 0}
-            unit="km"
-            previousValue={comparisonStats?.totalDistance}
-            icon={Activity}
-            color="hsl(199, 89%, 48%)"
-            gradient="from-cyan-500 to-blue-600"
-            delay={0.5}
-          />
-        </div>
+      {/* Cards Premium KPIs - Grid Responsivo */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <PremiumMetricCard
+          title="Passos"
+          value={filteredData.length ? currentStats.totalSteps : 0}
+          unit="passos"
+          goal={stepsGoal}
+          previousValue={comparisonStats?.totalSteps}
+          icon={Footprints}
+          color="hsl(142, 76%, 36%)"
+          gradient="from-emerald-500 to-green-600"
+          delay={0}
+        />
+        <PremiumMetricCard
+          title="Calorias Ativas"
+          value={filteredData.length ? currentStats.totalCalories : 0}
+          unit="kcal"
+          goal={caloriesGoal}
+          previousValue={comparisonStats?.totalCalories}
+          icon={Flame}
+          color="hsl(25, 95%, 53%)"
+          gradient="from-orange-500 to-red-500"
+          delay={0.1}
+        />
+        <PremiumMetricCard
+          title="Minutos Ativos"
+          value={filteredData.length ? currentStats.totalActiveMinutes : 0}
+          unit="min"
+          goal={activeMinutesGoal}
+          previousValue={comparisonStats?.totalActiveMinutes}
+          icon={Zap}
+          color="hsl(48, 96%, 53%)"
+          gradient="from-yellow-500 to-amber-500"
+          delay={0.2}
+        />
+        <PremiumMetricCard
+          title="Freq. Cardíaca"
+          value={filteredData.length ? currentStats.avgHeartRate : 0}
+          unit="bpm"
+          previousValue={comparisonStats?.avgHeartRate}
+          icon={Heart}
+          color="hsl(0, 84%, 60%)"
+          gradient="from-red-500 to-rose-600"
+          delay={0.3}
+        />
+        <PremiumMetricCard
+          title="Sono"
+          value={filteredData.length ? currentStats.avgSleepHours : 0}
+          unit="horas"
+          goal={sleepGoal}
+          previousValue={comparisonStats?.avgSleepHours}
+          icon={Moon}
+          color="hsl(263, 70%, 50%)"
+          gradient="from-violet-500 to-purple-600"
+          delay={0.4}
+        />
+        <PremiumMetricCard
+          title="Distância"
+          value={filteredData.length ? parseFloat(currentStats.totalDistance.toFixed(1)) : 0}
+          unit="km"
+          previousValue={comparisonStats?.totalDistance}
+          icon={Activity}
+          color="hsl(199, 89%, 48%)"
+          gradient="from-cyan-500 to-blue-600"
+          delay={0.5}
+        />
       </div>
 
       {/* Análise de IA com Insights */}

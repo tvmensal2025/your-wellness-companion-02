@@ -3,8 +3,8 @@ import MyProgress from '@/components/MyProgress';
 
 export default function ProgressPage() {
   return (
-    <div className="container mx-auto px-4 py-6">
+    <div className="min-h-screen w-full py-4 sm:py-6">
       <MyProgress />
     </div>
   );
-} 
+}
