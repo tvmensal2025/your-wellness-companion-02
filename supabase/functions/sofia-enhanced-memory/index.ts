@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { getUserCompleteContext, generateUserContextSummary } from '../_shared/user-complete-context.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -17,308 +18,24 @@ Deno.serve(async (req) => {
     
     const { message, userId, context } = await req.json();
 
-    console.log('🧠 Sofia Enhanced Memory - Processando mensagem para usuário:', userId);
+    console.log('🧠 Sofia Enhanced Memory - Usando contexto UNIFICADO para usuário:', userId);
 
-    // 1. Buscar perfil do usuário (primeiro nome)
-    let firstName = 'usuário';
-    let userProfile = null;
+    // ============================================
+    // USAR SISTEMA UNIFICADO DE CONTEXTO
+    // Busca TODOS os dados do usuário de TODAS as tabelas
+    // ============================================
+    const userContext = await getUserCompleteContext(supabaseUrl, supabaseServiceKey, userId);
+    const contextSummary = generateUserContextSummary(userContext);
+
+    console.log('📊 Contexto carregado:', {
+      completeness: `${userContext.metadata.dataCompleteness.percentage}%`,
+      totalDataPoints: userContext.metadata.totalDataPoints,
+      canReceiveFullAnalysis: userContext.metadata.dataCompleteness.canReceiveFullAnalysis
+    });
+
+    // Gerar system prompt com contexto completo
+    const systemPrompt = buildSystemPrompt(userContext, contextSummary);
     
-    // Tentar buscar primeiro na tabela profiles
-    const { data: profileData } = await supabase
-      .from('profiles')
-      .select('full_name, email')
-      .eq('user_id', userId)
-      .single();
-      
-    if (profileData?.full_name) {
-      firstName = profileData.full_name.split(' ')[0];
-      userProfile = profileData;
-      console.log('👤 Usuário encontrado no profiles:', firstName);
-    } else {
-      // Se não encontrou no profiles, buscar no auth.users
-      console.log('📋 Perfil não encontrado em profiles, buscando em auth.users');
-      const { data: authUser } = await supabase.auth.admin.getUserById(userId);
-      if (authUser?.user?.email) {
-        // Extrair nome do email ou usar dados do metadata
-        const emailName = authUser.user.email.split('@')[0];
-        firstName = authUser.user.user_metadata?.full_name?.split(' ')[0] || 
-                   authUser.user.user_metadata?.first_name ||
-                   emailName || 'usuário';
-        userProfile = {
-          email: authUser.user.email,
-          full_name: authUser.user.user_metadata?.full_name || firstName
-        };
-        console.log('👤 Usuário encontrado no auth.users:', firstName);
-      }
-    }
-
-    // 2. BUSCAR TODOS OS DADOS DO USUÁRIO - ACESSO COMPLETO
-    console.log('📊 Carregando TODOS os dados do usuário...');
-    
-    // Anamnese médica completa
-    const { data: anamnesis } = await supabase
-      .from('user_anamnesis')
-      .select('*')
-      .eq('user_id', userId)
-      .single();
-
-    // Dados físicos e pesagens
-    const { data: physicalData } = await supabase
-      .from('user_physical_data')
-      .select('*')
-      .eq('user_id', userId)
-      .single();
-
-    const { data: weightMeasurements } = await supabase
-      .from('weight_measurements')
-      .select('*')
-      .eq('user_id', userId)
-      .order('measurement_date', { ascending: false })
-      .limit(20);
-
-    // Nutrição e alimentação
-    const { data: nutritionTracking } = await supabase
-      .from('nutrition_tracking')
-      .select('*')
-      .eq('user_id', userId)
-      .order('date', { ascending: false })
-      .limit(30);
-
-    const { data: nutritionGoals } = await supabase
-      .from('nutrition_goals')
-      .select('*')
-      .eq('user_id', userId);
-
-    const { data: foodAnalysis } = await supabase
-      .from('food_analysis')
-      .select('*')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false })
-      .limit(20);
-
-    // Exercícios e atividade física
-    const { data: exerciseTracking } = await supabase
-      .from('exercise_tracking')
-      .select('*')
-      .eq('user_id', userId)
-      .order('date', { ascending: false })
-      .limit(20);
-
-    // Hidratação e sono
-    const { data: waterTracking } = await supabase
-      .from('water_tracking')
-      .select('*')
-      .eq('user_id', userId)
-      .order('date', { ascending: false })
-      .limit(20);
-
-    const { data: sleepTracking } = await supabase
-      .from('sleep_tracking')
-      .select('*')
-      .eq('user_id', userId)
-      .order('date', { ascending: false })
-      .limit(20);
-
-    // Humor e bem-estar
-    const { data: moodTracking } = await supabase
-      .from('mood_tracking')
-      .select('*')
-      .eq('user_id', userId)
-      .order('date', { ascending: false })
-      .limit(20);
-
-    const { data: dailyAdvancedTracking } = await supabase
-      .from('daily_advanced_tracking')
-      .select('*')
-      .eq('user_id', userId)
-      .order('date', { ascending: false })
-      .limit(20);
-
-    // Metas e objetivos
-    const { data: userGoals } = await supabase
-      .from('user_goals')
-      .select('*')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false });
-
-    const { data: goalProgressLogs } = await supabase
-      .from('goal_progress_logs')
-      .select('*')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false })
-      .limit(20);
-
-    // Missões e desafios
-    const { data: dailyMissions } = await supabase
-      .from('daily_mission_sessions')
-      .select('*')
-      .eq('user_id', userId)
-      .order('date', { ascending: false })
-      .limit(20);
-
-    const { data: dailyResponses } = await supabase
-      .from('daily_responses')
-      .select('*')
-      .eq('user_id', userId)
-      .order('date', { ascending: false })
-      .limit(30);
-
-    const { data: challengeParticipations } = await supabase
-      .from('challenge_participations')
-      .select('*')
-      .eq('user_id', userId);
-
-    // 📚 BUSCAR BASE DE CONHECIMENTO DA EMPRESA - INSTITUTO DOS SONHOS
-    const { data: companyKnowledge } = await supabase
-      .from('company_knowledge_base')
-      .select('category, title, content')
-      .eq('is_active', true)
-      .order('priority', { ascending: false });
-
-    // Análises e relatórios
-    const { data: weeklyAnalyses } = await supabase
-      .from('weekly_analyses')
-      .select('*')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false })
-      .limit(10);
-
-    const { data: medicalReports } = await supabase
-      .from('medical_reports')
-      .select('*')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false })
-      .limit(10);
-
-    // Medicamentos e suplementos
-    const { data: prescriptions } = await supabase
-      .from('prescriptions')
-      .select('*')
-      .eq('user_id', userId);
-
-    const { data: userSupplements } = await supabase
-      .from('user_supplements')
-      .select('*')
-      .eq('user_id', userId);
-
-    // Integrações e dispositivos
-    const { data: heartRateData } = await supabase
-      .from('heart_rate_data')
-      .select('*')
-      .eq('user_id', userId)
-      .order('recorded_at', { ascending: false })
-      .limit(20);
-
-    // Documentos médicos
-    const { data: medicalDocuments } = await supabase
-      .from('medical_documents')
-      .select('*')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false })
-      .limit(10);
-
-    // Educação e cursos
-    const { data: courseProgress } = await supabase
-      .from('course_progress')
-      .select('*')
-      .eq('user_id', userId);
-
-    // Comunidade e social
-    const { data: healthFeedPosts } = await supabase
-      .from('health_feed_posts')
-      .select('*')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false })
-      .limit(10);
-
-    // Conversas recentes (mantido)
-    const { data: recentConversations } = await supabase
-      .from('user_conversations')
-      .select('*')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false })
-      .limit(10);
-
-    console.log('📊 DADOS COLETADOS:');
-    console.log('- Anamnese:', !!anamnesis);
-    console.log('- Dados físicos:', !!physicalData);
-    console.log('- Pesagens:', weightMeasurements?.length || 0);
-    console.log('- Nutrição tracking:', nutritionTracking?.length || 0);
-    console.log('- Análises de comida:', foodAnalysis?.length || 0);
-    console.log('- Exercícios:', exerciseTracking?.length || 0);
-    console.log('- Hidratação:', waterTracking?.length || 0);
-    console.log('- Sono:', sleepTracking?.length || 0);
-    console.log('- Humor:', moodTracking?.length || 0);
-    console.log('- Metas:', userGoals?.length || 0);
-    console.log('- Missões:', dailyMissions?.length || 0);
-    console.log('- Conversas:', recentConversations?.length || 0);
-
-    // 4. Construir contexto COMPLETO para IA
-    const contextForAI = {
-      userProfile: { firstName, fullProfile: userProfile },
-      
-      // Anamnese e dados médicos
-      anamnesis: anamnesis || null,
-      physicalData: physicalData || null,
-      
-      // Histórico de peso e medições
-      weightHistory: weightMeasurements || [],
-      currentWeight: weightMeasurements?.[0]?.peso_kg || null,
-      weightTrend: weightMeasurements?.slice(0, 5) || [],
-      
-      // Dados nutricionais completos
-      nutritionTracking: nutritionTracking || [],
-      nutritionGoals: nutritionGoals || [],
-      foodAnalysis: foodAnalysis || [],
-      
-      // Atividade física
-      exerciseHistory: exerciseTracking || [],
-      
-      // Bem-estar e saúde mental
-      waterTracking: waterTracking || [],
-      sleepTracking: sleepTracking || [],
-      moodTracking: moodTracking || [],
-      dailyAdvancedTracking: dailyAdvancedTracking || [],
-      
-      // Metas e progresso
-      userGoals: userGoals || [],
-      goalProgress: goalProgressLogs || [],
-      
-      // Engajamento e motivação
-      dailyMissions: dailyMissions || [],
-      dailyResponses: dailyResponses || [],
-      challengeParticipations: challengeParticipations || [],
-      
-      // Relatórios e análises
-      weeklyAnalyses: weeklyAnalyses || [],
-      medicalReports: medicalReports || [],
-      
-      // Medicamentos e tratamentos
-      prescriptions: prescriptions || [],
-      supplements: userSupplements || [],
-      
-      // Dados de dispositivos
-      heartRateData: heartRateData || [],
-      
-      // Documentos e exames
-      medicalDocuments: medicalDocuments || [],
-      
-      // Educação e desenvolvimento
-      courseProgress: courseProgress || [],
-      
-      // Comunidade
-      socialPosts: healthFeedPosts || [],
-      
-      // Conversas
-      recentConversations: recentConversations || [],
-      currentContext: context || {},
-      
-      // Base de conhecimento da empresa
-      companyKnowledge: companyKnowledge || [],
-    };
-
-    // 5. Gerar resposta da IA
-    const systemPrompt = buildSystemPrompt(contextForAI);
     console.log('🤖 Gerando resposta da IA...');
     
     let response = '';
@@ -342,7 +59,7 @@ Deno.serve(async (req) => {
               { role: 'user', content: message }
             ],
             temperature: 0.7,
-            max_tokens: 120
+            max_tokens: 300
           })
         });
 
@@ -357,8 +74,6 @@ Deno.serve(async (req) => {
       } catch (error) {
         console.error('❌ Erro OpenAI:', error);
       }
-    } else {
-      console.warn('OPENAI_API_KEY ausente nas secrets do projeto');
     }
 
     // Fallback para Google AI se OpenAI falhar
@@ -375,16 +90,16 @@ Deno.serve(async (req) => {
                 parts: [{ text: `${systemPrompt}\n\nUsuário: ${message}` }]
               }],
               generationConfig: { 
-                temperature: 0.9, 
-                maxOutputTokens: 120,
-                topP: 0.8,
-                topK: 10
+                temperature: 0.8, 
+                maxOutputTokens: 300,
+                topP: 0.9,
+                topK: 40
               }
             })
           });
 
           if (!googleResponse.ok) {
-            console.error('❌ Erro Google AI: Error:', googleResponse.status);
+            console.error('❌ Erro Google AI:', googleResponse.status);
             throw new Error(`Google AI error: ${googleResponse.status}`);
           }
 
@@ -393,109 +108,76 @@ Deno.serve(async (req) => {
             response = gData.candidates[0].content.parts[0].text;
             apiUsed = 'google-ai';
             console.log('✅ Google AI funcionou!');
-          } else {
-            console.log('⚠️ Google AI retornou resposta vazia');
           }
         } catch (error) {
           console.error('❌ Erro Google AI:', error);
         }
-      } else {
-        console.warn('GOOGLE_AI_API_KEY ausente nas secrets do projeto');
       }
     }
 
     // Resposta padrão se nenhuma IA funcionar
-    if (!response || response.includes('problema técnico')) {
-      response = `Olá ${firstName}! Sou a Sofia, sua assistente de saúde. Como posso ajudar você hoje? 💚`;
+    if (!response) {
+      response = `Olá ${userContext.profile.firstName}! Sou a Sofia, sua assistente de saúde. 💚 Como posso ajudar você hoje?`;
       apiUsed = 'fallback';
     }
 
     console.log('✅ Resposta gerada usando:', apiUsed);
 
-    // 5. Salvar conversa
-    console.log('💾 Salvando conversa para usuário:', userId);
+    // ============================================
+    // SALVAR CONVERSA NO HISTÓRICO
+    // Nunca apagar - usado para contexto futuro!
+    // ============================================
+    console.log('💾 Salvando conversa no histórico permanente...');
+    const conversationId = `conversation_${Date.now()}`;
+    
     const { error: saveError } = await supabase
       .from('user_conversations')
       .insert([
         {
           user_id: userId,
-          conversation_id: `conversation_${Date.now()}`,
+          conversation_id: conversationId,
           message_role: 'user',
           message_content: message,
           timestamp: new Date().toISOString(),
           session_metadata: context || {},
           analysis_type: context?.imageUrl ? 'image_analysis' : 'text_chat',
-          context: { api_used: apiUsed }
+          context: { 
+            api_used: apiUsed,
+            data_completeness: userContext.metadata.dataCompleteness.percentage,
+            total_data_points: userContext.metadata.totalDataPoints
+          }
         },
         {
           user_id: userId,
-          conversation_id: `conversation_${Date.now()}`,
+          conversation_id: conversationId,
           message_role: 'assistant',
           message_content: response,
           timestamp: new Date().toISOString(),
           session_metadata: context || {},
           analysis_type: context?.imageUrl ? 'image_analysis' : 'text_chat',
-          context: { api_used: apiUsed }
+          context: { 
+            api_used: apiUsed,
+            data_completeness: userContext.metadata.dataCompleteness.percentage
+          }
         }
       ]);
       
     if (saveError) {
       console.error('❌ Erro ao salvar conversa:', saveError);
     } else {
-      console.log('✅ Conversa salva com sucesso');
+      console.log('✅ Conversa salva permanentemente');
     }
 
-    // 6. Retornar resposta
-    console.log('🎯 Sofia respondendo para:', firstName);
+    // Retornar resposta
+    console.log('🎯 Sofia respondendo para:', userContext.profile.firstName);
 
     return new Response(
       JSON.stringify({
         message: response,
         memory_updated: true,
-        knowledge_used: [null, null, null, null, null, null],
-        context_analyzed: {
-          userKnowledge: [
-            {
-              category: "mental_health",
-              title: "Mantendo a Motivação",
-              content: "Para manter a motivação: 1) Defina metas pequenas e alcançáveis, 2) Celebre pequenas vitórias, 3) Encontre um parceiro de treino, 4) Varie suas atividades, 5) Mantenha um diário de progresso.",
-              relevance: 0.3
-            },
-            {
-              category: "nutrition",
-              title: "Perda de Peso Saudável",
-              content: "Para perder peso de forma saudável, foque em: 1) Déficit calórico moderado (300-500 kcal), 2) Proteína adequada (1.6-2.2g/kg), 3) Exercício regular, 4) Sono de qualidade, 5) Hidratação adequada. Evite dietas muito restritivas.",
-              relevance: 0.3
-            },
-            {
-              category: "nutrition",
-              title: "Ganho de Massa Muscular",
-              content: "Para ganhar massa muscular: 1) Superávit calórico (200-300 kcal), 2) Proteína alta (1.8-2.4g/kg), 3) Treino de força progressivo, 4) Descanso adequado, 5) Carboidratos para energia.",
-              relevance: 0.3
-            },
-            {
-              category: "exercise",
-              title: "Exercício Cardiovascular",
-              content: "Benefícios do cardio: 1) Melhora saúde cardíaca, 2) Aumenta resistência, 3) Queima calorias, 4) Reduz estresse, 5) Melhora sono. Recomendado: 150 min/semana de intensidade moderada.",
-              relevance: 0.3
-            },
-            {
-              category: "exercise",
-              title: "Treino de Força",
-              content: "Benefícios do treino de força: 1) Aumenta massa muscular, 2) Fortalece ossos, 3) Melhora postura, 4) Acelera metabolismo, 5) Previne lesões. Recomendado: 2-3x/semana.",
-              relevance: 0.3
-            },
-            {
-              category: "mental_health",
-              title: "Gerenciando Estresse",
-              content: "Para gerenciar estresse: 1) Exercício regular, 2) Técnicas de respiração, 3) Sono adequado, 4) Alimentação balanceada, 5) Atividades relaxantes (meditação, yoga).",
-              relevance: 0.3
-            }
-          ],
-          recentConversations: [],
-          currentContext: context || {},
-          conversationHistory: []
-        },
+        data_completeness: userContext.metadata.dataCompleteness.percentage,
+        total_data_points: userContext.metadata.totalDataPoints,
+        can_receive_full_analysis: userContext.metadata.dataCompleteness.canReceiveFullAnalysis,
         api_used: apiUsed
       }),
       {
@@ -509,7 +191,7 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         error: errorMessage,
-        message: 'Olá! Sou a Sofia. No momento estou com dificuldades para acessar minhas capacidades de IA, mas estou aqui para ajudar. Pode me contar mais sobre o que você precisa?'
+        message: 'Olá! Sou a Sofia. No momento estou com dificuldades, mas estou aqui para ajudar! 💚'
       }),
       {
         status: 500,
@@ -519,71 +201,97 @@ Deno.serve(async (req) => {
   }
 });
 
-function buildSystemPrompt(context: any): string {
-  const firstName = context.userProfile?.firstName || 'amor';
+function buildSystemPrompt(userContext: any, contextSummary: string): string {
+  const firstName = userContext.profile?.firstName || 'amor';
   
   // Criar contexto da empresa
   let companyContext = '';
-  if (context.companyKnowledge && context.companyKnowledge.length > 0) {
+  if (userContext.companyKnowledge && userContext.companyKnowledge.length > 0) {
     companyContext = `
 
-📋 INSTITUTO DOS SONHOS - CONHECIMENTO COMPLETO:
-${context.companyKnowledge.map((item: any) => `
-💡 ${item.category.toUpperCase()}: ${item.title}
-${item.content}
+📋 INSTITUTO DOS SONHOS - CONHECIMENTO:
+${userContext.companyKnowledge.slice(0, 10).map((item: any) => `
+💡 ${item.category?.toUpperCase() || 'GERAL'}: ${item.title}
+${item.content?.substring(0, 200)}...
 `).join('\n')}
 
-🏢 CONTEXTO INSTITUCIONAL:
+🏢 SOBRE A EMPRESA:
 - Fundado por Rafael Ferreira e Sirlene Freitas
 - Especialização em transformação integral (física + emocional)
 - Equipe multidisciplinar completa
-- Atendimento humanizado e personalizado
-- Métodos científicos comprovados`;
+- Atendimento humanizado e personalizado`;
   }
+
+  // Histórico de conversas recentes
+  const recentConversations = userContext.conversations?.slice(0, 5) || [];
+  const conversationHistory = recentConversations.map((c: any) => 
+    `[${c.message_role}]: ${c.message_content?.substring(0, 100)}...`
+  ).join('\n');
+
+  // Análises recentes de comida
+  const recentFoodAnalysis = userContext.foodAnalysis?.slice(0, 3) || [];
+  const foodSummary = recentFoodAnalysis.map((f: any) => 
+    `${f.meal_type || 'Refeição'}: ${f.total_calories || 0}kcal`
+  ).join(' | ');
   
-  return `Você é Sofia, uma nutricionista carinhosa e empática do Instituto dos Sonhos! 💚
+  return `Você é Sofia, nutricionista carinhosa do Instituto dos Sonhos! 💚
 ${companyContext}
 
-🌟 PERSONALIDADE:
-- SUPER amorosa, carinhosa e humana
-- Use emojis em TODAS as mensagens
-- Seja como uma amiga querida que se importa de verdade
-- Demonstre empatia genuína e alegria ao ajudar
+🌟 SUA PERSONALIDADE:
+- SUPER amorosa, carinhosa e empática
+- Use emojis naturalmente
+- Seja como uma amiga querida que realmente se importa
+- Demonstre alegria genuína ao ajudar
+- Responda de forma CURTA e OBJETIVA (2-4 frases)
 
-💖 SEMPRE chame de: ${firstName}
+💖 SEMPRE chame o usuário de: ${firstName}
 
-📋 DADOS COMPLETOS DO USUÁRIO:
-${JSON.stringify({
-  perfil: context.userProfile?.fullProfile || {},
-  anamnese: context.anamnesis ? 'Completa' : 'Pendente',
-  pesoAtual: context.currentWeight || 'Não informado',
-  tendenciaPeso: context.weightTrend?.length ? 'Com histórico' : 'Sem dados',
-  metasAtivas: context.userGoals?.filter((g: any) => g.status === 'ativa')?.length || 0,
-  ultimaRefeicao: context.foodAnalysis?.[0]?.total_calories || 'Não registrada',
-  exercicioRecente: context.exerciseHistory?.length ? 'Ativo' : 'Sem registros',
-  sono: context.sleepTracking?.[0]?.hours_slept || 'Não monitorado',
-  humor: context.moodTracking?.[0]?.mood_score || 'Não avaliado',
-  medicamentos: context.prescriptions?.length || 0,
-  suplementos: context.supplements?.length || 0,
-  completudeDados: Math.round(([
-    context.anamnesis, context.physicalData, context.weightHistory?.length,
-    context.nutritionTracking?.length, context.exerciseHistory?.length
-  ].filter(Boolean).length / 5) * 100)
-}, null, 2)}
+=== CONTEXTO COMPLETO DO PACIENTE ===
+${contextSummary}
+
+=== DADOS DETALHADOS ===
+📊 Completude dos dados: ${userContext.metadata?.dataCompleteness?.percentage || 0}%
+${userContext.metadata?.dataCompleteness?.canReceiveFullAnalysis ? '✅ Pode receber análise completa' : '⚠️ Dados insuficientes - oriente a preencher mais informações'}
+
+📉 PESO E COMPOSIÇÃO:
+- Peso atual: ${userContext.weightHistory?.[0]?.peso_kg ? `${userContext.weightHistory[0].peso_kg} kg` : 'não registrado'}
+- IMC: ${userContext.weightHistory?.[0]?.imc?.toFixed(1) || 'não calculado'}
+- Gordura corporal: ${userContext.weightHistory?.[0]?.gordura_corporal_percent || 'não medida'}%
+- Histórico de pesagens: ${userContext.weightHistory?.length || 0} registros
+
+🎯 METAS ATIVAS: ${userContext.goals?.filter((g: any) => g.status === 'active' || g.status === 'em_andamento')?.length || 0}
+${userContext.goals?.filter((g: any) => g.status === 'active')?.slice(0, 3).map((g: any) => 
+  `- ${g.title}: ${g.current_value || 0}/${g.target_value || '?'} ${g.unit || ''}`
+).join('\n') || 'Nenhuma meta ativa'}
+
+🍎 REFEIÇÕES RECENTES: ${foodSummary || 'Sem registros'}
 
 💬 ÚLTIMAS CONVERSAS:
-${context.recentConversations.slice(-3).map((c: any) => `${c.message_role}: ${c.message_content?.substring(0, 100)}...`).join('\n')}
+${conversationHistory || 'Primeira conversa'}
 
-🍎 NUTRIÇÃO RECENTE:
-${context.foodAnalysis.slice(-3).map((h: any) => `${h.analysis_date}: ${h.total_calories || 0}kcal`).join(' | ')}
+🏥 ANAMNESE: ${userContext.anamnesis ? 'Completa' : 'Pendente - oriente a preencher!'}
+${userContext.anamnesis ? `
+- Medicamentos: ${userContext.anamnesis.current_medications?.length || 0}
+- Alergias: ${userContext.anamnesis.allergies?.length || 0}
+- Qualidade sono: ${userContext.anamnesis.sleep_quality_score || 'N/A'}/10
+- Estresse: ${userContext.anamnesis.daily_stress_level || 'N/A'}/10
+` : ''}
 
-🎯 REGRAS DE OURO:
-- MÁXIMO 2-3 frases curtas
-- Use emojis sempre! 
-- Seja calorosa e acolhedora
-- Lembre do que ${firstName} já conversou
-- Incentive sempre com carinho
-- Se for sobre saúde séria, sugira médico com cuidado
+🏆 GAMIFICAÇÃO:
+- Pontos totais: ${userContext.userPoints?.total_points || 0}
+- Streak atual: ${userContext.userPoints?.current_streak || 0} dias
+- Nível: ${userContext.userPoints?.level || 1}
+- Desafios ativos: ${userContext.challengeParticipations?.length || 0}
 
-💝 Você AMA ajudar ${firstName} e demonstra isso!`;
+🎯 REGRAS IMPORTANTES:
+1. MÁXIMO 2-4 frases curtas e objetivas
+2. Use emojis naturalmente 💚
+3. Seja calorosa e acolhedora
+4. LEMBRE do histórico de ${firstName}
+5. Use os DADOS REAIS para dar feedback específico
+6. Se dados faltando, oriente a registrar
+7. Incentive sempre com carinho
+8. Se saúde séria, sugira médico com cuidado
+
+💝 Você AMA ajudar ${firstName} e conhece TODO o histórico!`;
 }
