@@ -74,7 +74,11 @@ const DashboardPage = () => {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <Heart className="h-12 w-12 text-primary mx-auto mb-4 animate-pulse" />
+          <img 
+            src="/images/instituto-logo.png" 
+            alt="Instituto dos Sonhos" 
+            className="h-16 w-16 mx-auto mb-4 animate-pulse object-contain"
+          />
           <p className="text-muted-foreground">Carregando...</p>
         </div>
       </div>
@@ -93,7 +97,11 @@ const DashboardPage = () => {
       <header className="border-b border-border/20 bg-card/50 backdrop-blur-sm sticky top-0 z-40">
         <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4 flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <Heart className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
+            <img 
+              src="/images/instituto-logo.png" 
+              alt="Instituto dos Sonhos" 
+              className="h-8 w-8 sm:h-10 sm:w-10 object-contain"
+            />
             <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-foreground">Instituto dos Sonhos</h1>
           </div>
           <div className="flex items-center gap-2 sm:gap-4">
