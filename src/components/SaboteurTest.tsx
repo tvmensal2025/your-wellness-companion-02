@@ -805,7 +805,7 @@ const SaboteurTest: React.FC = () => {
   const currentQ = saboteurQuestions[currentQuestion];
 
   return (
-    <div className="mobile-padding space-y-4">
+    <div className="px-4 pt-2 pb-4 space-y-4">
       {/* Header */}
       <div className="text-center space-y-2">
         <div className="flex items-center justify-center gap-2">
