@@ -68,8 +68,19 @@ export const GoogleFitCallback: React.FC = () => {
           if (refreshError) throw refreshError;
         }
 
+        // Obter token de acesso para enviar ao edge function
+        const { data: currentSession } = await supabase.auth.getSession();
+        const accessToken = currentSession.session?.access_token;
+
+        if (!accessToken) {
+          throw new Error('Sessão inválida. Faça login novamente.');
+        }
+
         const { data, error: fnError } = await supabase.functions.invoke('google-fit-token', {
           body: { code, redirect_uri: redirectUri },
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
         });
 
         if (fnError) throw fnError;
