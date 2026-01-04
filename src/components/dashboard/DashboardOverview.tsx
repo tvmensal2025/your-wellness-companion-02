@@ -4,45 +4,35 @@ import { useNavigate } from 'react-router-dom';
 import { 
   Utensils, 
   Trophy,
-  Bot
+  Bot,
+  ChevronRight
 } from 'lucide-react';
 import { useWeightMeasurement } from '@/hooks/useWeightMeasurement';
 import { useUserGender } from '@/hooks/useUserGender';
 import { useTrackingData } from '@/hooks/useTrackingData';
-import { useHealthScore } from '@/hooks/useHealthScore';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
-import { BodyEvolutionChart } from './BodyEvolutionChart';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { User } from '@supabase/supabase-js';
 import SimpleWeightForm from '@/components/weighing/SimpleWeightForm';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Card, CardContent } from '@/components/ui/card';
-import {
-  PremiumHeroCard,
-  PremiumHealthRing,
-  PremiumWeeklyMini,
-  PremiumQuickActions,
-  PremiumFeatureCard
-} from './PremiumDashboardCards';
-// Gamification Components
-import { StreakBar } from '@/components/gamification/StreakBar';
-import { XPBar } from '@/components/gamification/XPBar';
-import { FlashChallengeCard } from '@/components/gamification/FlashChallengeCard';
-import { LiveRankingCard } from '@/components/gamification/LiveRankingCard';
+import { PremiumQuickActions } from './PremiumDashboardCards';
+import { CompactGamificationBar } from './CompactGamificationBar';
+import { VitalHealthCard } from './VitalHealthCard';
 import { SofiaEmotionalBanner } from '@/components/sofia/SofiaEmotionalBanner';
+import { FlashChallengeCard } from '@/components/gamification/FlashChallengeCard';
 
 const DashboardOverview: React.FC = () => {
   const { measurements, stats, loading } = useWeightMeasurement();
   const { trackingData, refreshData: refreshTrackingData } = useTrackingData();
-  const [weightData, setWeightData] = useState<any[]>([]);
-  const [exerciseData, setExerciseData] = useState<any[]>([]);
-  const [waterData, setWaterData] = useState<any[]>([]);
   const [isWeightModalOpen, setIsWeightModalOpen] = useState(false);
   const navigate = useNavigate();
 
   const [user, setUser] = useState<User | null>(null);
   const { gender } = useUserGender(user);
+  const [waistCircumference, setWaistCircumference] = useState<number>(0);
+  const [heightCm, setHeightCm] = useState<number>(170);
 
   useEffect(() => {
     const getCurrentUser = async () => {
@@ -52,50 +42,38 @@ const DashboardOverview: React.FC = () => {
     getCurrentUser();
   }, []);
 
-  const loadWeeklyData = async () => {
-    if (!user) return;
-    try {
-      const today = new Date();
-      const weekStart = new Date(today);
-      weekStart.setDate(today.getDate() - today.getDay());
-      const weekStartStr = weekStart.toISOString().split('T')[0];
-      const todayStr = today.toISOString().split('T')[0];
-
-      const { data: exerciseWeekData } = await supabase
-        .from('exercise_tracking')
-        .select('*')
-        .eq('user_id', user.id)
-        .gte('date', weekStartStr)
-        .lte('date', todayStr);
-
-      const { data: waterWeekData } = await supabase
-        .from('water_tracking')
-        .select('*')
-        .eq('user_id', user.id)
-        .gte('date', weekStartStr)
-        .lte('date', todayStr);
-
-      setExerciseData(exerciseWeekData || []);
-      setWaterData(waterWeekData || []);
-    } catch (error) {
-      console.error('Erro ao carregar dados semanais:', error);
-    }
-  };
-
+  // Buscar dados de saúde do usuário
   useEffect(() => {
-    loadWeeklyData();
+    const fetchHealthData = async () => {
+      if (!user) return;
+      
+      // Buscar cintura do advanced_daily_tracking mais recente
+      const { data: trackingData } = await supabase
+        .from('advanced_daily_tracking')
+        .select('waist_cm')
+        .eq('user_id', user.id)
+        .order('tracking_date', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (trackingData?.waist_cm) {
+        setWaistCircumference(trackingData.waist_cm);
+      }
+
+      // Buscar altura do perfil
+      const { data: profileData } = await supabase
+        .from('dados_físicos_do_usuário')
+        .select('altura_cm')
+        .eq('user_id', user.id)
+        .single();
+
+      if (profileData?.altura_cm) {
+        setHeightCm(profileData.altura_cm);
+      }
+    };
+
+    fetchHealthData();
   }, [user]);
-
-  useEffect(() => {
-    if (measurements && measurements.length > 0) {
-      const last7Days = measurements.slice(-7).map(m => ({
-        date: format(new Date(m.measurement_date || m.created_at), 'dd/MM'),
-        peso: Number(m.peso_kg) || 0,
-        meta: 70
-      }));
-      setWeightData(last7Days);
-    }
-  }, [measurements]);
 
   const weightChange = () => {
     if (measurements && measurements.length >= 2) {
@@ -107,224 +85,72 @@ const DashboardOverview: React.FC = () => {
     return "Primeiro registro";
   };
 
-  const getWeeklyStats = () => {
-    const today = new Date().toISOString().split('T')[0];
-    const weekStart = new Date();
-    weekStart.setDate(weekStart.getDate() - 7);
-    const weekStartStr = weekStart.toISOString().split('T')[0];
-
-    const exerciseDaysThisWeek = exerciseData.filter(e => 
-      e.date >= weekStartStr && e.date <= today && e.duration_minutes > 0
-    ).length;
-
-    const totalExerciseMinutes = exerciseData
-      .filter(e => e.date >= weekStartStr && e.date <= today)
-      .reduce((total, e) => total + (e.duration_minutes || 0), 0);
-
-    const todayWaterTotal = waterData
-      .filter(w => w.date === today)
-      .reduce((total, w) => total + (w.amount_ml || 0), 0);
-    
-    const hydrationProgress = Math.min(100, Math.round((todayWaterTotal / 2000) * 100));
-
-    return {
-      exerciseDays: exerciseDaysThisWeek,
-      totalMinutes: totalExerciseMinutes,
-      hydrationProgress,
-      waterLiters: (todayWaterTotal / 1000).toFixed(1)
-    };
-  };
-
-  const addExercise = async (duration: number, type: string = 'caminhada') => {
-    if (!user) return;
-    try {
-      await supabase
-        .from('exercise_tracking')
-        .insert({
-          user_id: user.id,
-          date: new Date().toISOString().split('T')[0],
-          exercise_type: type,
-          duration_minutes: duration,
-          source: 'manual'
-        });
-
-      const today = new Date();
-      const weekStart = new Date(today);
-      weekStart.setDate(today.getDate() - today.getDay());
-      const weekStartStr = weekStart.toISOString().split('T')[0];
-      const todayStr = today.toISOString().split('T')[0];
-
-      const { data: exerciseWeekData } = await supabase
-        .from('exercise_tracking')
-        .select('*')
-        .eq('user_id', user.id)
-        .gte('date', weekStartStr)
-        .lte('date', todayStr);
-
-      setExerciseData(exerciseWeekData || []);
-    } catch (error) {
-      console.error('Erro ao registrar exercício:', error);
-    }
-  };
-
-  const weeklyStats = getWeeklyStats();
   const currentWeight = stats?.currentWeight || (measurements?.[0]?.peso_kg ? Number(measurements[0].peso_kg).toFixed(1) : '--');
-  
-  // Dados de sono do tracking
-  const sleepHours = trackingData?.sleep?.lastNight?.hours || 0;
-  const sleepQuality = trackingData?.sleep?.lastNight?.quality || 3;
-  
-  // Health Score dinâmico
-  const healthScoreData = useHealthScore({
-    waterTodayMl: Number(weeklyStats.waterLiters) * 1000,
-    waterGoalMl: 2000,
-    sleepHours: sleepHours,
-    sleepQuality: sleepQuality,
-    sleepGoalHours: 8,
-    exerciseMinutesToday: weeklyStats.totalMinutes,
-    exerciseGoalMinutes: 30,
-    moodRating: trackingData?.mood?.today?.day_rating || 3,
-    stressLevel: trackingData?.mood?.today?.stress_level || 3,
-    currentStreak: 0, // TODO: calcular streak real
-  });
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/30">
-      <div className="mx-auto max-w-lg space-y-4 px-4 pb-28 pt-2">
+      <div className="mx-auto max-w-lg space-y-3 px-4 pb-28 pt-2">
         
-        {/* Sofia Emotional Banner - Mensagem do dia */}
+        {/* Sofia - Mensagem personalizada */}
         <SofiaEmotionalBanner />
 
-        {/* Streak + XP Bar */}
-        <StreakBar />
-        <XPBar />
+        {/* Gamificação Compacta - Streak, Level, XP em uma linha */}
+        <CompactGamificationBar />
 
-        {/* Desafio Relâmpago 24h */}
-        <FlashChallengeCard />
-
-        {/* Hero Card - Resumo */}
-        <PremiumHeroCard 
+        {/* MÉTRICAS VITAIS - Foco principal */}
+        <VitalHealthCard 
           weight={currentWeight}
-          calories={1850}
-          water={Number(weeklyStats.waterLiters) * 1000}
-          sleep={sleepHours || undefined}
           weightChange={weightChange()}
+          waistCircumference={waistCircumference}
+          heightCm={heightCm}
         />
 
-        {/* Health Score + Weekly Progress */}
-        <div className="grid grid-cols-5 gap-3">
-          <div className="col-span-2">
-            <PremiumHealthRing score={healthScoreData.score} label={healthScoreData.label} />
-          </div>
-          <div className="col-span-3">
-            <PremiumWeeklyMini 
-              exerciseDays={weeklyStats.exerciseDays}
-              hydrationProgress={weeklyStats.hydrationProgress}
-            />
-          </div>
-        </div>
-
-        {/* Quick Action - Apenas Peso (manual) */}
+        {/* Ação Rápida - Registrar Peso */}
         <PremiumQuickActions 
           onAddWeight={() => setIsWeightModalOpen(true)}
         />
 
-        {/* Ranking Social */}
-        <LiveRankingCard />
+        {/* Desafio do Dia - Compacto */}
+        <FlashChallengeCard />
 
-        {/* Feature Cards */}
+        {/* Acesso Rápido - Cards menores */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="space-y-3"
+          transition={{ delay: 0.3 }}
+          className="grid grid-cols-3 gap-2"
         >
-          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">Acesso Rápido</h3>
-          
-          <PremiumFeatureCard
+          <QuickAccessButton
             icon={Bot}
-            title="Sofia IA"
-            subtitle="Sua assistente de saúde"
+            label="Sofia IA"
             gradient="from-violet-600 to-purple-700"
-            shadowColor="shadow-violet-500/25"
             onClick={() => navigate('/sofia')}
           />
-          
-          <PremiumFeatureCard
+          <QuickAccessButton
             icon={Utensils}
-            title="Nutrição"
-            subtitle="Plano alimentar"
+            label="Nutrição"
             gradient="from-emerald-500 to-teal-600"
-            shadowColor="shadow-emerald-500/25"
             onClick={() => navigate('/nutricao')}
           />
-          
-          <PremiumFeatureCard
+          <QuickAccessButton
             icon={Trophy}
-            title="Desafios"
-            subtitle="Ganhe pontos"
+            label="Desafios"
             gradient="from-amber-500 to-orange-600"
-            shadowColor="shadow-amber-500/25"
             onClick={() => navigate('/goals')}
           />
         </motion.div>
 
-        {/* Body Evolution Chart */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-        >
-          <ErrorBoundary 
-            onError={(error) => console.warn('Erro no gráfico:', error.message)}
-            fallback={
-              <Card className="bg-card/80 backdrop-blur-md border border-border/40 shadow-lg rounded-2xl">
-                <CardContent className="p-4 text-center">
-                  <div className="w-14 h-14 bg-muted/50 rounded-full mx-auto mb-3 flex items-center justify-center">
-                    <span className="text-2xl">👤</span>
-                  </div>
-                  <p className="text-sm text-muted-foreground">Carregando...</p>
-                </CardContent>
-              </Card>
-            }
-          >
-            <Suspense fallback={
-              <Card className="bg-card/80 backdrop-blur-md border border-border/40 shadow-lg rounded-2xl">
-                <CardContent className="p-4 flex items-center justify-center h-40">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-                </CardContent>
-              </Card>
-            }>
-              <BodyEvolutionChart 
-                weightData={weightData.length > 0 ? weightData.map((item) => ({
-                  date: item.date,
-                  time: '08:30',
-                  value: item.peso,
-                  type: 'peso' as const
-                })) : [{ date: 'Hoje', time: '08:30', value: 70.0, type: 'peso' as const }]} 
-                bodyCompositionData={{
-                  gordura: measurements?.[0]?.gordura_corporal_percent || 25,
-                  musculo: measurements?.[0]?.massa_muscular_kg || 30,
-                  agua: measurements?.[0]?.agua_corporal_percent || 55,
-                  osso: 15.0
-                }} 
-                userGender={gender} 
-              />
-            </Suspense>
-          </ErrorBoundary>
-        </motion.div>
-
-        {/* Motivational Quote */}
-        <motion.div
+        {/* Ver mais métricas */}
+        <motion.button
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.6 }}
-          className="rounded-2xl bg-gradient-to-r from-primary/5 via-primary/10 to-violet-500/5 p-4 text-center border border-primary/10"
+          transition={{ delay: 0.4 }}
+          onClick={() => navigate('/tracking')}
+          className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-muted/50 border border-border/30 text-sm text-muted-foreground hover:bg-muted/70 transition-colors"
         >
-          <p className="text-sm italic text-muted-foreground">
-            "Cada pequeno passo te aproxima do seu objetivo."
-          </p>
-        </motion.div>
+          Ver histórico completo
+          <ChevronRight className="h-4 w-4" />
+        </motion.button>
       </div>
 
       {/* Weight Modal */}
@@ -344,5 +170,22 @@ const DashboardOverview: React.FC = () => {
     </div>
   );
 };
+
+// Botão de Acesso Rápido Compacto
+const QuickAccessButton: React.FC<{
+  icon: React.ElementType;
+  label: string;
+  gradient: string;
+  onClick?: () => void;
+}> = ({ icon: Icon, label, gradient, onClick }) => (
+  <motion.button
+    whileTap={{ scale: 0.95 }}
+    onClick={onClick}
+    className={`flex flex-col items-center gap-2 p-3 rounded-2xl bg-gradient-to-br ${gradient} text-white shadow-lg`}
+  >
+    <Icon className="h-5 w-5" />
+    <span className="text-[10px] font-medium">{label}</span>
+  </motion.button>
+);
 
 export default DashboardOverview;
