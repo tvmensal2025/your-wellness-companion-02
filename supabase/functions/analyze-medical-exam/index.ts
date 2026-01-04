@@ -2419,495 +2419,634 @@ Por favor, analise as imagens dos exames médicos e extraia todos os valores enc
       .replace(/\s{2,}/g, ' ')
       .trim();
 
-    // HTML Clínico Premium do Dr. Vital - Layout Corporativo
+    // HTML Clínico Premium ULTRA ELEGANTE do Dr. Vital
     const html = `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Relatório Médico Completo</title>
+  <title>Relatório Médico Premium | Instituto dos Sonhos</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --primary: #1e40af;
-      --primary-light: #3b82f6;
-      --primary-dark: #1e3a8a;
-      --accent: #f59e0b;
-      --text-dark: #1f2937;
-      --text-medium: #4b5563;
-      --text-light: #9ca3af;
-      --bg-white: #ffffff;
-      --bg-light: #f3f4f6;
-      --bg-secondary: #f8fafc;
-      --border-color: #e5e7eb;
-      --success: #10b981;
-      --warning: #f59e0b;
-      --danger: #ef4444;
-      --border-radius: 8px;
-      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-      --font-main: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', sans-serif;
-      --font-title: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', sans-serif;
+      /* Paleta Premium Elegante */
+      --primary: #0f172a;
+      --primary-light: #1e293b;
+      --accent: #c9a962;
+      --accent-light: #dfc893;
+      --accent-dark: #9f7b3d;
+      --success: #059669;
+      --success-bg: rgba(5, 150, 105, 0.08);
+      --warning: #d97706;
+      --warning-bg: rgba(217, 119, 6, 0.08);
+      --danger: #dc2626;
+      --danger-bg: rgba(220, 38, 38, 0.08);
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --text-muted: #94a3b8;
+      --bg-main: #fafaf9;
+      --bg-card: #ffffff;
+      --bg-soft: #f8fafc;
+      --border: #e2e8f0;
+      --border-light: #f1f5f9;
+      --shadow-soft: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.06);
+      --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.06);
+      --shadow-elevated: 0 12px 40px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.04);
+      --font-display: 'Playfair Display', Georgia, serif;
+      --font-body: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 24px;
     }
 
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html {
+      scroll-behavior: smooth;
     }
 
     body {
-      font-family: var(--font-main);
-      background-color: var(--bg-light);
-      color: var(--text-dark);
-      line-height: 1.5;
+      font-family: var(--font-body);
+      background: var(--bg-main);
+      color: var(--text-primary);
+      line-height: 1.65;
       font-size: 16px;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
     }
 
     .container {
-      max-width: 800px;
+      max-width: 920px;
       margin: 0 auto;
-      padding: 20px;
+      padding: 40px 24px;
     }
 
-    .header {
-      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-      color: white;
-      border-radius: 10px;
-      padding: 24px;
-      margin-bottom: 24px;
+    /* Hero Header Premium */
+    .hero-header {
+      background: linear-gradient(145deg, var(--primary) 0%, var(--primary-light) 100%);
+      border-radius: var(--radius-xl);
+      padding: 48px 40px;
+      margin-bottom: 32px;
       position: relative;
       overflow: hidden;
+      box-shadow: var(--shadow-elevated);
     }
 
-    .header::before {
-      content: "";
+    .hero-header::before {
+      content: '';
       position: absolute;
-      top: 0;
-      right: 0;
+      top: -50%;
+      right: -20%;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(201, 169, 98, 0.15) 0%, transparent 70%);
+      animation: pulse 4s ease-in-out infinite;
+    }
+
+    .hero-header::after {
+      content: '';
+      position: absolute;
+      bottom: -30%;
+      left: -10%;
       width: 300px;
       height: 300px;
-      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
-      border-radius: 50%;
-      transform: translate(30%, -30%);
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.05) 0%, transparent 60%);
     }
 
-    .header-content {
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 0.5; }
+      50% { transform: scale(1.1); opacity: 0.8; }
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
       display: flex;
       align-items: center;
-      gap: 16px;
-      position: relative;
-      z-index: 1;
+      gap: 28px;
     }
 
-    .header-icon {
-      background-color: white;
-      width: 48px;
-      height: 48px;
+    .hero-logo {
+      width: 72px;
+      height: 72px;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      box-shadow: 0 8px 24px rgba(201, 169, 98, 0.3);
+    }
+
+    .hero-text h1 {
+      font-family: var(--font-display);
+      font-size: 32px;
+      font-weight: 600;
+      color: white;
+      margin-bottom: 6px;
+      letter-spacing: -0.5px;
+    }
+
+    .hero-text p {
+      font-size: 16px;
+      color: rgba(255, 255, 255, 0.85);
+      font-weight: 400;
+    }
+
+    .hero-badge {
+      position: absolute;
+      top: 24px;
+      right: 28px;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      padding: 8px 16px;
+      border-radius: 100px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--accent-light);
+      letter-spacing: 0.5px;
+    }
+
+    /* Patient Info Bar Premium */
+    .info-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      margin-bottom: 32px;
+      box-shadow: var(--shadow-card);
+    }
+
+    .info-item {
+      background: var(--bg-card);
+      padding: 24px 20px;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+
+    .info-item:hover {
+      background: var(--bg-soft);
+    }
+
+    .info-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+
+    .info-value {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    /* Card Premium */
+    .card {
+      background: var(--bg-card);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow-card);
+      border: 1px solid var(--border-light);
+      transition: all 0.3s ease;
+    }
+
+    .card:hover {
+      box-shadow: var(--shadow-elevated);
+      transform: translateY(-2px);
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid var(--border-light);
+    }
+
+    .section-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      margin-right: 16px;
+      box-shadow: 0 4px 12px rgba(201, 169, 98, 0.25);
+    }
+
+    .summary-text {
+      font-size: 16px;
+      line-height: 1.8;
+      color: var(--text-secondary);
+    }
+
+    .summary-text p {
+      margin-bottom: 16px;
+    }
+
+    /* Premium Metric Cards */
+    .metabolic-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 24px;
+      margin-top: 24px;
+    }
+
+    .metric-card {
+      background: var(--bg-card);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .metric-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: var(--success);
+      transition: width 0.3s ease;
+    }
+
+    .metric-card.elevated::before { background: var(--warning); }
+    .metric-card.low::before, .metric-card.error::before { background: var(--danger); }
+
+    .metric-card:hover {
+      box-shadow: var(--shadow-elevated);
+      transform: translateY(-4px);
+    }
+
+    .metric-card:hover::before {
+      width: 6px;
+    }
+
+    .metric-icon {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      width: 36px;
+      height: 36px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 24px;
-      color: var(--primary);
-      box-shadow: var(--shadow-md);
+      font-size: 16px;
+      font-weight: 600;
     }
 
-    .header-title {
-      font-size: 24px;
-      font-weight: 700;
-      margin-bottom: 4px;
+    .metric-icon.normal {
+      background: var(--success-bg);
+      color: var(--success);
     }
 
-    .header-subtitle {
+    .metric-icon.elevated {
+      background: var(--warning-bg);
+      color: var(--warning);
+    }
+
+    .metric-icon.low, .metric-icon.error {
+      background: var(--danger-bg);
+      color: var(--danger);
+    }
+
+    .metric-name {
       font-size: 14px;
-      opacity: 0.9;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
     }
 
-    .welcome-message {
-      background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%);
-      border: 1px solid rgba(59, 130, 246, 0.2);
-      border-radius: 12px;
-      padding: 20px;
+    .metric-value {
+      font-family: var(--font-display);
+      font-size: 32px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+      letter-spacing: -1px;
+    }
+
+    .metric-reference {
+      font-size: 13px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .metric-reference::before {
+      content: '↳';
+      opacity: 0.5;
+    }
+
+    .how-it-works {
+      margin-top: 20px;
+      background: linear-gradient(135deg, rgba(201, 169, 98, 0.06) 0%, rgba(201, 169, 98, 0.02) 100%);
+      border: 1px solid rgba(201, 169, 98, 0.15);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+    }
+
+    .how-it-works-title {
+      display: flex;
+      align-items: center;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--accent-dark);
+      margin-bottom: 8px;
+    }
+
+    .how-it-works-icon {
+      margin-right: 8px;
+      font-size: 14px;
+    }
+
+    .how-it-works-text {
+      font-size: 13px;
+      line-height: 1.7;
+      color: var(--text-secondary);
+    }
+
+    /* Premium Recommendations */
+    .recommendations {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+
+    .recommendation-card {
+      background: linear-gradient(145deg, var(--bg-card) 0%, var(--bg-soft) 100%);
+      border-radius: var(--radius-md);
+      padding: 28px;
+      border: 1px solid var(--border);
+      transition: all 0.3s ease;
+    }
+
+    .recommendation-card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 8px 30px rgba(201, 169, 98, 0.12);
+    }
+
+    .recommendation-icon {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      margin-bottom: 16px;
+    }
+
+    .recommendation-title {
+      font-family: var(--font-display);
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 12px;
+    }
+
+    .recommendation-text {
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--text-secondary);
+    }
+
+    /* Premium Footer */
+    .footer {
+      background: linear-gradient(145deg, var(--primary) 0%, var(--primary-light) 100%);
+      border-radius: var(--radius-xl);
+      padding: 48px 40px;
+      text-align: center;
+      margin-top: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .footer::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 200px;
+      height: 200px;
+      background: radial-gradient(circle, rgba(201, 169, 98, 0.2) 0%, transparent 70%);
+    }
+
+    .footer-logo {
+      font-size: 36px;
+      margin-bottom: 16px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .footer-title {
+      font-family: var(--font-display);
+      font-size: 24px;
+      font-weight: 600;
+      color: white;
+      margin-bottom: 8px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .footer-subtitle {
+      font-size: 15px;
+      color: rgba(255, 255, 255, 0.7);
       margin-bottom: 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .footer-contact {
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+      margin-bottom: 32px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .contact-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .contact-icon {
+      font-size: 18px;
+      color: var(--accent-light);
+    }
+
+    .footer-divider {
+      width: 80px;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      margin: 0 auto 24px;
+    }
+
+    .footer-disclaimer {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.6);
+      max-width: 700px;
+      margin: 0 auto;
+      line-height: 1.7;
+      position: relative;
+      z-index: 1;
+    }
+
+    .footer-disclaimer strong {
+      color: var(--accent-light);
+    }
+
+    /* Print Button */
+    .print-btn {
+      position: fixed;
+      bottom: 32px;
+      right: 32px;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+      color: white;
+      border: none;
+      padding: 16px 28px;
+      border-radius: 100px;
+      font-family: var(--font-body);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 8px 24px rgba(201, 169, 98, 0.4);
+      transition: all 0.3s ease;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .print-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 32px rgba(201, 169, 98, 0.5);
+    }
+
+    /* Welcome Message */
+    .welcome-message {
+      background: linear-gradient(135deg, rgba(201, 169, 98, 0.08) 0%, rgba(201, 169, 98, 0.03) 100%);
+      border: 1px solid rgba(201, 169, 98, 0.2);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      margin-bottom: 32px;
       display: flex;
       align-items: flex-start;
-      gap: 16px;
+      gap: 20px;
     }
 
     .welcome-icon {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       font-size: 24px;
       flex-shrink: 0;
     }
 
     .welcome-text {
       font-size: 15px;
-      line-height: 1.6;
-      color: var(--text-dark);
+      line-height: 1.7;
+      color: var(--text-secondary);
     }
 
-    .info-bar {
-      display: flex;
-      background-color: var(--bg-white);
-      border-radius: var(--border-radius);
-      margin-bottom: 24px;
-      overflow: hidden;
-      box-shadow: var(--shadow-sm);
+    .welcome-text strong {
+      color: var(--text-primary);
     }
 
-    .info-item {
-      flex: 1;
-      padding: 16px;
-      text-align: center;
-      border-right: 1px solid var(--border-color);
-    }
-
-    .info-item:last-child {
-      border-right: none;
-    }
-
-    .info-label {
-      font-size: 14px;
-      color: var(--text-medium);
-      margin-bottom: 4px;
-    }
-
-    .info-value {
-      font-weight: 600;
-      color: var(--text-dark);
-    }
-
-    .card {
-      background-color: var(--bg-white);
-      border-radius: var(--border-radius);
-      padding: 24px;
-      margin-bottom: 24px;
-      box-shadow: var(--shadow-sm);
-    }
-
-    .section-title {
-      display: flex;
-      align-items: center;
-      font-size: 18px;
-      font-weight: 700;
-      color: var(--text-dark);
-      margin-bottom: 16px;
-      padding-bottom: 12px;
-      border-bottom: 1px solid var(--border-color);
-    }
-
-    .section-icon {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 24px;
-      height: 24px;
-      background-color: var(--primary-light);
-      color: white;
-      border-radius: 6px;
-      margin-right: 10px;
-      font-size: 14px;
-    }
-
-    .summary-text {
-      color: var(--text-medium);
-      line-height: 1.6;
-      margin-bottom: 16px;
-    }
-
-    .metabolic-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 20px;
-      margin-top: 20px;
-    }
-
-    .metric-card {
-      background-color: var(--bg-white);
-      border-radius: var(--border-radius);
-      padding: 20px;
-      box-shadow: var(--shadow-sm);
-      position: relative;
-      overflow: hidden;
-      border-left: 4px solid var(--primary-light);
-    }
-
-    .metric-card.normal {
-      border-left-color: var(--success);
-    }
-
-    .metric-card.elevated {
-      border-left-color: var(--warning);
-    }
-
-    .metric-card.low {
-      border-left-color: var(--danger);
-    }
-
-    .metric-icon {
-      position: absolute;
-      top: 16px;
-      right: 16px;
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 16px;
-      color: white;
-    }
-
-    .metric-icon.normal {
-      background-color: var(--success);
-    }
-
-    .metric-icon.elevated {
-      background-color: var(--warning);
-    }
-
-    .metric-icon.low {
-      background-color: var(--danger);
-    }
-
-    .metric-name {
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--text-dark);
-      margin-bottom: 8px;
-    }
-
-    .metric-value {
-      font-size: 28px;
-      font-weight: 700;
-      color: var(--text-dark);
-      margin-bottom: 4px;
-      font-family: var(--font-title);
-    }
-
-    .metric-reference {
-      font-size: 13px;
-      color: var(--text-medium);
-      margin-bottom: 16px;
-    }
-
-    .how-it-works {
-      margin-top: 16px;
-      background: linear-gradient(135deg, rgba(59, 130, 246, 0.04) 0%, rgba(59, 130, 246, 0.08) 100%);
-      border-radius: 8px;
-      padding: 16px;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .how-it-works::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      right: 0;
-      width: 60px;
-      height: 60px;
-      background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, rgba(255, 255, 255, 0) 70%);
-      border-radius: 50%;
-      transform: translate(30%, -30%);
-    }
-
-    .how-it-works-title {
-      display: flex;
-      align-items: center;
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--primary);
-      margin-bottom: 8px;
-    }
-
-    .how-it-works-icon {
-      margin-right: 6px;
-    }
-
-    .how-it-works-text {
-      font-size: 13px;
-      line-height: 1.6;
-      color: var(--text-medium);
-      position: relative;
-      z-index: 1;
-    }
-
-    .recommendations {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 20px;
-    }
-
-    .recommendation-card {
-      background-color: var(--bg-white);
-      border-radius: var(--border-radius);
-      padding: 20px;
-      box-shadow: var(--shadow-sm);
-      border-left: 4px solid var(--primary-light);
-    }
-
-    .recommendation-icon {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      background-color: var(--primary-light);
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-      margin-bottom: 12px;
-    }
-
-    .recommendation-title {
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--text-dark);
-      margin-bottom: 8px;
-    }
-
-    .recommendation-text {
-      font-size: 14px;
-      color: var(--text-medium);
-      line-height: 1.6;
-    }
-
-    .footer {
-      text-align: center;
-      padding: 24px 0;
-      background-color: var(--primary-dark);
-      color: white;
-      border-radius: 10px;
-      margin-top: 24px;
-    }
-
-    .footer-logo {
-      font-size: 24px;
-      margin-bottom: 12px;
-    }
-
-    .footer-title {
-      font-size: 16px;
-      font-weight: 600;
-      margin-bottom: 4px;
-    }
-
-    .footer-subtitle {
-      font-size: 14px;
-      opacity: 0.8;
-      margin-bottom: 16px;
-    }
-
-    .footer-contact {
-      display: flex;
-      justify-content: center;
-      gap: 24px;
-      margin: 16px 0;
-      flex-wrap: wrap;
-    }
-
-    .contact-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 14px;
-    }
-
-    .contact-icon {
-      font-size: 16px;
-    }
-
-    .footer-disclaimer {
-      font-size: 12px;
-      opacity: 0.8;
-      max-width: 700px;
-      margin: 0 auto;
-      line-height: 1.5;
-    }
-
+    /* Responsive */
     @media (max-width: 768px) {
-      .container {
-        padding: 16px;
-      }
+      .container { padding: 20px 16px; }
+      .hero-header { padding: 32px 24px; }
+      .hero-content { flex-direction: column; text-align: center; }
+      .hero-text h1 { font-size: 26px; }
+      .hero-badge { position: static; margin-top: 20px; }
+      .info-bar { grid-template-columns: 1fr 1fr; }
+      .metabolic-grid { grid-template-columns: 1fr; }
+      .recommendations { grid-template-columns: 1fr; }
+      .footer-contact { flex-direction: column; gap: 16px; }
+      .print-btn { bottom: 20px; right: 20px; padding: 14px 24px; }
+    }
 
-      .header {
-        padding: 20px;
-      }
-
-      .info-bar {
-        flex-direction: column;
-      }
-
-      .info-item {
-        border-right: none;
-        border-bottom: 1px solid var(--border-color);
-      }
-
-      .info-item:last-child {
-        border-bottom: none;
-      }
-
-      .metabolic-grid,
-      .recommendations {
-        grid-template-columns: 1fr;
-      }
-
-      .footer-contact {
-        flex-direction: column;
-        gap: 12px;
-      }
+    @media print {
+      .print-btn { display: none; }
+      body { background: white; }
+      .card { box-shadow: none; border: 1px solid #e5e7eb; }
     }
   </style>
 </head>
 <body>
+  <button class="print-btn" onclick="window.print()">🖨️ Imprimir Relatório</button>
+  
   <div class="container">
-    <header class="header">
-      <div class="header-content">
-        <div class="header-icon">👨‍⚕️</div>
-        <div>
-          <h1 class="header-title">Relatório Médico Completo</h1>
-          <p class="header-subtitle">Dr. Vital - IA Médica Avançada</p>
+    <!-- Hero Header Premium -->
+    <header class="hero-header">
+      <div class="hero-badge">✨ RELATÓRIO PREMIUM</div>
+      <div class="hero-content">
+        <div class="hero-logo">🏥</div>
+        <div class="hero-text">
+          <h1>Relatório Médico Clínico</h1>
+          <p>Dr. Vital — Análise Inteligente de Exames</p>
         </div>
       </div>
     </header>
 
+    <!-- Mensagem de Boas-vindas -->
     <div class="welcome-message">
-      <div class="welcome-icon">👋</div>
+      <div class="welcome-icon">👨‍⚕️</div>
       <div class="welcome-text">
-        <strong>Olá! Sou o Dr. Vital, sua IA médica.</strong> Vou explicar seus exames de forma bem simples, como se estivesse conversando com um amigo. Não se preocupe com termos complicados - vou explicar tudo de forma clara e fácil de entender!
+        <strong>Olá! Sou o Dr. Vital, sua IA médica personalizada.</strong> Preparei este relatório premium com uma análise detalhada e educativa dos seus exames. Cada resultado vem acompanhado de explicações claras sobre o que significa e como você pode cuidar melhor da sua saúde.
       </div>
     </div>
 
+    <!-- Barra de Informações do Paciente -->
     <div class="info-bar">
       <div class="info-item">
-        <div class="info-label">Nome Paciente</div>
+        <div class="info-label">Paciente</div>
         <div class="info-value">${patientName}</div>
       </div>
       <div class="info-item">
-        <div class="info-label">Data</div>
+        <div class="info-label">Data do Exame</div>
         <div class="info-value">${examDate}</div>
       </div>
       <div class="info-item">
-        <div class="info-label">Laboratório/Clínica</div>
+        <div class="info-label">Laboratório</div>
         <div class="info-value">${clinicName}</div>
       </div>
       <div class="info-item">
-        <div class="info-label">ID Exame</div>
-        <div class="info-value">#${documentId ? documentId.substring(0, 8) : 'N/A'}</div>
+        <div class="info-label">ID Relatório</div>
+        <div class="info-value">#${documentId ? documentId.substring(0, 8).toUpperCase() : 'N/A'}</div>
       </div>
-      ${examTypeEffective ? `
-      <div class="info-item">
-        <div class="info-label">Tipo do Exame</div>
-        <div class="info-value">${examTypeEffective}</div>
-      </div>` : ''}
-      ${doctorName ? `
-      <div class="info-item">
-        <div class="info-label">Médico</div>
-        <div class="info-value">${doctorName}</div>
-      </div>` : ''}
     </div>
 
     <section class="card">
@@ -3116,10 +3255,13 @@ Por favor, analise as imagens dos exames médicos e extraia todos os valores enc
       </div>
     </section>
 
+    <!-- Footer Premium -->
     <footer class="footer">
       <div class="footer-logo">🏥</div>
       <div class="footer-title">Instituto dos Sonhos</div>
-      <div class="footer-subtitle">Análise Médica Inteligente</div>
+      <div class="footer-subtitle">Tecnologia em Saúde e Bem-estar</div>
+      
+      <div class="footer-divider"></div>
       
       <div class="footer-contact">
         <div class="contact-item">
@@ -3130,12 +3272,16 @@ Por favor, analise as imagens dos exames médicos e extraia todos os valores enc
           <span class="contact-icon">🌐</span>
           <span>www.institutodossonhos.com.br</span>
         </div>
+        <div class="contact-item">
+          <span class="contact-icon">✉️</span>
+          <span>contato@institutodossonhos.com.br</span>
+        </div>
       </div>
       
       <div class="footer-disclaimer">
-        <strong>⚠️ IMPORTANTE:</strong> Este relatório é gerado automaticamente por IA e tem caráter educativo. 
-        <strong>NÃO substitui a consulta com um profissional de saúde.</strong> 
-        Consulte sempre um médico para interpretação clínica adequada e orientações personalizadas.
+        <strong>⚠️ AVISO IMPORTANTE:</strong> Este relatório é gerado por inteligência artificial com finalidade exclusivamente educativa e informativa. 
+        <strong>Não substitui consulta, diagnóstico ou tratamento médico profissional.</strong> 
+        Sempre consulte um médico qualificado para interpretação clínica adequada dos seus exames.
       </div>
     </footer>
   </div>
