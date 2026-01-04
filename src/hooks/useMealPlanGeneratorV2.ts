@@ -42,6 +42,15 @@ export function useMealPlanGeneratorV2() {
           peso_kg: params.peso_kg
         });
         
+        // Obter sessão atual
+        const { data: sessionData } = await supabase.auth.getSession();
+        const userId = sessionData?.session?.user?.id;
+        
+        if (!sessionData?.session) {
+          console.log('⚠️ Usuário não autenticado, usando fallback ultra-safe');
+          throw new Error('AUTH_REQUIRED');
+        }
+        
         const { data, error } = await supabase.functions.invoke('mealie-real', {
           body: {
             calorias: params.calorias,
@@ -50,7 +59,7 @@ export function useMealPlanGeneratorV2() {
             preferencias: params.preferencias || [],
             refeicoes_selecionadas: params.refeicoes_selecionadas || [],
             peso_kg: params.peso_kg,
-            userId: (await supabase.auth.getUser()).data.user?.id
+            userId
           }
         });
 
@@ -75,10 +84,29 @@ export function useMealPlanGeneratorV2() {
         }
       };
 
-      // Chamar função diretamente sem error handler
-      const result = await generatorFunction();
+      // Chamar função diretamente, com fallback se falhar
+      let result;
+      try {
+        result = await generatorFunction();
+      } catch (genError: any) {
+        console.log('⚠️ Erro na geração mealie-real:', genError.message);
+        // Se for erro de autenticação ou qualquer erro, usar fallback
+        const { data: ultraSafeData, error: ultraSafeError } = await supabase.functions.invoke('generate-meal-plan-ultra-safe', {
+          body: {
+            calorias: params.calorias,
+            dias: params.dias,
+            restricoes: params.restricoes || [],
+            preferencias: params.preferencias || [],
+            refeicoes_selecionadas: params.refeicoes_selecionadas || [],
+            peso_kg: params.peso_kg
+          }
+        });
+        
+        if (ultraSafeError) throw ultraSafeError;
+        result = ultraSafeData;
+      }
 
-      if (result.success && result.data) {
+      if (result?.success && result?.data) {
         console.log('✅ Geração bem-sucedida!');
         
         const mealieData = result.data.cardapio || result.data.mealPlan;
