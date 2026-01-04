@@ -794,35 +794,35 @@ const SaboteurTest: React.FC = () => {
   const currentQ = saboteurQuestions[currentQuestion];
 
   return (
-    <div className="mobile-padding space-y-6">
+    <div className="mobile-padding space-y-4">
       {/* Header */}
-      <div className="text-center space-y-4">
-        <div className="flex items-center justify-center gap-3">
-          <Brain className="h-8 w-8 lg:h-10 lg:w-10 text-primary" />
-          <h1 className="mobile-text-2xl font-bold">Teste de Sabotadores</h1>
+      <div className="text-center space-y-2">
+        <div className="flex items-center justify-center gap-2">
+          <Brain className="h-7 w-7 lg:h-8 lg:w-8 text-primary" />
+          <h1 className="mobile-text-xl font-bold">Teste de Sabotadores</h1>
         </div>
-        <p className="text-muted-foreground mobile-text-lg">
+        <p className="text-muted-foreground mobile-text-base">
           Identifique os padrões que podem estar sabotando seu progresso
         </p>
       </div>
 
       {/* Progress */}
       <Card className="health-card">
-        <CardContent className="pt-6">
-          <div className="space-y-4">
-            <div className="flex justify-between text-sm">
+        <CardContent className="pt-4">
+          <div className="space-y-3">
+            <div className="flex justify-between text-xs">
               <span>Questão {currentQuestion + 1} de {saboteurQuestions.length}</span>
               <span>{Math.round(progress)}% completo</span>
             </div>
-            <Progress value={progress} className="h-2" />
+            <Progress value={progress} className="h-1.5" />
           </div>
         </CardContent>
       </Card>
 
       {/* Question */}
       <Card className="health-card">
-        <CardHeader className="pb-3 md:pb-6">
-          <CardTitle className="text-lg md:text-xl leading-tight">
+        <CardHeader className="pb-2 md:pb-4">
+          <CardTitle className="text-base md:text-lg leading-tight">
             {currentQ.text}
           </CardTitle>
         </CardHeader>
