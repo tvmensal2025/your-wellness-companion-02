@@ -12,6 +12,7 @@ const corsHeaders = {
 // Tipos para melhor type safety
 interface RequestPayload {
   documentId?: string;
+  /** Derivado do JWT (não confie no client) */
   userId: string;
   examType?: string;
   imageUrls?: string[];
@@ -19,6 +20,8 @@ interface RequestPayload {
   title?: string;
   idempotencyKey?: string;
 }
+
+
 
 interface DocumentData {
   id: string;
@@ -64,11 +67,11 @@ function validateRequestPayload(payload: any): RequestPayload {
   if (!payload || typeof payload !== 'object') {
     throw new Error('Payload inválido: deve ser um objeto');
   }
-  
+
   if (!payload.userId || typeof payload.userId !== 'string') {
-    throw new Error('userId é obrigatório e deve ser uma string');
+    throw new Error('userId ausente (deve ser derivado do JWT)');
   }
-  
+
   // Validações opcionais com fallbacks seguros
   const validated: RequestPayload = {
     documentId: payload.documentId || undefined,
@@ -79,14 +82,16 @@ function validateRequestPayload(payload: any): RequestPayload {
     title: payload.title || 'Exame Médico',
     idempotencyKey: payload.idempotencyKey || `${Date.now()}-${Math.random().toString(36)}`
   };
-  
+
   // Validar que pelo menos documentId ou tmpPaths está presente
   if (!validated.documentId && (!validated.tmpPaths || validated.tmpPaths.length === 0)) {
     throw new Error('Deve fornecer documentId OU tmpPaths para processar');
   }
-  
+
   return validated;
 }
+
+
 
 // Verificar se o usuário existe em auth.users
 async function verifyUserExists(
@@ -857,17 +862,55 @@ serve(async (req) => {
     console.log('🌐 Method:', req.method);
     console.log('📍 URL:', req.url);
     
-    // Inicializar Supabase
-    const supabaseUrl = Deno.env.get('SUPABASE_URL');
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-    
-    if (!supabaseUrl || !supabaseKey) {
-      throw new Error('Configuração do Supabase não encontrada');
+    // Autenticação
+    //
+    // Este endpoint está configurado com verify_jwt=false (para contornar respostas "Invalid JWT" do gateway).
+    // Por isso, a validação do JWT é feita manualmente aqui.
+    const authHeader = req.headers.get('authorization') || req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(JSON.stringify({
+        success: false,
+        error: 'Missing authorization header'
+      }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
     }
-    
-    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Inicializar clientes
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    const anonKey = Deno.env.get('SUPABASE_ANON_KEY');
+
+    if (!supabaseUrl || !serviceRoleKey || !anonKey) {
+      throw new Error('Configuração do backend não encontrada');
+    }
+
+    // Validar JWT consultando o serviço de autenticação
+    const supabaseUser = createClient(supabaseUrl, anonKey, {
+      global: { headers: { Authorization: authHeader } },
+      auth: { persistSession: false },
+    });
+
+    const { data: userData, error: userError } = await supabaseUser.auth.getUser();
+    if (userError || !userData?.user) {
+      console.warn('❌ JWT inválido:', userError?.message || 'Usuário não encontrado');
+      return new Response(JSON.stringify({
+        success: false,
+        error: 'Invalid JWT'
+      }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+
+    const authedUserId = userData.user.id;
+    userId = authedUserId;
+
+    // Cliente privilegiado para operações internas (DB + Storage)
+    const supabase = createClient(supabaseUrl, serviceRoleKey);
     console.log('✅ Supabase inicializado');
-    
+
     // Parsear e validar payload
     let rawPayload: any;
     try {
@@ -876,12 +919,14 @@ serve(async (req) => {
       console.error('❌ Erro ao parsear JSON:', parseError);
       throw new Error('JSON inválido no body da requisição');
     }
-    
+
     console.log('📥 Payload bruto recebido:', Object.keys(rawPayload));
-    
+
+    // Forçar userId pelo JWT (nunca confiar no client)
+    rawPayload.userId = authedUserId;
+
     const payload = validateRequestPayload(rawPayload);
-    userId = payload.userId;
-    
+
     console.log('✅ Payload validado:', {
       userId: payload.userId,
       examType: payload.examType,
@@ -891,6 +936,21 @@ serve(async (req) => {
       tmpPathsCount: payload.tmpPaths?.length || 0,
       idempotencyKey: payload.idempotencyKey
     });
+
+    // Garantir que os tmpPaths pertencem ao usuário autenticado
+    if (payload.tmpPaths && payload.tmpPaths.length > 0) {
+      const safeTmpPaths = payload.tmpPaths.filter((p) => p.startsWith(`tmp/${authedUserId}/`));
+      if (safeTmpPaths.length !== payload.tmpPaths.length) {
+        console.warn('⚠️ Alguns tmpPaths foram descartados por não pertencerem ao usuário.');
+      }
+      payload.tmpPaths = safeTmpPaths;
+
+      if (payload.tmpPaths.length === 0 && !payload.documentId) {
+        throw new Error('Nenhum arquivo válido para processar');
+      }
+    }
+
+
     
     // Determinar ou criar documentId
     let actualDocumentId: string;
@@ -975,11 +1035,11 @@ serve(async (req) => {
       const didacticResponse = await fetch(`${supabaseUrl}/functions/v1/smart-medical-exam`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${supabaseKey}`,
+          'Authorization': `Bearer ${serviceRoleKey}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          userId: userId,
+          userId: authedUserId,
           documentId: actualDocumentId
         })
       });
