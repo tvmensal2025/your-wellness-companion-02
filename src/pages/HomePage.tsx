@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect, memo } from 'react';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { 
@@ -27,19 +27,29 @@ import {
 import { Link } from 'react-router-dom';
 import butterflyLogo from '@/assets/logo-instituto.png';
 
-const HomePage = () => {
+// Memoized components for better performance
+const MemoCard = memo(Card);
+const MemoCardContent = memo(CardContent);
+
+const HomePage = memo(() => {
   const { scrollYProgress } = useScroll();
   const opacity = useTransform(scrollYProgress, [0, 0.2], [1, 0]);
   const y = useTransform(scrollYProgress, [0, 0.2], [0, 50]);
-  const headerOpacity = useTransform(scrollYProgress, [0, 0.1], [0, 1]);
 
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
+    let ticking = false;
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          setIsScrolled(window.scrollY > 50);
+          ticking = false;
+        });
+        ticking = true;
+      }
     };
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -371,6 +381,6 @@ const HomePage = () => {
       </footer>
     </div>
   );
-};
+});
 
 export default HomePage;

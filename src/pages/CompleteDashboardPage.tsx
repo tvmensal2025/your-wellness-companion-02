@@ -2,7 +2,7 @@
 // Timestamp: $(date)
 // Este arquivo foi atualizado para incluir o botão "Exercícios Recomendados"
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -16,25 +16,33 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useSofiaAnalysis } from '@/hooks/useSofiaAnalysis';
 import { useExerciseProgram } from '@/hooks/useExerciseProgram';
-import DashboardOverview from '@/components/dashboard/DashboardOverview';
-import { DailyMissionsFinal as DailyMissions } from '@/components/daily-missions/DailyMissionsFinal';
-import CoursePlatformNetflix from '@/components/dashboard/CoursePlatformNetflix';
-import SessionsPage from '@/components/SessionsPage';
-import UserSessions from '@/components/UserSessions';
-import GoalsPage from '@/pages/GoalsPage';
-import DesafiosSection from '@/components/dashboard/DesafiosSection';
-import RankingCommunity from '@/components/RankingCommunity';
-import { ExerciseOnboardingModal } from '@/components/exercise/ExerciseOnboardingModal';
-import { ExerciseDashboard } from '@/components/exercise/ExerciseDashboard';
-import HealthFeedPage from '@/pages/HealthFeedPage';
-import PaymentPlans from '@/components/PaymentPlans';
-import UserDrVitalPage from '@/pages/UserDrVitalPage';
-// Import correto da página Sofia (export: SofiaNutricionalPage)
-import { SofiaNutricionalPage } from '@/pages/SofiaNutricionalPage';
-import UserProfile from '@/components/UserProfile';
-import MyProgress from '@/components/MyProgress';
-import SaboteurTest from '@/components/SaboteurTest';
 import { cn } from '@/lib/utils';
+
+// Lazy load heavy components for better performance
+const DashboardOverview = lazy(() => import('@/components/dashboard/DashboardOverview'));
+const DailyMissions = lazy(() => import('@/components/daily-missions/DailyMissionsFinal').then(m => ({ default: m.DailyMissionsFinal })));
+const CoursePlatformNetflix = lazy(() => import('@/components/dashboard/CoursePlatformNetflix'));
+const SessionsPage = lazy(() => import('@/components/SessionsPage'));
+const UserSessions = lazy(() => import('@/components/UserSessions'));
+const GoalsPage = lazy(() => import('@/pages/GoalsPage'));
+const DesafiosSection = lazy(() => import('@/components/dashboard/DesafiosSection'));
+const RankingCommunity = lazy(() => import('@/components/RankingCommunity'));
+const ExerciseOnboardingModal = lazy(() => import('@/components/exercise/ExerciseOnboardingModal').then(m => ({ default: m.ExerciseOnboardingModal })));
+const ExerciseDashboard = lazy(() => import('@/components/exercise/ExerciseDashboard').then(m => ({ default: m.ExerciseDashboard })));
+const HealthFeedPage = lazy(() => import('@/pages/HealthFeedPage'));
+const PaymentPlans = lazy(() => import('@/components/PaymentPlans'));
+const UserDrVitalPage = lazy(() => import('@/pages/UserDrVitalPage'));
+const SofiaNutricionalPage = lazy(() => import('@/pages/SofiaNutricionalPage').then(m => ({ default: m.SofiaNutricionalPage })));
+const UserProfile = lazy(() => import('@/components/UserProfile'));
+const MyProgress = lazy(() => import('@/components/MyProgress'));
+const SaboteurTest = lazy(() => import('@/components/SaboteurTest'));
+
+// Lightweight loader component
+const SectionLoader = () => (
+  <div className="flex items-center justify-center min-h-[200px]">
+    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+  </div>
+);
 
 // Core dashboard components
 import LockedMenuItem from '@/components/LockedMenuItem';
@@ -219,50 +227,51 @@ const CompleteDashboardPage = () => {
     }
 
     // Adicionar key para cada componente renderizado para evitar problemas de DOM
+    // Wrap all lazy components with Suspense for better loading performance
     switch (activeSection) {
       case 'dashboard':
-        return <DashboardOverview key="dashboard" />;
+        return <Suspense fallback={<SectionLoader />}><DashboardOverview key="dashboard" /></Suspense>;
       case 'missions':
-        return <DailyMissions key="missions" user={user} />;
+        return <Suspense fallback={<SectionLoader />}><DailyMissions key="missions" user={user} /></Suspense>;
       case 'progress':
-        return <MyProgress key="progress" />;
+        return <Suspense fallback={<SectionLoader />}><MyProgress key="progress" /></Suspense>;
       case 'saboteur-test':
-        return <SaboteurTest key="saboteur-test" />;
+        return <Suspense fallback={<SectionLoader />}><SaboteurTest key="saboteur-test" /></Suspense>;
       case 'goals':
-        return <GoalsPage key="goals" />;
+        return <Suspense fallback={<SectionLoader />}><GoalsPage key="goals" /></Suspense>;
       case 'subscriptions':
-        return <PaymentPlans key="subscriptions" />;
+        return <Suspense fallback={<SectionLoader />}><PaymentPlans key="subscriptions" /></Suspense>;
       case 'courses':
-        return <CoursePlatformNetflix key="courses" user={user} />;
+        return <Suspense fallback={<SectionLoader />}><CoursePlatformNetflix key="courses" user={user} /></Suspense>;
       case 'sessions':
-        return <div key="sessions" className="p-6">
+        return <Suspense fallback={<SectionLoader />}><div key="sessions" className="p-6">
             <UserSessions user={user} />
-          </div>;
+          </div></Suspense>;
       case 'comunidade':
-        return <div key="comunidade" className="p-6">
+        return <Suspense fallback={<SectionLoader />}><div key="comunidade" className="p-6">
             <RankingCommunity user={user} />
-          </div>;
+          </div></Suspense>;
       case 'challenges':
-        return <div key="challenges" className="p-6">
+        return <Suspense fallback={<SectionLoader />}><div key="challenges" className="p-6">
             <DesafiosSection user={user} />
-          </div>;
+          </div></Suspense>;
       case 'sofia-nutricional':
-        return <SofiaNutricionalPage key="sofia-nutricional" />;
+        return <Suspense fallback={<SectionLoader />}><SofiaNutricionalPage key="sofia-nutricional" /></Suspense>;
       case 'dr-vital':
-        return <UserDrVitalPage key="dr-vital" />;
+        return <Suspense fallback={<SectionLoader />}><UserDrVitalPage key="dr-vital" /></Suspense>;
       case 'exercicios':
-        return <div key="exercicios" className="p-4 space-y-4">
+        return <Suspense fallback={<SectionLoader />}><div key="exercicios" className="p-4 space-y-4">
             <div className="flex justify-end">
               <Button size="sm" variant="outline" onClick={() => setExerciseModalOpen(true)}>
                 Criar outro treino
               </Button>
             </div>
             <ExerciseDashboard user={user} />
-          </div>;
+          </div></Suspense>;
       case 'profile':
-        return <div key="profile" className="p-6">
+        return <Suspense fallback={<SectionLoader />}><div key="profile" className="p-6">
             <UserProfile />
-          </div>;
+          </div></Suspense>;
       default:
         return <div key={`default-${activeSection}`} className="p-6">
             <h1 className="text-3xl font-bold mb-4 capitalize">{activeSection.replace('-', ' ')}</h1>
