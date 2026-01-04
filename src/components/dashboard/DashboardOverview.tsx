@@ -159,28 +159,29 @@ const DashboardOverview: React.FC = () => {
       // Calculate RCE (Waist-to-Height Ratio)
       const rce = data.waist / data.height;
 
-      // Determine IMC status
-      let imcStatus = 'Normal';
-      if (imc < 18.5) imcStatus = 'Abaixo do peso';
-      else if (imc >= 25 && imc < 30) imcStatus = 'Sobrepeso';
-      else if (imc >= 30) imcStatus = 'Obesidade';
+      // Determine risco_metabolico based on IMC
+      let riscoMetabolico = 'normal';
+      if (imc < 18.5) riscoMetabolico = 'baixo_peso';
+      else if (imc >= 25 && imc < 30) riscoMetabolico = 'sobrepeso';
+      else if (imc >= 30 && imc < 35) riscoMetabolico = 'obesidade_grau1';
+      else if (imc >= 35 && imc < 40) riscoMetabolico = 'obesidade_grau2';
+      else if (imc >= 40) riscoMetabolico = 'obesidade_grau3';
 
       // Determine cardiometabolic risk
-      let riscoCardiometabolico = 'Baixo';
-      if (rce >= 0.5 && rce < 0.55) riscoCardiometabolico = 'Moderado';
-      else if (rce >= 0.55 && rce < 0.6) riscoCardiometabolico = 'Alto';
-      else if (rce >= 0.6) riscoCardiometabolico = 'Muito Alto';
+      let riscoCardiometabolico = 'BAIXO';
+      if (rce >= 0.5 && rce < 0.55) riscoCardiometabolico = 'MODERADO';
+      else if (rce >= 0.55 && rce < 0.6) riscoCardiometabolico = 'ALTO';
+      else if (rce >= 0.6) riscoCardiometabolico = 'MUITO ALTO';
 
       const { error } = await supabase.from('weight_measurements').insert({
         user_id: user.id,
         peso_kg: data.weight,
-        altura_cm: data.height,
         circunferencia_abdominal_cm: data.waist,
         imc: parseFloat(imc.toFixed(2)),
-        rce: parseFloat(rce.toFixed(3)),
-        imc_status: imcStatus,
+        risco_metabolico: riscoMetabolico,
         risco_cardiometabolico: riscoCardiometabolico,
-        measurement_date: new Date().toISOString().split('T')[0],
+        device_type: 'manual',
+        measurement_date: new Date().toISOString(),
       });
 
       if (error) throw error;
