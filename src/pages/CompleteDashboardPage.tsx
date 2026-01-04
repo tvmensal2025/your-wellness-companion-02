@@ -37,6 +37,9 @@ const UserProfile = lazy(() => import('@/components/UserProfile'));
 const MyProgress = lazy(() => import('@/components/MyProgress'));
 const SaboteurTest = lazy(() => import('@/components/SaboteurTest'));
 
+// Sidebar components
+import { SidebarProfile } from '@/components/sidebar/SidebarProfile';
+
 // Lightweight loader component
 const SectionLoader = () => (
   <div className="flex items-center justify-center min-h-[200px]">
@@ -285,25 +288,32 @@ const CompleteDashboardPage = () => {
     // No mobile, sempre expandido
     const isExpanded = isMobile ? true : sidebarExpanded;
     return <div className="flex flex-col h-full bg-card">
-        {/* Header com Menu - só mostra botão de expansão no desktop */}
-        <div className="flex items-center justify-between p-4 border-b">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-              <UserIcon className="w-5 h-5 text-primary" />
-            </div>
-            {isExpanded && <div className="flex-1 min-w-0">
-                <div className="font-semibold text-sm truncate">
-                  {profileData?.fullName || user?.email || 'Usuário'}
-                </div>
-                <div className="text-xs text-muted-foreground truncate">
-                  {user?.email}
-                </div>
-              </div>}
+        {/* Header com Perfil */}
+        <div className="flex items-center justify-between">
+          <div className="flex-1">
+            <SidebarProfile
+              fullName={profileData?.fullName || ''}
+              email={user?.email || ''}
+              avatarUrl={profileData?.avatarUrl || ''}
+              isExpanded={isExpanded}
+              onAvatarUpload={uploadAvatar}
+              onProfileClick={() => {
+                setActiveSection('profile');
+                if (isMobile) setSidebarOpen(false);
+              }}
+            />
           </div>
           
-          {!isMobile && <Button variant="ghost" size="icon" onClick={() => setSidebarExpanded(!sidebarExpanded)} className="h-8 w-8">
-              {sidebarExpanded ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-            </Button>}
+          {!isMobile && isExpanded && (
+            <Button variant="ghost" size="icon" onClick={() => setSidebarExpanded(!sidebarExpanded)} className="h-8 w-8 mr-2">
+              <ChevronLeft className="w-4 h-4" />
+            </Button>
+          )}
+          {!isMobile && !isExpanded && (
+            <Button variant="ghost" size="icon" onClick={() => setSidebarExpanded(!sidebarExpanded)} className="h-8 w-8 absolute right-1 top-3">
+              <ChevronRight className="w-4 h-4" />
+            </Button>
+          )}
         </div>
 
         {/* Menu Items */}
