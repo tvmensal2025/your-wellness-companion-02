@@ -28,7 +28,7 @@ import {
 import { CourseModal } from "./CourseModal";
 import { ModuleModal } from "./ModuleModal";
 import { LessonModal } from "./LessonModal";
-import { supabase } from "@/integrations/supabase/client-fixed";
+import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 interface Course {

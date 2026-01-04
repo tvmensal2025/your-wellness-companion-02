@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '../integrations/supabase/client-fixed';
+import { supabase } from '../integrations/supabase/client';
 import type { Database } from '../integrations/supabase/types';
 
 export type WeightMeasurement = Database['public']['Tables']['weight_measurements']['Row'];

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client-fixed';
+import { supabase } from '@/integrations/supabase/client';
 
 export const useAnamnesisStatus = () => {
   const [hasCompletedAnamnesis, setHasCompletedAnamnesis] = useState<boolean | null>(null);

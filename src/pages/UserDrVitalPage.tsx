@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client-fixed';
+import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
 import UserPreventiveAnalytics from '@/components/user/UserPreventiveAnalytics';
 import { DrVitalEnhancedChat } from '@/components/dr-vital/DrVitalEnhancedChat';

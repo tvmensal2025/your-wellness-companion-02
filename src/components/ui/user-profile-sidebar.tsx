@@ -12,7 +12,7 @@ import { getUserAvatar } from "@/lib/avatar-utils";
 import { useUserProfile } from "@/hooks/useUserProfile";
 
 
-import { supabase } from "@/integrations/supabase/client-fixed";
+import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 interface UserProfileSidebarProps {
