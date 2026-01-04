@@ -150,9 +150,79 @@ serve(async (req) => {
     const { data: user } = await supabaseClient.auth.getUser(token);
     if (!user.user) throw new Error('Unauthorized');
 
-    const { access_token, refresh_token, date_range } = await req.json();
+    let body: any = {};
+    try {
+      body = await req.json();
+    } catch {
+      body = {};
+    }
+
+    let { access_token, refresh_token, date_range, action } = body;
+
+    // Quando chamado pelo app (action: 'sync'), buscar tokens do usuário logado.
+    if (action === 'sync' || !access_token) {
+      const { data: tokenRow, error: tokenErr } = await supabaseClient
+        .from('google_fit_tokens')
+        .select('access_token, refresh_token, expires_at')
+        .eq('user_id', user.user.id)
+        .maybeSingle();
+
+      if (tokenErr) throw new Error(tokenErr.message);
+      if (!tokenRow?.access_token) throw new Error('Google Fit não conectado');
+
+      access_token = tokenRow.access_token;
+      refresh_token = tokenRow.refresh_token;
+
+      const expiresAt = tokenRow.expires_at ? new Date(tokenRow.expires_at).getTime() : 0;
+      const isExpiredOrNear = expiresAt && expiresAt < Date.now() + 60_000;
+
+      if (isExpiredOrNear) {
+        const clientId = Deno.env.get('GOOGLE_FIT_CLIENT_ID');
+        const clientSecret = Deno.env.get('GOOGLE_FIT_CLIENT_SECRET');
+
+        if (!clientId || !clientSecret || !refresh_token) {
+          throw new Error('Token expirado. Reconecte o Google Fit.');
+        }
+
+        const refreshBody = new URLSearchParams({
+          client_id: clientId,
+          client_secret: clientSecret,
+          refresh_token,
+          grant_type: 'refresh_token',
+        });
+
+        const refreshResp = await fetch('https://oauth2.googleapis.com/token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: refreshBody,
+        });
+
+        if (!refreshResp.ok) {
+          const txt = await refreshResp.text();
+          throw new Error(`Falha ao renovar token do Google Fit: ${txt}`);
+        }
+
+        const refreshData = await refreshResp.json();
+        access_token = refreshData.access_token;
+
+        const newExpiresAt = new Date(Date.now() + (refreshData.expires_in || 3600) * 1000).toISOString();
+
+        await supabaseClient
+          .from('google_fit_tokens')
+          .update({ access_token, expires_at: newExpiresAt, updated_at: new Date().toISOString() })
+          .eq('user_id', user.user.id);
+      }
+    }
+
+    if (!date_range?.startDate || !date_range?.endDate) {
+      const now = new Date();
+      const endDate = now.toISOString().slice(0, 10);
+      const startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+      date_range = { startDate, endDate };
+    }
 
     const dailyData = await fetchGoogleFitDaily(access_token, date_range);
+
 
     for (const d of dailyData) {
       const googleFitRecord: any = {
@@ -174,49 +244,49 @@ serve(async (req) => {
         // Dados de sono
         sleep_hours: d.sleepDuration || 0,
         sleep_efficiency: d.sleepEfficiency ?? null,
-        sleep_stages: d.sleepStages ? JSON.stringify(d.sleepStages) : null,
-        
+        sleep_stages: d.sleepStages ?? null,
+
         // Dados antropométricos
         weight_kg: d.weight ?? null,
         height_cm: d.height ? Math.round(d.height * 100) : null,
         bmi: d.bmi ?? null,
         body_fat_percentage: d.bodyFat ?? null,
         muscle_mass_kg: d.muscleMass ?? null,
-        
+
         // Dados de exercício
         exercise_minutes: d.exerciseMinutes || 0,
         workout_sessions: d.workoutSessions || 0,
         exercise_calories: d.exerciseCalories || 0,
-        
+
         // Dados de hidratação
         hydration_ml: d.hydration || 0,
         water_intake_ml: d.waterIntake || 0,
-        
+
         // Dados de nutrição
         nutrition_calories: d.nutritionCalories || 0,
         protein_g: d.protein ?? null,
         carbs_g: d.carbs ?? null,
         fat_g: d.fat ?? null,
-        
+
         // Dados de oxigenação
         oxygen_saturation: d.oxygenSaturation ?? null,
         respiratory_rate: d.respiratoryRate ?? null,
-        
+
         // Dados de ambiente
         location: d.location ?? null,
         weather: d.weather ?? null,
         temperature_celsius: d.temperature ?? null,
-        
+
         // Dados de dispositivos
         device_type: d.deviceType ?? null,
         data_source: d.dataSource ?? null,
-        
+
         // Metadados
         sync_timestamp: new Date().toISOString(),
         data_quality: d.dataQuality || 0,
-        
+
         // Dados brutos para análise futura
-        raw_data: JSON.stringify(d)
+        raw_data: d as any,
       };
 
       await supabaseClient.from('google_fit_data').upsert(googleFitRecord, { onConflict: 'user_id,date' });
