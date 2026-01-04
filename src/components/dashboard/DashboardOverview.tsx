@@ -5,24 +5,28 @@ import {
   Utensils, 
   Trophy,
   Bot,
-  ChevronRight
+  ChevronRight,
+  Scale,
+  Plus
 } from 'lucide-react';
 import { useWeightMeasurement } from '@/hooks/useWeightMeasurement';
 import { useUserGender } from '@/hooks/useUserGender';
+import { useUserStreak } from '@/hooks/useUserStreak';
+import { useUserXP } from '@/hooks/useUserXP';
 import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
 import SimpleWeightForm from '@/components/weighing/SimpleWeightForm';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { PremiumQuickActions } from './PremiumDashboardCards';
-import { CompactGamificationBar } from './CompactGamificationBar';
-import { HealthScoreGauge } from './HealthScoreGauge';
-import { PremiumVitalCards } from './PremiumVitalCards';
-import { MiniHealthAlerts, useHealthAlerts } from './MiniHealthAlerts';
-import { SofiaEmotionalBanner } from '@/components/sofia/SofiaEmotionalBanner';
+import { Button } from '@/components/ui/button';
+import { AvatarHeroCard } from './AvatarHeroCard';
+import { EvolutionChartPremium } from './EvolutionChartPremium';
+import { SofiaInsightsCard } from './SofiaInsightsCard';
 import { FlashChallengeCard } from '@/components/gamification/FlashChallengeCard';
-import { WeightEvolutionCard } from './WeightEvolutionCard';
+
 const DashboardOverview: React.FC = () => {
   const { measurements, stats, loading } = useWeightMeasurement();
+  const { currentStreak } = useUserStreak();
+  const { totalXP, level, levelTitle } = useUserXP();
   const [isWeightModalOpen, setIsWeightModalOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -30,9 +34,9 @@ const DashboardOverview: React.FC = () => {
   const { gender } = useUserGender(user);
   const [waistCircumference, setWaistCircumference] = useState<number>(0);
   const [heightCm, setHeightCm] = useState<number>(170);
-  const [weightHistory, setWeightHistory] = useState<number[]>([]);
   const [healthScore, setHealthScore] = useState<number>(0);
-  const [previousHealthScore, setPreviousHealthScore] = useState<number | undefined>();
+  const [targetWeight, setTargetWeight] = useState<number | undefined>();
+  const [lastMeasurementDays, setLastMeasurementDays] = useState<number>(0);
 
   useEffect(() => {
     const getCurrentUser = async () => {
@@ -60,7 +64,7 @@ const DashboardOverview: React.FC = () => {
         setWaistCircumference(trackingData.waist_cm);
       }
 
-      // Buscar altura do perfil
+      // Buscar altura e meta do perfil
       const { data: profileData } = await supabase
         .from('dados_físicos_do_usuário')
         .select('altura_cm')
@@ -70,19 +74,33 @@ const DashboardOverview: React.FC = () => {
       if (profileData?.altura_cm) {
         setHeightCm(profileData.altura_cm);
       }
+
+      // Buscar meta de peso
+      const { data: goalData } = await supabase
+        .from('user_goals')
+        .select('target_value')
+        .eq('user_id', user.id)
+        .eq('goal_type', 'weight')
+        .eq('status', 'active')
+        .limit(1)
+        .single();
+
+      if (goalData?.target_value) {
+        setTargetWeight(goalData.target_value);
+      }
     };
 
     fetchHealthData();
   }, [user]);
 
-  // Buscar histórico de peso para sparkline
+  // Calculate days since last measurement
   useEffect(() => {
     if (measurements && measurements.length > 0) {
-      const history = measurements
-        .slice(0, 10)
-        .map(m => Number(m.peso_kg) || 0)
-        .reverse();
-      setWeightHistory(history);
+      const lastDate = new Date(measurements[0].measurement_date || measurements[0].created_at);
+      const today = new Date();
+      const diffTime = Math.abs(today.getTime() - lastDate.getTime());
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      setLastMeasurementDays(diffDays);
     }
   }, [measurements]);
 
@@ -109,77 +127,80 @@ const DashboardOverview: React.FC = () => {
     // Constância: bonus se tem medições recentes
     if (measurements && measurements.length >= 3) score += 10;
     
+    // Streak bonus
+    if (currentStreak >= 7) score += 10;
+    else if (currentStreak >= 3) score += 5;
+    
     setHealthScore(Math.max(0, Math.min(100, score)));
-  }, [measurements, waistCircumference, heightCm]);
+  }, [measurements, waistCircumference, heightCm, currentStreak]);
 
   const weightChange = () => {
     if (measurements && measurements.length >= 2) {
       const current = Number(measurements[0]?.peso_kg) || 0;
       const previous = Number(measurements[1]?.peso_kg) || 0;
-      const change = current - previous;
-      return change > 0 ? `+${change.toFixed(1)}kg` : `${change.toFixed(1)}kg`;
+      return current - previous;
     }
-    return "Primeiro registro";
+    return 0;
   };
 
-  const currentWeight = stats?.currentWeight || (measurements?.[0]?.peso_kg ? Number(measurements[0].peso_kg).toFixed(1) : '--');
-  const previousWeight = measurements?.[1]?.peso_kg ? Number(measurements[1].peso_kg) : undefined;
-
-  // Health alerts
-  const alerts = useHealthAlerts({
-    weight: typeof currentWeight === 'number' ? currentWeight : parseFloat(String(currentWeight)) || undefined,
-    previousWeight,
-    waistCircumference,
-    heightCm
-  });
+  const currentWeight = stats?.currentWeight || (measurements?.[0]?.peso_kg ? Number(measurements[0].peso_kg) : 0);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/30">
-      <div className="mx-auto max-w-lg space-y-3 sm:space-y-4 px-2 sm:px-4 pb-24 pt-2">
+      <div className="mx-auto max-w-lg space-y-4 px-3 sm:px-4 pb-24 pt-3">
         
-        {/* Sofia - Mensagem personalizada */}
-        <SofiaEmotionalBanner />
-
-        {/* Gamificação Compacta */}
-        <CompactGamificationBar />
-
-        {/* HEALTH SCORE GAUGE - Principal */}
-        <HealthScoreGauge 
-          score={healthScore}
-          previousScore={previousHealthScore}
-        />
-
-        {/* ALERTAS DE SAÚDE */}
-        <MiniHealthAlerts alerts={alerts} />
-
-        {/* MÉTRICAS VITAIS PREMIUM */}
-        <PremiumVitalCards 
-          weight={currentWeight}
+        {/* 1. HERO: Avatar com métricas principais */}
+        <AvatarHeroCard
+          gender={gender === 'feminino' ? 'female' : 'male'}
+          currentWeight={typeof currentWeight === 'number' ? currentWeight : parseFloat(String(currentWeight)) || 0}
+          targetWeight={targetWeight}
           weightChange={weightChange()}
-          waistCircumference={waistCircumference}
-          heightCm={heightCm}
-          weightHistory={weightHistory}
+          healthScore={healthScore}
+          level={level}
+          levelTitle={levelTitle}
+          currentStreak={currentStreak}
         />
 
-        {/* Ação Rápida - Registrar Peso */}
-        <PremiumQuickActions 
-          onAddWeight={() => setIsWeightModalOpen(true)}
+        {/* 2. SOFIA INSIGHTS: Dicas personalizadas da IA */}
+        <SofiaInsightsCard
+          healthScore={healthScore}
+          weightChange={weightChange()}
+          currentStreak={currentStreak}
+          lastMeasurementDays={lastMeasurementDays}
         />
 
-        {/* EVOLUÇÃO DO PESO - Gráfico e histórico com personagem 3D */}
-        <WeightEvolutionCard 
+        {/* 3. EVOLUÇÃO: Gráfico premium */}
+        <EvolutionChartPremium
           measurements={measurements || []}
           loading={loading}
-          gender={gender === 'feminino' ? 'female' : 'male'}
+          onViewFullHistory={() => navigate('/tracking')}
         />
+
+        {/* 4. CTA: Registrar Peso */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <Button
+            onClick={() => setIsWeightModalOpen(true)}
+            className="w-full h-14 rounded-2xl bg-gradient-to-r from-primary to-violet-600 hover:from-primary/90 hover:to-violet-700 text-white font-semibold shadow-lg shadow-primary/30"
+          >
+            <Scale className="h-5 w-5 mr-2" />
+            Registrar Peso
+            <Plus className="h-4 w-4 ml-2" />
+          </Button>
+        </motion.div>
+
+        {/* 5. DESAFIO RELÂMPAGO */}
         <FlashChallengeCard />
 
-        {/* Acesso Rápido - Cards menores */}
+        {/* 6. Acesso Rápido - Cards menores */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="grid grid-cols-3 gap-2 sm:gap-3"
+          className="grid grid-cols-3 gap-3"
         >
           <QuickAccessButton
             icon={Bot}
@@ -242,10 +263,10 @@ const QuickAccessButton: React.FC<{
   <motion.button
     whileTap={{ scale: 0.95 }}
     onClick={onClick}
-    className={`flex flex-col items-center justify-center gap-1.5 sm:gap-2 p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-gradient-to-br ${gradient} text-white shadow-lg min-h-[72px] sm:min-h-[80px]`}
+    className={`flex flex-col items-center justify-center gap-2 p-3 rounded-2xl bg-gradient-to-br ${gradient} text-white shadow-lg min-h-[80px]`}
   >
-    <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
-    <span className="text-[9px] sm:text-[10px] font-medium leading-tight text-center">{label}</span>
+    <Icon className="h-5 w-5" />
+    <span className="text-[10px] font-medium leading-tight text-center">{label}</span>
   </motion.button>
 );
 
