@@ -27,7 +27,6 @@ import {
   PremiumFeatureCard,
   PremiumDailyStats
 } from './PremiumDashboardCards';
-import { QuickExerciseModal } from '@/components/tracking';
 import { SofiaProactiveCard } from '@/components/sofia/SofiaProactiveCard';
 
 const DashboardOverview: React.FC = () => {
@@ -37,7 +36,6 @@ const DashboardOverview: React.FC = () => {
   const [exerciseData, setExerciseData] = useState<any[]>([]);
   const [waterData, setWaterData] = useState<any[]>([]);
   const [isWeightModalOpen, setIsWeightModalOpen] = useState(false);
-  const [isExerciseModalOpen, setIsExerciseModalOpen] = useState(false);
   const navigate = useNavigate();
 
   const [user, setUser] = useState<User | null>(null);
@@ -213,10 +211,9 @@ const DashboardOverview: React.FC = () => {
           </div>
         </div>
 
-        {/* Quick Actions (Peso e Exercício) */}
+        {/* Quick Action - Apenas Peso (manual) */}
         <PremiumQuickActions 
           onAddWeight={() => setIsWeightModalOpen(true)}
-          onAddExercise={() => setIsExerciseModalOpen(true)}
         />
 
         {/* Daily Stats */}
@@ -338,13 +335,6 @@ const DashboardOverview: React.FC = () => {
           />
         </DialogContent>
       </Dialog>
-
-      {/* Exercise Modal */}
-      <QuickExerciseModal 
-        open={isExerciseModalOpen} 
-        onOpenChange={setIsExerciseModalOpen}
-        onSuccess={loadWeeklyData}
-      />
     </div>
   );
 };
