@@ -62,7 +62,7 @@ export const MissionCompletePage: React.FC<MissionCompletePageProps> = ({
                 📋 Resumo das suas Respostas
               </h2>
 
-              <div className="space-y-3 max-h-[460px] overflow-y-auto pr-1">
+              <div className="space-y-3">
                 {questions.map((question, index) => (
                   <article
                     key={question.id}
