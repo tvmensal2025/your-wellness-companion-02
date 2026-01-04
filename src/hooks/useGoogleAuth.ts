@@ -8,21 +8,20 @@ export const useGoogleAuth = () => {
     try {
       setIsLoading(true);
       
-      // Configurar OAuth com novas credenciais Google
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/auth`,
           queryParams: {
             access_type: 'offline',
-            prompt: 'consent',
+            prompt: 'select_account',
           },
         },
       });
 
       if (error) throw error;
 
-      return { success: true };
+      return { success: true, data };
       
     } catch (error) {
       console.error('Erro no login Google:', error);
