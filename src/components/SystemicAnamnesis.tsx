@@ -793,71 +793,71 @@ const SystemicAnamnesis = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 py-8">
-      <div className="container mx-auto px-4 max-w-4xl">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 py-4 sm:py-8 pb-24">
+      <div className="container mx-auto px-3 sm:px-4 max-w-4xl">
         <Card className="shadow-lg border-slate-200">
-          <CardHeader className="text-center pb-6">
-            <CardTitle className="text-3xl font-bold text-gray-800">
-              Anamnese Nutricional Completa
+          <CardHeader className="text-center p-4 sm:p-6 pb-4 sm:pb-6">
+            <CardTitle className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800">
+              Anamnese Nutricional
             </CardTitle>
-            <CardDescription className="text-gray-600 text-lg">
-              Complete sua avaliação personalizada para Dr. Vital e Sofia
+            <CardDescription className="text-gray-600 text-sm sm:text-base lg:text-lg">
+              Avaliação personalizada para Dr. Vital e Sofia
               {hasExistingAnamnesis && (
-                <div className="mt-2 text-sm">
-                  <span className="bg-green-100 text-green-800 px-2 py-1 rounded-md">
-                    ✓ Anamnese já preenchida - você pode atualizar as informações
+                <div className="mt-2 text-xs sm:text-sm">
+                  <span className="bg-green-100 text-green-800 px-2 py-1 rounded-md inline-block">
+                    ✓ Anamnese já preenchida
                   </span>
                 </div>
               )}
               {isDraft && !hasExistingAnamnesis && (
-                <div className="mt-2 text-sm">
-                  <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-md">
-                    📝 Rascunho - salvo apenas ao finalizar
+                <div className="mt-2 text-xs sm:text-sm">
+                  <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-md inline-block">
+                    📝 Rascunho
                   </span>
                 </div>
               )}
             </CardDescription>
             
-            {/* Progress Bar */}
-            <div className="mt-6">
-              <div className="flex justify-between text-sm text-gray-500 mb-2">
-                <span>Seção {currentSection + 1} de {sections.length}</span>
-                <span>{Math.round(((currentSection + 1) / sections.length) * 100)}% concluído</span>
+            {/* Progress Bar - Mobile Optimized */}
+            <div className="mt-4 sm:mt-6">
+              <div className="flex justify-between text-xs sm:text-sm text-gray-500 mb-2">
+                <span>Seção {currentSection + 1}/{sections.length}</span>
+                <span>{Math.round(((currentSection + 1) / sections.length) * 100)}%</span>
               </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
+              <div className="w-full bg-gray-200 rounded-full h-1.5 sm:h-2">
                 <div 
-                  className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
+                  className="bg-blue-600 h-1.5 sm:h-2 rounded-full transition-all duration-300" 
                   style={{ width: `${((currentSection + 1) / sections.length) * 100}%` }}
                 ></div>
               </div>
             </div>
           </CardHeader>
           
-          <CardContent className="px-6 pb-6">
+          <CardContent className="px-3 sm:px-6 pb-4 sm:pb-6">
             <form onSubmit={handleSubmit}>
-              <div className="mb-8">
-                <h3 className="text-xl font-semibold text-gray-800 mb-2">
+              <div className="mb-6 sm:mb-8">
+                <h3 className="text-base sm:text-lg lg:text-xl font-semibold text-gray-800 mb-1 sm:mb-2">
                   {sections[currentSection].title}
                 </h3>
-                <p className="text-gray-600 mb-6">
+                <p className="text-xs sm:text-sm text-gray-600 mb-4 sm:mb-6">
                   {sections[currentSection].description}
                 </p>
                 
-                <div className="bg-white p-6 rounded-lg border border-gray-200">
+                <div className="bg-white p-3 sm:p-6 rounded-lg border border-gray-200">
                   {sections[currentSection].fields}
                 </div>
               </div>
 
-              {/* Navigation Buttons */}
-              <div className="flex justify-between">
+              {/* Navigation Buttons - Mobile Fixed Bottom */}
+              <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-3 sm:p-4 flex justify-between gap-2 sm:relative sm:bg-transparent sm:border-0 sm:p-0 z-40">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={prevSection}
                   disabled={currentSection === 0}
-                  className="px-6"
+                  className="flex-1 sm:flex-none px-3 sm:px-6 text-sm sm:text-base"
                 >
-                  ← Anterior
+                  ← <span className="hidden sm:inline ml-1">Anterior</span>
                 </Button>
                 
                 {currentSection === sections.length - 1 ? (
@@ -865,17 +865,17 @@ const SystemicAnamnesis = () => {
                     type="button"
                     onClick={handleSubmit}
                     disabled={loading}
-                    className="px-8 bg-blue-600 hover:bg-blue-700"
+                    className="flex-1 sm:flex-none px-3 sm:px-8 bg-blue-600 hover:bg-blue-700 text-sm sm:text-base"
                   >
-                    {loading ? 'Salvando...' : 'Finalizar Anamnese ✓'}
+                    {loading ? 'Salvando...' : 'Finalizar ✓'}
                   </Button>
                 ) : (
                   <Button
                     type="button"
                     onClick={nextSection}
-                    className="px-6 bg-blue-600 hover:bg-blue-700"
+                    className="flex-1 sm:flex-none px-3 sm:px-6 bg-blue-600 hover:bg-blue-700 text-sm sm:text-base"
                   >
-                    Próximo →
+                    <span className="hidden sm:inline mr-1">Próximo</span> →
                   </Button>
                 )}
               </div>

@@ -34,47 +34,43 @@ export const NutritionTrackingPage: React.FC = () => {
   const dailyNutrition = getDailyNutrition(selectedDate);
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Rastreador Nutricional</h1>
-          <p className="text-muted-foreground">
-            Monitore sua alimentação e atinja suas metas nutricionais
+    <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6 pb-24">
+      {/* Header - Mobile Optimized */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+        <div className="min-w-0">
+          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold truncate">Rastreador Nutricional</h1>
+          <p className="text-xs sm:text-sm text-muted-foreground">
+            Monitore sua alimentação e metas
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline">
-            <Settings className="w-4 h-4 mr-2" />
-            Configurações
+        <div className="flex gap-2 flex-shrink-0">
+          <Button variant="outline" size="sm" className="text-xs sm:text-sm">
+            <Settings className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-2" />
+            <span className="hidden sm:inline">Configurações</span>
           </Button>
-          <Button>
-            <Plus className="w-4 h-4 mr-2" />
-            Nova Refeição
+          <Button size="sm" className="text-xs sm:text-sm">
+            <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4 sm:mr-2" />
+            <span className="hidden sm:inline">Nova</span> Refeição
           </Button>
         </div>
       </div>
 
-      {/* Cards de Resumo */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Cards de Resumo - Mobile Grid */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Calorias Hoje</CardTitle>
-            <Activity className="h-4 w-4 text-muted-foreground" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 sm:p-4 pb-1 sm:pb-2">
+            <CardTitle className="text-xs sm:text-sm font-medium">Calorias</CardTitle>
+            <Activity className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{dailyNutrition.totalCalories}</div>
-            <p className="text-xs text-muted-foreground">
+          <CardContent className="p-3 sm:p-4 pt-0">
+            <div className="text-lg sm:text-2xl font-bold">{dailyNutrition.totalCalories}</div>
+            <p className="text-[10px] sm:text-xs text-muted-foreground">
               Meta: {goals.calories} kcal
             </p>
-            <div className="mt-2">
-              <div className="flex justify-between text-xs mb-1">
-                <span>Progresso</span>
-                <span>{Math.round(dailyNutrition.progress.calories)}%</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
+            <div className="mt-1.5 sm:mt-2">
+              <div className="w-full bg-muted rounded-full h-1.5 sm:h-2">
                 <div 
-                  className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                  className="bg-blue-600 h-1.5 sm:h-2 rounded-full transition-all duration-300"
                   style={{ width: `${Math.min(dailyNutrition.progress.calories, 100)}%` }}
                 />
               </div>
@@ -83,23 +79,19 @@ export const NutritionTrackingPage: React.FC = () => {
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Proteínas</CardTitle>
-            <Apple className="h-4 w-4 text-muted-foreground" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 sm:p-4 pb-1 sm:pb-2">
+            <CardTitle className="text-xs sm:text-sm font-medium">Proteínas</CardTitle>
+            <Apple className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{dailyNutrition.totalProtein}g</div>
-            <p className="text-xs text-muted-foreground">
+          <CardContent className="p-3 sm:p-4 pt-0">
+            <div className="text-lg sm:text-2xl font-bold">{dailyNutrition.totalProtein}g</div>
+            <p className="text-[10px] sm:text-xs text-muted-foreground">
               Meta: {goals.protein}g
             </p>
-            <div className="mt-2">
-              <div className="flex justify-between text-xs mb-1">
-                <span>Progresso</span>
-                <span>{Math.round(dailyNutrition.progress.protein)}%</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
+            <div className="mt-1.5 sm:mt-2">
+              <div className="w-full bg-muted rounded-full h-1.5 sm:h-2">
                 <div 
-                  className="bg-green-600 h-2 rounded-full transition-all duration-300"
+                  className="bg-green-600 h-1.5 sm:h-2 rounded-full transition-all duration-300"
                   style={{ width: `${Math.min(dailyNutrition.progress.protein, 100)}%` }}
                 />
               </div>
@@ -108,23 +100,19 @@ export const NutritionTrackingPage: React.FC = () => {
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Carboidratos</CardTitle>
-            <BarChart3 className="h-4 w-4 text-muted-foreground" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 sm:p-4 pb-1 sm:pb-2">
+            <CardTitle className="text-xs sm:text-sm font-medium">Carbos</CardTitle>
+            <BarChart3 className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{dailyNutrition.totalCarbs}g</div>
-            <p className="text-xs text-muted-foreground">
+          <CardContent className="p-3 sm:p-4 pt-0">
+            <div className="text-lg sm:text-2xl font-bold">{dailyNutrition.totalCarbs}g</div>
+            <p className="text-[10px] sm:text-xs text-muted-foreground">
               Meta: {goals.carbs}g
             </p>
-            <div className="mt-2">
-              <div className="flex justify-between text-xs mb-1">
-                <span>Progresso</span>
-                <span>{Math.round(dailyNutrition.progress.carbs)}%</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
+            <div className="mt-1.5 sm:mt-2">
+              <div className="w-full bg-muted rounded-full h-1.5 sm:h-2">
                 <div 
-                  className="bg-yellow-600 h-2 rounded-full transition-all duration-300"
+                  className="bg-yellow-600 h-1.5 sm:h-2 rounded-full transition-all duration-300"
                   style={{ width: `${Math.min(dailyNutrition.progress.carbs, 100)}%` }}
                 />
               </div>
@@ -133,23 +121,19 @@ export const NutritionTrackingPage: React.FC = () => {
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Gorduras</CardTitle>
-            <Target className="h-4 w-4 text-muted-foreground" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 sm:p-4 pb-1 sm:pb-2">
+            <CardTitle className="text-xs sm:text-sm font-medium">Gorduras</CardTitle>
+            <Target className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{dailyNutrition.totalFat}g</div>
-            <p className="text-xs text-muted-foreground">
+          <CardContent className="p-3 sm:p-4 pt-0">
+            <div className="text-lg sm:text-2xl font-bold">{dailyNutrition.totalFat}g</div>
+            <p className="text-[10px] sm:text-xs text-muted-foreground">
               Meta: {goals.fat}g
             </p>
-            <div className="mt-2">
-              <div className="flex justify-between text-xs mb-1">
-                <span>Progresso</span>
-                <span>{Math.round(dailyNutrition.progress.fat)}%</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
+            <div className="mt-1.5 sm:mt-2">
+              <div className="w-full bg-muted rounded-full h-1.5 sm:h-2">
                 <div 
-                  className="bg-red-600 h-2 rounded-full transition-all duration-300"
+                  className="bg-red-600 h-1.5 sm:h-2 rounded-full transition-all duration-300"
                   style={{ width: `${Math.min(dailyNutrition.progress.fat, 100)}%` }}
                 />
               </div>
@@ -158,13 +142,13 @@ export const NutritionTrackingPage: React.FC = () => {
         </Card>
       </div>
 
-      {/* Conteúdo Principal */}
-      <Tabs defaultValue="tracker" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="tracker">Rastreador</TabsTrigger>
-          <TabsTrigger value="stats">Estatísticas</TabsTrigger>
-          <TabsTrigger value="insights">Insights</TabsTrigger>
-          <TabsTrigger value="goals">Metas</TabsTrigger>
+      {/* Conteúdo Principal - Mobile Tabs */}
+      <Tabs defaultValue="tracker" className="space-y-3 sm:space-y-4">
+        <TabsList className="grid w-full grid-cols-4 h-9 sm:h-10">
+          <TabsTrigger value="tracker" className="text-xs sm:text-sm px-1 sm:px-3">Rastreador</TabsTrigger>
+          <TabsTrigger value="stats" className="text-xs sm:text-sm px-1 sm:px-3">Stats</TabsTrigger>
+          <TabsTrigger value="insights" className="text-xs sm:text-sm px-1 sm:px-3">Insights</TabsTrigger>
+          <TabsTrigger value="goals" className="text-xs sm:text-sm px-1 sm:px-3">Metas</TabsTrigger>
         </TabsList>
 
         <TabsContent value="tracker" className="space-y-4">

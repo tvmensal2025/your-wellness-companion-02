@@ -115,47 +115,47 @@ const CoursePlatform = () => {
 
   if (selectedCourse) {
     return (
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8 pb-24">
         <Button 
           variant="outline" 
           onClick={() => setSelectedCourse(null)}
-          className="mb-6"
+          className="mb-4 sm:mb-6 text-sm"
         >
-          ← Voltar aos Cursos
+          ← Voltar
         </Button>
         
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div className="grid lg:grid-cols-3 gap-4 sm:gap-8">
           <div className="lg:col-span-2">
             <Card>
-              <CardHeader>
-                <CardTitle className="text-2xl">{selectedCourse.title}</CardTitle>
-                <CardDescription>{selectedCourse.description}</CardDescription>
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="text-lg sm:text-2xl">{selectedCourse.title}</CardTitle>
+                <CardDescription className="text-xs sm:text-sm">{selectedCourse.description}</CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="aspect-video bg-gray-100 rounded-lg mb-6 flex items-center justify-center">
-                  <Play className="h-16 w-16 text-gray-400" />
+              <CardContent className="p-4 sm:p-6 pt-0">
+                <div className="aspect-video bg-gray-100 rounded-lg mb-4 sm:mb-6 flex items-center justify-center">
+                  <Play className="h-10 w-10 sm:h-16 sm:w-16 text-gray-400" />
                 </div>
                 
-                <div className="space-y-4">
-                  <h3 className="text-xl font-semibold">Aulas do Curso</h3>
+                <div className="space-y-3 sm:space-y-4">
+                  <h3 className="text-base sm:text-xl font-semibold">Aulas do Curso</h3>
                   {lessons.length === 0 ? (
-                    <p className="text-gray-500">Carregando aulas...</p>
+                    <p className="text-sm text-gray-500">Carregando aulas...</p>
                   ) : (
                     lessons.map((lesson) => (
                       <Card key={lesson.id} className="cursor-pointer hover:shadow-md transition-shadow">
-                        <CardContent className="p-4">
-                          <div className="flex items-center gap-4">
+                        <CardContent className="p-3 sm:p-4">
+                          <div className="flex items-center gap-3 sm:gap-4">
                             <div className="flex-shrink-0">
-                              <CheckCircle className="h-6 w-6 text-green-500" />
+                              <CheckCircle className="h-5 w-5 sm:h-6 sm:w-6 text-green-500" />
                             </div>
-                            <div className="flex-1">
-                              <h4 className="font-medium">{lesson.title}</h4>
-                              <p className="text-sm text-gray-500 mt-1">
-                                {lesson.duration_minutes} minutos
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-medium text-sm sm:text-base truncate">{lesson.title}</h4>
+                              <p className="text-xs sm:text-sm text-gray-500 mt-0.5 sm:mt-1">
+                                {lesson.duration_minutes} min
                               </p>
                             </div>
                             {lesson.is_free && (
-                              <Badge variant="secondary">Grátis</Badge>
+                              <Badge variant="secondary" className="text-xs flex-shrink-0">Grátis</Badge>
                             )}
                           </div>
                         </CardContent>
@@ -169,23 +169,23 @@ const CoursePlatform = () => {
           
           <div>
             <Card>
-              <CardHeader>
-                <CardTitle>Detalhes do Curso</CardTitle>
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="text-base sm:text-lg">Detalhes</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-3 sm:space-y-4 p-4 sm:p-6 pt-0">
                 <div className="flex items-center gap-2">
-                  <Users className="h-4 w-4 text-gray-500" />
-                  <span className="text-sm">Instrutor: {selectedCourse.instructor_name}</span>
+                  <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-500 flex-shrink-0" />
+                  <span className="text-xs sm:text-sm truncate">{selectedCourse.instructor_name}</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-gray-500" />
-                  <span className="text-sm">{selectedCourse.duration_minutes} minutos</span>
+                  <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-500 flex-shrink-0" />
+                  <span className="text-xs sm:text-sm">{selectedCourse.duration_minutes} min</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Star className="h-4 w-4 text-gray-500" />
-                  <span className="text-sm">Nível: {selectedCourse.difficulty_level}</span>
+                  <Star className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-500 flex-shrink-0" />
+                  <span className="text-xs sm:text-sm">{selectedCourse.difficulty_level}</span>
                 </div>
-                <Badge variant="outline">{selectedCourse.category}</Badge>
+                <Badge variant="outline" className="text-xs">{selectedCourse.category}</Badge>
               </CardContent>
             </Card>
           </div>
@@ -195,44 +195,44 @@ const CoursePlatform = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold mb-4">Plataforma de Cursos</h1>
-        <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-          Aprenda com nossos especialistas e transforme sua saúde
+    <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8 pb-24">
+      <div className="text-center mb-6 sm:mb-12">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2 sm:mb-4">Plataforma de Cursos</h1>
+        <p className="text-sm sm:text-base lg:text-xl text-gray-600 max-w-2xl mx-auto">
+          Aprenda com especialistas e transforme sua saúde
         </p>
       </div>
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         {courses.map((course) => (
           <Card key={course.id} className="cursor-pointer hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <div className="aspect-video bg-gradient-to-br from-primary/20 to-primary/10 rounded-lg mb-4 flex items-center justify-center">
-                <BookOpen className="h-12 w-12 text-primary" />
+            <CardHeader className="p-4 sm:p-6">
+              <div className="aspect-video bg-gradient-to-br from-primary/20 to-primary/10 rounded-lg mb-3 sm:mb-4 flex items-center justify-center">
+                <BookOpen className="h-8 w-8 sm:h-12 sm:w-12 text-primary" />
               </div>
-              <CardTitle className="text-xl">{course.title}</CardTitle>
-              <CardDescription>{course.description}</CardDescription>
+              <CardTitle className="text-base sm:text-xl">{course.title}</CardTitle>
+              <CardDescription className="text-xs sm:text-sm line-clamp-2">{course.description}</CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between text-sm text-gray-500">
+            <CardContent className="p-4 sm:p-6 pt-0">
+              <div className="space-y-2 sm:space-y-3">
+                <div className="flex items-center justify-between text-xs sm:text-sm text-gray-500">
                   <div className="flex items-center gap-1">
-                    <Users className="h-4 w-4" />
-                    <span>{course.instructor_name}</span>
+                    <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                    <span className="truncate max-w-[80px]">{course.instructor_name}</span>
                   </div>
                   <div className="flex items-center gap-1">
-                    <Clock className="h-4 w-4" />
+                    <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                     <span>{course.duration_minutes}min</span>
                   </div>
                 </div>
                 
-                <div className="flex items-center justify-between">
-                  <Badge variant="outline">{course.category}</Badge>
-                  <Badge variant="secondary">{course.difficulty_level}</Badge>
+                <div className="flex items-center justify-between gap-2">
+                  <Badge variant="outline" className="text-xs">{course.category}</Badge>
+                  <Badge variant="secondary" className="text-xs">{course.difficulty_level}</Badge>
                 </div>
                 
                 <Button 
-                  className="w-full" 
+                  className="w-full text-sm" 
                   onClick={() => {
                     setSelectedCourse(course);
                     fetchLessons(course.id);
