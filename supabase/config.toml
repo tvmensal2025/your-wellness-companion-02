@@ -1,1 +1,7 @@
 project_id = "ciszqtlaacrhfwsqnvjr"
+
+[functions.mealie-real]
+verify_jwt = false
+
+[functions.generate-meal-plan-ultra-safe]
+verify_jwt = false
