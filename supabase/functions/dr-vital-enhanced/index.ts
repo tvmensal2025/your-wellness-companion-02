@@ -775,6 +775,7 @@ async function translateToPt(service: string, model: string, text: string, openA
 }
 
 serve(async (req) => {
+  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -793,8 +794,18 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
     const anonKey = Deno.env.get('SUPABASE_ANON_KEY') || '';
-    const supabaseKey = serviceRoleKey || anonKey;
     const openAIKey = Deno.env.get('OPENAI_API_KEY') || '';
+
+    // Extrair token JWT do header Authorization
+    const authHeader = req.headers.get('Authorization');
+    const userToken = authHeader?.replace('Bearer ', '') || '';
+
+    // Usar serviceRoleKey para acessar dados do usuário (preferido)
+    // ou usar o token do usuário com anonKey como fallback
+    let supabaseKey = serviceRoleKey;
+    if (!supabaseKey) {
+      supabaseKey = anonKey;
+    }
 
     if (!openAIKey || openAIKey.trim() === '') {
       console.error('OPENAI_API_KEY não configurada nas Edge Functions.');
@@ -812,7 +823,16 @@ serve(async (req) => {
       }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    // Criar cliente com service role para bypass de RLS (necessário para ler dados do usuário)
+    const supabase = createClient(supabaseUrl, supabaseKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
+      },
+      global: {
+        headers: userToken ? { Authorization: `Bearer ${userToken}` } : {}
+      }
+    });
 
     // Buscar perfil completo do usuário
     console.log(`🔍 Carregando dados completos para usuário: ${userId}`);
