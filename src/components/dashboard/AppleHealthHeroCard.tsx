@@ -195,14 +195,14 @@ const StatItem: React.FC<{
   suffix: string;
   color: string;
 }> = ({ icon: Icon, label, value, suffix, color }) => (
-  <div className="text-center">
-    <div className={`flex items-center justify-center gap-1 mb-1 ${color}`}>
-      <Icon className="h-3.5 w-3.5" />
+  <div className="text-center py-2">
+    <div className={`flex items-center justify-center gap-1.5 mb-2 ${color}`}>
+      <Icon className="h-5 w-5" />
     </div>
-    <div className="flex items-baseline justify-center gap-1">
-      <span className="text-2xl font-bold text-white">{value}</span>
-      <span className="text-xs text-slate-400">{suffix}</span>
+    <div className="flex items-baseline justify-center gap-1.5">
+      <span className="text-3xl font-bold text-white">{value}</span>
+      <span className="text-sm text-slate-300 font-medium">{suffix}</span>
     </div>
-    <p className="text-[10px] text-slate-500 mt-0.5">{label}</p>
+    <p className="text-sm text-slate-400 mt-1.5 font-medium">{label}</p>
   </div>
 );
