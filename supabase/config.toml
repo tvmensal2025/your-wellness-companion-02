@@ -23,3 +23,6 @@ verify_jwt = false
 
 [functions.dr-vital-enhanced]
 verify_jwt = false
+
+[functions.check-user-data-completeness]
+verify_jwt = false
