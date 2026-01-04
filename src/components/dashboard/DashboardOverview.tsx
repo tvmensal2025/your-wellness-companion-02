@@ -219,11 +219,11 @@ const DashboardOverview: React.FC = () => {
           loading={loading}
         />
 
+        {/* Quick Actions */}
+        <QuickActionsGrid onWeightClick={() => setIsWeightModalOpen(true)} />
+
         {/* Motivational Mascot */}
         <MotivationalMascot />
-
-        {/* 4. Quick Actions */}
-        <QuickActionsGrid onWeightClick={() => setIsWeightModalOpen(true)} />
 
       </div>
 
