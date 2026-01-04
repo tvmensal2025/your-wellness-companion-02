@@ -32,19 +32,9 @@ const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & {
     hideTitle?: boolean;
+    accessibleTitle?: string;
   }
->(({ className, children, hideTitle = false, ...props }, ref) => {
-  // Auto-detecta se há DialogTitle nos children
-  const hasDialogTitle = React.Children.toArray(children).some(child =>
-    React.isValidElement(child) && 
-    (child.type === DialogTitle || 
-     (child.props && child.props.children && 
-      React.Children.toArray(child.props.children).some(nested => 
-        React.isValidElement(nested) && nested.type === DialogTitle
-      ))
-    )
-  );
-
+>(({ className, children, hideTitle = false, accessibleTitle = "Dialog", ...props }, ref) => {
   return (
     <DialogPortal>
       <DialogOverlay />
@@ -57,11 +47,11 @@ const DialogContent = React.forwardRef<
         aria-describedby={props["aria-describedby"] || undefined}
         {...props}
       >
-        {(hideTitle || !hasDialogTitle) && (
-          <VisuallyHiddenPrimitive.Root>
-            <DialogPrimitive.Title>Dialog</DialogPrimitive.Title>
-          </VisuallyHiddenPrimitive.Root>
-        )}
+        {/* Título visualmente oculto para acessibilidade */}
+        <VisuallyHiddenPrimitive.Root>
+          <DialogPrimitive.Title>{accessibleTitle}</DialogPrimitive.Title>
+          <DialogPrimitive.Description>Dialog content</DialogPrimitive.Description>
+        </VisuallyHiddenPrimitive.Root>
         {children}
         <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground">
           <X className="h-4 w-4" />
