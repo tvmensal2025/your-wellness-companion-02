@@ -39,6 +39,7 @@ const SaboteurTest = lazy(() => import('@/components/SaboteurTest'));
 
 // Sidebar components
 import { SidebarProfile } from '@/components/sidebar/SidebarProfile';
+import { ProfileModal } from '@/components/sidebar/ProfileModal';
 
 // Lightweight loader component
 const SectionLoader = () => (
@@ -58,6 +59,7 @@ const CompleteDashboardPage = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
   const [exerciseModalOpen, setExerciseModalOpen] = useState(false);
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
   const navigate = useNavigate();
   const {
     toast
@@ -298,7 +300,7 @@ const CompleteDashboardPage = () => {
               isExpanded={isExpanded}
               onAvatarUpload={uploadAvatar}
               onProfileClick={() => {
-                setActiveSection('profile');
+                setProfileModalOpen(true);
                 if (isMobile) setSidebarOpen(false);
               }}
             />
@@ -398,6 +400,9 @@ const CompleteDashboardPage = () => {
 
       {/* Modal de Exercícios */}
       <ExerciseOnboardingModal isOpen={exerciseModalOpen} onClose={() => setExerciseModalOpen(false)} user={user} />
+      
+      {/* Modal de Perfil */}
+      <ProfileModal open={profileModalOpen} onOpenChange={setProfileModalOpen} />
     </div>;
 };
 export default CompleteDashboardPage;
