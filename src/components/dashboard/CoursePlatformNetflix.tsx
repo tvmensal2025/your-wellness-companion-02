@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import { useAdminMode } from "@/hooks/useAdminMode";
 import { AdminEditControls, AdminStatsPanel, AdminViewToggle } from "@/components/admin/AdminEditControls";
-import { supabase } from "@/integrations/supabase/client-fixed";
+import { supabase } from "@/integrations/supabase/client";
 import { getVideoEmbedUrl, detectVideoProvider } from "@/utils/videoUrlParser";
 
 interface Lesson {
