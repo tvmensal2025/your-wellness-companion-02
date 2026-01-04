@@ -150,71 +150,84 @@ const MyProgress: React.FC = () => {
       </div>;
   }
 
-  // Experiência elegante quando não conectado (customizada)
+  // Experiência elegante quando não conectado (hero em um único card)
   if (!isConnected) {
-    return <div className="max-w-5xl mx-auto p-6">
-        <Card className="relative overflow-hidden border-0 shadow-xl">
-          {/* background decor */}
-          <div className="pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full bg-gradient-to-br from-violet-400/30 to-fuchsia-400/30 blur-3xl" />
-          <div className="pointer-events-none absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-gradient-to-br from-indigo-400/30 to-purple-400/30 blur-3xl" />
+    return (
+      <div className="min-h-[70vh] flex items-start justify-center px-4 py-6">
+        <Card className="relative w-full max-w-md overflow-hidden border-0 shadow-xl rounded-[2rem] bg-gradient-mission text-primary-foreground">
+          {/* brilho suave de fundo */}
+          <div className="pointer-events-none absolute inset-0 opacity-70 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.9),_transparent_60%),radial-gradient(circle_at_bottom,_rgba(255,255,255,0.4),_transparent_55%)]" />
 
-          <div className="grid md:grid-cols-2">
-            <div className="p-10 flex flex-col justify-center gap-4">
-              <div className="flex items-center gap-3">
-                <img src="/favicon.png" alt="Instituto dos Sonhos" className="h-8 w-8 rounded" />
-                <span className="text-sm font-semibold tracking-wide text-muted-foreground">Instituto dos Sonhos</span>
+          <div className="relative z-10 p-7 space-y-5">
+            <div className="flex items-center gap-3">
+              <div className="h-8 w-8 rounded-lg bg-background/80 flex items-center justify-center text-[10px] font-bold text-primary">
+                IS
               </div>
-              <h1 className="text-3xl font-extrabold leading-tight">Conecte o Google Fit e acompanhe sua evolução</h1>
-              <p className="text-muted-foreground">Sincronize automaticamente seus <b>passos</b>, <b>calorias ativas</b>, <b>minutos de intensidade</b>, <b>sono</b> e <b>frequência cardíaca</b> para análises inteligentes e relatórios do Dr. Vital.</p>
-
-              <div className="grid grid-cols-2 gap-3 mt-2">
-                <div className="flex items-center gap-2 text-sm"><Activity className="w-4 h-4 text-indigo-600" /> Passos e distância</div>
-                <div className="flex items-center gap-2 text-sm"><Zap className="w-4 h-4 text-orange-600" /> Calorias ativas</div>
-                <div className="flex items-center gap-2 text-sm"><Heart className="w-4 h-4 text-rose-600" /> FC min/média/máx</div>
-                <div className="flex items-center gap-2 text-sm"><Clock className="w-4 h-4 text-emerald-600" /> Heart minutes e sono</div>
-              </div>
-
-              <div className="flex flex-col sm:flex-row gap-3 mt-4">
-                <Button size="lg" className="w-full sm:w-auto" onClick={() => {
-                window.location.href = '/google-fit-oauth';
-              }}>
-                  Conectar Google Fit
-                </Button>
-                <Button size="lg" variant="outline" className="w-full sm:w-auto" onClick={() => window.location.reload()}>
-                  Já conectei, atualizar
-                </Button>
-              </div>
-              <p className="text-xs text-muted-foreground">Autorização única. Seus dados permanecem salvos com segurança no Supabase.</p>
+              <span className="text-xs font-semibold tracking-wide uppercase text-primary-foreground/80">
+                Instituto dos Sonhos
+              </span>
             </div>
 
-            <div className="p-6 md:p-10 bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 flex items-center justify-center">
-              <div className="w-full max-w-sm space-y-4">
-                <div className="rounded-2xl border bg-white/70 dark:bg-zinc-900/50 backdrop-blur p-5 shadow">
-                  <div className="text-sm text-muted-foreground mb-2">Prévia do painel</div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="rounded-lg border p-3">
-                      <div className="text-xs text-muted-foreground">Passos (hoje)</div>
-                      <div className="text-xl font-bold">—</div>
-                    </div>
-                    <div className="rounded-lg border p-3">
-                      <div className="text-xs text-muted-foreground">Calorias ativas</div>
-                      <div className="text-xl font-bold">—</div>
-                    </div>
-                    <div className="rounded-lg border p-3">
-                      <div className="text-xs text-muted-foreground">Minutos ativos</div>
-                      <div className="text-xl font-bold">—</div>
-                    </div>
-                    <div className="rounded-lg border p-3">
-                      <div className="text-xs text-muted-foreground">Sono</div>
-                      <div className="text-xl font-bold">—</div>
-                    </div>
-                  </div>
+            <div className="space-y-3">
+              <h1 className="text-2xl font-extrabold leading-tight">
+                Conecte o Google Fit e acompanhe sua evolução
+              </h1>
+              <p className="text-sm text-primary-foreground/90 leading-relaxed">
+                Sincronize automaticamente seus <b>passos</b>, <b>calorias ativas</b>, <b>minutos de intensidade</b>,
+                <b> sono</b> e <b>frequência cardíaca</b> para análises inteligentes e relatórios do Dr. Vital.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 text-xs text-primary-foreground/90">
+              <div className="space-y-1">
+                <div className="flex items-center gap-1.5">
+                  <Activity className="w-3.5 h-3.5" />
+                  <span className="font-medium">Passos e distância</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Heart className="w-3.5 h-3.5" />
+                  <span>FC min/média/máx</span>
+                </div>
+              </div>
+              <div className="space-y-1">
+                <div className="flex items-center gap-1.5">
+                  <Zap className="w-3.5 h-3.5" />
+                  <span className="font-medium">Calorias ativas</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <Clock className="w-3.5 h-3.5" />
+                  <span>Heart minutes e sono</span>
                 </div>
               </div>
             </div>
+
+            <div className="flex flex-col sm:flex-row gap-3 pt-1">
+              <Button
+                size="lg"
+                className="w-full sm:w-auto rounded-full shadow-hero bg-background text-primary hover:bg-background/90"
+                onClick={() => {
+                  window.location.href = '/google-fit-oauth';
+                }}
+              >
+                Conectar Google Fit
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                className="w-full sm:w-auto rounded-full border-primary-foreground/40 bg-background/20 text-primary-foreground hover:bg-background/30"
+                onClick={() => window.location.reload()}
+              >
+                Já conectei, atualizar
+              </Button>
+            </div>
+
+            <p className="text-[11px] text-primary-foreground/80 leading-snug">
+              Autorização única. Seus dados permanecem protegidos e você pode revogar o acesso quando quiser.
+            </p>
           </div>
         </Card>
-      </div>;
+      </div>
+    );
   }
   if (error) {
     return <div className="text-center py-8">
