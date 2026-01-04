@@ -24,6 +24,7 @@ const ProgressPage = lazy(() => import("./pages/ProgressPage"));
 const GoogleFitPage = lazy(() => import("./pages/GoogleFitPage").then(module => ({ default: module.GoogleFitPage })));
 const GoogleFitCallbackPage = lazy(() => import("./pages/GoogleFitCallback").then(module => ({ default: module.GoogleFitCallback })));
 const GoogleFitTestPage = lazy(() => import("./pages/GoogleFitTestPage"));
+const GoogleFitPremiumDashboard = lazy(() => import("./pages/GoogleFitPremiumDashboard"));
 
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-screen bg-background">
@@ -64,6 +65,7 @@ const App: React.FC = () => {
               <Route path="/google-fit-oauth" element={<Suspense fallback={<PageLoader />}><GoogleFitPage /></Suspense>} />
               <Route path="/google-fit-callback" element={<Suspense fallback={<PageLoader />}><GoogleFitCallbackPage /></Suspense>} />
               <Route path="/google-fit-test" element={<Suspense fallback={<PageLoader />}><GoogleFitTestPage /></Suspense>} />
+              <Route path="/google-fit-dashboard" element={<Suspense fallback={<PageLoader />}><GoogleFitPremiumDashboard /></Suspense>} />
             </Routes>
           </Suspense>
         </BrowserRouter>
