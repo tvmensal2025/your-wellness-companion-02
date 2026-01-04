@@ -34,7 +34,7 @@ export const QuickActionsGrid: React.FC<QuickActionsGridProps> = ({ onWeightClic
       description: 'Plano alimentar',
       gradient: 'from-rose-500 to-pink-600',
       shadow: 'shadow-rose-500/20',
-      onClick: () => navigate('/sofia') // Navigate to Sofia for nutrition advice
+      onClick: () => navigate('/nutricao')
     },
     {
       icon: Trophy,
