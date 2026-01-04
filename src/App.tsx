@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import SofiaFloatingButton from "@/components/SofiaFloatingButton";
 
 // Core pages
 import AuthPage from "./pages/AuthPage";
@@ -67,6 +68,7 @@ const App: React.FC = () => {
               <Route path="/google-fit-test" element={<Suspense fallback={<PageLoader />}><GoogleFitTestPage /></Suspense>} />
               <Route path="/google-fit-dashboard" element={<Suspense fallback={<PageLoader />}><GoogleFitPremiumDashboard /></Suspense>} />
             </Routes>
+            <SofiaFloatingButton />
           </Suspense>
         </BrowserRouter>
       </TooltipProvider>
