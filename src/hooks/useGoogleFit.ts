@@ -54,37 +54,73 @@ export const useGoogleFit = () => {
     }
   };
 
+  const ensureValidSession = async (): Promise<boolean> => {
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError) throw sessionError;
+
+    if (!sessionData.session) {
+      toast({
+        title: "⚠️ Faça login",
+        description: "Você precisa estar logado para conectar o Google Fit.",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    // Valida se o access token atual está aceito pelo backend. Se não estiver, força refresh.
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+    if (userError || !userData.user) {
+      const { error: refreshError } = await supabase.auth.refreshSession();
+      if (refreshError) {
+        await supabase.auth.signOut();
+        toast({
+          title: "Sessão expirada",
+          description: "Faça login novamente para continuar.",
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      const { data: userData2, error: userError2 } = await supabase.auth.getUser();
+      if (userError2 || !userData2.user) {
+        await supabase.auth.signOut();
+        toast({
+          title: "Sessão inválida",
+          description: "Faça login novamente para continuar.",
+          variant: "destructive",
+        });
+        return false;
+      }
+    }
+
+    return true;
+  };
+
   const connectGoogleFit = async () => {
     setIsLoading(true);
     try {
-      // Garantir sessão válida (evita 401 por token expirado)
-      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-      if (sessionError) throw sessionError;
+      const ok = await ensureValidSession();
+      if (!ok) return;
 
-      const session = sessionData.session;
-      if (!session) {
-        toast({
-          title: "❌ Erro de autenticação",
-          description: "Por favor, faça login primeiro",
-          variant: "destructive",
+      const invokeConnect = async () =>
+        supabase.functions.invoke('google-fit-token', {
+          body: { action: 'connect' },
         });
-        return;
-      }
 
-      // Se estiver perto de expirar, tenta renovar
-      if (session.expires_at && session.expires_at * 1000 < Date.now() + 60_000) {
+      let { data, error } = await invokeConnect();
+
+      // Se o backend rejeitar o JWT (401), tenta renovar a sessão e repetir 1x.
+      const status = (error as any)?.status;
+      if (error && status === 401) {
         const { error: refreshError } = await supabase.auth.refreshSession();
-        if (refreshError) throw refreshError;
+        if (!refreshError) {
+          ({ data, error } = await invokeConnect());
+        }
       }
-
-      // Chamar função do backend (o client injeta Authorization automaticamente quando logado)
-      const { data, error } = await supabase.functions.invoke('google-fit-token', {
-        body: { action: 'connect' },
-      });
 
       if (error) {
-        const status = (error as any)?.status;
-        if (status === 401) {
+        const finalStatus = (error as any)?.status;
+        if (finalStatus === 401) {
           await supabase.auth.signOut();
           toast({
             title: "Sessão expirada",
@@ -97,7 +133,6 @@ export const useGoogleFit = () => {
       }
 
       if (data?.authUrl) {
-        console.log('🔗 Redirecionando para autorização Google Fit...');
         window.location.href = data.authUrl;
       } else {
         toast({
@@ -167,12 +202,35 @@ export const useGoogleFit = () => {
   const syncGoogleFitData = async () => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('google-fit-sync', {
-        body: { action: 'sync' }
-      });
+      const ok = await ensureValidSession();
+      if (!ok) return;
+
+      const invokeSync = async () =>
+        supabase.functions.invoke('google-fit-sync', {
+          body: { action: 'sync' },
+        });
+
+      let { data, error } = await invokeSync();
+
+      const status = (error as any)?.status;
+      if (error && status === 401) {
+        const { error: refreshError } = await supabase.auth.refreshSession();
+        if (!refreshError) {
+          ({ data, error } = await invokeSync());
+        }
+      }
 
       if (error) {
-        console.error('❌ Erro na Edge Function sync:', error);
+        const finalStatus = (error as any)?.status;
+        if (finalStatus === 401) {
+          await supabase.auth.signOut();
+          toast({
+            title: "Sessão expirada",
+            description: "Faça login novamente para sincronizar.",
+            variant: "destructive",
+          });
+          return;
+        }
         throw error;
       }
 
@@ -180,14 +238,13 @@ export const useGoogleFit = () => {
         setFitData(data.fitData);
         toast({
           title: "✅ Sincronizado!",
-          description: "Dados do Google Fit atualizados"
+          description: "Dados do Google Fit atualizados",
         });
       } else {
-        console.error('❌ Sincronização falhou:', data);
         toast({
           title: "❌ Erro",
-          description: "Falha na sincronização dos dados",
-          variant: "destructive"
+          description: data?.error || "Falha na sincronização dos dados",
+          variant: "destructive",
         });
       }
     } catch (error) {
@@ -195,7 +252,7 @@ export const useGoogleFit = () => {
       toast({
         title: "❌ Erro",
         description: "Erro ao sincronizar dados do Google Fit",
-        variant: "destructive"
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
