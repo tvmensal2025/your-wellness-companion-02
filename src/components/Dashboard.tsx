@@ -139,10 +139,10 @@ export default function Dashboard() {
         ]}
       />
 
-      {/* Header */}
+      {/* Header enxuto (título global já exibe "Dashboard") */}
       <div className="flex items-center justify-between mt-8">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Dashboard Tradicional</h1>
+          <p className="text-sm font-medium text-primary">Visão geral dos seus resultados</p>
           <p className="text-muted-foreground">Acompanhe sua jornada de saúde</p>
         </div>
       </div>

@@ -632,15 +632,15 @@ const SaboteurTest: React.FC = () => {
   }
   const currentQ = saboteurQuestions[currentQuestion];
   return <div className="mobile-padding space-y-6">
-      {/* Header */}
-      <div className="text-center space-y-4">
-        <div className="flex items-center justify-center gap-3">
-          <Brain className="h-8 w-8 lg:h-10 lg:w-10 text-primary" />
-          <h1 className="mobile-text-2xl font-bold">Teste de Sabotadores</h1>
+      {/* Header compacto abaixo do título global */}
+      <div className="flex items-center justify-between mobile-text-sm text-muted-foreground">
+        <div className="flex items-center gap-2">
+          <Brain className="h-5 w-5 text-primary" />
+          <span className="font-medium">Teste de Sabotadores</span>
         </div>
-        <p className="text-muted-foreground mobile-text-lg">
-          Identifique os padrões que podem estar sabotando seu progresso
-        </p>
+        <span className="font-semibold">
+          Pergunta {currentQuestion + 1} de {saboteurQuestions.length}
+        </span>
       </div>
 
       {/* Progress */}

@@ -340,16 +340,15 @@ export default function MissionSystem({ user }: MissionSystemProps = {}) {
 
   return (
     <div className="p-6 space-y-6 animate-fade-up">
-      {/* Header */}
+      {/* Header enxuto (título global já exibe "Missão do Dia") */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground flex items-center space-x-2">
-            <Zap className="w-8 h-8 text-primary" />
-            <span>Missão do Dia</span>
-          </h1>
-          <p className="text-muted-foreground">Complete suas missões e ganhe pontos</p>
+          <p className="text-sm font-medium text-primary flex items-center space-x-2">
+            <Zap className="w-5 h-5" />
+            <span>Painel da sua missão de hoje</span>
+          </p>
+          <p className="text-muted-foreground text-sm">Complete suas missões e ganhe pontos</p>
         </div>
-        
         <div className="text-right">
           <div className="text-2xl font-bold text-primary">{totalPoints} pts</div>
           <div className="text-sm text-muted-foreground">Pontos hoje</div>
