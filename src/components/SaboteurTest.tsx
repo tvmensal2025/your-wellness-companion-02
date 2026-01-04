@@ -109,9 +109,8 @@ const SaboteurTest: React.FC = () => {
   const [showResults, setShowResults] = useState(false);
   const [scores, setScores] = useState<Record<string, number>>({});
   const [isLoading, setIsLoading] = useState(false);
-  const {
-    toast
-  } = useToast();
+  const [isGeneratingHtml, setIsGeneratingHtml] = useState(false);
+  const { toast } = useToast();
   const handleAnswer = async (value: number) => {
     const questionId = saboteurQuestions[currentQuestion].id;
 
@@ -629,15 +628,83 @@ const SaboteurTest: React.FC = () => {
             <ArrowLeft className="h-4 w-4 mr-2" />
             Refazer Teste
           </Button>
-          <Button className="btn-gradient w-full sm:w-auto" size="lg" onClick={() => {
-          toast({
-            title: "Em breve! 📚",
-            description: "Estamos preparando conteúdos exclusivos para você!",
-            duration: 3000
-          });
-        }}>
+          <Button
+            className="btn-gradient w-full sm:w-auto"
+            size="lg"
+            onClick={() => {
+              toast({
+                title: "Em breve! 📚",
+                description: "Estamos preparando conteúdos exclusivos para você!",
+                duration: 3000,
+              });
+            }}
+          >
             <BookOpen className="h-4 w-4 mr-2" />
             Explorar Estratégias
+          </Button>
+          <Button
+            variant="default"
+            size="lg"
+            disabled={isGeneratingHtml}
+            className="w-full sm:w-auto"
+            onClick={async () => {
+              try {
+                setIsGeneratingHtml(true);
+                const { data: userData } = await supabase.auth.getUser();
+                const user = userData?.user;
+
+                if (!user) {
+                  toast({
+                    title: "Faça login para gerar o relatório",
+                    description: "Você precisa estar autenticado para salvar o relatório em HTML.",
+                    variant: "destructive",
+                  });
+                  setIsGeneratingHtml(false);
+                  return;
+                }
+
+                const { data, error } = await supabase.functions.invoke("saboteur-html-report", {
+                  body: { userId: user.id },
+                });
+
+                if (error || !data?.html) {
+                  console.error("Erro ao gerar HTML:", error);
+                  toast({
+                    title: "Erro ao gerar relatório",
+                    description: "Tente novamente em alguns instantes.",
+                    variant: "destructive",
+                  });
+                  setIsGeneratingHtml(false);
+                  return;
+                }
+
+                const blob = new Blob([data.html], { type: "text/html;charset=utf-8" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `relatorio-sabotadores-${Date.now()}.html`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+                toast({
+                  title: "Relatório gerado com sucesso!",
+                  description: "O arquivo HTML foi baixado para o seu dispositivo.",
+                });
+              } catch (err) {
+                console.error("Erro inesperado:", err);
+                toast({
+                  title: "Erro inesperado",
+                  description: "Não foi possível gerar o relatório agora.",
+                  variant: "destructive",
+                });
+              } finally {
+                setIsGeneratingHtml(false);
+              }
+            }}
+          >
+            {isGeneratingHtml ? "Gerando..." : "Baixar Relatório em HTML"}
           </Button>
         </div>
       </div>;
