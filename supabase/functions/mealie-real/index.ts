@@ -747,11 +747,31 @@ serve(async (req)=>{
   }
   
   try {
+    // Verificar configuração do Mealie
+    if (!MEALIE_BASE_URL || !MEALIE_API_TOKEN) {
+      console.error('❌ MEALIE_BASE_URL ou MEALIE_API_TOKEN não configurados');
+      return new Response(JSON.stringify({
+        success: false,
+        error: 'Mealie não configurado',
+        details: 'Configure MEALIE_BASE_URL e MEALIE_API_TOKEN nas variáveis de ambiente'
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+    
+    console.log('🔧 Mealie configurado:', { 
+      baseUrl: MEALIE_BASE_URL.substring(0, 30) + '...', 
+      tokenConfigured: !!MEALIE_API_TOKEN 
+    });
+    
     const requestData = await req.json();
     console.log('🚀 Mealie Real - Iniciando geração');
     console.log('📥 Parâmetros recebidos:', requestData);
     console.log('🔍 DEBUG - refeicoes_selecionadas RAW:', requestData.refeicoes_selecionadas);
     console.log('🔍 DEBUG - tipo de refeicoes_selecionadas:', typeof requestData.refeicoes_selecionadas);
+    console.log('🔍 DEBUG - restricoes RAW:', requestData.restricoes);
+    console.log('🔍 DEBUG - preferencias RAW:', requestData.preferencias);
     
     const calorias = requestData.calorias || 2000;
     const dias = requestData.dias || 7;
