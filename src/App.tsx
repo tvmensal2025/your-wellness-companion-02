@@ -22,6 +22,7 @@ const SofiaPage = lazy(() => import("./pages/SofiaPage"));
 const GoalsPage = lazy(() => import("./pages/GoalsPage"));
 const CoursePlatform = lazy(() => import("./components/CoursePlatform"));
 const ProgressPage = lazy(() => import("./pages/ProgressPage"));
+const AnamnesisPage = lazy(() => import("./pages/AnamnesisPage"));
 const GoogleFitPage = lazy(() => import("./pages/GoogleFitPage").then(module => ({ default: module.GoogleFitPage })));
 const GoogleFitCallbackPage = lazy(() => import("./pages/GoogleFitCallback").then(module => ({ default: module.GoogleFitCallback })));
 const GoogleFitTestPage = lazy(() => import("./pages/GoogleFitTestPage"));
@@ -60,6 +61,7 @@ const App: React.FC = () => {
               <Route path="/dashboard" element={<Suspense fallback={<PageLoader />}><CompleteDashboardPage /></Suspense>} />
               <Route path="/admin" element={<Suspense fallback={<PageLoader />}><AdminPage /></Suspense>} />
               <Route path="/sofia" element={<Suspense fallback={<PageLoader />}><SofiaPage /></Suspense>} />
+              <Route path="/anamnesis" element={<Suspense fallback={<PageLoader />}><AnamnesisPage /></Suspense>} />
               <Route path="/app/goals" element={<Suspense fallback={<PageLoader />}><GoalsPage /></Suspense>} />
               <Route path="/app/courses" element={<Suspense fallback={<PageLoader />}><CoursePlatform /></Suspense>} />
               <Route path="/app/progress" element={<Suspense fallback={<PageLoader />}><ProgressPage /></Suspense>} />
