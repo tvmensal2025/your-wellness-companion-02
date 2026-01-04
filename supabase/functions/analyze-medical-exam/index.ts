@@ -20,62 +20,73 @@ const AI_CONFIG = {
   temperature: 0.2
 };
 
-// 🎯 TEMPLATE PARA ANÁLISE PREMIUM DE EXAMES
-const PREMIUM_ANALYSIS_PROMPT = `Você é um médico especialista em análises laboratoriais. Analise os resultados de exames médicos fornecidos e crie um relatório completo e educativo.
+// 🎯 TEMPLATE PARA ANÁLISE PREMIUM HUMANIZADA DE EXAMES
+const PREMIUM_ANALYSIS_PROMPT = `Você é uma IA médica educativa premium especializada em traduzir exames laboratoriais para linguagem totalmente leiga, humana e compreensível.
+
+OBJETIVO:
+Criar um RELATÓRIO DE SAÚDE COMPLETO, didático e tranquilizador, para qualquer pessoa entender como está sua saúde, mesmo sem nenhum conhecimento médico.
+
+REGRAS OBRIGATÓRIAS:
+- Explique cada exame como se estivesse falando com alguém que nunca viu um laudo médico
+- Use exemplos do dia a dia (comparações simples)
+- Sempre responda à pergunta implícita do paciente: "Isso é grave?", "Estou saudável?", "Preciso me preocupar?"
+- Nunca use linguagem técnica sem explicar
+- Destaque impactos na vida real
+- Traga educação preventiva
+- Seja claro, empático e profissional
 
 ESTRUTURA OBRIGATÓRIA DO RELATÓRIO:
 
-## 📋 ANÁLISE MÉDICA COMPLETA
-**Paciente:** [Nome se disponível]
-**Data:** [Data do exame]
-**Laboratório:** [Nome do laboratório]
-**ID Exame:** [Número de identificação]
+## 1. VISÃO GERAL DA SUA SAÚDE
+Um resumo executivo simples e direto respondendo: "Como estou de saúde?" em 3-4 frases acolhedoras.
 
-## 📝 RESUMO CLÍNICO
-Texto de 2-3 linhas explicando os principais achados e orientações gerais.
+## 2. PARA CADA EXAME, INCLUIR:
 
-## 📊 RESULTADOS POR CATEGORIA
+### [NOME DO EXAME]
+**Seu Resultado:** [valor] [unidade]
+**Faixa de Referência:** [valores de referência]
+**Situação:** 🟢 Tudo certo / 🟡 Atenção / 🔴 Precisa de cuidado
 
-Para cada exame encontrado, criar cards formatados como:
+**O que é esse exame?**
+[Explicação em 2-3 linhas como se explicasse para uma criança de 12 anos - use analogias do cotidiano]
 
-### [CATEGORIA - ex: 🫀 Perfil Lipídico]
+**O que seu resultado significa na prática?**
+[Explicação clara do que esse valor representa para a vida da pessoa - como impacta o dia a dia]
 
-**[NOME DO EXAME]** 
-- **Resultado:** [valor] [unidade]
-- **Referência:** [valor de referência]
-- **Status:** ✅ Normal / ⚠️ Atenção / 🔴 Alterado
+**Exemplo prático:**
+[Uma comparação ou situação do dia a dia que ilustre o conceito - ex: "Imagine que seu sangue é como uma estrada..."]
 
-**Como Funciona?**
-[Explicação didática de 3-4 linhas sobre como o exame funciona e o que avalia]
+**Isso é grave? Devo me preocupar?**
+[Resposta direta e tranquilizadora quando possível, ou honesta quando necessário]
 
-**Para que serve:**
-• [Ponto 1 sobre utilidade clínica]
-• [Ponto 2 sobre interpretação]
-• [Ponto 3 sobre acompanhamento]
+**O que pode acontecer se eu não cuidar?**
+[Prevenção - consequências futuras de forma educativa, não alarmista]
 
 ---
 
-## 🎯 RECOMENDAÇÕES PERSONALIZADAS
+## 3. RECOMENDAÇÕES PERSONALIZADAS
 
-### 🥗 Alimentação
-[Orientações específicas baseadas nos resultados]
+### 🥗 O que Comer
+[Orientações práticas e específicas baseadas nos resultados - cite alimentos reais]
 
-### 🏃‍♂️ Atividade Física
-[Recomendações de exercícios adequadas]
+### 🚶 Movimento e Exercícios
+[Sugestões simples e alcançáveis de atividade física]
 
-### 🧘‍♀️ Bem-estar
-[Dicas de estilo de vida e manejo do estresse]
+### 😴 Cuidados com Sono e Estresse
+[Dicas práticas para bem-estar mental]
 
-### 👨‍⚕️ Acompanhamento
-[Orientações sobre retorno médico e próximos exames]
+### 👨‍⚕️ Próximos Passos
+[O que fazer agora - consultas, repetir exames, mudanças de hábito]
 
-INSTRUÇÕES IMPORTANTES:
-1. Use sempre emojis para categorizar exames
-2. Seja didático e educativo
-3. Evite linguagem técnica excessiva
-4. Destaque valores alterados com ⚠️ ou 🔴
-5. Inclua sempre explicações sobre "Como Funciona"
-6. Personalize as recomendações com base nos resultados`;
+## 4. MENSAGEM FINAL
+[Uma mensagem acolhedora de encerramento, motivacional e que transmita segurança]
+
+ESTILO DE COMUNICAÇÃO:
+- Tom humano, acolhedor e educativo (como um médico da família que você conhece há anos)
+- Clareza absoluta (qualquer pessoa deve entender)
+- Sem alarmismo (mesmo quando há alterações, seja equilibrado)
+- Sem jargões médicos não explicados
+- Use emojis com moderação para tornar mais amigável`;
 
 // 📚 BANCO DE EXPLICAÇÕES DIDÁTICAS PRÉ-PRONTAS
 const EXPLICACOES_EXAMES: Record<string, { categoria: string; icone: string; explicacao: string }> = {
@@ -2419,41 +2430,42 @@ Por favor, analise as imagens dos exames médicos e extraia todos os valores enc
       .replace(/\s{2,}/g, ' ')
       .trim();
 
-    // HTML Clínico Premium ULTRA ELEGANTE do Dr. Vital
+    // HTML Premium HUMANIZADO do Dr. Vital
     const html = `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Relatório Médico Premium | Instituto dos Sonhos</title>
+  <title>Seu Relatório de Saúde | Instituto dos Sonhos</title>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      /* Paleta Premium Elegante */
       --primary: #0f172a;
       --primary-light: #1e293b;
-      --accent: #c9a962;
-      --accent-light: #dfc893;
-      --accent-dark: #9f7b3d;
+      --accent: #10b981;
+      --accent-light: #34d399;
+      --accent-dark: #059669;
+      --gold: #c9a962;
+      --gold-light: #dfc893;
       --success: #059669;
       --success-bg: rgba(5, 150, 105, 0.08);
-      --warning: #d97706;
-      --warning-bg: rgba(217, 119, 6, 0.08);
-      --danger: #dc2626;
-      --danger-bg: rgba(220, 38, 38, 0.08);
+      --warning: #f59e0b;
+      --warning-bg: rgba(245, 158, 11, 0.08);
+      --danger: #ef4444;
+      --danger-bg: rgba(239, 68, 68, 0.08);
       --text-primary: #0f172a;
       --text-secondary: #475569;
       --text-muted: #94a3b8;
-      --bg-main: #fafaf9;
+      --bg-main: #f8fafc;
       --bg-card: #ffffff;
-      --bg-soft: #f8fafc;
+      --bg-soft: #f1f5f9;
       --border: #e2e8f0;
       --border-light: #f1f5f9;
-      --shadow-soft: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.06);
-      --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.06);
-      --shadow-elevated: 0 12px 40px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.04);
+      --shadow-soft: 0 1px 3px rgba(0, 0, 0, 0.04);
+      --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.06);
+      --shadow-elevated: 0 20px 50px rgba(0, 0, 0, 0.1);
       --font-display: 'Playfair Display', Georgia, serif;
-      --font-body: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
       --radius-sm: 8px;
       --radius-md: 12px;
       --radius-lg: 16px;
@@ -2461,33 +2473,29 @@ Por favor, analise as imagens dos exames médicos e extraia todos os valores enc
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
-
-    html {
-      scroll-behavior: smooth;
-    }
-
+    html { scroll-behavior: smooth; }
+    
     body {
       font-family: var(--font-body);
       background: var(--bg-main);
       color: var(--text-primary);
-      line-height: 1.65;
+      line-height: 1.7;
       font-size: 16px;
       -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
     }
 
     .container {
-      max-width: 920px;
+      max-width: 900px;
       margin: 0 auto;
       padding: 40px 24px;
     }
 
-    /* Hero Header Premium */
+    /* Header Premium Humanizado */
     .hero-header {
-      background: linear-gradient(145deg, var(--primary) 0%, var(--primary-light) 100%);
+      background: linear-gradient(145deg, var(--primary) 0%, #2d3748 100%);
       border-radius: var(--radius-xl);
-      padding: 48px 40px;
-      margin-bottom: 32px;
+      padding: 56px 48px;
+      margin-bottom: 40px;
       position: relative;
       overflow: hidden;
       box-shadow: var(--shadow-elevated);
@@ -2496,83 +2504,114 @@ Por favor, analise as imagens dos exames médicos e extraia todos os valores enc
     .hero-header::before {
       content: '';
       position: absolute;
-      top: -50%;
-      right: -20%;
-      width: 400px;
-      height: 400px;
-      background: radial-gradient(circle, rgba(201, 169, 98, 0.15) 0%, transparent 70%);
-      animation: pulse 4s ease-in-out infinite;
-    }
-
-    .hero-header::after {
-      content: '';
-      position: absolute;
-      bottom: -30%;
-      left: -10%;
+      top: -100px;
+      right: -100px;
       width: 300px;
       height: 300px;
-      background: radial-gradient(circle, rgba(255, 255, 255, 0.05) 0%, transparent 60%);
+      background: radial-gradient(circle, rgba(16, 185, 129, 0.2) 0%, transparent 70%);
+      animation: float 6s ease-in-out infinite;
     }
 
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); opacity: 0.5; }
-      50% { transform: scale(1.1); opacity: 0.8; }
-    }
-
-    .hero-content {
-      position: relative;
-      z-index: 2;
-      display: flex;
-      align-items: center;
-      gap: 28px;
-    }
-
-    .hero-logo {
-      width: 72px;
-      height: 72px;
-      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
-      border-radius: 18px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 32px;
-      box-shadow: 0 8px 24px rgba(201, 169, 98, 0.3);
-    }
-
-    .hero-text h1 {
-      font-family: var(--font-display);
-      font-size: 32px;
-      font-weight: 600;
-      color: white;
-      margin-bottom: 6px;
-      letter-spacing: -0.5px;
-    }
-
-    .hero-text p {
-      font-size: 16px;
-      color: rgba(255, 255, 255, 0.85);
-      font-weight: 400;
+    @keyframes float {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-20px) scale(1.05); }
     }
 
     .hero-badge {
       position: absolute;
       top: 24px;
-      right: 28px;
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      padding: 8px 16px;
+      right: 32px;
+      background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%);
+      padding: 8px 20px;
       border-radius: 100px;
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--accent-light);
-      letter-spacing: 0.5px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--primary);
+      letter-spacing: 1px;
+      text-transform: uppercase;
     }
 
-    /* Patient Info Bar Premium */
-    .info-bar {
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+    }
+
+    .hero-icon {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
+      border-radius: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 40px;
+      margin: 0 auto 24px;
+      box-shadow: 0 12px 32px rgba(16, 185, 129, 0.4);
+    }
+
+    .hero-title {
+      font-family: var(--font-display);
+      font-size: 36px;
+      font-weight: 600;
+      color: white;
+      margin-bottom: 12px;
+    }
+
+    .hero-subtitle {
+      font-size: 18px;
+      color: rgba(255, 255, 255, 0.8);
+      font-weight: 400;
+    }
+
+    .hero-date {
+      margin-top: 24px;
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    /* Card de Boas-vindas Caloroso */
+    .welcome-card {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(16, 185, 129, 0.02) 100%);
+      border: 2px solid rgba(16, 185, 129, 0.2);
+      border-radius: var(--radius-lg);
+      padding: 32px;
+      margin-bottom: 32px;
+      display: flex;
+      gap: 24px;
+      align-items: flex-start;
+    }
+
+    .welcome-avatar {
+      width: 64px;
+      height: 64px;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      flex-shrink: 0;
+      box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+    }
+
+    .welcome-content h2 {
+      font-family: var(--font-display);
+      font-size: 22px;
+      color: var(--text-primary);
+      margin-bottom: 12px;
+    }
+
+    .welcome-content p {
+      font-size: 16px;
+      color: var(--text-secondary);
+      line-height: 1.8;
+    }
+
+    /* Info Bar do Paciente */
+    .patient-bar {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(3, 1fr);
       gap: 1px;
       background: var(--border);
       border-radius: var(--radius-lg);
@@ -2581,220 +2620,249 @@ Por favor, analise as imagens dos exames médicos e extraia todos os valores enc
       box-shadow: var(--shadow-card);
     }
 
-    .info-item {
+    .patient-item {
       background: var(--bg-card);
-      padding: 24px 20px;
+      padding: 24px;
       text-align: center;
+    }
+
+    .patient-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 8px;
+    }
+
+    .patient-value {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    /* Seção Card */
+    .section-card {
+      background: var(--bg-card);
+      border-radius: var(--radius-lg);
+      padding: 36px;
+      margin-bottom: 28px;
+      box-shadow: var(--shadow-card);
+      border: 1px solid var(--border-light);
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 28px;
+      padding-bottom: 20px;
+      border-bottom: 2px solid var(--bg-soft);
+    }
+
+    .section-icon {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      margin-right: 16px;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+    }
+
+    .section-title {
+      font-family: var(--font-display);
+      font-size: 24px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .section-text {
+      font-size: 17px;
+      line-height: 1.9;
+      color: var(--text-secondary);
+    }
+
+    .section-text p {
+      margin-bottom: 16px;
+    }
+
+    /* Cards de Exame Humanizados */
+    .exam-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    .exam-card {
+      background: var(--bg-card);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      overflow: hidden;
       transition: all 0.3s ease;
     }
 
-    .info-item:hover {
-      background: var(--bg-soft);
+    .exam-card:hover {
+      box-shadow: var(--shadow-elevated);
+      transform: translateY(-4px);
     }
 
-    .info-label {
-      font-size: 11px;
+    .exam-header {
+      padding: 24px 28px;
+      background: var(--bg-soft);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .exam-name {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .exam-status {
+      padding: 8px 16px;
+      border-radius: 100px;
+      font-size: 13px;
       font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .exam-status.normal {
+      background: var(--success-bg);
+      color: var(--success);
+    }
+
+    .exam-status.elevated, .exam-status.warning {
+      background: var(--warning-bg);
+      color: var(--warning);
+    }
+
+    .exam-status.low, .exam-status.danger {
+      background: var(--danger-bg);
+      color: var(--danger);
+    }
+
+    .exam-body {
+      padding: 28px;
+    }
+
+    .exam-values {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      margin-bottom: 28px;
+      padding-bottom: 24px;
+      border-bottom: 1px dashed var(--border);
+    }
+
+    .exam-value-item {
+      text-align: center;
+      padding: 16px;
+      background: var(--bg-soft);
+      border-radius: var(--radius-sm);
+    }
+
+    .exam-value-label {
+      font-size: 11px;
+      font-weight: 700;
       color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 1px;
       margin-bottom: 8px;
     }
 
-    .info-value {
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--text-primary);
-    }
-
-    /* Card Premium */
-    .card {
-      background: var(--bg-card);
-      border-radius: var(--radius-lg);
-      padding: 32px;
-      margin-bottom: 24px;
-      box-shadow: var(--shadow-card);
-      border: 1px solid var(--border-light);
-      transition: all 0.3s ease;
-    }
-
-    .card:hover {
-      box-shadow: var(--shadow-elevated);
-      transform: translateY(-2px);
-    }
-
-    .section-title {
-      display: flex;
-      align-items: center;
+    .exam-value-number {
       font-family: var(--font-display);
-      font-size: 22px;
+      font-size: 28px;
       font-weight: 600;
       color: var(--text-primary);
+    }
+
+    .exam-value-unit {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-left: 4px;
+    }
+
+    .exam-explanation {
       margin-bottom: 24px;
-      padding-bottom: 16px;
-      border-bottom: 2px solid var(--border-light);
     }
 
-    .section-icon {
-      width: 40px;
-      height: 40px;
-      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
-      border-radius: var(--radius-sm);
+    .exam-question {
       display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-      margin-right: 16px;
-      box-shadow: 0 4px 12px rgba(201, 169, 98, 0.25);
+      align-items: flex-start;
+      margin-bottom: 20px;
     }
 
-    .summary-text {
-      font-size: 16px;
-      line-height: 1.8;
-      color: var(--text-secondary);
-    }
-
-    .summary-text p {
-      margin-bottom: 16px;
-    }
-
-    /* Premium Metric Cards */
-    .metabolic-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 24px;
-      margin-top: 24px;
-    }
-
-    .metric-card {
-      background: var(--bg-card);
-      border-radius: var(--radius-md);
-      padding: 24px;
-      position: relative;
-      overflow: hidden;
-      border: 1px solid var(--border);
-      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .metric-card::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 4px;
-      height: 100%;
-      background: var(--success);
-      transition: width 0.3s ease;
-    }
-
-    .metric-card.elevated::before { background: var(--warning); }
-    .metric-card.low::before, .metric-card.error::before { background: var(--danger); }
-
-    .metric-card:hover {
-      box-shadow: var(--shadow-elevated);
-      transform: translateY(-4px);
-    }
-
-    .metric-card:hover::before {
-      width: 6px;
-    }
-
-    .metric-icon {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      width: 36px;
-      height: 36px;
+    .exam-question-icon {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%);
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 16px;
-      font-weight: 600;
+      margin-right: 14px;
+      flex-shrink: 0;
     }
 
-    .metric-icon.normal {
-      background: var(--success-bg);
-      color: var(--success);
-    }
-
-    .metric-icon.elevated {
-      background: var(--warning-bg);
-      color: var(--warning);
-    }
-
-    .metric-icon.low, .metric-icon.error {
-      background: var(--danger-bg);
-      color: var(--danger);
-    }
-
-    .metric-name {
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--text-secondary);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 12px;
-    }
-
-    .metric-value {
-      font-family: var(--font-display);
-      font-size: 32px;
-      font-weight: 600;
+    .exam-question-content h4 {
+      font-size: 15px;
+      font-weight: 700;
       color: var(--text-primary);
       margin-bottom: 8px;
-      letter-spacing: -1px;
     }
 
-    .metric-reference {
-      font-size: 13px;
-      color: var(--text-muted);
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .metric-reference::before {
-      content: '↳';
-      opacity: 0.5;
-    }
-
-    .how-it-works {
-      margin-top: 20px;
-      background: linear-gradient(135deg, rgba(201, 169, 98, 0.06) 0%, rgba(201, 169, 98, 0.02) 100%);
-      border: 1px solid rgba(201, 169, 98, 0.15);
-      border-radius: var(--radius-sm);
-      padding: 16px;
-    }
-
-    .how-it-works-title {
-      display: flex;
-      align-items: center;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--accent-dark);
-      margin-bottom: 8px;
-    }
-
-    .how-it-works-icon {
-      margin-right: 8px;
-      font-size: 14px;
-    }
-
-    .how-it-works-text {
-      font-size: 13px;
-      line-height: 1.7;
+    .exam-question-content p {
+      font-size: 15px;
+      line-height: 1.8;
       color: var(--text-secondary);
     }
 
-    /* Premium Recommendations */
-    .recommendations {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 20px;
+    .exam-example {
+      background: linear-gradient(135deg, rgba(201, 169, 98, 0.08) 0%, rgba(201, 169, 98, 0.03) 100%);
+      border: 1px solid rgba(201, 169, 98, 0.2);
+      border-radius: var(--radius-sm);
+      padding: 20px;
+      margin-top: 20px;
     }
 
-    .recommendation-card {
+    .exam-example-title {
+      display: flex;
+      align-items: center;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--gold);
+      margin-bottom: 10px;
+    }
+
+    .exam-example-title span {
+      margin-right: 8px;
+    }
+
+    .exam-example p {
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--text-secondary);
+      font-style: italic;
+    }
+
+    /* Cards de Recomendação */
+    .recommendations-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+    }
+
+    .rec-card {
       background: linear-gradient(145deg, var(--bg-card) 0%, var(--bg-soft) 100%);
       border-radius: var(--radius-md);
       padding: 28px;
@@ -2802,64 +2870,102 @@ Por favor, analise as imagens dos exames médicos e extraia todos os valores enc
       transition: all 0.3s ease;
     }
 
-    .recommendation-card:hover {
+    .rec-card:hover {
       border-color: var(--accent);
-      box-shadow: 0 8px 30px rgba(201, 169, 98, 0.12);
+      box-shadow: 0 8px 30px rgba(16, 185, 129, 0.15);
     }
 
-    .recommendation-icon {
-      width: 48px;
-      height: 48px;
+    .rec-icon {
+      width: 56px;
+      height: 56px;
       background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
-      border-radius: var(--radius-sm);
+      border-radius: var(--radius-md);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 22px;
-      margin-bottom: 16px;
+      font-size: 28px;
+      margin-bottom: 20px;
     }
 
-    .recommendation-title {
+    .rec-title {
       font-family: var(--font-display);
-      font-size: 18px;
+      font-size: 20px;
       font-weight: 600;
       color: var(--text-primary);
-      margin-bottom: 12px;
+      margin-bottom: 14px;
     }
 
-    .recommendation-text {
-      font-size: 14px;
-      line-height: 1.7;
+    .rec-text {
+      font-size: 15px;
+      line-height: 1.8;
       color: var(--text-secondary);
     }
 
-    /* Premium Footer */
-    .footer {
-      background: linear-gradient(145deg, var(--primary) 0%, var(--primary-light) 100%);
+    /* Mensagem Final */
+    .final-message {
+      background: linear-gradient(145deg, var(--accent) 0%, var(--accent-dark) 100%);
       border-radius: var(--radius-xl);
-      padding: 48px 40px;
+      padding: 48px;
       text-align: center;
-      margin-top: 40px;
+      margin-bottom: 32px;
       position: relative;
       overflow: hidden;
     }
 
-    .footer::before {
+    .final-message::before {
       content: '';
       position: absolute;
-      top: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 200px;
-      height: 200px;
-      background: radial-gradient(circle, rgba(201, 169, 98, 0.2) 0%, transparent 70%);
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 50%);
+      animation: pulse-slow 4s ease-in-out infinite;
     }
 
-    .footer-logo {
-      font-size: 36px;
+    @keyframes pulse-slow {
+      0%, 100% { opacity: 0.5; }
+      50% { opacity: 1; }
+    }
+
+    .final-icon {
+      font-size: 48px;
+      margin-bottom: 20px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .final-title {
+      font-family: var(--font-display);
+      font-size: 28px;
+      font-weight: 600;
+      color: white;
       margin-bottom: 16px;
       position: relative;
       z-index: 1;
+    }
+
+    .final-text {
+      font-size: 17px;
+      line-height: 1.8;
+      color: rgba(255, 255, 255, 0.9);
+      max-width: 600px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Footer */
+    .footer {
+      background: linear-gradient(145deg, var(--primary) 0%, #1a1a2e 100%);
+      border-radius: var(--radius-xl);
+      padding: 48px;
+      text-align: center;
+    }
+
+    .footer-logo {
+      font-size: 40px;
+      margin-bottom: 16px;
     }
 
     .footer-title {
@@ -2868,25 +2974,19 @@ Por favor, analise as imagens dos exames médicos e extraia todos os valores enc
       font-weight: 600;
       color: white;
       margin-bottom: 8px;
-      position: relative;
-      z-index: 1;
     }
 
     .footer-subtitle {
       font-size: 15px;
       color: rgba(255, 255, 255, 0.7);
-      margin-bottom: 24px;
-      position: relative;
-      z-index: 1;
+      margin-bottom: 28px;
     }
 
     .footer-contact {
       display: flex;
       justify-content: center;
-      gap: 32px;
+      gap: 40px;
       margin-bottom: 32px;
-      position: relative;
-      z-index: 1;
     }
 
     .contact-item {
@@ -2899,28 +2999,28 @@ Por favor, analise as imagens dos exames médicos e extraia todos os valores enc
 
     .contact-icon {
       font-size: 18px;
-      color: var(--accent-light);
+      color: var(--gold-light);
     }
 
     .footer-divider {
-      width: 80px;
+      width: 100px;
       height: 2px;
-      background: linear-gradient(90deg, transparent, var(--accent), transparent);
-      margin: 0 auto 24px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      margin: 0 auto 28px;
     }
 
     .footer-disclaimer {
-      font-size: 12px;
-      color: rgba(255, 255, 255, 0.6);
-      max-width: 700px;
-      margin: 0 auto;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.7);
       line-height: 1.7;
-      position: relative;
-      z-index: 1;
     }
 
     .footer-disclaimer strong {
-      color: var(--accent-light);
+      color: var(--gold-light);
     }
 
     /* Print Button */
@@ -2928,21 +3028,21 @@ Por favor, analise as imagens dos exames médicos e extraia todos os valores enc
       position: fixed;
       bottom: 32px;
       right: 32px;
-      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
-      color: white;
+      background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 100%);
+      color: var(--primary);
       border: none;
-      padding: 16px 28px;
+      padding: 16px 32px;
       border-radius: 100px;
       font-family: var(--font-body);
       font-size: 14px;
-      font-weight: 600;
+      font-weight: 700;
       cursor: pointer;
       box-shadow: 0 8px 24px rgba(201, 169, 98, 0.4);
       transition: all 0.3s ease;
       z-index: 1000;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
     }
 
     .print-btn:hover {
@@ -2950,50 +3050,16 @@ Por favor, analise as imagens dos exames médicos e extraia todos os valores enc
       box-shadow: 0 12px 32px rgba(201, 169, 98, 0.5);
     }
 
-    /* Welcome Message */
-    .welcome-message {
-      background: linear-gradient(135deg, rgba(201, 169, 98, 0.08) 0%, rgba(201, 169, 98, 0.03) 100%);
-      border: 1px solid rgba(201, 169, 98, 0.2);
-      border-radius: var(--radius-lg);
-      padding: 28px;
-      margin-bottom: 32px;
-      display: flex;
-      align-items: flex-start;
-      gap: 20px;
-    }
-
-    .welcome-icon {
-      width: 48px;
-      height: 48px;
-      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-      flex-shrink: 0;
-    }
-
-    .welcome-text {
-      font-size: 15px;
-      line-height: 1.7;
-      color: var(--text-secondary);
-    }
-
-    .welcome-text strong {
-      color: var(--text-primary);
-    }
-
     /* Responsive */
     @media (max-width: 768px) {
       .container { padding: 20px 16px; }
-      .hero-header { padding: 32px 24px; }
-      .hero-content { flex-direction: column; text-align: center; }
-      .hero-text h1 { font-size: 26px; }
-      .hero-badge { position: static; margin-top: 20px; }
-      .info-bar { grid-template-columns: 1fr 1fr; }
-      .metabolic-grid { grid-template-columns: 1fr; }
-      .recommendations { grid-template-columns: 1fr; }
+      .hero-header { padding: 40px 24px; }
+      .hero-title { font-size: 28px; }
+      .welcome-card { flex-direction: column; text-align: center; }
+      .welcome-avatar { margin: 0 auto; }
+      .patient-bar { grid-template-columns: 1fr; }
+      .recommendations-grid { grid-template-columns: 1fr; }
+      .exam-values { grid-template-columns: 1fr; }
       .footer-contact { flex-direction: column; gap: 16px; }
       .print-btn { bottom: 20px; right: 20px; padding: 14px 24px; }
     }
@@ -3001,7 +3067,8 @@ Por favor, analise as imagens dos exames médicos e extraia todos os valores enc
     @media print {
       .print-btn { display: none; }
       body { background: white; }
-      .card { box-shadow: none; border: 1px solid #e5e7eb; }
+      .section-card { box-shadow: none; border: 1px solid #e5e7eb; page-break-inside: avoid; }
+      .exam-card { page-break-inside: avoid; }
     }
   </style>
 </head>
@@ -3009,257 +3076,207 @@ Por favor, analise as imagens dos exames médicos e extraia todos os valores enc
   <button class="print-btn" onclick="window.print()">🖨️ Imprimir Relatório</button>
   
   <div class="container">
-    <!-- Hero Header Premium -->
+    <!-- Header Premium -->
     <header class="hero-header">
-      <div class="hero-badge">✨ RELATÓRIO PREMIUM</div>
+      <div class="hero-badge">✨ Premium</div>
       <div class="hero-content">
-        <div class="hero-logo">🏥</div>
-        <div class="hero-text">
-          <h1>Relatório Médico Clínico</h1>
-          <p>Dr. Vital — Análise Inteligente de Exames</p>
-        </div>
+        <div class="hero-icon">💚</div>
+        <h1 class="hero-title">Seu Relatório de Saúde</h1>
+        <p class="hero-subtitle">Uma análise completa e fácil de entender dos seus exames</p>
+        <p class="hero-date">📅 ${examDate} · Instituto dos Sonhos</p>
       </div>
     </header>
 
-    <!-- Mensagem de Boas-vindas -->
-    <div class="welcome-message">
-      <div class="welcome-icon">👨‍⚕️</div>
-      <div class="welcome-text">
-        <strong>Olá! Sou o Dr. Vital, sua IA médica personalizada.</strong> Preparei este relatório premium com uma análise detalhada e educativa dos seus exames. Cada resultado vem acompanhado de explicações claras sobre o que significa e como você pode cuidar melhor da sua saúde.
+    <!-- Card de Boas-vindas -->
+    <div class="welcome-card">
+      <div class="welcome-avatar">👨‍⚕️</div>
+      <div class="welcome-content">
+        <h2>Olá, ${patientName}! 👋</h2>
+        <p>
+          Eu sou o <strong>Dr. Vital</strong>, sua IA médica especializada em traduzir exames para uma linguagem simples e acolhedora. 
+          Preparei este relatório especialmente para você entender <em>exatamente</em> como está sua saúde, sem termos técnicos complicados. 
+          Vamos juntos descobrir o que seus exames revelam?
+        </p>
       </div>
     </div>
 
-    <!-- Barra de Informações do Paciente -->
-    <div class="info-bar">
-      <div class="info-item">
-        <div class="info-label">Paciente</div>
-        <div class="info-value">${patientName}</div>
+    <!-- Info do Paciente -->
+    <div class="patient-bar">
+      <div class="patient-item">
+        <div class="patient-label">Paciente</div>
+        <div class="patient-value">${patientName}</div>
       </div>
-      <div class="info-item">
-        <div class="info-label">Data do Exame</div>
-        <div class="info-value">${examDate}</div>
+      <div class="patient-item">
+        <div class="patient-label">Data do Exame</div>
+        <div class="patient-value">${examDate}</div>
       </div>
-      <div class="info-item">
-        <div class="info-label">Laboratório</div>
-        <div class="info-value">${clinicName}</div>
-      </div>
-      <div class="info-item">
-        <div class="info-label">ID Relatório</div>
-        <div class="info-value">#${documentId ? documentId.substring(0, 8).toUpperCase() : 'N/A'}</div>
+      <div class="patient-item">
+        <div class="patient-label">Laboratório</div>
+        <div class="patient-value">${clinicName}</div>
       </div>
     </div>
 
-    <section class="card">
-      <h2 class="section-title">
-        <span class="section-icon">📊</span>
-        Resumo Clínico
-      </h2>
-      <div class="summary-text">
-        ${summaryText ? summaryText.substring(0, 1200) + (summaryText.length > 1200 ? '...' : '') : `
-          <p>A análise dos exames laboratoriais apresentados revela um perfil de saúde que está dentro dos parâmetros de normalidade, com pequenos pontos para atenção específica. Os resultados indicam função renal e hepática adequadas, perfil lipídico equilibrado e níveis normais de glicemia.</p>
-          <p>Recomenda-se manter os hábitos saudáveis e seguir as orientações personalizadas abaixo para otimização dos resultados.</p>
+    <!-- Visão Geral da Saúde -->
+    <section class="section-card">
+      <div class="section-header">
+        <div class="section-icon">🌟</div>
+        <h2 class="section-title">Visão Geral da Sua Saúde</h2>
+      </div>
+      <div class="section-text">
+        ${summaryText ? `<p>${summaryText.substring(0, 1500)}</p>` : `
+          <p><strong>Como você está de saúde?</strong> De modo geral, seus exames mostram que seu corpo está funcionando bem. 
+          Você tem pontos positivos para celebrar e alguns detalhes que merecem atenção — mas nada alarmante.</p>
+          <p>Abaixo, vou explicar <em>cada exame</em> de forma simples, como se estivéssemos conversando. 
+          Meu objetivo é que você saia daqui sabendo exatamente o que significa cada número e o que fazer para cuidar ainda melhor da sua saúde. 💪</p>
         `}
       </div>
     </section>
 
-    <section class="card">
-      <h2 class="section-title">
-        <span class="section-icon">🔬</span>
-        Perfil Metabólico
-      </h2>
-      <div class="metabolic-grid">
-        ${parsed?.sections && parsed.sections.length > 0 ? 
-          parsed.sections.filter((section: any) => 
-            section.title === 'Perfil Lipídico' || 
-            section.title === 'Glicemia' || 
-            section.title === 'Metabolismo' ||
-            section.title === 'Vitaminas'
-          ).map((section: any) => 
-            section.metrics ? section.metrics.map((metric: any) => {
-              const statusClass = metric.status || 'normal';
-              const statusIcon = metric.status === 'elevated' ? '⚠️' : metric.status === 'low' ? '⚠️' : '✓';
-              
-              return `
-                <div class="metric-card ${statusClass}">
-                  <div class="metric-icon ${statusClass}">${statusIcon}</div>
-                  <div class="metric-name">${metric.name}</div>
-                  <div class="metric-value">${metric.value} ${metric.unit || ''}</div>
-                  <div class="metric-reference">Referência: ${metric.us_reference || 'N/A'}</div>
-                  ${metric.how_it_works ? `
-                    <div class="how-it-works">
-                      <div class="how-it-works-title">
-                        <span class="how-it-works-icon">💡</span>
-                        Como Funciona?
-                      </div>
-                      <div class="how-it-works-text">${metric.how_it_works}</div>
-                    </div>
-                  ` : ''}
-                </div>
-              `;
-            }).join('') : ''
-          ).join('') : `
-            <div class="metric-card error">
-              <div class="metric-icon error">❌</div>
-              <div class="metric-name">Erro na Extração</div>
-              <div class="metric-value">Não foi possível extrair dados</div>
-              <div class="metric-reference">Verifique a qualidade das imagens</div>
-              <div class="how-it-works">
-                <div class="how-it-works-title">
-                  <span class="how-it-works-icon">💡</span>
-                  O que fazer?
-                </div>
-                <div class="how-it-works-text">Certifique-se de que as imagens dos exames estão nítidas e legíveis. Tente fazer upload novamente com imagens de melhor qualidade.</div>
-              </div>
-            </div>
-          `
-        }
+    <!-- Análise Detalhada dos Exames -->
+    <section class="section-card">
+      <div class="section-header">
+        <div class="section-icon">🔬</div>
+        <h2 class="section-title">Seus Exames Explicados</h2>
       </div>
-    </section>
-
-    <section class="card">
-      <h2 class="section-title">
-        <span class="section-icon">🧾</span>
-        Exames Detalhados
-      </h2>
-      <div class="metabolic-grid">
+      
+      <div class="exam-grid">
         ${allMetrics && allMetrics.length > 0 ? allMetrics.map((metric: any) => {
-          const statusClass = metric.status || 'normal';
-          const statusIcon = metric.status === 'elevated' ? '⚠️' : metric.status === 'low' ? '⚠️' : '✓';
+          const statusClass = metric.status === 'elevated' ? 'warning' : metric.status === 'low' ? 'danger' : 'normal';
+          const statusEmoji = metric.status === 'elevated' ? '🟡' : metric.status === 'low' ? '🔴' : '🟢';
+          const statusText = metric.status === 'elevated' ? 'Atenção' : metric.status === 'low' ? 'Precisa de Cuidado' : 'Tudo Certo';
+          
           return `
-            <div class="metric-card ${statusClass}">
-              <div class="metric-icon ${statusClass}">${statusIcon}</div>
-              <div class="metric-name">${metric.name || ''}</div>
-              <div class="metric-value">${metric.value || ''} ${metric.unit || ''}</div>
-              <div class="metric-reference">Referência: ${metric.us_reference || metric.reference || 'N/A'}</div>
-              ${metric.how_it_works ? `
-                <div class="how-it-works">
-                  <div class="how-it-works-title">
-                    <span class="how-it-works-icon">💡</span>
-                    Como Funciona?
+            <div class="exam-card">
+              <div class="exam-header">
+                <span class="exam-name">${metric.name || 'Exame'}</span>
+                <span class="exam-status ${statusClass}">${statusEmoji} ${statusText}</span>
+              </div>
+              <div class="exam-body">
+                <div class="exam-values">
+                  <div class="exam-value-item">
+                    <div class="exam-value-label">Seu Resultado</div>
+                    <div class="exam-value-number">${metric.value || '-'}<span class="exam-value-unit">${metric.unit || ''}</span></div>
                   </div>
-                  <div class="how-it-works-text">${metric.how_it_works}</div>
+                  <div class="exam-value-item">
+                    <div class="exam-value-label">Faixa Ideal</div>
+                    <div class="exam-value-number" style="font-size: 20px; color: var(--text-secondary);">${metric.us_reference || metric.reference || 'Consultar médico'}</div>
+                  </div>
                 </div>
-              ` : ''}
+                
+                <div class="exam-explanation">
+                  <div class="exam-question">
+                    <div class="exam-question-icon">❓</div>
+                    <div class="exam-question-content">
+                      <h4>O que é esse exame?</h4>
+                      <p>${metric.how_it_works || 'Este exame avalia um aspecto importante da sua saúde. Converse com seu médico para uma explicação mais detalhada sobre o que ele mede e por que é importante.'}</p>
+                    </div>
+                  </div>
+                  
+                  <div class="exam-question">
+                    <div class="exam-question-icon">💡</div>
+                    <div class="exam-question-content">
+                      <h4>Isso é grave? Devo me preocupar?</h4>
+                      <p>${metric.status === 'normal' 
+                        ? '✅ <strong>Fique tranquilo(a)!</strong> Seu resultado está dentro da faixa considerada saudável. Continue mantendo seus bons hábitos!'
+                        : metric.status === 'elevated'
+                        ? '⚠️ <strong>Atenção, mas sem pânico!</strong> Seu resultado está um pouco acima do ideal. Isso não é uma emergência, mas vale conversar com seu médico sobre ajustes no estilo de vida.'
+                        : '🔔 <strong>Merece atenção!</strong> Seu resultado está fora da faixa ideal. Recomendo agendar uma consulta com seu médico para avaliar melhor e definir os próximos passos.'
+                      }</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="exam-example">
+                  <div class="exam-example-title"><span>💭</span> Exemplo Prático</div>
+                  <p>Pense no seu corpo como uma casa: cada exame verifica uma parte diferente dessa casa. 
+                  ${metric.name?.toLowerCase().includes('colesterol') ? 'O colesterol seria como a gordura que pode acumular nos canos da sua casa — um pouco é normal, mas muito pode causar entupimentos.' :
+                    metric.name?.toLowerCase().includes('glicose') || metric.name?.toLowerCase().includes('glicemia') ? 'A glicose é como o combustível que faz sua casa funcionar — precisa estar na medida certa, nem muito nem pouco.' :
+                    metric.name?.toLowerCase().includes('creatinina') ? 'A creatinina mostra como estão os "filtros" da sua casa (seus rins) — se acumula muito, pode indicar que os filtros precisam de atenção.' :
+                    'Esse exame verifica se essa parte específica da sua casa está funcionando bem.'}
+                  </p>
+                </div>
+              </div>
             </div>
           `;
         }).join('') : `
-          <div style="color: var(--text-medium); font-size: 0.95rem;">Nenhum exame reconhecido automaticamente.</div>
+          <div class="exam-card">
+            <div class="exam-header">
+              <span class="exam-name">Aguardando Exames</span>
+              <span class="exam-status normal">📋 Em Processamento</span>
+            </div>
+            <div class="exam-body">
+              <div class="section-text">
+                <p>Não foi possível extrair os dados dos exames automaticamente. Isso pode acontecer se as imagens estiverem com baixa qualidade ou o formato não for reconhecido.</p>
+                <p><strong>O que fazer?</strong> Tente fazer upload novamente com imagens mais nítidas e bem iluminadas.</p>
+              </div>
+            </div>
+          </div>
         `}
       </div>
     </section>
 
-    <section class="card">
-      <h2 class="section-title">
-        <span class="section-icon">🧪</span>
-        Função Renal e Hepática
-      </h2>
-      <div class="metabolic-grid">
-        ${parsed?.sections && parsed.sections.length > 0 ? 
-          parsed.sections.filter((section: any) => 
-            section.title === 'Função Renal' || 
-            section.title === 'Função Hepática' ||
-            section.title === 'Fígado'
-          ).map((section: any) => 
-            section.metrics ? section.metrics.map((metric: any) => {
-              const statusClass = metric.status || 'normal';
-              const statusIcon = metric.status === 'elevated' ? '⚠️' : metric.status === 'low' ? '⚠️' : '✓';
-              
-              return `
-                <div class="metric-card ${statusClass}">
-                  <div class="metric-icon ${statusClass}">${statusIcon}</div>
-                  <div class="metric-name">${metric.name}</div>
-                  <div class="metric-value">${metric.value} ${metric.unit || ''}</div>
-                  <div class="metric-reference">Referência: ${metric.us_reference || 'N/A'}</div>
-                  ${metric.how_it_works ? `
-                    <div class="how-it-works">
-                      <div class="how-it-works-title">
-                        <span class="how-it-works-icon">💡</span>
-                        Como Funciona?
-                      </div>
-                      <div class="how-it-works-text">${metric.how_it_works}</div>
-                    </div>
-                  ` : ''}
-                </div>
-              `;
-            }).join('') : ''
-          ).join('') : `
-            <div class="metric-card normal">
-              <div class="metric-icon normal">✓</div>
-              <div class="metric-name">Creatinina</div>
-              <div class="metric-value">0.9 mg/dL</div>
-              <div class="metric-reference">Referência: 0.6-1.1 mg/dL</div>
-              <div class="how-it-works">
-                <div class="how-it-works-title">
-                  <span class="how-it-works-icon">💡</span>
-                  Como Funciona?
-                </div>
-                <div class="how-it-works-text">É um subproduto do músculo que os rins devem filtrar. Quando a filtração diminui, a creatinina acumula no sangue.</div>
-              </div>
-            </div>
-            <div class="metric-card normal">
-              <div class="metric-icon normal">✓</div>
-              <div class="metric-name">TGP/ALT</div>
-              <div class="metric-value">28 U/L</div>
-              <div class="metric-reference">Referência: < 41 U/L</div>
-              <div class="how-it-works">
-                <div class="how-it-works-title">
-                  <span class="how-it-works-icon">💡</span>
-                  Como Funciona?
-                </div>
-                <div class="how-it-works-text">São enzimas dentro das células do fígado. Quando as células sofrem, parte dessas enzimas "vaza" para o sangue, elevando os valores no exame.</div>
-              </div>
-            </div>
-          `
-        }
+    <!-- Recomendações Personalizadas -->
+    <section class="section-card">
+      <div class="section-header">
+        <div class="section-icon">💪</div>
+        <h2 class="section-title">Recomendações Para Você</h2>
       </div>
-    </section>
-
-    <section class="card">
-      <h2 class="section-title">
-        <span class="section-icon">💊</span>
-        Recomendações Personalizadas
-      </h2>
-      <div class="recommendations">
-        <div class="recommendation-card">
-          <div class="recommendation-icon">🥗</div>
-          <h3 class="recommendation-title">Alimentação</h3>
-          <p class="recommendation-text">
+      
+      <div class="recommendations-grid">
+        <div class="rec-card">
+          <div class="rec-icon">🥗</div>
+          <h3 class="rec-title">O que Comer</h3>
+          <p class="rec-text">
             ${parsed?.recommendations?.medium?.filter((r: string) => r.includes('aliment') || r.includes('diet') || r.includes('nutri')).slice(0, 1)[0] || 
-            'Priorize uma dieta rica em vegetais, frutas, grãos integrais e proteínas magras. Reduza o consumo de alimentos processados, açúcares refinados e gorduras saturadas.'}
+            'Priorize alimentos naturais: frutas, verduras, legumes, grãos integrais e proteínas magras. Evite ultraprocessados, açúcar em excesso e frituras. Seu corpo vai agradecer!'}
           </p>
         </div>
-        <div class="recommendation-card">
-          <div class="recommendation-icon">🏃</div>
-          <h3 class="recommendation-title">Atividade Física</h3>
-          <p class="recommendation-text">
+        
+        <div class="rec-card">
+          <div class="rec-icon">🚶</div>
+          <h3 class="rec-title">Movimento</h3>
+          <p class="rec-text">
             ${parsed?.recommendations?.medium?.filter((r: string) => r.includes('exerc') || r.includes('atividade') || r.includes('físic')).slice(0, 1)[0] || 
-            'Realize pelo menos 150 minutos de atividade física moderada por semana, combinando exercícios aeróbicos e de resistência para saúde cardiovascular e muscular.'}
+            'Mexa-se! Uma caminhada de 30 minutos por dia já faz diferença enorme. O importante é ser constante — escolha algo que você goste e mantenha a regularidade.'}
           </p>
         </div>
-        <div class="recommendation-card">
-          <div class="recommendation-icon">🧠</div>
-          <h3 class="recommendation-title">Bem-estar</h3>
-          <p class="recommendation-text">
-            ${parsed?.recommendations?.low?.filter((r: string) => r.includes('estresse') || r.includes('sono') || r.includes('bem-estar')).slice(0, 1)[0] || 
-            'Priorize um sono de qualidade (7-8h), pratique técnicas de gerenciamento de estresse como meditação e reserve tempo para atividades prazerosas.'}
+        
+        <div class="rec-card">
+          <div class="rec-icon">😴</div>
+          <h3 class="rec-title">Sono e Bem-estar</h3>
+          <p class="rec-text">
+            ${parsed?.recommendations?.low?.filter((r: string) => r.includes('sono') || r.includes('estresse') || r.includes('descanso')).slice(0, 1)[0] || 
+            'Durma de 7 a 8 horas por noite. O sono é quando seu corpo se recupera e se regenera. Também reserve momentos para relaxar — sua saúde mental importa tanto quanto a física.'}
           </p>
         </div>
-        <div class="recommendation-card">
-          <div class="recommendation-icon">⚕️</div>
-          <h3 class="recommendation-title">Acompanhamento</h3>
-          <p class="recommendation-text">
+        
+        <div class="rec-card">
+          <div class="rec-icon">👨‍⚕️</div>
+          <h3 class="rec-title">Próximos Passos</h3>
+          <p class="rec-text">
             ${parsed?.recommendations?.high?.filter((r: string) => r.includes('médico') || r.includes('consulta') || r.includes('acompanhamento')).slice(0, 1)[0] || 
-            'Mantenha consultas regulares com seu médico. Repita os exames em 6 meses para acompanhamento dos valores que necessitam atenção.'}
+            'Leve este relatório para seu médico na próxima consulta. Repita os exames em 6 meses para acompanhar sua evolução. Pequenas mudanças hoje trazem grandes resultados amanhã!'}
           </p>
         </div>
       </div>
     </section>
 
-    <!-- Footer Premium -->
+    <!-- Mensagem Final Acolhedora -->
+    <div class="final-message">
+      <div class="final-icon">🌟</div>
+      <h2 class="final-title">Você Está no Caminho Certo!</h2>
+      <p class="final-text">
+        Lembre-se: cuidar da saúde é uma jornada, não uma corrida. Cada pequena escolha saudável conta. 
+        Estou aqui para ajudar você a entender melhor seu corpo e tomar decisões mais informadas. 
+        Cuide-se com carinho — você merece! 💚
+      </p>
+    </div>
+
+    <!-- Footer -->
     <footer class="footer">
       <div class="footer-logo">🏥</div>
       <div class="footer-title">Instituto dos Sonhos</div>
-      <div class="footer-subtitle">Tecnologia em Saúde e Bem-estar</div>
+      <div class="footer-subtitle">Tecnologia a serviço da sua saúde</div>
       
       <div class="footer-divider"></div>
       
@@ -3279,9 +3296,9 @@ Por favor, analise as imagens dos exames médicos e extraia todos os valores enc
       </div>
       
       <div class="footer-disclaimer">
-        <strong>⚠️ AVISO IMPORTANTE:</strong> Este relatório é gerado por inteligência artificial com finalidade exclusivamente educativa e informativa. 
-        <strong>Não substitui consulta, diagnóstico ou tratamento médico profissional.</strong> 
-        Sempre consulte um médico qualificado para interpretação clínica adequada dos seus exames.
+        <strong>⚠️ AVISO IMPORTANTE:</strong> Este relatório foi criado por inteligência artificial com finalidade <strong>exclusivamente educativa e informativa</strong>. 
+        Ele <strong>NÃO substitui</strong> consulta médica, diagnóstico ou tratamento profissional. 
+        Sempre procure um médico qualificado para interpretar seus exames e orientar condutas de saúde.
       </div>
     </footer>
   </div>
