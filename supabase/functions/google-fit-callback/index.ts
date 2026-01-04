@@ -138,7 +138,11 @@ serve(async (req) => {
 
       // SOLUÇÃO ALTERNATIVA: Tentar extrair userId do state ou usar fallback
       let userId = null
-      let returnUrl = 'https://plataforma.institutodossonhos.com.br'
+      // Detectar URL de retorno dinamicamente
+      const referer = req.headers.get('referer') || '';
+      let returnUrl = referer.includes('lovableproject.com') 
+        ? referer.split('?')[0].replace(/\/$/, '')
+        : 'https://plataforma.institutodossonhos.com.br'
 
       if (state) {
         try {
@@ -333,7 +337,7 @@ serve(async (req) => {
             } else {
               // Se não for popup, redirecionar para o frontend
               setTimeout(() => {
-                window.location.href = '${returnUrl || 'http://localhost:8080'}/dashboard?tab=progress';
+                window.location.href = '${returnUrl}/dashboard?tab=progress';
               }, 3000);
             }
           </script>

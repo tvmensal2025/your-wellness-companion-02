@@ -95,9 +95,21 @@ serve(async (req) => {
       // USAR A URL QUE JÁ ESTÁ AUTORIZADA NO GOOGLE CLOUD CONSOLE
       const redirectUri = `${supabaseUrl}/functions/v1/google-fit-callback`
       
-      // Criar state com userId e returnUrl
+      // Criar state com userId e returnUrl dinâmica
+      // Detectar ambiente automaticamente
+      const origin = req.headers.get('origin') || req.headers.get('referer') || '';
+      let returnUrl = 'https://plataforma.institutodossonhos.com.br';
+      
+      if (origin.includes('localhost')) {
+        returnUrl = origin.split('?')[0].replace(/\/$/, '');
+      } else if (origin.includes('lovableproject.com')) {
+        returnUrl = origin.split('?')[0].replace(/\/$/, '');
+      } else if (origin) {
+        returnUrl = origin.split('?')[0].replace(/\/$/, '');
+      }
+      
       const stateData = {
-        returnUrl: 'http://localhost:8080', // URL local do Vite
+        returnUrl,
         userId: user.user.id,
         userEmail: user.user.email,
         timestamp: new Date().toISOString()
