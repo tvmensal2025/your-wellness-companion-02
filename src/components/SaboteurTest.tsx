@@ -632,12 +632,8 @@ const SaboteurTest: React.FC = () => {
   }
   const currentQ = saboteurQuestions[currentQuestion];
   return <div className="mobile-padding space-y-6">
-      {/* Header compacto abaixo do título global */}
-      <div className="flex items-center justify-between mobile-text-sm text-muted-foreground">
-        <div className="flex items-center gap-2">
-          <Brain className="h-5 w-5 text-primary" />
-          <span className="font-medium">Teste de Sabotadores</span>
-        </div>
+      {/* Header ultra compacto: só progresso da pergunta */}
+      <div className="flex items-center justify-end mobile-text-sm text-muted-foreground">
         <span className="font-semibold">
           Pergunta {currentQuestion + 1} de {saboteurQuestions.length}
         </span>
