@@ -9,7 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
 import SimpleWeightForm from '@/components/weighing/SimpleWeightForm';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-
+import { toast } from 'sonner';
 // New clean components
 import { AppleHealthHeroCard } from './AppleHealthHeroCard';
 import { CleanEvolutionChart } from './CleanEvolutionChart';
@@ -17,10 +17,11 @@ import { SofiaTipBanner } from './SofiaTipBanner';
 import { QuickActionsGrid } from './QuickActionsGrid';
 
 const DashboardOverview: React.FC = () => {
-  const { measurements, stats, loading } = useWeightMeasurement();
+  const { measurements, stats, loading, fetchMeasurements } = useWeightMeasurement();
   const { currentStreak } = useUserStreak();
   const { totalXP, level, levelTitle } = useUserXP();
   const [isWeightModalOpen, setIsWeightModalOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const navigate = useNavigate();
 
   const [user, setUser] = useState<User | null>(null);
@@ -143,6 +144,58 @@ const DashboardOverview: React.FC = () => {
     return 0;
   };
 
+  const handleWeightSubmit = async (data: { weight: number; height: number; waist: number }) => {
+    if (!user) {
+      toast.error('Você precisa estar logado para registrar peso');
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      // Calculate IMC
+      const heightM = data.height / 100;
+      const imc = data.weight / (heightM * heightM);
+
+      // Calculate RCE (Waist-to-Height Ratio)
+      const rce = data.waist / data.height;
+
+      // Determine IMC status
+      let imcStatus = 'Normal';
+      if (imc < 18.5) imcStatus = 'Abaixo do peso';
+      else if (imc >= 25 && imc < 30) imcStatus = 'Sobrepeso';
+      else if (imc >= 30) imcStatus = 'Obesidade';
+
+      // Determine cardiometabolic risk
+      let riscoCardiometabolico = 'Baixo';
+      if (rce >= 0.5 && rce < 0.55) riscoCardiometabolico = 'Moderado';
+      else if (rce >= 0.55 && rce < 0.6) riscoCardiometabolico = 'Alto';
+      else if (rce >= 0.6) riscoCardiometabolico = 'Muito Alto';
+
+      const { error } = await supabase.from('weight_measurements').insert({
+        user_id: user.id,
+        peso_kg: data.weight,
+        altura_cm: data.height,
+        circunferencia_abdominal_cm: data.waist,
+        imc: parseFloat(imc.toFixed(2)),
+        rce: parseFloat(rce.toFixed(3)),
+        imc_status: imcStatus,
+        risco_cardiometabolico: riscoCardiometabolico,
+        measurement_date: new Date().toISOString().split('T')[0],
+      });
+
+      if (error) throw error;
+
+      toast.success('Peso registrado com sucesso!');
+      setIsWeightModalOpen(false);
+      fetchMeasurements(30, true);
+    } catch (error) {
+      console.error('Error saving weight:', error);
+      toast.error('Erro ao registrar peso');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const currentWeight = stats?.currentWeight || (measurements?.[0]?.peso_kg ? Number(measurements[0].peso_kg) : 0);
 
   return (
@@ -188,7 +241,7 @@ const DashboardOverview: React.FC = () => {
             </DialogDescription>
           </DialogHeader>
           <SimpleWeightForm 
-            onSubmit={() => setIsWeightModalOpen(false)}
+            onSubmit={handleWeightSubmit}
           />
         </DialogContent>
       </Dialog>
