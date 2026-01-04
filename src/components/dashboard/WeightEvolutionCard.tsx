@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { TrendingDown, TrendingUp, Minus, Scale, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { SimpleCharacter3D } from '@/components/ui/simple-character-3d';
 
 interface WeightRecord {
   id: string;
@@ -14,11 +15,13 @@ interface WeightRecord {
 interface WeightEvolutionCardProps {
   measurements: WeightRecord[];
   loading?: boolean;
+  gender?: 'male' | 'female';
 }
 
 export const WeightEvolutionCard: React.FC<WeightEvolutionCardProps> = ({
   measurements,
-  loading = false
+  loading = false,
+  gender = 'male'
 }) => {
   if (loading) {
     return (
@@ -44,8 +47,18 @@ export const WeightEvolutionCard: React.FC<WeightEvolutionCardProps> = ({
           <Scale className="h-4 w-4 text-primary" />
           <span className="text-sm font-medium text-foreground">Evolução do Peso</span>
         </div>
-        <p className="text-sm text-muted-foreground text-center py-6">
-          Nenhum registro de peso ainda. Comece a acompanhar sua evolução!
+        <div className="flex items-center justify-center py-4">
+          <SimpleCharacter3D 
+            width={120} 
+            height={150} 
+            gender={gender} 
+            autoRotate={true}
+            backgroundColor="transparent"
+            className="opacity-50"
+          />
+        </div>
+        <p className="text-sm text-muted-foreground text-center">
+          Nenhum registro ainda. Comece a acompanhar!
         </p>
       </motion.div>
     );
@@ -126,22 +139,47 @@ export const WeightEvolutionCard: React.FC<WeightEvolutionCardProps> = ({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="rounded-2xl bg-card border border-border/40 p-4 space-y-4"
+      className="rounded-2xl bg-card border border-border/40 overflow-hidden"
     >
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Scale className="h-4 w-4 text-primary" />
-          <span className="text-sm font-medium text-foreground">Evolução do Peso</span>
-        </div>
-        <div className={`flex items-center gap-1 px-2 py-1 rounded-full bg-muted/50 ${getTrendColor()}`}>
-          {getTrendIcon()}
-          <span className="text-xs font-semibold">
-            {totalChange > 0 ? '+' : ''}{totalChange.toFixed(1)}kg
-          </span>
-          <span className="text-[10px] opacity-70">({percentChange}%)</span>
+      {/* Hero com personagem 3D e métricas */}
+      <div className="relative bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-4">
+        <div className="flex items-center gap-4">
+          {/* Personagem 3D */}
+          <div className="flex-shrink-0">
+            <SimpleCharacter3D 
+              width={100} 
+              height={130} 
+              gender={gender} 
+              autoRotate={true}
+              backgroundColor="transparent"
+            />
+          </div>
+          
+          {/* Métricas principais */}
+          <div className="flex-1 space-y-2">
+            <div className="flex items-center gap-2">
+              <Scale className="h-4 w-4 text-primary" />
+              <span className="text-sm font-semibold text-foreground">Sua Evolução</span>
+            </div>
+            
+            {/* Peso atual */}
+            <div className="text-3xl font-bold text-foreground">
+              {lastWeight.toFixed(1)}<span className="text-lg text-muted-foreground ml-1">kg</span>
+            </div>
+            
+            {/* Variação */}
+            <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full bg-background/80 ${getTrendColor()}`}>
+              {getTrendIcon()}
+              <span className="text-xs font-semibold">
+                {totalChange > 0 ? '+' : ''}{totalChange.toFixed(1)}kg
+              </span>
+              <span className="text-[10px] opacity-70">({percentChange}%)</span>
+            </div>
+          </div>
         </div>
       </div>
+
+      <div className="p-4 space-y-4">
 
       {/* Mini Chart */}
       <div className="relative h-16 w-full">
@@ -222,12 +260,13 @@ export const WeightEvolutionCard: React.FC<WeightEvolutionCardProps> = ({
         })}
       </div>
 
-      {/* Footer com período */}
-      {measurements.length > 1 && (
-        <div className="text-center text-[10px] text-muted-foreground pt-2 border-t border-border/30">
-          {measurements.length} registros • {format(new Date(measurements[measurements.length - 1].measurement_date || measurements[measurements.length - 1].created_at), "dd/MM", { locale: ptBR })} a {format(new Date(measurements[0].measurement_date || measurements[0].created_at), "dd/MM", { locale: ptBR })}
-        </div>
-      )}
+        {/* Footer com período */}
+        {measurements.length > 1 && (
+          <div className="text-center text-[10px] text-muted-foreground pt-2 border-t border-border/30">
+            {measurements.length} registros • {format(new Date(measurements[measurements.length - 1].measurement_date || measurements[measurements.length - 1].created_at), "dd/MM", { locale: ptBR })} a {format(new Date(measurements[0].measurement_date || measurements[0].created_at), "dd/MM", { locale: ptBR })}
+          </div>
+        )}
+      </div>
     </motion.div>
   );
 };
