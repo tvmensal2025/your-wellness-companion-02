@@ -166,10 +166,11 @@ const DashboardOverview: React.FC = () => {
           onAddWeight={() => setIsWeightModalOpen(true)}
         />
 
-        {/* EVOLUÇÃO DO PESO - Gráfico e histórico */}
+        {/* EVOLUÇÃO DO PESO - Gráfico e histórico com personagem 3D */}
         <WeightEvolutionCard 
           measurements={measurements || []}
           loading={loading}
+          gender={gender === 'feminino' ? 'female' : 'male'}
         />
         <FlashChallengeCard />
 
