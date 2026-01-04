@@ -32,7 +32,7 @@ import { SofiaProactiveCard } from '@/components/sofia/SofiaProactiveCard';
 
 const DashboardOverview: React.FC = () => {
   const { measurements, stats, loading } = useWeightMeasurement();
-  const { trackingData } = useTrackingData();
+  const { trackingData, refreshData: refreshTrackingData } = useTrackingData();
   const [weightData, setWeightData] = useState<any[]>([]);
   const [exerciseData, setExerciseData] = useState<any[]>([]);
   const [waterData, setWaterData] = useState<any[]>([]);
@@ -53,36 +53,37 @@ const DashboardOverview: React.FC = () => {
     getCurrentUser();
   }, []);
 
+  const loadWeeklyData = async () => {
+    if (!user) return;
+    try {
+      const today = new Date();
+      const weekStart = new Date(today);
+      weekStart.setDate(today.getDate() - today.getDay());
+      const weekStartStr = weekStart.toISOString().split('T')[0];
+      const todayStr = today.toISOString().split('T')[0];
+
+      const { data: exerciseWeekData } = await supabase
+        .from('exercise_tracking')
+        .select('*')
+        .eq('user_id', user.id)
+        .gte('date', weekStartStr)
+        .lte('date', todayStr);
+
+      const { data: waterWeekData } = await supabase
+        .from('water_tracking')
+        .select('*')
+        .eq('user_id', user.id)
+        .gte('date', weekStartStr)
+        .lte('date', todayStr);
+
+      setExerciseData(exerciseWeekData || []);
+      setWaterData(waterWeekData || []);
+    } catch (error) {
+      console.error('Erro ao carregar dados semanais:', error);
+    }
+  };
+
   useEffect(() => {
-    const loadWeeklyData = async () => {
-      if (!user) return;
-      try {
-        const today = new Date();
-        const weekStart = new Date(today);
-        weekStart.setDate(today.getDate() - today.getDay());
-        const weekStartStr = weekStart.toISOString().split('T')[0];
-        const todayStr = today.toISOString().split('T')[0];
-
-        const { data: exerciseWeekData } = await supabase
-          .from('exercise_tracking')
-          .select('*')
-          .eq('user_id', user.id)
-          .gte('date', weekStartStr)
-          .lte('date', todayStr);
-
-        const { data: waterWeekData } = await supabase
-          .from('water_tracking')
-          .select('*')
-          .eq('user_id', user.id)
-          .gte('date', weekStartStr)
-          .lte('date', todayStr);
-
-        setExerciseData(exerciseWeekData || []);
-        setWaterData(waterWeekData || []);
-      } catch (error) {
-        console.error('Erro ao carregar dados semanais:', error);
-      }
-    };
     loadWeeklyData();
   }, [user]);
 
@@ -345,19 +346,22 @@ const DashboardOverview: React.FC = () => {
       {/* Water Modal */}
       <QuickWaterModal 
         open={isWaterModalOpen} 
-        onOpenChange={setIsWaterModalOpen} 
+        onOpenChange={setIsWaterModalOpen}
+        onSuccess={loadWeeklyData}
       />
 
       {/* Sleep Modal */}
       <QuickSleepModal 
         open={isSleepModalOpen} 
-        onOpenChange={setIsSleepModalOpen} 
+        onOpenChange={setIsSleepModalOpen}
+        onSuccess={loadWeeklyData}
       />
 
       {/* Exercise Modal */}
       <QuickExerciseModal 
         open={isExerciseModalOpen} 
-        onOpenChange={setIsExerciseModalOpen} 
+        onOpenChange={setIsExerciseModalOpen}
+        onSuccess={loadWeeklyData}
       />
     </div>
   );

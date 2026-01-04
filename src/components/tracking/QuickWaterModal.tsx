@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 interface QuickWaterModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onSuccess?: () => void;
 }
 
 const QUICK_OPTIONS = [
@@ -19,20 +20,22 @@ const QUICK_OPTIONS = [
   { label: '1 litro', value: 4, ml: 1000 },
 ];
 
-export const QuickWaterModal: React.FC<QuickWaterModalProps> = ({ open, onOpenChange }) => {
+export const QuickWaterModal: React.FC<QuickWaterModalProps> = ({ open, onOpenChange, onSuccess }) => {
   const [customAmount, setCustomAmount] = useState(250);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { addWaterIntake, trackingData } = useTrackingData();
+  const { addWaterIntake, trackingData, refreshData } = useTrackingData();
   const { toast } = useToast();
 
   const handleQuickAdd = async (glasses: number, ml: number) => {
     setIsSubmitting(true);
     try {
       await addWaterIntake(glasses);
+      await refreshData();
       toast({
         title: "💧 Água registrada!",
         description: `+${ml}ml adicionados ao seu dia`,
       });
+      onSuccess?.();
       onOpenChange(false);
     } catch (error) {
       toast({

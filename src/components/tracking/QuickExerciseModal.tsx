@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 interface QuickExerciseModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onSuccess?: () => void;
 }
 
 const EXERCISE_TYPES = [
@@ -21,11 +22,11 @@ const EXERCISE_TYPES = [
   { id: 'outro', label: 'Outro', icon: Activity, color: 'from-gray-500 to-slate-600', calories: 5 },
 ];
 
-export const QuickExerciseModal: React.FC<QuickExerciseModalProps> = ({ open, onOpenChange }) => {
+export const QuickExerciseModal: React.FC<QuickExerciseModalProps> = ({ open, onOpenChange, onSuccess }) => {
   const [selectedType, setSelectedType] = useState('caminhada');
   const [duration, setDuration] = useState(30);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { addExerciseData, trackingData } = useTrackingData();
+  const { addExerciseData, trackingData, refreshData } = useTrackingData();
   const { toast } = useToast();
 
   const selectedExercise = EXERCISE_TYPES.find(e => e.id === selectedType)!;
@@ -35,10 +36,12 @@ export const QuickExerciseModal: React.FC<QuickExerciseModalProps> = ({ open, on
     setIsSubmitting(true);
     try {
       await addExerciseData(duration, selectedType);
+      await refreshData(); // Recarrega todos os dados
       toast({
         title: "🏃 Exercício registrado!",
         description: `${duration} min de ${selectedExercise.label.toLowerCase()} (~${estimatedCalories} kcal)`,
       });
+      onSuccess?.(); // Callback para o dashboard recarregar
       onOpenChange(false);
     } catch (error) {
       toast({

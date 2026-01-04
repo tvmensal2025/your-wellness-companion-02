@@ -11,27 +11,30 @@ import { useToast } from '@/hooks/use-toast';
 interface QuickSleepModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onSuccess?: () => void;
 }
 
 const QUALITY_LABELS = ['Péssima', 'Ruim', 'Regular', 'Boa', 'Excelente'];
 const QUALITY_EMOJIS = ['😫', '😔', '😐', '😊', '🌟'];
 
-export const QuickSleepModal: React.FC<QuickSleepModalProps> = ({ open, onOpenChange }) => {
+export const QuickSleepModal: React.FC<QuickSleepModalProps> = ({ open, onOpenChange, onSuccess }) => {
   const [hours, setHours] = useState(7);
   const [quality, setQuality] = useState(3);
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { addSleepData, trackingData } = useTrackingData();
+  const { addSleepData, trackingData, refreshData } = useTrackingData();
   const { toast } = useToast();
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
       await addSleepData({ hours, quality, notes });
+      await refreshData();
       toast({
         title: "😴 Sono registrado!",
         description: `${hours}h de sono com qualidade ${QUALITY_LABELS[quality - 1].toLowerCase()}`,
       });
+      onSuccess?.();
       onOpenChange(false);
       setNotes('');
     } catch (error) {
