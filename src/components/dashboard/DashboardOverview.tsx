@@ -9,6 +9,8 @@ import {
 } from 'lucide-react';
 import { useWeightMeasurement } from '@/hooks/useWeightMeasurement';
 import { useUserGender } from '@/hooks/useUserGender';
+import { useTrackingData } from '@/hooks/useTrackingData';
+import { useHealthScore } from '@/hooks/useHealthScore';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
 import { BodyEvolutionChart } from './BodyEvolutionChart';
@@ -25,13 +27,19 @@ import {
   PremiumFeatureCard,
   PremiumDailyStats
 } from './PremiumDashboardCards';
+import { QuickWaterModal, QuickSleepModal, QuickExerciseModal } from '@/components/tracking';
+import { SofiaProactiveCard } from '@/components/sofia/SofiaProactiveCard';
 
 const DashboardOverview: React.FC = () => {
   const { measurements, stats, loading } = useWeightMeasurement();
+  const { trackingData } = useTrackingData();
   const [weightData, setWeightData] = useState<any[]>([]);
   const [exerciseData, setExerciseData] = useState<any[]>([]);
   const [waterData, setWaterData] = useState<any[]>([]);
   const [isWeightModalOpen, setIsWeightModalOpen] = useState(false);
+  const [isWaterModalOpen, setIsWaterModalOpen] = useState(false);
+  const [isSleepModalOpen, setIsSleepModalOpen] = useState(false);
+  const [isExerciseModalOpen, setIsExerciseModalOpen] = useState(false);
   const navigate = useNavigate();
 
   const [user, setUser] = useState<User | null>(null);
@@ -161,7 +169,24 @@ const DashboardOverview: React.FC = () => {
 
   const weeklyStats = getWeeklyStats();
   const currentWeight = stats?.currentWeight || (measurements?.[0]?.peso_kg ? Number(measurements[0].peso_kg).toFixed(1) : '--');
-  const healthScore = 78; // Calculate based on real data
+  
+  // Dados de sono do tracking
+  const sleepHours = trackingData?.sleep?.lastNight?.hours || 0;
+  const sleepQuality = trackingData?.sleep?.lastNight?.quality || 3;
+  
+  // Health Score dinâmico
+  const healthScoreData = useHealthScore({
+    waterTodayMl: Number(weeklyStats.waterLiters) * 1000,
+    waterGoalMl: 2000,
+    sleepHours: sleepHours,
+    sleepQuality: sleepQuality,
+    sleepGoalHours: 8,
+    exerciseMinutesToday: weeklyStats.totalMinutes,
+    exerciseGoalMinutes: 30,
+    moodRating: trackingData?.mood?.today?.day_rating || 3,
+    stressLevel: trackingData?.mood?.today?.stress_level || 3,
+    currentStreak: 0, // TODO: calcular streak real
+  });
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/30">
@@ -172,14 +197,14 @@ const DashboardOverview: React.FC = () => {
           weight={currentWeight}
           calories={1850}
           water={Number(weeklyStats.waterLiters) * 1000}
-          sleep={7.5}
+          sleep={sleepHours || undefined}
           weightChange={weightChange()}
         />
 
         {/* Health Score + Weekly Progress */}
         <div className="grid grid-cols-5 gap-3">
           <div className="col-span-2">
-            <PremiumHealthRing score={healthScore} />
+            <PremiumHealthRing score={healthScoreData.score} label={healthScoreData.label} />
           </div>
           <div className="col-span-3">
             <PremiumWeeklyMini 
@@ -192,15 +217,20 @@ const DashboardOverview: React.FC = () => {
         {/* Quick Actions */}
         <PremiumQuickActions 
           onAddWeight={() => setIsWeightModalOpen(true)}
-          onAddExercise={() => addExercise(30, 'caminhada')}
+          onAddExercise={() => setIsExerciseModalOpen(true)}
+          onAddWater={() => setIsWaterModalOpen(true)}
+          onAddSleep={() => setIsSleepModalOpen(true)}
         />
 
         {/* Daily Stats */}
         <PremiumDailyStats 
           exerciseMinutes={weeklyStats.totalMinutes}
           waterLiters={Number(weeklyStats.waterLiters)}
-          sleepHours={7.5}
+          sleepHours={sleepHours || 0}
         />
+
+        {/* Sofia Proactive Insights */}
+        <SofiaProactiveCard />
 
         {/* Feature Cards */}
         <motion.div
@@ -311,6 +341,24 @@ const DashboardOverview: React.FC = () => {
           />
         </DialogContent>
       </Dialog>
+
+      {/* Water Modal */}
+      <QuickWaterModal 
+        open={isWaterModalOpen} 
+        onOpenChange={setIsWaterModalOpen} 
+      />
+
+      {/* Sleep Modal */}
+      <QuickSleepModal 
+        open={isSleepModalOpen} 
+        onOpenChange={setIsSleepModalOpen} 
+      />
+
+      {/* Exercise Modal */}
+      <QuickExerciseModal 
+        open={isExerciseModalOpen} 
+        onOpenChange={setIsExerciseModalOpen} 
+      />
     </div>
   );
 };
