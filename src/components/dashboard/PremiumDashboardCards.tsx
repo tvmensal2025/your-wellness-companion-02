@@ -235,14 +235,14 @@ export const PremiumWeeklyMini: React.FC<{
   );
 };
 
-// Premium Quick Action Buttons
+// Premium Quick Action Buttons (Peso e Exercício apenas - Água/Sono ficam no Google Fit)
 export const PremiumQuickActions: React.FC<{
   onAddWeight: () => void;
   onAddExercise: () => void;
-  onAddWater: () => void;
-  onAddSleep: () => void;
+  onAddWater?: () => void;
+  onAddSleep?: () => void;
   delay?: number;
-}> = ({ onAddWeight, onAddExercise, onAddWater, onAddSleep, delay = 0.2 }) => {
+}> = ({ onAddWeight, onAddExercise, delay = 0.2 }) => {
   const actions = [
     { 
       icon: Scale, 
@@ -258,20 +258,6 @@ export const PremiumQuickActions: React.FC<{
       shadow: 'shadow-orange-500/30',
       action: onAddExercise
     },
-    { 
-      icon: Droplets, 
-      label: 'Água', 
-      gradient: 'from-cyan-500 to-blue-500',
-      shadow: 'shadow-cyan-500/30',
-      action: onAddWater
-    },
-    { 
-      icon: Moon, 
-      label: 'Sono', 
-      gradient: 'from-indigo-500 to-purple-600',
-      shadow: 'shadow-indigo-500/30',
-      action: onAddSleep
-    },
   ];
 
   return (
@@ -282,7 +268,7 @@ export const PremiumQuickActions: React.FC<{
       className="space-y-2.5"
     >
       <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">Registrar</h3>
-      <div className="grid grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 gap-4">
         {actions.map((action, i) => (
           <motion.button
             key={i}
