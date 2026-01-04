@@ -12,3 +12,8 @@ verify_jwt = false
 [functions.analyze-medical-exam]
 verify_jwt = false
 
+[functions.google-fit-token]
+verify_jwt = false
+
+[functions.google-fit-sync]
+verify_jwt = false

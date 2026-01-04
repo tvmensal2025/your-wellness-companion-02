@@ -67,6 +67,14 @@ serve(async (req) => {
     // Helpers auth
     const authHeader = req.headers.get("Authorization") || "";
     const jwt = authHeader.replace("Bearer ", "");
+    const apiKeyHeader = req.headers.get("apikey") || req.headers.get("x-api-key") || "";
+
+    console.log("🔐 Headers recebidos:", {
+      hasAuthorization: !!authHeader,
+      jwtLength: jwt ? jwt.length : 0,
+      hasApikey: !!apiKeyHeader,
+      origin: req.headers.get("origin"),
+    });
 
     // 2) Gerar URL de autorização
     if (action === "connect") {
