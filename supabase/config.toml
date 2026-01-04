@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.google-fit-sync]
 verify_jwt = false
+
+[functions.google-fit-ai-analysis]
+verify_jwt = false
