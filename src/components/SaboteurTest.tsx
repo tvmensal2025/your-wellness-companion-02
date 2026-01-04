@@ -243,13 +243,23 @@ const SaboteurTest: React.FC = () => {
   const { toast } = useToast();
 
   const handleAnswer = async (value: number) => {
-    setAnswers(prev => ({
-      ...prev,
-      [saboteurQuestions[currentQuestion].id]: value
-    }));
-    
-    // Salvar resposta individual no banco
-    await saveAnswer(saboteurQuestions[currentQuestion].id, value);
+    const questionId = saboteurQuestions[currentQuestion].id;
+
+    const updatedAnswers: Record<number, number> = {
+      ...answers,
+      [questionId]: value,
+    };
+
+    setAnswers(updatedAnswers);
+    await saveAnswer(questionId, value);
+
+    const isLastQuestion = currentQuestion === saboteurQuestions.length - 1;
+
+    if (isLastQuestion) {
+      await handleFinish(updatedAnswers);
+    } else {
+      setCurrentQuestion((prev) => Math.min(prev + 1, saboteurQuestions.length - 1));
+    }
   };
 
   const saveAnswer = async (questionId: number, answer: number) => {
@@ -282,7 +292,7 @@ const SaboteurTest: React.FC = () => {
     }
   };
 
-  const calculateScores = () => {
+  const calculateScores = (answersMap: Record<number, number> = answers) => {
     const categoryScores: Record<string, number> = {};
     
     Object.keys(saboteurTypes).forEach(category => {
@@ -291,7 +301,7 @@ const SaboteurTest: React.FC = () => {
       let maxScore = 0;
       
       categoryQuestions.forEach(question => {
-        const answer = answers[question.id] || 0;
+        const answer = answersMap[question.id] || 0;
         totalScore += answer * question.weight;
         maxScore += 5 * question.weight; // 5 é o valor máximo da escala
       });
@@ -302,15 +312,16 @@ const SaboteurTest: React.FC = () => {
     setScores(categoryScores);
   };
 
-  const handleFinish = async () => {
+  const handleFinish = async (answersOverride?: Record<number, number>) => {
     setIsLoading(true);
-    calculateScores();
-    await saveTestResults();
+    const effectiveAnswers = answersOverride ?? answers;
+    calculateScores(effectiveAnswers);
+    await saveTestResults(effectiveAnswers);
     setShowResults(true);
     setIsLoading(false);
   };
 
-  const saveTestResults = async () => {
+  const saveTestResults = async (answersMap: Record<number, number> = answers) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
@@ -325,7 +336,7 @@ const SaboteurTest: React.FC = () => {
         let maxScore = 0;
         
         categoryQuestions.forEach(question => {
-          const answer = answers[question.id] || 0;
+          const answer = answersMap[question.id] || 0;
           totalScore += answer * question.weight;
           maxScore += 5 * question.weight;
         });
@@ -895,7 +906,7 @@ const SaboteurTest: React.FC = () => {
 
         {currentQuestion === saboteurQuestions.length - 1 ? (
           <Button
-            onClick={handleFinish}
+            onClick={() => handleFinish()}
             disabled={!answers[currentQ.id] || isLoading}
             className="mobile-button-lg w-full lg:w-auto"
           >
