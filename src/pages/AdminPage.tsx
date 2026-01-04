@@ -41,7 +41,7 @@ import AnamnesisManagement from "@/components/admin/AnamnesisManagement";
 import { WeightReportGenerator } from "@/components/admin/WeightReportGenerator";
 import AdvancedReports from "@/components/admin/AdvancedReports";
 import { CourseManagementNew } from "@/components/admin/CourseManagementNew";
-import DebugDataVerification from "@/components/DebugDataVerification";
+// DebugDataVerification removido - componente de debug não necessário em produção
 import ToolsManagement from "@/components/admin/ToolsManagement";
 import SessionManagement from "@/components/admin/SessionManagement";
 import ChallengeManagement from "@/components/admin/ChallengeManagement";
@@ -1001,9 +1001,7 @@ const AdminPage = () => {
               </Button>
             </div>
             
-            {/* Sistema de verificação de dados atual */}
-            <DebugDataVerification />
-            
+            {/* Sistema de verificação de dados removido */}
             {/* Status adicional dos serviços */}
             <Card>
               <CardHeader>
