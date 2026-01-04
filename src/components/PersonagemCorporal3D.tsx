@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 
 interface Personagem3DProps {
   genero: 'masculino' | 'feminino';
@@ -17,90 +17,69 @@ const PersonagemCorporal3D: React.FC<Personagem3DProps> = ({
 }) => {
   const [isInteracting, setIsInteracting] = useState(false);
   const [touchCount, setTouchCount] = useState(0);
-  const [lastTouchTime, setLastTouchTime] = useState(0);
   const [iframeLoaded, setIframeLoaded] = useState(false);
   const [iframeError, setIframeError] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const mountedRef = useRef(true);
 
-  // Limpeza segura do iframe - CORRIGIDO para evitar erro de removeChild
+  // Cleanup seguro
   useEffect(() => {
+    mountedRef.current = true;
     return () => {
-      // Limpeza mais segura sem tentar remover o DOM
-      if (iframeRef.current) {
-        try {
-          // Apenas limpar o src de forma segura
-          iframeRef.current.src = 'about:blank';
-        } catch (error) {
-          // Ignorar erros de limpeza
-          console.log('Limpeza do iframe concluída');
-        }
-      }
+      mountedRef.current = false;
     };
   }, []);
 
   // Resetar estados quando o gênero mudar
   useEffect(() => {
-    setIframeLoaded(false);
-    setIframeError(false);
-    setRetryCount(0);
+    if (mountedRef.current) {
+      setIframeLoaded(false);
+      setIframeError(false);
+      setRetryCount(0);
+    }
   }, [genero]);
 
   // Função para detectar gestos de toque
-  const handleTouchStart = (e: React.TouchEvent) => {
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
     const touches = e.touches.length;
     setTouchCount(touches);
-    setLastTouchTime(Date.now());
 
     if (touches === 1) {
-      // 1 dedo = scroll da página (desabilitar interação 3D)
       setIsInteracting(false);
       if (iframeRef.current) {
         iframeRef.current.style.pointerEvents = 'none';
         iframeRef.current.style.touchAction = 'none';
       }
     } else if (touches === 2) {
-      // 2 dedos = interação com 3D (habilitar interação)
       setIsInteracting(true);
       if (iframeRef.current) {
         iframeRef.current.style.pointerEvents = 'auto';
         iframeRef.current.style.touchAction = 'manipulation';
       }
-      // Prevenir scroll da página durante interação 3D
       e.preventDefault();
     }
-  };
+  }, []);
 
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    const touches = e.changedTouches.length;
+  const handleTouchEnd = useCallback((e: React.TouchEvent) => {
     const remainingTouches = e.touches.length;
-    
     setTouchCount(remainingTouches);
     
-    if (remainingTouches === 0) {
-      // Sem toques = voltar ao estado normal
-      setIsInteracting(false);
-      if (iframeRef.current) {
-        iframeRef.current.style.pointerEvents = 'none';
-        iframeRef.current.style.touchAction = 'none';
-      }
-    } else if (remainingTouches === 1) {
-      // Voltou para 1 dedo = desabilitar interação 3D
+    if (remainingTouches <= 1) {
       setIsInteracting(false);
       if (iframeRef.current) {
         iframeRef.current.style.pointerEvents = 'none';
         iframeRef.current.style.touchAction = 'none';
       }
     }
-  };
+  }, []);
 
-  const handleTouchMove = (e: React.TouchEvent) => {
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
     if (touchCount === 2) {
-      // 2 dedos = interação 3D (prevenir scroll da página)
       e.preventDefault();
     }
-  };
+  }, [touchCount]);
 
   // Verificações de segurança
   if (!genero) {
