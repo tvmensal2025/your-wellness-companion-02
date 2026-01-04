@@ -2,10 +2,8 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-// Fixed Supabase client using Lovable Cloud backend directly.
-// This avoids runtime errors when Vite env variables are not available.
-const SUPABASE_URL = 'https://bstkhoxhxitfjbwudthq.supabase.co';
-const SUPABASE_PUBLISHABLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJzdGtob3hoeGl0Zmpid3VkdGhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0NjI2NzIsImV4cCI6MjA4MzAzODY3Mn0.nU0R0yF7YynnPwDV8MuF_wmpcKX1swYERdE6lW-saOA';
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
@@ -15,5 +13,5 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     storage: localStorage,
     persistSession: true,
     autoRefreshToken: true,
-  },
+  }
 });
