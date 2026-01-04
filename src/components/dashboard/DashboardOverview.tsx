@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -9,23 +9,20 @@ import {
 } from 'lucide-react';
 import { useWeightMeasurement } from '@/hooks/useWeightMeasurement';
 import { useUserGender } from '@/hooks/useUserGender';
-import { useTrackingData } from '@/hooks/useTrackingData';
 import { supabase } from '@/integrations/supabase/client';
-import { format } from 'date-fns';
-import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { User } from '@supabase/supabase-js';
 import SimpleWeightForm from '@/components/weighing/SimpleWeightForm';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Card, CardContent } from '@/components/ui/card';
 import { PremiumQuickActions } from './PremiumDashboardCards';
 import { CompactGamificationBar } from './CompactGamificationBar';
-import { VitalHealthCard } from './VitalHealthCard';
+import { HealthScoreGauge } from './HealthScoreGauge';
+import { PremiumVitalCards } from './PremiumVitalCards';
+import { MiniHealthAlerts, useHealthAlerts } from './MiniHealthAlerts';
 import { SofiaEmotionalBanner } from '@/components/sofia/SofiaEmotionalBanner';
 import { FlashChallengeCard } from '@/components/gamification/FlashChallengeCard';
 
 const DashboardOverview: React.FC = () => {
   const { measurements, stats, loading } = useWeightMeasurement();
-  const { trackingData, refreshData: refreshTrackingData } = useTrackingData();
   const [isWeightModalOpen, setIsWeightModalOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -33,6 +30,9 @@ const DashboardOverview: React.FC = () => {
   const { gender } = useUserGender(user);
   const [waistCircumference, setWaistCircumference] = useState<number>(0);
   const [heightCm, setHeightCm] = useState<number>(170);
+  const [weightHistory, setWeightHistory] = useState<number[]>([]);
+  const [healthScore, setHealthScore] = useState<number>(0);
+  const [previousHealthScore, setPreviousHealthScore] = useState<number | undefined>();
 
   useEffect(() => {
     const getCurrentUser = async () => {
@@ -75,6 +75,43 @@ const DashboardOverview: React.FC = () => {
     fetchHealthData();
   }, [user]);
 
+  // Buscar histórico de peso para sparkline
+  useEffect(() => {
+    if (measurements && measurements.length > 0) {
+      const history = measurements
+        .slice(0, 10)
+        .map(m => Number(m.peso_kg) || 0)
+        .reverse();
+      setWeightHistory(history);
+    }
+  }, [measurements]);
+
+  // Calcular Health Score baseado nos dados
+  useEffect(() => {
+    let score = 50; // Base score
+    
+    // Peso: bonus se perdendo peso
+    if (measurements && measurements.length >= 2) {
+      const current = Number(measurements[0]?.peso_kg) || 0;
+      const previous = Number(measurements[1]?.peso_kg) || 0;
+      if (current < previous) score += 15;
+      else if (current > previous + 1) score -= 10;
+    }
+    
+    // Cintura: bonus se RCEst saudável
+    if (waistCircumference && heightCm) {
+      const ratio = waistCircumference / heightCm;
+      if (ratio < 0.5) score += 25;
+      else if (ratio < 0.55) score += 10;
+      else if (ratio >= 0.6) score -= 15;
+    }
+    
+    // Constância: bonus se tem medições recentes
+    if (measurements && measurements.length >= 3) score += 10;
+    
+    setHealthScore(Math.max(0, Math.min(100, score)));
+  }, [measurements, waistCircumference, heightCm]);
+
   const weightChange = () => {
     if (measurements && measurements.length >= 2) {
       const current = Number(measurements[0]?.peso_kg) || 0;
@@ -86,23 +123,42 @@ const DashboardOverview: React.FC = () => {
   };
 
   const currentWeight = stats?.currentWeight || (measurements?.[0]?.peso_kg ? Number(measurements[0].peso_kg).toFixed(1) : '--');
+  const previousWeight = measurements?.[1]?.peso_kg ? Number(measurements[1].peso_kg) : undefined;
+
+  // Health alerts
+  const alerts = useHealthAlerts({
+    weight: typeof currentWeight === 'number' ? currentWeight : parseFloat(String(currentWeight)) || undefined,
+    previousWeight,
+    waistCircumference,
+    heightCm
+  });
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/30">
-      <div className="mx-auto max-w-lg space-y-3 px-4 pb-28 pt-2">
+      <div className="mx-auto max-w-lg space-y-4 px-4 pb-28 pt-2">
         
         {/* Sofia - Mensagem personalizada */}
         <SofiaEmotionalBanner />
 
-        {/* Gamificação Compacta - Streak, Level, XP em uma linha */}
+        {/* Gamificação Compacta */}
         <CompactGamificationBar />
 
-        {/* MÉTRICAS VITAIS - Foco principal */}
-        <VitalHealthCard 
+        {/* HEALTH SCORE GAUGE - Principal */}
+        <HealthScoreGauge 
+          score={healthScore}
+          previousScore={previousHealthScore}
+        />
+
+        {/* ALERTAS DE SAÚDE */}
+        <MiniHealthAlerts alerts={alerts} />
+
+        {/* MÉTRICAS VITAIS PREMIUM */}
+        <PremiumVitalCards 
           weight={currentWeight}
           weightChange={weightChange()}
           waistCircumference={waistCircumference}
           heightCm={heightCm}
+          weightHistory={weightHistory}
         />
 
         {/* Ação Rápida - Registrar Peso */}
