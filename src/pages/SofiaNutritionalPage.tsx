@@ -124,11 +124,6 @@ export const SofiaNutritionalPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-purple-50 p-3 sm:p-4">
-      {/* Top Banner simplificado (sem perfil/host) */}
-      <div className="bg-gradient-to-r from-emerald-500 via-green-500 to-emerald-600 rounded-2xl p-4 sm:p-6 mb-4 sm:mb-6 text-white text-center">
-        <h1 className="text-xl sm:text-2xl font-bold">Ψ Sofia Nutricional</h1>
-        <p className="text-emerald-100 mt-1 text-sm sm:text-base">Planejamento inteligente com garantia de metas</p>
-      </div>
 
       {/* Nutritional Summary Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">

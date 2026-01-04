@@ -101,18 +101,7 @@ export default function RankingCommunity({ user }: RankingCommunityProps) {
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Header */}
-      <div className="bg-white border-b sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-gray-900">Comunidade</h1>
-            <Button variant="ghost" size="sm" className="rounded-full">
-              <MessageCircle className="w-5 h-5" />
-            </Button>
-          </div>
-        </div>
-      </div>
+    <div className="min-h-screen bg-background">
 
       <div className="container mx-auto px-4 py-6 max-w-4xl">
         {/* Título */}

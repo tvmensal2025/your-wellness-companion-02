@@ -86,15 +86,9 @@ export default function GoalsPage() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Minhas Metas</h1>
-          <p className="text-muted-foreground">
-            Defina e acompanhe suas metas pessoais com aprovação administrativa
-          </p>
-        </div>
+    <div className="container mx-auto p-4 space-y-4">
+      {/* Header compacto - título já aparece no header mobile */}
+      <div className="flex justify-end">
         <Button onClick={() => setCreateDialogOpen(true)} className="gap-2">
           <Plus className="w-4 h-4" />
           Nova Meta

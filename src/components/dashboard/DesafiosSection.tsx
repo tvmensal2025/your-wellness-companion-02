@@ -980,15 +980,7 @@ const DesafiosSection: React.FC<DesafiosSectionProps> = ({
         </div>
       </Card>;
   }
-  return <div className="space-y-6">
-      <div className="mb-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">
-          Seus Desafios de Saúde
-        </h2>
-        <p className="text-sm text-gray-600">
-          Participe de desafios individuais ou comunitários e compete no ranking
-        </p>
-      </div>
+  return <div className="space-y-4">
 
       <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
         <TabsList className="grid w-full grid-cols-3 bg-gray-100 p-1 rounded-lg">

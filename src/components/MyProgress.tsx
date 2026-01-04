@@ -227,27 +227,20 @@ const MyProgress: React.FC = () => {
       </div>;
   }
   return <motion.div initial="hidden" animate="visible" variants={cardVariants} className="w-full max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 space-y-4">
-      {/* Header Mobile Otimizado */}
+      {/* Header compacto - título já aparece no header mobile */}
       <div className="flex flex-col gap-3">
-        {/* Linha 1: Voltar + Ações */}
-        <div className="flex items-center justify-between">
-          <Button variant="ghost" size="sm" onClick={() => window.history.back()} className="flex items-center gap-1.5 px-2">
-            <ArrowLeft className="w-4 h-4" />
-            <span className="hidden sm:inline">Voltar</span>
+        {/* Ações */}
+        <div className="flex items-center justify-end gap-2">
+          <Button variant="outline" size="sm" onClick={async () => {
+            try { await syncData(); } catch (e) { console.error(e); }
+          }} className="flex items-center gap-1.5 px-2 sm:px-3">
+            <RefreshCw className="w-4 h-4" />
+            <span className="hidden sm:inline">Sincronizar</span>
           </Button>
-          
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={async () => {
-              try { await syncData(); } catch (e) { console.error(e); }
-            }} className="flex items-center gap-1.5 px-2 sm:px-3">
-              <RefreshCw className="w-4 h-4" />
-              <span className="hidden sm:inline">Sincronizar</span>
-            </Button>
-            <Button variant="default" size="sm" onClick={() => setGoalsOpen(true)} className="flex items-center gap-1.5 px-2 sm:px-3">
-              <Target className="w-4 h-4" />
-              <span className="hidden sm:inline">Definir</span>
-            </Button>
-          </div>
+          <Button variant="default" size="sm" onClick={() => setGoalsOpen(true)} className="flex items-center gap-1.5 px-2 sm:px-3">
+            <Target className="w-4 h-4" />
+            <span className="hidden sm:inline">Definir Metas</span>
+          </Button>
         </div>
 
         {/* Período - Centralizado */}

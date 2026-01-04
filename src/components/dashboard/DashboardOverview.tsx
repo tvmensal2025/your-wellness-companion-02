@@ -380,14 +380,10 @@ const DashboardOverview: React.FC = () => {
 
   // Removed global error handler that was capturing external library errors
   return <div className="w-full space-y-3 animate-fade-up p-2 md:p-3 lg:p-4">
-      {/* Header */}
-      <div className="flex flex-col xs:flex-row xs:items-center justify-between mb-3 gap-2">
-        <div className="text-center xs:text-left">
-          <h1 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl font-bold text-foreground mb-1">Dashboard</h1>
-          <p className="text-base xs:text-lg sm:text-xl md:text-2xl text-muted-foreground">Acompanhe sua jornada de saúde</p>
-        </div>
-        <Button className="btn-gradient h-10 xs:h-12 px-4 xs:px-6 text-sm xs:text-base text-slate-950 bg-[#a6a6ef]/35 w-full xs:w-auto">
-          <Calendar className="w-4 h-4 xs:w-5 xs:h-5 mr-2" />
+      {/* Header compacto - título já aparece no header mobile */}
+      <div className="flex justify-end mb-3">
+        <Button className="btn-gradient h-10 px-4 text-sm text-slate-950 bg-[#a6a6ef]/35">
+          <Calendar className="w-4 h-4 mr-2" />
           Hoje
         </Button>
       </div>
