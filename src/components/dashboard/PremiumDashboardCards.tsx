@@ -235,54 +235,28 @@ export const PremiumWeeklyMini: React.FC<{
   );
 };
 
-// Premium Quick Action Buttons (Peso e Exercício apenas - Água/Sono ficam no Google Fit)
+// Premium Quick Action - Apenas Peso (manual), resto vem do Google Fit
 export const PremiumQuickActions: React.FC<{
   onAddWeight: () => void;
-  onAddExercise: () => void;
-  onAddWater?: () => void;
-  onAddSleep?: () => void;
   delay?: number;
-}> = ({ onAddWeight, onAddExercise, delay = 0.2 }) => {
-  const actions = [
-    { 
-      icon: Scale, 
-      label: 'Peso', 
-      gradient: 'from-violet-500 to-purple-600',
-      shadow: 'shadow-violet-500/30',
-      action: onAddWeight
-    },
-    { 
-      icon: Activity, 
-      label: 'Exercício', 
-      gradient: 'from-orange-500 to-red-500',
-      shadow: 'shadow-orange-500/30',
-      action: onAddExercise
-    },
-  ];
-
+}> = ({ onAddWeight, delay = 0.2 }) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay }}
-      className="space-y-2.5"
+      className="flex flex-col items-center"
     >
-      <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">Registrar</h3>
-      <div className="grid grid-cols-2 gap-4">
-        {actions.map((action, i) => (
-          <motion.button
-            key={i}
-            whileTap={{ scale: 0.92 }}
-            onClick={action.action}
-            className="group flex flex-col items-center gap-1.5"
-          >
-            <div className={`flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br ${action.gradient} shadow-lg ${action.shadow} transition-all duration-200 group-active:scale-95`}>
-              <action.icon className="h-6 w-6 text-white" />
-            </div>
-            <span className="text-[11px] font-medium text-muted-foreground">{action.label}</span>
-          </motion.button>
-        ))}
-      </div>
+      <motion.button
+        whileTap={{ scale: 0.92 }}
+        onClick={onAddWeight}
+        className="group flex flex-col items-center gap-2"
+      >
+        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 shadow-lg shadow-violet-500/30 transition-all duration-200 group-active:scale-95">
+          <Scale className="h-7 w-7 text-white" />
+        </div>
+        <span className="text-xs font-medium text-muted-foreground">Registrar Peso</span>
+      </motion.button>
     </motion.div>
   );
 };
