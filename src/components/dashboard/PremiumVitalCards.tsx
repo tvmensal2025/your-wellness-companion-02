@@ -223,43 +223,6 @@ export const PremiumVitalCards: React.FC<PremiumVitalCardsProps> = ({
         sparklineData={weightHistory}
       />
 
-      {/* Grid for secondary metrics */}
-      <div className="grid grid-cols-2 gap-3">
-        {/* Waist Card */}
-        <PremiumMetricCard
-          icon={Activity}
-          label="Cintura"
-          value={waistCircumference || '--'}
-          unit="cm"
-          gradient="from-amber-500 to-orange-600"
-          status={waistStatus}
-          medicalNote={getWaistMedicalNote()}
-          motivationalMessage={getWaistMessage()}
-          sparklineData={waistHistory}
-        />
-
-        {/* Heart Rate or Goal Card */}
-        {heartRate ? (
-          <PremiumMetricCard
-            icon={Heart}
-            label="FC"
-            value={heartRate}
-            unit="bpm"
-            gradient="from-rose-500 to-red-600"
-            status={heartRate > 100 ? 'warning' : heartRate < 60 ? 'warning' : 'good'}
-          />
-        ) : (
-          <PremiumMetricCard
-            icon={Target}
-            label="Meta"
-            value="--"
-            unit="kg"
-            gradient="from-teal-500 to-cyan-600"
-            status="neutral"
-            motivationalMessage="Defina sua meta!"
-          />
-        )}
-      </div>
 
       {/* Blood Pressure Card - Full Width */}
       {bloodPressure && (
