@@ -631,7 +631,7 @@ const SaboteurTest: React.FC = () => {
       </div>;
   }
   const currentQ = saboteurQuestions[currentQuestion];
-  return <div className="mobile-padding space-y-6">
+  return <div className="mobile-padding space-y-4">
       {/* Header ultra compacto: só progresso da pergunta */}
       <div className="flex items-center justify-end mobile-text-sm text-muted-foreground">
         <span className="font-semibold">
@@ -676,11 +676,11 @@ const SaboteurTest: React.FC = () => {
           <RadioGroup
             value={answers[currentQ.id]?.toString() || ""}
             onValueChange={(value) => handleAnswer(parseInt(value))}
-            className="space-y-2 md:space-y-3"
+            className="space-y-1.5 md:space-y-2"
           >
             {/* Mantemos o RadioGroupItem para acessibilidade, mas estilizamos como botões de lista */}
             <div
-              className="flex items-center space-x-3 px-3 py-3 md:px-4 md:py-3 rounded-2xl border bg-background hover:bg-primary/5 hover:border-primary/40 cursor-pointer transition-colors"
+              className="flex items-center space-x-3 px-3 py-2.5 md:px-4 md:py-2.5 rounded-2xl border bg-background hover:bg-primary/5 hover:border-primary/40 cursor-pointer transition-colors"
               onClick={() => handleAnswer(1)}
             >
               <RadioGroupItem value="1" id={`q${currentQ.id}-1`} className="sr-only" />
@@ -692,7 +692,7 @@ const SaboteurTest: React.FC = () => {
               </Label>
             </div>
             <div
-              className="flex items-center space-x-3 px-3 py-3 md:px-4 md:py-3 rounded-2xl border bg-background hover:bg-primary/5 hover:border-primary/40 cursor-pointer transition-colors"
+              className="flex items-center space-x-3 px-3 py-2.5 md:px-4 md:py-2.5 rounded-2xl border bg-background hover:bg-primary/5 hover:border-primary/40 cursor-pointer transition-colors"
               onClick={() => handleAnswer(2)}
             >
               <RadioGroupItem value="2" id={`q${currentQ.id}-2`} className="sr-only" />
@@ -704,7 +704,7 @@ const SaboteurTest: React.FC = () => {
               </Label>
             </div>
             <div
-              className="flex items-center space-x-3 px-3 py-3 md:px-4 md:py-3 rounded-2xl border bg-background hover:bg-primary/5 hover:border-primary/40 cursor-pointer transition-colors"
+              className="flex items-center space-x-3 px-3 py-2.5 md:px-4 md:py-2.5 rounded-2xl border bg-background hover:bg-primary/5 hover:border-primary/40 cursor-pointer transition-colors"
               onClick={() => handleAnswer(3)}
             >
               <RadioGroupItem value="3" id={`q${currentQ.id}-3`} className="sr-only" />
@@ -716,7 +716,7 @@ const SaboteurTest: React.FC = () => {
               </Label>
             </div>
             <div
-              className="flex items-center space-x-3 px-3 py-3 md:px-4 md:py-3 rounded-2xl border bg-background hover:bg-primary/5 hover:border-primary/40 cursor-pointer transition-colors"
+              className="flex items-center space-x-3 px-3 py-2.5 md:px-4 md:py-2.5 rounded-2xl border bg-background hover:bg-primary/5 hover:border-primary/40 cursor-pointer transition-colors"
               onClick={() => handleAnswer(4)}
             >
               <RadioGroupItem value="4" id={`q${currentQ.id}-4`} className="sr-only" />
@@ -728,7 +728,7 @@ const SaboteurTest: React.FC = () => {
               </Label>
             </div>
             <div
-              className="flex items-center space-x-3 px-3 py-3 md:px-4 md:py-3 rounded-2xl border bg-background hover:bg-primary/5 hover:border-primary/40 cursor-pointer transition-colors"
+              className="flex items-center space-x-3 px-3 py-2.5 md:px-4 md:py-2.5 rounded-2xl border bg-background hover:bg-primary/5 hover:border-primary/40 cursor-pointer transition-colors"
               onClick={() => handleAnswer(5)}
             >
               <RadioGroupItem value="5" id={`q${currentQ.id}-5`} className="sr-only" />
