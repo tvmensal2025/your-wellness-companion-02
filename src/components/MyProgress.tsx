@@ -159,13 +159,13 @@ const MyProgress: React.FC = () => {
           <div className="pointer-events-none absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-gradient-to-br from-indigo-400/30 to-purple-400/30 blur-3xl" />
 
           <div className="grid md:grid-cols-2 text-primary-foreground bg-health-hydration">
-            <div className="p-10 flex flex-col justify-center gap-4">
+            <div className="p-10 flex flex-col justify-center gap-4 text-primary-foreground">
               <div className="flex items-center gap-3">
                 <img src="/favicon.png" alt="Instituto dos Sonhos" className="h-8 w-8 rounded" />
-                <span className="text-sm font-semibold tracking-wide text-muted-foreground">Instituto dos Sonhos</span>
+                <span className="text-sm font-semibold tracking-wide text-primary-foreground">Instituto dos Sonhos</span>
               </div>
               <h1 className="text-3xl font-extrabold leading-tight">Conecte o Google Fit e acompanhe sua evolução</h1>
-              <p className="text-muted-foreground">Sincronize automaticamente seus <b>passos</b>, <b>calorias ativas</b>, <b>minutos de intensidade</b>, <b>sono</b> e <b>frequência cardíaca</b> para análises inteligentes e relatórios do Dr. Vital.</p>
+              <p className="text-secondary">Sincronize automaticamente seus <b>passos</b>, <b>calorias ativas</b>, <b>minutos de intensidade</b>, <b>sono</b> e <b>frequência cardíaca</b> para análises inteligentes e relatórios do Dr. Vital.</p>
 
               <div className="grid grid-cols-2 gap-3 mt-2">
                 <div className="flex items-center gap-2 text-sm"><Activity className="w-4 h-4 text-indigo-600" /> Passos e distância</div>
@@ -180,11 +180,11 @@ const MyProgress: React.FC = () => {
               }}>
                   Conectar Google Fit
                 </Button>
-                <Button size="lg" variant="outline" className="w-full sm:w-auto" onClick={() => window.location.reload()}>
+                <Button size="lg" variant="outline" onClick={() => window.location.reload()} className="w-full sm:w-auto text-popover-foreground">
                   Já conectei, atualizar
                 </Button>
               </div>
-              <p className="text-xs text-muted-foreground">Autorização única. Seus dados permanecem salvos com segurança no Supabase.</p>
+              <p className="text-xs text-primary-foreground">Autorização única. Seus dados permanecem salvos com segurança no Supabase.</p>
             </div>
 
             <div className="p-6 md:p-10 bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 flex items-center justify-center">
