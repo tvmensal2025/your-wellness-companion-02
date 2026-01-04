@@ -113,13 +113,25 @@ const SaboteurTest: React.FC = () => {
     toast
   } = useToast();
   const handleAnswer = async (value: number) => {
+    const questionId = saboteurQuestions[currentQuestion].id;
+
+    // Atualiza resposta localmente
     setAnswers(prev => ({
       ...prev,
-      [saboteurQuestions[currentQuestion].id]: value
+      [questionId]: value
     }));
 
-    // Salvar resposta individual no banco
-    await saveAnswer(saboteurQuestions[currentQuestion].id, value);
+    // Avança imediatamente para a próxima pergunta (fluxo rápido tipo Missão do Dia)
+    if (currentQuestion < saboteurQuestions.length - 1) {
+      setCurrentQuestion(prev => prev + 1);
+    } else {
+      // Se for a última pergunta, finaliza o teste
+      await handleFinish();
+      return;
+    }
+
+    // Salva resposta individual no banco (em background)
+    await saveAnswer(questionId, value);
   };
   const saveAnswer = async (questionId: number, answer: number) => {
     try {
