@@ -199,9 +199,9 @@ const StatItem: React.FC<{
     <div className={`flex items-center justify-center gap-1 mb-1 ${color}`}>
       <Icon className="h-3.5 w-3.5" />
     </div>
-    <div className="flex items-baseline justify-center gap-0.5">
-      <span className="text-lg font-semibold text-white">{value}</span>
-      <span className="text-[10px] text-slate-500">{suffix}</span>
+    <div className="flex items-baseline justify-center gap-1">
+      <span className="text-2xl font-bold text-white">{value}</span>
+      <span className="text-xs text-slate-400">{suffix}</span>
     </div>
     <p className="text-[10px] text-slate-500 mt-0.5">{label}</p>
   </div>
