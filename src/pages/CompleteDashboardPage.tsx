@@ -8,12 +8,7 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client-fixed';
 import { useToast } from '@/hooks/use-toast';
 import { useUserProfile } from '@/hooks/useUserProfile';
-import { 
-  Home, Activity, GraduationCap, FileText, Users, Target, 
-  Award, Settings, TrendingUp, Stethoscope, CreditCard, Utensils,
-  Menu, LogOut, ChevronLeft, ChevronRight, User as UserIcon, Scale,
-  MessageCircle, Lock, Play, Dumbbell
-} from 'lucide-react';
+import { Home, Activity, GraduationCap, FileText, Users, Target, Award, Settings, TrendingUp, Stethoscope, CreditCard, Utensils, Menu, LogOut, ChevronLeft, ChevronRight, User as UserIcon, Scale, MessageCircle, Lock, Play, Dumbbell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -21,8 +16,6 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useSofiaAnalysis } from '@/hooks/useSofiaAnalysis';
 import { useExerciseProgram } from '@/hooks/useExerciseProgram';
-
-
 import DashboardOverview from '@/components/dashboard/DashboardOverview';
 import { DailyMissionsFinal as DailyMissions } from '@/components/daily-missions/DailyMissionsFinal';
 import CoursePlatformNetflix from '@/components/dashboard/CoursePlatformNetflix';
@@ -33,7 +26,6 @@ import DesafiosSection from '@/components/dashboard/DesafiosSection';
 import RankingCommunity from '@/components/RankingCommunity';
 import { ExerciseOnboardingModal } from '@/components/exercise/ExerciseOnboardingModal';
 import { ExerciseDashboard } from '@/components/exercise/ExerciseDashboard';
-
 import HealthFeedPage from '@/pages/HealthFeedPage';
 import PaymentPlans from '@/components/PaymentPlans';
 import UserDrVitalPage from '@/pages/UserDrVitalPage';
@@ -46,25 +38,7 @@ import { cn } from '@/lib/utils';
 
 // Core dashboard components
 import LockedMenuItem from '@/components/LockedMenuItem';
-
-type DashboardSection = 
-  | 'dashboard' 
-  | 'missions' 
-  | 'courses' 
-  | 'sessions' 
-  | 'comunidade' 
-  | 'goals'
-  | 'challenges'
-  | 'saboteur-test'
-  | 'progress'
-  | 'subscriptions'
-  | 'sofia-nutricional'
-  | 'dr-vital'
-  | 'exercicios'
-  | 'apps'
-  | 'help'
-  | 'profile';
-
+type DashboardSection = 'dashboard' | 'missions' | 'courses' | 'sessions' | 'comunidade' | 'goals' | 'challenges' | 'saboteur-test' | 'progress' | 'subscriptions' | 'sofia-nutricional' | 'dr-vital' | 'exercicios' | 'apps' | 'help' | 'profile';
 const CompleteDashboardPage = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -74,36 +48,51 @@ const CompleteDashboardPage = () => {
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
   const [exerciseModalOpen, setExerciseModalOpen] = useState(false);
   const navigate = useNavigate();
-  const { toast } = useToast();
-  const { profileData, loading: profileLoading, loadProfile, uploadAvatar } = useUserProfile(user);
-  const { performAnalysis } = useSofiaAnalysis();
+  const {
+    toast
+  } = useToast();
+  const {
+    profileData,
+    loading: profileLoading,
+    loadProfile,
+    uploadAvatar
+  } = useUserProfile(user);
+  const {
+    performAnalysis
+  } = useSofiaAnalysis();
   const hasAutoAnalyzedRef = useRef(false);
-  const { programs, activeProgram } = useExerciseProgram(user?.id);
-
+  const {
+    programs,
+    activeProgram
+  } = useExerciseProgram(user?.id);
   useEffect(() => {
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({
+      data: {
+        session
+      }
+    }) => {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
-      
       if (!session) {
         navigate("/auth");
       }
     });
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false); // garante que não fique preso no loader em mudanças de auth
-        if (!session) {
-          navigate("/auth");
-        }
+    const {
+      data: {
+        subscription
       }
-    );
-
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      setLoading(false); // garante que não fique preso no loader em mudanças de auth
+      if (!session) {
+        navigate("/auth");
+      }
+    });
     return () => subscription.unsubscribe();
   }, [navigate]);
 
@@ -118,52 +107,98 @@ const CompleteDashboardPage = () => {
     const id = window.setTimeout(() => setLoading(false), 3000);
     return () => window.clearTimeout(id);
   }, [loading]);
-
   const handleLogout = async () => {
     try {
       // não travar se o signOut demorar
-      await Promise.race([
-        supabase.auth.signOut(),
-        new Promise((resolve) => setTimeout(resolve, 1500)),
-      ]);
-    } catch (e) {
-    } finally {
+      await Promise.race([supabase.auth.signOut(), new Promise(resolve => setTimeout(resolve, 1500))]);
+    } catch (e) {} finally {
       setLoading(false);
-      navigate('/auth', { replace: true });
+      navigate('/auth', {
+        replace: true
+      });
     }
   };
-
-  const menuItems = [
-    { id: 'dashboard', icon: Home, label: 'Dashboard', color: 'text-primary' },
-    { id: 'missions', icon: Activity, label: 'Missão do Dia', color: 'text-secondary' },
-    { id: 'progress', icon: TrendingUp, label: 'Meu Progresso', color: 'text-cyan-500' },
-    { id: 'goals', icon: Target, label: 'Minhas Metas', color: 'text-green-500' },
-    { id: 'courses', icon: GraduationCap, label: 'Plataforma dos Sonhos', color: 'text-accent' },
-    { id: 'sessions', icon: FileText, label: 'Sessões', color: 'text-muted-foreground' },
-    { id: 'comunidade', icon: Users, label: 'Comunidade', color: 'text-blue-500' },
-    { id: 'challenges', icon: Award, label: 'Desafios Individuais', color: 'text-orange-500' },
-    { id: 'saboteur-test', icon: Settings, label: 'Teste de Sabotadores', color: 'text-gray-500' },
-    { id: 'sofia-nutricional', icon: Utensils, label: 'Sofia Nutricional', color: 'text-emerald-600' },
-    { id: 'dr-vital', icon: Stethoscope, label: 'Dr.Vital', color: 'text-blue-600' },
-    { id: 'exercicios', icon: Dumbbell, label: 'Exercícios Recomendados', color: 'text-orange-600' }, // NOVO!
-    { id: 'subscriptions', icon: CreditCard, label: 'Assinaturas', color: 'text-purple-600' },
-  ];
-
+  const menuItems = [{
+    id: 'dashboard',
+    icon: Home,
+    label: 'Dashboard',
+    color: 'text-primary'
+  }, {
+    id: 'missions',
+    icon: Activity,
+    label: 'Missão do Dia',
+    color: 'text-secondary'
+  }, {
+    id: 'progress',
+    icon: TrendingUp,
+    label: 'Meu Progresso',
+    color: 'text-cyan-500'
+  }, {
+    id: 'goals',
+    icon: Target,
+    label: 'Minhas Metas',
+    color: 'text-green-500'
+  }, {
+    id: 'courses',
+    icon: GraduationCap,
+    label: 'Plataforma dos Sonhos',
+    color: 'text-accent'
+  }, {
+    id: 'sessions',
+    icon: FileText,
+    label: 'Sessões',
+    color: 'text-muted-foreground'
+  }, {
+    id: 'comunidade',
+    icon: Users,
+    label: 'Comunidade',
+    color: 'text-blue-500'
+  }, {
+    id: 'challenges',
+    icon: Award,
+    label: 'Desafios Individuais',
+    color: 'text-orange-500'
+  }, {
+    id: 'saboteur-test',
+    icon: Settings,
+    label: 'Teste de Sabotadores',
+    color: 'text-gray-500'
+  }, {
+    id: 'sofia-nutricional',
+    icon: Utensils,
+    label: 'Sofia Nutricional',
+    color: 'text-emerald-600'
+  }, {
+    id: 'dr-vital',
+    icon: Stethoscope,
+    label: 'Dr.Vital',
+    color: 'text-blue-600'
+  }, {
+    id: 'exercicios',
+    icon: Dumbbell,
+    label: 'Exercícios Recomendados',
+    color: 'text-orange-600'
+  },
+  // NOVO!
+  {
+    id: 'subscriptions',
+    icon: CreditCard,
+    label: 'Assinaturas',
+    color: 'text-purple-600'
+  }];
   const renderContent = () => {
     // Verificar se a seção é bloqueada
     const lockedSections = []; // ← TODOS OS BLOQUEIOS REMOVIDOS
-    
+
     if (lockedSections.includes(activeSection)) {
       const sectionNames = {
         challenges: 'Desafios Individuais',
-        comunidade: 'Comunidade', 
+        comunidade: 'Comunidade',
         sessions: 'Sessões',
         courses: 'Plataforma dos Sonhos',
         subscriptions: 'Assinaturas'
       };
-      
-      return (
-        <div key="locked-content" className="min-h-screen flex items-center justify-center p-6">
+      return <div key="locked-content" className="min-h-screen flex items-center justify-center p-6">
           <div className="text-center max-w-md mx-auto">
             <div className="mb-6">
               <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
@@ -175,16 +210,12 @@ const CompleteDashboardPage = () => {
               <p className="text-muted-foreground mb-6">
                 {sectionNames[activeSection as keyof typeof sectionNames]} está disponível apenas para usuários premium.
               </p>
-              <Button 
-                onClick={() => setActiveSection('subscriptions')}
-                className="bg-primary hover:bg-primary/90"
-              >
+              <Button onClick={() => setActiveSection('subscriptions')} className="bg-primary hover:bg-primary/90">
                 Ver Planos Premium
               </Button>
             </div>
           </div>
-        </div>
-      );
+        </div>;
     }
 
     // Adicionar key para cada componente renderizado para evitar problemas de DOM
@@ -204,167 +235,112 @@ const CompleteDashboardPage = () => {
       case 'courses':
         return <CoursePlatformNetflix key="courses" user={user} />;
       case 'sessions':
-        return (
-          <div key="sessions" className="p-6">
+        return <div key="sessions" className="p-6">
             <UserSessions user={user} />
-          </div>
-        );
+          </div>;
       case 'comunidade':
-        return (
-          <div key="comunidade" className="p-6">
+        return <div key="comunidade" className="p-6">
             <RankingCommunity user={user} />
-          </div>
-        );
+          </div>;
       case 'challenges':
-        return (
-          <div key="challenges" className="p-6">
+        return <div key="challenges" className="p-6">
             <DesafiosSection user={user} />
-          </div>
-        );
+          </div>;
       case 'sofia-nutricional':
         return <SofiaNutricionalPage key="sofia-nutricional" />;
-       case 'dr-vital':
+      case 'dr-vital':
         return <UserDrVitalPage key="dr-vital" />;
       case 'exercicios':
-        return (
-          <div key="exercicios" className="p-4 space-y-4">
+        return <div key="exercicios" className="p-4 space-y-4">
             <div className="flex justify-end">
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setExerciseModalOpen(true)}
-              >
+              <Button size="sm" variant="outline" onClick={() => setExerciseModalOpen(true)}>
                 Criar outro treino
               </Button>
             </div>
             <ExerciseDashboard user={user} />
-          </div>
-        );
+          </div>;
       case 'profile':
-        return (
-          <div key="profile" className="p-6">
+        return <div key="profile" className="p-6">
             <UserProfile />
-          </div>
-        );
+          </div>;
       default:
-        return (
-          <div key={`default-${activeSection}`} className="p-6">
+        return <div key={`default-${activeSection}`} className="p-6">
             <h1 className="text-3xl font-bold mb-4 capitalize">{activeSection.replace('-', ' ')}</h1>
             <p className="text-muted-foreground">Esta funcionalidade está em desenvolvimento...</p>
-          </div>
-        );
+          </div>;
     }
   };
-
-  const SidebarContent = ({ isMobile = false }) => {
+  const SidebarContent = ({
+    isMobile = false
+  }) => {
     // No mobile, sempre expandido
     const isExpanded = isMobile ? true : sidebarExpanded;
-    
-    return (
-      <div className="flex flex-col h-full bg-card">
+    return <div className="flex flex-col h-full bg-card">
         {/* Header com Menu - só mostra botão de expansão no desktop */}
         <div className="flex items-center justify-between p-4 border-b">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
               <UserIcon className="w-5 h-5 text-primary" />
             </div>
-            {isExpanded && (
-              <div className="flex-1 min-w-0">
+            {isExpanded && <div className="flex-1 min-w-0">
                 <div className="font-semibold text-sm truncate">
                   {profileData?.fullName || user?.email || 'Usuário'}
                 </div>
                 <div className="text-xs text-muted-foreground truncate">
                   {user?.email}
                 </div>
-              </div>
-            )}
+              </div>}
           </div>
           
-          {!isMobile && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setSidebarExpanded(!sidebarExpanded)}
-              className="h-8 w-8"
-            >
-              {sidebarExpanded ? (
-                <ChevronLeft className="w-4 h-4" />
-              ) : (
-                <ChevronRight className="w-4 h-4" />
-              )}
-            </Button>
-          )}
+          {!isMobile && <Button variant="ghost" size="icon" onClick={() => setSidebarExpanded(!sidebarExpanded)} className="h-8 w-8">
+              {sidebarExpanded ? <ChevronLeft className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+            </Button>}
         </div>
 
         {/* Menu Items */}
         <div className="flex-1 overflow-y-auto p-2">
           <div className="space-y-1">
-            {menuItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = activeSection === item.id;
-              
-              return (
-                <Button
-                  key={item.id}
-                  variant={isActive ? "secondary" : "ghost"}
-                  className={`w-full justify-start h-10 px-3 ${
-                    isActive ? 'bg-secondary text-secondary-foreground' : 'hover:bg-muted'
-                  }`}
-                  onClick={() => {
-                    setActiveSection(item.id as DashboardSection);
-                    if (item.id === 'exercicios' && programs.length === 0) {
-                      setExerciseModalOpen(true);
-                    }
-                    if (isMobile) setSidebarOpen(false);
-                  }}
-                >
+            {menuItems.map(item => {
+            const Icon = item.icon;
+            const isActive = activeSection === item.id;
+            return <Button key={item.id} variant={isActive ? "secondary" : "ghost"} className={`w-full justify-start h-10 px-3 ${isActive ? 'bg-secondary text-secondary-foreground' : 'hover:bg-muted'}`} onClick={() => {
+              setActiveSection(item.id as DashboardSection);
+              if (item.id === 'exercicios' && programs.length === 0) {
+                setExerciseModalOpen(true);
+              }
+              if (isMobile) setSidebarOpen(false);
+            }}>
                   <Icon className={`w-4 h-4 mr-3 ${item.color}`} />
-                  {isExpanded && (
-                    <span className="text-sm font-medium truncate">{item.label}</span>
-                  )}
-                </Button>
-              );
-            })}
+                  {isExpanded && <span className="text-sm font-medium truncate">{item.label}</span>}
+                </Button>;
+          })}
           </div>
         </div>
 
         {/* Footer com Logout */}
         <div className="p-4 border-t">
-          <Button
-            variant="destructive"
-            className="w-full justify-start h-10 px-3"
-            onClick={handleLogout}
-          >
+          <Button variant="destructive" className="w-full justify-start h-10 px-3" onClick={handleLogout}>
             <LogOut className="w-4 h-4 mr-3" />
             {isExpanded && <span className="text-sm font-medium">Sair</span>}
           </Button>
         </div>
-      </div>
-    );
+      </div>;
   };
-
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
+    return <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-muted-foreground">Carregando...</p>
         </div>
-      </div>
-    );
+      </div>;
   }
-
   if (!user) {
     return null;
   }
-
-  return (
-    <div className="min-h-screen bg-background">
+  return <div className="min-h-screen bg-background">
       <div className="flex h-screen">
         {/* Desktop Sidebar */}
-        <div className={`hidden lg:flex flex-col transition-all duration-300 ${
-          sidebarExpanded ? 'w-64' : 'w-16'
-        }`}>
+        <div className={`hidden lg:flex flex-col transition-all duration-300 ${sidebarExpanded ? 'w-64' : 'w-16'}`}>
           <SidebarContent />
         </div>
 
@@ -379,15 +355,11 @@ const CompleteDashboardPage = () => {
         <div className="flex-1 flex flex-col min-w-0 bg-gradient-to-b from-background via-background to-muted/40">
           {/* Mobile Header */}
           <div className="lg:hidden flex items-center justify-between px-4 py-3 border-b bg-card/95 backdrop-blur-sm">
-            <Button 
-              variant="ghost" 
-              size="icon"
-              onClick={() => setSidebarOpen(true)}
-            >
+            <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(true)}>
               <Menu className="w-5 h-5" />
             </Button>
             
-            <h1 className="text-base font-semibold">
+            <h1 className="text-base font-semibold text-center">
               {menuItems.find(item => item.id === activeSection)?.label || 'Dashboard'}
             </h1>
             
@@ -406,13 +378,7 @@ const CompleteDashboardPage = () => {
       {/* Mobile bottom navigation removida conforme pedido do usuário */}
 
       {/* Modal de Exercícios */}
-      <ExerciseOnboardingModal
-        isOpen={exerciseModalOpen}
-        onClose={() => setExerciseModalOpen(false)}
-        user={user}
-      />
-    </div>
-  );
+      <ExerciseOnboardingModal isOpen={exerciseModalOpen} onClose={() => setExerciseModalOpen(false)} user={user} />
+    </div>;
 };
-
 export default CompleteDashboardPage;

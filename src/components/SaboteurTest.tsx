@@ -7,31 +7,8 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { 
-  Brain, 
-  Target, 
-  AlertTriangle, 
-  CheckCircle, 
-  Clock, 
-  TrendingUp,
-  BarChart3,
-  Lightbulb,
-  Heart,
-  Zap,
-  Shield,
-  Eye,
-  ArrowRight,
-  ArrowLeft,
-  Star,
-  Award,
-  BookOpen,
-  Users,
-  MessageSquare,
-  UserCheck,
-  Settings
-} from 'lucide-react';
+import { Brain, Target, AlertTriangle, CheckCircle, Clock, TrendingUp, BarChart3, Lightbulb, Heart, Zap, Shield, Eye, ArrowRight, ArrowLeft, Star, Award, BookOpen, Users, MessageSquare, UserCheck, Settings } from 'lucide-react';
 import { saboteurQuestions, Question } from '@/data/saboteurQuestions';
-
 interface SaboteurType {
   name: string;
   description: string;
@@ -39,249 +16,134 @@ interface SaboteurType {
   impact: string;
   strategies: string[];
   color: string;
-  icon: React.ComponentType<{ className?: string }>;
+  icon: React.ComponentType<{
+    className?: string;
+  }>;
 }
-
 const saboteurTypes: Record<string, SaboteurType> = {
   perfeccionismo: {
     name: "O Perfeccionista",
     description: "O sabotador que exige perfeição absoluta em tudo, criando padrões impossíveis de atingir.",
-    characteristics: [
-      "Estabelece padrões extremamente altos",
-      "Foca em detalhes irrelevantes",
-      "Tem dificuldade em aceitar resultados 'bons o suficiente'",
-      "Procrastina por medo de imperfeição",
-      "Revisa trabalho repetidamente"
-    ],
+    characteristics: ["Estabelece padrões extremamente altos", "Foca em detalhes irrelevantes", "Tem dificuldade em aceitar resultados 'bons o suficiente'", "Procrastina por medo de imperfeição", "Revisa trabalho repetidamente"],
     impact: "Pode levar à paralisia, procrastinação e burnout, impedindo progresso real.",
-    strategies: [
-      "Estabeleça padrões realistas e flexíveis",
-      "Celebre progresso, não apenas perfeição",
-      "Pratique o conceito de 'bom o suficiente'",
-      "Foque no processo, não apenas no resultado",
-      "Defina prazos para finalizar projetos"
-    ],
+    strategies: ["Estabeleça padrões realistas e flexíveis", "Celebre progresso, não apenas perfeição", "Pratique o conceito de 'bom o suficiente'", "Foque no processo, não apenas no resultado", "Defina prazos para finalizar projetos"],
     color: "text-purple-600",
     icon: Star
   },
   procrastinacao: {
     name: "O Procrastinador",
     description: "O sabotador que sempre encontra desculpas para adiar ações importantes.",
-    characteristics: [
-      "Sempre encontra razões para adiar",
-      "Trabalha melhor 'sob pressão'",
-      "Distrai-se facilmente",
-      "Tem dificuldade em priorizar",
-      "Começa muitas coisas mas não termina"
-    ],
+    characteristics: ["Sempre encontra razões para adiar", "Trabalha melhor 'sob pressão'", "Distrai-se facilmente", "Tem dificuldade em priorizar", "Começa muitas coisas mas não termina"],
     impact: "Resulta em estresse desnecessário, prazos apertados e qualidade comprometida.",
-    strategies: [
-      "Quebre tarefas grandes em partes menores",
-      "Use a técnica Pomodoro (25min focados)",
-      "Elimine distrações durante períodos de foco",
-      "Estabeleça prazos intermediários",
-      "Crie rotinas consistentes"
-    ],
+    strategies: ["Quebre tarefas grandes em partes menores", "Use a técnica Pomodoro (25min focados)", "Elimine distrações durante períodos de foco", "Estabeleça prazos intermediários", "Crie rotinas consistentes"],
     color: "text-orange-600",
     icon: Clock
   },
   comparacao: {
     name: "O Comparador",
     description: "O sabotador que constantemente se compara com outros, perdendo foco no próprio progresso.",
-    characteristics: [
-      "Compara-se constantemente com outros",
-      "Foca no que outros têm ou fazem",
-      "Perde perspectiva do próprio progresso",
-      "Sente-se inadequado facilmente",
-      "Fica desmotivado com sucessos alheios"
-    ],
+    characteristics: ["Compara-se constantemente com outros", "Foca no que outros têm ou fazem", "Perde perspectiva do próprio progresso", "Sente-se inadequado facilmente", "Fica desmotivado com sucessos alheios"],
     impact: "Reduz autoestima, motivação e foco no próprio desenvolvimento.",
-    strategies: [
-      "Foque no seu próprio progresso",
-      "Celebre conquistas pessoais",
-      "Use comparação como inspiração, não desmotivação",
-      "Pratique gratidão pelo que você tem",
-      "Desenvolva sua própria métrica de sucesso"
-    ],
+    strategies: ["Foque no seu próprio progresso", "Celebre conquistas pessoais", "Use comparação como inspiração, não desmotivação", "Pratique gratidão pelo que você tem", "Desenvolva sua própria métrica de sucesso"],
     color: "text-blue-600",
     icon: Users
   },
   autocritica: {
     name: "O Autocrítico",
     description: "O sabotador que tem uma voz interna extremamente negativa e crítica.",
-    characteristics: [
-      "Voz interna muito negativa",
-      "Foca mais em erros que acertos",
-      "Tem dificuldade em aceitar elogios",
-      "Espera o pior de si mesmo",
-      "É mais duro consigo que com outros"
-    ],
+    characteristics: ["Voz interna muito negativa", "Foca mais em erros que acertos", "Tem dificuldade em aceitar elogios", "Espera o pior de si mesmo", "É mais duro consigo que com outros"],
     impact: "Reduz confiança, motivação e pode levar à depressão e ansiedade.",
-    strategies: [
-      "Pratique autocompaixão diariamente",
-      "Reconheça e celebre pequenas conquistas",
-      "Trate-se como trataria um amigo",
-      "Desenvolva uma voz interna mais gentil",
-      "Foque nos seus pontos fortes"
-    ],
+    strategies: ["Pratique autocompaixão diariamente", "Reconheça e celebre pequenas conquistas", "Trate-se como trataria um amigo", "Desenvolva uma voz interna mais gentil", "Foque nos seus pontos fortes"],
     color: "text-red-600",
     icon: Heart
   },
   medo_falha: {
     name: "O Medroso",
     description: "O sabotador que tem tanto medo de falhar que evita tentar coisas novas.",
-    characteristics: [
-      "Evita situações desconhecidas",
-      "Prefere não tentar do que tentar e falhar",
-      "Fica ansioso com mudanças",
-      "Tem medo de julgamento dos outros",
-      "Fica paralisado por possíveis falhas"
-    ],
+    characteristics: ["Evita situações desconhecidas", "Prefere não tentar do que tentar e falhar", "Fica ansioso com mudanças", "Tem medo de julgamento dos outros", "Fica paralisado por possíveis falhas"],
     impact: "Limita crescimento pessoal e profissional, mantendo a pessoa na zona de conforto.",
-    strategies: [
-      "Reenquadre falhas como oportunidades de aprendizado",
-      "Comece com desafios pequenos",
-      "Pratique aceitação da imperfeição",
-      "Foque no processo, não apenas no resultado",
-      "Desenvolva resiliência emocional"
-    ],
+    strategies: ["Reenquadre falhas como oportunidades de aprendizado", "Comece com desafios pequenos", "Pratique aceitação da imperfeição", "Foque no processo, não apenas no resultado", "Desenvolva resiliência emocional"],
     color: "text-yellow-600",
     icon: Shield
   },
   pensamento_binario: {
     name: "O Binário",
     description: "O sabotador que vê tudo como preto ou branco, sem nuances.",
-    characteristics: [
-      "Vê situações como 'tudo ou nada'",
-      "Tem dificuldade com nuances",
-      "É muito rígido em suas opiniões",
-      "Não aceita resultados intermediários",
-      "É inflexível em suas decisões"
-    ],
+    characteristics: ["Vê situações como 'tudo ou nada'", "Tem dificuldade com nuances", "É muito rígido em suas opiniões", "Não aceita resultados intermediários", "É inflexível em suas decisões"],
     impact: "Cria expectativas irreais e dificulta flexibilidade e adaptação.",
-    strategies: [
-      "Pratique ver nuances nas situações",
-      "Aceite que a vida tem tons de cinza",
-      "Desenvolva flexibilidade de pensamento",
-      "Foque em progresso gradual",
-      "Pratique aceitação de diferentes perspectivas"
-    ],
+    strategies: ["Pratique ver nuances nas situações", "Aceite que a vida tem tons de cinza", "Desenvolva flexibilidade de pensamento", "Foque em progresso gradual", "Pratique aceitação de diferentes perspectivas"],
     color: "text-gray-600",
     icon: Eye
   },
   vitima: {
     name: "A Vítima",
     description: "O sabotador que sempre se vê como vítima das circunstâncias.",
-    characteristics: [
-      "Sempre acha que a vida é injusta",
-      "Culpa outros pelos seus problemas",
-      "Sente que não tem controle",
-      "Acha que outros têm mais sorte",
-      "Evita assumir responsabilidade"
-    ],
+    characteristics: ["Sempre acha que a vida é injusta", "Culpa outros pelos seus problemas", "Sente que não tem controle", "Acha que outros têm mais sorte", "Evita assumir responsabilidade"],
     impact: "Reduz autonomia, motivação e capacidade de mudança.",
-    strategies: [
-      "Assuma responsabilidade pelas suas escolhas",
-      "Foque no que você pode controlar",
-      "Desenvolva mentalidade de crescimento",
-      "Pratique gratidão pelas oportunidades",
-      "Aceite que você tem poder de mudança"
-    ],
+    strategies: ["Assuma responsabilidade pelas suas escolhas", "Foque no que você pode controlar", "Desenvolva mentalidade de crescimento", "Pratique gratidão pelas oportunidades", "Aceite que você tem poder de mudança"],
     color: "text-pink-600",
     icon: UserCheck
   },
   controle: {
     name: "O Controlador",
     description: "O sabotador que precisa controlar tudo ao seu redor.",
-    characteristics: [
-      "Precisa controlar tudo",
-      "Fica ansioso com imprevistos",
-      "Tem dificuldade em delegar",
-      "Precisa saber de tudo",
-      "Fica frustrado quando outros não seguem seu jeito"
-    ],
+    characteristics: ["Precisa controlar tudo", "Fica ansioso com imprevistos", "Tem dificuldade em delegar", "Precisa saber de tudo", "Fica frustrado quando outros não seguem seu jeito"],
     impact: "Cria estresse desnecessário e dificulta relacionamentos e colaboração.",
-    strategies: [
-      "Pratique aceitação do que não pode controlar",
-      "Aprenda a delegar e confiar",
-      "Desenvolva flexibilidade",
-      "Foque no que realmente importa",
-      "Pratique mindfulness e presença"
-    ],
+    strategies: ["Pratique aceitação do que não pode controlar", "Aprenda a delegar e confiar", "Desenvolva flexibilidade", "Foque no que realmente importa", "Pratique mindfulness e presença"],
     color: "text-indigo-600",
     icon: Settings
   },
   aprovacao: {
     name: "O Aprovador",
     description: "O sabotador que precisa da aprovação dos outros para se sentir bem.",
-    characteristics: [
-      "Precisa da aprovação dos outros",
-      "Fica ansioso com rejeição",
-      "Tem dificuldade em tomar decisões sozinho",
-      "Preocupa-se com o que outros pensam",
-      "Precisa agradar todos"
-    ],
+    characteristics: ["Precisa da aprovação dos outros", "Fica ansioso com rejeição", "Tem dificuldade em tomar decisões sozinho", "Preocupa-se com o que outros pensam", "Precisa agradar todos"],
     impact: "Reduz autenticidade, confiança e capacidade de tomar decisões independentes.",
-    strategies: [
-      "Desenvolva autoconfiança",
-      "Pratique tomar decisões independentes",
-      "Aceite que não pode agradar todos",
-      "Foque em seus próprios valores",
-      "Desenvolva autoestima interna"
-    ],
+    strategies: ["Desenvolva autoconfiança", "Pratique tomar decisões independentes", "Aceite que não pode agradar todos", "Foque em seus próprios valores", "Desenvolva autoestima interna"],
     color: "text-green-600",
     icon: MessageSquare
   }
 };
-
 const SaboteurTest: React.FC = () => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<Record<number, number>>({});
   const [showResults, setShowResults] = useState(false);
   const [scores, setScores] = useState<Record<string, number>>({});
   const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
-
+  const {
+    toast
+  } = useToast();
   const handleAnswer = async (value: number) => {
-    const questionId = saboteurQuestions[currentQuestion].id;
+    setAnswers(prev => ({
+      ...prev,
+      [saboteurQuestions[currentQuestion].id]: value
+    }));
 
-    const updatedAnswers: Record<number, number> = {
-      ...answers,
-      [questionId]: value,
-    };
-
-    setAnswers(updatedAnswers);
-    await saveAnswer(questionId, value);
-
-    const isLastQuestion = currentQuestion === saboteurQuestions.length - 1;
-
-    if (isLastQuestion) {
-      await handleFinish(updatedAnswers);
-    } else {
-      setCurrentQuestion((prev) => Math.min(prev + 1, saboteurQuestions.length - 1));
-    }
+    // Salvar resposta individual no banco
+    await saveAnswer(saboteurQuestions[currentQuestion].id, value);
   };
-
   const saveAnswer = async (questionId: number, answer: number) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: {
+          user
+        }
+      } = await supabase.auth.getUser();
       if (!user) return;
-
       const today = new Date().toISOString().split('T')[0];
-      
-      // Salvar na tabela daily_responses com seção saboteurs
-      const { error } = await supabase
-        .from('daily_responses')
-        .upsert({
-          user_id: user.id,
-          date: today,
-          section: 'saboteurs',
-          question_id: `saboteur_${questionId}`,
-          answer: answer.toString(),
-          points_earned: 5, // Pontos por resposta
-          created_at: new Date().toISOString()
-        });
 
+      // Salvar na tabela daily_responses com seção saboteurs
+      const {
+        error
+      } = await supabase.from('daily_responses').upsert({
+        user_id: user.id,
+        date: today,
+        section: 'saboteurs',
+        question_id: `saboteur_${questionId}`,
+        answer: answer.toString(),
+        points_earned: 5,
+        // Pontos por resposta
+        created_at: new Date().toISOString()
+      });
       if (error) {
         console.error('Erro ao salvar resposta do sabotador:', error);
       } else {
@@ -291,73 +153,66 @@ const SaboteurTest: React.FC = () => {
       console.error('Erro ao salvar resposta do sabotador:', error);
     }
   };
-
-  const calculateScores = (answersMap: Record<number, number> = answers) => {
+  const calculateScores = () => {
     const categoryScores: Record<string, number> = {};
-    
     Object.keys(saboteurTypes).forEach(category => {
       const categoryQuestions = saboteurQuestions.filter(q => q.category === category);
       let totalScore = 0;
       let maxScore = 0;
-      
       categoryQuestions.forEach(question => {
-        const answer = answersMap[question.id] || 0;
+        const answer = answers[question.id] || 0;
         totalScore += answer * question.weight;
         maxScore += 5 * question.weight; // 5 é o valor máximo da escala
       });
-      
-      categoryScores[category] = (totalScore / maxScore) * 100;
+      categoryScores[category] = totalScore / maxScore * 100;
     });
-    
     setScores(categoryScores);
   };
-
-  const handleFinish = async (answersOverride?: Record<number, number>) => {
+  const handleFinish = async () => {
     setIsLoading(true);
-    const effectiveAnswers = answersOverride ?? answers;
-    calculateScores(effectiveAnswers);
-    await saveTestResults(effectiveAnswers);
+    calculateScores();
+    await saveTestResults();
     setShowResults(true);
     setIsLoading(false);
   };
-
-  const saveTestResults = async (answersMap: Record<number, number> = answers) => {
+  const saveTestResults = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: {
+          user
+        }
+      } = await supabase.auth.getUser();
       if (!user) return;
-
       const today = new Date().toISOString().split('T')[0];
       const categoryScores: Record<string, number> = {};
-      
+
       // Calcular scores por categoria
       Object.keys(saboteurTypes).forEach(category => {
         const categoryQuestions = saboteurQuestions.filter(q => q.category === category);
         let totalScore = 0;
         let maxScore = 0;
-        
         categoryQuestions.forEach(question => {
-          const answer = answersMap[question.id] || 0;
+          const answer = answers[question.id] || 0;
           totalScore += answer * question.weight;
           maxScore += 5 * question.weight;
         });
-        
-        categoryScores[category] = (totalScore / maxScore) * 100;
+        categoryScores[category] = totalScore / maxScore * 100;
       });
 
       // Salvar resultados do teste de sabotadores
-      const { error } = await supabase
-        .from('daily_responses')
-        .upsert({
-          user_id: user.id,
-          date: today,
-          section: 'saboteurs_results',
-          question_id: 'saboteur_test_complete',
-          answer: JSON.stringify(categoryScores),
-          text_response: `Teste de sabotadores concluído com ${Object.keys(answers).length} respostas`,
-          points_earned: 50, // Pontos por completar o teste
-          created_at: new Date().toISOString()
-        });
-
+      const {
+        error
+      } = await supabase.from('daily_responses').upsert({
+        user_id: user.id,
+        date: today,
+        section: 'saboteurs_results',
+        question_id: 'saboteur_test_complete',
+        answer: JSON.stringify(categoryScores),
+        text_response: `Teste de sabotadores concluído com ${Object.keys(answers).length} respostas`,
+        points_earned: 50,
+        // Pontos por completar o teste
+        created_at: new Date().toISOString()
+      });
       if (error) {
         console.error('Erro ao salvar resultados do teste:', error);
         toast({
@@ -366,57 +221,58 @@ const SaboteurTest: React.FC = () => {
           variant: "destructive"
         });
       } else {
-          console.log('Resultados do teste de sabotadores salvos:', categoryScores);
-          
-          // Determinar nível de risco
-          const averageScore = Object.values(categoryScores).reduce((a, b) => a + b, 0) / Object.keys(categoryScores).length;
-          const riskLevel = averageScore > 70 ? 'alto' : averageScore > 40 ? 'médio' : 'baixo';
-          
-          toast({
-            title: "Teste Concluído! 🎯",
-            description: `Seus resultados foram salvos. Nível de risco: ${riskLevel}`,
-            duration: 5000
-          });
+        console.log('Resultados do teste de sabotadores salvos:', categoryScores);
+
+        // Determinar nível de risco
+        const averageScore = Object.values(categoryScores).reduce((a, b) => a + b, 0) / Object.keys(categoryScores).length;
+        const riskLevel = averageScore > 70 ? 'alto' : averageScore > 40 ? 'médio' : 'baixo';
+        toast({
+          title: "Teste Concluído! 🎯",
+          description: `Seus resultados foram salvos. Nível de risco: ${riskLevel}`,
+          duration: 5000
+        });
       }
     } catch (error) {
       console.error('Erro ao salvar resultados:', error);
     }
   };
-
   const handleRestart = () => {
     setCurrentQuestion(0);
     setAnswers({});
     setShowResults(false);
     setScores({});
   };
-
   const getTopSaboteurs = () => {
-    return Object.entries(scores)
-      .sort(([,a], [,b]) => b - a)
-      .slice(0, 3);
+    return Object.entries(scores).sort(([, a], [, b]) => b - a).slice(0, 3);
   };
-
   const getOverallScore = () => {
     const totalScore = Object.values(scores).reduce((sum, score) => sum + score, 0);
     return totalScore / Object.keys(scores).length;
   };
-
   const getScoreLevel = (score: number) => {
-    if (score < 30) return { level: "Baixo", color: "text-green-600", bgColor: "bg-green-100" };
-    if (score < 60) return { level: "Médio", color: "text-yellow-600", bgColor: "bg-yellow-100" };
-    return { level: "Alto", color: "text-red-600", bgColor: "bg-red-100" };
+    if (score < 30) return {
+      level: "Baixo",
+      color: "text-green-600",
+      bgColor: "bg-green-100"
+    };
+    if (score < 60) return {
+      level: "Médio",
+      color: "text-yellow-600",
+      bgColor: "bg-yellow-100"
+    };
+    return {
+      level: "Alto",
+      color: "text-red-600",
+      bgColor: "bg-red-100"
+    };
   };
-
-  const progress = ((currentQuestion + 1) / saboteurQuestions.length) * 100;
-
+  const progress = (currentQuestion + 1) / saboteurQuestions.length * 100;
   if (showResults) {
     const topSaboteurs = getTopSaboteurs();
     const overallScore = getOverallScore();
     const overallLevel = getScoreLevel(overallScore);
     const totalAnswered = Object.keys(answers).length;
-
-    return (
-      <div className="p-4 md:p-6 space-y-6 max-w-6xl mx-auto">
+    return <div className="p-4 md:p-6 space-y-6 max-w-6xl mx-auto">
         {/* Hero Header com Gradiente */}
         <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary/20 via-primary/10 to-background p-8 md:p-12 text-center space-y-6 border border-primary/20">
           <div className="absolute inset-0 bg-grid-white/5 [mask-image:radial-gradient(white,transparent_70%)]" />
@@ -459,31 +315,25 @@ const SaboteurTest: React.FC = () => {
                 </Badge>
                 
                 <div className="max-w-xl space-y-3">
-                  {overallScore < 30 ? (
-                    <>
+                  {overallScore < 30 ? <>
                       <p className="text-lg font-semibold text-green-600">🌟 Resultado Excepcional!</p>
                       <p className="text-muted-foreground">
                         Você demonstra excelente consciência dos seus padrões mentais. Continue cultivando
                         essa autoconsciência e use-a para alcançar seus objetivos com mais facilidade.
                       </p>
-                    </>
-                  ) : overallScore < 60 ? (
-                    <>
+                    </> : overallScore < 60 ? <>
                       <p className="text-lg font-semibold text-yellow-600">⚡ Momento de Transformação!</p>
                       <p className="text-muted-foreground">
                         Você identificou alguns sabotadores que podem estar limitando seu potencial. 
                         A boa notícia? Agora você tem clareza sobre onde focar sua energia para crescer ainda mais!
                       </p>
-                    </>
-                  ) : (
-                    <>
+                    </> : <>
                       <p className="text-lg font-semibold text-orange-600">🎯 Grande Oportunidade de Crescimento!</p>
                       <p className="text-muted-foreground">
                         Seus sabotadores estão bastante ativos, mas isso significa que você tem um 
                         enorme potencial de transformação à sua frente. Cada insight é um passo rumo à sua melhor versão!
                       </p>
-                    </>
-                  )}
+                    </>}
                 </div>
               </div>
             </div>
@@ -503,13 +353,11 @@ const SaboteurTest: React.FC = () => {
           </div>
           
           {topSaboteurs.map(([category, score], index) => {
-            const saboteur = saboteurTypes[category];
-            const Icon = saboteur.icon;
-            const level = getScoreLevel(score);
-            const medals = ['🥇', '🥈', '🥉'];
-            
-            return (
-              <Card key={category} className="health-card border-2 hover:shadow-xl transition-all duration-300">
+          const saboteur = saboteurTypes[category];
+          const Icon = saboteur.icon;
+          const level = getScoreLevel(score);
+          const medals = ['🥇', '🥈', '🥉'];
+          return <Card key={category} className="health-card border-2 hover:shadow-xl transition-all duration-300">
                 <CardHeader className="bg-gradient-to-r from-muted/30 to-transparent">
                   <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                     <div className="flex items-start gap-4 flex-1">
@@ -547,12 +395,10 @@ const SaboteurTest: React.FC = () => {
                       Como ele se manifesta:
                     </h4>
                     <div className="grid gap-2">
-                      {saboteur.characteristics.slice(0, 3).map((char, i) => (
-                        <div key={i} className="flex items-start gap-2 text-sm text-muted-foreground bg-muted/30 p-2 rounded-lg">
+                      {saboteur.characteristics.slice(0, 3).map((char, i) => <div key={i} className="flex items-start gap-2 text-sm text-muted-foreground bg-muted/30 p-2 rounded-lg">
                           <div className={`w-1.5 h-1.5 rounded-full mt-1.5 ${saboteur.color.replace('text-', 'bg-')}`} />
                           {char}
-                        </div>
-                      ))}
+                        </div>)}
                     </div>
                   </div>
                   
@@ -572,18 +418,15 @@ const SaboteurTest: React.FC = () => {
                       Estratégias Práticas de Transformação:
                     </h4>
                     <div className="space-y-2">
-                      {saboteur.strategies.map((strategy, i) => (
-                        <div key={i} className="flex items-start gap-2 text-sm p-3 rounded-lg bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800">
+                      {saboteur.strategies.map((strategy, i) => <div key={i} className="flex items-start gap-2 text-sm p-3 rounded-lg bg-green-50 dark:bg-green-950/20 border border-green-200 dark:border-green-800">
                           <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400 mt-0.5 shrink-0" />
                           <span className="text-green-800 dark:text-green-300">{strategy}</span>
-                        </div>
-                      ))}
+                        </div>)}
                     </div>
                   </div>
                 </CardContent>
-              </Card>
-            );
-          })}
+              </Card>;
+        })}
         </div>
 
         {/* All Scores */}
@@ -594,12 +437,10 @@ const SaboteurTest: React.FC = () => {
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {Object.entries(scores).map(([category, score]) => {
-                const saboteur = saboteurTypes[category];
-                const Icon = saboteur.icon;
-                const level = getScoreLevel(score);
-                
-                return (
-                  <div key={category} className="flex items-center justify-between p-3 border rounded-lg">
+              const saboteur = saboteurTypes[category];
+              const Icon = saboteur.icon;
+              const level = getScoreLevel(score);
+              return <div key={category} className="flex items-center justify-between p-3 border rounded-lg">
                     <div className="flex items-center gap-3">
                       <Icon className={`h-5 w-5 ${saboteur.color}`} />
                       <div>
@@ -610,9 +451,8 @@ const SaboteurTest: React.FC = () => {
                     <Badge className={`${level.bgColor} ${level.color}`}>
                       {level.level}
                     </Badge>
-                  </div>
-                );
-              })}
+                  </div>;
+            })}
             </div>
           </CardContent>
         </Card>
@@ -717,25 +557,20 @@ const SaboteurTest: React.FC = () => {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {Object.entries(scores)
-                .sort(([,a], [,b]) => b - a)
-                .map(([category, score]) => {
-                  const saboteur = saboteurTypes[category];
-                  const Icon = saboteur.icon;
-                  const level = getScoreLevel(score);
-                  
-                  return (
-                    <div key={category} className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/20 transition-colors">
+              {Object.entries(scores).sort(([, a], [, b]) => b - a).map(([category, score]) => {
+              const saboteur = saboteurTypes[category];
+              const Icon = saboteur.icon;
+              const level = getScoreLevel(score);
+              return <div key={category} className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/20 transition-colors">
                       <div className="flex items-center gap-3 flex-1">
                         <Icon className={`h-5 w-5 ${saboteur.color} shrink-0`} />
                         <div className="flex-1 min-w-0">
                           <p className="font-medium truncate">{saboteur.name}</p>
                           <div className="flex items-center gap-2 mt-1">
                             <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
-                              <div 
-                                className={`h-full ${saboteur.color.replace('text-', 'bg-')}/50 transition-all duration-500`}
-                                style={{ width: `${score}%` }}
-                              />
+                              <div className={`h-full ${saboteur.color.replace('text-', 'bg-')}/50 transition-all duration-500`} style={{
+                          width: `${score}%`
+                        }} />
                             </div>
                             <span className="text-xs text-muted-foreground w-10 text-right">{score.toFixed(0)}%</span>
                           </div>
@@ -744,9 +579,8 @@ const SaboteurTest: React.FC = () => {
                       <Badge className={`${level.bgColor} ${level.color} ml-2 shrink-0`}>
                         {level.level}
                       </Badge>
-                    </div>
-                  );
-                })}
+                    </div>;
+            })}
             </div>
           </CardContent>
         </Card>
@@ -783,106 +617,76 @@ const SaboteurTest: React.FC = () => {
             <ArrowLeft className="h-4 w-4 mr-2" />
             Refazer Teste
           </Button>
-          <Button 
-            className="btn-gradient w-full sm:w-auto" 
-            size="lg"
-            onClick={() => {
-              toast({
-                title: "Em breve! 📚",
-                description: "Estamos preparando conteúdos exclusivos para você!",
-                duration: 3000
-              });
-            }}
-          >
+          <Button className="btn-gradient w-full sm:w-auto" size="lg" onClick={() => {
+          toast({
+            title: "Em breve! 📚",
+            description: "Estamos preparando conteúdos exclusivos para você!",
+            duration: 3000
+          });
+        }}>
             <BookOpen className="h-4 w-4 mr-2" />
             Explorar Estratégias
           </Button>
         </div>
-      </div>
-    );
+      </div>;
   }
-
   const currentQ = saboteurQuestions[currentQuestion];
-
-  return (
-    <div className="px-3 pt-0 pb-3 space-y-3">
+  return <div className="mobile-padding space-y-6">
       {/* Header */}
-      <div className="text-center space-y-1">
-        <div className="flex items-center justify-center gap-2">
-          <Brain className="h-6 w-6 text-primary" />
-          <h1 className="text-base font-semibold">Teste de Sabotadores</h1>
+      <div className="text-center space-y-4">
+        <div className="flex items-center justify-center gap-3">
+          <Brain className="h-8 w-8 lg:h-10 lg:w-10 text-primary" />
+          <h1 className="mobile-text-2xl font-bold">Teste de Sabotadores</h1>
         </div>
-        <p className="text-muted-foreground text-xs">
-          Identifique os padrões que sabotam seu progresso
+        <p className="text-muted-foreground mobile-text-lg">
+          Identifique os padrões que podem estar sabotando seu progresso
         </p>
       </div>
 
       {/* Progress */}
       <Card className="health-card">
-        <CardContent className="pt-2 pb-3">
-          <div className="space-y-2">
-            <div className="flex justify-between text-[11px]">
-              <span>Questão {currentQuestion + 1} de {saboteurQuestions.length}</span>
-              <span>{Math.round(progress)}% completo</span>
-            </div>
-            <Progress value={progress} className="h-1.5" />
+        <CardContent className="pt-6">
+          <div className="space-y-4">
+            
+            <Progress value={progress} className="h-2" />
           </div>
         </CardContent>
       </Card>
 
       {/* Question */}
       <Card className="health-card">
-        <CardHeader className="pb-2 md:pb-4">
-          <CardTitle className="text-base md:text-lg leading-tight">
+        <CardHeader className="pb-3 md:pb-6">
+          <CardTitle className="text-lg md:text-xl leading-tight">
             {currentQ.text}
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <RadioGroup
-            value={answers[currentQ.id]?.toString() || ""}
-            onValueChange={(value) => handleAnswer(parseInt(value))}
-            className="space-y-2 md:space-y-4"
-          >
-            <div 
-              className="flex items-center space-x-2 md:space-x-3 p-2 md:p-3 rounded-lg border hover:bg-muted/20 cursor-pointer transition-colors"
-              onClick={() => handleAnswer(1)}
-            >
+          <RadioGroup value={answers[currentQ.id]?.toString() || ""} onValueChange={value => handleAnswer(parseInt(value))} className="space-y-2 md:space-y-4">
+            <div className="flex items-center space-x-2 md:space-x-3 p-2 md:p-3 rounded-lg border hover:bg-muted/20 cursor-pointer transition-colors" onClick={() => handleAnswer(1)}>
               <RadioGroupItem value="1" id={`q${currentQ.id}-1`} />
               <Label htmlFor={`q${currentQ.id}-1`} className="text-sm md:text-base cursor-pointer flex-1">
                 Discordo Totalmente
               </Label>
             </div>
-            <div 
-              className="flex items-center space-x-2 md:space-x-3 p-2 md:p-3 rounded-lg border hover:bg-muted/20 cursor-pointer transition-colors"
-              onClick={() => handleAnswer(2)}
-            >
+            <div className="flex items-center space-x-2 md:space-x-3 p-2 md:p-3 rounded-lg border hover:bg-muted/20 cursor-pointer transition-colors" onClick={() => handleAnswer(2)}>
               <RadioGroupItem value="2" id={`q${currentQ.id}-2`} />
               <Label htmlFor={`q${currentQ.id}-2`} className="text-sm md:text-base cursor-pointer flex-1">
                 Discordo
               </Label>
             </div>
-            <div 
-              className="flex items-center space-x-2 md:space-x-3 p-2 md:p-3 rounded-lg border hover:bg-muted/20 cursor-pointer transition-colors"
-              onClick={() => handleAnswer(3)}
-            >
+            <div className="flex items-center space-x-2 md:space-x-3 p-2 md:p-3 rounded-lg border hover:bg-muted/20 cursor-pointer transition-colors" onClick={() => handleAnswer(3)}>
               <RadioGroupItem value="3" id={`q${currentQ.id}-3`} />
               <Label htmlFor={`q${currentQ.id}-3`} className="text-sm md:text-base cursor-pointer flex-1">
                 Neutro
               </Label>
             </div>
-            <div 
-              className="flex items-center space-x-2 md:space-x-3 p-2 md:p-3 rounded-lg border hover:bg-muted/20 cursor-pointer transition-colors"
-              onClick={() => handleAnswer(4)}
-            >
+            <div className="flex items-center space-x-2 md:space-x-3 p-2 md:p-3 rounded-lg border hover:bg-muted/20 cursor-pointer transition-colors" onClick={() => handleAnswer(4)}>
               <RadioGroupItem value="4" id={`q${currentQ.id}-4`} />
               <Label htmlFor={`q${currentQ.id}-4`} className="text-sm md:text-base cursor-pointer flex-1">
                 Concordo
               </Label>
             </div>
-            <div 
-              className="flex items-center space-x-2 md:space-x-3 p-2 md:p-3 rounded-lg border hover:bg-muted/20 cursor-pointer transition-colors"
-              onClick={() => handleAnswer(5)}
-            >
+            <div className="flex items-center space-x-2 md:space-x-3 p-2 md:p-3 rounded-lg border hover:bg-muted/20 cursor-pointer transition-colors" onClick={() => handleAnswer(5)}>
               <RadioGroupItem value="5" id={`q${currentQ.id}-5`} />
               <Label htmlFor={`q${currentQ.id}-5`} className="text-sm md:text-base cursor-pointer flex-1">
                 Concordo Totalmente
@@ -894,38 +698,19 @@ const SaboteurTest: React.FC = () => {
 
       {/* Navigation */}
       <div className="flex flex-col md:flex-row justify-between gap-2 md:gap-4">
-        <Button
-          variant="outline"
-          onClick={() => setCurrentQuestion(prev => Math.max(0, prev - 1))}
-          disabled={currentQuestion === 0}
-          className="h-12 md:h-10 text-sm md:text-base w-full md:w-auto"
-        >
+        <Button variant="outline" onClick={() => setCurrentQuestion(prev => Math.max(0, prev - 1))} disabled={currentQuestion === 0} className="h-12 md:h-10 text-sm md:text-base w-full md:w-auto">
           <ArrowLeft className="h-4 w-4 mr-2" />
           Anterior
         </Button>
 
-        {currentQuestion === saboteurQuestions.length - 1 ? (
-          <Button
-            onClick={() => handleFinish()}
-            disabled={!answers[currentQ.id] || isLoading}
-            className="mobile-button-lg w-full lg:w-auto"
-          >
+        {currentQuestion === saboteurQuestions.length - 1 ? <Button onClick={handleFinish} disabled={!answers[currentQ.id] || isLoading} className="mobile-button-lg w-full lg:w-auto">
             {isLoading ? 'Processando...' : 'Finalizar Teste'}
             <CheckCircle className="h-4 w-4 ml-2" />
-          </Button>
-        ) : (
-          <Button
-            onClick={() => setCurrentQuestion(prev => prev + 1)}
-            disabled={!answers[currentQ.id] || isLoading}
-            className="mobile-button-lg w-full lg:w-auto"
-          >
+          </Button> : <Button onClick={() => setCurrentQuestion(prev => prev + 1)} disabled={!answers[currentQ.id] || isLoading} className="mobile-button-lg w-full lg:w-auto">
             Próxima
             <ArrowRight className="h-4 w-4 ml-2" />
-          </Button>
-        )}
+          </Button>}
       </div>
-    </div>
-  );
+    </div>;
 };
-
-export default SaboteurTest; 
+export default SaboteurTest;
