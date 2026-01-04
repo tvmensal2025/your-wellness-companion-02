@@ -73,14 +73,17 @@ export const NotificationBell: React.FC = () => {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="relative">
-          <Bell className="h-7 w-7" />
+          <Bell className={`h-7 w-7 transition-all duration-300 ${unreadCount > 0 ? 'animate-[bell-ring_1s_ease-in-out_infinite] text-primary' : ''}`} />
           {unreadCount > 0 && (
             <Badge 
               variant="destructive" 
-              className="absolute -top-1 -right-1 h-6 w-6 p-0 flex items-center justify-center text-sm font-bold"
+              className="absolute -top-1 -right-1 h-6 w-6 p-0 flex items-center justify-center text-sm font-bold animate-pulse"
             >
               {unreadCount > 9 ? '9+' : unreadCount}
             </Badge>
+          )}
+          {unreadCount > 0 && (
+            <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-primary animate-ping" />
           )}
         </Button>
       </DropdownMenuTrigger>
