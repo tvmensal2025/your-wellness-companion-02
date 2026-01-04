@@ -684,69 +684,69 @@ const SaboteurTest: React.FC = () => {
             {currentQ.text}
           </CardTitle>
         </CardHeader>
-        <CardContent className="pt-0">
+        <CardContent className="pt-1">
           <RadioGroup
             value={answers[currentQ.id]?.toString() || ""}
             onValueChange={(value) => handleAnswer(parseInt(value))}
-            className="space-y-1.5 md:space-y-2"
+            className="space-y-1"
           >
-            {/* Mantemos o RadioGroupItem para acessibilidade, mas estilizamos como botões de lista */}
+            {/* Mantemos o RadioGroupItem para acessibilidade, mas estilizamos como linhas compactas */}
             <div
-              className="flex items-center space-x-3 px-3 py-2.5 md:px-4 md:py-2.5 rounded-2xl border bg-background hover:bg-primary/5 hover:border-primary/40 cursor-pointer transition-colors"
+              className="flex items-center space-x-2 px-3 py-1.5 rounded-xl border bg-background hover:bg-primary/5 hover:border-primary/40 cursor-pointer transition-colors text-xs"
               onClick={() => handleAnswer(1)}
             >
               <RadioGroupItem value="1" id={`q${currentQ.id}-1`} className="sr-only" />
               <Label
                 htmlFor={`q${currentQ.id}-1`}
-                className="text-sm md:text-base cursor-pointer flex-1"
+                className="cursor-pointer flex-1 leading-snug"
               >
                 Discordo Totalmente
               </Label>
             </div>
             <div
-              className="flex items-center space-x-3 px-3 py-2.5 md:px-4 md:py-2.5 rounded-2xl border bg-background hover:bg-primary/5 hover:border-primary/40 cursor-pointer transition-colors"
+              className="flex items-center space-x-2 px-3 py-1.5 rounded-xl border bg-background hover:bg-primary/5 hover:border-primary/40 cursor-pointer transition-colors text-xs"
               onClick={() => handleAnswer(2)}
             >
               <RadioGroupItem value="2" id={`q${currentQ.id}-2`} className="sr-only" />
               <Label
                 htmlFor={`q${currentQ.id}-2`}
-                className="text-sm md:text-base cursor-pointer flex-1"
+                className="cursor-pointer flex-1 leading-snug"
               >
                 Discordo
               </Label>
             </div>
             <div
-              className="flex items-center space-x-3 px-3 py-2.5 md:px-4 md:py-2.5 rounded-2xl border bg-background hover:bg-primary/5 hover:border-primary/40 cursor-pointer transition-colors"
+              className="flex items-center space-x-2 px-3 py-1.5 rounded-xl border bg-background hover:bg-primary/5 hover:border-primary/40 cursor-pointer transition-colors text-xs"
               onClick={() => handleAnswer(3)}
             >
               <RadioGroupItem value="3" id={`q${currentQ.id}-3`} className="sr-only" />
               <Label
                 htmlFor={`q${currentQ.id}-3`}
-                className="text-sm md:text-base cursor-pointer flex-1"
+                className="cursor-pointer flex-1 leading-snug"
               >
                 Neutro
               </Label>
             </div>
             <div
-              className="flex items-center space-x-3 px-3 py-2.5 md:px-4 md:py-2.5 rounded-2xl border bg-background hover:bg-primary/5 hover:border-primary/40 cursor-pointer transition-colors"
+              className="flex items-center space-x-2 px-3 py-1.5 rounded-xl border bg-background hover:bg-primary/5 hover:border-primary/40 cursor-pointer transition-colors text-xs"
               onClick={() => handleAnswer(4)}
             >
               <RadioGroupItem value="4" id={`q${currentQ.id}-4`} className="sr-only" />
               <Label
                 htmlFor={`q${currentQ.id}-4`}
-                className="text-sm md:text-base cursor-pointer flex-1"
+                className="cursor-pointer flex-1 leading-snug"
               >
                 Concordo
               </Label>
             </div>
             <div
-              className="flex items-center space-x-3 px-3 py-2.5 md:px-4 md:py-2.5 rounded-2xl border bg-background hover:bg-primary/5 hover:border-primary/40 cursor-pointer transition-colors"
+              className="flex items-center space-x-2 px-3 py-1.5 rounded-xl border bg-background hover:bg-primary/5 hover:border-primary/40 cursor-pointer transition-colors text-xs"
               onClick={() => handleAnswer(5)}
             >
               <RadioGroupItem value="5" id={`q${currentQ.id}-5`} className="sr-only" />
               <Label
                 htmlFor={`q${currentQ.id}-5`}
-                className="text-sm md:text-base cursor-pointer flex-1"
+                className="cursor-pointer flex-1 leading-snug"
               >
                 Concordo Totalmente
               </Label>
