@@ -20,3 +20,6 @@ verify_jwt = false
 
 [functions.google-fit-ai-analysis]
 verify_jwt = false
+
+[functions.dr-vital-enhanced]
+verify_jwt = false
