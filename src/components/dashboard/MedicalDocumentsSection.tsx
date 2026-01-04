@@ -249,38 +249,32 @@ const MedicalDocumentsSection: React.FC = () => {
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        toast({
+          title: "Erro de autenticação",
+          description: "Você precisa estar logado para enviar documentos.",
+          variant: "destructive"
+        });
+        return;
+      }
 
       const idempotencyKey = crypto.randomUUID();
 
-      // Chamada direta ao endpoint da função usando apenas a API key pública,
-      // evitando problemas com JWT inválido do usuário
-      const response = await fetch(
-        'https://dobzvllqpqabnrwvphym.supabase.co/functions/v1/finalize-medical-document',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
-          body: JSON.stringify({
-            tmpPaths,
-            title: newDocument.title || 'Exame',
-            examType: newDocument.type,
-            idempotencyKey,
-            userId: user.id,
-          }),
-        }
-      );
+      // Usar supabase.functions.invoke para autenticação correta com JWT do usuário
+      const { data: result, error: invokeError } = await supabase.functions.invoke('finalize-medical-document', {
+        body: {
+          tmpPaths,
+          title: newDocument.title || 'Exame',
+          examType: newDocument.type,
+          idempotencyKey,
+          userId: user.id,
+        },
+      });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Erro na finalização do documento (HTTP):', response.status, errorText);
-        throw new Error('Falha ao finalizar documento');
+      if (invokeError) {
+        console.error('Erro na finalização do documento:', invokeError);
+        throw new Error(invokeError.message || 'Falha ao finalizar documento');
       }
-
-      const result: any = await response.json();
 
       if (!result?.success) {
         console.error('Erro na finalização do documento (payload):', result);
