@@ -13,7 +13,7 @@ import {
   Sparkles,
   Heart
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+
 
 // Premium Hero Card - Glassmorphism style
 export const PremiumHeroCard: React.FC<{
@@ -239,10 +239,10 @@ export const PremiumWeeklyMini: React.FC<{
 export const PremiumQuickActions: React.FC<{
   onAddWeight: () => void;
   onAddExercise: () => void;
+  onAddWater: () => void;
+  onAddSleep: () => void;
   delay?: number;
-}> = ({ onAddWeight, onAddExercise, delay = 0.2 }) => {
-  const navigate = useNavigate();
-  
+}> = ({ onAddWeight, onAddExercise, onAddWater, onAddSleep, delay = 0.2 }) => {
   const actions = [
     { 
       icon: Scale, 
@@ -263,14 +263,14 @@ export const PremiumQuickActions: React.FC<{
       label: 'Água', 
       gradient: 'from-cyan-500 to-blue-500',
       shadow: 'shadow-cyan-500/30',
-      action: () => navigate('/goals')
+      action: onAddWater
     },
     { 
       icon: Moon, 
       label: 'Sono', 
       gradient: 'from-indigo-500 to-purple-600',
       shadow: 'shadow-indigo-500/30',
-      action: () => navigate('/goals')
+      action: onAddSleep
     },
   ];
 
