@@ -41,7 +41,17 @@ export const GoogleFitPage: React.FC = () => {
             variant="outline"
             className="h-10 xs:h-12 px-4 xs:px-6 text-base xs:text-lg"
             onClick={async () => {
-              const { data: { session } } = await supabase.auth.getSession();
+              const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+              if (sessionError) {
+                toast({
+                  title: '❌ Erro de sessão',
+                  description: sessionError.message,
+                  variant: 'destructive',
+                });
+                return;
+              }
+
+              const session = sessionData.session;
               if (!session) {
                 toast({
                   title: '⚠️ Faça login',
@@ -51,12 +61,34 @@ export const GoogleFitPage: React.FC = () => {
                 return;
               }
 
+              if (session.expires_at && session.expires_at * 1000 < Date.now() + 60_000) {
+                const { error: refreshError } = await supabase.auth.refreshSession();
+                if (refreshError) {
+                  toast({
+                    title: '❌ Sessão expirada',
+                    description: 'Faça login novamente para testar a configuração.',
+                    variant: 'destructive',
+                  });
+                  return;
+                }
+              }
+
               const { data, error } = await supabase.functions.invoke('google-fit-token', {
-                headers: { Authorization: `Bearer ${session.access_token}` },
                 body: { testSecrets: true },
               });
 
               if (error) {
+                const status = (error as any)?.status;
+                if (status === 401) {
+                  await supabase.auth.signOut();
+                  toast({
+                    title: 'Sessão expirada',
+                    description: 'Faça login novamente para testar a configuração.',
+                    variant: 'destructive',
+                  });
+                  return;
+                }
+
                 toast({
                   title: '❌ Erro na configuração',
                   description: error.message,
