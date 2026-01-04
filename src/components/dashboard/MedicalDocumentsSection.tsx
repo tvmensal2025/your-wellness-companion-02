@@ -447,6 +447,90 @@ const MedicalDocumentsSection: React.FC = () => {
     }
   };
 
+  // Baixar relatório como PDF
+  const downloadReportPdf = async (reportPath: string, docTitle: string) => {
+    try {
+      toast({ title: 'Gerando PDF...', description: 'Aguarde um momento' });
+
+      const { data, error } = await supabase.storage
+        .from('medical-documents-reports')
+        .createSignedUrl(reportPath, 3600);
+      if (error || !data?.signedUrl) throw error || new Error('URL assinada indisponível');
+
+      const res = await fetch(data.signedUrl, { cache: 'no-store' });
+      const html = await res.text();
+
+      // Criar iframe oculto para renderizar o HTML
+      const iframe = document.createElement('iframe');
+      iframe.style.position = 'fixed';
+      iframe.style.left = '-9999px';
+      iframe.style.width = '210mm'; // A4 width
+      iframe.style.height = '297mm'; // A4 height
+      document.body.appendChild(iframe);
+
+      const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+      if (!iframeDoc) throw new Error('Falha ao criar documento');
+
+      iframeDoc.open();
+      iframeDoc.write(html);
+      iframeDoc.close();
+
+      // Aguardar carregamento
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
+      const { exportPDF } = await import('@/lib/exporters');
+      await exportPDF(iframeDoc.body, `relatorio-${docTitle.replace(/\s+/g, '-')}-${Date.now()}.pdf`);
+
+      document.body.removeChild(iframe);
+      toast({ title: 'PDF baixado com sucesso!' });
+    } catch (err: any) {
+      console.error('Erro ao gerar PDF:', err);
+      toast({ title: 'Falha ao gerar PDF', description: err?.message || 'Tente novamente', variant: 'destructive' });
+    }
+  };
+
+  // Baixar relatório como PNG
+  const downloadReportPng = async (reportPath: string, docTitle: string) => {
+    try {
+      toast({ title: 'Gerando imagem...', description: 'Aguarde um momento' });
+
+      const { data, error } = await supabase.storage
+        .from('medical-documents-reports')
+        .createSignedUrl(reportPath, 3600);
+      if (error || !data?.signedUrl) throw error || new Error('URL assinada indisponível');
+
+      const res = await fetch(data.signedUrl, { cache: 'no-store' });
+      const html = await res.text();
+
+      // Criar iframe oculto para renderizar o HTML
+      const iframe = document.createElement('iframe');
+      iframe.style.position = 'fixed';
+      iframe.style.left = '-9999px';
+      iframe.style.width = '800px';
+      iframe.style.height = '2000px';
+      document.body.appendChild(iframe);
+
+      const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+      if (!iframeDoc) throw new Error('Falha ao criar documento');
+
+      iframeDoc.open();
+      iframeDoc.write(html);
+      iframeDoc.close();
+
+      // Aguardar carregamento
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
+      const { exportPNG } = await import('@/lib/exporters');
+      await exportPNG(iframeDoc.body, `relatorio-${docTitle.replace(/\s+/g, '-')}-${Date.now()}.png`);
+
+      document.body.removeChild(iframe);
+      toast({ title: 'Imagem baixada com sucesso!' });
+    } catch (err: any) {
+      console.error('Erro ao gerar PNG:', err);
+      toast({ title: 'Falha ao gerar imagem', description: err?.message || 'Tente novamente', variant: 'destructive' });
+    }
+  };
+
   // Dispara a análise para um documento existente (sem cobrar crédito)
   const triggerAnalyze = async (doc: MedicalDocument) => {
     try {
@@ -899,6 +983,22 @@ const MedicalDocumentsSection: React.FC = () => {
                             title="Imprimir relatório"
                           >
                             <Printer className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => downloadReportPdf(doc.didactic_report_path || doc.report_path!, doc.title)}
+                            title="Baixar como PDF"
+                          >
+                            <Download className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => downloadReportPng(doc.didactic_report_path || doc.report_path!, doc.title)}
+                            title="Baixar como imagem PNG"
+                          >
+                            <FileImage className="w-4 h-4" />
                           </Button>
                           
                           {/* Relatório didático agora é gerado automaticamente */}
