@@ -1091,6 +1091,52 @@ serve(async (req) => {
       }
     }
 
+    // Salvar análise na memória do Dr. Vital para histórico
+    try {
+      const analysisRecord = {
+        question: message,
+        response: aiResponseText,
+        dataCompleteness: userProfile.dataCompleteness,
+        timestamp: new Date().toISOString(),
+        service: effectiveConfig.service,
+        model: effectiveConfig.model
+      };
+      
+      // Buscar histórico existente do usuário
+      const { data: existingMemory } = await supabase
+        .from('dr_vital_memory')
+        .select('*')
+        .eq('memory_key', `user_${userId}_analyses`)
+        .maybeSingle();
+      
+      let analyses = [];
+      if (existingMemory?.memory_value) {
+        analyses = Array.isArray(existingMemory.memory_value) 
+          ? existingMemory.memory_value 
+          : [existingMemory.memory_value];
+      }
+      
+      // Adicionar nova análise (manter últimas 50 para contexto)
+      analyses.push(analysisRecord);
+      if (analyses.length > 50) {
+        analyses = analyses.slice(-50);
+      }
+      
+      // Salvar/atualizar histórico
+      await supabase
+        .from('dr_vital_memory')
+        .upsert({
+          memory_key: `user_${userId}_analyses`,
+          memory_value: analyses,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'memory_key' });
+      
+      console.log(`Análise do Dr. Vital salva para usuário ${userId}`);
+    } catch (memoryError) {
+      console.error('Erro ao salvar memória do Dr. Vital:', memoryError);
+      // Não falhar a resposta se a memória falhar
+    }
+
     // Registrar uso de IA (mesmo com provedores diferentes)
     await supabase.functions.invoke('consume-ai-credit', {
       body: {
