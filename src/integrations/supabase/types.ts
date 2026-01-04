@@ -3034,6 +3034,69 @@ export type Database = {
         }
         Relationships: []
       }
+      exercises_library: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          difficulty: string | null
+          equipment_needed: string[] | null
+          id: string
+          image_url: string | null
+          instructions: string[] | null
+          is_active: boolean | null
+          location: string
+          muscle_group: string | null
+          name: string
+          order_index: number | null
+          reps: string | null
+          rest_time: string | null
+          sets: string | null
+          tips: string | null
+          updated_at: string | null
+          youtube_url: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          difficulty?: string | null
+          equipment_needed?: string[] | null
+          id?: string
+          image_url?: string | null
+          instructions?: string[] | null
+          is_active?: boolean | null
+          location: string
+          muscle_group?: string | null
+          name: string
+          order_index?: number | null
+          reps?: string | null
+          rest_time?: string | null
+          sets?: string | null
+          tips?: string | null
+          updated_at?: string | null
+          youtube_url?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          difficulty?: string | null
+          equipment_needed?: string[] | null
+          id?: string
+          image_url?: string | null
+          instructions?: string[] | null
+          is_active?: boolean | null
+          location?: string
+          muscle_group?: string | null
+          name?: string
+          order_index?: number | null
+          reps?: string | null
+          rest_time?: string | null
+          sets?: string | null
+          tips?: string | null
+          updated_at?: string | null
+          youtube_url?: string | null
+        }
+        Relationships: []
+      }
       fatos_da_conversação: {
         Row: {
           conteudo_fato: string | null
