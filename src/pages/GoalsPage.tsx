@@ -86,35 +86,36 @@ export default function GoalsPage() {
   };
 
   return (
-    <div className="container mx-auto p-4 space-y-4">
+    <div className="container mx-auto p-3 sm:p-4 space-y-3 sm:space-y-4">
       {/* Header compacto - título já aparece no header mobile */}
       <div className="flex justify-end">
-        <Button onClick={() => setCreateDialogOpen(true)} className="gap-2">
+        <Button onClick={() => setCreateDialogOpen(true)} className="gap-2 text-sm sm:text-base">
           <Plus className="w-4 h-4" />
-          Nova Meta
+          <span className="hidden sm:inline">Nova Meta</span>
+          <span className="sm:hidden">Nova</span>
         </Button>
       </div>
 
       {/* Stats Cards - Interativos */}
       {stats && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4">
           <Card 
             className={`cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-105 ${
               selectedFilter === null ? 'ring-2 ring-primary shadow-md' : ''
             }`}
             onClick={() => setSelectedFilter(null)}
           >
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total de Metas</CardTitle>
-              <Target className={`h-4 w-4 transition-colors ${
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2 p-3 sm:p-6">
+              <CardTitle className="text-xs sm:text-sm font-medium">Total de Metas</CardTitle>
+              <Target className={`h-3.5 w-3.5 sm:h-4 sm:w-4 transition-colors ${
                 selectedFilter === null ? 'text-primary' : 'text-muted-foreground'
               }`} />
             </CardHeader>
-            <CardContent>
-              <div className={`text-2xl font-bold transition-colors ${
+            <CardContent className="p-3 sm:p-6 pt-0">
+              <div className={`text-xl sm:text-2xl font-bold transition-colors ${
                 selectedFilter === null ? 'text-primary' : ''
               }`}>{stats.total}</div>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1 truncate">
                 {selectedFilter === null ? '← Filtro ativo' : 'Clique para ver todas'}
               </p>
             </CardContent>
@@ -184,9 +185,9 @@ export default function GoalsPage() {
 
       {/* Progresso Geral */}
       {stats && (
-        <div className="space-y-4">
-          <h2 className="text-xl font-semibold">📊 Progresso Geral</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="space-y-3 sm:space-y-4">
+          <h2 className="text-lg sm:text-xl font-semibold">📊 Progresso Geral</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-6">
             {/* Card de Progresso Principal */}
             <Card className="relative overflow-hidden">
               <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-primary/20 to-transparent rounded-full transform translate-x-16 -translate-y-16" />

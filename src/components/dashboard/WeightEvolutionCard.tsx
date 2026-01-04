@@ -139,47 +139,48 @@ export const WeightEvolutionCard: React.FC<WeightEvolutionCardProps> = ({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="rounded-2xl bg-card border border-border/40 overflow-hidden"
+      className="rounded-xl sm:rounded-2xl bg-card border border-border/40 overflow-hidden"
     >
       {/* Hero com personagem 3D e métricas */}
-      <div className="relative bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-4">
-        <div className="flex items-center gap-4">
+      <div className="relative bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-3 sm:p-4">
+        <div className="flex items-center gap-3 sm:gap-4">
           {/* Personagem 3D */}
           <div className="flex-shrink-0">
             <SimpleCharacter3D 
-              width={100} 
-              height={130} 
+              width={80} 
+              height={100} 
               gender={gender} 
               autoRotate={true}
               backgroundColor="transparent"
+              className="sm:w-[100px] sm:h-[130px]"
             />
           </div>
           
           {/* Métricas principais */}
-          <div className="flex-1 space-y-2">
-            <div className="flex items-center gap-2">
-              <Scale className="h-4 w-4 text-primary" />
-              <span className="text-sm font-semibold text-foreground">Sua Evolução</span>
+          <div className="flex-1 space-y-1.5 sm:space-y-2">
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <Scale className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-primary" />
+              <span className="text-xs sm:text-sm font-semibold text-foreground">Sua Evolução</span>
             </div>
             
             {/* Peso atual */}
-            <div className="text-3xl font-bold text-foreground">
-              {lastWeight.toFixed(1)}<span className="text-lg text-muted-foreground ml-1">kg</span>
+            <div className="text-2xl sm:text-3xl font-bold text-foreground">
+              {lastWeight.toFixed(1)}<span className="text-base sm:text-lg text-muted-foreground ml-0.5 sm:ml-1">kg</span>
             </div>
             
             {/* Variação */}
-            <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full bg-background/80 ${getTrendColor()}`}>
+            <div className={`inline-flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full bg-background/80 ${getTrendColor()}`}>
               {getTrendIcon()}
-              <span className="text-xs font-semibold">
+              <span className="text-[10px] sm:text-xs font-semibold">
                 {totalChange > 0 ? '+' : ''}{totalChange.toFixed(1)}kg
               </span>
-              <span className="text-[10px] opacity-70">({percentChange}%)</span>
+              <span className="text-[9px] sm:text-[10px] opacity-70">({percentChange}%)</span>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="p-4 space-y-4">
+      <div className="p-3 sm:p-4 space-y-3 sm:space-y-4">
 
       {/* Mini Chart */}
       <div className="relative h-16 w-full">
@@ -219,7 +220,7 @@ export const WeightEvolutionCard: React.FC<WeightEvolutionCardProps> = ({
       </div>
 
       {/* Lista de registros */}
-      <div className="space-y-2 max-h-48 overflow-y-auto">
+      <div className="space-y-1.5 sm:space-y-2 max-h-40 sm:max-h-48 overflow-y-auto">
         {measurements.slice(0, 10).map((record, index) => {
           const prevRecord = measurements[index + 1];
           const change = prevRecord 
@@ -232,26 +233,26 @@ export const WeightEvolutionCard: React.FC<WeightEvolutionCardProps> = ({
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: index * 0.05 }}
-              className="flex items-center justify-between py-2 px-3 rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors"
+              className="flex items-center justify-between py-1.5 sm:py-2 px-2 sm:px-3 rounded-lg sm:rounded-xl bg-muted/30 hover:bg-muted/50 transition-colors"
             >
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-1.5 text-muted-foreground">
-                  <Calendar className="h-3 w-3" />
-                  <span className="text-xs">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="flex items-center gap-1 sm:gap-1.5 text-muted-foreground">
+                  <Calendar className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+                  <span className="text-[10px] sm:text-xs">
                     {format(new Date(record.measurement_date || record.created_at), "dd MMM", { locale: ptBR })}
                   </span>
                 </div>
               </div>
               
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 sm:gap-3">
                 {index < measurements.length - 1 && change !== 0 && (
-                  <span className={`text-xs font-medium ${
+                  <span className={`text-[10px] sm:text-xs font-medium ${
                     change < 0 ? 'text-emerald-500' : 'text-red-500'
                   }`}>
                     {change > 0 ? '+' : ''}{change.toFixed(1)}
                   </span>
                 )}
-                <span className="text-sm font-semibold text-foreground">
+                <span className="text-xs sm:text-sm font-semibold text-foreground">
                   {Number(record.peso_kg).toFixed(1)} kg
                 </span>
               </div>
