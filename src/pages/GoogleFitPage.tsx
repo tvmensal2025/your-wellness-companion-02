@@ -3,9 +3,12 @@ import { GoogleFitConnect } from '@/components/GoogleFitConnect';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 export const GoogleFitPage: React.FC = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 p-2 xs:p-3 sm:p-4 md:p-6">
@@ -20,7 +23,7 @@ export const GoogleFitPage: React.FC = () => {
             <ArrowLeft className="mr-2 h-5 w-5 xs:h-6 xs:w-6" />
             Voltar
           </Button>
-          
+
           <h1 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-2 xs:mb-3">
             Integração Google Fit
           </h1>
@@ -34,28 +37,34 @@ export const GoogleFitPage: React.FC = () => {
 
         {/* Botão de teste de configuração */}
         <div className="mt-4 xs:mt-6 text-center">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="h-10 xs:h-12 px-4 xs:px-6 text-base xs:text-lg"
             onClick={async () => {
-              try {
-                const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/test-google-fit-config`, {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${process.env.REACT_APP_SUPABASE_ANON_KEY}`
-                  }
+              const { data, error } = await supabase.functions.invoke('google-fit-token', {
+                body: { testSecrets: true },
+              });
+
+              if (error) {
+                toast({
+                  title: '❌ Erro na configuração',
+                  description: error.message,
+                  variant: 'destructive',
                 });
-                const data = await response.json();
-                alert(JSON.stringify(data, null, 2));
-              } catch (error) {
-                alert('Erro ao testar: ' + error.message);
+                return;
               }
+
+              toast({
+                title: '✅ Configuração OK',
+                description: 'Credenciais do Google Fit estão configuradas no backend.',
+              });
+              console.log('🔧 Teste Google Fit (secrets):', data);
             }}
           >
             🔧 Testar Configuração
           </Button>
         </div>
+
 
         {/* Informações adicionais */}
         <div className="mt-6 xs:mt-8 grid grid-cols-1 gap-4 xs:gap-6">
