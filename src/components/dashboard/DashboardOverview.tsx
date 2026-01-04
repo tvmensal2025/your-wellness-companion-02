@@ -13,7 +13,7 @@ import { toast } from 'sonner';
 // New clean components
 import { AppleHealthHeroCard } from './AppleHealthHeroCard';
 import { CleanEvolutionChart } from './CleanEvolutionChart';
-import { SofiaTipBanner } from './SofiaTipBanner';
+
 import { QuickActionsGrid } from './QuickActionsGrid';
 
 const DashboardOverview: React.FC = () => {
@@ -213,13 +213,6 @@ const DashboardOverview: React.FC = () => {
           userName={userName || 'Usuário'}
         />
 
-        {/* 2. Sofia Tip Banner - Minimal */}
-        <SofiaTipBanner
-          healthScore={healthScore}
-          weightChange={weightChange()}
-          currentStreak={currentStreak}
-          lastMeasurementDays={lastMeasurementDays}
-        />
 
         {/* 3. Clean Evolution Chart */}
         <CleanEvolutionChart

@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { Home, Activity, GraduationCap, FileText, Users, Target, Award, Settings, TrendingUp, Stethoscope, CreditCard, Utensils, Menu, LogOut, ChevronLeft, ChevronRight, User as UserIcon, Scale, MessageCircle, Lock, Play, Dumbbell } from 'lucide-react';
+import { NotificationBell } from '@/components/NotificationBell';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -380,11 +381,11 @@ const CompleteDashboardPage = () => {
               <Menu className="w-5 h-5" />
             </Button>
             
-            <h1 className="text-sm font-semibold text-center truncate max-w-[50vw]">
+            <h1 className="text-sm font-semibold text-center truncate max-w-[40vw]">
               {menuItems.find(item => item.id === activeSection)?.label || 'Dashboard'}
             </h1>
             
-            <div className="w-9" /> {/* Spacer */}
+            <NotificationBell />
           </div>
 
           {/* Content - Otimizado para mobile */}
