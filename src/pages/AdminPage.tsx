@@ -50,6 +50,7 @@ import AIControlPanelUnified from "@/components/admin/AIControlPanelUnified";
 import CompanyConfiguration from "@/components/admin/CompanyConfiguration";
 import { ProductManagement } from "@/components/admin/ProductManagement";
 import { ExerciseManagement } from "@/components/admin/ExerciseManagement";
+import { ExerciseLibraryManagement } from "@/components/admin/ExerciseLibraryManagement";
 
 import SystemStatus from "@/components/admin/SystemStatus";
 import SimulatedTests from "@/components/admin/SimulatedTests";
@@ -230,7 +231,7 @@ const AdminPage = () => {
       case 'courses':
         return <CourseManagementNew />;
       case 'exercises':
-        return <ExerciseManagement />;
+        return <ExerciseLibraryManagement />;
       case 'challenges':
         return <ChallengeManagement user={user} />;
       case 'company-config':
