@@ -3474,7 +3474,9 @@ export type Database = {
           created_at: string | null
           goal_id: string | null
           id: string
+          new_value: number | null
           notes: string | null
+          previous_value: number | null
           update_type: string | null
           user_id: string | null
           value: number | null
@@ -3483,7 +3485,9 @@ export type Database = {
           created_at?: string | null
           goal_id?: string | null
           id?: string
+          new_value?: number | null
           notes?: string | null
+          previous_value?: number | null
           update_type?: string | null
           user_id?: string | null
           value?: number | null
@@ -3492,7 +3496,9 @@ export type Database = {
           created_at?: string | null
           goal_id?: string | null
           id?: string
+          new_value?: number | null
           notes?: string | null
+          previous_value?: number | null
           update_type?: string | null
           user_id?: string | null
           value?: number | null

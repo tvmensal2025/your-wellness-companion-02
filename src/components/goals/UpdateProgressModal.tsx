@@ -175,14 +175,17 @@ export const UpdateProgressModal = ({ goal, onUpdate, children }: UpdateProgress
       if (goalError) throw goalError;
 
       // Registrar a atualização no histórico
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Usuário não autenticado');
+
       const { error: updateError } = await supabase
         .from('goal_updates')
         .insert({
           goal_id: goal.id,
-          user_id: (await supabase.auth.getUser()).data.user?.id,
-          previous_value: goal.current_value,
-          new_value: newValue,
-          notes: notes || null
+          user_id: user.id,
+          update_type: 'progress_update',
+          value: newValue,
+          notes: notes || null,
         });
 
       if (updateError) throw updateError;

@@ -80,23 +80,12 @@ export const useGoals = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Usuário não autenticado");
 
-      // Buscar meta atual para obter valor anterior
-      const { data: currentGoal, error: fetchError } = await supabase
-        .from("user_goals")
-        .select("*")
-        .eq("id", goalId)
-        .single();
-
-      if (fetchError) throw fetchError;
-
-      const previousValue = (currentGoal as any)?.current_value || 0;
-
       // Atualizar meta
       const { error: updateError } = await supabase
         .from("user_goals")
-        .update({ 
+        .update({
           current_value: newValue,
-          status: "em_progresso" 
+          status: "em_progresso",
         } as any)
         .eq("id", goalId);
 
@@ -108,8 +97,8 @@ export const useGoals = () => {
         .insert({
           goal_id: goalId,
           user_id: user.id,
-          previous_value: previousValue,
-          new_value: newValue,
+          update_type: "progress_update",
+          value: newValue,
           notes,
         });
 
