@@ -19,34 +19,33 @@ interface Notification {
   is_read?: boolean;
 }
 
+// Sofia tips to show as notifications
+const sofiaTips = [
+  { id: '1', title: 'Dica da Sofia', message: 'Beba água antes das refeições para aumentar a saciedade' },
+  { id: '2', title: 'Dica da Sofia', message: 'Mantenha a consistência! Resultados vêm com o tempo' },
+  { id: '3', title: 'Dica da Sofia', message: 'Registre seu peso no mesmo horário para maior precisão' },
+  { id: '4', title: 'Dica da Sofia', message: 'Pequenos progressos diários geram grandes transformações' },
+  { id: '5', title: 'Dica da Sofia', message: 'O sono é fundamental para o controle do peso' },
+  { id: '6', title: 'Lembrete', message: 'Não esqueça de registrar sua refeição hoje!' },
+  { id: '7', title: 'Motivação', message: 'Cada passo conta na sua jornada de saúde!' },
+];
+
 export const NotificationBell: React.FC = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const { toast } = useToast();
 
   useEffect(() => {
-    fetchNotifications();
+    // Load a random Sofia tip as notification
+    const randomTip = sofiaTips[Math.floor(Math.random() * sofiaTips.length)];
+    const notification: Notification = {
+      ...randomTip,
+      created_at: new Date().toISOString(),
+      is_read: false,
+    };
+    setNotifications([notification]);
+    setUnreadCount(1);
   }, []);
-
-  const fetchNotifications = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      // Smart notifications table doesn't exist yet - return empty data
-      const data: any[] = [];
-      const error = null;
-
-      if (error) throw error;
-
-      const formattedNotifications: Notification[] = [];
-
-      setNotifications(formattedNotifications);
-      setUnreadCount(formattedNotifications.length);
-    } catch (error) {
-      console.error('Erro ao carregar notificações:', error);
-    }
-  };
 
   const markAsRead = (notificationId: string) => {
     setNotifications(prev => 
