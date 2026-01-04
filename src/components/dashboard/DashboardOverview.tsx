@@ -135,7 +135,7 @@ const DashboardOverview: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/30">
-      <div className="mx-auto max-w-lg space-y-4 px-4 pb-28 pt-2">
+      <div className="mx-auto max-w-lg space-y-3 sm:space-y-4 px-2 sm:px-4 pb-24 pt-2">
         
         {/* Sofia - Mensagem personalizada */}
         <SofiaEmotionalBanner />
@@ -179,7 +179,7 @@ const DashboardOverview: React.FC = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="grid grid-cols-3 gap-2"
+          className="grid grid-cols-3 gap-2 sm:gap-3"
         >
           <QuickAccessButton
             icon={Bot}
@@ -242,10 +242,10 @@ const QuickAccessButton: React.FC<{
   <motion.button
     whileTap={{ scale: 0.95 }}
     onClick={onClick}
-    className={`flex flex-col items-center gap-2 p-3 rounded-2xl bg-gradient-to-br ${gradient} text-white shadow-lg`}
+    className={`flex flex-col items-center justify-center gap-1.5 sm:gap-2 p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-gradient-to-br ${gradient} text-white shadow-lg min-h-[72px] sm:min-h-[80px]`}
   >
-    <Icon className="h-5 w-5" />
-    <span className="text-[10px] font-medium">{label}</span>
+    <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
+    <span className="text-[9px] sm:text-[10px] font-medium leading-tight text-center">{label}</span>
   </motion.button>
 );
 

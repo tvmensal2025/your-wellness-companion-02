@@ -55,10 +55,10 @@ const PremiumMetricCard: React.FC<MetricCardProps> = ({
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ scale: 1.02, y: -2 }}
       transition={{ type: "spring", stiffness: 300 }}
-      className={`relative overflow-hidden rounded-[20px] bg-gradient-to-br from-card via-card to-muted/20 border ${statusColors[status]} p-4 shadow-lg`}
+      className={`relative overflow-hidden rounded-xl sm:rounded-[20px] bg-gradient-to-br from-card via-card to-muted/20 border ${statusColors[status]} p-3 sm:p-4 shadow-lg`}
     >
       {/* Gradient overlay */}
-      <div className={`absolute -top-12 -right-12 h-24 w-24 rounded-full bg-gradient-to-br ${gradient} opacity-20 blur-2xl`} />
+      <div className={`absolute -top-10 -right-10 sm:-top-12 sm:-right-12 h-20 w-20 sm:h-24 sm:w-24 rounded-full bg-gradient-to-br ${gradient} opacity-20 blur-2xl`} />
       
       {/* Sparkline background */}
       {sparklineData && sparklineData.length > 0 && (
@@ -82,26 +82,26 @@ const PremiumMetricCard: React.FC<MetricCardProps> = ({
 
       <div className="relative">
         {/* Header */}
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <div className={`flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br ${gradient} shadow-md`}>
-              <Icon className="h-4 w-4 text-white" />
+        <div className="flex items-center justify-between mb-2 sm:mb-3">
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <div className={`flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg sm:rounded-xl bg-gradient-to-br ${gradient} shadow-md`}>
+              <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-white" />
             </div>
-            <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wide">{label}</span>
+            <span className="text-[10px] sm:text-[11px] font-medium text-muted-foreground uppercase tracking-wide">{label}</span>
           </div>
           
           {trend && (
-            <div className={`flex items-center gap-1 px-2 py-0.5 rounded-full bg-muted/50 ${trendColor}`}>
-              <TrendIcon className="h-3 w-3" />
-              {trendValue && <span className="text-[10px] font-semibold">{trendValue}</span>}
+            <div className={`flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-0.5 rounded-full bg-muted/50 ${trendColor}`}>
+              <TrendIcon className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+              {trendValue && <span className="text-[9px] sm:text-[10px] font-semibold">{trendValue}</span>}
             </div>
           )}
         </div>
 
         {/* Value */}
-        <div className="flex items-baseline gap-1 mb-2">
-          <span className="text-3xl font-black text-foreground">{value}</span>
-          <span className="text-sm text-muted-foreground font-medium">{unit}</span>
+        <div className="flex items-baseline gap-0.5 sm:gap-1 mb-1.5 sm:mb-2">
+          <span className="text-2xl sm:text-3xl font-black text-foreground">{value}</span>
+          <span className="text-xs sm:text-sm text-muted-foreground font-medium">{unit}</span>
         </div>
 
         {/* Messages */}

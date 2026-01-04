@@ -103,25 +103,25 @@ export default function RankingCommunity({ user }: RankingCommunityProps) {
   return (
     <div className="min-h-screen bg-background">
 
-      <div className="container mx-auto px-4 py-6 max-w-4xl">
+      <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-6 max-w-4xl">
         {/* Título */}
-        <div className="mb-4">
-          <div className="bg-emerald-50 rounded-lg px-4 py-3 border border-emerald-200">
-            <h2 className="text-base font-semibold text-gray-900">
+        <div className="mb-3 sm:mb-4">
+          <div className="bg-emerald-50 rounded-lg px-3 sm:px-4 py-2 sm:py-3 border border-emerald-200">
+            <h2 className="text-sm sm:text-base font-semibold text-gray-900">
               Top 10 membros mais engajados
             </h2>
           </div>
         </div>
 
         {/* Busca */}
-        <div className="mb-4">
+        <div className="mb-3 sm:mb-4">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
             <Input
               placeholder="Buscar membro..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 bg-white"
+              className="pl-9 sm:pl-10 bg-white text-sm"
             />
           </div>
         </div>
@@ -177,38 +177,38 @@ export default function RankingCommunity({ user }: RankingCommunityProps) {
                 {filteredAndSortedRanking.map((rankUser) => {
                   const isCurrentUser = rankUser.user_id === user?.id;
                   
-                  return (
-                    <div
-                      key={rankUser.user_id}
-                      className={`px-4 py-3 hover:bg-gray-50 transition-colors ${
-                        isCurrentUser ? 'bg-blue-50' : ''
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        {/* Posição */}
-                        <div className="flex-shrink-0 w-10">
-                          {getRankBadge(rankUser.position)}
-                        </div>
+                    return (
+                      <div
+                        key={rankUser.user_id}
+                        className={`px-3 sm:px-4 py-2.5 sm:py-3 hover:bg-gray-50 transition-colors ${
+                          isCurrentUser ? 'bg-blue-50' : ''
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 sm:gap-3">
+                          {/* Posição */}
+                          <div className="flex-shrink-0 w-8 sm:w-10">
+                            {getRankBadge(rankUser.position)}
+                          </div>
 
-                        {/* Avatar */}
-                        <div className="flex-shrink-0">
-                          <Avatar className="h-10 w-10">
-                            <AvatarImage src={rankUser.avatar_url} alt={rankUser.user_name} />
-                            <AvatarFallback className="bg-emerald-100 text-emerald-700 font-semibold text-sm">
-                              {rankUser.user_name.charAt(0).toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
-                        </div>
+                          {/* Avatar */}
+                          <div className="flex-shrink-0">
+                            <Avatar className="h-8 w-8 sm:h-10 sm:w-10">
+                              <AvatarImage src={rankUser.avatar_url} alt={rankUser.user_name} />
+                              <AvatarFallback className="bg-emerald-100 text-emerald-700 font-semibold text-xs sm:text-sm">
+                                {rankUser.user_name.charAt(0).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                          </div>
 
-                        {/* Nome */}
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-gray-900 truncate text-sm">
-                            {rankUser.user_name}
-                            {isCurrentUser && (
-                              <span className="ml-2 text-xs text-blue-600 font-normal">(Você)</span>
-                            )}
-                          </p>
-                        </div>
+                          {/* Nome */}
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-gray-900 truncate text-xs sm:text-sm">
+                              {rankUser.user_name}
+                              {isCurrentUser && (
+                                <span className="ml-1 sm:ml-2 text-[10px] sm:text-xs text-blue-600 font-normal">(Você)</span>
+                              )}
+                            </p>
+                          </div>
 
                         {/* Streak Badge */}
                         {rankUser.streak_days > 7 && (

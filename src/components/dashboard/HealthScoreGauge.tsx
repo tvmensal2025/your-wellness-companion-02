@@ -58,21 +58,21 @@ export const HealthScoreGauge: React.FC<HealthScoreGaugeProps> = ({
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
-      className="relative rounded-[28px] bg-gradient-to-br from-card via-card to-muted/30 border border-border/40 p-5 shadow-xl overflow-hidden"
+      className="relative rounded-2xl sm:rounded-[28px] bg-gradient-to-br from-card via-card to-muted/30 border border-border/40 p-3 sm:p-5 shadow-xl overflow-hidden"
     >
       {/* Background glow effect */}
       <div className={`absolute -top-20 -right-20 h-40 w-40 rounded-full bg-gradient-to-br ${scoreInfo.gradient} opacity-20 blur-3xl`} />
       <div className={`absolute -bottom-20 -left-20 h-40 w-40 rounded-full bg-gradient-to-br ${scoreInfo.gradient} opacity-10 blur-3xl`} />
 
       {/* Header */}
-      <div className="relative flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <div className={`flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-br ${scoreInfo.gradient} shadow-lg`}>
-            <Activity className="h-4 w-4 text-white" />
+      <div className="relative flex items-center justify-between mb-3 sm:mb-4">
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          <div className={`flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-lg sm:rounded-xl bg-gradient-to-br ${scoreInfo.gradient} shadow-lg`}>
+            <Activity className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-white" />
           </div>
           <div>
-            <h3 className="text-sm font-bold text-foreground">Score de Saúde</h3>
-            <p className="text-[10px] text-muted-foreground">Atualizado agora</p>
+            <h3 className="text-xs sm:text-sm font-bold text-foreground">Score de Saúde</h3>
+            <p className="text-[9px] sm:text-[10px] text-muted-foreground">Atualizado agora</p>
           </div>
         </div>
 
@@ -97,9 +97,9 @@ export const HealthScoreGauge: React.FC<HealthScoreGaugeProps> = ({
         )}
       </div>
 
-      {/* Main Gauge */}
-      <div className="relative flex items-center justify-center py-4">
-        <svg width="200" height="120" viewBox="0 0 200 120" className="overflow-visible">
+      {/* Main Gauge - Responsivo */}
+      <div className="relative flex items-center justify-center py-2 sm:py-4">
+        <svg className="w-full max-w-[200px] h-auto" viewBox="0 0 200 120" preserveAspectRatio="xMidYMid meet">
           {/* Background arc */}
           <defs>
             <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -164,7 +164,7 @@ export const HealthScoreGauge: React.FC<HealthScoreGaugeProps> = ({
         </svg>
 
         {/* Center score */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center pt-6">
+        <div className="absolute inset-0 flex flex-col items-center justify-center pt-4 sm:pt-6">
           <motion.div
             key={animatedScore}
             initial={{ scale: 0.8, opacity: 0 }}
@@ -172,10 +172,10 @@ export const HealthScoreGauge: React.FC<HealthScoreGaugeProps> = ({
             transition={{ type: "spring", stiffness: 200 }}
             className="flex flex-col items-center"
           >
-            <span className={`text-5xl font-black ${scoreInfo.text}`}>
+            <span className={`text-4xl sm:text-5xl font-black ${scoreInfo.text}`}>
               {Math.round(animatedScore)}
             </span>
-            <span className={`text-sm font-semibold ${scoreInfo.text} mt-1`}>
+            <span className={`text-xs sm:text-sm font-semibold ${scoreInfo.text} mt-0.5 sm:mt-1`}>
               {scoreInfo.label}
             </span>
           </motion.div>
@@ -205,7 +205,7 @@ export const HealthScoreGauge: React.FC<HealthScoreGaugeProps> = ({
       </AnimatePresence>
 
       {/* Bottom status indicators */}
-      <div className="relative grid grid-cols-3 gap-2 mt-4">
+      <div className="relative grid grid-cols-3 gap-1.5 sm:gap-2 mt-3 sm:mt-4">
         <StatusIndicator
           label="Peso"
           status={score >= 60 ? 'good' : score >= 40 ? 'warning' : 'alert'}
@@ -241,11 +241,11 @@ const StatusIndicator: React.FC<{
   const config = statusConfig[status];
 
   return (
-    <div className="flex flex-col items-center gap-1 px-2 py-2 rounded-xl bg-muted/30">
-      <div className={`flex items-center justify-center h-5 w-5 rounded-full ${config.color}/20`}>
-        <IconComponent className={`h-3 w-3 ${config.text}`} />
+    <div className="flex flex-col items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2 py-1.5 sm:py-2 rounded-lg sm:rounded-xl bg-muted/30">
+      <div className={`flex items-center justify-center h-4 w-4 sm:h-5 sm:w-5 rounded-full ${config.color}/20`}>
+        <IconComponent className={`h-2.5 w-2.5 sm:h-3 sm:w-3 ${config.text}`} />
       </div>
-      <span className="text-[9px] text-muted-foreground font-medium">{label}</span>
+      <span className="text-[8px] sm:text-[9px] text-muted-foreground font-medium">{label}</span>
     </div>
   );
 };
