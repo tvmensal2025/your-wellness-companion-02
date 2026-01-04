@@ -27,7 +27,7 @@ import {
   PremiumFeatureCard,
   PremiumDailyStats
 } from './PremiumDashboardCards';
-import { QuickWaterModal, QuickSleepModal, QuickExerciseModal } from '@/components/tracking';
+import { QuickExerciseModal } from '@/components/tracking';
 import { SofiaProactiveCard } from '@/components/sofia/SofiaProactiveCard';
 
 const DashboardOverview: React.FC = () => {
@@ -37,8 +37,6 @@ const DashboardOverview: React.FC = () => {
   const [exerciseData, setExerciseData] = useState<any[]>([]);
   const [waterData, setWaterData] = useState<any[]>([]);
   const [isWeightModalOpen, setIsWeightModalOpen] = useState(false);
-  const [isWaterModalOpen, setIsWaterModalOpen] = useState(false);
-  const [isSleepModalOpen, setIsSleepModalOpen] = useState(false);
   const [isExerciseModalOpen, setIsExerciseModalOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -215,12 +213,10 @@ const DashboardOverview: React.FC = () => {
           </div>
         </div>
 
-        {/* Quick Actions */}
+        {/* Quick Actions (Peso e Exercício) */}
         <PremiumQuickActions 
           onAddWeight={() => setIsWeightModalOpen(true)}
           onAddExercise={() => setIsExerciseModalOpen(true)}
-          onAddWater={() => setIsWaterModalOpen(true)}
-          onAddSleep={() => setIsSleepModalOpen(true)}
         />
 
         {/* Daily Stats */}
@@ -342,20 +338,6 @@ const DashboardOverview: React.FC = () => {
           />
         </DialogContent>
       </Dialog>
-
-      {/* Water Modal */}
-      <QuickWaterModal 
-        open={isWaterModalOpen} 
-        onOpenChange={setIsWaterModalOpen}
-        onSuccess={loadWeeklyData}
-      />
-
-      {/* Sleep Modal */}
-      <QuickSleepModal 
-        open={isSleepModalOpen} 
-        onOpenChange={setIsSleepModalOpen}
-        onSuccess={loadWeeklyData}
-      />
 
       {/* Exercise Modal */}
       <QuickExerciseModal 

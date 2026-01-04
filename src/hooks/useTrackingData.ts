@@ -80,12 +80,12 @@ export const useTrackingData = () => {
         .eq('user_id', user.id)
         .gte('date', weekStartStr);
 
-      // 😴 Carregar dados de sono
+      // 😴 Carregar dados de sono (usando sleep_monitoring)
       const { data: sleepData } = await (supabase as any)
-        .from('sleep_tracking')
+        .from('sleep_monitoring')
         .select('*')
         .eq('user_id', user.id)
-        .eq('date', today)
+        .eq('sleep_date', today)
         .single();
 
       // 😊 Carregar dados de humor
@@ -129,12 +129,12 @@ export const useTrackingData = () => {
         },
         sleep: {
           lastNight: {
-            hours: sleepData?.hours_slept || 0,
-            quality: sleepData?.sleep_quality || 0
+            hours: sleepData?.sleep_duration_hours || 0,
+            quality: sleepData?.sleep_quality_rating || 0
           },
           goal: 8,
-          quality: sleepData?.sleep_quality ? sleepData.sleep_quality * 20 : 0, // Converter 1-5 para 0-100
-          weeklyAverage: sleepData?.hours_slept || 0,
+          quality: sleepData?.sleep_quality_rating ? sleepData.sleep_quality_rating * 20 : 0,
+          weeklyAverage: sleepData?.sleep_duration_hours || 0,
           weeklyData: []
         },
         mood: {
@@ -173,13 +173,16 @@ export const useTrackingData = () => {
       if (!user) return;
 
       const amountMl = amount * 250; // Converter copos para ml
+      const today = new Date().toISOString().split('T')[0];
+      const now = new Date().toTimeString().split(' ')[0];
       
       const { data: inserted, error } = await (supabase as any)
         .from('water_tracking')
         .insert({
           user_id: user.id,
           amount_ml: amountMl,
-          source: 'manual'
+          date: today,
+          time: now
         })
         .select()
         .single();
@@ -187,7 +190,6 @@ export const useTrackingData = () => {
       if (error) throw error;
       
       // Upsert de daily_advanced_tracking após salvar água e detecção de anomalias
-      const today = new Date().toISOString().split('T')[0];
       const { data: newDailyRecord, error: advError } = await (supabase as any)
         .from('daily_advanced_tracking')
         .upsert({
@@ -223,22 +225,23 @@ export const useTrackingData = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
+      const today = new Date().toISOString().split('T')[0];
+      
       const { data: upserted, error } = await (supabase as any)
-        .from('sleep_tracking')
+        .from('sleep_monitoring')
         .upsert({
           user_id: user.id,
-          hours_slept: sleepForm.hours,
-          sleep_quality: sleepForm.quality,
-          sleep_notes: sleepForm.notes,
-          date: new Date().toISOString().split('T')[0]
-        })
+          sleep_duration_hours: sleepForm.hours,
+          sleep_quality_rating: sleepForm.quality,
+          notes: sleepForm.notes,
+          sleep_date: today
+        }, { onConflict: 'user_id,sleep_date' })
         .select()
         .single();
 
       if (error) throw error;
       
       // Upsert de daily_advanced_tracking com qualidade e horas de sono e detecção de anomalias
-      const today = new Date().toISOString().split('T')[0];
       const { data: newDailyRecord, error: advError } = await (supabase as any)
         .from('daily_advanced_tracking')
         .upsert({
