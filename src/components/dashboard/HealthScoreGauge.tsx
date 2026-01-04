@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, TrendingUp, TrendingDown, AlertTriangle, CheckCircle2, Activity } from 'lucide-react';
+import { Sparkles, TrendingUp, TrendingDown, AlertTriangle, CheckCircle2, Activity, Moon, Droplets, Scale } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 interface HealthScoreGaugeProps {
@@ -209,14 +209,17 @@ export const HealthScoreGauge: React.FC<HealthScoreGaugeProps> = ({
         <StatusIndicator
           label="Peso"
           status={score >= 60 ? 'good' : score >= 40 ? 'warning' : 'alert'}
+          icon={Scale}
         />
         <StatusIndicator
-          label="Cintura"
+          label="Sono"
           status={score >= 70 ? 'good' : score >= 45 ? 'warning' : 'alert'}
+          icon={Moon}
         />
         <StatusIndicator
-          label="Atividade"
+          label="Hidratação"
           status={score >= 50 ? 'good' : score >= 30 ? 'warning' : 'alert'}
+          icon={Droplets}
         />
       </div>
     </motion.div>
@@ -227,20 +230,20 @@ export const HealthScoreGauge: React.FC<HealthScoreGaugeProps> = ({
 const StatusIndicator: React.FC<{
   label: string;
   status: 'good' | 'warning' | 'alert';
-}> = ({ label, status }) => {
+  icon: React.FC<{ className?: string }>;
+}> = ({ label, status, icon: IconComponent }) => {
   const statusConfig = {
-    good: { color: 'bg-emerald-500', icon: CheckCircle2, text: 'text-emerald-500' },
-    warning: { color: 'bg-amber-500', icon: AlertTriangle, text: 'text-amber-500' },
-    alert: { color: 'bg-red-500', icon: AlertTriangle, text: 'text-red-500' }
+    good: { color: 'bg-emerald-500', text: 'text-emerald-500' },
+    warning: { color: 'bg-amber-500', text: 'text-amber-500' },
+    alert: { color: 'bg-red-500', text: 'text-red-500' }
   };
 
   const config = statusConfig[status];
-  const Icon = config.icon;
 
   return (
     <div className="flex flex-col items-center gap-1 px-2 py-2 rounded-xl bg-muted/30">
       <div className={`flex items-center justify-center h-5 w-5 rounded-full ${config.color}/20`}>
-        <Icon className={`h-3 w-3 ${config.text}`} />
+        <IconComponent className={`h-3 w-3 ${config.text}`} />
       </div>
       <span className="text-[9px] text-muted-foreground font-medium">{label}</span>
     </div>
