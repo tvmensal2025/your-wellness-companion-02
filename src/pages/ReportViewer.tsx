@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client-fixed";
+import { supabase } from "@/integrations/supabase/client";
 
 const ReportViewer: React.FC = () => {
   const { reportId } = useParams();

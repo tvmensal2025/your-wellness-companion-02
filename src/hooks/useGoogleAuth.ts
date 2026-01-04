@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { supabase } from '@/integrations/supabase/client-fixed';
+import { supabase } from '@/integrations/supabase/client';
 
 export const useGoogleAuth = () => {
   const [isLoading, setIsLoading] = useState(false);

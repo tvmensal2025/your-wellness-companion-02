@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client-fixed";
+import { supabase } from "@/integrations/supabase/client";
 
 interface UserDataCompleteness {
   hasRequiredData: boolean;

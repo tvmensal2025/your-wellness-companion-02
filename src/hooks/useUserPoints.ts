@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client-fixed';
+import { supabase } from '@/integrations/supabase/client';
 
 interface UserPoints {
   total_points: number;

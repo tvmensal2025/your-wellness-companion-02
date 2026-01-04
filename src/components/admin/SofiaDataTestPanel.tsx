@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client-fixed";
+import { supabase } from "@/integrations/supabase/client";
 import { Brain, Database, Check, X, Loader2, TestTube, MessageCircle, Stethoscope } from "lucide-react";
 
 interface UserDataStatus {
