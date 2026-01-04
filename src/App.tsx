@@ -20,6 +20,8 @@ const CompleteDashboardPage = lazy(() => import("./pages/CompleteDashboardPage")
 const AdminPage = lazy(() => import("./pages/AdminPage"));
 const SofiaPage = lazy(() => import("./pages/SofiaPage"));
 const GoalsPage = lazy(() => import("./pages/GoalsPage"));
+const NutritionTrackingPage = lazy(() => import("./pages/NutritionTrackingPage").then(module => ({ default: module.NutritionTrackingPage })));
+const ChallengeDetailPage = lazy(() => import("./pages/ChallengeDetailPage"));
 const CoursePlatform = lazy(() => import("./components/CoursePlatform"));
 const ProgressPage = lazy(() => import("./pages/ProgressPage"));
 const AnamnesisPage = lazy(() => import("./pages/AnamnesisPage"));
@@ -65,6 +67,8 @@ const App: React.FC = () => {
               <Route path="/app/goals" element={<Suspense fallback={<PageLoader />}><GoalsPage /></Suspense>} />
               <Route path="/app/courses" element={<Suspense fallback={<PageLoader />}><CoursePlatform /></Suspense>} />
               <Route path="/app/progress" element={<Suspense fallback={<PageLoader />}><ProgressPage /></Suspense>} />
+              <Route path="/nutricao" element={<Suspense fallback={<PageLoader />}><NutritionTrackingPage /></Suspense>} />
+              <Route path="/challenges/:id" element={<Suspense fallback={<PageLoader />}><ChallengeDetailPage /></Suspense>} />
               <Route path="/google-fit-oauth" element={<Suspense fallback={<PageLoader />}><GoogleFitPage /></Suspense>} />
               <Route path="/google-fit-callback" element={<Suspense fallback={<PageLoader />}><GoogleFitCallbackPage /></Suspense>} />
               <Route path="/google-fit-test" element={<Suspense fallback={<PageLoader />}><GoogleFitTestPage /></Suspense>} />
