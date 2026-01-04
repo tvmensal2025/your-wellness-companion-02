@@ -11,11 +11,15 @@ import { AdvancedGoogleFitMetrics } from './progress/AdvancedGoogleFitMetrics';
 import { GoogleFitInsights } from './progress/GoogleFitInsights';
 import { HealthExecutiveSummary } from './progress/HealthExecutiveSummary';
 import { MedicalHealthAnalysis } from './progress/MedicalHealthAnalysis';
-import { ArrowLeft, Activity, Target, TrendingUp, RefreshCw, Clock, Heart, Zap } from 'lucide-react';
+import { ArrowLeft, Activity, Target, TrendingUp, RefreshCw, Clock, Heart, Zap, Moon, Flame, Footprints, FileText } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { PremiumHealthScore } from './google-fit/PremiumHealthScore';
+import { PremiumMetricCard } from './google-fit/PremiumMetricCard';
+import { AIHealthAnalysis } from './google-fit/AIHealthAnalysis';
+import { HealthReportExport } from './google-fit/HealthReportExport';
 const MyProgress: React.FC = () => {
   const [period, setPeriod] = useState<Period>('week');
   const {
@@ -269,61 +273,116 @@ const MyProgress: React.FC = () => {
         </ToggleGroup>
       </div>
 
-      {/* Cards KPIs principais */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
-        <motion.div variants={cardVariants}>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-base font-medium">Passos</CardTitle>
-              <Activity className="h-5 w-5 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{filteredData.length ? currentStats.totalSteps.toLocaleString() : '—'}</div>
-              {comparisonStats && filteredData.length > 0 && <div className="flex items-center text-sm text-muted-foreground mt-1">
-                  <TrendingUp className={`mr-1 h-4 w-4 ${currentStats.totalSteps - comparisonStats.totalSteps >= 0 ? 'text-green-500' : 'text-red-500'}`} />
-                  {Math.round((currentStats.totalSteps - comparisonStats.totalSteps) / Math.max(1, comparisonStats.totalSteps) * 100)}% vs {period === 'day' ? 'ontem' : period === 'week' ? 'semana passada' : 'mês passado'}
-                </div>}
-            </CardContent>
-          </Card>
-        </motion.div>
-        <motion.div variants={cardVariants}>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-base font-medium">Calorias Ativas</CardTitle>
-              <Activity className="h-5 w-5 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{filteredData.length ? currentStats.totalCalories.toLocaleString() : '—'}</div>
-              {comparisonStats && filteredData.length > 0 && <div className="flex items-center text-sm text-muted-foreground mt-1">
-                  <TrendingUp className={`mr-1 h-4 w-4 ${currentStats.totalCalories - comparisonStats.totalCalories >= 0 ? 'text-green-500' : 'text-red-500'}`} />
-                  {Math.round((currentStats.totalCalories - comparisonStats.totalCalories) / Math.max(1, comparisonStats.totalCalories) * 100)}% vs {period === 'day' ? 'ontem' : 'semana passada'}
-                </div>}
-            </CardContent>
-          </Card>
-        </motion.div>
-        <motion.div variants={cardVariants}>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-base font-medium">Distância</CardTitle>
-              <Activity className="h-5 w-5 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{filteredData.length ? `${currentStats.totalDistance.toFixed(1)} km` : '—'}</div>
-            </CardContent>
-          </Card>
-        </motion.div>
-        <motion.div variants={cardVariants}>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-base font-medium">Freq. Cardíaca média</CardTitle>
-              <Activity className="h-5 w-5 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">{filteredData.length ? `${currentStats.avgHeartRate} bpm` : '—'}</div>
-            </CardContent>
-          </Card>
-        </motion.div>
+      {/* Score de Saúde Premium + Cards Premium */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        {/* Score de Saúde */}
+        <div className="lg:col-span-4">
+          <PremiumHealthScore 
+            score={currentScore} 
+            previousScore={comparisonStats ? computeScoreForPeriod(comparisonData) : undefined}
+            label="Score de Saúde"
+            description={`Baseado em ${filteredData.length} dia(s) de dados`}
+          />
+        </div>
+
+        {/* Cards Premium KPIs */}
+        <div className="lg:col-span-8 grid grid-cols-2 md:grid-cols-3 gap-3">
+          <PremiumMetricCard
+            title="Passos"
+            value={filteredData.length ? currentStats.totalSteps : 0}
+            unit="passos"
+            goal={stepsGoal}
+            previousValue={comparisonStats?.totalSteps}
+            icon={Footprints}
+            color="hsl(142, 76%, 36%)"
+            gradient="from-emerald-500 to-green-600"
+            delay={0}
+          />
+          <PremiumMetricCard
+            title="Calorias Ativas"
+            value={filteredData.length ? currentStats.totalCalories : 0}
+            unit="kcal"
+            goal={caloriesGoal}
+            previousValue={comparisonStats?.totalCalories}
+            icon={Flame}
+            color="hsl(25, 95%, 53%)"
+            gradient="from-orange-500 to-red-500"
+            delay={0.1}
+          />
+          <PremiumMetricCard
+            title="Minutos Ativos"
+            value={filteredData.length ? currentStats.totalActiveMinutes : 0}
+            unit="min"
+            goal={activeMinutesGoal}
+            previousValue={comparisonStats?.totalActiveMinutes}
+            icon={Zap}
+            color="hsl(48, 96%, 53%)"
+            gradient="from-yellow-500 to-amber-500"
+            delay={0.2}
+          />
+          <PremiumMetricCard
+            title="Freq. Cardíaca"
+            value={filteredData.length ? currentStats.avgHeartRate : 0}
+            unit="bpm"
+            previousValue={comparisonStats?.avgHeartRate}
+            icon={Heart}
+            color="hsl(0, 84%, 60%)"
+            gradient="from-red-500 to-rose-600"
+            delay={0.3}
+          />
+          <PremiumMetricCard
+            title="Sono"
+            value={filteredData.length ? currentStats.avgSleepHours : 0}
+            unit="horas"
+            goal={sleepGoal}
+            previousValue={comparisonStats?.avgSleepHours}
+            icon={Moon}
+            color="hsl(263, 70%, 50%)"
+            gradient="from-violet-500 to-purple-600"
+            delay={0.4}
+          />
+          <PremiumMetricCard
+            title="Distância"
+            value={filteredData.length ? parseFloat(currentStats.totalDistance.toFixed(1)) : 0}
+            unit="km"
+            previousValue={comparisonStats?.totalDistance}
+            icon={Activity}
+            color="hsl(199, 89%, 48%)"
+            gradient="from-cyan-500 to-blue-600"
+            delay={0.5}
+          />
+        </div>
       </div>
+
+      {/* Análise de IA com Insights */}
+      <AIHealthAnalysis 
+        metrics={{
+          steps: currentStats.totalSteps,
+          calories: currentStats.totalCalories,
+          activeMinutes: currentStats.totalActiveMinutes,
+          sleepHours: currentStats.avgSleepHours,
+          heartRateAvg: currentStats.avgHeartRate,
+          distance: currentStats.totalDistance * 1000
+        }}
+        period={period}
+      />
+
+      {/* Exportar Relatório para Médico */}
+      <HealthReportExport 
+        data={{
+          metrics: {
+            steps: currentStats.totalSteps,
+            calories: currentStats.totalCalories,
+            activeMinutes: currentStats.totalActiveMinutes,
+            sleepHours: currentStats.avgSleepHours,
+            heartRateAvg: currentStats.avgHeartRate,
+            distance: currentStats.totalDistance * 1000
+          },
+          period,
+          startDate: getPeriodRange(period).start,
+          endDate: getPeriodRange(period).end
+        }}
+      />
 
       {/* Gráficos baseados no período */}
       <GoogleFitCharts chartData={filteredData as any} cardVariants={cardVariants} period={period} comparisonData={comparisonData as any} userGoals={{
@@ -341,27 +400,6 @@ const MyProgress: React.FC = () => {
       heartRateGoal: 80,
       weightGoal: 70
     }} />
-
-      {/* DEBUG: Verificar se os dados estão chegando */}
-      {(() => {
-      console.log('DEBUG - filteredData:', filteredData);
-      return null;
-    })()}
-      {(() => {
-      console.log('DEBUG - period:', period);
-      return null;
-    })()}
-
-      {/* DEBUG: Verificar se os componentes estão sendo renderizados */}
-      
-
-      {/* DEBUG: Log direto antes do HealthExecutiveSummary */}
-      {(() => {
-      console.log('MyProgress - ANTES do HealthExecutiveSummary');
-      console.log('MyProgress - filteredData:', filteredData);
-      console.log('MyProgress - period:', period);
-      return null;
-    })()}
 
       {/* Resumo Executivo de Saúde - Componente Premium */}
       <HealthExecutiveSummary data={filteredData as any} period={period} userGoals={{
@@ -382,12 +420,6 @@ const MyProgress: React.FC = () => {
       heartRateGoal: 80,
       weightGoal: 70
     }} />
-
-      {/* DEBUG: Log após MedicalHealthAnalysis */}
-      {(() => {
-      console.log('MyProgress - APÓS MedicalHealthAnalysis');
-      return null;
-    })()}
 
       <GoogleFitInsights data={filteredData as any} period={period} userGoals={{
       stepsGoal,
