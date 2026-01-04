@@ -548,42 +548,53 @@ export const DrVitalEnhancedChat: React.FC = () => {
 
             {/* Modal elegante com o conteúdo completo */}
             <Dialog open={isPopupOpen} onOpenChange={setIsPopupOpen}>
-              <DialogContent className="sm:max-w-2xl md:max-w-3xl lg:max-w-4xl p-0 overflow-hidden">
+              <DialogContent className="w-[95vw] max-w-4xl p-0 overflow-hidden max-h-[90vh]">
                 {/* Cabeçalho colorido com gradiente */}
-                <div className="bg-gradient-to-r from-indigo-600 via-cyan-500 to-amber-500 p-6 text-white relative overflow-hidden">
+                <div className="bg-gradient-to-r from-indigo-600 via-cyan-500 to-amber-500 p-3 sm:p-6 text-white relative overflow-hidden">
                   <div className="absolute inset-0 bg-black/10"></div>
-                  <div className="relative flex items-center gap-4">
-                    <div className="w-14 h-14 rounded-full bg-white/20 p-2 border-2 border-white/30">
-                      <img src="http://45.67.221.216:8086/Dr.Vital.png" alt="Dr. Vital" className="w-full h-full rounded-full object-cover" />
+                  <div className="relative flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
+                    <div className="flex items-center gap-3 w-full sm:w-auto">
+                      <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-white/20 p-1.5 sm:p-2 border-2 border-white/30 flex-shrink-0">
+                        <img src="http://45.67.221.216:8086/Dr.Vital.png" alt="Dr. Vital" className="w-full h-full rounded-full object-cover" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h1 className="text-base sm:text-xl font-bold mb-0.5 sm:mb-1 truncate">Dr. Vital IA</h1>
+                        <p className="text-xs sm:text-sm opacity-95 font-medium line-clamp-2">
+                          {userName ? `Análise para ${userName}` : generateTitle(currentQuestion)}
+                        </p>
+                      </div>
                     </div>
-                    <div className="flex-1">
-                      <h1 className="text-xl font-bold mb-1">Dr. Vital IA do Instituto dos Sonhos</h1>
-                      <p className="text-sm opacity-95 font-medium">
-                        {userName ? `Análise para ${userName} • ` : ''}{generateTitle(currentQuestion)}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <Button size="sm" variant="secondary" onClick={handlePrint} className="bg-white/90 text-indigo-700 hover:bg-white shadow-lg">
+                    <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto justify-end">
+                      <Button size="sm" variant="secondary" onClick={handlePrint} className="bg-white/90 text-indigo-700 hover:bg-white shadow-lg text-xs sm:text-sm px-2 sm:px-3">
                         📄 Imprimir
                       </Button>
-                      <img src="http://45.67.221.216:8086/logoids.png" alt="Instituto dos Sonhos" className="w-10 h-10 rounded-lg bg-white/20 p-1" />
+                      <img src="http://45.67.221.216:8086/logoids.png" alt="Instituto dos Sonhos" className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-white/20 p-1 hidden sm:block" />
                     </div>
                   </div>
                 </div>
 
                 {/* Conteúdo com cores */}
-                <div className="p-6 bg-gradient-to-br from-slate-50 to-blue-50">
-                  <div className="bg-white rounded-xl p-6 shadow-sm border border-slate-200">
+                <div className="p-3 sm:p-6 bg-gradient-to-br from-slate-50 to-blue-50 overflow-y-auto max-h-[calc(90vh-120px)]">
+                  <div className="bg-white rounded-xl p-3 sm:p-6 shadow-sm border border-slate-200">
                     <style>{`
                       /* Blocos de conteúdo com ícones temáticos */
                       .content-block {
                         position: relative;
-                        margin-bottom: 24px;
-                        padding: 14px 14px 14px 42px;
+                        margin-bottom: 16px;
+                        padding: 12px 12px 12px 36px;
                         border-radius: 10px;
                         background: white;
                         border: 1px solid #e2e8f0;
                         box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+                        word-wrap: break-word;
+                        overflow-wrap: break-word;
+                      }
+                      
+                      @media (min-width: 640px) {
+                        .content-block {
+                          margin-bottom: 24px;
+                          padding: 14px 14px 14px 42px;
+                        }
                       }
                       
                       .content-block:after {
@@ -592,19 +603,36 @@ export const DrVitalEnhancedChat: React.FC = () => {
                         left: 0;
                         top: 0;
                         height: 100%;
-                        width: 5px;
+                        width: 4px;
                         border-radius: 10px 0 0 10px;
+                      }
+                      
+                      @media (min-width: 640px) {
+                        .content-block:after {
+                          width: 5px;
+                        }
                       }
                       
                       .block-icon {
                         position: absolute;
-                        left: 12px;
-                        top: 14px;
-                        font-size: 18px;
-                        width: 22px;
-                        height: 22px;
-                        line-height: 22px;
+                        left: 8px;
+                        top: 12px;
+                        font-size: 16px;
+                        width: 20px;
+                        height: 20px;
+                        line-height: 20px;
                         text-align: center;
+                      }
+                      
+                      @media (min-width: 640px) {
+                        .block-icon {
+                          left: 12px;
+                          top: 14px;
+                          font-size: 18px;
+                          width: 22px;
+                          height: 22px;
+                          line-height: 22px;
+                        }
                       }
                       
                       /* Estilos específicos para cada tipo de bloco */
@@ -620,61 +648,108 @@ export const DrVitalEnhancedChat: React.FC = () => {
                       /* Títulos de seção */
                       .section-title {
                         color: #1e293b;
-                        font-size: 18px;
+                        font-size: 15px;
                         font-weight: 700;
-                        margin: 18px 0 16px;
+                        margin: 14px 0 12px;
                         padding-bottom: 6px;
                         border-bottom: 1px solid #e2e8f0;
                         display: flex;
                         align-items: center;
+                        word-break: break-word;
+                      }
+                      
+                      @media (min-width: 640px) {
+                        .section-title {
+                          font-size: 18px;
+                          margin: 18px 0 16px;
+                        }
                       }
                       
                       /* Itens numerados */
                       .numbered-item {
                         display: flex;
-                        margin: 12px 0;
-                        padding: 14px;
+                        margin: 8px 0;
+                        padding: 10px;
                         background: #f8fafc;
                         border-radius: 10px;
+                      }
+                      
+                      @media (min-width: 640px) {
+                        .numbered-item {
+                          margin: 12px 0;
+                          padding: 14px;
+                        }
                       }
                       
                       .numbered-item .number {
                         background: #6366f1;
                         color: white;
-                        width: 24px;
-                        height: 24px;
+                        width: 22px;
+                        height: 22px;
+                        min-width: 22px;
                         border-radius: 50%;
                         display: flex;
                         align-items: center;
                         justify-content: center;
                         font-weight: bold;
-                        margin-right: 12px;
-                        font-size: 12px;
+                        margin-right: 10px;
+                        font-size: 11px;
                         flex-shrink: 0;
+                      }
+                      
+                      @media (min-width: 640px) {
+                        .numbered-item .number {
+                          width: 24px;
+                          height: 24px;
+                          min-width: 24px;
+                          margin-right: 12px;
+                          font-size: 12px;
+                        }
                       }
                       
                       .numbered-item .text {
                         flex: 1;
+                        word-wrap: break-word;
+                        overflow-wrap: break-word;
+                        min-width: 0;
                       }
                       
                       /* Bullet points */
                       .bullet-item {
                         display: flex;
                         align-items: flex-start;
-                        margin: 10px 0;
-                        padding: 10px 14px;
+                        margin: 8px 0;
+                        padding: 8px 10px;
                         background: #f0fdf4;
                         border-radius: 8px;
                       }
                       
+                      @media (min-width: 640px) {
+                        .bullet-item {
+                          margin: 10px 0;
+                          padding: 10px 14px;
+                        }
+                      }
+                      
                       .bullet-marker {
                         color: #10b981;
-                        font-size: 16px;
-                        margin-right: 10px;
+                        font-size: 14px;
+                        margin-right: 8px;
+                        flex-shrink: 0;
+                      }
+                      
+                      @media (min-width: 640px) {
+                        .bullet-marker {
+                          font-size: 16px;
+                          margin-right: 10px;
+                        }
                       }
                       
                       .bullet-text {
                         flex: 1;
+                        word-wrap: break-word;
+                        overflow-wrap: break-word;
+                        min-width: 0;
                       }
                       
                       /* Badge de porcentagem */
@@ -682,32 +757,54 @@ export const DrVitalEnhancedChat: React.FC = () => {
                         background: #f97316;
                         color: white;
                         font-weight: bold;
-                        padding: 3px 8px;
-                        border-radius: 12px;
-                        font-size: 0.9em;
+                        padding: 2px 6px;
+                        border-radius: 10px;
+                        font-size: 0.8em;
                         display: inline-block;
+                      }
+                      
+                      @media (min-width: 640px) {
+                        .percentage-badge {
+                          padding: 3px 8px;
+                          border-radius: 12px;
+                          font-size: 0.9em;
+                        }
                       }
                       
                       /* Valores destacados */
                       .highlight-value {
                         background: rgba(99,102,241,0.1);
                         color: #4f46e5;
-                        padding: 2px 6px;
+                        padding: 1px 4px;
                         border-radius: 4px;
                         font-weight: 600;
+                      }
+                      
+                      @media (min-width: 640px) {
+                        .highlight-value {
+                          padding: 2px 6px;
+                        }
                       }
                       
                       /* Alertas de risco */
                       .risk-badge {
                         background: #fef2f2;
                         color: #dc2626;
-                        padding: 2px 8px 2px 3px;
+                        padding: 2px 6px 2px 3px;
                         border-radius: 6px;
                         font-weight: 600;
                         border: 1px solid #fecaca;
                         display: inline-flex;
                         align-items: center;
                         margin: 0 2px;
+                        font-size: 0.85em;
+                      }
+                      
+                      @media (min-width: 640px) {
+                        .risk-badge {
+                          padding: 2px 8px 2px 3px;
+                          font-size: 1em;
+                        }
                       }
                       
                       /* Box de alerta importante */
@@ -716,10 +813,17 @@ export const DrVitalEnhancedChat: React.FC = () => {
                         border: 1px solid #fde68a;
                         border-left: 4px solid #f59e0b;
                         border-radius: 6px;
-                        padding: 12px;
-                        margin: 14px 0;
+                        padding: 10px;
+                        margin: 12px 0;
                         display: flex;
                         align-items: center;
+                      }
+                      
+                      @media (min-width: 640px) {
+                        .important-box {
+                          padding: 12px;
+                          margin: 14px 0;
+                        }
                       }
                       
                       /* Texto destacado importante */
@@ -727,15 +831,22 @@ export const DrVitalEnhancedChat: React.FC = () => {
                         color: #b45309;
                         font-weight: 600;
                       }
+                      
+                      /* Conteúdo do bloco */
+                      .block-content {
+                        word-wrap: break-word;
+                        overflow-wrap: break-word;
+                        min-width: 0;
+                      }
                     `}</style>
                     <div 
-                      className="text-sm leading-relaxed text-slate-700 max-h-[60vh] overflow-y-auto"
+                      className="text-xs sm:text-sm leading-relaxed text-slate-700"
                       dangerouslySetInnerHTML={{ __html: formatResponse(response.response) }}
                     />
                   </div>
                   
                   {/* Footer com logo */}
-                  <div className="mt-4 flex items-center justify-center gap-2 text-xs text-slate-500 bg-white/60 rounded-lg p-3">
+                  <div className="mt-3 sm:mt-4 flex items-center justify-center gap-2 text-[10px] sm:text-xs text-slate-500 bg-white/60 rounded-lg p-2 sm:p-3">
                     <img src="http://45.67.221.216:8086/logoids.png" alt="Instituto dos Sonhos" className="w-4 h-4" />
                     <span>⚠️ Este material é educativo e não substitui consulta médica presencial.</span>
                   </div>
