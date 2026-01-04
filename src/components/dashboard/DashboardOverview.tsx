@@ -20,7 +20,7 @@ import { PremiumVitalCards } from './PremiumVitalCards';
 import { MiniHealthAlerts, useHealthAlerts } from './MiniHealthAlerts';
 import { SofiaEmotionalBanner } from '@/components/sofia/SofiaEmotionalBanner';
 import { FlashChallengeCard } from '@/components/gamification/FlashChallengeCard';
-
+import { WeightEvolutionCard } from './WeightEvolutionCard';
 const DashboardOverview: React.FC = () => {
   const { measurements, stats, loading } = useWeightMeasurement();
   const [isWeightModalOpen, setIsWeightModalOpen] = useState(false);
@@ -166,7 +166,11 @@ const DashboardOverview: React.FC = () => {
           onAddWeight={() => setIsWeightModalOpen(true)}
         />
 
-        {/* Desafio do Dia - Compacto */}
+        {/* EVOLUÇÃO DO PESO - Gráfico e histórico */}
+        <WeightEvolutionCard 
+          measurements={measurements || []}
+          loading={loading}
+        />
         <FlashChallengeCard />
 
         {/* Acesso Rápido - Cards menores */}
