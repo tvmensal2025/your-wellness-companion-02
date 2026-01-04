@@ -987,73 +987,33 @@ serve(async (req) => {
       console.log('✅ Status do documento atualizado');
     }
     
-    // Executar análise médica integrada
-    const analysisResult = await analyzeAndProcessExam(supabase, payload, actualDocumentId);
-    
-    // Gerar HTML do relatório
-    const htmlReport = generateHTMLReport(analysisResult.analysis, payload.userId, actualDocumentId);
-    
-    // Salvar relatório no storage
-    console.log('💾 Salvando relatório HTML...');
-    const reportPath = `${payload.userId}/${actualDocumentId}_report.html`;
-    
-    const { error: saveError } = await supabase.storage
-      .from('medical-documents-reports')
-      .upload(reportPath, new Blob([htmlReport], { type: 'text/html' }), { upsert: true });
-    
-    if (saveError) {
-      console.warn('⚠️ Erro ao salvar relatório (não crítico):', saveError);
-    } else {
-      console.log('✅ Relatório salvo com sucesso');
+    // Delegar a análise e geração do relatório para a função analyze-medical-exam.
+    // Motivo: este pipeline é o que atualiza corretamente report_path/analysis_status e evita precisar "reiniciar".
+    console.log('🚀 Delegando análise para analyze-medical-exam...');
+
+    const { data: delegatedData, error: delegatedError } = await supabaseUser.functions.invoke('analyze-medical-exam', {
+      body: {
+        documentId: actualDocumentId,
+        userId: authedUserId,
+        examType: payload.examType,
+        tmpPaths: payload.tmpPaths,
+        title: payload.title,
+        forcePremium: true,
+        generateReport: true,
+      },
+    });
+
+    if (delegatedError) {
+      console.error('❌ analyze-medical-exam retornou erro:', delegatedError);
+      throw new Error(delegatedError.message || 'Falha ao gerar relatório do exame');
     }
-    
-    // Atualizar documento como finalizado
-    await supabase
-      .from('medical_documents')
-      .update({
-        analysis_status: 'ready',
-        status: 'normal',
-        processing_stage: 'finalizado',
-        progress_pct: 100,
-        report_path: reportPath,
-        report_content: analysisResult.analysis,
-        report_meta: {
-          generated_at: new Date().toISOString(),
-          service_used: analysisResult.service,
-          image_count: analysisResult.imageCount,
-          tmp_paths: payload.tmpPaths
-        },
-      })
-      .eq('id', actualDocumentId);
-    
-    // 🎯 NOVA FUNCIONALIDADE: Gerar automaticamente o relatório didático
-    console.log('🎓 Gerando relatório didático automaticamente...');
-    let didacticReportGenerated = false;
-    
-    try {
-      // Chamar a função smart-medical-exam internamente
-      const didacticResponse = await fetch(`${supabaseUrl}/functions/v1/smart-medical-exam`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${serviceRoleKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userId: authedUserId,
-          documentId: actualDocumentId
-        })
-      });
-      
-      if (didacticResponse.ok) {
-        const didacticData = await didacticResponse.json();
-        console.log('✅ Relatório didático gerado automaticamente!');
-        didacticReportGenerated = true;
-      } else {
-        console.warn('⚠️ Falha ao gerar relatório didático, continuando...');
-      }
-    } catch (didacticError) {
-      console.warn('⚠️ Erro ao gerar relatório didático:', didacticError);
-    }
+
+    // Mantemos o nome da variável (analysisResult) porque a resposta abaixo já referencia ela.
+    const analysisResult = delegatedData;
+
+    // A geração do relatório didático interno antigo era uma chamada para um endpoint inexistente.
+    // Mantemos o campo na resposta apenas como compatibilidade.
+    const didacticReportGenerated = false;
 
     // Resposta final de sucesso
     const response = {
@@ -1103,7 +1063,11 @@ serve(async (req) => {
             analysis_status: 'error',
             processing_stage: 'erro_na_finalizacao',
             progress_pct: 0,
-            error_message: err.message,
+            analysis_result: {
+              error: err.message,
+              requestId: requestId || null,
+              at: new Date().toISOString(),
+            },
             updated_at: new Date().toISOString()
           })
           .eq('id', documentId);
