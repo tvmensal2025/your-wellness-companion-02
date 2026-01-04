@@ -1,1 +1,4 @@
 project_id = "bstkhoxhxitfjbwudthq"
+
+[functions.saboteur-html-report]
+verify_jwt = true
