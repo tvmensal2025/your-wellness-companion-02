@@ -13,8 +13,8 @@ import { toast } from 'sonner';
 // New clean components
 import { AppleHealthHeroCard } from './AppleHealthHeroCard';
 import { CleanEvolutionChart } from './CleanEvolutionChart';
-
 import { QuickActionsGrid } from './QuickActionsGrid';
+import { MotivationalMascot } from './MotivationalMascot';
 
 const DashboardOverview: React.FC = () => {
   const { measurements, stats, loading, fetchMeasurements } = useWeightMeasurement();
@@ -218,6 +218,9 @@ const DashboardOverview: React.FC = () => {
           measurements={measurements || []}
           loading={loading}
         />
+
+        {/* Motivational Mascot */}
+        <MotivationalMascot />
 
         {/* 4. Quick Actions */}
         <QuickActionsGrid onWeightClick={() => setIsWeightModalOpen(true)} />
