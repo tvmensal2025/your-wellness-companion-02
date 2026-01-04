@@ -1,6 +1,6 @@
 // @ts-nocheck
 import { useEffect, useMemo, useState } from 'react';
-import { supabase } from '../integrations/supabase/client-fixed';
+import { supabase } from '@/integrations/supabase/client';
 
 interface GoogleFitData {
   id: string;
