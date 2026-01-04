@@ -4,14 +4,17 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { CheckCircle2, Clock, Dumbbell, Flame, Info, Target, ArrowLeft, ArrowRight, Repeat, Timer, Play, Heart, Pause } from 'lucide-react';
+import { CheckCircle2, Clock, Dumbbell, Flame, Info, Target, ArrowLeft, ArrowRight, Repeat, Timer, Play, Heart, Pause, RefreshCw, WifiOff } from 'lucide-react';
 import { exerciseInstructions } from '@/data/exercise-instructions';
+import { useRealTimeHeartRate } from '@/hooks/useRealTimeHeartRate';
+
 interface ExerciseDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
   exerciseData: any;
   location?: 'casa' | 'academia';
 }
+
 export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
   isOpen,
   onClose,
@@ -23,6 +26,8 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
   const [timerSeconds, setTimerSeconds] = useState(0);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
 
+  // Hook para frequência cardíaca real do Google Fit
+  const { heartRate, isLoading: isHeartRateLoading, isConnected: isGoogleFitConnected, refresh: refreshHeartRate, sync: syncHeartRate } = useRealTimeHeartRate(isOpen && currentStep === 'execution');
   // Cronômetro
   useEffect(() => {
     let interval: NodeJS.Timeout | undefined;
@@ -266,9 +271,44 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
 
         <Card className="bg-white/50 dark:bg-black/20">
           <CardContent className="p-3 text-center space-y-1">
-            <Heart className="w-5 h-5 mx-auto text-orange-600" />
-            <div className="text-base font-semibold">120 bpm</div>
-            <div className="text-[11px] text-muted-foreground">Frequência Cardíaca</div>
+            <div className="flex items-center justify-center gap-1">
+              <Heart className={`w-5 h-5 ${heartRate.current > 0 ? 'text-red-500 animate-pulse' : 'text-orange-600'}`} />
+              {isGoogleFitConnected && (
+                <button 
+                  onClick={syncHeartRate}
+                  disabled={isHeartRateLoading}
+                  className="p-0.5 hover:bg-muted rounded-full transition-colors"
+                  title="Sincronizar frequência cardíaca"
+                >
+                  <RefreshCw className={`w-3 h-3 text-muted-foreground ${isHeartRateLoading ? 'animate-spin' : ''}`} />
+                </button>
+              )}
+            </div>
+            {isGoogleFitConnected ? (
+              <>
+                <div className="text-base font-semibold">
+                  {heartRate.current > 0 ? `${heartRate.current} bpm` : '--'}
+                </div>
+                <div className="text-[11px] text-muted-foreground">
+                  Frequência Cardíaca
+                  {heartRate.min > 0 && heartRate.max > 0 && (
+                    <span className="block text-[10px]">
+                      Min: {heartRate.min} | Max: {heartRate.max}
+                    </span>
+                  )}
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="flex items-center justify-center gap-1 text-muted-foreground">
+                  <WifiOff className="w-3 h-3" />
+                  <span className="text-xs">Sem conexão</span>
+                </div>
+                <div className="text-[10px] text-muted-foreground">
+                  Conecte o Google Fit para ver dados reais
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
 
