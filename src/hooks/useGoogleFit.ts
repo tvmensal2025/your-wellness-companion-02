@@ -102,9 +102,25 @@ export const useGoogleFit = () => {
       const ok = await ensureValidSession();
       if (!ok) return;
 
+      // Obter sessão atualizada para garantir token válido
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
+
+      if (!accessToken) {
+        toast({
+          title: "⚠️ Sessão inválida",
+          description: "Faça login novamente para conectar o Google Fit.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const invokeConnect = async () =>
         supabase.functions.invoke('google-fit-token', {
           body: { action: 'connect' },
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
         });
 
       let { data, error } = await invokeConnect();
@@ -114,7 +130,14 @@ export const useGoogleFit = () => {
       if (error && status === 401) {
         const { error: refreshError } = await supabase.auth.refreshSession();
         if (!refreshError) {
-          ({ data, error } = await invokeConnect());
+          const { data: newSession } = await supabase.auth.getSession();
+          const newToken = newSession.session?.access_token;
+          if (newToken) {
+            ({ data, error } = await supabase.functions.invoke('google-fit-token', {
+              body: { action: 'connect' },
+              headers: { Authorization: `Bearer ${newToken}` },
+            }));
+          }
         }
       }
 
@@ -205,9 +228,25 @@ export const useGoogleFit = () => {
       const ok = await ensureValidSession();
       if (!ok) return;
 
+      // Obter sessão atualizada para garantir token válido
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
+
+      if (!accessToken) {
+        toast({
+          title: "⚠️ Sessão inválida",
+          description: "Faça login novamente para sincronizar.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const invokeSync = async () =>
         supabase.functions.invoke('google-fit-sync', {
           body: { action: 'sync' },
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
         });
 
       let { data, error } = await invokeSync();
@@ -216,7 +255,14 @@ export const useGoogleFit = () => {
       if (error && status === 401) {
         const { error: refreshError } = await supabase.auth.refreshSession();
         if (!refreshError) {
-          ({ data, error } = await invokeSync());
+          const { data: newSession } = await supabase.auth.getSession();
+          const newToken = newSession.session?.access_token;
+          if (newToken) {
+            ({ data, error } = await supabase.functions.invoke('google-fit-sync', {
+              body: { action: 'sync' },
+              headers: { Authorization: `Bearer ${newToken}` },
+            }));
+          }
         }
       }
 
