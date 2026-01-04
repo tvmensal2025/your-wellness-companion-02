@@ -76,18 +76,18 @@ export default function SubscriptionPage() {
 
   return (
     <FeatureLockGuard feature="assinatura">
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
-        <div className="container mx-auto px-4 py-8">
-          {/* Header */}
-          <div className="text-center mb-12">
-            <h1 className="text-4xl font-bold mb-4">Escolha seu Plano</h1>
-            <p className="text-xl text-muted-foreground">
-              Transforme sua saúde com as ferramentas certas para você
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 pb-24">
+        <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
+          {/* Header - Mobile Optimized */}
+          <div className="text-center mb-6 sm:mb-12">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2 sm:mb-4">Escolha seu Plano</h1>
+            <p className="text-sm sm:text-base lg:text-xl text-muted-foreground">
+              Transforme sua saúde com as ferramentas certas
             </p>
           </div>
 
-          {/* Planos */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16 max-w-4xl mx-auto">
+          {/* Planos - Mobile Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8 mb-8 sm:mb-16 max-w-4xl mx-auto">
             {plans.map((plan) => {
               const IconComponent = plan.icon;
               return (
@@ -98,36 +98,36 @@ export default function SubscriptionPage() {
                   }`}
                 >
                   {plan.popular && (
-                    <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-primary text-primary-foreground">
+                    <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-primary text-primary-foreground text-xs">
                       Mais Popular
                     </Badge>
                   )}
                   
-                  <CardHeader className="text-center">
-                    <div className={`w-12 h-12 mx-auto mb-4 rounded-full bg-gradient-to-r ${plan.color} flex items-center justify-center`}>
-                      <IconComponent className="w-6 h-6 text-white" />
+                  <CardHeader className="text-center p-4 sm:p-6">
+                    <div className={`w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-3 sm:mb-4 rounded-full bg-gradient-to-r ${plan.color} flex items-center justify-center`}>
+                      <IconComponent className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                     </div>
-                    <CardTitle className="text-2xl">{plan.name}</CardTitle>
-                    <p className="text-muted-foreground">{plan.description}</p>
+                    <CardTitle className="text-xl sm:text-2xl">{plan.name}</CardTitle>
+                    <p className="text-xs sm:text-sm text-muted-foreground">{plan.description}</p>
                   </CardHeader>
                   
-                  <CardContent className="space-y-6">
+                  <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6 pt-0">
                     <div className="text-center">
-                      <div className="text-3xl font-bold">{plan.price}</div>
-                      <div className="text-muted-foreground">{plan.period}</div>
+                      <div className="text-2xl sm:text-3xl font-bold">{plan.price}</div>
+                      <div className="text-xs sm:text-sm text-muted-foreground">{plan.period}</div>
                     </div>
                     
-                    <div className="space-y-3">
+                    <div className="space-y-2 sm:space-y-3">
                       {plan.features.map((feature, index) => (
-                        <div key={index} className="flex items-center gap-3">
-                          <Check className="w-4 h-4 text-green-600" />
-                          <span className="text-sm">{feature}</span>
+                        <div key={index} className="flex items-start gap-2 sm:gap-3">
+                          <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-600 mt-0.5 flex-shrink-0" />
+                          <span className="text-xs sm:text-sm">{feature}</span>
                         </div>
                       ))}
                     </div>
                     
                     <Button 
-                      className={`w-full ${
+                      className={`w-full text-sm sm:text-base ${
                         plan.popular 
                           ? 'bg-primary hover:bg-primary/90' 
                           : 'bg-secondary hover:bg-secondary/90'
@@ -143,20 +143,20 @@ export default function SubscriptionPage() {
             })}
           </div>
 
-          {/* Benefícios */}
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-8">Por que escolher nossa plataforma?</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {/* Benefícios - Mobile Grid */}
+          <div className="text-center mb-8 sm:mb-12">
+            <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-4 sm:mb-8">Por que escolher nossa plataforma?</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-8">
               {benefits.map((benefit, index) => {
                 const IconComponent = benefit.icon;
                 return (
                   <Card key={index} className="text-center">
-                    <CardContent className="pt-6">
-                      <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
-                        <IconComponent className="w-6 h-6 text-primary" />
+                    <CardContent className="p-4 sm:pt-6">
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-3 sm:mb-4 rounded-full bg-primary/10 flex items-center justify-center">
+                        <IconComponent className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
                       </div>
-                      <h3 className="text-xl font-semibold mb-2">{benefit.title}</h3>
-                      <p className="text-muted-foreground">{benefit.description}</p>
+                      <h3 className="text-base sm:text-xl font-semibold mb-1 sm:mb-2">{benefit.title}</h3>
+                      <p className="text-xs sm:text-sm text-muted-foreground">{benefit.description}</p>
                     </CardContent>
                   </Card>
                 );
@@ -164,42 +164,39 @@ export default function SubscriptionPage() {
             </div>
           </div>
 
-          {/* FAQ */}
+          {/* FAQ - Mobile Optimized */}
           <div className="max-w-4xl mx-auto">
-            <h2 className="text-3xl font-bold text-center mb-8">Perguntas Frequentes</h2>
-            <div className="space-y-4">
+            <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-center mb-4 sm:mb-8">Perguntas Frequentes</h2>
+            <div className="space-y-3 sm:space-y-4">
               <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Posso cancelar minha assinatura a qualquer momento?</CardTitle>
+                <CardHeader className="p-3 sm:p-6">
+                  <CardTitle className="text-sm sm:text-lg">Posso cancelar a qualquer momento?</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    Sim! Você pode cancelar sua assinatura a qualquer momento através do seu painel de controle. 
-                    O acesso será mantido até o final do período atual.
+                <CardContent className="p-3 sm:p-6 pt-0">
+                  <p className="text-xs sm:text-sm text-muted-foreground">
+                    Sim! Cancele quando quiser pelo painel. Acesso mantido até o fim do período.
                   </p>
                 </CardContent>
               </Card>
               
               <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Existe um período de teste gratuito?</CardTitle>
+                <CardHeader className="p-3 sm:p-6">
+                  <CardTitle className="text-sm sm:text-lg">Existe período de teste?</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    Oferecemos 7 dias de teste gratuito para todos os planos. 
-                    Você pode experimentar todas as funcionalidades sem compromisso.
+                <CardContent className="p-3 sm:p-6 pt-0">
+                  <p className="text-xs sm:text-sm text-muted-foreground">
+                    Oferecemos 7 dias grátis para experimentar todas as funcionalidades.
                   </p>
                 </CardContent>
               </Card>
               
               <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Como funciona o suporte?</CardTitle>
+                <CardHeader className="p-3 sm:p-6">
+                  <CardTitle className="text-sm sm:text-lg">Como funciona o suporte?</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">
-                    O suporte por email está disponível para todos os planos. 
-                    Assinantes Premium e Professional têm acesso prioritário e suporte 24/7.
+                <CardContent className="p-3 sm:p-6 pt-0">
+                  <p className="text-xs sm:text-sm text-muted-foreground">
+                    Email para todos os planos. Premium tem suporte prioritário 24/7.
                   </p>
                 </CardContent>
               </Card>

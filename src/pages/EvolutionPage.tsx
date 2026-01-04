@@ -55,29 +55,30 @@ export default function EvolutionPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="border-b bg-card">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
+      {/* Header - Mobile Optimized */}
+      <div className="border-b bg-card sticky top-0 z-40">
+        <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 sm:gap-4 min-w-0">
               <Button 
                 variant="ghost" 
                 size="sm"
                 onClick={() => navigate('/dashboard')}
+                className="px-2 sm:px-3 flex-shrink-0"
               >
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Voltar ao Dashboard
+                <ArrowLeft className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">Voltar</span>
               </Button>
-              <div className="flex items-center space-x-2">
-                <TrendingUp className="h-6 w-6 text-primary" />
-                <h1 className="text-2xl font-bold">Minha Evolução</h1>
+              <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+                <TrendingUp className="h-5 w-5 sm:h-6 sm:w-6 text-primary flex-shrink-0" />
+                <h1 className="text-lg sm:text-2xl font-bold truncate">Minha Evolução</h1>
               </div>
             </div>
             
             {profile && (
-              <div className="flex items-center space-x-2">
-                <User className="h-5 w-5" />
-                <span className="text-sm text-muted-foreground">
+              <div className="hidden sm:flex items-center gap-2 flex-shrink-0">
+                <User className="h-4 w-4 sm:h-5 sm:w-5" />
+                <span className="text-xs sm:text-sm text-muted-foreground truncate max-w-[120px]">
                   {profile.full_name || user.email}
                 </span>
               </div>
@@ -86,21 +87,20 @@ export default function EvolutionPage() {
         </div>
       </div>
 
-      {/* Conteúdo Principal */}
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-6">
+      {/* Conteúdo Principal - Mobile Optimized */}
+      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8 pb-24">
+        <div className="mb-4 sm:mb-6">
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5" />
-                Acompanhe Sua Jornada de Crescimento
+            <CardHeader className="p-3 sm:p-6">
+              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5" />
+                Acompanhe Sua Jornada
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">
-                Aqui você pode visualizar todo o histórico das suas respostas e atividades. 
-                Cada registro é mantido para que você possa acompanhar sua evolução ao longo do tempo.
-                Use os filtros para explorar suas respostas por seção ou data específica.
+            <CardContent className="p-3 sm:p-6 pt-0 sm:pt-0">
+              <p className="text-xs sm:text-sm text-muted-foreground">
+                Visualize o histórico das suas respostas e atividades. 
+                Use os filtros para explorar por seção ou data.
               </p>
             </CardContent>
           </Card>

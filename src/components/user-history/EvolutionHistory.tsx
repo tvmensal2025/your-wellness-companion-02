@@ -138,156 +138,159 @@ export function EvolutionHistory({ userId }: EvolutionHistoryProps) {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Estatísticas Gerais */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div className="space-y-4 sm:space-y-6">
+      {/* Estatísticas Gerais - Mobile Grid */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4">
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <Activity className="h-4 w-4 text-blue-500" />
-              <div>
-                <p className="text-sm text-muted-foreground">Total de Respostas</p>
-                <p className="text-2xl font-bold">{stats.totalResponses}</p>
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex items-center gap-2">
+              <Activity className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-blue-500 flex-shrink-0" />
+              <div className="min-w-0">
+                <p className="text-[10px] sm:text-sm text-muted-foreground truncate">Respostas</p>
+                <p className="text-lg sm:text-2xl font-bold">{stats.totalResponses}</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <Award className="h-4 w-4 text-yellow-500" />
-              <div>
-                <p className="text-sm text-muted-foreground">Pontos Totais</p>
-                <p className="text-2xl font-bold">{stats.totalPoints}</p>
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex items-center gap-2">
+              <Award className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-yellow-500 flex-shrink-0" />
+              <div className="min-w-0">
+                <p className="text-[10px] sm:text-sm text-muted-foreground truncate">Pontos</p>
+                <p className="text-lg sm:text-2xl font-bold">{stats.totalPoints}</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <Target className="h-4 w-4 text-green-500" />
-              <div>
-                <p className="text-sm text-muted-foreground">Seções Ativas</p>
-                <p className="text-2xl font-bold">{stats.sectionsCompleted}</p>
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex items-center gap-2">
+              <Target className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-500 flex-shrink-0" />
+              <div className="min-w-0">
+                <p className="text-[10px] sm:text-sm text-muted-foreground truncate">Seções</p>
+                <p className="text-lg sm:text-2xl font-bold">{stats.sectionsCompleted}</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center space-x-2">
-              <Calendar className="h-4 w-4 text-purple-500" />
-              <div>
-                <p className="text-sm text-muted-foreground">Dias Ativos</p>
-                <p className="text-2xl font-bold">{stats.daysActive}</p>
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex items-center gap-2">
+              <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-purple-500 flex-shrink-0" />
+              <div className="min-w-0">
+                <p className="text-[10px] sm:text-sm text-muted-foreground truncate">Dias</p>
+                <p className="text-lg sm:text-2xl font-bold">{stats.daysActive}</p>
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Filtros */}
+      {/* Filtros - Mobile Optimized */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <BarChart3 className="h-5 w-5" />
-            Filtros de Evolução
+        <CardHeader className="p-3 sm:p-6">
+          <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
+            <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5" />
+            Filtros
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-2 mb-4">
-            <Button
-              variant={selectedSection === null ? "default" : "outline"}
-              size="sm"
-              onClick={() => setSelectedSection(null)}
-            >
-              Todas as Seções
-            </Button>
-            {Object.keys(responsesBySection).map(section => (
+        <CardContent className="p-3 sm:p-6 pt-0 sm:pt-0 space-y-3">
+          <div className="overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0">
+            <div className="flex gap-1.5 sm:gap-2 pb-2 sm:pb-0 sm:flex-wrap min-w-max sm:min-w-0">
               <Button
-                key={section}
-                variant={selectedSection === section ? "default" : "outline"}
+                variant={selectedSection === null ? "default" : "outline"}
                 size="sm"
-                onClick={() => setSelectedSection(section)}
+                onClick={() => setSelectedSection(null)}
+                className="text-xs sm:text-sm h-7 sm:h-8 px-2 sm:px-3 flex-shrink-0"
               >
-                <div className={`w-2 h-2 rounded-full mr-2 ${sectionColors[section] || 'bg-gray-500'}`} />
-                {getSectionName(section)} ({responsesBySection[section].length})
+                Todas
               </Button>
-            ))}
+              {Object.keys(responsesBySection).map(section => (
+                <Button
+                  key={section}
+                  variant={selectedSection === section ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setSelectedSection(section)}
+                  className="text-xs sm:text-sm h-7 sm:h-8 px-2 sm:px-3 flex-shrink-0"
+                >
+                  <div className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full mr-1 sm:mr-2 ${sectionColors[section] || 'bg-gray-500'}`} />
+                  {getSectionName(section)} <span className="hidden sm:inline ml-1">({responsesBySection[section].length})</span>
+                </Button>
+              ))}
+            </div>
           </div>
 
-          <div className="flex flex-wrap gap-2">
-            <Button
-              variant={selectedDate === null ? "default" : "outline"}
-              size="sm"
-              onClick={() => setSelectedDate(null)}
-            >
-              Todas as Datas
-            </Button>
-            {Object.keys(responsesByDate).slice(0, 10).map(date => (
+          <div className="overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0">
+            <div className="flex gap-1.5 sm:gap-2 pb-2 sm:pb-0 sm:flex-wrap min-w-max sm:min-w-0">
               <Button
-                key={date}
-                variant={selectedDate === date ? "default" : "outline"}
+                variant={selectedDate === null ? "default" : "outline"}
                 size="sm"
-                onClick={() => setSelectedDate(date)}
+                onClick={() => setSelectedDate(null)}
+                className="text-xs sm:text-sm h-7 sm:h-8 px-2 sm:px-3 flex-shrink-0"
               >
-                {format(new Date(date), 'dd/MM', { locale: ptBR })} ({responsesByDate[date].length})
+                Todas Datas
               </Button>
-            ))}
+              {Object.keys(responsesByDate).slice(0, 7).map(date => (
+                <Button
+                  key={date}
+                  variant={selectedDate === date ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setSelectedDate(date)}
+                  className="text-xs sm:text-sm h-7 sm:h-8 px-2 sm:px-3 flex-shrink-0"
+                >
+                  {format(new Date(date), 'dd/MM', { locale: ptBR })}
+                </Button>
+              ))}
+            </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Lista de Respostas */}
+      {/* Lista de Respostas - Mobile Optimized */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="h-5 w-5" />
-            Histórico de Evolução ({filteredResponses.length} respostas)
+        <CardHeader className="p-3 sm:p-6">
+          <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
+            <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5" />
+            Histórico ({filteredResponses.length})
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
+        <CardContent className="p-3 sm:p-6 pt-0 sm:pt-0">
+          <div className="space-y-3 sm:space-y-4">
             {filteredResponses.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                <Eye className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>Nenhuma resposta encontrada com os filtros selecionados</p>
+              <div className="text-center py-6 sm:py-8 text-muted-foreground">
+                <Eye className="h-8 w-8 sm:h-12 sm:w-12 mx-auto mb-3 sm:mb-4 opacity-50" />
+                <p className="text-xs sm:text-sm">Nenhuma resposta encontrada</p>
               </div>
             ) : (
               filteredResponses.map((response, index) => (
-                <div key={response.id} className="border rounded-lg p-4 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
+                <div key={response.id} className="border rounded-lg p-3 sm:p-4 space-y-2">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
                       <Badge 
                         variant="secondary" 
-                        className={`${sectionColors[response.section] || 'bg-gray-500'} text-white`}
+                        className={`${sectionColors[response.section] || 'bg-gray-500'} text-white text-[10px] sm:text-xs`}
                       >
                         {getSectionName(response.section)}
                       </Badge>
-                      <span className="text-sm text-muted-foreground">
-                        {format(new Date(response.created_at), 'dd/MM/yyyy HH:mm', { locale: ptBR })}
+                      <span className="text-[10px] sm:text-sm text-muted-foreground">
+                        {format(new Date(response.created_at), 'dd/MM HH:mm', { locale: ptBR })}
                       </span>
-                      {response.session_attempt_id && (
-                        <Badge variant="outline" className="text-xs">
-                          Tentativa: {response.session_attempt_id.split('_').slice(-1)[0]}
-                        </Badge>
-                      )}
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <Award className="h-4 w-4 text-yellow-500" />
-                      <span className="font-semibold">+{response.points_earned} pts</span>
+                    <div className="flex items-center gap-1 sm:gap-2">
+                      <Award className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-yellow-500" />
+                      <span className="text-xs sm:text-sm font-semibold">+{response.points_earned}</span>
                     </div>
                   </div>
                   
-                  <div>
-                    <p className="text-sm font-medium">Pergunta: {response.question_id}</p>
-                    <p className="text-sm">Resposta: <span className="font-semibold">{response.answer}</span></p>
+                  <div className="space-y-1">
+                    <p className="text-xs sm:text-sm font-medium truncate">Pergunta: {response.question_id}</p>
+                    <p className="text-xs sm:text-sm">Resposta: <span className="font-semibold">{response.answer}</span></p>
                     {response.text_response && (
-                      <p className="text-xs text-muted-foreground mt-1">{response.text_response}</p>
+                      <p className="text-[10px] sm:text-xs text-muted-foreground line-clamp-2">{response.text_response}</p>
                     )}
                   </div>
                 </div>
