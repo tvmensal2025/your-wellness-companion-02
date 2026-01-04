@@ -2,7 +2,6 @@ import React, { useState, useEffect, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { 
-  MessageCircle, 
   Utensils, 
   Trophy,
   Bot
@@ -24,10 +23,14 @@ import {
   PremiumHealthRing,
   PremiumWeeklyMini,
   PremiumQuickActions,
-  PremiumFeatureCard,
-  PremiumDailyStats
+  PremiumFeatureCard
 } from './PremiumDashboardCards';
-import { SofiaProactiveCard } from '@/components/sofia/SofiaProactiveCard';
+// Gamification Components
+import { StreakBar } from '@/components/gamification/StreakBar';
+import { XPBar } from '@/components/gamification/XPBar';
+import { FlashChallengeCard } from '@/components/gamification/FlashChallengeCard';
+import { LiveRankingCard } from '@/components/gamification/LiveRankingCard';
+import { SofiaEmotionalBanner } from '@/components/sofia/SofiaEmotionalBanner';
 
 const DashboardOverview: React.FC = () => {
   const { measurements, stats, loading } = useWeightMeasurement();
@@ -187,9 +190,19 @@ const DashboardOverview: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/30">
-      <div className="mx-auto max-w-lg space-y-5 px-4 pb-28 pt-2">
+      <div className="mx-auto max-w-lg space-y-4 px-4 pb-28 pt-2">
         
-        {/* Hero Card */}
+        {/* Sofia Emotional Banner - Mensagem do dia */}
+        <SofiaEmotionalBanner />
+
+        {/* Streak + XP Bar */}
+        <StreakBar />
+        <XPBar />
+
+        {/* Desafio Relâmpago 24h */}
+        <FlashChallengeCard />
+
+        {/* Hero Card - Resumo */}
         <PremiumHeroCard 
           weight={currentWeight}
           calories={1850}
@@ -216,8 +229,8 @@ const DashboardOverview: React.FC = () => {
           onAddWeight={() => setIsWeightModalOpen(true)}
         />
 
-        {/* Sofia Proactive Insights */}
-        <SofiaProactiveCard />
+        {/* Ranking Social */}
+        <LiveRankingCard />
 
         {/* Feature Cards */}
         <motion.div
