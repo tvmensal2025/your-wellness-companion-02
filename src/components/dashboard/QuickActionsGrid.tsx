@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Scale, Bot, Apple, Trophy, FileText, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAnamnesisStatus } from '@/hooks/useAnamnesisStatus';
 
 interface QuickActionsGridProps {
   onWeightClick: () => void;
@@ -9,50 +10,60 @@ interface QuickActionsGridProps {
 
 export const QuickActionsGrid: React.FC<QuickActionsGridProps> = ({ onWeightClick }) => {
   const navigate = useNavigate();
+  const { hasCompletedAnamnesis } = useAnamnesisStatus();
 
-  const actions = [
-    {
-      icon: Scale,
-      label: 'Registrar Peso',
-      description: 'Acompanhe sua evolução',
-      gradient: 'from-emerald-500 to-teal-600',
-      shadow: 'shadow-emerald-500/20',
-      onClick: onWeightClick,
-      primary: true
-    },
-    {
-      icon: Bot,
-      label: 'Sofia IA',
-      description: 'Tire suas dúvidas',
-      gradient: 'from-violet-500 to-purple-600',
-      shadow: 'shadow-violet-500/20',
-      onClick: () => navigate('/sofia')
-    },
-    {
-      icon: Apple,
-      label: 'Nutrição',
-      description: 'Plano alimentar',
-      gradient: 'from-rose-500 to-pink-600',
-      shadow: 'shadow-rose-500/20',
-      onClick: () => navigate('/nutricao')
-    },
-    {
-      icon: Trophy,
-      label: 'Desafios',
-      description: 'Ganhe pontos',
-      gradient: 'from-amber-500 to-orange-600',
-      shadow: 'shadow-amber-500/20',
-      onClick: () => navigate('/app/goals')
-    },
-    {
-      icon: FileText,
-      label: 'Anamnese',
-      description: 'Atualize seu perfil',
-      gradient: 'from-blue-500 to-cyan-600',
-      shadow: 'shadow-blue-500/20',
-      onClick: () => navigate('/anamnesis')
+  const actions = useMemo(() => {
+    const baseActions = [
+      {
+        icon: Scale,
+        label: 'Registrar Peso',
+        description: 'Acompanhe sua evolução',
+        gradient: 'from-emerald-500 to-teal-600',
+        shadow: 'shadow-emerald-500/20',
+        onClick: onWeightClick,
+        primary: true
+      },
+      {
+        icon: Bot,
+        label: 'Sofia IA',
+        description: 'Tire suas dúvidas',
+        gradient: 'from-violet-500 to-purple-600',
+        shadow: 'shadow-violet-500/20',
+        onClick: () => navigate('/sofia')
+      },
+      {
+        icon: Apple,
+        label: 'Nutrição',
+        description: 'Plano alimentar',
+        gradient: 'from-rose-500 to-pink-600',
+        shadow: 'shadow-rose-500/20',
+        onClick: () => navigate('/nutricao')
+      },
+      {
+        icon: Trophy,
+        label: 'Desafios',
+        description: 'Ganhe pontos',
+        gradient: 'from-amber-500 to-orange-600',
+        shadow: 'shadow-amber-500/20',
+        onClick: () => navigate('/app/goals')
+      }
+    ];
+
+    // Only show anamnesis button if not completed yet
+    if (!hasCompletedAnamnesis) {
+      baseActions.push({
+        icon: FileText,
+        label: 'Anamnese',
+        description: 'Complete seu perfil',
+        gradient: 'from-blue-500 to-cyan-600',
+        shadow: 'shadow-blue-500/20',
+        onClick: () => navigate('/anamnesis'),
+        primary: false
+      });
     }
-  ];
+
+    return baseActions;
+  }, [hasCompletedAnamnesis, navigate, onWeightClick]);
 
   return (
     <div className="space-y-3">
