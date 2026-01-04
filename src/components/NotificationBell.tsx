@@ -71,54 +71,82 @@ export const NotificationBell: React.FC = () => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
-          <Bell className={`h-7 w-7 transition-all duration-300 ${unreadCount > 0 ? 'animate-[bell-ring_1s_ease-in-out_infinite] text-primary' : ''}`} />
+        <Button variant="ghost" size="icon" className="relative hover:bg-primary/10 transition-colors">
+          <Bell className={`h-6 w-6 transition-all duration-300 ${unreadCount > 0 ? 'animate-[bell-ring_1s_ease-in-out_infinite] text-primary' : 'text-muted-foreground'}`} />
           {unreadCount > 0 && (
-            <Badge 
-              variant="destructive" 
-              className="absolute -top-1 -right-1 h-6 w-6 p-0 flex items-center justify-center text-sm font-bold animate-pulse"
-            >
-              {unreadCount > 9 ? '9+' : unreadCount}
-            </Badge>
-          )}
-          {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-primary animate-ping" />
+            <>
+              <Badge 
+                variant="destructive" 
+                className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center text-xs font-bold animate-pulse shadow-lg"
+              >
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </Badge>
+              <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-destructive animate-ping opacity-50" />
+            </>
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-80">
-        <div className="p-2 border-b">
-          <h3 className="font-semibold">Notificações</h3>
+      <DropdownMenuContent align="end" className="w-80 p-0 overflow-hidden rounded-xl shadow-xl border-border/50">
+        {/* Header com gradiente */}
+        <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-4 border-b border-border/50">
+          <div className="flex items-center gap-2">
+            <div className="p-2 bg-primary/10 rounded-full">
+              <Bell className="h-4 w-4 text-primary" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-foreground">Notificações</h3>
+              <p className="text-xs text-muted-foreground">
+                {unreadCount > 0 ? `${unreadCount} nova${unreadCount > 1 ? 's' : ''}` : 'Tudo em dia!'}
+              </p>
+            </div>
+          </div>
         </div>
         
         {notifications.length === 0 ? (
-          <div className="p-4 text-center text-muted-foreground">
-            <Bell className="h-8 w-8 mx-auto mb-2 opacity-50" />
-            <p>Nenhuma notificação</p>
+          <div className="p-6 text-center">
+            <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-muted/50 flex items-center justify-center">
+              <Bell className="h-6 w-6 text-muted-foreground/50" />
+            </div>
+            <p className="text-muted-foreground text-sm">Nenhuma notificação</p>
           </div>
         ) : (
-          <div className="max-h-96 overflow-y-auto">
-            {notifications.map((notification) => (
+          <div className="max-h-80 overflow-y-auto">
+            {notifications.map((notification, index) => (
               <DropdownMenuItem
                 key={notification.id}
-                className="p-3 cursor-pointer hover:bg-muted"
+                className={`p-4 cursor-pointer border-b border-border/30 last:border-0 focus:bg-primary/5 transition-colors ${
+                  !notification.is_read ? 'bg-primary/5' : ''
+                }`}
                 onClick={() => markAsRead(notification.id)}
               >
-                <div className="w-full">
-                  <div className="flex items-start justify-between">
-                    <h4 className="font-medium text-sm line-clamp-1">
-                      {notification.title}
-                    </h4>
-                    {!notification.is_read && (
-                      <div className="w-2 h-2 bg-primary rounded-full flex-shrink-0 ml-2" />
-                    )}
+                <div className="flex gap-3 w-full">
+                  <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
+                    notification.title.includes('Sofia') 
+                      ? 'bg-gradient-to-br from-primary/20 to-primary/5' 
+                      : notification.title.includes('Lembrete')
+                        ? 'bg-gradient-to-br from-amber-500/20 to-amber-500/5'
+                        : 'bg-gradient-to-br from-green-500/20 to-green-500/5'
+                  }`}>
+                    <span className="text-lg">
+                      {notification.title.includes('Sofia') ? '💡' : notification.title.includes('Lembrete') ? '⏰' : '🎯'}
+                    </span>
                   </div>
-                  <p className="text-sm text-muted-foreground line-clamp-2 mt-1">
-                    {notification.message}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    {formatDate(notification.created_at)}
-                  </p>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-medium text-sm text-foreground">
+                        {notification.title}
+                      </h4>
+                      {!notification.is_read && (
+                        <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+                      )}
+                    </div>
+                    <p className="text-sm text-muted-foreground line-clamp-2 mt-0.5">
+                      {notification.message}
+                    </p>
+                    <p className="text-xs text-muted-foreground/70 mt-1.5">
+                      {formatDate(notification.created_at)}
+                    </p>
+                  </div>
                 </div>
               </DropdownMenuItem>
             ))}
@@ -126,17 +154,17 @@ export const NotificationBell: React.FC = () => {
         )}
         
         {notifications.length > 0 && (
-          <div className="p-2 border-t">
+          <div className="p-3 border-t border-border/50 bg-muted/30">
             <Button 
               variant="ghost" 
               size="sm" 
-              className="w-full"
+              className="w-full text-primary hover:text-primary hover:bg-primary/10 font-medium"
               onClick={() => {
                 setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
                 setUnreadCount(0);
               }}
             >
-              Marcar todas como lidas
+              ✓ Marcar todas como lidas
             </Button>
           </div>
         )}
