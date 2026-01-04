@@ -88,12 +88,37 @@ function validateRequestPayload(payload: any): RequestPayload {
   return validated;
 }
 
+// Verificar se o usuário existe em auth.users
+async function verifyUserExists(
+  supabase: any,
+  userId: string
+): Promise<boolean> {
+  console.log('🔍 Verificando se usuário existe:', userId);
+  
+  // Usar admin API para verificar usuário
+  const { data: authUser, error: authError } = await supabase.auth.admin.getUserById(userId);
+  
+  if (authError || !authUser?.user) {
+    console.error('❌ Usuário não encontrado em auth.users:', authError?.message || 'ID não existe');
+    return false;
+  }
+  
+  console.log('✅ Usuário verificado:', authUser.user.email);
+  return true;
+}
+
 // Criar documento com dados completos e validação
 async function createDocument(
   supabase: any, 
   payload: RequestPayload
 ): Promise<string> {
   console.log('📝 Criando novo documento médico...');
+  
+  // IMPORTANTE: Verificar se o usuário existe antes de criar o documento
+  const userExists = await verifyUserExists(supabase, payload.userId);
+  if (!userExists) {
+    throw new Error(`Usuário não encontrado: ${payload.userId}. Verifique se você está autenticado corretamente.`);
+  }
   
   const documentData = {
     user_id: payload.userId,
