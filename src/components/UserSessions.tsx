@@ -101,20 +101,34 @@ export default function UserSessions({ user }: UserSessionsProps) {
         return;
       }
 
-      // Verificar perfil do usuário
-      const { data: profile, error: profileError } = await supabase
+      // Verificar perfil do usuário - criar se não existir
+      let { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('*')
         .eq('user_id', currentUser.id)
-        .single();
+        .maybeSingle();
       
-      if (profileError) {
-        toast({
-          title: "Perfil não encontrado",
-          description: "Não foi possível encontrar seu perfil. Entre em contato com o suporte.",
-          variant: "destructive"
-        });
-        return;
+      if (profileError && profileError.code !== 'PGRST116') {
+        console.error('Erro ao buscar perfil:', profileError);
+      }
+
+      // Criar perfil automaticamente se não existir
+      if (!profile) {
+        const { data: newProfile, error: createError } = await supabase
+          .from('profiles')
+          .insert({
+            user_id: currentUser.id,
+            email: currentUser.email,
+            full_name: currentUser.user_metadata?.full_name || currentUser.email?.split('@')[0] || 'Usuário',
+          })
+          .select()
+          .single();
+        
+        if (createError) {
+          console.error('Erro ao criar perfil:', createError);
+        } else {
+          profile = newProfile;
+        }
       }
 
       // Buscar sessões do usuário com logs detalhados
