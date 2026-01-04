@@ -57,13 +57,18 @@ export const GoogleFitCallback: React.FC = () => {
       }
 
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) {
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError) throw sessionError;
+        if (!sessionData.session) {
           throw new Error('Você precisa estar logado para concluir a conexão.');
         }
 
+        if (sessionData.session.expires_at && sessionData.session.expires_at * 1000 < Date.now() + 60_000) {
+          const { error: refreshError } = await supabase.auth.refreshSession();
+          if (refreshError) throw refreshError;
+        }
+
         const { data, error: fnError } = await supabase.functions.invoke('google-fit-token', {
-          headers: { Authorization: `Bearer ${session.access_token}` },
           body: { code, redirect_uri: redirectUri },
         });
 

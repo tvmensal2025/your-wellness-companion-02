@@ -57,52 +57,53 @@ export const useGoogleFit = () => {
   const connectGoogleFit = async () => {
     setIsLoading(true);
     try {
-      // Verificar se o usuário está autenticado
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      
-      if (authError || !user) {
-        console.error('❌ Usuário não autenticado:', authError?.message);
+      // Garantir sessão válida (evita 401 por token expirado)
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError) throw sessionError;
+
+      const session = sessionData.session;
+      if (!session) {
         toast({
           title: "❌ Erro de autenticação",
           description: "Por favor, faça login primeiro",
-          variant: "destructive"
+          variant: "destructive",
         });
         return;
       }
-      
-      // Obter token de sessão
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      
-      if (sessionError || !session) {
-        console.error('❌ Erro ao obter sessão:', sessionError?.message);
-        toast({
-          title: "❌ Erro de sessão",
-          description: "Sessão expirada. Faça login novamente",
-          variant: "destructive"
-        });
-        return;
+
+      // Se estiver perto de expirar, tenta renovar
+      if (session.expires_at && session.expires_at * 1000 < Date.now() + 60_000) {
+        const { error: refreshError } = await supabase.auth.refreshSession();
+        if (refreshError) throw refreshError;
       }
-      
-      // Chamar Edge Function para conectar Google Fit
+
+      // Chamar função do backend (o client injeta Authorization automaticamente quando logado)
       const { data, error } = await supabase.functions.invoke('google-fit-token', {
-        headers: { Authorization: `Bearer ${session.access_token}` }, body: { action: 'connect' }
+        body: { action: 'connect' },
       });
 
       if (error) {
-        console.error('❌ Erro na Edge Function:', error);
+        const status = (error as any)?.status;
+        if (status === 401) {
+          await supabase.auth.signOut();
+          toast({
+            title: "Sessão expirada",
+            description: "Faça login novamente para conectar o Google Fit.",
+            variant: "destructive",
+          });
+          return;
+        }
         throw error;
       }
 
       if (data?.authUrl) {
-        // Redirecionar diretamente para o Google (sem popup)
         console.log('🔗 Redirecionando para autorização Google Fit...');
         window.location.href = data.authUrl;
       } else {
-        console.error('❌ URL de autorização não encontrada na resposta');
         toast({
           title: "❌ Erro",
-          description: "Não foi possível obter URL de autorização do Google Fit",
-          variant: "destructive"
+          description: "Não foi possível obter a URL de autorização do Google Fit",
+          variant: "destructive",
         });
       }
     } catch (error) {
@@ -110,7 +111,7 @@ export const useGoogleFit = () => {
       toast({
         title: "❌ Erro",
         description: "Erro ao conectar com Google Fit",
-        variant: "destructive"
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
