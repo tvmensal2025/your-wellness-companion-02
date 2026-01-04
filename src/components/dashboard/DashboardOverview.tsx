@@ -216,13 +216,6 @@ const DashboardOverview: React.FC = () => {
           onAddWeight={() => setIsWeightModalOpen(true)}
         />
 
-        {/* Daily Stats */}
-        <PremiumDailyStats 
-          exerciseMinutes={weeklyStats.totalMinutes}
-          waterLiters={Number(weeklyStats.waterLiters)}
-          sleepHours={sleepHours || 0}
-        />
-
         {/* Sofia Proactive Insights */}
         <SofiaProactiveCard />
 
