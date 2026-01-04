@@ -807,21 +807,21 @@ const SaboteurTest: React.FC = () => {
   return (
     <div className="px-4 pt-2 pb-4 space-y-4">
       {/* Header */}
-      <div className="text-center space-y-2">
+      <div className="text-center space-y-1">
         <div className="flex items-center justify-center gap-2">
-          <Brain className="h-7 w-7 lg:h-8 lg:w-8 text-primary" />
-          <h1 className="mobile-text-xl font-bold">Teste de Sabotadores</h1>
+          <Brain className="h-6 w-6 text-primary" />
+          <h1 className="text-base font-semibold">Teste de Sabotadores</h1>
         </div>
-        <p className="text-muted-foreground mobile-text-base">
-          Identifique os padrões que podem estar sabotando seu progresso
+        <p className="text-muted-foreground text-xs">
+          Identifique os padrões que sabotam seu progresso
         </p>
       </div>
 
       {/* Progress */}
       <Card className="health-card">
-        <CardContent className="pt-4">
-          <div className="space-y-3">
-            <div className="flex justify-between text-xs">
+        <CardContent className="pt-2 pb-3">
+          <div className="space-y-2">
+            <div className="flex justify-between text-[11px]">
               <span>Questão {currentQuestion + 1} de {saboteurQuestions.length}</span>
               <span>{Math.round(progress)}% completo</span>
             </div>
