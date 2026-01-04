@@ -1,300 +1,366 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Scale, Target, Droplets, Activity, TrendingUp, TrendingDown, Minus, Heart, Flame, Moon } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
+import { 
+  Scale, 
+  Flame, 
+  Droplets, 
+  Moon, 
+  TrendingUp,
+  Activity,
+  Target,
+  Zap,
+  ChevronRight,
+  Sparkles,
+  Heart
+} from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
-interface MetricCardProps {
-  title: string;
-  value: string | number;
-  unit?: string;
-  subtitle?: string;
-  change?: number;
-  icon: React.ComponentType<{ className?: string }>;
-  gradient: string;
-  iconBg: string;
-  delay?: number;
-}
-
-export const PremiumMetricCard: React.FC<MetricCardProps> = ({
-  title,
-  value,
-  unit,
-  subtitle,
-  change,
-  icon: Icon,
-  gradient,
-  iconBg,
-  delay = 0
-}) => {
-  const getTrendIcon = () => {
-    if (!change || change === 0) return <Minus className="w-3 h-3" />;
-    return change > 0 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />;
-  };
-
-  const getTrendColor = () => {
-    if (!change || change === 0) return 'text-muted-foreground';
-    return change > 0 ? 'text-red-500' : 'text-emerald-500';
-  };
-
+// Premium Hero Card - Glassmorphism style
+export const PremiumHeroCard: React.FC<{
+  weight?: number | string;
+  calories?: number;
+  water?: number;
+  sleep?: number;
+  weightChange?: string;
+}> = ({ weight, calories, water, sleep, weightChange }) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay }}
+      className="relative overflow-hidden rounded-[28px] bg-gradient-to-br from-primary via-primary/95 to-violet-600 p-5 text-white shadow-2xl"
     >
-      <Card className={`relative overflow-hidden border-0 shadow-lg ${gradient}`}>
-        <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
-        
-        <CardContent className="p-4 relative">
-          <div className="flex items-start justify-between mb-3">
-            <div className={`p-2.5 rounded-xl ${iconBg}`}>
-              <Icon className="w-5 h-5 text-white" />
-            </div>
-            {change !== undefined && (
-              <div className={`flex items-center gap-1 text-xs font-medium ${getTrendColor()}`}>
-                {getTrendIcon()}
-                <span>{Math.abs(change)}%</span>
-              </div>
-            )}
+      {/* Animated orbs */}
+      <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10 blur-3xl animate-pulse" />
+      <div className="absolute -bottom-8 -left-8 h-32 w-32 rounded-full bg-violet-300/20 blur-2xl" />
+      <div className="absolute right-1/3 top-1/2 h-20 w-20 rounded-full bg-white/5 blur-xl" />
+      
+      <div className="relative z-10">
+        {/* Header */}
+        <div className="mb-5 flex items-center gap-2.5">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/15 backdrop-blur-md shadow-inner">
+            <Sparkles className="h-4.5 w-4.5" />
           </div>
-          
-          <h3 className="text-sm font-medium text-white/80 mb-1">{title}</h3>
-          
-          <div className="flex items-baseline gap-1">
-            <span className="text-3xl font-bold text-white">{value}</span>
-            {unit && <span className="text-lg text-white/70">{unit}</span>}
+          <div>
+            <span className="text-sm font-semibold">Resumo de Hoje</span>
+            <p className="text-[11px] text-white/60">Atualizado agora</p>
           </div>
-          
-          {subtitle && (
-            <p className="text-xs text-white/60 mt-2">{subtitle}</p>
-          )}
-        </CardContent>
-      </Card>
+        </div>
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-2 gap-4">
+          <HeroStat 
+            icon={Scale} 
+            label="Peso" 
+            value={weight ? `${weight}` : '--'} 
+            unit="kg"
+            subtext={weightChange || 'Primeiro registro'}
+          />
+          <HeroStat 
+            icon={Flame} 
+            label="Calorias" 
+            value={calories ? `${calories}` : '--'} 
+            unit="kcal"
+          />
+          <HeroStat 
+            icon={Droplets} 
+            label="Água" 
+            value={water ? `${(water/1000).toFixed(1)}` : '--'} 
+            unit="L"
+          />
+          <HeroStat 
+            icon={Moon} 
+            label="Sono" 
+            value={sleep ? `${sleep}` : '--'} 
+            unit="h"
+          />
+        </div>
+      </div>
     </motion.div>
   );
 };
 
-interface BodyMetricsCardProps {
-  imc: number | string;
-  imcClass: string;
-  muscleMass?: number;
-  metabolism?: number;
-  fatPercentage?: number;
-  visceralFat?: number;
-  metabolicAge?: number;
-  delay?: number;
-}
+const HeroStat: React.FC<{
+  icon: React.ElementType;
+  label: string;
+  value: string;
+  unit: string;
+  subtext?: string;
+}> = ({ icon: Icon, label, value, unit, subtext }) => (
+  <div className="flex items-center gap-3">
+    <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/10 backdrop-blur-sm border border-white/10">
+      <Icon className="h-5 w-5 text-white/90" />
+    </div>
+    <div className="min-w-0 flex-1">
+      <p className="text-[11px] text-white/60 uppercase tracking-wide">{label}</p>
+      <div className="flex items-baseline gap-1">
+        <span className="text-xl font-bold tracking-tight">{value}</span>
+        <span className="text-xs text-white/50">{unit}</span>
+      </div>
+      {subtext && <p className="text-[10px] text-white/40 truncate">{subtext}</p>}
+    </div>
+  </div>
+);
 
-export const PremiumBodyMetricsCard: React.FC<BodyMetricsCardProps> = ({
-  imc,
-  imcClass,
-  muscleMass,
-  metabolism,
-  fatPercentage,
-  visceralFat,
-  metabolicAge,
-  delay = 0
-}) => {
-  const getImcColor = (classification: string) => {
-    switch (classification.toLowerCase()) {
-      case 'abaixo do peso': return 'bg-yellow-500';
-      case 'normal': return 'bg-emerald-500';
-      case 'sobrepeso': return 'bg-orange-500';
-      case 'obesidade': return 'bg-red-500';
-      default: return 'bg-gray-500';
-    }
+// Premium Health Score Circle
+export const PremiumHealthRing: React.FC<{
+  score: number;
+  label?: string;
+}> = ({ score = 75, label = "Score" }) => {
+  const circumference = 2 * Math.PI * 40;
+  const strokeDashoffset = circumference - (score / 100) * circumference;
+  
+  const getScoreColor = (s: number) => {
+    if (s >= 80) return '#10B981';
+    if (s >= 60) return '#F59E0B';
+    return '#EF4444';
   };
+
+  const color = getScoreColor(score);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ delay: 0.1 }}
+      className="relative flex flex-col items-center justify-center rounded-[24px] bg-card/80 backdrop-blur-md p-4 border border-border/40 shadow-lg"
+    >
+      <div className="relative h-24 w-24">
+        <svg className="h-full w-full -rotate-90">
+          <circle
+            cx="48"
+            cy="48"
+            r="40"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="6"
+            className="text-muted/20"
+          />
+          <motion.circle
+            cx="48"
+            cy="48"
+            r="40"
+            fill="none"
+            stroke={color}
+            strokeWidth="6"
+            strokeLinecap="round"
+            strokeDasharray={circumference}
+            initial={{ strokeDashoffset: circumference }}
+            animate={{ strokeDashoffset }}
+            transition={{ duration: 1.5, ease: "easeOut" }}
+          />
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <span className="text-2xl font-bold" style={{ color }}>{score}</span>
+          <span className="text-[10px] text-muted-foreground uppercase tracking-wide">{label}</span>
+        </div>
+      </div>
+      <div className="mt-2 flex items-center gap-1 text-[10px] text-muted-foreground">
+        <TrendingUp className="h-3 w-3 text-emerald-500" />
+        <span>+5 pts</span>
+      </div>
+    </motion.div>
+  );
+};
+
+// Premium Weekly Mini Bars
+export const PremiumWeeklyMini: React.FC<{
+  days?: { day: string; value: number }[];
+  exerciseDays?: number;
+  hydrationProgress?: number;
+}> = ({ days, exerciseDays = 3, hydrationProgress = 65 }) => {
+  const defaultDays = [
+    { day: 'S', value: 90 },
+    { day: 'T', value: 100 },
+    { day: 'Q', value: 70 },
+    { day: 'Q', value: 50 },
+    { day: 'S', value: 0 },
+    { day: 'S', value: 0 },
+    { day: 'D', value: 0 },
+  ];
+
+  const displayDays = days || defaultDays;
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay }}
+      transition={{ delay: 0.15 }}
+      className="rounded-[24px] bg-card/80 backdrop-blur-md border border-border/40 p-4 shadow-lg"
     >
-      <Card className="relative overflow-hidden border-0 shadow-lg bg-gradient-to-br from-teal-500 to-cyan-600">
-        <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
-        
-        <CardContent className="p-4 relative">
-          <div className="flex items-start justify-between mb-3">
-            <div className="p-2.5 rounded-xl bg-white/20">
-              <Target className="w-5 h-5 text-white" />
+      <div className="flex items-center justify-between mb-3">
+        <div>
+          <h3 className="text-sm font-semibold text-foreground">Semana</h3>
+          <p className="text-[10px] text-muted-foreground">{exerciseDays}/7 dias ativos</p>
+        </div>
+        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/10">
+          <Target className="h-4 w-4 text-primary" />
+        </div>
+      </div>
+
+      {/* Mini bar chart */}
+      <div className="flex justify-between items-end gap-1.5 h-14 mb-3">
+        {displayDays.map((day, i) => (
+          <div key={i} className="flex-1 flex flex-col items-center gap-1">
+            <div className="w-full h-10 bg-muted/30 rounded-full overflow-hidden flex flex-col-reverse">
+              <motion.div
+                className={`w-full rounded-full ${day.value > 0 ? 'bg-gradient-to-t from-primary to-primary/70' : 'bg-muted/40'}`}
+                initial={{ height: 0 }}
+                animate={{ height: `${day.value}%` }}
+                transition={{ delay: 0.3 + i * 0.05, duration: 0.4 }}
+              />
             </div>
-            <span className={`px-2 py-0.5 text-xs font-semibold text-white rounded-full ${getImcColor(imcClass)}`}>
-              {imcClass}
+            <span className={`text-[9px] font-medium ${day.value > 0 ? 'text-primary' : 'text-muted-foreground/60'}`}>
+              {day.day}
             </span>
           </div>
-          
-          <h3 className="text-sm font-medium text-white/80 mb-1">Métricas Corporais</h3>
-          
-          <div className="flex items-baseline gap-1 mb-3">
-            <span className="text-3xl font-bold text-white">{imc}</span>
-            <span className="text-lg text-white/70">IMC</span>
-          </div>
+        ))}
+      </div>
 
-          <div className="grid grid-cols-2 gap-2">
-            <MetricItem label="Massa Magra" value={muscleMass ? `${muscleMass.toFixed(1)}kg` : 'N/A'} color="text-emerald-200" />
-            <MetricItem label="Metabolismo" value={metabolism ? `${Math.round(metabolism)}` : 'N/A'} color="text-orange-200" />
-            <MetricItem label="Gordura" value={fatPercentage ? `${fatPercentage.toFixed(1)}%` : 'N/A'} color="text-yellow-200" />
-            <MetricItem label="Idade Met." value={metabolicAge ? `${metabolicAge}` : 'N/A'} color="text-blue-200" />
-          </div>
-          
-          {visceralFat !== undefined && (
-            <div className="mt-2 pt-2 border-t border-white/20">
-              <MetricItem label="Gordura Visceral" value={visceralFat ? `${visceralFat}` : 'N/A'} color="text-pink-200" />
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      {/* Stats row */}
+      <div className="flex justify-between text-center pt-2 border-t border-border/30">
+        <div>
+          <span className="text-sm font-bold text-foreground">{hydrationProgress}%</span>
+          <p className="text-[9px] text-muted-foreground">Hidratação</p>
+        </div>
+        <div>
+          <span className="text-sm font-bold text-foreground">{exerciseDays}/7</span>
+          <p className="text-[9px] text-muted-foreground">Exercícios</p>
+        </div>
+        <div>
+          <span className="text-sm font-bold text-emerald-500">Bom</span>
+          <p className="text-[9px] text-muted-foreground">Status</p>
+        </div>
+      </div>
     </motion.div>
   );
 };
 
-const MetricItem: React.FC<{ label: string; value: string; color: string }> = ({ label, value, color }) => (
-  <div className="text-center">
-    <span className={`text-lg font-bold ${color}`}>{value}</span>
-    <p className="text-xs text-white/60">{label}</p>
-  </div>
-);
-
-interface WeeklyProgressCardProps {
-  progress: number;
-  exerciseDays: number;
-  hydrationProgress: number;
-  weightChange: number;
-  totalExerciseMinutes?: number;
-  delay?: number;
-}
-
-export const PremiumWeeklyProgressCard: React.FC<WeeklyProgressCardProps> = ({
-  progress,
-  exerciseDays,
-  hydrationProgress,
-  weightChange,
-  totalExerciseMinutes = 0,
-  delay = 0
-}) => {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay }}
-      className="col-span-full"
-    >
-      <Card className="relative overflow-hidden border-0 shadow-lg bg-gradient-to-r from-violet-500 via-purple-500 to-fuchsia-500">
-        <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent" />
-        
-        <CardContent className="p-4 relative">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-xl bg-white/20">
-                <Activity className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h3 className="text-base font-semibold text-white">Progresso Semanal</h3>
-                <p className="text-xs text-white/60">Continue assim!</p>
-              </div>
-            </div>
-            <div className="text-right">
-              <span className="text-3xl font-bold text-white">{progress}%</span>
-            </div>
-          </div>
-
-          <div className="w-full bg-white/20 rounded-full h-2 mb-4">
-            <motion.div 
-              className="bg-white rounded-full h-2"
-              initial={{ width: 0 }}
-              animate={{ width: `${progress}%` }}
-              transition={{ duration: 0.8, delay: delay + 0.2 }}
-            />
-          </div>
-
-          <div className="grid grid-cols-4 gap-2">
-            <ProgressItem 
-              icon={<Activity className="w-4 h-4" />} 
-              label="Exercícios" 
-              value={`${exerciseDays}/7`}
-              subValue={`${totalExerciseMinutes}min`}
-            />
-            <ProgressItem 
-              icon={<Droplets className="w-4 h-4" />} 
-              label="Hidratação" 
-              value={`${hydrationProgress}%`}
-            />
-            <ProgressItem 
-              icon={<Scale className="w-4 h-4" />} 
-              label="Peso" 
-              value={`${weightChange > 0 ? '+' : ''}${weightChange}kg`}
-            />
-            <ProgressItem 
-              icon={<Heart className="w-4 h-4" />} 
-              label="Saúde" 
-              value="Bom"
-            />
-          </div>
-        </CardContent>
-      </Card>
-    </motion.div>
-  );
-};
-
-const ProgressItem: React.FC<{ 
-  icon: React.ReactNode; 
-  label: string; 
-  value: string;
-  subValue?: string;
-}> = ({ icon, label, value, subValue }) => (
-  <div className="text-center">
-    <div className="flex justify-center mb-1 text-white/80">{icon}</div>
-    <span className="text-sm font-bold text-white">{value}</span>
-    {subValue && <span className="text-xs text-white/60 block">{subValue}</span>}
-    <p className="text-xs text-white/60">{label}</p>
-  </div>
-);
-
-interface QuickActionsProps {
+// Premium Quick Action Buttons
+export const PremiumQuickActions: React.FC<{
   onAddWeight: () => void;
   onAddExercise: () => void;
   delay?: number;
-}
-
-export const PremiumQuickActions: React.FC<QuickActionsProps> = ({
-  onAddWeight,
-  onAddExercise,
-  delay = 0
-}) => {
+}> = ({ onAddWeight, onAddExercise, delay = 0.2 }) => {
+  const navigate = useNavigate();
+  
   const actions = [
-    { icon: Scale, label: 'Registrar Peso', color: 'from-blue-500 to-indigo-600', onClick: onAddWeight },
-    { icon: Activity, label: 'Adicionar Exercício', color: 'from-green-500 to-emerald-600', onClick: onAddExercise },
-    { icon: Droplets, label: 'Registrar Água', color: 'from-cyan-500 to-blue-600', onClick: () => {} },
-    { icon: Moon, label: 'Registrar Sono', color: 'from-purple-500 to-violet-600', onClick: () => {} },
+    { 
+      icon: Scale, 
+      label: 'Peso', 
+      gradient: 'from-violet-500 to-purple-600',
+      shadow: 'shadow-violet-500/30',
+      action: onAddWeight
+    },
+    { 
+      icon: Activity, 
+      label: 'Exercício', 
+      gradient: 'from-orange-500 to-red-500',
+      shadow: 'shadow-orange-500/30',
+      action: onAddExercise
+    },
+    { 
+      icon: Droplets, 
+      label: 'Água', 
+      gradient: 'from-cyan-500 to-blue-500',
+      shadow: 'shadow-cyan-500/30',
+      action: () => navigate('/goals')
+    },
+    { 
+      icon: Moon, 
+      label: 'Sono', 
+      gradient: 'from-indigo-500 to-purple-600',
+      shadow: 'shadow-indigo-500/30',
+      action: () => navigate('/goals')
+    },
   ];
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay }}
-      className="col-span-full"
+      transition={{ delay }}
+      className="space-y-2.5"
     >
-      <Card className="border-0 shadow-lg bg-card">
-        <CardContent className="p-4">
-          <h3 className="text-sm font-semibold text-foreground mb-3">Ações Rápidas</h3>
-          <div className="grid grid-cols-4 gap-2">
-            {actions.map((action, index) => (
-              <motion.button
-                key={action.label}
-                onClick={action.onClick}
-                className={`flex flex-col items-center justify-center p-3 rounded-xl bg-gradient-to-br ${action.color} text-white shadow-md`}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <action.icon className="w-5 h-5 mb-1" />
-                <span className="text-xs font-medium text-center leading-tight">{action.label}</span>
-              </motion.button>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">Registrar</h3>
+      <div className="grid grid-cols-4 gap-3">
+        {actions.map((action, i) => (
+          <motion.button
+            key={i}
+            whileTap={{ scale: 0.92 }}
+            onClick={action.action}
+            className="group flex flex-col items-center gap-1.5"
+          >
+            <div className={`flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br ${action.gradient} shadow-lg ${action.shadow} transition-all duration-200 group-active:scale-95`}>
+              <action.icon className="h-6 w-6 text-white" />
+            </div>
+            <span className="text-[11px] font-medium text-muted-foreground">{action.label}</span>
+          </motion.button>
+        ))}
+      </div>
     </motion.div>
   );
 };
+
+// Premium Feature Card
+export const PremiumFeatureCard: React.FC<{
+  icon: React.ElementType;
+  title: string;
+  subtitle: string;
+  gradient: string;
+  shadowColor: string;
+  onClick?: () => void;
+}> = ({ icon: Icon, title, subtitle, gradient, shadowColor, onClick }) => (
+  <motion.button
+    whileTap={{ scale: 0.98 }}
+    onClick={onClick}
+    className={`relative w-full overflow-hidden rounded-2xl bg-gradient-to-br ${gradient} p-4 text-left text-white shadow-xl ${shadowColor}`}
+  >
+    <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-white/10 blur-2xl" />
+    <div className="absolute bottom-0 left-0 right-0 h-1/2 bg-gradient-to-t from-black/20 to-transparent" />
+    
+    <div className="relative z-10 flex items-center justify-between">
+      <div className="flex items-center gap-3">
+        <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm border border-white/10">
+          <Icon className="h-5 w-5" />
+        </div>
+        <div>
+          <h4 className="font-semibold text-[15px]">{title}</h4>
+          <p className="text-[11px] text-white/70">{subtitle}</p>
+        </div>
+      </div>
+      <ChevronRight className="h-5 w-5 text-white/50" />
+    </div>
+  </motion.button>
+);
+
+// Compact Daily Stats
+export const PremiumDailyStats: React.FC<{
+  exerciseMinutes: number;
+  waterLiters: number;
+  sleepHours: number;
+}> = ({ exerciseMinutes, waterLiters, sleepHours }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: 0.35 }}
+    className="grid grid-cols-3 gap-2"
+  >
+    <StatPill icon={Activity} value={`${exerciseMinutes}min`} label="Exercício" color="text-orange-500" bg="bg-orange-500/10" />
+    <StatPill icon={Droplets} value={`${waterLiters}L`} label="Água" color="text-cyan-500" bg="bg-cyan-500/10" />
+    <StatPill icon={Zap} value={`${sleepHours}h`} label="Sono" color="text-violet-500" bg="bg-violet-500/10" />
+  </motion.div>
+);
+
+const StatPill: React.FC<{
+  icon: React.ElementType;
+  value: string;
+  label: string;
+  color: string;
+  bg: string;
+}> = ({ icon: Icon, value, label, color, bg }) => (
+  <div className={`flex flex-col items-center rounded-2xl ${bg} backdrop-blur-sm border border-border/30 py-3 px-2`}>
+    <Icon className={`h-5 w-5 ${color} mb-1`} />
+    <span className="text-base font-bold text-foreground">{value}</span>
+    <span className="text-[10px] text-muted-foreground">{label}</span>
+  </div>
+);
