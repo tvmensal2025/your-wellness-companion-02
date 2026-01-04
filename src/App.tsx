@@ -21,6 +21,8 @@ const SofiaPage = lazy(() => import("./pages/SofiaPage"));
 const GoalsPage = lazy(() => import("./pages/GoalsPage"));
 const CoursePlatform = lazy(() => import("./components/CoursePlatform"));
 const ProgressPage = lazy(() => import("./pages/ProgressPage"));
+const GoogleFitPage = lazy(() => import("./pages/GoogleFitPage").then(module => ({ default: module.GoogleFitPage })));
+const GoogleFitTestPage = lazy(() => import("./pages/GoogleFitTestPage"));
 
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-screen bg-background">
@@ -58,6 +60,8 @@ const App: React.FC = () => {
               <Route path="/app/goals" element={<Suspense fallback={<PageLoader />}><GoalsPage /></Suspense>} />
               <Route path="/app/courses" element={<Suspense fallback={<PageLoader />}><CoursePlatform /></Suspense>} />
               <Route path="/app/progress" element={<Suspense fallback={<PageLoader />}><ProgressPage /></Suspense>} />
+              <Route path="/google-fit-oauth" element={<Suspense fallback={<PageLoader />}><GoogleFitPage /></Suspense>} />
+              <Route path="/google-fit-test" element={<Suspense fallback={<PageLoader />}><GoogleFitTestPage /></Suspense>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>

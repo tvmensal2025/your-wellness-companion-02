@@ -3590,40 +3590,127 @@ export type Database = {
       }
       google_fit_data: {
         Row: {
+          active_minutes: number | null
+          bmi: number | null
+          body_fat_percentage: number | null
+          calories: number | null
+          carbs_g: number | null
           created_at: string | null
-          data_type: string | null
-          end_time: string | null
+          data_quality: number | null
+          data_source: string | null
+          date: string
+          device_type: string | null
+          distance_meters: number | null
+          exercise_calories: number | null
+          exercise_minutes: number | null
+          fat_g: number | null
+          heart_rate_avg: number | null
+          heart_rate_max: number | null
+          heart_rate_min: number | null
+          heart_rate_resting: number | null
+          height_cm: number | null
+          hydration_ml: number | null
           id: string
+          location: string | null
+          muscle_mass_kg: number | null
+          nutrition_calories: number | null
+          oxygen_saturation: number | null
+          protein_g: number | null
           raw_data: Json | null
-          source: string | null
-          start_time: string | null
-          unit: string | null
-          user_id: string | null
-          value: number | null
+          respiratory_rate: number | null
+          sleep_efficiency: number | null
+          sleep_hours: number | null
+          sleep_stages: Json | null
+          steps: number | null
+          sync_timestamp: string | null
+          temperature_celsius: number | null
+          user_id: string
+          water_intake_ml: number | null
+          weather: string | null
+          weight_kg: number | null
+          workout_sessions: number | null
         }
         Insert: {
+          active_minutes?: number | null
+          bmi?: number | null
+          body_fat_percentage?: number | null
+          calories?: number | null
+          carbs_g?: number | null
           created_at?: string | null
-          data_type?: string | null
-          end_time?: string | null
+          data_quality?: number | null
+          data_source?: string | null
+          date: string
+          device_type?: string | null
+          distance_meters?: number | null
+          exercise_calories?: number | null
+          exercise_minutes?: number | null
+          fat_g?: number | null
+          heart_rate_avg?: number | null
+          heart_rate_max?: number | null
+          heart_rate_min?: number | null
+          heart_rate_resting?: number | null
+          height_cm?: number | null
+          hydration_ml?: number | null
           id?: string
+          location?: string | null
+          muscle_mass_kg?: number | null
+          nutrition_calories?: number | null
+          oxygen_saturation?: number | null
+          protein_g?: number | null
           raw_data?: Json | null
-          source?: string | null
-          start_time?: string | null
-          unit?: string | null
-          user_id?: string | null
-          value?: number | null
+          respiratory_rate?: number | null
+          sleep_efficiency?: number | null
+          sleep_hours?: number | null
+          sleep_stages?: Json | null
+          steps?: number | null
+          sync_timestamp?: string | null
+          temperature_celsius?: number | null
+          user_id: string
+          water_intake_ml?: number | null
+          weather?: string | null
+          weight_kg?: number | null
+          workout_sessions?: number | null
         }
         Update: {
+          active_minutes?: number | null
+          bmi?: number | null
+          body_fat_percentage?: number | null
+          calories?: number | null
+          carbs_g?: number | null
           created_at?: string | null
-          data_type?: string | null
-          end_time?: string | null
+          data_quality?: number | null
+          data_source?: string | null
+          date?: string
+          device_type?: string | null
+          distance_meters?: number | null
+          exercise_calories?: number | null
+          exercise_minutes?: number | null
+          fat_g?: number | null
+          heart_rate_avg?: number | null
+          heart_rate_max?: number | null
+          heart_rate_min?: number | null
+          heart_rate_resting?: number | null
+          height_cm?: number | null
+          hydration_ml?: number | null
           id?: string
+          location?: string | null
+          muscle_mass_kg?: number | null
+          nutrition_calories?: number | null
+          oxygen_saturation?: number | null
+          protein_g?: number | null
           raw_data?: Json | null
-          source?: string | null
-          start_time?: string | null
-          unit?: string | null
-          user_id?: string | null
-          value?: number | null
+          respiratory_rate?: number | null
+          sleep_efficiency?: number | null
+          sleep_hours?: number | null
+          sleep_stages?: Json | null
+          steps?: number | null
+          sync_timestamp?: string | null
+          temperature_celsius?: number | null
+          user_id?: string
+          water_intake_ml?: number | null
+          weather?: string | null
+          weight_kg?: number | null
+          workout_sessions?: number | null
         }
         Relationships: []
       }
