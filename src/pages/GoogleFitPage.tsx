@@ -41,7 +41,18 @@ export const GoogleFitPage: React.FC = () => {
             variant="outline"
             className="h-10 xs:h-12 px-4 xs:px-6 text-base xs:text-lg"
             onClick={async () => {
+              const { data: { session } } = await supabase.auth.getSession();
+              if (!session) {
+                toast({
+                  title: '⚠️ Faça login',
+                  description: 'Você precisa estar logado para testar a configuração do Google Fit.',
+                  variant: 'destructive',
+                });
+                return;
+              }
+
               const { data, error } = await supabase.functions.invoke('google-fit-token', {
+                headers: { Authorization: `Bearer ${session.access_token}` },
                 body: { testSecrets: true },
               });
 

@@ -63,6 +63,7 @@ export const GoogleFitCallback: React.FC = () => {
         }
 
         const { data, error: fnError } = await supabase.functions.invoke('google-fit-token', {
+          headers: { Authorization: `Bearer ${session.access_token}` },
           body: { code, redirect_uri: redirectUri },
         });
 

@@ -85,7 +85,7 @@ export const useGoogleFit = () => {
       
       // Chamar Edge Function para conectar Google Fit
       const { data, error } = await supabase.functions.invoke('google-fit-token', {
-        body: { action: 'connect' }
+        headers: { Authorization: `Bearer ${session.access_token}` }, body: { action: 'connect' }
       });
 
       if (error) {
