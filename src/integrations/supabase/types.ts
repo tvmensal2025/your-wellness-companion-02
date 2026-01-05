@@ -2305,6 +2305,36 @@ export type Database = {
         }
         Relationships: []
       }
+      dashboard_settings: {
+        Row: {
+          banner_image_url: string | null
+          banner_subtitle: string | null
+          banner_title: string | null
+          banner_video_url: string | null
+          created_at: string
+          key: string
+          updated_at: string
+        }
+        Insert: {
+          banner_image_url?: string | null
+          banner_subtitle?: string | null
+          banner_title?: string | null
+          banner_video_url?: string | null
+          created_at?: string
+          key: string
+          updated_at?: string
+        }
+        Update: {
+          banner_image_url?: string | null
+          banner_subtitle?: string | null
+          banner_title?: string | null
+          banner_video_url?: string | null
+          created_at?: string
+          key?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       demographic_nutrition: {
         Row: {
           age_group: string | null
