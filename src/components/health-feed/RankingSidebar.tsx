@@ -41,25 +41,10 @@ export function RankingSidebar({ currentUserId }: RankingSidebarProps) {
   const [selectedPeriod, setSelectedPeriod] = useState<'week' | 'month' | 'year'>('week');
   const [selectedCategory, setSelectedCategory] = useState<'geral' | 'peso' | 'exercicio' | 'hidratacao' | 'metas' | 'social'>('geral');
 
-  // Mock data - Em produção, virá do Supabase
-  const mockRankings: RankingUser[] = [
-    { id: '1', name: 'Em breve', avatar: '🌟', points: 2450, level: 'Mestre', badge: '👑', position: 1 },
-    { id: '2', name: 'Em breve', avatar: '🚀', points: 2200, level: 'Expert', badge: '🏆', position: 2 },
-    { id: '3', name: 'Em breve', avatar: '💪', points: 1980, level: 'Expert', badge: '⭐', position: 3 },
-    { id: '4', name: 'Em breve', avatar: '🎯', points: 1750, level: 'Dedicado', badge: '🔥', position: 4 },
-    { 
-      id: '5', 
-      name: 'Em breve', 
-      avatar: '⭐', 
-      points: 1620, 
-      level: 'Dedicado', 
-      badge: '💪', 
-      position: 5 
-    },
-    { id: '6', name: 'Você', avatar: '', points: 1420, level: 'Dedicado', badge: '🎯', position: 8 },
-  ];
+  // Removidos dados fictícios - apenas dados reais do banco serão exibidos
+  const rankings: RankingUser[] = [];
 
-  const currentUser = mockRankings.find(u => u.name === 'Você');
+  const currentUser = rankings.find(u => u.name === 'Você');
 
   const getLevelColor = (level: string) => {
     switch (level) {
@@ -187,39 +172,45 @@ export function RankingSidebar({ currentUserId }: RankingSidebarProps) {
           </p>
         </CardHeader>
         <CardContent className="space-y-2 md:space-y-3">
-          {mockRankings.slice(0, 10).map((user, index) => (
-            <div key={user.id}>
-              <div className="flex items-center gap-2 md:gap-3 py-1">
-                <div className="flex items-center gap-1 md:gap-2 w-8 md:w-10">
-                  {getPositionIcon(user.position)}
-                  <span className="text-sm md:text-base">{user.badge}</span>
-                </div>
-                
-                <Avatar className="w-6 h-6 md:w-8 md:h-8">
-                  <AvatarImage src={user.avatar} />
-                  <AvatarFallback className="text-xs md:text-sm">{user.name.charAt(0)}</AvatarFallback>
-                </Avatar>
-                
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-xs md:text-sm truncate">
-                    {user.name}
-                  </p>
-                  <Badge 
-                    variant="secondary" 
-                    className={`text-xs ${getLevelColor(user.level)} px-1 py-0`}
-                  >
-                    {user.level}
-                  </Badge>
-                </div>
-                
-                <div className="text-right">
-                  <p className="font-bold text-xs md:text-sm">{user.points}</p>
-                  <p className="text-xs text-muted-foreground">pts</p>
-                </div>
-              </div>
-              {index < mockRankings.length - 1 && <Separator className="mt-1 md:mt-2" />}
+          {rankings.length === 0 ? (
+            <div className="p-4 text-center">
+              <p className="text-sm text-muted-foreground">Nenhum ranking disponível ainda.</p>
             </div>
-          ))}
+          ) : (
+            rankings.slice(0, 10).map((user, index) => (
+              <div key={user.id}>
+                <div className="flex items-center gap-2 md:gap-3 py-1">
+                  <div className="flex items-center gap-1 md:gap-2 w-8 md:w-10">
+                    {getPositionIcon(user.position)}
+                    <span className="text-sm md:text-base">{user.badge}</span>
+                  </div>
+                  
+                  <Avatar className="w-6 h-6 md:w-8 md:h-8">
+                    <AvatarImage src={user.avatar} />
+                    <AvatarFallback className="text-xs md:text-sm">{user.name.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                  
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-xs md:text-sm truncate">
+                      {user.name}
+                    </p>
+                    <Badge 
+                      variant="secondary" 
+                      className={`text-xs ${getLevelColor(user.level)} px-1 py-0`}
+                    >
+                      {user.level}
+                    </Badge>
+                  </div>
+                  
+                  <div className="text-right">
+                    <p className="font-bold text-xs md:text-sm">{user.points}</p>
+                    <p className="text-xs text-muted-foreground">pts</p>
+                  </div>
+                </div>
+                {index < rankings.length - 1 && <Separator className="mt-1 md:mt-2" />}
+              </div>
+            ))
+          )}
         </CardContent>
       </Card>
 

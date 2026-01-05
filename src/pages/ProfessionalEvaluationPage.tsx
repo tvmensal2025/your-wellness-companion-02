@@ -93,93 +93,11 @@ const ProfessionalEvaluationPage: React.FC = () => {
     calculateMetricsFromHook
   } = useProfessionalEvaluation();
 
-  // Dados mock para demonstração
-  const mockEvaluations = [
-    {
-      id: 'eval-1',
-      user_id: '1',
-      evaluation_date: '2025-01-15',
-      weight_kg: 75.5,
-      abdominal_circumference_cm: 85,
-      waist_circumference_cm: 80,
-      hip_circumference_cm: 95,
-      body_fat_percentage: 18.5,
-      fat_mass_kg: 14.0,
-      lean_mass_kg: 61.5,
-      muscle_mass_kg: 58.0,
-      bmi: 24.8,
-      bmr_kcal: 1650,
-      waist_to_height_ratio: 0.45,
-      waist_to_hip_ratio: 0.84,
-      muscle_to_fat_ratio: 4.1,
-      risk_level: 'low' as const,
-      notes: 'Avaliação inicial - resultados excelentes'
-    },
-    {
-      id: 'eval-2',
-      user_id: '1',
-      evaluation_date: '2025-01-08',
-      weight_kg: 76.2,
-      abdominal_circumference_cm: 86,
-      waist_circumference_cm: 81,
-      hip_circumference_cm: 96,
-      body_fat_percentage: 19.2,
-      fat_mass_kg: 14.6,
-      lean_mass_kg: 61.6,
-      muscle_mass_kg: 58.2,
-      bmi: 25.1,
-      bmr_kcal: 1660,
-      waist_to_height_ratio: 0.46,
-      waist_to_hip_ratio: 0.84,
-      muscle_to_fat_ratio: 4.0,
-      risk_level: 'low' as const,
-      notes: 'Segunda avaliação - pequena variação'
-    },
-    {
-      id: 'eval-3',
-      user_id: '1',
-      evaluation_date: '2025-01-01',
-      weight_kg: 77.0,
-      abdominal_circumference_cm: 87,
-      waist_circumference_cm: 82,
-      hip_circumference_cm: 97,
-      body_fat_percentage: 19.8,
-      fat_mass_kg: 15.2,
-      lean_mass_kg: 61.8,
-      muscle_mass_kg: 58.5,
-      bmi: 25.4,
-      bmr_kcal: 1670,
-      waist_to_height_ratio: 0.47,
-      waist_to_hip_ratio: 0.85,
-      muscle_to_fat_ratio: 3.9,
-      risk_level: 'low' as const,
-      notes: 'Terceira avaliação - evolução positiva'
-    },
-    {
-      id: 'eval-4',
-      user_id: '1',
-      evaluation_date: '2024-12-25',
-      weight_kg: 77.8,
-      abdominal_circumference_cm: 88,
-      waist_circumference_cm: 83,
-      hip_circumference_cm: 98,
-      body_fat_percentage: 20.1,
-      fat_mass_kg: 15.6,
-      lean_mass_kg: 62.2,
-      muscle_mass_kg: 58.8,
-      bmi: 25.7,
-      bmr_kcal: 1680,
-      waist_to_height_ratio: 0.48,
-      waist_to_hip_ratio: 0.85,
-      muscle_to_fat_ratio: 3.8,
-      risk_level: 'low' as const,
-      notes: 'Quarta avaliação - estabilização'
-    }
-  ];
+  // Removidos dados mock - apenas dados reais do banco
 
   // Filtra avaliações baseadas no período selecionado
   const getFilteredEvaluations = () => {
-    const allEvaluations = [...evaluations, ...mockEvaluations];
+    const allEvaluations = [...evaluations];
     const today = new Date();
     
     return allEvaluations.filter(evaluation => {

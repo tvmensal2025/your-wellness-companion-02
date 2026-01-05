@@ -66,226 +66,7 @@ const difficultyLabels = {
   dificil: 'Difícil'
 };
 
-// Dados de exemplo para demonstração
-const desafiosExemplo: Desafio[] = [{
-  id: 'demo-1',
-  title: 'Beber 2L de Água Diariamente',
-  description: 'Mantenha-se hidratado bebendo pelo menos 2 litros de água por dia',
-  category: 'Hidratação',
-  difficulty: 'facil',
-  duration_days: 30,
-  points_reward: 50,
-  badge_icon: '💧',
-  badge_name: 'Hidratação Master',
-  instructions: 'Beba água regularmente ao longo do dia. Use um aplicativo ou marque em uma garrafa para acompanhar.',
-  tips: ['Tenha sempre uma garrafa de água por perto', 'Beba um copo ao acordar', 'Use apps para lembrar'],
-  is_active: true,
-  is_featured: true,
-  is_group_challenge: false,
-  daily_log_target: 2000,
-  daily_log_unit: 'ml',
-  user_participation: {
-    id: 'part-1',
-    progress: 1200,
-    is_completed: false,
-    started_at: new Date().toISOString()
-  }
-}, {
-  id: 'demo-2',
-  title: 'Caminhar 8000 Passos',
-  description: 'Dê pelo menos 8000 passos todos os dias para manter-se ativo',
-  category: 'Atividade Física',
-  difficulty: 'medio',
-  duration_days: 30,
-  points_reward: 75,
-  badge_icon: '🚶‍♂️',
-  badge_name: 'Caminhador Dedicado',
-  instructions: 'Use um contador de passos ou app no celular. Caminhe durante as ligações, use escadas.',
-  tips: ['Estacione mais longe', 'Use escadas', 'Caminhe durante ligações'],
-  is_active: true,
-  is_featured: true,
-  is_group_challenge: false,
-  daily_log_target: 8000,
-  daily_log_unit: 'passos',
-  user_participation: {
-    id: 'part-2',
-    progress: 5500,
-    is_completed: false,
-    started_at: new Date().toISOString()
-  }
-}, {
-  id: 'demo-3',
-  title: 'Exercitar-se 30 Minutos',
-  description: 'Faça pelo menos 30 minutos de exercício físico moderado',
-  category: 'Atividade Física',
-  difficulty: 'dificil',
-  duration_days: 30,
-  points_reward: 120,
-  badge_icon: '💪',
-  badge_name: 'Atleta Dedicado',
-  instructions: 'Pode ser academia, corrida, natação, dança ou esportes. O importante é mover o corpo.',
-  tips: ['Escolha atividade prazerosa', 'Comece gradualmente', 'Varie os exercícios'],
-  is_active: true,
-  is_featured: true,
-  is_group_challenge: false,
-  daily_log_target: 30,
-  daily_log_unit: 'minutos',
-  user_participation: {
-    id: 'part-3',
-    progress: 25,
-    is_completed: false,
-    started_at: new Date().toISOString()
-  }
-}, {
-  id: 'demo-4',
-  title: 'Meditar 10 Minutos',
-  description: 'Pratique meditação ou mindfulness por 10 minutos diários',
-  category: 'Bem-estar Mental',
-  difficulty: 'facil',
-  duration_days: 21,
-  points_reward: 60,
-  badge_icon: '🧘‍♀️',
-  badge_name: 'Mente Zen',
-  instructions: 'Use apps como Headspace, Calm ou pratique respiração profunda. Encontre um local tranquilo.',
-  tips: ['Comece com 5 minutos', 'Use apps guiados', 'Pratique sempre no mesmo horário'],
-  is_active: true,
-  is_featured: false,
-  is_group_challenge: false,
-  daily_log_target: 10,
-  daily_log_unit: 'minutos',
-  user_participation: {
-    id: 'part-4',
-    progress: 10,
-    is_completed: true,
-    started_at: new Date().toISOString()
-  }
-}];
-
-// Desafios Públicos/Comunitários
-const desafiosPublicosExemplo: Desafio[] = [{
-  id: 'publico-1',
-  title: '💧 Hidratação em Grupo - Janeiro 2025',
-  description: 'Desafio comunitário: Vamos todos beber 2.5L de água por dia durante todo janeiro!',
-  category: 'Hidratação',
-  difficulty: 'facil',
-  duration_days: 31,
-  points_reward: 150,
-  badge_icon: '💧',
-  badge_name: 'Hidratação Comunitária',
-  instructions: 'Junte-se à comunidade e mantenha-se hidratado. Registre seu progresso diário!',
-  tips: ['Beba um copo ao acordar', 'Use uma garrafa marcada', 'Apoie outros participantes'],
-  is_active: true,
-  is_featured: true,
-  is_group_challenge: true,
-  daily_log_target: 2500,
-  daily_log_unit: 'ml',
-  participants_count: 847,
-  total_participants: 1000,
-  user_participation: {
-    id: 'pub-part-1',
-    progress: 2100,
-    is_completed: false,
-    started_at: new Date().toISOString()
-  }
-}, {
-  id: 'publico-2',
-  title: '🚶‍♀️ Caminhada Matinal Coletiva',
-  description: 'Desafio: 30 minutos de caminhada toda manhã. Vamos começar o dia com energia!',
-  category: 'Atividade Física',
-  difficulty: 'facil',
-  duration_days: 21,
-  points_reward: 200,
-  badge_icon: '🚶‍♀️',
-  badge_name: 'Caminhador Matinal',
-  instructions: 'Caminhe 30 minutos todas as manhãs e compartilhe sua energia com a comunidade!',
-  tips: ['Acorde 30min mais cedo', 'Convide um amigo', 'Ouça música ou podcast'],
-  is_active: true,
-  is_featured: true,
-  is_group_challenge: true,
-  daily_log_target: 30,
-  daily_log_unit: 'minutos',
-  participants_count: 623,
-  total_participants: 800,
-  user_participation: {
-    id: 'pub-part-2',
-    progress: 25,
-    is_completed: false,
-    started_at: new Date().toISOString()
-  }
-}, {
-  id: 'publico-3',
-  title: '💪 Guerreiros do Treino',
-  description: 'Desafio hardcore: 1 hora de exercício intenso por dia. Apenas para guerreiros!',
-  category: 'Atividade Física',
-  difficulty: 'dificil',
-  duration_days: 30,
-  points_reward: 300,
-  badge_icon: '💪',
-  badge_name: 'Guerreiro Fitness',
-  instructions: 'Treino intenso de 1 hora. Compartilhe seus resultados e motive outros guerreiros!',
-  tips: ['Varie os exercícios', 'Respeite o descanso', 'Hidrate-se bem'],
-  is_active: true,
-  is_featured: true,
-  is_group_challenge: true,
-  daily_log_target: 60,
-  daily_log_unit: 'minutos',
-  participants_count: 234,
-  total_participants: 500,
-  user_participation: {
-    id: 'pub-part-3',
-    progress: 45,
-    is_completed: false,
-    started_at: new Date().toISOString()
-  }
-}];
-
-// Dados do Ranking
-const rankingExemplo: RankingUser[] = [{
-  id: 'user-1',
-  name: 'Ana Silva',
-  avatar: '👩‍💼',
-  progress: 95,
-  points: 2847,
-  position: 1,
-  badge: '👑',
-  is_current_user: false
-}, {
-  id: 'user-2',
-  name: 'Carlos Santos',
-  avatar: '👨‍💻',
-  progress: 92,
-  points: 2756,
-  position: 2,
-  badge: '🥈',
-  is_current_user: false
-}, {
-  id: 'user-3',
-  name: 'Maria Oliveira',
-  avatar: '👩‍🔬',
-  progress: 89,
-  points: 2654,
-  position: 3,
-  badge: '🥉',
-  is_current_user: false
-}, {
-  id: 'user-4',
-  name: 'Você',
-  avatar: '😊',
-  progress: 86,
-  points: 2543,
-  position: 4,
-  badge: '⭐',
-  is_current_user: true
-}, {
-  id: 'user-5',
-  name: 'João Pereira',
-  avatar: '👨‍🎓',
-  progress: 83,
-  points: 2432,
-  position: 5,
-  badge: '🎯',
-  is_current_user: false
-}];
+// Removidos dados fictícios - apenas dados reais do banco serão exibidos
 const DesafiosSection: React.FC<DesafiosSectionProps> = ({
   user
 }) => {
@@ -574,20 +355,13 @@ const DesafiosSection: React.FC<DesafiosSectionProps> = ({
         .sort((a, b) => b.points - a.points)
         .map((u, index) => ({ ...u, position: index + 1, badge: index < 3 ? ['👑', '🥈', '🥉'][index] : '⭐' }));
 
-      // Se não há dados reais, usar exemplos
-      if (desafiosProcessados.length === 0) {
-        console.log('⚠️ Usando dados de exemplo - nenhum desafio encontrado no banco');
-        setDesafios(desafiosExemplo);
-        setDesafiosPublicos(desafiosPublicosExemplo);
-        setRankingData(rankingExemplo);
-      } else {
-        console.log(`✅ Carregados ${desafiosProcessados.length} desafios individuais`);
-        console.log(`✅ Carregados ${desafiosPublicosProcessados.length} desafios públicos`);
-        console.log(`✅ Carregados ${rankingProcessado.length} usuários no ranking`);
-        setDesafios(desafiosProcessados);
-        setDesafiosPublicos(desafiosPublicosProcessados);
-        setRankingData(rankingProcessado);
-      }
+      // Usar apenas dados reais do banco
+      console.log(`✅ Carregados ${desafiosProcessados.length} desafios individuais`);
+      console.log(`✅ Carregados ${desafiosPublicosProcessados.length} desafios públicos`);
+      console.log(`✅ Carregados ${rankingProcessado.length} usuários no ranking`);
+      setDesafios(desafiosProcessados);
+      setDesafiosPublicos(desafiosPublicosProcessados);
+      setRankingData(rankingProcessado);
     } catch (error) {
       console.error('Erro ao carregar desafios:', error);
       toast({
@@ -595,10 +369,10 @@ const DesafiosSection: React.FC<DesafiosSectionProps> = ({
         description: "Não foi possível carregar os desafios.",
         variant: "destructive"
       });
-      // Fallback para dados de exemplo
-      setDesafios(desafiosExemplo);
-      setDesafiosPublicos(desafiosPublicosExemplo);
-      setRankingData(rankingExemplo);
+      // Não usar dados fictícios - manter arrays vazios
+      setDesafios([]);
+      setDesafiosPublicos([]);
+      setRankingData([]);
     } finally {
       setLoading(false);
       setDataLoaded(true);
