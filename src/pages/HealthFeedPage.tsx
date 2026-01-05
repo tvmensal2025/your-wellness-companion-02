@@ -288,45 +288,45 @@ export default function HealthFeedPage() {
                 </div>
 
                 <Tabs value={sortMode} onValueChange={(v) => setSortMode(v as typeof sortMode)}>
-                  <TabsList className="w-full justify-start bg-transparent p-0 gap-2">
-                    <TabsTrigger value="position" className="flex-1 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                  <TabsList className="w-full justify-start bg-transparent p-0 gap-1 sm:gap-2 flex-wrap">
+                    <TabsTrigger value="position" className="flex-1 min-w-[70px] text-xs sm:text-sm rounded-xl data-[state=active]:bg-blue-600 data-[state=active]:text-white">
                       Posição
                     </TabsTrigger>
-                    <TabsTrigger value="points" className="flex-1 rounded-xl">Pontos</TabsTrigger>
-                    <TabsTrigger value="missions" className="flex-1 rounded-xl">Missões</TabsTrigger>
-                    <TabsTrigger value="streak" className="flex-1 rounded-xl">Sequência</TabsTrigger>
+                    <TabsTrigger value="points" className="flex-1 min-w-[70px] text-xs sm:text-sm rounded-xl data-[state=active]:bg-blue-600 data-[state=active]:text-white">Pontos</TabsTrigger>
+                    <TabsTrigger value="missions" className="flex-1 min-w-[70px] text-xs sm:text-sm rounded-xl data-[state=active]:bg-blue-600 data-[state=active]:text-white">Missões</TabsTrigger>
+                    <TabsTrigger value="streak" className="flex-1 min-w-[70px] text-xs sm:text-sm rounded-xl data-[state=active]:bg-blue-600 data-[state=active]:text-white">Sequência</TabsTrigger>
                   </TabsList>
                 </Tabs>
 
                 {/* Top User Card */}
                 {!loading && topUser && (
-                  <div className="flex items-center gap-3 rounded-2xl bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-950/30 dark:to-amber-950/30 border border-yellow-200/50 dark:border-yellow-800/50 shadow-sm px-4 py-4">
-                    <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-yellow-400 to-amber-500 text-white shadow-lg">
-                      <Crown className="w-5 h-5" />
-                    </div>
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <Avatar className="w-12 h-12 border-2 border-yellow-400/50">
-                        <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 rounded-2xl bg-gradient-to-r from-blue-50 to-blue-100/50 dark:from-blue-950/30 dark:to-blue-900/20 border border-blue-200/50 dark:border-blue-800/50 shadow-sm px-3 sm:px-4 py-3 sm:py-4">
+                    <div className="flex items-center gap-3 w-full sm:w-auto">
+                      <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg flex-shrink-0">
+                        <Crown className="w-4 h-4 sm:w-5 sm:h-5" />
+                      </div>
+                      <Avatar className="w-10 h-10 sm:w-12 sm:h-12 border-2 border-blue-400/50 flex-shrink-0">
+                        <AvatarFallback className="bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 font-semibold">
                           {topUser.user_name.charAt(0).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
                       <div className="min-w-0 flex-1">
-                        <p className="font-semibold truncate">{topUser.user_name}</p>
+                        <p className="font-semibold truncate text-sm sm:text-base">{topUser.user_name}</p>
                         <p className="text-xs text-muted-foreground">Líder do ranking</p>
                       </div>
-                      <div className="flex items-center gap-4 text-sm">
-                        <div className="flex items-center gap-1">
-                          <Star className="w-4 h-4 text-yellow-500" />
-                          <span className="font-semibold">{topUser.total_points}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Target className="w-4 h-4 text-primary" />
-                          <span>{topUser.missions_completed}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Flame className="w-4 h-4 text-orange-500" />
-                          <span>{topUser.streak_days}</span>
-                        </div>
+                    </div>
+                    <div className="flex items-center gap-3 sm:gap-4 text-xs sm:text-sm ml-11 sm:ml-0">
+                      <div className="flex items-center gap-1">
+                        <Star className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-yellow-500" />
+                        <span className="font-semibold">{topUser.total_points}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Target className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-500" />
+                        <span>{topUser.missions_completed}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Flame className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-orange-500" />
+                        <span>{topUser.streak_days}</span>
                       </div>
                     </div>
                   </div>
@@ -368,18 +368,18 @@ export default function HealthFeedPage() {
                 </div>
 
                 {/* Stats */}
-                <div className="grid grid-cols-3 gap-3 pt-4">
-                  <div className="rounded-xl bg-primary/5 p-4 text-center">
-                    <p className="text-2xl font-bold text-primary">{totalMembers}</p>
-                    <p className="text-xs text-muted-foreground">Membros</p>
+                <div className="grid grid-cols-3 gap-2 sm:gap-3 pt-4">
+                  <div className="rounded-xl bg-blue-500/10 p-2 sm:p-4 text-center">
+                    <p className="text-lg sm:text-2xl font-bold text-blue-600">{totalMembers}</p>
+                    <p className="text-[10px] sm:text-xs text-muted-foreground">Membros</p>
                   </div>
-                  <div className="rounded-xl bg-emerald-500/10 p-4 text-center">
-                    <p className="text-2xl font-bold text-emerald-600">{totalMissions}</p>
-                    <p className="text-xs text-muted-foreground">Missões</p>
+                  <div className="rounded-xl bg-emerald-500/10 p-2 sm:p-4 text-center">
+                    <p className="text-lg sm:text-2xl font-bold text-emerald-600">{totalMissions}</p>
+                    <p className="text-[10px] sm:text-xs text-muted-foreground">Missões</p>
                   </div>
-                  <div className="rounded-xl bg-amber-500/10 p-4 text-center">
-                    <p className="text-2xl font-bold text-amber-600">{totalPoints.toLocaleString()}</p>
-                    <p className="text-xs text-muted-foreground">Pontos</p>
+                  <div className="rounded-xl bg-amber-500/10 p-2 sm:p-4 text-center">
+                    <p className="text-lg sm:text-2xl font-bold text-amber-600">{totalPoints.toLocaleString()}</p>
+                    <p className="text-[10px] sm:text-xs text-muted-foreground">Pontos</p>
                   </div>
                 </div>
               </CardContent>
