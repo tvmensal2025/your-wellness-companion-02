@@ -2881,6 +2881,59 @@ export type Database = {
         }
         Relationships: []
       }
+      exercise_progress_logs: {
+        Row: {
+          created_at: string
+          duration_seconds: number | null
+          exercise_id: string | null
+          exercise_name: string
+          id: string
+          notes: string | null
+          perceived_difficulty: number | null
+          reps_completed: number | null
+          set_number: number
+          user_id: string
+          weight_kg: number | null
+          workout_date: string
+        }
+        Insert: {
+          created_at?: string
+          duration_seconds?: number | null
+          exercise_id?: string | null
+          exercise_name: string
+          id?: string
+          notes?: string | null
+          perceived_difficulty?: number | null
+          reps_completed?: number | null
+          set_number?: number
+          user_id: string
+          weight_kg?: number | null
+          workout_date?: string
+        }
+        Update: {
+          created_at?: string
+          duration_seconds?: number | null
+          exercise_id?: string | null
+          exercise_name?: string
+          id?: string
+          notes?: string | null
+          perceived_difficulty?: number | null
+          reps_completed?: number | null
+          set_number?: number
+          user_id?: string
+          weight_kg?: number | null
+          workout_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exercise_progress_logs_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercises_library"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       exercise_sessions: {
         Row: {
           calories_burned: number | null
@@ -10402,6 +10455,29 @@ export type Database = {
       }
     }
     Views: {
+      exercise_progress_stats: {
+        Row: {
+          avg_reps: number | null
+          avg_weight: number | null
+          exercise_id: string | null
+          exercise_name: string | null
+          first_workout: string | null
+          last_workout: string | null
+          max_reps: number | null
+          max_weight: number | null
+          total_sessions: number | null
+          user_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exercise_progress_logs_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "exercises_library"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       v_ingestão_diária_de_macronutrientes: {
         Row: {
           agua_ml_dia: number | null
