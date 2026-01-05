@@ -405,15 +405,9 @@ Clique no botão abaixo para começar! ⬇️`,
 
       setMessages(prev => [...prev, userMessage]);
 
-      // Chamar análise da Sofia via chamada direta ao backend (evita problemas de JWT)
-      const functionUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sofia-image-analysis`;
-      const response = await fetch(functionUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-        },
-        body: JSON.stringify({
+      // Chamar análise da Sofia via supabase.functions.invoke (garante URL correta)
+      const { data, error } = await supabase.functions.invoke('sofia-image-analysis', {
+        body: {
           imageUrl,
           userId: currentUser?.id || 'guest',
           userContext: {
@@ -423,15 +417,12 @@ Clique no botão abaixo para começar! ⬇️`,
               currentUser?.email?.split('@')[0] ||
               'usuário',
           },
-        }),
+        },
       });
 
-      if (!response.ok) {
-        throw new Error(`Erro na função sofia-image-analysis: ${response.status}`);
+      if (error) {
+        throw new Error(`Erro na função sofia-image-analysis: ${error.message}`);
       }
-
-      const data = await response.json();
-      const error = null as any;
 
       if (error) throw error;
 

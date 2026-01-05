@@ -180,19 +180,31 @@ Agora posso falar com você! 🎤 Use o microfone para conversar ou digite suas 
       let data, error;
 
       if (selectedImage) {
-        // Processar imagem
-        const formData = new FormData();
-        formData.append('image', selectedImage);
-        formData.append('userId', user.id);
-        formData.append('userName', user.user_metadata?.full_name || user.email?.split('@')[0] || 'usuário');
-
-        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/sofia-image-analysis`, {
-          method: 'POST',
-          body: formData
+        // Primeiro, fazer upload da imagem para storage
+        const fileName = `${Date.now()}-${selectedImage.name.replace(/[^a-zA-Z0-9.]/g, '-')}`;
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('chat-images')
+          .upload(fileName, selectedImage);
+        
+        if (uploadError) throw uploadError;
+        
+        const { data: urlData } = supabase.storage
+          .from('chat-images')
+          .getPublicUrl(fileName);
+        
+        // Chamar análise via supabase.functions.invoke
+        const result = await supabase.functions.invoke('sofia-image-analysis', {
+          body: {
+            imageUrl: urlData.publicUrl,
+            userId: user.id,
+            userContext: {
+              currentMeal: 'refeicao',
+              userName: user.user_metadata?.full_name || user.email?.split('@')[0] || 'usuário',
+            }
+          }
         });
-
-        data = await response.json();
-        error = !response.ok ? new Error(data.error || 'Erro no processamento') : null;
+        data = result.data;
+        error = result.error;
       } else {
         // Processar mensagem de texto
         const chatResult = await supabase.functions.invoke('health-chat-bot', {
