@@ -595,15 +595,9 @@ const AdminPage = () => {
       case 'settings':
         return (
           <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-3xl font-bold">Configurações Gerais</h1>
-                <p className="text-muted-foreground">Configurações globais do sistema</p>
-              </div>
-              <Button onClick={() => toast({ title: "💾 Configurações", description: "Salvando configurações..." })}>
-                <Settings className="h-4 w-4 mr-2" />
-                Salvar Alterações
-              </Button>
+            <div>
+              <h1 className="text-3xl font-bold">Configurações Gerais</h1>
+              <p className="text-muted-foreground">Configurações globais do sistema</p>
             </div>
             
             <div className="grid gap-6">
