@@ -7318,46 +7318,97 @@ export type Database = {
           analysis_result: Json | null
           calories: number | null
           carbs: number | null
+          confirmation_prompt_sent: boolean | null
+          confirmation_status: string | null
           confirmed_by_user: boolean | null
           created_at: string | null
           fats: number | null
           food_image_url: string | null
           food_name: string | null
+          foods_detected: Json | null
           health_score: number | null
           id: string
+          image_deleted: boolean | null
+          image_deleted_at: string | null
+          image_url: string | null
+          label_studio_task_id: string | null
+          meal_date: string | null
+          meal_time: string | null
+          meal_type: string | null
           proteins: number | null
           recommendations: string | null
+          sofia_analysis: string | null
+          total_calories: number | null
+          total_carbs: number | null
+          total_fat: number | null
+          total_fiber: number | null
+          total_protein: number | null
           user_id: string | null
+          user_name: string | null
         }
         Insert: {
           analysis_result?: Json | null
           calories?: number | null
           carbs?: number | null
+          confirmation_prompt_sent?: boolean | null
+          confirmation_status?: string | null
           confirmed_by_user?: boolean | null
           created_at?: string | null
           fats?: number | null
           food_image_url?: string | null
           food_name?: string | null
+          foods_detected?: Json | null
           health_score?: number | null
           id?: string
+          image_deleted?: boolean | null
+          image_deleted_at?: string | null
+          image_url?: string | null
+          label_studio_task_id?: string | null
+          meal_date?: string | null
+          meal_time?: string | null
+          meal_type?: string | null
           proteins?: number | null
           recommendations?: string | null
+          sofia_analysis?: string | null
+          total_calories?: number | null
+          total_carbs?: number | null
+          total_fat?: number | null
+          total_fiber?: number | null
+          total_protein?: number | null
           user_id?: string | null
+          user_name?: string | null
         }
         Update: {
           analysis_result?: Json | null
           calories?: number | null
           carbs?: number | null
+          confirmation_prompt_sent?: boolean | null
+          confirmation_status?: string | null
           confirmed_by_user?: boolean | null
           created_at?: string | null
           fats?: number | null
           food_image_url?: string | null
           food_name?: string | null
+          foods_detected?: Json | null
           health_score?: number | null
           id?: string
+          image_deleted?: boolean | null
+          image_deleted_at?: string | null
+          image_url?: string | null
+          label_studio_task_id?: string | null
+          meal_date?: string | null
+          meal_time?: string | null
+          meal_type?: string | null
           proteins?: number | null
           recommendations?: string | null
+          sofia_analysis?: string | null
+          total_calories?: number | null
+          total_carbs?: number | null
+          total_fat?: number | null
+          total_fiber?: number | null
+          total_protein?: number | null
           user_id?: string | null
+          user_name?: string | null
         }
         Relationships: []
       }
