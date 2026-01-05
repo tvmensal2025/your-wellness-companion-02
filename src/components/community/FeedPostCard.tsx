@@ -13,7 +13,8 @@ import {
   Trophy,
   TrendingUp,
   Send,
-  Bookmark
+  Bookmark,
+  ChevronDown
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -72,13 +73,15 @@ export const FeedPostCard: React.FC<FeedPostCardProps> = ({
   onShare,
   onSave
 }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [newComment, setNewComment] = useState('');
   const [isLiked, setIsLiked] = useState(post.isLiked);
   const [likesCount, setLikesCount] = useState(post.likes);
   const [isSaved, setIsSaved] = useState(post.isSaved);
 
-  const handleLike = () => {
+  const handleLike = (e: React.MouseEvent) => {
+    e.stopPropagation();
     setIsLiked(!isLiked);
     setLikesCount(prev => isLiked ? prev - 1 : prev + 1);
     onLike(post.id);
@@ -107,6 +110,62 @@ export const FeedPostCard: React.FC<FeedPostCardProps> = ({
     return date.toLocaleDateString('pt-BR');
   };
 
+  // Truncate content for collapsed view
+  const maxLength = 80;
+  const shouldTruncate = post.content.length > maxLength;
+  const displayContent = !isExpanded && shouldTruncate 
+    ? post.content.slice(0, maxLength) + '...' 
+    : post.content;
+
+  // Collapsed View
+  if (!isExpanded) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.2 }}
+      >
+        <Card 
+          className="mb-2 overflow-hidden hover:shadow-md transition-all border-blue-200/50 dark:border-blue-800/50 bg-white dark:bg-card cursor-pointer hover:bg-blue-50/30 dark:hover:bg-blue-950/20"
+          onClick={() => setIsExpanded(true)}
+        >
+          <CardContent className="p-3">
+            <div className="flex items-center gap-3">
+              <Avatar className="w-9 h-9 flex-shrink-0">
+                <AvatarImage src={post.userAvatar} />
+                <AvatarFallback className="bg-blue-100 dark:bg-blue-900/50 text-blue-600 font-semibold text-xs">
+                  {post.userName?.charAt(0)?.toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-0.5">
+                  <span className="font-semibold text-foreground text-sm">{post.userName}</span>
+                  <span className="text-[10px] text-muted-foreground">{formatTimeAgo(post.createdAt)}</span>
+                </div>
+                <p className="text-xs text-muted-foreground line-clamp-1">{displayContent}</p>
+              </div>
+              <div className="flex items-center gap-3 flex-shrink-0">
+                <button 
+                  className="flex items-center gap-1 text-xs text-muted-foreground hover:text-blue-600"
+                  onClick={handleLike}
+                >
+                  <Heart className={`w-3.5 h-3.5 ${isLiked ? 'text-blue-600 fill-current' : ''}`} />
+                  <span>{likesCount}</span>
+                </button>
+                <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <MessageCircle className="w-3.5 h-3.5" />
+                  <span>{post.comments}</span>
+                </div>
+                <ChevronDown className="w-4 h-4 text-muted-foreground" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
+    );
+  }
+
+  // Expanded View
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -146,20 +205,30 @@ export const FeedPostCard: React.FC<FeedPostCardProps> = ({
               </div>
             </div>
             
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-7 w-7 sm:h-8 sm:w-8 text-blue-600 hover:bg-blue-50">
-                  <MoreHorizontal className="w-4 h-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={handleSave}>
-                  <Bookmark className="w-4 h-4 mr-2" />
-                  {isSaved ? 'Remover dos salvos' : 'Salvar post'}
-                </DropdownMenuItem>
-                <DropdownMenuItem>Denunciar</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <div className="flex items-center gap-1">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-7 text-xs text-blue-600 hover:bg-blue-50"
+                onClick={(e) => { e.stopPropagation(); setIsExpanded(false); }}
+              >
+                Recolher
+              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-7 w-7 sm:h-8 sm:w-8 text-blue-600 hover:bg-blue-50">
+                    <MoreHorizontal className="w-4 h-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={handleSave}>
+                    <Bookmark className="w-4 h-4 mr-2" />
+                    {isSaved ? 'Remover dos salvos' : 'Salvar post'}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>Denunciar</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
         </CardHeader>
 
