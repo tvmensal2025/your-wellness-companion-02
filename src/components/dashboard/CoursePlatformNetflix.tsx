@@ -401,160 +401,166 @@ const CoursePlatformNetflix = ({ user }: CoursePlatformNetflixProps) => {
     loadData();
   }, []);
 
-  // HOME VIEW - Grid de cursos (320x480px cards)
+  // HOME VIEW - Estilo Netflix Premium
   if (currentView === 'home') {
     return (
-      <div className="min-h-screen bg-black text-white relative">
+      <div className="min-h-screen bg-gradient-to-b from-zinc-900 via-black to-black text-white relative overflow-hidden">
         {/* Controles Admin */}
         {isAdmin && (
           <>
-            {/* Botão para ativar modo admin */}
             <div className="fixed top-4 right-4 z-50">
               <Button
                 onClick={toggleAdminMode}
-                className={`${adminModeEnabled ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700'}`}
+                className={`${adminModeEnabled ? 'bg-red-600 hover:bg-red-700' : 'bg-white/10 backdrop-blur-md hover:bg-white/20 border border-white/20'} transition-all duration-300`}
               >
                 <Shield className="h-4 w-4 mr-2" />
                 {adminModeEnabled ? 'Sair Admin' : 'Modo Admin'}
               </Button>
             </div>
-
-            {/* Toggle para escolher entre cursos e módulos */}
             {adminModeEnabled && (
               <AdminViewToggle 
                 viewMode={dashboardViewMode} 
                 onToggle={setDashboardViewMode} 
               />
             )}
-
-            {/* Painel de estatísticas */}
             {adminModeEnabled && <AdminStatsPanel />}
           </>
         )}
 
-        {/* Banner/Video no topo - Responsivo */}
-        <div className="relative h-32 sm:h-48 md:h-64 lg:h-80 mb-3 sm:mb-4 md:mb-6 rounded-lg overflow-hidden mx-2 sm:mx-4 md:mx-6 mt-2 sm:mt-4">
-          {/* Controles admin do banner */}
+        {/* HERO BANNER - Estilo Netflix */}
+        <div className="relative w-full h-[50vh] sm:h-[60vh] md:h-[70vh] lg:h-[80vh]">
           {adminModeEnabled && (
-            <AdminEditControls 
-              type="banner" 
-              onSave={handleSaveEdit}
-            />
+            <AdminEditControls type="banner" onSave={handleSaveEdit} />
           )}
           
-          {showVideo ? (
-            <div className="absolute inset-0">
-              <video
-                autoPlay
-                muted
-                loop
-                className="w-full h-full object-cover"
-                poster="/placeholder.svg"
-              >
-                <source src="https://sample-videos.com/zip/10/mp4/SampleVideo_1280x720_1mb.mp4" type="video/mp4" />
-              </video>
-              <div className="absolute inset-0 bg-black/30"></div>
-            </div>
-          ) : (
-            <div 
-              className="absolute inset-0 bg-cover bg-center"
-              style={{ backgroundImage: 'url(/placeholder.svg)' }}
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-black/30"></div>
-            </div>
-          )}
-          
-          <div className="relative z-10 flex items-end justify-between h-full p-4 sm:p-6 md:p-8">
-            <div className="flex-1">
-              <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold mb-1 sm:mb-2">
-                PLATAFORMA DOS SONHOS
-                {adminModeEnabled && (
-                  <Badge className="ml-2 bg-red-600 text-white text-[10px] sm:text-xs">
-                    ADMIN
-                  </Badge>
-                )}
-              </h1>
-              <p className="text-xs sm:text-sm md:text-base opacity-90">Novo conteúdo mensalmente</p>
-            </div>
-            
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setShowVideo(!showVideo)}
-              className="bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30 h-8 w-8 sm:h-9 sm:w-9"
-            >
-              {showVideo ? (
-                <BookOpen className="h-4 w-4" />
-              ) : (
-                <Play className="h-4 w-4" />
+          {/* Background com gradiente cinematográfico */}
+          <div 
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+            style={{ 
+              backgroundImage: dbCourses[0]?.thumbnail_url 
+                ? `url(${dbCourses[0].thumbnail_url})` 
+                : 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f0f23 100%)'
+            }}
+          >
+            {/* Gradientes sobrepostos estilo Netflix */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/40 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black" />
+          </div>
+
+          {/* Conteúdo do Hero */}
+          <div className="relative z-10 h-full flex flex-col justify-end pb-16 sm:pb-20 md:pb-24 lg:pb-32 px-4 sm:px-8 md:px-12 lg:px-16">
+            <div className="max-w-3xl">
+              {adminModeEnabled && (
+                <Badge className="mb-4 bg-red-600 text-white px-3 py-1">
+                  ADMIN MODE
+                </Badge>
               )}
-            </Button>
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black tracking-tight mb-3 sm:mb-4 drop-shadow-2xl">
+                PLATAFORMA DOS SONHOS
+              </h1>
+              <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-300 mb-6 sm:mb-8 max-w-2xl leading-relaxed">
+                Transforme sua vida com nossos cursos exclusivos. Novo conteúdo mensalmente.
+              </p>
+              
+              {/* Botões de ação */}
+              <div className="flex flex-wrap gap-3 sm:gap-4">
+                {dbCourses[0] && (
+                  <Button 
+                    onClick={() => handleCourseClick(dbCourses[0])}
+                    className="bg-white text-black hover:bg-white/90 font-bold px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base rounded-md transition-all duration-300 hover:scale-105 shadow-2xl"
+                  >
+                    <Play className="h-5 w-5 sm:h-6 sm:w-6 mr-2 fill-black" />
+                    Assistir Agora
+                  </Button>
+                )}
+                <Button 
+                  variant="outline"
+                  className="bg-white/10 backdrop-blur-sm border-white/30 text-white hover:bg-white/20 font-semibold px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base rounded-md transition-all duration-300"
+                  onClick={() => setShowVideo(!showVideo)}
+                >
+                  <BookOpen className="h-5 w-5 sm:h-6 sm:w-6 mr-2" />
+                  Mais Informações
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Grid de cursos - Cards Responsivos */}
-        <div className="px-2 sm:px-4 md:px-6">
-          <div className="flex items-center justify-between mb-3 sm:mb-4">
-            <h2 className="text-base sm:text-lg md:text-xl font-bold">
-              {dashboardViewMode === 'courses' ? 'Todos os Cursos' : 'Módulos do Sistema'}
+        {/* CATÁLOGO DE CURSOS */}
+        <div className="relative z-20 -mt-16 sm:-mt-20 md:-mt-24 lg:-mt-32 px-4 sm:px-8 md:px-12 lg:px-16 pb-16">
+          {/* Título da seção */}
+          <div className="flex items-center justify-between mb-6 sm:mb-8">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold">
+              Nossos Cursos
             </h2>
             {adminModeEnabled && (
-              <Badge className="bg-yellow-600 text-black text-[10px] sm:text-xs">
-                {dashboardViewMode === 'courses' ? 'Cursos' : 'Módulos'}
+              <Badge className="bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                {dbCourses.length} cursos
               </Badge>
             )}
           </div>
-          
-          {/* Seções por Curso: título do curso + grid de módulos (estilo Netflix) */}
-          <div className="space-y-8">
-            {dbCourses.map((course) => {
-              const courseModules = dbModules.filter((m) => m.course_id === course.id);
-              return (
-                <section key={course.id} className="pt-4 border-t border-gray-800">
-                  <div className="flex items-center justify-between mb-3 sm:mb-4">
-                    <h3 className="text-lg sm:text-xl font-semibold">{course.title}</h3>
-                    {adminModeEnabled && (
-                      <Badge className="bg-blue-600">Curso</Badge>
-                    )}
+
+          {/* Grid de cursos - Cards Netflix 16:9 */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 md:gap-6">
+            {dbCourses.map((course) => (
+              <div 
+                key={course.id}
+                className="group relative cursor-pointer"
+                onClick={() => handleCourseClick(course)}
+              >
+                {adminModeEnabled && (
+                  <AdminEditControls 
+                    type="course" 
+                    course={course as any}
+                    onSave={handleSaveEdit}
+                  />
+                )}
+                
+                {/* Card Netflix Style - Aspect 16:9 */}
+                <div className="relative aspect-video rounded-lg overflow-hidden bg-zinc-800 shadow-xl transition-all duration-500 group-hover:scale-105 group-hover:shadow-2xl group-hover:shadow-red-500/20 group-hover:z-30">
+                  {/* Imagem */}
+                  <img 
+                    src={course.thumbnail_url || '/placeholder.svg'} 
+                    alt={course.title}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                  />
+                  
+                  {/* Overlay gradiente */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-60 group-hover:opacity-90 transition-opacity duration-300" />
+                  
+                  {/* Play button central */}
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
+                    <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-white/95 flex items-center justify-center shadow-2xl transform scale-75 group-hover:scale-100 transition-transform duration-300">
+                      <Play className="h-6 w-6 sm:h-7 sm:w-7 text-black fill-black ml-1" />
+                    </div>
                   </div>
-                  {/* Grid de cursos - Cards responsivos */}
-                  <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3 md:gap-4">
-                    <Card 
-                      key={course.id} 
-                      className="w-full h-[180px] sm:h-[220px] md:h-[280px] lg:h-[320px] bg-gray-900 border-gray-700 cursor-pointer hover:scale-[1.02] sm:hover:scale-105 transition-all duration-300 group relative overflow-hidden"
-                      onClick={() => handleCourseClick(course)}
-                    >
-                      {adminModeEnabled && (
-                        <AdminEditControls 
-                          type="course" 
-                          course={course as any}
-                          onSave={handleSaveEdit}
-                        />
+
+                  {/* Info no hover - aparece na parte inferior */}
+                  <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+                    <h3 className="text-base sm:text-lg font-bold text-white mb-1 line-clamp-1 drop-shadow-lg">
+                      {course.title}
+                    </h3>
+                    <div className="flex items-center gap-3 text-xs sm:text-sm text-gray-300">
+                      <span className="flex items-center gap-1">
+                        <Play className="h-3 w-3" />
+                        {course.lessons.length} aulas
+                      </span>
+                      {course.category && (
+                        <span className="px-2 py-0.5 bg-white/20 rounded-full backdrop-blur-sm">
+                          {course.category}
+                        </span>
                       )}
-                      <div className="relative h-full">
-                        <img 
-                          src={course.thumbnail_url || '/placeholder.svg'} 
-                          alt={course.title}
-                          className="w-full h-full object-cover"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                        <div className="absolute bottom-0 left-0 right-0 p-2 sm:p-3">
-                          <h4 className="text-xs sm:text-sm font-semibold line-clamp-2">{course.title}</h4>
-                          <p className="text-[10px] sm:text-xs text-gray-400 mt-0.5 line-clamp-1">{course.lessons.length} aulas</p>
-                        </div>
-                        {!adminModeEnabled && (
-                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-300 flex items-center justify-center">
-                            <Button size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white text-black hover:bg-white/90 h-8 w-8 sm:h-10 sm:w-10">
-                              <Play className="h-4 w-4 sm:h-5 sm:w-5" />
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                    </Card>
+                    </div>
                   </div>
-                </section>
-              );
-            })}
+
+                  {/* Badge de quantidade no canto */}
+                  <div className="absolute top-3 right-3 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    HD
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -662,10 +668,10 @@ const CoursePlatformNetflix = ({ user }: CoursePlatformNetflixProps) => {
     );
   }
 
-  // PLAYER VIEW - Player 1380x776px + Thumbs à direita
+  // PLAYER VIEW - Estilo Netflix Premium
   if (currentView === 'player' && selectedLesson && selectedCourse) {
     return (
-      <div className="min-h-screen bg-black text-white relative">
+      <div className="min-h-screen bg-gradient-to-b from-zinc-900 to-black text-white">
         {/* Controles Admin */}
         {isAdmin && adminModeEnabled && (
           <>
@@ -678,111 +684,150 @@ const CoursePlatformNetflix = ({ user }: CoursePlatformNetflixProps) => {
           </>
         )}
 
-        <div className="p-6">
+        {/* Header minimalista */}
+        <div className="px-4 sm:px-8 md:px-12 lg:px-16 py-4 sm:py-6">
           <Button 
-            variant="outline" 
-            onClick={handleBackToCourse}
-            className="mb-6 border-gray-600 text-gray-300 hover:bg-gray-800"
+            variant="ghost" 
+            onClick={handleBackToHome}
+            className="text-gray-400 hover:text-white hover:bg-white/10 transition-all duration-300"
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Voltar para Aulas
+            <ArrowLeft className="h-5 w-5 mr-2" />
+            Voltar para Cursos
           </Button>
+        </div>
 
-          {/* Layout Responsivo - Coluna no mobile, lado a lado no desktop */}
-          <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
-            {/* Player principal - Responsivo */}
+        {/* Layout do Player */}
+        <div className="px-4 sm:px-8 md:px-12 lg:px-16 pb-16">
+          <div className="flex flex-col xl:flex-row gap-6 lg:gap-8">
+            
+            {/* Player Principal */}
             <div className="flex-1">
-              {(() => {
-                const videoUrl = selectedLesson.video_url;
-                const provider = detectVideoProvider(videoUrl);
-                const embedUrl = getVideoEmbedUrl(videoUrl);
-                const isOneDrive = provider.type === 'onedrive';
-                
-                // Para OneDrive, mostra iframe e também botão alternativo
-                return (
-                  <div className="relative w-full aspect-video rounded-lg overflow-hidden bg-gray-900 shadow-2xl">
-                    <iframe
-                      src={embedUrl}
-                      className="w-full h-full border-0"
-                      title={selectedLesson.title}
-                      loading="lazy"
-                      referrerPolicy="strict-origin-when-cross-origin"
-                      allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture; web-share"
-                      onError={() => {
-                        console.error('Erro ao carregar vídeo embed');
-                      }}
-                    />
-                    {isOneDrive && (
-                      <div className="absolute bottom-4 right-4">
-                        <Button
-                          asChild
-                          variant="secondary"
-                          size="sm"
-                          className="bg-white/90 hover:bg-white text-black"
-                        >
-                          <a
-                            href={videoUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            <Play className="h-4 w-4 mr-2" />
-                            Abrir no OneDrive
-                          </a>
-                        </Button>
+              {/* Container do vídeo com sombra cinematográfica */}
+              <div className="relative rounded-xl overflow-hidden shadow-2xl shadow-black/50 ring-1 ring-white/10">
+                {(() => {
+                  const videoUrl = selectedLesson.video_url;
+                  const provider = detectVideoProvider(videoUrl);
+                  const embedUrl = getVideoEmbedUrl(videoUrl);
+                  const isOneDrive = provider.type === 'onedrive';
+                  
+                  return (
+                    <>
+                      <div className="relative w-full aspect-video bg-zinc-900">
+                        <iframe
+                          src={embedUrl}
+                          className="w-full h-full border-0"
+                          title={selectedLesson.title}
+                          loading="lazy"
+                          referrerPolicy="strict-origin-when-cross-origin"
+                          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture; web-share"
+                        />
                       </div>
-                    )}
-                  </div>
-                );
-              })()}
+                      {isOneDrive && (
+                        <div className="absolute bottom-4 right-4">
+                          <Button
+                            asChild
+                            size="sm"
+                            className="bg-white/90 hover:bg-white text-black font-semibold"
+                          >
+                            <a href={videoUrl} target="_blank" rel="noopener noreferrer">
+                              <Play className="h-4 w-4 mr-2 fill-black" />
+                              Abrir no OneDrive
+                            </a>
+                          </Button>
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
+              </div>
               
-              {/* Título/subtítulo/descrição abaixo do player */}
-              <div className="mt-4 lg:mt-6">
-                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-2">
-                  {selectedLesson.title}
+              {/* Info do vídeo */}
+              <div className="mt-6 sm:mt-8">
+                <div className="flex items-start justify-between gap-4 mb-4">
+                  <div>
+                    <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2">
+                      {selectedLesson.title}
+                    </h1>
+                    <div className="flex items-center gap-4 text-sm sm:text-base text-gray-400">
+                      <span className="text-red-500 font-semibold">{selectedCourse.title}</span>
+                      <span>•</span>
+                      <span className="flex items-center gap-1">
+                        <Clock className="h-4 w-4" />
+                        {formatDuration(selectedLesson.duration)}
+                      </span>
+                    </div>
+                  </div>
                   {adminModeEnabled && (
-                    <Badge className="ml-2 lg:ml-4 bg-red-600 text-white text-xs sm:text-sm">
-                      [ADMIN MODE]
+                    <Badge className="bg-red-600 text-white shrink-0">
+                      ADMIN MODE
                     </Badge>
                   )}
-                </h1>
-                <p className="text-sm sm:text-base lg:text-lg text-gray-400 mb-3 lg:mb-4">{selectedCourse.title}</p>
-                <p className="text-sm sm:text-base text-gray-300">{selectedLesson.description}</p>
+                </div>
+                
+                {selectedLesson.description && (
+                  <p className="text-gray-300 text-base sm:text-lg leading-relaxed max-w-4xl">
+                    {selectedLesson.description}
+                  </p>
+                )}
               </div>
             </div>
 
-            {/* Lista de aulas - Abaixo no mobile, à direita no desktop */}
-            <div className="w-full lg:w-80 lg:flex-shrink-0">
-              <h3 className="text-base sm:text-lg font-semibold mb-3 lg:mb-4">Aulas do Curso</h3>
-              <div className="space-y-2 lg:space-y-3 max-h-96 lg:max-h-[600px] overflow-y-auto">
-                {selectedCourse.lessons.map((lesson, index) => (
-                  <div 
-                    key={lesson.id}
-                    className={`flex gap-2 lg:gap-3 p-2 lg:p-3 rounded-lg cursor-pointer transition-all duration-200 ${
-                      lesson.id === selectedLesson.id 
-                        ? 'bg-red-600' 
-                        : 'bg-gray-800 hover:bg-gray-700'
-                    }`}
-                    onClick={() => handleLessonClick(lesson)}
-                  >
-                    <div className="relative w-16 h-12 lg:w-24 lg:h-16 flex-shrink-0">
-                      <img 
-                        src={lesson.thumbnail_url} 
-                        alt={lesson.title}
-                        className="w-full h-full object-cover rounded"
-                      />
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <Play className="h-3 w-3 lg:h-4 lg:w-4 text-white" />
+            {/* Lista de Aulas - Sidebar */}
+            <div className="w-full xl:w-96 shrink-0">
+              <div className="sticky top-4">
+                <h3 className="text-lg sm:text-xl font-bold mb-4 flex items-center gap-2">
+                  <BookOpen className="h-5 w-5 text-red-500" />
+                  Aulas do Curso
+                  <span className="text-sm font-normal text-gray-500">
+                    ({selectedCourse.lessons.length})
+                  </span>
+                </h3>
+                
+                <div className="space-y-2 max-h-[70vh] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-zinc-700 scrollbar-track-transparent">
+                  {selectedCourse.lessons.map((lesson, index) => {
+                    const isActive = lesson.id === selectedLesson.id;
+                    return (
+                      <div 
+                        key={lesson.id}
+                        className={`group flex gap-3 p-3 rounded-lg cursor-pointer transition-all duration-300 ${
+                          isActive 
+                            ? 'bg-red-600/90 ring-2 ring-red-500' 
+                            : 'bg-zinc-800/80 hover:bg-zinc-700/80'
+                        }`}
+                        onClick={() => handleLessonClick(lesson)}
+                      >
+                        {/* Thumbnail */}
+                        <div className="relative w-28 h-16 shrink-0 rounded-md overflow-hidden bg-zinc-900">
+                          <img 
+                            src={lesson.thumbnail_url || '/placeholder.svg'} 
+                            alt={lesson.title}
+                            className="w-full h-full object-cover"
+                          />
+                          {/* Play overlay */}
+                          <div className={`absolute inset-0 flex items-center justify-center transition-opacity ${isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                            <div className="w-8 h-8 rounded-full bg-white/90 flex items-center justify-center">
+                              <Play className="h-4 w-4 text-black fill-black ml-0.5" />
+                            </div>
+                          </div>
+                          {/* Duração */}
+                          <div className="absolute bottom-1 right-1 bg-black/80 px-1.5 py-0.5 rounded text-[10px] font-medium">
+                            {formatDuration(lesson.duration)}
+                          </div>
+                        </div>
+                        
+                        {/* Info */}
+                        <div className="flex-1 min-w-0">
+                          <span className="text-xs text-gray-400 mb-1 block">
+                            Aula {index + 1}
+                          </span>
+                          <h4 className={`font-medium text-sm line-clamp-2 ${isActive ? 'text-white' : 'text-gray-200'}`}>
+                            {lesson.title}
+                          </h4>
+                        </div>
                       </div>
-                      <div className="absolute bottom-0.5 right-0.5 lg:bottom-1 lg:right-1 bg-black/70 px-1 py-0.5 rounded text-[10px] lg:text-xs">
-                        {formatDuration(lesson.duration)}
-                      </div>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-medium text-xs sm:text-sm line-clamp-2 mb-1">{lesson.title}</h4>
-                      <p className="text-[10px] sm:text-xs text-gray-400 line-clamp-1">{lesson.description}</p>
-                    </div>
-                  </div>
-                ))}
+                    );
+                  })}
+                </div>
               </div>
             </div>
           </div>
