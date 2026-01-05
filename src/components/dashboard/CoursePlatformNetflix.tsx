@@ -15,7 +15,11 @@ import {
   Settings,
   Shield,
   Eye,
-  EyeOff
+  EyeOff,
+  Download,
+  Award,
+  FileText,
+  CheckCircle
 } from "lucide-react";
 import { useAdminMode } from "@/hooks/useAdminMode";
 import { AdminEditControls, AdminStatsPanel, AdminViewToggle } from "@/components/admin/AdminEditControls";
@@ -735,6 +739,49 @@ const CoursePlatformNetflix = ({ user }: CoursePlatformNetflixProps) => {
                     {selectedLesson.description}
                   </p>
                 )}
+
+                {/* Seção de Download e Quiz */}
+                <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Download */}
+                  <div className="bg-zinc-800/60 rounded-xl p-5 border border-zinc-700/50 hover:border-zinc-600 transition-colors">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-10 h-10 rounded-full bg-blue-600/20 flex items-center justify-center">
+                        <Download className="h-5 w-5 text-blue-400" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-white">Material de Apoio</h4>
+                        <p className="text-xs text-gray-400">Arquivos para download</p>
+                      </div>
+                    </div>
+                    <Button 
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                      size="sm"
+                    >
+                      <FileText className="h-4 w-4 mr-2" />
+                      Baixar Material
+                    </Button>
+                  </div>
+
+                  {/* Quiz */}
+                  <div className="bg-zinc-800/60 rounded-xl p-5 border border-zinc-700/50 hover:border-zinc-600 transition-colors">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-10 h-10 rounded-full bg-purple-600/20 flex items-center justify-center">
+                        <Award className="h-5 w-5 text-purple-400" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-white">Quiz da Aula</h4>
+                        <p className="text-xs text-gray-400">Teste seu conhecimento</p>
+                      </div>
+                    </div>
+                    <Button 
+                      className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+                      size="sm"
+                    >
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      Iniciar Quiz
+                    </Button>
+                  </div>
+                </div>
               </div>
             </div>
 
