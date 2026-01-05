@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Dialog, 
@@ -42,6 +42,7 @@ import { Exercise, WeeklyPlan } from '@/hooks/useExercisesLibrary';
 import { RestTimer } from './RestTimer';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
+import confetti from 'canvas-confetti';
 
 interface ActiveWorkoutModalProps {
   isOpen: boolean;
@@ -170,6 +171,20 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
     onClose();
   };
 
+  // Animação de confete ao completar exercício
+  const triggerSuccessAnimation = useCallback(() => {
+    confetti({
+      particleCount: 80,
+      spread: 60,
+      origin: { y: 0.6 },
+      colors: ['#22c55e', '#16a34a', '#4ade80', '#86efac'],
+      scalar: 0.8,
+      gravity: 1.2,
+      drift: 0,
+      ticks: 150,
+    });
+  }, []);
+
   const handleCompleteExercise = () => {
     const nextProgress = progress.map((p, i) =>
       i === currentIndex
@@ -183,6 +198,9 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
 
     setProgress(nextProgress);
     setIsExerciseTimerRunning(false);
+    
+    // Animação de sucesso
+    triggerSuccessAnimation();
 
     // Ir direto para o próximo exercício
     if (currentIndex < totalExercises - 1) {
