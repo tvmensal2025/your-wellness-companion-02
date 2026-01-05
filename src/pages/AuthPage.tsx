@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useGoogleAuth } from "@/hooks/useGoogleAuth";
 import { GoogleSignupModal } from "@/components/GoogleSignupModal";
 import { AuthChoiceModal } from "@/components/AuthChoiceModal";
+import { repairAuthSessionIfTooLarge } from "@/lib/auth-token-repair";
 const AuthPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);

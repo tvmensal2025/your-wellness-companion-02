@@ -1,26 +1,50 @@
-import { useState, useEffect } from 'react';
-import { User } from '@supabase/supabase-js';
+import { useEffect, useState } from "react";
+import type { User } from "@supabase/supabase-js";
+import { supabase } from "@/integrations/supabase/client";
 
 /**
- * Determines admin capability from the authenticated user's claims/metadata.
- * Admin is granted only if the token (app_metadata) or user_metadata contains role === 'admin'.
- * Admin mode toggle is available only for admins and defaults to enabled for admins.
+ * Determina capacidade de admin com validação no backend (evita manipulação client-side).
  */
 export const useAdminMode = (user: User | null) => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [adminModeEnabled, setAdminModeEnabled] = useState(false);
+  const [isChecking, setIsChecking] = useState(false);
 
   useEffect(() => {
-    const roleFromAppMeta = (user as any)?.app_metadata?.role as string | undefined;
-    const roleFromUserMeta = (user as any)?.user_metadata?.role as string | undefined;
-    const hasAdminRole = roleFromAppMeta === 'admin' || roleFromUserMeta === 'admin';
+    let cancelled = false;
 
-    setIsAdmin(!!hasAdminRole);
-    setAdminModeEnabled(!!hasAdminRole);
-  }, [user]);
+    if (!user) {
+      setIsAdmin(false);
+      setAdminModeEnabled(false);
+      setIsChecking(false);
+      return;
+    }
+
+    setIsChecking(true);
+
+    (async () => {
+      try {
+        const { data, error } = await supabase.rpc("is_admin_user");
+        const ok = !error && data === true;
+
+        if (cancelled) return;
+        setIsAdmin(ok);
+        setAdminModeEnabled(ok);
+      } catch {
+        if (cancelled) return;
+        setIsAdmin(false);
+        setAdminModeEnabled(false);
+      } finally {
+        if (!cancelled) setIsChecking(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id]);
 
   const toggleAdminMode = () => {
-    // Only admins can toggle admin features in the UI
     setAdminModeEnabled((prev) => (isAdmin ? !prev : false));
   };
 
@@ -28,5 +52,6 @@ export const useAdminMode = (user: User | null) => {
     isAdmin,
     adminModeEnabled,
     toggleAdminMode,
+    isChecking,
   };
 };
