@@ -29,6 +29,10 @@ const GoogleFitPage = lazy(() => import("./pages/GoogleFitPage").then(module => 
 const GoogleFitCallbackPage = lazy(() => import("./pages/GoogleFitCallback").then(module => ({ default: module.GoogleFitCallback })));
 const GoogleFitTestPage = lazy(() => import("./pages/GoogleFitTestPage"));
 const GoogleFitPremiumDashboard = lazy(() => import("./pages/GoogleFitPremiumDashboard"));
+const DrVitalEnhancedPage = lazy(() => import("./pages/DrVitalEnhancedPage"));
+const HealthFeedPage = lazy(() => import("./pages/HealthFeedPage"));
+const SofiaNutricionalPage = lazy(() => import("./pages/SofiaNutricionalPage").then(module => ({ default: module.SofiaNutricionalPage })));
+const ProfessionalEvaluationPage = lazy(() => import("./pages/ProfessionalEvaluationPage"));
 
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-screen bg-background">
@@ -73,6 +77,10 @@ const App: React.FC = () => {
               <Route path="/google-fit-callback" element={<Suspense fallback={<PageLoader />}><GoogleFitCallbackPage /></Suspense>} />
               <Route path="/google-fit-test" element={<Suspense fallback={<PageLoader />}><GoogleFitTestPage /></Suspense>} />
               <Route path="/google-fit-dashboard" element={<Suspense fallback={<PageLoader />}><GoogleFitPremiumDashboard /></Suspense>} />
+              <Route path="/dr-vital-enhanced" element={<Suspense fallback={<PageLoader />}><DrVitalEnhancedPage /></Suspense>} />
+              <Route path="/health-feed" element={<Suspense fallback={<PageLoader />}><HealthFeedPage /></Suspense>} />
+              <Route path="/sofia-nutricional" element={<Suspense fallback={<PageLoader />}><SofiaNutricionalPage /></Suspense>} />
+              <Route path="/professional-evaluation" element={<Suspense fallback={<PageLoader />}><ProfessionalEvaluationPage /></Suspense>} />
             </Routes>
             <SofiaFloatingButton />
           </Suspense>
