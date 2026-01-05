@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Users, Clock, Target, Brain, DollarSign, Star, Zap, Send, CheckCircle, Database, BarChart3, Moon, Heart, Sparkles, Scale } from 'lucide-react';
+import { Users, Clock, Target, Brain, DollarSign, Star, Zap, Send, CheckCircle, Database, BarChart3, Moon, Heart, Sparkles, Scale, Utensils, Droplets, Calendar, Flag, Flame, ClipboardList, Activity } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -109,6 +109,13 @@ const SessionTemplates: React.FC = () => {
     if (title.includes('Sono') || title.includes('Sleep')) return 'sono';
     if (title.includes('Estresse') || title.includes('Ansiedade')) return 'estresse';
     if (title.includes('Bem-estar') || title.includes('Mindfulness')) return 'bem-estar';
+    if (title.includes('Hábitos Alimentares') || title.includes('Alimentar')) return 'habitos-alimentares';
+    if (title.includes('Hidratação') || title.includes('Água')) return 'hidratacao';
+    if (title.includes('Rotina') || title.includes('Diária')) return 'rotina-diaria';
+    if (title.includes('Objetivos') || title.includes('Metas de Saúde')) return 'objetivos-saude';
+    if (title.includes('Motivação') || title.includes('Energia Mental')) return 'motivacao';
+    if (title.includes('Anamnese') || title.includes('Histórico')) return 'anamnese';
+    if (title.includes('Atividade Física') || title.includes('Exercício')) return 'atividade-fisica';
     return 'other';
   };
 
@@ -216,6 +223,97 @@ const SessionTemplates: React.FC = () => {
       areas: 6,
       dbCount: stats.sessionsByType['bem-estar']?.count || 0,
       assignedCount: stats.sessionsByType['bem-estar']?.assignments || 0
+    },
+    {
+      id: 'habitos-alimentares',
+      title: 'Avaliação de Hábitos Alimentares',
+      description: 'Analise seus padrões alimentares, preferências e comportamentos em relação à comida. Receba insights personalizados para melhorar sua nutrição.',
+      duration: '12-15 minutos',
+      category: 'Nutrição',
+      icon: <Utensils className="w-6 h-6" />,
+      features: ['Padrões Alimentares', 'Preferências', 'Comportamentos'],
+      color: 'bg-amber-500',
+      questions: 25,
+      dbCount: stats.sessionsByType['habitos-alimentares']?.count || 0,
+      assignedCount: stats.sessionsByType['habitos-alimentares']?.assignments || 0
+    },
+    {
+      id: 'hidratacao',
+      title: 'Avaliação de Hidratação',
+      description: 'Avalie seus hábitos de hidratação e consumo de líquidos. Identifique padrões e receba recomendações para otimizar sua ingestão de água.',
+      duration: '5-8 minutos',
+      category: 'Saúde',
+      icon: <Droplets className="w-6 h-6" />,
+      features: ['Consumo de Água', 'Padrões Diários', 'Recomendações'],
+      color: 'bg-cyan-500',
+      questions: 12,
+      dbCount: stats.sessionsByType['hidratacao']?.count || 0,
+      assignedCount: stats.sessionsByType['hidratacao']?.assignments || 0
+    },
+    {
+      id: 'rotina-diaria',
+      title: 'Mapeamento de Rotina Diária',
+      description: 'Mapeie sua rotina diária completa incluindo horários de acordar, refeições, trabalho e descanso. Otimize seu dia para máxima produtividade e bem-estar.',
+      duration: '10-12 minutos',
+      category: 'Produtividade',
+      icon: <Calendar className="w-6 h-6" />,
+      features: ['Horários', 'Hábitos Diários', 'Otimização'],
+      color: 'bg-violet-500',
+      questions: 20,
+      dbCount: stats.sessionsByType['rotina-diaria']?.count || 0,
+      assignedCount: stats.sessionsByType['rotina-diaria']?.assignments || 0
+    },
+    {
+      id: 'objetivos-saude',
+      title: 'Definição de Objetivos de Saúde',
+      description: 'Defina e acompanhe seus objetivos de saúde de curto, médio e longo prazo. Crie metas SMART e receba um plano de ação personalizado.',
+      duration: '15-20 minutos',
+      category: 'Metas',
+      icon: <Flag className="w-6 h-6" />,
+      features: ['Metas SMART', 'Plano de Ação', 'Acompanhamento'],
+      color: 'bg-emerald-500',
+      questions: 18,
+      dbCount: stats.sessionsByType['objetivos-saude']?.count || 0,
+      assignedCount: stats.sessionsByType['objetivos-saude']?.assignments || 0
+    },
+    {
+      id: 'motivacao',
+      title: 'Avaliação de Motivação e Energia',
+      description: 'Avalie seu nível de motivação, energia mental e disposição para mudanças. Identifique bloqueios e receba estratégias de ativação.',
+      duration: '8-12 minutos',
+      category: 'Psicológico',
+      icon: <Flame className="w-6 h-6" />,
+      features: ['Nível de Motivação', 'Energia Mental', 'Estratégias'],
+      color: 'bg-rose-500',
+      questions: 16,
+      dbCount: stats.sessionsByType['motivacao']?.count || 0,
+      assignedCount: stats.sessionsByType['motivacao']?.assignments || 0
+    },
+    {
+      id: 'anamnese',
+      title: 'Anamnese Completa de Saúde',
+      description: 'Questionário completo de histórico de saúde incluindo doenças, medicamentos, alergias, cirurgias e histórico familiar. Essencial para acompanhamento profissional.',
+      duration: '20-30 minutos',
+      category: 'Histórico Médico',
+      icon: <ClipboardList className="w-6 h-6" />,
+      features: ['Histórico Completo', 'Medicamentos', 'Alergias'],
+      color: 'bg-slate-500',
+      questions: 50,
+      dbCount: stats.sessionsByType['anamnese']?.count || 0,
+      assignedCount: stats.sessionsByType['anamnese']?.assignments || 0
+    },
+    {
+      id: 'atividade-fisica',
+      title: 'Avaliação de Atividade Física',
+      description: 'Avalie seu nível atual de atividade física, preferências de exercício e barreiras. Receba recomendações personalizadas para um estilo de vida mais ativo.',
+      duration: '10-15 minutos',
+      category: 'Exercício',
+      icon: <Activity className="w-6 h-6" />,
+      features: ['Nível de Atividade', 'Preferências', 'Plano de Exercícios'],
+      color: 'bg-lime-500',
+      questions: 22,
+      dbCount: stats.sessionsByType['atividade-fisica']?.count || 0,
+      assignedCount: stats.sessionsByType['atividade-fisica']?.assignments || 0
     }
   ];
 
@@ -472,6 +570,165 @@ const SessionTemplates: React.FC = () => {
                 { id: 'conexao', name: 'Conexão Social', icon: '🤝', color: '#0ea5e9' },
                 { id: 'proposito', name: 'Propósito', icon: '🎯', color: '#f59e0b' },
                 { id: 'paz', name: 'Paz Interior', icon: '☮️', color: '#8b5cf6' }
+              ].map(area => ({
+                ...area,
+                question: { id: `${area.id}_q1`, text: `Como está seu(sua) ${area.name}?`, type: 'emoji_scale' },
+                emoji_options: emojiOptions
+              }))
+            },
+            target_saboteurs: [],
+            difficulty: 'beginner',
+            estimated_time: 12
+          };
+        case 'habitos-alimentares':
+          return {
+            title: 'Avaliação de Hábitos Alimentares',
+            description: 'Analise seus padrões alimentares, preferências e comportamentos em relação à comida.',
+            type: 'life_wheel_assessment',
+            content: {
+              areas: [
+                { id: 'refeicoes', name: 'Regularidade das Refeições', icon: '🍽️', color: '#f59e0b' },
+                { id: 'vegetais', name: 'Consumo de Vegetais', icon: '🥗', color: '#22c55e' },
+                { id: 'proteinas', name: 'Consumo de Proteínas', icon: '🥩', color: '#ef4444' },
+                { id: 'acucar', name: 'Controle de Açúcar', icon: '🍬', color: '#ec4899' },
+                { id: 'processados', name: 'Evitar Processados', icon: '🍔', color: '#f97316' },
+                { id: 'mastigacao', name: 'Mastigação Adequada', icon: '👄', color: '#8b5cf6' },
+                { id: 'porcoes', name: 'Controle de Porções', icon: '📏', color: '#0ea5e9' },
+                { id: 'emocional', name: 'Alimentação Consciente', icon: '🧠', color: '#14b8a6' }
+              ].map(area => ({
+                ...area,
+                question: { id: `${area.id}_q1`, text: `Como está seu(sua) ${area.name}?`, type: 'emoji_scale' },
+                emoji_options: emojiOptions
+              }))
+            },
+            target_saboteurs: [],
+            difficulty: 'beginner',
+            estimated_time: 15
+          };
+        case 'hidratacao':
+          return {
+            title: 'Avaliação de Hidratação',
+            description: 'Avalie seus hábitos de hidratação e consumo de líquidos.',
+            type: 'life_wheel_assessment',
+            content: {
+              areas: [
+                { id: 'quantidade', name: 'Quantidade de Água', icon: '💧', color: '#0ea5e9' },
+                { id: 'frequencia', name: 'Frequência', icon: '⏰', color: '#6366f1' },
+                { id: 'sinais', name: 'Atenção aos Sinais', icon: '👁️', color: '#22c55e' },
+                { id: 'habito', name: 'Hábito Estabelecido', icon: '✅', color: '#14b8a6' }
+              ].map(area => ({
+                ...area,
+                question: { id: `${area.id}_q1`, text: `Como está seu(sua) ${area.name}?`, type: 'emoji_scale' },
+                emoji_options: emojiOptions
+              }))
+            },
+            target_saboteurs: [],
+            difficulty: 'beginner',
+            estimated_time: 8
+          };
+        case 'rotina-diaria':
+          return {
+            title: 'Mapeamento de Rotina Diária',
+            description: 'Mapeie sua rotina diária completa incluindo horários e hábitos.',
+            type: 'life_wheel_assessment',
+            content: {
+              areas: [
+                { id: 'acordar', name: 'Horário de Acordar', icon: '🌅', color: '#f59e0b' },
+                { id: 'cafe', name: 'Café da Manhã', icon: '☕', color: '#8b5cf6' },
+                { id: 'trabalho', name: 'Produtividade no Trabalho', icon: '💼', color: '#0ea5e9' },
+                { id: 'almoco', name: 'Pausa para Almoço', icon: '🍽️', color: '#22c55e' },
+                { id: 'exercicio', name: 'Tempo para Exercício', icon: '🏃', color: '#ef4444' },
+                { id: 'jantar', name: 'Jantar em Família', icon: '👨‍👩‍👧', color: '#ec4899' },
+                { id: 'lazer', name: 'Tempo de Lazer', icon: '🎮', color: '#a78bfa' },
+                { id: 'dormir', name: 'Hora de Dormir', icon: '🌙', color: '#6366f1' }
+              ].map(area => ({
+                ...area,
+                question: { id: `${area.id}_q1`, text: `Como está seu(sua) ${area.name}?`, type: 'emoji_scale' },
+                emoji_options: emojiOptions
+              }))
+            },
+            target_saboteurs: [],
+            difficulty: 'beginner',
+            estimated_time: 12
+          };
+        case 'objetivos-saude':
+          return {
+            title: 'Definição de Objetivos de Saúde',
+            description: 'Defina e acompanhe seus objetivos de saúde de curto, médio e longo prazo.',
+            type: 'life_wheel_assessment',
+            content: {
+              areas: [
+                { id: 'peso', name: 'Meta de Peso', icon: '⚖️', color: '#22c55e' },
+                { id: 'exercicio', name: 'Meta de Exercício', icon: '🏋️', color: '#ef4444' },
+                { id: 'alimentacao', name: 'Meta Alimentar', icon: '🥗', color: '#f59e0b' },
+                { id: 'sono', name: 'Meta de Sono', icon: '😴', color: '#6366f1' },
+                { id: 'stress', name: 'Redução de Estresse', icon: '🧘', color: '#ec4899' },
+                { id: 'exames', name: 'Exames em Dia', icon: '🩺', color: '#0ea5e9' }
+              ].map(area => ({
+                ...area,
+                question: { id: `${area.id}_q1`, text: `Como está sua ${area.name}?`, type: 'emoji_scale' },
+                emoji_options: emojiOptions
+              }))
+            },
+            target_saboteurs: [],
+            difficulty: 'beginner',
+            estimated_time: 15
+          };
+        case 'motivacao':
+          return {
+            title: 'Avaliação de Motivação e Energia',
+            description: 'Avalie seu nível de motivação, energia mental e disposição para mudanças.',
+            type: 'life_wheel_assessment',
+            content: {
+              areas: [
+                { id: 'energia', name: 'Nível de Energia', icon: '⚡', color: '#f59e0b' },
+                { id: 'motivacao', name: 'Motivação Geral', icon: '🔥', color: '#ef4444' },
+                { id: 'foco', name: 'Capacidade de Foco', icon: '🎯', color: '#0ea5e9' },
+                { id: 'resiliencia', name: 'Resiliência', icon: '💪', color: '#22c55e' },
+                { id: 'otimismo', name: 'Otimismo', icon: '😊', color: '#ec4899' },
+                { id: 'autodisciplina', name: 'Autodisciplina', icon: '📋', color: '#8b5cf6' }
+              ].map(area => ({
+                ...area,
+                question: { id: `${area.id}_q1`, text: `Como está seu(sua) ${area.name}?`, type: 'emoji_scale' },
+                emoji_options: emojiOptions
+              }))
+            },
+            target_saboteurs: [],
+            difficulty: 'beginner',
+            estimated_time: 10
+          };
+        case 'anamnese':
+          return {
+            title: 'Anamnese Completa de Saúde',
+            description: 'Questionário completo de histórico de saúde incluindo doenças, medicamentos e histórico familiar.',
+            type: 'anamnesis_assessment',
+            content: {
+              sections: [
+                { id: 'historico_pessoal', name: 'Histórico Pessoal', icon: '📋', color: '#0ea5e9', questions: ['Possui alguma doença crônica?', 'Faz uso de medicamentos contínuos?', 'Possui alergias conhecidas?'] },
+                { id: 'historico_familiar', name: 'Histórico Familiar', icon: '👨‍👩‍👧‍👦', color: '#22c55e', questions: ['Histórico de diabetes na família?', 'Histórico de hipertensão?', 'Histórico de câncer?'] },
+                { id: 'cirurgias', name: 'Cirurgias', icon: '🏥', color: '#ef4444', questions: ['Já realizou alguma cirurgia?', 'Teve complicações em cirurgias?'] },
+                { id: 'habitos', name: 'Hábitos de Vida', icon: '🍺', color: '#f59e0b', questions: ['Consome bebidas alcoólicas?', 'É fumante ou ex-fumante?', 'Pratica atividade física regular?'] }
+              ]
+            },
+            target_saboteurs: [],
+            difficulty: 'intermediate',
+            estimated_time: 25
+          };
+        case 'atividade-fisica':
+          return {
+            title: 'Avaliação de Atividade Física',
+            description: 'Avalie seu nível atual de atividade física, preferências de exercício e barreiras.',
+            type: 'life_wheel_assessment',
+            content: {
+              areas: [
+                { id: 'frequencia', name: 'Frequência de Treino', icon: '📅', color: '#22c55e' },
+                { id: 'intensidade', name: 'Intensidade', icon: '💪', color: '#ef4444' },
+                { id: 'variedade', name: 'Variedade de Exercícios', icon: '🎯', color: '#8b5cf6' },
+                { id: 'alongamento', name: 'Alongamento', icon: '🧘', color: '#14b8a6' },
+                { id: 'cardio', name: 'Exercício Cardiovascular', icon: '❤️', color: '#ec4899' },
+                { id: 'forca', name: 'Treino de Força', icon: '🏋️', color: '#f59e0b' },
+                { id: 'descanso', name: 'Descanso e Recuperação', icon: '😴', color: '#6366f1' },
+                { id: 'motivacao_treino', name: 'Motivação para Treinar', icon: '🔥', color: '#0ea5e9' }
               ].map(area => ({
                 ...area,
                 question: { id: `${area.id}_q1`, text: `Como está seu(sua) ${area.name}?`, type: 'emoji_scale' },
