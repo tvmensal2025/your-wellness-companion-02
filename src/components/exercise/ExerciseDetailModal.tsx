@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   ArrowLeft,
@@ -83,8 +83,6 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
   const [userFeedback, setUserFeedback] = useState<'facil' | 'medio' | 'dificil' | null>(null);
   const [feedbackSaving, setFeedbackSaving] = useState(false);
   const [showFullDescription, setShowFullDescription] = useState(false);
-  const [showInstructions, setShowInstructions] = useState(false);
-  const [showTips, setShowTips] = useState(false);
 
   const exerciseId = useMemo(() => exerciseData?.id || '', [exerciseData]);
 
@@ -190,8 +188,6 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
     setCurrentSet(1);
     setUserFeedback(null);
     setShowFullDescription(false);
-    setShowInstructions(false);
-    setShowTips(false);
   }, [isOpen, name]);
 
   useEffect(() => {
@@ -398,92 +394,56 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
         </CardContent>
       </Card>
 
-      {/* Seção colapsável de Instruções */}
+      {/* Instruções - exibidas diretamente */}
       {instructions.length > 0 && (
-        <Collapsible open={showInstructions} onOpenChange={setShowInstructions}>
-          <CollapsibleTrigger asChild>
-            <Card className="border-0 bg-green-50/50 dark:bg-green-950/20 cursor-pointer hover:bg-green-50 dark:hover:bg-green-950/30 transition-colors">
-              <CardContent className="p-3 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center">
-                    <CheckCircle2 className="w-4 h-4 text-green-600" />
-                  </div>
-                  <div>
-                    <span className="text-sm font-semibold text-green-700 dark:text-green-400">
-                      Passo a Passo
-                    </span>
-                    <p className="text-[10px] text-green-600/70 dark:text-green-500/70">
-                      {instructions.length} passos detalhados
-                    </p>
-                  </div>
-                </div>
-                {showInstructions ? (
-                  <ChevronUp className="w-5 h-5 text-green-600" />
-                ) : (
-                  <ChevronDown className="w-5 h-5 text-green-600" />
-                )}
-              </CardContent>
-            </Card>
-          </CollapsibleTrigger>
-          <CollapsibleContent>
-            <div className="mt-2 space-y-2 pl-2">
+        <Card className="border-0 bg-green-50/50 dark:bg-green-950/20">
+          <CardContent className="p-4 space-y-3">
+            <div className="flex items-center gap-2 mb-2">
+              <CheckCircle2 className="w-5 h-5 text-green-600" />
+              <span className="font-semibold text-green-700 dark:text-green-400">
+                Passo a Passo
+              </span>
+            </div>
+            <div className="space-y-2">
               {instructions.map((step, index) => (
                 <div
                   key={index}
-                  className="flex items-start gap-3 p-3 bg-white/50 dark:bg-white/5 rounded-lg border border-green-100 dark:border-green-900/30"
+                  className="flex items-start gap-3"
                 >
-                  <div className="w-6 h-6 rounded-full bg-green-500 text-white flex items-center justify-center text-xs font-bold shrink-0">
+                  <div className="w-6 h-6 rounded-full bg-green-500 text-white flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">
                     {index + 1}
                   </div>
                   <span className="text-sm text-foreground leading-relaxed">{step}</span>
                 </div>
               ))}
             </div>
-          </CollapsibleContent>
-        </Collapsible>
+          </CardContent>
+        </Card>
       )}
 
-      {/* Seção colapsável de Dicas */}
+      {/* Dicas - exibidas diretamente */}
       {tips.length > 0 && (
-        <Collapsible open={showTips} onOpenChange={setShowTips}>
-          <CollapsibleTrigger asChild>
-            <Card className="border-0 bg-blue-50/50 dark:bg-blue-950/20 cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-950/30 transition-colors">
-              <CardContent className="p-3 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center">
-                    <Lightbulb className="w-4 h-4 text-blue-600" />
-                  </div>
-                  <div>
-                    <span className="text-sm font-semibold text-blue-700 dark:text-blue-400">
-                      Dicas do Personal
-                    </span>
-                    <p className="text-[10px] text-blue-600/70 dark:text-blue-500/70">
-                      {tips.length} dicas importantes
-                    </p>
-                  </div>
-                </div>
-                {showTips ? (
-                  <ChevronUp className="w-5 h-5 text-blue-600" />
-                ) : (
-                  <ChevronDown className="w-5 h-5 text-blue-600" />
-                )}
-              </CardContent>
-            </Card>
-          </CollapsibleTrigger>
-          <CollapsibleContent>
-            <div className="mt-2 space-y-2 pl-2">
+        <Card className="border-0 bg-blue-50/50 dark:bg-blue-950/20">
+          <CardContent className="p-4 space-y-3">
+            <div className="flex items-center gap-2 mb-2">
+              <Lightbulb className="w-5 h-5 text-blue-600" />
+              <span className="font-semibold text-blue-700 dark:text-blue-400">
+                Dicas do Personal
+              </span>
+            </div>
+            <div className="space-y-2">
               {tips.map((tip, index) => (
                 <div
                   key={index}
-                  className="flex items-start gap-3 p-3 bg-white/50 dark:bg-white/5 rounded-lg border border-blue-100 dark:border-blue-900/30"
+                  className="flex items-start gap-2"
                 >
                   <Flame className="w-4 h-4 text-blue-500 mt-0.5 shrink-0" />
                   <span className="text-sm text-foreground leading-relaxed">{tip}</span>
                 </div>
               ))}
             </div>
-          </CollapsibleContent>
-        </Collapsible>
+          </CardContent>
+        </Card>
       )}
 
       {/* Botão principal */}
