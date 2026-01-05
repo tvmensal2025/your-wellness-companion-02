@@ -335,25 +335,25 @@ const UserProfile = ({ onOpenLayoutPrefs }: UserProfileProps = {}) => {
   };
 
   return (
-    <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-6xl">
+    <div className="container mx-auto px-2 sm:px-4 py-3 sm:py-8 max-w-6xl">
       {/* Header Section */}
-      <div className="mb-4 sm:mb-8">
+      <div className="mb-3 sm:mb-8">
         <Card className="border-0 shadow-lg bg-gradient-to-r from-primary/5 to-secondary/5">
-          <CardContent className="p-4 sm:p-6">
-            <div className="flex flex-col gap-4 sm:gap-6">
-              {/* Avatar e Info - Layout responsivo */}
-              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
+          <CardContent className="p-3 sm:p-6">
+            <div className="flex flex-col gap-3 sm:gap-6">
+              {/* Avatar e Info - Layout mobile first */}
+              <div className="flex flex-col items-center gap-3 sm:flex-row sm:items-start sm:gap-6">
                 <div className="relative group shrink-0">
-                  <Avatar className="h-20 w-20 sm:h-24 sm:w-24 border-4 border-white shadow-lg">
+                  <Avatar className="h-16 w-16 sm:h-24 sm:w-24 border-4 border-background shadow-lg">
                     <AvatarImage src={profile.avatar_url} />
-                    <AvatarFallback className="text-lg sm:text-xl bg-primary text-primary-foreground">
+                    <AvatarFallback className="text-base sm:text-xl bg-primary text-primary-foreground">
                       {profile.full_name ? getInitials(profile.full_name) : 'U'}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="absolute -bottom-1 -right-1 w-5 h-5 sm:w-6 sm:h-6 bg-green-500 rounded-full border-2 border-white"></div>
+                  <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 sm:w-6 sm:h-6 bg-green-500 rounded-full border-2 border-background"></div>
                   
                   {/* Botão de upload de foto */}
-                  <label className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                  <label className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 active:opacity-100 transition-opacity cursor-pointer">
                     <input
                       type="file"
                       accept="image/*"
@@ -362,51 +362,53 @@ const UserProfile = ({ onOpenLayoutPrefs }: UserProfileProps = {}) => {
                       disabled={uploadingPhoto}
                     />
                     {uploadingPhoto ? (
-                      <Loader2 className="h-6 w-6 sm:h-8 sm:w-8 text-white animate-spin" />
+                      <Loader2 className="h-5 w-5 sm:h-8 sm:w-8 text-white animate-spin" />
                     ) : (
-                      <Camera className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
+                      <Camera className="h-5 w-5 sm:h-8 sm:w-8 text-white" />
                     )}
                   </label>
                 </div>
                 
-                <div className="flex-1 text-center sm:text-left min-w-0">
-                  <h1 className="text-xl sm:text-3xl font-bold text-foreground mb-1 truncate">
+                <div className="flex-1 text-center sm:text-left min-w-0 w-full">
+                  <h1 className="text-lg sm:text-3xl font-bold text-foreground mb-0.5 sm:mb-1 truncate px-2 sm:px-0">
                     {profile.full_name || 'Usuário'}
                   </h1>
-                  <p className="text-sm sm:text-base text-muted-foreground mb-2">
+                  <p className="text-xs sm:text-base text-muted-foreground mb-2">
                     Membro desde {profile.created_at ? new Date(profile.created_at).toLocaleDateString('pt-BR') : 'hoje'}
                   </p>
-                  <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
+                  
+                  {/* Info do usuário - stack vertical em mobile */}
+                  <div className="flex flex-col items-center gap-1.5 sm:flex-row sm:gap-4 text-xs sm:text-sm text-muted-foreground">
                     {profile.email && (
-                      <div className="flex items-center space-x-1 truncate max-w-full">
+                      <div className="flex items-center gap-1 max-w-[90%] sm:max-w-none">
                         <Mail className="h-3 w-3 sm:h-4 sm:w-4 shrink-0" />
-                        <span className="truncate">{profile.email}</span>
+                        <span className="truncate text-[11px] sm:text-sm">{profile.email}</span>
                       </div>
                     )}
                     {profile.phone && (
-                      <div className="flex items-center space-x-1">
+                      <div className="flex items-center gap-1">
                         <Phone className="h-3 w-3 sm:h-4 sm:w-4 shrink-0" />
-                        <span>{profile.phone}</span>
+                        <span className="text-[11px] sm:text-sm">{profile.phone}</span>
                       </div>
                     )}
                     {(profile.city || profile.state) && (
-                      <div className="flex items-center space-x-1">
+                      <div className="flex items-center gap-1">
                         <MapPin className="h-3 w-3 sm:h-4 sm:w-4 shrink-0" />
-                        <span>{[profile.city, profile.state].filter(Boolean).join(', ')}</span>
+                        <span className="text-[11px] sm:text-sm">{[profile.city, profile.state].filter(Boolean).join(', ')}</span>
                       </div>
                     )}
                   </div>
                 </div>
               </div>
               
-              {/* Botão Editar - Sempre visível */}
+              {/* Botão Editar */}
               <Button
-                size="default"
+                size="sm"
                 variant={editing ? "outline" : "default"}
                 onClick={() => setEditing(!editing)}
                 className="w-full sm:w-auto sm:self-end"
               >
-                <Edit2 className="h-4 w-4 mr-2" />
+                <Edit2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
                 {editing ? 'Cancelar' : 'Editar'}
               </Button>
             </div>
@@ -414,19 +416,19 @@ const UserProfile = ({ onOpenLayoutPrefs }: UserProfileProps = {}) => {
         </Card>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 gap-2 sm:gap-4 mb-4 sm:mb-8">
+      {/* Stats Cards - 2x2 grid sempre */}
+      <div className="grid grid-cols-2 gap-2 sm:gap-4 mb-3 sm:mb-8">
         {activityStats.map((stat, index) => {
           const IconComponent = stat.icon;
           return (
             <Card key={index} className="hover:shadow-md transition-shadow">
-              <CardContent className="p-3 sm:p-4">
-                <div className="flex items-center justify-between gap-2">
-                  <div className="min-w-0">
-                    <p className="text-lg sm:text-2xl font-bold text-foreground">{stat.value}</p>
-                    <p className="text-[10px] sm:text-xs text-muted-foreground mt-1 truncate">{stat.label}</p>
+              <CardContent className="p-2.5 sm:p-4">
+                <div className="flex items-center justify-between gap-1 sm:gap-2">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-base sm:text-2xl font-bold text-foreground">{stat.value}</p>
+                    <p className="text-[9px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1 leading-tight">{stat.label}</p>
                   </div>
-                  <IconComponent className={`h-6 w-6 sm:h-8 sm:w-8 shrink-0 ${stat.color}`} />
+                  <IconComponent className={`h-5 w-5 sm:h-8 sm:w-8 shrink-0 ${stat.color}`} />
                 </div>
               </CardContent>
             </Card>
@@ -434,45 +436,42 @@ const UserProfile = ({ onOpenLayoutPrefs }: UserProfileProps = {}) => {
         })}
       </div>
 
-      {/* Main Content Tabs */}
+      {/* Main Content Tabs - Scrollable em mobile */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="flex w-full overflow-x-auto mb-4 sm:mb-6 h-auto p-1 gap-1">
-          <TabsTrigger value="overview" className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 text-xs sm:text-sm whitespace-nowrap flex-1 min-w-0">
-            <User className="h-3 w-3 sm:h-4 sm:w-4 shrink-0" />
-            <span className="hidden xs:inline sm:inline">Visão Geral</span>
-            <span className="xs:hidden sm:hidden">Geral</span>
-          </TabsTrigger>
-          <TabsTrigger value="medical" className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 text-xs sm:text-sm whitespace-nowrap flex-1 min-w-0">
-            <FileText className="h-3 w-3 sm:h-4 sm:w-4 shrink-0" />
-            <span className="hidden sm:inline">Meus Exames</span>
-            <span className="sm:hidden">Exames</span>
-          </TabsTrigger>
-          <TabsTrigger value="achievements" className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 text-xs sm:text-sm whitespace-nowrap flex-1 min-w-0">
-            <Award className="h-3 w-3 sm:h-4 sm:w-4 shrink-0" />
-            <span className="hidden sm:inline">Conquistas</span>
-            <span className="sm:hidden">🏆</span>
-          </TabsTrigger>
-          <TabsTrigger value="settings" className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 text-xs sm:text-sm whitespace-nowrap flex-1 min-w-0">
-            <Settings className="h-3 w-3 sm:h-4 sm:w-4 shrink-0" />
-            <span className="hidden sm:inline">Configurações</span>
-            <span className="sm:hidden">⚙️</span>
-          </TabsTrigger>
-          <TabsTrigger value="subscription" className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 text-xs sm:text-sm whitespace-nowrap flex-1 min-w-0">
-            <Crown className="h-3 w-3 sm:h-4 sm:w-4 shrink-0" />
-            <span className="hidden sm:inline">Assinatura</span>
-            <span className="sm:hidden">👑</span>
-          </TabsTrigger>
-        </TabsList>
+        <div className="overflow-x-auto -mx-2 px-2 sm:mx-0 sm:px-0 pb-1">
+          <TabsList className="inline-flex w-max sm:w-full min-w-full sm:grid sm:grid-cols-5 mb-3 sm:mb-6 h-9 sm:h-10 p-1 gap-0.5 sm:gap-1">
+            <TabsTrigger value="overview" className="flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-sm whitespace-nowrap">
+              <User className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              <span>Geral</span>
+            </TabsTrigger>
+            <TabsTrigger value="medical" className="flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-sm whitespace-nowrap">
+              <FileText className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              <span>Exames</span>
+            </TabsTrigger>
+            <TabsTrigger value="achievements" className="flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-sm whitespace-nowrap">
+              <Award className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              <span>Conquistas</span>
+            </TabsTrigger>
+            <TabsTrigger value="settings" className="flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-sm whitespace-nowrap">
+              <Settings className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              <span>Config</span>
+            </TabsTrigger>
+            <TabsTrigger value="subscription" className="flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-sm whitespace-nowrap">
+              <Crown className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              <span>Plano</span>
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         {/* Overview Tab */}
-        <TabsContent value="overview" className="space-y-6">
-          <div className="grid lg:grid-cols-2 gap-6">
+        <TabsContent value="overview" className="space-y-4 sm:space-y-6">
+          <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
             <Card>
-              <CardHeader>
-                <CardTitle>Informações Pessoais</CardTitle>
-                <CardDescription>Seus dados básicos de perfil</CardDescription>
+              <CardHeader className="pb-2 sm:pb-4">
+                <CardTitle className="text-base sm:text-lg">Informações Pessoais</CardTitle>
+                <CardDescription className="text-xs sm:text-sm">Seus dados básicos de perfil</CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="pt-2 sm:pt-4">
                 {editing ? (
                   <div className="space-y-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -525,7 +524,7 @@ const UserProfile = ({ onOpenLayoutPrefs }: UserProfileProps = {}) => {
                         onChange={(e) => handleInputChange('address', e.target.value)}
                       />
                     </div>
-                    <div className="grid grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                       <div>
                         <Label htmlFor="city">Cidade</Label>
                         <Input
