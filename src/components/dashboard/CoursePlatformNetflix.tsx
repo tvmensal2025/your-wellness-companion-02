@@ -534,11 +534,24 @@ const CoursePlatformNetflix = ({ user }: CoursePlatformNetflixProps) => {
                 {/* Card Poster Style - Aspect 2:3 */}
                 <div className="relative aspect-[2/3] rounded-md overflow-hidden bg-zinc-800 shadow-lg transition-all duration-300 group-hover:scale-105 group-hover:shadow-xl group-hover:shadow-white/10 group-hover:z-30">
                   {/* Imagem */}
-                  <img 
-                    src={course.thumbnail_url || '/placeholder.svg'} 
-                    alt={course.title}
-                    className="w-full h-full object-cover"
-                  />
+                  {course.thumbnail_url ? (
+                    <img 
+                      src={course.thumbnail_url} 
+                      alt={course.title}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                        target.parentElement?.classList.add('bg-gradient-to-br', 'from-primary/30', 'to-primary/10');
+                      }}
+                      crossOrigin="anonymous"
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center">
+                      <span className="text-4xl opacity-50">🎓</span>
+                    </div>
+                  )}
                   
                   {/* Overlay gradiente sutil */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
