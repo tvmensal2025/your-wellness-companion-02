@@ -335,7 +335,7 @@ const UserProfile = ({ onOpenLayoutPrefs }: UserProfileProps = {}) => {
   };
 
   return (
-    <div className="container mx-auto px-2 sm:px-4 py-3 sm:py-8 max-w-6xl">
+    <div className="w-full max-w-6xl mx-auto px-3 sm:px-4 py-3 sm:py-8 overflow-x-hidden">
       {/* Header Section */}
       <div className="mb-3 sm:mb-8">
         <Card className="border-0 shadow-lg bg-gradient-to-r from-primary/5 to-secondary/5">
@@ -369,8 +369,8 @@ const UserProfile = ({ onOpenLayoutPrefs }: UserProfileProps = {}) => {
                   </label>
                 </div>
                 
-                <div className="flex-1 text-center sm:text-left min-w-0 w-full">
-                  <h1 className="text-lg sm:text-3xl font-bold text-foreground mb-0.5 sm:mb-1 truncate px-2 sm:px-0">
+                <div className="flex-1 text-center sm:text-left min-w-0 overflow-hidden">
+                  <h1 className="text-base sm:text-3xl font-bold text-foreground mb-0.5 sm:mb-1 break-words">
                     {profile.full_name || 'Usuário'}
                   </h1>
                   <p className="text-xs sm:text-base text-muted-foreground mb-2">

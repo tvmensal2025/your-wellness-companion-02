@@ -25,7 +25,7 @@ const ModalLoader = () => (
 export const ProfileModal: React.FC<ProfileModalProps> = ({ open, onOpenChange, onOpenLayoutPrefs }) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-full max-w-4xl max-h-[90vh] sm:max-h-[90vh] h-[100dvh] sm:h-auto overflow-y-auto p-0 sm:rounded-lg rounded-none">
+      <DialogContent className="w-[100vw] sm:w-full max-w-4xl max-h-[90vh] sm:max-h-[90vh] h-[100dvh] sm:h-auto overflow-y-auto overflow-x-hidden p-0 sm:rounded-lg rounded-none">
         <DialogHeader className="sticky top-0 z-10 bg-background border-b px-6 py-4">
           <div className="flex items-center justify-between">
             <DialogTitle className="text-xl font-semibold">Meu Perfil</DialogTitle>
