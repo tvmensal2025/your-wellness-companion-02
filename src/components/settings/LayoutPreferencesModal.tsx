@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { GripVertical, Eye, EyeOff, Home, Check } from 'lucide-react';
+import { GripVertical, Check } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { LayoutPreferences } from '@/hooks/useLayoutPreferences';
 import { cn } from '@/lib/utils';
@@ -162,20 +162,28 @@ export const LayoutPreferencesModal: React.FC<LayoutPreferencesModalProps> = ({
                       {item.label}
                     </span>
 
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
+                    <button
+                      className={cn(
+                        "w-8 h-8 rounded-full flex items-center justify-center transition-all",
+                        isDashboard 
+                          ? "bg-muted cursor-not-allowed" 
+                          : isHidden 
+                            ? "bg-red-500/20 hover:bg-red-500/30" 
+                            : "bg-green-500/20 hover:bg-green-500/30"
+                      )}
                       onClick={() => toggleVisibility(itemId)}
                       disabled={isDashboard}
-                      title={isDashboard ? "Dashboard não pode ser oculto" : isHidden ? "Mostrar" : "Ocultar"}
+                      title={isDashboard ? "Dashboard não pode ser oculto" : isHidden ? "Clique para mostrar" : "Clique para ocultar"}
                     >
-                      {isHidden ? (
-                        <EyeOff className="w-4 h-4 text-muted-foreground" />
-                      ) : (
-                        <Eye className="w-4 h-4 text-primary" />
-                      )}
-                    </Button>
+                      <div className={cn(
+                        "w-3 h-3 rounded-full",
+                        isDashboard 
+                          ? "bg-muted-foreground/50" 
+                          : isHidden 
+                            ? "bg-red-500" 
+                            : "bg-green-500"
+                      )} />
+                    </button>
                   </div>
                 );
               })}
