@@ -61,7 +61,7 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
   const [currentStep, setCurrentStep] = useState<Step>('overview');
   const [timerSeconds, setTimerSeconds] = useState(0);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
-  const [repCount, setRepCount] = useState(0);
+  const [currentSet, setCurrentSet] = useState(1);
 
   // Hook para frequência cardíaca (Google Fit)
   const {
@@ -84,12 +84,12 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
     [exerciseData]
   );
 
-  const targetReps = useMemo(() => {
-    const nums = (reps.match(/\d+/g) || [])
+  const totalSets = useMemo(() => {
+    const nums = (sets.match(/\d+/g) || [])
       .map((n) => Number(n))
       .filter((n) => Number.isFinite(n) && n > 0);
-    return nums.length ? Math.max(...nums) : 12;
-  }, [reps]);
+    return nums.length ? Math.max(...nums) : 3;
+  }, [sets]);
 
   const instructions = useMemo(
     () => asStringList(exerciseData?.instrucoes ?? exerciseData?.instructions),
@@ -130,7 +130,7 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
     setCurrentStep('overview');
     setTimerSeconds(0);
     setIsTimerRunning(false);
-    setRepCount(0);
+    setCurrentSet(1);
   }, [isOpen, name]);
 
   // Cronômetro
@@ -157,7 +157,7 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
   const startExecution = () => {
     setTimerSeconds(0);
     setIsTimerRunning(true);
-    setRepCount(0);
+    setCurrentSet(1);
     setCurrentStep('execution');
 
     // Ao iniciar o exercício, puxa o dado mais recente do Google Fit (se conectado)
@@ -414,18 +414,21 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
 
       <div className="space-y-1">
         <div className="flex items-center justify-between text-xs">
-          <span className="font-semibold">Progresso da Série</span>
-          <span className="text-muted-foreground">{repCount}/{targetReps}</span>
+          <span className="font-semibold">Série atual</span>
+          <span className="text-muted-foreground">{currentSet}/{totalSets}</span>
         </div>
-        <Progress value={(repCount / Math.max(1, targetReps)) * 100} className="h-1.5" />
+        <Progress value={(currentSet / Math.max(1, totalSets)) * 100} className="h-1.5" />
+        <div className="text-[11px] text-muted-foreground">
+          Repetições por série: <span className="font-medium text-foreground">{reps}</span>
+        </div>
       </div>
 
       <div className="flex justify-between gap-2">
         <Button
           variant="outline"
           className="flex-1 py-2 text-xs"
-          disabled={repCount <= 0}
-          onClick={() => setRepCount((prev) => Math.max(0, prev - 1))}
+          disabled={currentSet <= 1}
+          onClick={() => setCurrentSet((prev) => Math.max(1, prev - 1))}
         >
           <ArrowLeft className="w-4 h-4 mr-1" />
           Anterior
@@ -433,6 +436,15 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
         <Button
           className="flex-1 py-2 text-xs bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600"
           onClick={() => {
+            if (currentSet < totalSets) {
+              toast({
+                title: `Série ${currentSet} concluída!`,
+                description: `Descanse ${rest} e siga para a próxima.`,
+              });
+              setCurrentSet((prev) => Math.min(totalSets, prev + 1));
+              return;
+            }
+
             toast({ title: '✅ Exercício concluído!', description: 'Boa! Vamos para o próximo.' });
             onClose();
           }}
@@ -443,16 +455,8 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
         <Button
           variant="outline"
           className="flex-1 py-2 text-xs"
-          disabled={repCount >= targetReps}
-          onClick={() => {
-            setRepCount((prev) => {
-              const next = Math.min(targetReps, prev + 1);
-              if (next === targetReps && prev !== targetReps) {
-                toast({ title: 'Série concluída!', description: 'Repetições completas. Descanse e siga quando estiver pronto.' });
-              }
-              return next;
-            });
-          }}
+          disabled={currentSet >= totalSets}
+          onClick={() => setCurrentSet((prev) => Math.min(totalSets, prev + 1))}
         >
           Próximo
           <ArrowRight className="w-4 h-4 ml-1" />
