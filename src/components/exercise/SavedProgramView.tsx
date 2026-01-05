@@ -269,17 +269,28 @@ export const SavedProgramView: React.FC<SavedProgramProps> = ({
   const dayExercises = useMemo(() => {
     if (!selectedDay || selectedDay.isRestDay) return [] as Exercise[];
 
-    const keyed = libraryExercises.map((ex) => ({ key: normalizeKey(ex.name), ex }));
+    // Cada atividade é um grupo muscular (ex: "Ombros", "Funcional", "Mobilidade")
+    // Buscar exercícios pelo muscle_group ao invés do nome do exercício
+    const exercises: Exercise[] = [];
 
-    return selectedDay.activities
-      .map((activity) => {
-        const name = parseActivityTitle(activity);
-        const key = normalizeKey(name);
-        const exact = keyed.find((k) => k.key === key)?.ex;
-        if (exact) return exact;
-        return keyed.find((k) => k.key.includes(key) || key.includes(k.key))?.ex;
-      })
-      .filter(Boolean) as Exercise[];
+    for (const activity of selectedDay.activities) {
+      const name = parseActivityTitle(activity);
+      const key = normalizeKey(name);
+      
+      // Encontrar exercícios que tenham este muscle_group
+      const matchingExercises = libraryExercises.filter((ex) => {
+        const muscleGroupKey = normalizeKey(ex.muscle_group || '');
+        return muscleGroupKey === key || 
+               muscleGroupKey.includes(key) || 
+               key.includes(muscleGroupKey);
+      });
+
+      // Pegar apenas 2-3 exercícios por grupo muscular para não sobrecarregar
+      const selectedExercises = matchingExercises.slice(0, 3);
+      exercises.push(...selectedExercises);
+    }
+
+    return exercises;
   }, [selectedDay, libraryExercises]);
 
   if (weeks.length === 0) {
