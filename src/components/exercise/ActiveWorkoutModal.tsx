@@ -67,11 +67,21 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
   const [workoutStartTime] = useState(Date.now());
   const [showDetailedInstructions, setShowDetailedInstructions] = useState(false);
   const [showDetailedTips, setShowDetailedTips] = useState(false);
+  const [isExerciseStarted, setIsExerciseStarted] = useState(false);
+  const [elapsedTime, setElapsedTime] = useState(0);
 
   const currentExercise = workout.exercises[currentIndex];
   const totalExercises = workout.exercises.length;
   const completedCount = progress.filter(p => p.completed).length;
   const progressPercentage = (completedCount / totalExercises) * 100;
+
+  // Timer atualizado a cada segundo
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setElapsedTime(Math.floor((Date.now() - workoutStartTime) / 1000));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [workoutStartTime]);
 
   // YouTube ID para embed
   const youtubeId = useMemo(() => 
@@ -107,6 +117,7 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
   useEffect(() => {
     setShowDetailedInstructions(false);
     setShowDetailedTips(false);
+    setIsExerciseStarted(false);
   }, [currentIndex]);
 
   const handleCompleteExercise = () => {
@@ -142,10 +153,13 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
   };
 
   const getElapsedTime = () => {
-    const elapsed = Math.floor((Date.now() - workoutStartTime) / 1000);
-    const mins = Math.floor(elapsed / 60);
-    const secs = elapsed % 60;
+    const mins = Math.floor(elapsedTime / 60);
+    const secs = elapsedTime % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const handleStartExercise = () => {
+    setIsExerciseStarted(true);
   };
 
   const parseRestTime = (restTime: string | null): number => {
@@ -254,132 +268,153 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
                     </p>
                   )}
 
-                  {/* Instruções - Resumo com botão para expandir */}
-                  {currentExercise.instructions && currentExercise.instructions.length > 0 && (
-                    <Card className="border border-border/50 bg-muted/30">
-                      <CardContent className="p-3">
-                        <button
-                          onClick={() => setShowDetailedInstructions(!showDetailedInstructions)}
-                          className="w-full flex items-center justify-between gap-2"
-                        >
-                          <div className="flex items-center gap-2">
-                            <Info className="w-4 h-4 text-orange-500" />
-                            <span className="text-sm font-medium">Como fazer</span>
-                            <Badge variant="outline" className="text-xs">
-                              {currentExercise.instructions.length} passos
-                            </Badge>
+                  {/* Botão Começar Treino - sempre visível */}
+                  <Button
+                    className="w-full bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white"
+                    onClick={handleStartExercise}
+                  >
+                    <Play className="w-4 h-4 mr-2" />
+                    Começar Treino
+                  </Button>
+
+                  {/* Conteúdo expandido após clicar em Começar */}
+                  <AnimatePresence>
+                    {isExerciseStarted && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="space-y-3"
+                      >
+                        {/* Instruções - Resumo com botão para expandir */}
+                        {currentExercise.instructions && currentExercise.instructions.length > 0 && (
+                          <Card className="border border-border/50 bg-muted/30">
+                            <CardContent className="p-3">
+                              <button
+                                onClick={() => setShowDetailedInstructions(!showDetailedInstructions)}
+                                className="w-full flex items-center justify-between gap-2"
+                              >
+                                <div className="flex items-center gap-2">
+                                  <Info className="w-4 h-4 text-orange-500" />
+                                  <span className="text-sm font-medium">Como fazer</span>
+                                  <Badge variant="outline" className="text-xs">
+                                    {currentExercise.instructions.length} passos
+                                  </Badge>
+                                </div>
+                                {showDetailedInstructions ? (
+                                  <ChevronUp className="w-4 h-4 text-muted-foreground" />
+                                ) : (
+                                  <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                                )}
+                              </button>
+                              
+                              <AnimatePresence>
+                                {!showDetailedInstructions ? (
+                                  <motion.p 
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    className="text-xs text-muted-foreground mt-2 line-clamp-2"
+                                  >
+                                    {instructionsSummary}
+                                  </motion.p>
+                                ) : (
+                                  <motion.ol
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: 'auto' }}
+                                    exit={{ opacity: 0, height: 0 }}
+                                    className="text-xs text-muted-foreground mt-3 space-y-2 list-decimal list-inside"
+                                  >
+                                    {currentExercise.instructions.map((step, i) => (
+                                      <li key={i} className="leading-relaxed">{step}</li>
+                                    ))}
+                                  </motion.ol>
+                                )}
+                              </AnimatePresence>
+                            </CardContent>
+                          </Card>
+                        )}
+
+                        {/* Dicas - Resumo com botão para expandir */}
+                        {currentExercise.tips && (
+                          <Card className="border border-border/50 bg-amber-50/50 dark:bg-amber-950/20">
+                            <CardContent className="p-3">
+                              <button
+                                onClick={() => setShowDetailedTips(!showDetailedTips)}
+                                className="w-full flex items-center justify-between gap-2"
+                              >
+                                <div className="flex items-center gap-2">
+                                  <Lightbulb className="w-4 h-4 text-amber-500" />
+                                  <span className="text-sm font-medium">Dica do Personal</span>
+                                </div>
+                                {showDetailedTips ? (
+                                  <ChevronUp className="w-4 h-4 text-muted-foreground" />
+                                ) : (
+                                  <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                                )}
+                              </button>
+                              
+                              <AnimatePresence>
+                                {!showDetailedTips ? (
+                                  <motion.p 
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    className="text-xs text-muted-foreground mt-2 line-clamp-2"
+                                  >
+                                    {tipsSummary}
+                                  </motion.p>
+                                ) : (
+                                  <motion.p
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: 'auto' }}
+                                    exit={{ opacity: 0, height: 0 }}
+                                    className="text-xs text-muted-foreground mt-3 leading-relaxed"
+                                  >
+                                    {currentExercise.tips}
+                                  </motion.p>
+                                )}
+                              </AnimatePresence>
+                            </CardContent>
+                          </Card>
+                        )}
+
+                        {/* Player de Vídeo Embutido */}
+                        {youtubeId && (
+                          <div className="rounded-lg overflow-hidden border border-border/50">
+                            <div className="aspect-video">
+                              <iframe
+                                src={`https://www.youtube.com/embed/${youtubeId}?rel=0&modestbranding=1`}
+                                title={`Vídeo: ${currentExercise.name}`}
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowFullScreen
+                                className="w-full h-full"
+                              />
+                            </div>
                           </div>
-                          {showDetailedInstructions ? (
-                            <ChevronUp className="w-4 h-4 text-muted-foreground" />
-                          ) : (
-                            <ChevronDown className="w-4 h-4 text-muted-foreground" />
-                          )}
-                        </button>
-                        
-                        <AnimatePresence>
-                          {!showDetailedInstructions ? (
-                            <motion.p 
-                              initial={{ opacity: 0 }}
-                              animate={{ opacity: 1 }}
-                              className="text-xs text-muted-foreground mt-2 line-clamp-2"
-                            >
-                              {instructionsSummary}
-                            </motion.p>
-                          ) : (
-                            <motion.ol
-                              initial={{ opacity: 0, height: 0 }}
-                              animate={{ opacity: 1, height: 'auto' }}
-                              exit={{ opacity: 0, height: 0 }}
-                              className="text-xs text-muted-foreground mt-3 space-y-2 list-decimal list-inside"
-                            >
-                              {currentExercise.instructions.map((step, i) => (
-                                <li key={i} className="leading-relaxed">{step}</li>
-                              ))}
-                            </motion.ol>
-                          )}
-                        </AnimatePresence>
-                      </CardContent>
-                    </Card>
-                  )}
+                        )}
 
-                  {/* Dicas - Resumo com botão para expandir */}
-                  {currentExercise.tips && (
-                    <Card className="border border-border/50 bg-amber-50/50 dark:bg-amber-950/20">
-                      <CardContent className="p-3">
-                        <button
-                          onClick={() => setShowDetailedTips(!showDetailedTips)}
-                          className="w-full flex items-center justify-between gap-2"
-                        >
-                          <div className="flex items-center gap-2">
-                            <Lightbulb className="w-4 h-4 text-amber-500" />
-                            <span className="text-sm font-medium">Dica do Personal</span>
-                          </div>
-                          {showDetailedTips ? (
-                            <ChevronUp className="w-4 h-4 text-muted-foreground" />
-                          ) : (
-                            <ChevronDown className="w-4 h-4 text-muted-foreground" />
-                          )}
-                        </button>
-                        
-                        <AnimatePresence>
-                          {!showDetailedTips ? (
-                            <motion.p 
-                              initial={{ opacity: 0 }}
-                              animate={{ opacity: 1 }}
-                              className="text-xs text-muted-foreground mt-2 line-clamp-2"
-                            >
-                              {tipsSummary}
-                            </motion.p>
-                          ) : (
-                            <motion.p
-                              initial={{ opacity: 0, height: 0 }}
-                              animate={{ opacity: 1, height: 'auto' }}
-                              exit={{ opacity: 0, height: 0 }}
-                              className="text-xs text-muted-foreground mt-3 leading-relaxed"
-                            >
-                              {currentExercise.tips}
-                            </motion.p>
-                          )}
-                        </AnimatePresence>
-                      </CardContent>
-                    </Card>
-                  )}
-
-                  {/* Player de Vídeo Embutido */}
-                  {youtubeId && (
-                    <div className="rounded-lg overflow-hidden border border-border/50">
-                      <div className="aspect-video">
-                        <iframe
-                          src={`https://www.youtube.com/embed/${youtubeId}?rel=0&modestbranding=1`}
-                          title={`Vídeo: ${currentExercise.name}`}
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                          allowFullScreen
-                          className="w-full h-full"
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Ações */}
-                  <div className="flex gap-3 pt-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="flex-1"
-                      onClick={handleSkipExercise}
-                    >
-                      <SkipForward className="w-4 h-4 mr-1" />
-                      Pular
-                    </Button>
-                    <Button
-                      size="sm"
-                      className="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
-                      onClick={handleCompleteExercise}
-                    >
-                      <Check className="w-4 h-4 mr-1" />
-                      Concluir
-                    </Button>
-                  </div>
+                        {/* Ações */}
+                        <div className="flex gap-3 pt-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex-1"
+                            onClick={handleSkipExercise}
+                          >
+                            <SkipForward className="w-4 h-4 mr-1" />
+                            Pular
+                          </Button>
+                          <Button
+                            size="sm"
+                            className="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
+                            onClick={handleCompleteExercise}
+                          >
+                            <Check className="w-4 h-4 mr-1" />
+                            Concluir
+                          </Button>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </motion.div>
               ) : null}
             </AnimatePresence>
