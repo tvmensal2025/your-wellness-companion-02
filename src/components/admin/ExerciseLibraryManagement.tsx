@@ -90,6 +90,7 @@ const defaultFormData: FormData = {
 export const ExerciseLibraryManagement = () => {
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingExercise, setEditingExercise] = useState<Exercise | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -132,6 +133,10 @@ export const ExerciseLibraryManagement = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    e.stopPropagation();
+
+    if (saving) return;
+    setSaving(true);
 
     try {
       const equipmentArray = formData.equipment_needed
@@ -180,7 +185,7 @@ export const ExerciseLibraryManagement = () => {
 
       setIsModalOpen(false);
       resetForm();
-      fetchExercises();
+      await fetchExercises();
     } catch (error) {
       console.error('Error saving exercise:', error);
       toast({
@@ -188,6 +193,8 @@ export const ExerciseLibraryManagement = () => {
         description: 'Não foi possível salvar o exercício',
         variant: 'destructive',
       });
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -750,12 +757,12 @@ export const ExerciseLibraryManagement = () => {
             </div>
 
             <DialogFooter className="gap-2">
-              <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>
+              <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)} disabled={saving}>
                 Cancelar
               </Button>
-              <Button type="submit" className="gap-2">
+              <Button type="submit" className="gap-2" disabled={saving}>
                 <Save className="h-4 w-4" />
-                {editingExercise ? 'Salvar Alterações' : 'Criar Exercício'}
+                {saving ? 'Salvando...' : (editingExercise ? 'Salvar Alterações' : 'Criar Exercício')}
               </Button>
             </DialogFooter>
           </form>
