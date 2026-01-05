@@ -25,23 +25,27 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
   const [isWorkoutModalOpen, setIsWorkoutModalOpen] = useState(false);
   const { toast } = useToast();
 
-  // Extrair localização e objetivo do programa ativo
-  const programData = React.useMemo(() => {
-    if (!activeProgram) return null;
-    return (activeProgram as any).exercises || 
-           (activeProgram as any).plan_data || 
-           (activeProgram as any).planData;
+  // Extrair localização e objetivo do programa ativo - PRIORIZAR campos diretos do programa
+  const location = React.useMemo<'casa' | 'academia'>(() => {
+    if (!activeProgram) return 'casa';
+    
+    // Primeiro tentar pegar diretamente do programa
+    const programExercises = (activeProgram as any).exercises;
+    const loc = programExercises?.location || '';
+    
+    const locStr = String(loc).toLowerCase();
+    if (locStr.includes('academia')) return 'academia';
+    return 'casa';
   }, [activeProgram]);
 
-  const location = React.useMemo<'casa' | 'academia'>(() => {
-    if (!programData?.location) return 'casa';
-    const loc = String(programData.location).toLowerCase();
-    if (loc.includes('academia')) return 'academia';
-    return 'casa';
-  }, [programData]);
-
   const goal = React.useMemo(() => {
-    const rawGoal = programData?.goal || (activeProgram as any)?.goal;
+    if (!activeProgram) return 'condicionamento';
+    
+    // PRIORIZAR o campo goal DIRETO do programa (não o nested dentro de exercises)
+    const rawGoal = (activeProgram as any).goal;
+    
+    console.log('📌 Goal extraído do activeProgram.goal:', rawGoal);
+    
     if (!rawGoal) return 'condicionamento';
     
     const goalMap: Record<string, string> = {
@@ -56,14 +60,25 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
       'saúde': 'saude'
     };
     
-    const normalizedGoal = String(rawGoal).toLowerCase();
+    const normalizedGoal = String(rawGoal).toLowerCase().trim();
+    
+    // Match exato primeiro
+    if (goalMap[normalizedGoal]) {
+      console.log('✅ Goal mapeado:', goalMap[normalizedGoal]);
+      return goalMap[normalizedGoal];
+    }
+    
+    // Match parcial
     for (const [key, value] of Object.entries(goalMap)) {
       if (normalizedGoal.includes(key)) {
+        console.log('✅ Goal mapeado (parcial):', value);
         return value;
       }
     }
+    
+    console.log('⚠️ Goal não mapeado, usando default condicionamento');
     return 'condicionamento';
-  }, [programData, activeProgram]);
+  }, [activeProgram]);
 
   // Usar exercícios do banco de dados
   const { 
