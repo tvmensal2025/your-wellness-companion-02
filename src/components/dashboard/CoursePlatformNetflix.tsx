@@ -427,8 +427,8 @@ const CoursePlatformNetflix = ({ user }: CoursePlatformNetflixProps) => {
           </>
         )}
 
-        {/* HERO BANNER - Estilo Netflix */}
-        <div className="relative w-full h-[50vh] sm:h-[60vh] md:h-[70vh] lg:h-[80vh]">
+        {/* HERO BANNER - Estilo Netflix Cinematográfico */}
+        <div className="relative w-full h-[40vh] sm:h-[50vh] md:h-[55vh]">
           {adminModeEnabled && (
             <AdminEditControls type="banner" onSave={handleSaveEdit} />
           )}
@@ -443,55 +443,33 @@ const CoursePlatformNetflix = ({ user }: CoursePlatformNetflixProps) => {
             }}
           >
             {/* Gradientes sobrepostos estilo Netflix */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
-            <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/40 to-transparent" />
-            <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-transparent to-transparent" />
           </div>
 
-          {/* Conteúdo do Hero */}
-          <div className="relative z-10 h-full flex flex-col justify-end pb-16 sm:pb-20 md:pb-24 lg:pb-32 px-4 sm:px-8 md:px-12 lg:px-16">
-            <div className="max-w-3xl">
+          {/* Conteúdo do Hero - Simples */}
+          <div className="relative z-10 h-full flex flex-col justify-end pb-8 sm:pb-12 md:pb-16 px-4 sm:px-8 md:px-12 lg:px-16">
+            <div className="max-w-2xl">
               {adminModeEnabled && (
-                <Badge className="mb-4 bg-red-600 text-white px-3 py-1">
+                <Badge className="mb-3 bg-red-600 text-white px-3 py-1">
                   ADMIN MODE
                 </Badge>
               )}
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black tracking-tight mb-3 sm:mb-4 drop-shadow-2xl">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black tracking-tight mb-2 drop-shadow-2xl">
                 PLATAFORMA DOS SONHOS
               </h1>
-              <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-300 mb-6 sm:mb-8 max-w-2xl leading-relaxed">
-                Transforme sua vida com nossos cursos exclusivos. Novo conteúdo mensalmente.
+              <p className="text-sm sm:text-base md:text-lg text-gray-300 max-w-xl">
+                Transforme sua vida com nossos cursos exclusivos
               </p>
-              
-              {/* Botões de ação */}
-              <div className="flex flex-wrap gap-3 sm:gap-4">
-                {dbCourses[0] && (
-                  <Button 
-                    onClick={() => handleCourseClick(dbCourses[0])}
-                    className="bg-white text-black hover:bg-white/90 font-bold px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base rounded-md transition-all duration-300 hover:scale-105 shadow-2xl"
-                  >
-                    <Play className="h-5 w-5 sm:h-6 sm:w-6 mr-2 fill-black" />
-                    Assistir Agora
-                  </Button>
-                )}
-                <Button 
-                  variant="outline"
-                  className="bg-white/10 backdrop-blur-sm border-white/30 text-white hover:bg-white/20 font-semibold px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base rounded-md transition-all duration-300"
-                  onClick={() => setShowVideo(!showVideo)}
-                >
-                  <BookOpen className="h-5 w-5 sm:h-6 sm:w-6 mr-2" />
-                  Mais Informações
-                </Button>
-              </div>
             </div>
           </div>
         </div>
 
         {/* CATÁLOGO DE CURSOS */}
-        <div className="relative z-20 -mt-16 sm:-mt-20 md:-mt-24 lg:-mt-32 px-4 sm:px-8 md:px-12 lg:px-16 pb-16">
+        <div className="relative z-20 -mt-8 sm:-mt-12 px-4 sm:px-8 md:px-12 lg:px-16 pb-16">
           {/* Título da seção */}
-          <div className="flex items-center justify-between mb-6 sm:mb-8">
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold">
+          <div className="flex items-center justify-between mb-4 sm:mb-6">
+            <h2 className="text-lg sm:text-xl md:text-2xl font-bold">
               Nossos Cursos
             </h2>
             {adminModeEnabled && (
@@ -501,8 +479,8 @@ const CoursePlatformNetflix = ({ user }: CoursePlatformNetflixProps) => {
             )}
           </div>
 
-          {/* Grid de cursos - Cards Netflix 16:9 */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 md:gap-6">
+          {/* Grid de cursos - Cards Poster Style (2:3 vertical) */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
             {dbCourses.map((course) => (
               <div 
                 key={course.id}
@@ -517,46 +495,34 @@ const CoursePlatformNetflix = ({ user }: CoursePlatformNetflixProps) => {
                   />
                 )}
                 
-                {/* Card Netflix Style - Aspect 16:9 */}
-                <div className="relative aspect-video rounded-lg overflow-hidden bg-zinc-800 shadow-xl transition-all duration-500 group-hover:scale-105 group-hover:shadow-2xl group-hover:shadow-red-500/20 group-hover:z-30">
+                {/* Card Poster Style - Aspect 2:3 */}
+                <div className="relative aspect-[2/3] rounded-md overflow-hidden bg-zinc-800 shadow-lg transition-all duration-300 group-hover:scale-105 group-hover:shadow-xl group-hover:shadow-white/10 group-hover:z-30">
                   {/* Imagem */}
                   <img 
                     src={course.thumbnail_url || '/placeholder.svg'} 
                     alt={course.title}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    className="w-full h-full object-cover"
                   />
                   
-                  {/* Overlay gradiente */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-60 group-hover:opacity-90 transition-opacity duration-300" />
+                  {/* Overlay gradiente sutil */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   
-                  {/* Play button central */}
+                  {/* Play button central no hover */}
                   <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
-                    <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-white/95 flex items-center justify-center shadow-2xl transform scale-75 group-hover:scale-100 transition-transform duration-300">
-                      <Play className="h-6 w-6 sm:h-7 sm:w-7 text-black fill-black ml-1" />
+                    <div className="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center shadow-xl transform scale-75 group-hover:scale-100 transition-transform duration-300">
+                      <Play className="h-5 w-5 text-black fill-black ml-0.5" />
                     </div>
                   </div>
 
-                  {/* Info no hover - aparece na parte inferior */}
-                  <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
-                    <h3 className="text-base sm:text-lg font-bold text-white mb-1 line-clamp-1 drop-shadow-lg">
+                  {/* Título no hover */}
+                  <div className="absolute bottom-0 left-0 right-0 p-3 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                    <h3 className="text-sm font-semibold text-white line-clamp-2 drop-shadow-lg">
                       {course.title}
                     </h3>
-                    <div className="flex items-center gap-3 text-xs sm:text-sm text-gray-300">
-                      <span className="flex items-center gap-1">
-                        <Play className="h-3 w-3" />
-                        {course.lessons.length} aulas
-                      </span>
-                      {course.category && (
-                        <span className="px-2 py-0.5 bg-white/20 rounded-full backdrop-blur-sm">
-                          {course.category}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Badge de quantidade no canto */}
-                  <div className="absolute top-3 right-3 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    HD
+                    <span className="text-xs text-gray-300 mt-1 flex items-center gap-1">
+                      <Play className="h-3 w-3" />
+                      {course.lessons.length} aulas
+                    </span>
                   </div>
                 </div>
               </div>
