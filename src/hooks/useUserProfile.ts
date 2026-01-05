@@ -113,6 +113,7 @@ export const useUserProfile = (user: User | null) => {
       });
       
       // Atualizar no Supabase usando tabela profiles unificada
+      // Apenas colunas que existem na tabela
       const { error } = await supabase
         .from('profiles')
         .update({
@@ -121,10 +122,7 @@ export const useUserProfile = (user: User | null) => {
           birth_date: updatedData.birthDate,
           city: updatedData.city,
           state: updatedData.state,
-          avatar_url: updatedData.avatarUrl, // ← Aqui está o problema principal
-          bio: updatedData.bio,
-          goals: updatedData.goals,
-          achievements: updatedData.achievements,
+          avatar_url: updatedData.avatarUrl,
           updated_at: new Date().toISOString()
         })
         .eq('user_id', user.id);
