@@ -117,35 +117,16 @@ async function calculateDeterministicNutrition(supabase: any, foods: DetectedFoo
     unmatched_items: []
   };
 
-  console.log(`🔥 CÁLCULO NUTRICIONAL DIRETO TACO - Processando ${foods.length} alimentos`);
+  console.log(`🔥 CÁLCULO NUTRICIONAL TACO ROBUSTO - Processando ${foods.length} alimentos`);
 
   for (const food of foods) {
     const grams = Number(food.grams) || 100;
-    console.log(`🔍 Buscando na TACO: ${food.name} (${grams}g)`);
+    const originalName = food.name.toLowerCase().trim();
+    console.log(`🔍 Buscando: "${originalName}" (${grams}g)`);
 
-    const normalizedName = normalizeText(food.name);
-    const { data: tacoData } = await supabase
-      .from('taco_foods')
-      .select('food_name, energy_kcal, protein_g, carbohydrate_g, lipids_g, fiber_g, sodium_mg')
-      .order('id');
- 
-    let selectedFood: any = null;
-    
-    if (tacoData && tacoData.length > 0) {
-      selectedFood = tacoData.find((item: any) => {
-        const itemName = normalizeText(item.food_name);
-        return itemName.includes(normalizedName) || normalizedName.includes(itemName);
-      });
-      
-      if (!selectedFood) {
-        const keywords = normalizedName.split(' ').filter((w: string) => w.length > 2);
-        selectedFood = tacoData.find((item: any) => {
-          const itemName = normalizeText(item.food_name);
-          return keywords.some((keyword: string) => itemName.includes(keyword));
-        });
-      }
-    }
- 
+    // Estratégia de busca em múltiplas etapas
+    let selectedFood = await searchTacoFood(supabase, originalName);
+
     if (selectedFood) {
       const factor = grams / 100.0;
       
@@ -165,13 +146,11 @@ async function calculateDeterministicNutrition(supabase: any, foods: DetectedFoo
       
       result.matched_count++;
       
-      if (NUTRITION_DEBUG) {
-        console.log(`✅ TACO: ${selectedFood.food_name}`);
-        console.log(`   ${grams}g = ${Math.round(item_kcal)} kcal, ${item_protein.toFixed(1)}g prot, ${item_carbs.toFixed(1)}g carb, ${item_fat.toFixed(1)}g gord`);
-      }
+      console.log(`✅ ENCONTRADO: "${selectedFood.food_name}"`);
+      console.log(`   ${grams}g = ${Math.round(item_kcal)} kcal, ${item_protein.toFixed(1)}g prot, ${item_carbs.toFixed(1)}g carb, ${item_fat.toFixed(1)}g gord`);
     } else {
       result.unmatched_items.push(food.name);
-      console.warn(`❌ NÃO ENCONTRADO: ${food.name}`);
+      console.warn(`❌ NÃO ENCONTRADO: "${food.name}"`);
     }
   }
 
@@ -182,7 +161,7 @@ async function calculateDeterministicNutrition(supabase: any, foods: DetectedFoo
   result.total_fibras = Math.round(result.total_fibras * 10) / 10;
   result.total_sodio = Math.round(result.total_sodio);
 
-  console.log('✅ RESUMO FINAL (Valores diretos TACO):');
+  console.log('✅ RESUMO FINAL (TACO):');
   console.log(`   🔥 ${result.total_kcal} kcal`);
   console.log(`   💪 ${result.total_proteina}g proteínas`);
   console.log(`   🍞 ${result.total_carbo}g carboidratos`);
@@ -190,6 +169,118 @@ async function calculateDeterministicNutrition(supabase: any, foods: DetectedFoo
   console.log(`   ✅ ${result.matched_count}/${result.total_count} alimentos encontrados`);
   
   return result;
+}
+
+// Função de busca robusta com múltiplas estratégias
+async function searchTacoFood(supabase: any, foodName: string): Promise<any> {
+  const normalized = normalizeText(foodName);
+  
+  // Mapeamento de sinônimos comuns para nomes TACO
+  const synonyms: Record<string, string> = {
+    'arroz': 'arroz, tipo 1, cozido',
+    'arroz branco': 'arroz, tipo 1, cozido',
+    'arroz cozido': 'arroz, tipo 1, cozido',
+    'arroz integral': 'arroz, integral, cozido',
+    'feijao': 'feijão, carioca, cozido',
+    'feijao carioca': 'feijão, carioca, cozido',
+    'feijao preto': 'feijão, preto, cozido',
+    'ovo': 'ovo, de galinha, inteiro, cozido',
+    'ovo cozido': 'ovo, de galinha, inteiro, cozido',
+    'ovo frito': 'ovo, de galinha, inteiro, frito',
+    'ovo mexido': 'ovo, de galinha, inteiro, frito',
+    'frango': 'frango, peito, sem pele, grelhado',
+    'peito de frango': 'frango, peito, sem pele, grelhado',
+    'frango grelhado': 'frango, peito, sem pele, grelhado',
+    'carne': 'carne, bovina, patinho, cozido',
+    'carne bovina': 'carne, bovina, patinho, cozido',
+    'carne moida': 'carne, bovina, patinho, cozido',
+    'bife': 'carne, bovina, alcatra, grelhada',
+    'picanha': 'carne, bovina, picanha, grelhada',
+    'alcatra': 'carne, bovina, alcatra, grelhada',
+    'batata': 'batata, inglesa, cozida',
+    'batata cozida': 'batata, inglesa, cozida',
+    'batata frita': 'batata, inglesa, frita',
+    'batata doce': 'batata, doce, cozida',
+    'mandioca': 'mandioca, cozida',
+    'aipim': 'mandioca, cozida',
+    'macaxeira': 'mandioca, cozida',
+    'salada': 'alface, crespa, crua',
+    'alface': 'alface, crespa, crua',
+    'tomate': 'tomate, cru',
+    'cenoura': 'cenoura, crua',
+    'brocolis': 'brócolis, cozido',
+    'couve': 'couve, manteiga, refogada',
+    'banana': 'banana, nanica, crua',
+    'maca': 'maçã, fuji, crua',
+    'laranja': 'laranja, pera, crua',
+    'leite': 'leite, de vaca, integral',
+    'queijo': 'queijo, minas, frescal',
+    'queijo minas': 'queijo, minas, frescal',
+    'mussarela': 'queijo, mussarela',
+    'pao': 'pão, trigo, francês',
+    'pao frances': 'pão, trigo, francês',
+    'pao de forma': 'pão, trigo, forma, integral',
+    'macarrao': 'macarrão, trigo, cru',
+    'macarrao cozido': 'lasanha, massa fresca, cozida',
+    'linguica': 'linguiça, de porco, frita',
+    'bacon': 'bacon, defumado',
+    'presunto': 'presunto, cru',
+    'cafe': 'café, infusão 10%',
+    'suco de laranja': 'suco, de laranja, integral',
+    'agua de coco': 'água de coco',
+    'acucar': 'açúcar, refinado',
+    'mel': 'mel, de abelha',
+    'azeite': 'azeite, de oliva, extra virgem',
+    'oleo': 'óleo, de soja',
+    'manteiga': 'manteiga, com sal',
+    'maionese': 'maionese, tradicional',
+    'ketchup': 'ketchup',
+    'farofa': 'farofa, de mandioca',
+  };
+
+  // 1. Verificar sinônimos primeiro
+  const synonymKey = Object.keys(synonyms).find(key => normalized.includes(key));
+  if (synonymKey) {
+    const tacoName = synonyms[synonymKey];
+    const { data } = await supabase
+      .from('taco_foods')
+      .select('food_name, energy_kcal, protein_g, carbohydrate_g, lipids_g, fiber_g, sodium_mg')
+      .ilike('food_name', `%${tacoName}%`)
+      .limit(1);
+    
+    if (data && data.length > 0) {
+      console.log(`   🔗 Sinônimo: "${normalized}" → "${tacoName}"`);
+      return data[0];
+    }
+  }
+
+  // 2. Busca por nome exato
+  const { data: exactMatch } = await supabase
+    .from('taco_foods')
+    .select('food_name, energy_kcal, protein_g, carbohydrate_g, lipids_g, fiber_g, sodium_mg')
+    .ilike('food_name', `%${foodName}%`)
+    .limit(1);
+  
+  if (exactMatch && exactMatch.length > 0) {
+    return exactMatch[0];
+  }
+
+  // 3. Busca por palavras-chave principais
+  const keywords = normalized.split(' ').filter(w => w.length > 2);
+  for (const keyword of keywords) {
+    const { data: keywordMatch } = await supabase
+      .from('taco_foods')
+      .select('food_name, energy_kcal, protein_g, carbohydrate_g, lipids_g, fiber_g, sodium_mg')
+      .ilike('food_name', `%${keyword}%`)
+      .limit(1);
+    
+    if (keywordMatch && keywordMatch.length > 0) {
+      console.log(`   🔑 Palavra-chave: "${keyword}"`);
+      return keywordMatch[0];
+    }
+  }
+
+  return null;
 }
 
 function generateSofiaResponse(userName: string, nutrition: NutritionCalculation, foods: DetectedFood[]): string {  
