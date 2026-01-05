@@ -1,11 +1,10 @@
 // Configuração centralizada das imagens dos personagens
-// Sistema híbrido: imagens locais + URLs do Supabase quando disponíveis
+// Sistema híbrido: URLs externas + fallback local
 
-// URLs do Supabase (quando disponíveis)
-const SUPABASE_BASE_URL = import.meta.env.VITE_SUPABASE_URL || 'https://vgmqcodfdslyculfaknx.supabase.co';
-const SUPABASE_URLS = {
-  DR_VITAL: `${SUPABASE_BASE_URL}/storage/v1/object/public/course-thumbnails/Dr.Vital%20sem%20fundo.png`,
-  SOFIA: `${SUPABASE_BASE_URL}/storage/v1/object/public/course-thumbnails/Sofia%20sem%20fundo.png`
+// URLs externas (servidor de imagens)
+const EXTERNAL_URLS = {
+  DR_VITAL: 'http://45.67.221.216:8086/Dr.Vital.png',
+  SOFIA: 'http://45.67.221.216:8086/Sofia.png'
 };
 
 // URLs locais (fallback)
@@ -26,12 +25,12 @@ async function checkImageUrl(url: string): Promise<boolean> {
 
 // Função para obter a melhor URL disponível
 async function getBestImageUrl(characterType: 'dr-vital' | 'sofia'): Promise<string> {
-  const supabaseUrl = SUPABASE_URLS[characterType.toUpperCase() as keyof typeof SUPABASE_URLS];
-  const localUrl = LOCAL_URLS[characterType.toUpperCase() as keyof typeof LOCAL_URLS];
+  const externalUrl = EXTERNAL_URLS[characterType.toUpperCase().replace('-', '_') as keyof typeof EXTERNAL_URLS];
+  const localUrl = LOCAL_URLS[characterType.toUpperCase().replace('-', '_') as keyof typeof LOCAL_URLS];
   
-  // Tentar URL do Supabase primeiro
-  if (await checkImageUrl(supabaseUrl)) {
-    return supabaseUrl;
+  // Tentar URL externa primeiro
+  if (await checkImageUrl(externalUrl)) {
+    return externalUrl;
   }
   
   // Fallback para URL local
@@ -41,8 +40,8 @@ async function getBestImageUrl(characterType: 'dr-vital' | 'sofia'): Promise<str
 export const CHARACTER_IMAGES = {
   DR_VITAL: {
     name: 'Dr. Vital',
-    // URL híbrida - tenta Supabase primeiro, depois local
-    imageUrl: SUPABASE_URLS.DR_VITAL,
+    // URL externa + fallback local
+    imageUrl: EXTERNAL_URLS.DR_VITAL,
     fallbackUrl: LOCAL_URLS.DR_VITAL,
     description: 'Médico especialista em saúde e bem-estar',
     role: 'doctor',
@@ -53,8 +52,8 @@ export const CHARACTER_IMAGES = {
   },
   SOFIA: {
     name: 'Sofia',
-    // URL híbrida - tenta Supabase primeiro, depois local
-    imageUrl: SUPABASE_URLS.SOFIA,
+    // URL externa + fallback local
+    imageUrl: EXTERNAL_URLS.SOFIA,
     fallbackUrl: LOCAL_URLS.SOFIA,
     description: 'Assistente virtual e coach de saúde',
     role: 'assistant',

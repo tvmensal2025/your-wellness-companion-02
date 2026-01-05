@@ -303,7 +303,7 @@ const SessionDashboardPage: React.FC = () => {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <img src="/images/dr-vital.png" alt="Logo" className="h-14 w-14" />
+            <img src="http://45.67.221.216:8086/Dr.Vital.png" alt="Dr.Vital" className="h-14 w-14 object-contain" />
             <div className="text-right">
               <div className="text-base font-semibold">b.i.a</div>
               <div className="text-sm text-gray-400">TeraScience</div>
