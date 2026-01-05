@@ -16,7 +16,7 @@ import { SessionTool, ToolResponse } from '@/types/session-tools';
 import {
   Clock, CheckCircle, PlayCircle, BookOpen, 
   Target, Calendar, FileText, AlertCircle,
-  Lock, Unlock, Timer, Eye, Send, Wrench
+  Lock, Unlock, Timer, Eye, Send, Wrench, Printer
 } from 'lucide-react';
 
 interface Session {
@@ -575,58 +575,68 @@ export default function UserSessions({ user }: UserSessionsProps) {
   return (
     <div className="space-y-6">
       {/* Header e Estatísticas */}
-      <div className="space-y-6">
-        <div className="text-center space-y-2">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+      <div className="space-y-6 print:space-y-4">
+        <div className="text-center space-y-2 print:mb-6">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent print:text-gray-900 print:bg-none">
             Suas Sessões
           </h1>
-          <p className="text-muted-foreground text-lg">
+          <p className="text-muted-foreground text-lg print:text-gray-600">
             Acompanhe seu progresso nas sessões personalizadas
           </p>
+          {/* Botão de Impressão */}
+          <Button 
+            onClick={() => window.print()}
+            variant="outline"
+            size="sm"
+            className="mt-4 print:hidden"
+          >
+            <Printer className="w-4 h-4 mr-2" />
+            Imprimir Sessões
+          </Button>
         </div>
 
         {/* Estatísticas */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-yellow-50 to-amber-50 hover:shadow-xl transition-all duration-300">
-            <CardContent className="p-6 text-center">
-              <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-yellow-100 flex items-center justify-center">
-                <Clock className="w-6 h-6 text-yellow-600" />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 print:grid-cols-4 print:gap-4">
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-yellow-50 to-amber-50 hover:shadow-xl transition-all duration-300 print:shadow-none print:border print:border-yellow-300">
+            <CardContent className="p-6 text-center print:p-4">
+              <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-yellow-100 flex items-center justify-center print:w-10 print:h-10 print:mb-2">
+                <Clock className="w-6 h-6 text-yellow-600 print:w-5 print:h-5" />
               </div>
-              <div className="text-3xl font-bold text-yellow-600 mb-1">{stats.pending}</div>
+              <div className="text-3xl font-bold text-yellow-600 mb-1 print:text-2xl">{stats.pending}</div>
               <div className="text-sm font-medium text-yellow-700">Pendentes</div>
             </CardContent>
           </Card>
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50 hover:shadow-xl transition-all duration-300">
-            <CardContent className="p-6 text-center">
-              <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-blue-100 flex items-center justify-center">
-                <PlayCircle className="w-6 h-6 text-blue-600" />
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50 hover:shadow-xl transition-all duration-300 print:shadow-none print:border print:border-blue-300">
+            <CardContent className="p-6 text-center print:p-4">
+              <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-blue-100 flex items-center justify-center print:w-10 print:h-10 print:mb-2">
+                <PlayCircle className="w-6 h-6 text-blue-600 print:w-5 print:h-5" />
               </div>
-              <div className="text-3xl font-bold text-blue-600 mb-1">{stats.inProgress}</div>
+              <div className="text-3xl font-bold text-blue-600 mb-1 print:text-2xl">{stats.inProgress}</div>
               <div className="text-sm font-medium text-blue-700">Em Progresso</div>
             </CardContent>
           </Card>
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-green-50 to-emerald-50 hover:shadow-xl transition-all duration-300">
-            <CardContent className="p-6 text-center">
-              <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-green-100 flex items-center justify-center">
-                <CheckCircle className="w-6 h-6 text-green-600" />
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-green-50 to-emerald-50 hover:shadow-xl transition-all duration-300 print:shadow-none print:border print:border-green-300">
+            <CardContent className="p-6 text-center print:p-4">
+              <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-green-100 flex items-center justify-center print:w-10 print:h-10 print:mb-2">
+                <CheckCircle className="w-6 h-6 text-green-600 print:w-5 print:h-5" />
               </div>
-              <div className="text-3xl font-bold text-green-600 mb-1">{stats.completed}</div>
+              <div className="text-3xl font-bold text-green-600 mb-1 print:text-2xl">{stats.completed}</div>
               <div className="text-sm font-medium text-green-700">Completas</div>
             </CardContent>
           </Card>
-          <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-50 to-violet-50 hover:shadow-xl transition-all duration-300">
-            <CardContent className="p-6 text-center">
-              <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-purple-100 flex items-center justify-center">
-                <Target className="w-6 h-6 text-purple-600" />
+          <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-50 to-violet-50 hover:shadow-xl transition-all duration-300 print:shadow-none print:border print:border-purple-300">
+            <CardContent className="p-6 text-center print:p-4">
+              <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-purple-100 flex items-center justify-center print:w-10 print:h-10 print:mb-2">
+                <Target className="w-6 h-6 text-purple-600 print:w-5 print:h-5" />
               </div>
-              <div className="text-3xl font-bold text-purple-600 mb-1">{stats.total}</div>
+              <div className="text-3xl font-bold text-purple-600 mb-1 print:text-2xl">{stats.total}</div>
               <div className="text-sm font-medium text-purple-700">Total</div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Filtros */}
-        <div className="flex flex-wrap justify-center gap-3">
+        {/* Filtros - Hidden on print */}
+        <div className="flex flex-wrap justify-center gap-3 print:hidden">
           <Button 
             variant={stats.pending > 0 ? "default" : "outline"} 
             size="sm"
@@ -666,17 +676,18 @@ export default function UserSessions({ user }: UserSessionsProps) {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 print:grid-cols-2 print:gap-4">
           {userSessions.map((userSession) => (
             <Card 
               key={userSession.id} 
               className={`
                 group relative overflow-hidden cursor-pointer transition-all duration-300 
                 hover:scale-[1.02] hover:shadow-2xl border-0 shadow-lg backdrop-blur-sm
-                ${userSession.status === 'pending' ? 'bg-gradient-to-br from-yellow-50/90 via-amber-50/80 to-orange-50/70' : ''}
-                ${userSession.status === 'in_progress' ? 'bg-gradient-to-br from-blue-50/90 via-indigo-50/80 to-violet-50/70' : ''}
-                ${userSession.status === 'completed' ? 'bg-gradient-to-br from-green-50/90 via-emerald-50/80 to-teal-50/70' : ''}
-                ${userSession.is_locked ? 'bg-gradient-to-br from-gray-50/90 via-slate-50/80 to-zinc-50/70' : ''}
+                print:shadow-none print:border print:hover:scale-100 print:break-inside-avoid
+                ${userSession.status === 'pending' ? 'bg-gradient-to-br from-yellow-50/90 via-amber-50/80 to-orange-50/70 print:bg-yellow-50 print:border-yellow-300' : ''}
+                ${userSession.status === 'in_progress' ? 'bg-gradient-to-br from-blue-50/90 via-indigo-50/80 to-violet-50/70 print:bg-blue-50 print:border-blue-300' : ''}
+                ${userSession.status === 'completed' ? 'bg-gradient-to-br from-green-50/90 via-emerald-50/80 to-teal-50/70 print:bg-green-50 print:border-green-300' : ''}
+                ${userSession.is_locked ? 'bg-gradient-to-br from-gray-50/90 via-slate-50/80 to-zinc-50/70 print:bg-gray-50 print:border-gray-300' : ''}
               `}
             >
               {/* Status Badge flutuante */}
@@ -684,22 +695,22 @@ export default function UserSessions({ user }: UserSessionsProps) {
                 {getStatusBadge(userSession)}
               </div>
 
-              {/* Overlay sutil */}
-              <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              {/* Overlay sutil - Hidden on print */}
+              <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 print:hidden" />
 
-              <CardContent className="relative p-6 h-full flex flex-col z-10">
+              <CardContent className="relative p-6 h-full flex flex-col z-10 print:p-4">
                 {/* Header com ícone e título */}
-                <div className="text-center mb-4">
-                  <div className="relative w-16 h-16 mx-auto mb-4">
+                <div className="text-center mb-4 print:mb-2">
+                  <div className="relative w-16 h-16 mx-auto mb-4 print:w-12 print:h-12 print:mb-2">
                     <div className={`
-                      w-full h-full rounded-full flex items-center justify-center shadow-lg
-                      ${userSession.status === 'pending' ? 'bg-gradient-to-br from-yellow-100 to-amber-200' : ''}
-                      ${userSession.status === 'in_progress' ? 'bg-gradient-to-br from-blue-100 to-indigo-200' : ''}
-                      ${userSession.status === 'completed' ? 'bg-gradient-to-br from-green-100 to-emerald-200' : ''}
-                      ${userSession.is_locked ? 'bg-gradient-to-br from-gray-100 to-slate-200' : ''}
+                      w-full h-full rounded-full flex items-center justify-center shadow-lg print:shadow-none
+                      ${userSession.status === 'pending' ? 'bg-gradient-to-br from-yellow-100 to-amber-200 print:bg-yellow-100' : ''}
+                      ${userSession.status === 'in_progress' ? 'bg-gradient-to-br from-blue-100 to-indigo-200 print:bg-blue-100' : ''}
+                      ${userSession.status === 'completed' ? 'bg-gradient-to-br from-green-100 to-emerald-200 print:bg-green-100' : ''}
+                      ${userSession.is_locked ? 'bg-gradient-to-br from-gray-100 to-slate-200 print:bg-gray-100' : ''}
                     `}>
                       <BookOpen className={`
-                        w-8 h-8 transition-transform duration-300 group-hover:scale-110
+                        w-8 h-8 transition-transform duration-300 group-hover:scale-110 print:w-6 print:h-6
                         ${userSession.status === 'pending' ? 'text-yellow-600' : ''}
                         ${userSession.status === 'in_progress' ? 'text-blue-600' : ''}
                         ${userSession.status === 'completed' ? 'text-green-600' : ''}
@@ -707,25 +718,25 @@ export default function UserSessions({ user }: UserSessionsProps) {
                       `} />
                     </div>
                   </div>
-                  <h3 className="font-bold text-base text-center leading-tight mb-2 line-clamp-2 text-gray-800">
+                  <h3 className="font-bold text-base text-center leading-tight mb-2 line-clamp-2 text-gray-800 print:text-sm print:mb-1">
                     {userSession.sessions.title}
                   </h3>
                 </div>
 
                 {/* Progresso com animação */}
-                <div className="mb-4">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm font-medium text-gray-600">Progresso</span>
-                    <span className="text-sm font-bold text-gray-800">{userSession.progress}%</span>
+                <div className="mb-4 print:mb-2">
+                  <div className="flex justify-between items-center mb-2 print:mb-1">
+                    <span className="text-sm font-medium text-gray-600 print:text-xs">Progresso</span>
+                    <span className="text-sm font-bold text-gray-800 print:text-xs">{userSession.progress}%</span>
                   </div>
                   <div className="relative">
                     <Progress 
                       value={userSession.progress} 
-                      className="h-3 bg-gray-200/50" 
+                      className="h-3 bg-gray-200/50 print:h-2" 
                     />
                     {userSession.progress > 0 && (
                       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent 
-                                     transform -skew-x-12 animate-pulse opacity-50" />
+                                     transform -skew-x-12 animate-pulse opacity-50 print:hidden" />
                     )}
                   </div>
                 </div>
@@ -753,7 +764,7 @@ export default function UserSessions({ user }: UserSessionsProps) {
                 </div>
 
                 {/* Botões de Ação */}
-                <div className="mt-auto space-y-3">
+                <div className="mt-auto space-y-3 print:hidden">
                   {/* Sessão Bloqueada - Ciclo de 30 dias */}
                   {userSession.is_locked && (
                     <div className="space-y-3">
@@ -875,15 +886,40 @@ export default function UserSessions({ user }: UserSessionsProps) {
                   )}
 
                   {/* Data de atribuição */}
-                  <div className="text-xs text-center p-2 bg-gray-50/50 rounded-lg text-gray-500">
+                  <div className="text-xs text-center p-2 bg-gray-50/50 rounded-lg text-gray-500 print:block print:p-1 print:bg-transparent">
                     📅 {new Date(userSession.assigned_at).toLocaleDateString('pt-BR')}
                   </div>
+                </div>
+                
+                {/* Print-only: Status text */}
+                <div className="hidden print:block text-center mt-2 pt-2 border-t border-gray-200">
+                  <span className={`text-xs font-medium ${
+                    userSession.status === 'pending' ? 'text-yellow-700' : 
+                    userSession.status === 'in_progress' ? 'text-blue-700' : 
+                    userSession.status === 'completed' ? 'text-green-700' : 'text-gray-600'
+                  }`}>
+                    {userSession.status === 'pending' ? '⏳ Pendente' : 
+                     userSession.status === 'in_progress' ? '▶️ Em Progresso' : 
+                     userSession.status === 'completed' ? '✅ Completa' : 'Status: ' + userSession.status}
+                  </span>
                 </div>
               </CardContent>
             </Card>
           ))}
         </div>
       )}
+
+      {/* Print Footer */}
+      <div className="hidden print:block text-center text-xs text-gray-500 border-t border-gray-200 pt-4 mt-8">
+        <p className="font-medium">Instituto dos Sonhos — Relatório de Sessões</p>
+        <p className="mt-1">Gerado em {new Date().toLocaleDateString('pt-BR', { 
+          day: '2-digit', 
+          month: 'long', 
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        })}</p>
+      </div>
 
       {/* Modal de Solicitação de Liberação Antecipada */}
       <Dialog open={showEarlyRequestModal} onOpenChange={setShowEarlyRequestModal}>
