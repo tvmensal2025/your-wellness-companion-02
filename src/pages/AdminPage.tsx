@@ -78,15 +78,95 @@ const AdminPage = () => {
   const { isAdmin } = useAdminMode(user);
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
-      
+    let alive = true;
+
+    (async () => {
+      // Get initial session
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (!alive) return;
+
       if (!session) {
+        setUser(null);
+        setLoading(false);
         navigate("/auth");
+        return;
       }
-    });
+
+      // ⚠️ Se o avatar estiver salvo como base64 na metadata, o token fica enorme e alguns requests falham com "Failed to fetch"
+      const avatarMeta = session.user?.user_metadata?.avatar_url;
+      const hasHugeAvatarInToken =
+        typeof avatarMeta === 'string' &&
+        avatarMeta.startsWith('data:image') &&
+        avatarMeta.length > 4000;
+
+      if (hasHugeAvatarInToken) {
+        const avatarDataUri = avatarMeta as string;
+
+        toast({
+          title: 'Otimizando seu perfil…',
+          description: 'Detectei um avatar muito pesado no login. Vou corrigir para evitar erros no admin.',
+        });
+
+        // 1) Limpa avatar_url da metadata para reduzir o token
+        const { error: clearErr } = await supabase.auth.updateUser({
+          data: { avatar_url: '' },
+        });
+
+        if (!clearErr) {
+          await supabase.auth.refreshSession();
+        } else {
+          console.warn('Falha ao limpar avatar_url da metadata:', clearErr);
+        }
+
+        // 2) Sobe o avatar para o storage e salva uma URL curta (mantém o avatar sem inchar o token)
+        try {
+          const blob = await (await fetch(avatarDataUri)).blob();
+          const ext = blob.type?.split('/')[1] || 'png';
+          const filePath = `${session.user.id}/${Date.now()}_avatar.${ext}`;
+
+          const { error: uploadErr } = await supabase.storage
+            .from('avatars')
+            .upload(filePath, blob, {
+              cacheControl: '3600',
+              upsert: true,
+              contentType: blob.type || 'image/png',
+            });
+
+          if (!uploadErr) {
+            const { data: pub } = supabase.storage.from('avatars').getPublicUrl(filePath);
+            const publicUrl = pub?.publicUrl;
+
+            if (publicUrl) {
+              await supabase
+                .from('profiles')
+                .update({ avatar_url: publicUrl, updated_at: new Date().toISOString() })
+                .eq('user_id', session.user.id);
+
+              await supabase.auth.updateUser({ data: { avatar_url: publicUrl } });
+              await supabase.auth.refreshSession();
+
+              toast({
+                title: 'Perfil otimizado',
+                description: 'Avatar ajustado. Tente criar o curso novamente.',
+              });
+            }
+          } else {
+            console.warn('Falha ao subir avatar para o storage:', uploadErr);
+          }
+        } catch (e) {
+          console.warn('Falha ao migrar avatar base64 para URL:', e);
+        }
+
+        const { data: { session: refreshed } } = await supabase.auth.getSession();
+        setUser(refreshed?.user ?? session.user);
+        setLoading(false);
+      } else {
+        setUser(session.user);
+        setLoading(false);
+      }
+
+    })();
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -98,8 +178,11 @@ const AdminPage = () => {
       }
     );
 
-    return () => subscription.unsubscribe();
-  }, [navigate]);
+    return () => {
+      alive = false;
+      subscription.unsubscribe();
+    };
+  }, [navigate, toast]);
 
   useEffect(() => {
     if (user) {
