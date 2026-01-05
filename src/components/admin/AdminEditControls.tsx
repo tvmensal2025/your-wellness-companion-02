@@ -100,8 +100,14 @@ export const AdminEditControls = ({ course, lesson, onSave, type }: AdminEditCon
                   />
                 </div>
                 <div>
-                  <Label>Upload Nova Imagem</Label>
-                  <Input type="file" accept="image/*" />
+                  <Label>URL da Imagem do Banner</Label>
+                  <Input 
+                    placeholder="Cole o link da imagem aqui"
+                    onChange={(e) => setEditData({...editData, banner_url: e.target.value})}
+                  />
+                  <p className="text-xs text-gray-400 mt-1">
+                    📐 Tamanho recomendado: <strong>750 x 500px</strong> (3:2 horizontal)
+                  </p>
                 </div>
                 <div>
                   <Label>URL do Vídeo</Label>
@@ -175,8 +181,15 @@ export const AdminEditControls = ({ course, lesson, onSave, type }: AdminEditCon
                 </div>
                 <div className="space-y-4">
                   <div>
-                    <Label>Upload Nova Capa</Label>
-                    <Input type="file" accept="image/*" />
+                    <Label>URL da Capa (Poster)</Label>
+                    <Input 
+                      placeholder="Cole o link da imagem aqui"
+                      defaultValue={course?.thumbnail_url}
+                      onChange={(e) => setEditData({...editData, thumbnail_url: e.target.value})}
+                    />
+                    <p className="text-xs text-gray-400 mt-1">
+                      📐 Tamanho recomendado: <strong>400 x 600px</strong> (2:3 vertical)
+                    </p>
                   </div>
                   <div className="p-4 border rounded-lg">
                     <h4 className="font-semibold mb-2">Estatísticas do Curso</h4>
@@ -253,8 +266,15 @@ export const AdminEditControls = ({ course, lesson, onSave, type }: AdminEditCon
                     />
                   </div>
                   <div>
-                    <Label>Upload Nova Thumbnail</Label>
-                    <Input type="file" accept="image/*" />
+                    <Label>URL da Thumbnail</Label>
+                    <Input 
+                      placeholder="Cole o link da imagem aqui"
+                      defaultValue={lesson?.thumbnail_url}
+                      onChange={(e) => setEditData({...editData, thumbnail_url: e.target.value})}
+                    />
+                    <p className="text-xs text-gray-400 mt-1">
+                      📐 Tamanho recomendado: <strong>400 x 600px</strong> (2:3)
+                    </p>
                   </div>
                 </div>
                 <div className="space-y-4">
