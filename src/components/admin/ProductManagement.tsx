@@ -106,7 +106,7 @@ export const ProductManagement = () => {
     setFormData({
       name: '',
       category: '',
-      brand: "Nema's Way",
+      brand: "MaxNutrition",
       original_price: 0,
       stock_quantity: 0,
       description: '',

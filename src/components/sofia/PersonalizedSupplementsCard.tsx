@@ -345,7 +345,7 @@ export const PersonalizedSupplementsCard: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
         <div>
           <h2 className="text-lg font-semibold text-gray-900 mb-1">
-            Vitrine Personalizada Nema's Way
+            Vitrine Personalizada MaxNutrition
           </h2>
           <p className="text-sm text-gray-600">
             Produtos específicos para seu metabolismo e objetivos
@@ -506,7 +506,7 @@ export const PersonalizedSupplementsCard: React.FC = () => {
 
       <div className="flex justify-center pt-4">
         <Button variant="outline" className="border-dashed text-muted-foreground hover:text-emerald-600 hover:border-emerald-300">
-            Ver todo o catálogo Nema's Way
+            Ver todo o catálogo MaxNutrition
         </Button>
       </div>
     </div>

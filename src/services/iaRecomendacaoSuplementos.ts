@@ -82,7 +82,7 @@ export const iaRecomendacaoSuplementos = {
     if (imc < 18.5) categoriaPeso = 'abaixo';
     else if (imc >= 25) categoriaPeso = 'acima';
 
-    // MAPA DE PONTUAÇÃO INTELIGENTE (PRODUTOS NEMA'S WAY)
+    // MAPA DE PONTUAÇÃO INTELIGENTE (PRODUTOS MAXNUTRITION)
     const suplementosComScore = suplementosDisponiveis.map(sup => {
       let score = 50; // Score base
       const nome = sup.name.toLowerCase();
@@ -398,7 +398,7 @@ export const iaRecomendacaoSuplementos = {
     const peso = perfil.weight || 70;
     const extId = sup.external_id || '';
     
-    // Lógica de dosagem baseada em PESO (O Diferencial Nema's Way)
+    // Lógica de dosagem baseada em PESO (O Diferencial MaxNutrition)
     
     if (['LIPOWAY', 'BVB_SB', 'BVB_MORO'].includes(extId)) {
        if (peso > 95) return '2 cápsulas antes do almoço e 1 antes do jantar';
