@@ -2,7 +2,7 @@
 // Sistema com múltiplos fallbacks para garantir exibição
 
 // URL base do servidor externo
-const EXTERNAL_BASE_URL = 'http://45.67.221.216:8086';
+const EXTERNAL_BASE_URL = 'https://45.67.221.216:8086';
 
 // URLs externas (servidor de imagens) - sem cache busting para melhor performance
 const EXTERNAL_URLS = {
