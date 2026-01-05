@@ -162,10 +162,12 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
     setIsExerciseStarted(true);
   };
 
-  const parseRestTime = (restTime: string | null): number => {
+  const parseRestTime = (restTime: string | number | null | undefined): number => {
     if (!restTime) return 60;
-    const match = restTime.match(/(\d+)/);
-    return match ? parseInt(match[1]) : 60;
+    if (typeof restTime === 'number') return restTime > 0 ? restTime : 60;
+    const match = String(restTime).match(/(\d+)/);
+    const parsed = match ? parseInt(match[1]) : 60;
+    return parsed > 0 ? parsed : 60; // Garantir mínimo de 60s se 0 ou inválido
   };
 
   return (
@@ -185,25 +187,30 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.9 }}
+                  className="text-center space-y-6"
                 >
-                  <div className="text-center mb-4">
-                    <h3 className="text-lg font-semibold">Descanse agora! 💪</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Próximo: {workout.exercises[currentIndex + 1]?.name}
+                  <div className="mb-4">
+                    <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-green-100 dark:bg-green-950 flex items-center justify-center">
+                      <Check className="w-8 h-8 text-green-600" />
+                    </div>
+                    <h3 className="text-xl font-bold text-green-600">Exercício Concluído! 💪</h3>
+                    <p className="text-sm text-muted-foreground mt-2">
+                      Próximo: <span className="font-medium">{workout.exercises[currentIndex + 1]?.name}</span>
                     </p>
                   </div>
+                  
                   <RestTimer 
                     defaultSeconds={parseRestTime(currentExercise?.rest_time)}
                     onComplete={handleTimerComplete}
                     autoStart={true}
                   />
+                  
                   <Button
-                    variant="outline"
-                    className="w-full mt-4"
+                    className="w-full bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white gap-2"
                     onClick={handleTimerComplete}
                   >
-                    <SkipForward className="w-4 h-4 mr-2" />
-                    Pular Descanso
+                    <SkipForward className="w-4 h-4" />
+                    Ir para Próximo Exercício
                   </Button>
                 </motion.div>
               ) : currentExercise ? (
