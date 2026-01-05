@@ -22,16 +22,17 @@ interface Plan {
 const plans: Plan[] = [
   {
     id: 'free',
-    name: 'Gratuito',
-    description: 'Comece sua jornada de saúde sem custo',
+    name: 'Experimente Grátis',
+    description: '14 dias de cardápio personalizado sem pagar nada',
     price: 0,
     billingPeriod: 'monthly',
     features: [
+      '🎁 Cardápio personalizado por 2 semanas',
+      'Dashboard completo',
       'Registro de peso e medidas',
-      'Dashboard básico',
-      '3 desafios por mês',
-      'Dicas básicas do Dr. Vital',
-      'Gráficos de evolução'
+      'Dicas do Dr. Vital',
+      'Gráficos de evolução',
+      '3 desafios por mês'
     ],
     icon: Zap,
     color: 'text-emerald-600'
@@ -39,16 +40,16 @@ const plans: Plan[] = [
   {
     id: 'premium',
     name: 'Premium',
-    description: 'Recursos completos para sua transformação',
-    price: 19.90,
+    description: 'Cardápio ilimitado + todos os recursos',
+    price: 29.90,
     billingPeriod: 'monthly',
     features: [
-      'Tudo do plano Gratuito',
+      '✨ Cardápios ilimitados personalizados',
+      'IA Sofia sem limites',
       'Desafios ilimitados',
-      'IA Sofia ilimitada',
       'Análises e gráficos avançados',
-      'Planos alimentares personalizados',
       'Conquistas e badges exclusivos',
+      'Suporte prioritário',
       'Sem anúncios'
     ],
     highlighted: true,
@@ -56,18 +57,19 @@ const plans: Plan[] = [
     color: 'text-purple-600'
   },
   {
-    id: 'annual',
-    name: 'Anual',
-    description: 'Economize 2 meses com o plano anual',
-    price: 149.90,
-    billingPeriod: 'yearly',
+    id: 'vip',
+    name: 'VIP',
+    description: 'Acompanhamento individual com especialistas',
+    price: 99.90,
+    billingPeriod: 'monthly',
     features: [
-      'Tudo do plano Premium',
-      'Economia de 2 meses',
-      'Acesso antecipado a novos recursos',
-      'Badge VIP exclusivo',
-      'Suporte prioritário',
-      'Sessões exclusivas com especialistas'
+      '🏆 Tudo do Premium incluído',
+      '👩‍⚕️ Sessões individuais com nutricionista',
+      '🎯 Plano personalizado exclusivo',
+      '📞 Suporte WhatsApp direto',
+      '📊 Relatórios mensais detalhados',
+      '🥇 Badge VIP exclusivo',
+      'Acesso antecipado a novidades'
     ],
     icon: Star,
     color: 'text-amber-500'
@@ -126,9 +128,9 @@ export const PaymentPlans: React.FC = () => {
           const isSelected = selectedPlan === plan.id;
           const isLoading = status.isLoading && isSelected;
           const isCurrentPlan = status.subscribed && 
-            ((plan.id === 'free' && status.subscription_tier === 'Gratuito') ||
+            ((plan.id === 'free' && status.subscription_tier === 'Experimente Grátis') ||
              (plan.id === 'premium' && status.subscription_tier === 'Premium') ||
-             (plan.id === 'annual' && status.subscription_tier === 'Anual'));
+             (plan.id === 'vip' && status.subscription_tier === 'VIP'));
           
           return (
             <Card 
