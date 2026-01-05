@@ -9310,6 +9310,42 @@ export type Database = {
         }
         Relationships: []
       }
+      user_layout_preferences: {
+        Row: {
+          created_at: string
+          dashboard_cards_order: string[] | null
+          default_section: string | null
+          hidden_dashboard_cards: string[] | null
+          hidden_sidebar_items: string[] | null
+          id: string
+          sidebar_order: string[] | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          dashboard_cards_order?: string[] | null
+          default_section?: string | null
+          hidden_dashboard_cards?: string[] | null
+          hidden_sidebar_items?: string[] | null
+          id?: string
+          sidebar_order?: string[] | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          dashboard_cards_order?: string[] | null
+          default_section?: string | null
+          hidden_dashboard_cards?: string[] | null
+          hidden_sidebar_items?: string[] | null
+          id?: string
+          sidebar_order?: string[] | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_medical_reports: {
         Row: {
           analysis_data: Json | null
