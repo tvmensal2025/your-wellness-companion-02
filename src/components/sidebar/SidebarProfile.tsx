@@ -61,7 +61,7 @@ export const SidebarProfile: React.FC<SidebarProfileProps> = ({
   };
 
   return (
-    <div className="flex justify-center p-4">
+    <div className="flex justify-center pt-8 pb-4 px-4">
       <div className="relative group">
         {/* Gradient ring around avatar */}
         <div className="absolute -inset-1.5 bg-gradient-to-tr from-primary via-primary/50 to-primary/20 rounded-full opacity-75 group-hover:opacity-100 transition-opacity blur-sm" />
