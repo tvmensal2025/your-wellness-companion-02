@@ -8,7 +8,7 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useUserProfile } from '@/hooks/useUserProfile';
-import { Home, Activity, GraduationCap, FileText, Users, Target, Award, Settings, TrendingUp, Stethoscope, CreditCard, Utensils, Menu, LogOut, ChevronLeft, ChevronRight, User as UserIcon, Scale, MessageCircle, Lock, Play, Dumbbell } from 'lucide-react';
+import { Home, Activity, GraduationCap, FileText, Users, Target, Award, Settings, TrendingUp, Stethoscope, CreditCard, Utensils, Menu, LogOut, ChevronLeft, ChevronRight, User as UserIcon, Scale, MessageCircle, Lock, Play, Dumbbell, SlidersHorizontal } from 'lucide-react';
 import { NotificationBell } from '@/components/NotificationBell';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
@@ -17,6 +17,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useSofiaAnalysis } from '@/hooks/useSofiaAnalysis';
 import { useExerciseProgram } from '@/hooks/useExerciseProgram';
+import { useLayoutPreferences } from '@/hooks/useLayoutPreferences';
 import { cn } from '@/lib/utils';
 
 // Lazy load heavy components for better performance
@@ -37,6 +38,7 @@ const SofiaNutricionalPage = lazy(() => import('@/pages/SofiaNutricionalPage').t
 const UserProfile = lazy(() => import('@/components/UserProfile'));
 const MyProgress = lazy(() => import('@/components/MyProgress'));
 const SaboteurTest = lazy(() => import('@/components/SaboteurTest'));
+const LayoutPreferencesModal = lazy(() => import('@/components/settings/LayoutPreferencesModal').then(m => ({ default: m.LayoutPreferencesModal })));
 
 // Sidebar components
 import { SidebarProfile } from '@/components/sidebar/SidebarProfile';
@@ -61,6 +63,7 @@ const CompleteDashboardPage = () => {
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
   const [exerciseModalOpen, setExerciseModalOpen] = useState(false);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
+  const [layoutPrefsModalOpen, setLayoutPrefsModalOpen] = useState(false);
   const navigate = useNavigate();
   const {
     toast
@@ -79,6 +82,21 @@ const CompleteDashboardPage = () => {
     programs,
     activeProgram
   } = useExerciseProgram(user?.id);
+  const {
+    preferences,
+    loading: prefsLoading,
+    savePreferences,
+    getVisibleSidebarItems
+  } = useLayoutPreferences(user);
+  
+  // Definir seção inicial baseada nas preferências
+  const hasSetDefaultSectionRef = useRef(false);
+  useEffect(() => {
+    if (!prefsLoading && preferences.defaultSection && !hasSetDefaultSectionRef.current) {
+      hasSetDefaultSectionRef.current = true;
+      setActiveSection(preferences.defaultSection as DashboardSection);
+    }
+  }, [preferences.defaultSection, prefsLoading]);
   useEffect(() => {
     // Get initial session
     supabase.auth.getSession().then(({
@@ -290,6 +308,30 @@ const CompleteDashboardPage = () => {
   }) => {
     // No mobile, sempre expandido
     const isExpanded = isMobile ? true : sidebarExpanded;
+    
+    // Ordenar itens do menu de acordo com as preferências
+    const orderedMenuItems = React.useMemo(() => {
+      const visibleIds = getVisibleSidebarItems();
+      const orderedItems: typeof menuItems = [];
+      
+      // Primeiro, adicionar itens na ordem das preferências
+      for (const id of preferences.sidebarOrder) {
+        if (visibleIds.includes(id)) {
+          const item = menuItems.find(m => m.id === id);
+          if (item) orderedItems.push(item);
+        }
+      }
+      
+      // Adicionar itens que não estão nas preferências (novos itens)
+      for (const item of menuItems) {
+        if (visibleIds.includes(item.id) && !orderedItems.some(m => m.id === item.id)) {
+          orderedItems.push(item);
+        }
+      }
+      
+      return orderedItems;
+    }, [preferences.sidebarOrder, getVisibleSidebarItems]);
+    
     return <div className="flex flex-col h-full bg-card">
         {/* Header com Perfil */}
         <div className="flex items-center justify-between">
@@ -322,7 +364,7 @@ const CompleteDashboardPage = () => {
         {/* Menu Items */}
         <div className="flex-1 overflow-y-auto p-2">
           <div className="space-y-1">
-            {menuItems.map(item => {
+            {orderedMenuItems.map(item => {
             const Icon = item.icon;
             const isActive = activeSection === item.id;
             return <Button key={item.id} variant={isActive ? "secondary" : "ghost"} className={`w-full justify-start h-10 px-3 ${isActive ? 'bg-secondary text-secondary-foreground' : 'hover:bg-muted'}`} onClick={() => {
@@ -337,6 +379,23 @@ const CompleteDashboardPage = () => {
                 </Button>;
           })}
           </div>
+          
+          {/* Botão de Personalização */}
+          {isExpanded && (
+            <div className="mt-4 pt-4 border-t border-border/50">
+              <Button 
+                variant="ghost" 
+                className="w-full justify-start h-10 px-3 text-muted-foreground hover:text-foreground"
+                onClick={() => {
+                  setLayoutPrefsModalOpen(true);
+                  if (isMobile) setSidebarOpen(false);
+                }}
+              >
+                <SlidersHorizontal className="w-4 h-4 mr-3" />
+                <span className="text-sm font-medium">Personalizar Menu</span>
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* Footer com Logout */}
@@ -400,10 +459,23 @@ const CompleteDashboardPage = () => {
       {/* Mobile bottom navigation removida conforme pedido do usuário */}
 
       {/* Modal de Exercícios */}
-      <ExerciseOnboardingModal isOpen={exerciseModalOpen} onClose={() => setExerciseModalOpen(false)} user={user} />
+      <Suspense fallback={null}>
+        <ExerciseOnboardingModal isOpen={exerciseModalOpen} onClose={() => setExerciseModalOpen(false)} user={user} />
+      </Suspense>
       
       {/* Modal de Perfil */}
       <ProfileModal open={profileModalOpen} onOpenChange={setProfileModalOpen} />
+      
+      {/* Modal de Preferências de Layout */}
+      <Suspense fallback={null}>
+        <LayoutPreferencesModal 
+          open={layoutPrefsModalOpen} 
+          onOpenChange={setLayoutPrefsModalOpen}
+          preferences={preferences}
+          menuItems={menuItems}
+          onSave={savePreferences}
+        />
+      </Suspense>
     </div>;
 };
 export default CompleteDashboardPage;
