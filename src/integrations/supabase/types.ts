@@ -10586,6 +10586,10 @@ export type Database = {
         Returns: boolean
       }
       has_role: { Args: { _role: string; _user_id: string }; Returns: boolean }
+      has_role_text: {
+        Args: { _role: string; _user_id: string }
+        Returns: boolean
+      }
       is_admin_user: { Args: never; Returns: boolean }
     }
     Enums: {
