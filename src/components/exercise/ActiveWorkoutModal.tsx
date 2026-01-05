@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Dialog, 
@@ -24,7 +24,11 @@ import {
   Flame,
   Trophy,
   ChevronRight,
-  Youtube
+  ChevronDown,
+  ChevronUp,
+  Youtube,
+  Info,
+  Lightbulb
 } from 'lucide-react';
 import { Exercise, WeeklyPlan } from '@/hooks/useExercisesLibrary';
 import { RestTimer } from './RestTimer';
@@ -43,6 +47,13 @@ interface ExerciseProgress {
   setsCompleted: number;
 }
 
+// Extrair ID do YouTube
+const extractYouTubeId = (url: string | null | undefined): string | null => {
+  if (!url) return null;
+  const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
+  return match ? match[1] : null;
+};
+
 export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
   isOpen,
   onClose,
@@ -54,20 +65,49 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
   const [showTimer, setShowTimer] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [workoutStartTime] = useState(Date.now());
+  const [showDetailedInstructions, setShowDetailedInstructions] = useState(false);
+  const [showDetailedTips, setShowDetailedTips] = useState(false);
 
   const currentExercise = workout.exercises[currentIndex];
   const totalExercises = workout.exercises.length;
   const completedCount = progress.filter(p => p.completed).length;
   const progressPercentage = (completedCount / totalExercises) * 100;
 
+  // YouTube ID para embed
+  const youtubeId = useMemo(() => 
+    extractYouTubeId(currentExercise?.youtube_url), 
+    [currentExercise?.youtube_url]
+  );
+
+  // Resumo das instruções (primeiros 80 caracteres de cada)
+  const instructionsSummary = useMemo(() => {
+    if (!currentExercise?.instructions?.length) return '';
+    return currentExercise.instructions
+      .slice(0, 2)
+      .map((s, i) => `${i + 1}. ${s.slice(0, 60)}${s.length > 60 ? '...' : ''}`)
+      .join(' ');
+  }, [currentExercise]);
+
+  // Resumo das dicas
+  const tipsSummary = useMemo(() => {
+    if (!currentExercise?.tips) return '';
+    const tips = currentExercise.tips;
+    return tips.slice(0, 100) + (tips.length > 100 ? '...' : '');
+  }, [currentExercise]);
+
   useEffect(() => {
-    // Inicializar progresso
     setProgress(workout.exercises.map(ex => ({
       exerciseId: ex.id,
       completed: false,
       setsCompleted: 0
     })));
   }, [workout]);
+
+  // Reset detalhes ao mudar de exercício
+  useEffect(() => {
+    setShowDetailedInstructions(false);
+    setShowDetailedTips(false);
+  }, [currentIndex]);
 
   const handleCompleteExercise = () => {
     setProgress(prev => prev.map((p, i) => 
@@ -77,7 +117,6 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
     if (currentIndex < totalExercises - 1) {
       setShowTimer(true);
     } else {
-      // Treino completo!
       handleFinishWorkout();
     }
   };
@@ -122,10 +161,11 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
           <DialogTitle>Treino Ativo - {workout.title}</DialogTitle>
           <DialogDescription>Acompanhe seu progresso durante o treino</DialogDescription>
         </VisuallyHidden>
+        
         {/* Header com progresso */}
         <div className="bg-gradient-to-r from-orange-500 to-red-600 text-white p-4">
           <div className="flex items-center justify-between mb-3">
-            <Badge className="bg-white/20 border-0">
+            <Badge className="bg-white/20 border-0 text-xs">
               {workout.dayName} - {workout.title}
             </Badge>
             <div className="flex items-center gap-2 text-sm">
@@ -182,77 +222,161 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
+                  className="space-y-3"
                 >
-                  {/* Exercício Atual */}
-                  <Card className="border-2 border-orange-200 dark:border-orange-800">
-                    <CardContent className="p-4 space-y-4">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <Badge className="mb-2 bg-orange-100 text-orange-600 dark:bg-orange-950 dark:text-orange-400">
-                            Exercício {currentIndex + 1} de {totalExercises}
-                          </Badge>
-                          <h2 className="text-xl font-bold">{currentExercise.name}</h2>
-                          <p className="text-sm text-muted-foreground capitalize">
-                            {currentExercise.muscle_group}
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-2xl font-bold text-orange-500">
-                            {currentExercise.sets || '3'}x{currentExercise.reps || '12'}
-                          </p>
-                          {currentExercise.rest_time && (
-                            <p className="text-xs text-muted-foreground">
-                              {currentExercise.rest_time} descanso
-                            </p>
-                          )}
-                        </div>
-                      </div>
-
-                      {currentExercise.description && (
-                        <p className="text-sm text-muted-foreground">
-                          {currentExercise.description}
+                  {/* Header do exercício - compacto */}
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <Badge className="mb-1 bg-orange-100 text-orange-600 dark:bg-orange-950 dark:text-orange-400 text-xs">
+                        Exercício {currentIndex + 1} de {totalExercises}
+                      </Badge>
+                      <h2 className="text-lg font-bold">{currentExercise.name}</h2>
+                      <p className="text-xs text-muted-foreground capitalize">
+                        {currentExercise.muscle_group}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-2xl font-bold text-orange-500">
+                        {currentExercise.sets || '3'}x{currentExercise.reps || '12'}
+                      </p>
+                      {currentExercise.rest_time && (
+                        <p className="text-xs text-muted-foreground">
+                          {currentExercise.rest_time}s descanso
                         </p>
                       )}
+                    </div>
+                  </div>
 
-                      {currentExercise.instructions && currentExercise.instructions.length > 0 && (
-                        <div className="space-y-2">
-                          <p className="text-sm font-medium">Como fazer:</p>
-                          <ol className="text-sm text-muted-foreground space-y-1 list-decimal list-inside">
-                            {currentExercise.instructions.slice(0, 4).map((step, i) => (
-                              <li key={i}>{step}</li>
-                            ))}
-                          </ol>
-                        </div>
-                      )}
+                  {/* Descrição curta */}
+                  {currentExercise.description && (
+                    <p className="text-xs text-muted-foreground line-clamp-2">
+                      {currentExercise.description}
+                    </p>
+                  )}
 
-                      {currentExercise.youtube_url && (
-                        <Button
-                          variant="outline"
-                          className="w-full"
-                          onClick={() => window.open(currentExercise.youtube_url!, '_blank')}
+                  {/* Instruções - Resumo com botão para expandir */}
+                  {currentExercise.instructions && currentExercise.instructions.length > 0 && (
+                    <Card className="border border-border/50 bg-muted/30">
+                      <CardContent className="p-3">
+                        <button
+                          onClick={() => setShowDetailedInstructions(!showDetailedInstructions)}
+                          className="w-full flex items-center justify-between gap-2"
                         >
-                          <Youtube className="w-4 h-4 mr-2 text-red-500" />
-                          Ver Vídeo Demonstrativo
-                        </Button>
-                      )}
-                    </CardContent>
-                  </Card>
+                          <div className="flex items-center gap-2">
+                            <Info className="w-4 h-4 text-orange-500" />
+                            <span className="text-sm font-medium">Como fazer</span>
+                            <Badge variant="outline" className="text-xs">
+                              {currentExercise.instructions.length} passos
+                            </Badge>
+                          </div>
+                          {showDetailedInstructions ? (
+                            <ChevronUp className="w-4 h-4 text-muted-foreground" />
+                          ) : (
+                            <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                          )}
+                        </button>
+                        
+                        <AnimatePresence>
+                          {!showDetailedInstructions ? (
+                            <motion.p 
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              className="text-xs text-muted-foreground mt-2 line-clamp-2"
+                            >
+                              {instructionsSummary}
+                            </motion.p>
+                          ) : (
+                            <motion.ol
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: 'auto' }}
+                              exit={{ opacity: 0, height: 0 }}
+                              className="text-xs text-muted-foreground mt-3 space-y-2 list-decimal list-inside"
+                            >
+                              {currentExercise.instructions.map((step, i) => (
+                                <li key={i} className="leading-relaxed">{step}</li>
+                              ))}
+                            </motion.ol>
+                          )}
+                        </AnimatePresence>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* Dicas - Resumo com botão para expandir */}
+                  {currentExercise.tips && (
+                    <Card className="border border-border/50 bg-amber-50/50 dark:bg-amber-950/20">
+                      <CardContent className="p-3">
+                        <button
+                          onClick={() => setShowDetailedTips(!showDetailedTips)}
+                          className="w-full flex items-center justify-between gap-2"
+                        >
+                          <div className="flex items-center gap-2">
+                            <Lightbulb className="w-4 h-4 text-amber-500" />
+                            <span className="text-sm font-medium">Dica do Personal</span>
+                          </div>
+                          {showDetailedTips ? (
+                            <ChevronUp className="w-4 h-4 text-muted-foreground" />
+                          ) : (
+                            <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                          )}
+                        </button>
+                        
+                        <AnimatePresence>
+                          {!showDetailedTips ? (
+                            <motion.p 
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              className="text-xs text-muted-foreground mt-2 line-clamp-2"
+                            >
+                              {tipsSummary}
+                            </motion.p>
+                          ) : (
+                            <motion.p
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: 'auto' }}
+                              exit={{ opacity: 0, height: 0 }}
+                              className="text-xs text-muted-foreground mt-3 leading-relaxed"
+                            >
+                              {currentExercise.tips}
+                            </motion.p>
+                          )}
+                        </AnimatePresence>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* Player de Vídeo Embutido */}
+                  {youtubeId && (
+                    <div className="rounded-lg overflow-hidden border border-border/50">
+                      <div className="aspect-video">
+                        <iframe
+                          src={`https://www.youtube.com/embed/${youtubeId}?rel=0&modestbranding=1`}
+                          title={`Vídeo: ${currentExercise.name}`}
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                          className="w-full h-full"
+                        />
+                      </div>
+                    </div>
+                  )}
 
                   {/* Ações */}
-                  <div className="flex gap-3 mt-4">
+                  <div className="flex gap-3 pt-2">
                     <Button
                       variant="outline"
+                      size="sm"
                       className="flex-1"
                       onClick={handleSkipExercise}
                     >
-                      <SkipForward className="w-4 h-4 mr-2" />
+                      <SkipForward className="w-4 h-4 mr-1" />
                       Pular
                     </Button>
                     <Button
+                      size="sm"
                       className="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
                       onClick={handleCompleteExercise}
                     >
-                      <Check className="w-4 h-4 mr-2" />
+                      <Check className="w-4 h-4 mr-1" />
                       Concluir
                     </Button>
                   </div>
@@ -260,12 +384,12 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
               ) : null}
             </AnimatePresence>
 
-            {/* Lista de exercícios */}
-            <div className="pt-4 border-t">
-              <p className="text-sm font-medium text-muted-foreground mb-3">
+            {/* Lista de exercícios - mais compacta */}
+            <div className="pt-3 border-t">
+              <p className="text-xs font-medium text-muted-foreground mb-2">
                 Todos os exercícios
               </p>
-              <div className="space-y-2">
+              <div className="space-y-1">
                 {workout.exercises.map((ex, i) => {
                   const isCompleted = progress[i]?.completed;
                   const isCurrent = i === currentIndex;
@@ -275,26 +399,26 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
                       key={ex.id}
                       onClick={() => !showTimer && setCurrentIndex(i)}
                       className={cn(
-                        "w-full flex items-center gap-3 p-3 rounded-lg text-left transition-all",
+                        "w-full flex items-center gap-2 p-2 rounded-lg text-left transition-all text-sm",
                         isCurrent && "bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-800",
                         isCompleted && "bg-green-50 dark:bg-green-950/30",
                         !isCurrent && !isCompleted && "hover:bg-muted"
                       )}
                     >
                       <div className={cn(
-                        "w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold",
+                        "w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold shrink-0",
                         isCompleted ? "bg-green-500 text-white" : isCurrent ? "bg-orange-500 text-white" : "bg-muted text-muted-foreground"
                       )}>
                         {isCompleted ? <Check className="w-3 h-3" /> : i + 1}
                       </div>
                       <span className={cn(
-                        "flex-1 text-sm",
+                        "flex-1 text-xs truncate",
                         isCompleted && "line-through text-muted-foreground"
                       )}>
                         {ex.name}
                       </span>
                       {isCurrent && !showTimer && (
-                        <ChevronRight className="w-4 h-4 text-orange-500" />
+                        <ChevronRight className="w-3 h-3 text-orange-500 shrink-0" />
                       )}
                     </button>
                   );
@@ -305,18 +429,19 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
         </ScrollArea>
 
         {/* Footer */}
-        <div className="p-4 border-t bg-muted/30">
-          <div className="flex gap-3">
-            <Button variant="outline" onClick={onClose} className="flex-1">
-              <X className="w-4 h-4 mr-2" />
+        <div className="p-3 border-t bg-muted/30">
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={onClose} className="flex-1">
+              <X className="w-4 h-4 mr-1" />
               Cancelar Treino
             </Button>
             {completedCount === totalExercises && (
               <Button 
+                size="sm"
                 onClick={handleFinishWorkout}
                 className="flex-1 bg-gradient-to-r from-green-500 to-emerald-600"
               >
-                <Trophy className="w-4 h-4 mr-2" />
+                <Trophy className="w-4 h-4 mr-1" />
                 Finalizar Treino
               </Button>
             )}
