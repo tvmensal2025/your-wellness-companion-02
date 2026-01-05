@@ -332,9 +332,9 @@ const CompleteDashboardPage = () => {
       return orderedItems;
     }, [preferences.sidebarOrder, getVisibleSidebarItems]);
     
-    return <div className="flex flex-col h-full bg-card">
+    return <div className="flex flex-col h-full bg-gradient-to-b from-card via-card to-muted/30">
         {/* Header com Perfil */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between border-b border-border/50 bg-gradient-to-r from-primary/5 to-transparent">
           <div className="flex-1">
             <SidebarProfile
               fullName={profileData?.fullName || ''}
@@ -350,43 +350,83 @@ const CompleteDashboardPage = () => {
           </div>
           
           {!isMobile && isExpanded && (
-            <Button variant="ghost" size="icon" onClick={() => setSidebarExpanded(!sidebarExpanded)} className="h-8 w-8 mr-2">
+            <Button variant="ghost" size="icon" onClick={() => setSidebarExpanded(!sidebarExpanded)} className="h-8 w-8 mr-2 hover:bg-primary/10">
               <ChevronLeft className="w-4 h-4" />
             </Button>
           )}
           {!isMobile && !isExpanded && (
-            <Button variant="ghost" size="icon" onClick={() => setSidebarExpanded(!sidebarExpanded)} className="h-8 w-8 absolute right-1 top-3">
+            <Button variant="ghost" size="icon" onClick={() => setSidebarExpanded(!sidebarExpanded)} className="h-8 w-8 absolute right-1 top-3 hover:bg-primary/10">
               <ChevronRight className="w-4 h-4" />
             </Button>
           )}
         </div>
 
         {/* Menu Items */}
-        <div className="flex-1 overflow-y-auto p-2">
-          <div className="space-y-1">
-            {orderedMenuItems.map(item => {
-            const Icon = item.icon;
-            const isActive = activeSection === item.id;
-            return <Button key={item.id} variant={isActive ? "secondary" : "ghost"} className={`w-full justify-start h-10 px-3 ${isActive ? 'bg-secondary text-secondary-foreground' : 'hover:bg-muted'}`} onClick={() => {
-              setActiveSection(item.id as DashboardSection);
-              if (item.id === 'exercicios' && programs.length === 0) {
-                setExerciseModalOpen(true);
-              }
-              if (isMobile) setSidebarOpen(false);
-            }}>
-                  <Icon className={`w-4 h-4 mr-3 ${item.color}`} />
-                  {isExpanded && <span className="text-sm font-medium truncate">{item.label}</span>}
-                </Button>;
-          })}
+        <div className="flex-1 overflow-y-auto px-3 py-4">
+          <div className="space-y-1.5">
+            {orderedMenuItems.map((item, index) => {
+              const Icon = item.icon;
+              const isActive = activeSection === item.id;
+              return (
+                <button
+                  key={item.id}
+                  className={`
+                    w-full flex items-center gap-3 h-11 px-3 rounded-xl transition-all duration-200
+                    ${isActive 
+                      ? 'bg-gradient-to-r from-primary/20 via-primary/15 to-primary/5 text-primary shadow-sm border border-primary/20' 
+                      : 'hover:bg-muted/80 text-muted-foreground hover:text-foreground'
+                    }
+                    ${!isExpanded ? 'justify-center px-0' : ''}
+                  `}
+                  onClick={() => {
+                    setActiveSection(item.id as DashboardSection);
+                    if (item.id === 'exercicios' && programs.length === 0) {
+                      setExerciseModalOpen(true);
+                    }
+                    if (isMobile) setSidebarOpen(false);
+                  }}
+                  style={{
+                    animationDelay: `${index * 30}ms`
+                  }}
+                >
+                  <div className={`
+                    flex items-center justify-center w-8 h-8 rounded-lg transition-all
+                    ${isActive 
+                      ? 'bg-primary/20 shadow-inner' 
+                      : 'bg-muted/50 group-hover:bg-muted'
+                    }
+                  `}>
+                    <Icon className={`w-4 h-4 ${isActive ? 'text-primary' : item.color}`} />
+                  </div>
+                  {isExpanded && (
+                    <span className={`text-sm font-medium truncate flex-1 text-left ${isActive ? 'text-primary' : ''}`}>
+                      {item.label}
+                    </span>
+                  )}
+                  {isActive && isExpanded && (
+                    <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                  )}
+                </button>
+              );
+            })}
           </div>
         </div>
 
         {/* Footer com Logout */}
-        <div className="p-4 border-t">
-          <Button variant="destructive" className="w-full justify-start h-10 px-3" onClick={handleLogout}>
-            <LogOut className="w-4 h-4 mr-3" />
+        <div className="p-3 border-t border-border/50 bg-gradient-to-t from-muted/20 to-transparent">
+          <button 
+            className={`
+              w-full flex items-center gap-3 h-11 px-3 rounded-xl transition-all duration-200
+              bg-destructive/10 hover:bg-destructive/20 text-destructive border border-destructive/20
+              ${!isExpanded ? 'justify-center px-0' : ''}
+            `}
+            onClick={handleLogout}
+          >
+            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-destructive/20">
+              <LogOut className="w-4 h-4" />
+            </div>
             {isExpanded && <span className="text-sm font-medium">Sair</span>}
-          </Button>
+          </button>
         </div>
       </div>;
   };
