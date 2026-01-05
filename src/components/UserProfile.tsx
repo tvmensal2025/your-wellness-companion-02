@@ -370,7 +370,7 @@ const UserProfile = ({ onOpenLayoutPrefs }: UserProfileProps = {}) => {
                 </div>
                 
                 <div className="flex-1 text-center sm:text-left min-w-0 overflow-hidden">
-                  <h1 className="text-base sm:text-3xl font-bold text-foreground mb-0.5 sm:mb-1 break-words">
+                  <h1 className="text-base sm:text-3xl font-bold text-foreground mb-0.5 sm:mb-1 break-words whitespace-normal leading-tight">
                     {profile.full_name || 'Usuário'}
                   </h1>
                   <p className="text-xs sm:text-base text-muted-foreground mb-2">
@@ -417,21 +417,21 @@ const UserProfile = ({ onOpenLayoutPrefs }: UserProfileProps = {}) => {
       </div>
 
       {/* Stats Cards - 2x2 grid sempre */}
-      <div className="grid grid-cols-2 gap-2 sm:gap-4 mb-3 sm:mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 mb-3 sm:mb-8">
         {activityStats.map((stat, index) => {
           const IconComponent = stat.icon;
           return (
-            <Card key={index} className="hover:shadow-md transition-shadow">
-              <CardContent className="p-2.5 sm:p-4">
-                <div className="flex items-center justify-between gap-1 sm:gap-2">
-                  <div className="min-w-0 flex-1">
-                    <p className="text-base sm:text-2xl font-bold text-foreground">{stat.value}</p>
-                    <p className="text-[9px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1 leading-tight">{stat.label}</p>
+              <Card key={index} className="hover:shadow-md transition-shadow">
+                <CardContent className="p-3 sm:p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <IconComponent className={`h-5 w-5 sm:h-8 sm:w-8 shrink-0 ${stat.color}`} />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-base sm:text-2xl font-bold text-foreground">{stat.value}</p>
+                      <p className="text-[11px] sm:text-xs text-muted-foreground leading-tight">{stat.label}</p>
+                    </div>
                   </div>
-                  <IconComponent className={`h-5 w-5 sm:h-8 sm:w-8 shrink-0 ${stat.color}`} />
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
           );
         })}
       </div>
