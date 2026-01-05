@@ -55,7 +55,7 @@ interface SavedProgramProps {
     goal?: string;
     difficulty?: string;
   };
-  onStartWorkout: (weekNumber: number, dayActivities: string[]) => void;
+  onStartWorkout: (weekNumber: number, dayActivities: string[], resolvedExercises?: Exercise[]) => void;
   onCompleteWorkout: () => void;
   onExerciseClick?: (exercise: Exercise) => void;
 }
@@ -439,7 +439,7 @@ const RestDayCard: React.FC<{ day: DayPlan }> = ({ day }) => (
 const WorkoutDayCard: React.FC<{
   day: DayPlan;
   weekNumber: number;
-  onStartWorkout: (weekNumber: number, activities: string[]) => void;
+  onStartWorkout: (weekNumber: number, activities: string[], resolvedExercises?: Exercise[]) => void;
   location: 'casa' | 'academia';
   exercises: Exercise[];
   isLibraryLoading: boolean;
@@ -481,7 +481,7 @@ const WorkoutDayCard: React.FC<{
 
           <Button
             size="lg"
-            onClick={() => onStartWorkout(weekNumber, day.activities)}
+            onClick={() => onStartWorkout(weekNumber, day.activities, exercises)}
             className="w-full mt-4 bg-white text-orange-600 hover:bg-white/90 font-bold"
           >
             <Play className="w-5 h-5 mr-2" fill="currentColor" />

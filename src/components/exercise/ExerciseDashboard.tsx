@@ -236,16 +236,22 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
     return result;
   }, []);
 
-  const handleStartSavedWorkout = async (weekNumber: number, activities: string[]) => {
+  const handleStartSavedWorkout = async (weekNumber: number, activities: string[], resolvedExercises?: Exercise[]) => {
     try {
-      toast({
-        title: "Preparando seu treino…",
-        description: "Carregando exercícios e vídeos.",
-      });
+      // Se já temos exercícios resolvidos (passados do SavedProgramView), usá-los diretamente
+      let exercises: Exercise[] = resolvedExercises || [];
 
-      const resolved = await resolveExercisesFromActivities(activities);
+      // Se não temos exercícios resolvidos, tentar resolver (fallback)
+      if (exercises.length === 0) {
+        toast({
+          title: "Preparando seu treino…",
+          description: "Carregando exercícios e vídeos.",
+        });
 
-      if (resolved.length === 0) {
+        exercises = await resolveExercisesFromActivities(activities);
+      }
+
+      if (exercises.length === 0) {
         toast({
           title: "Nenhum exercício encontrado",
           description: "Os exercícios deste treino ainda não estão na biblioteca. Tente gerar um novo plano.",
@@ -255,8 +261,8 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
       }
 
       // Se encontramos alguns mas não todos, avisa mas continua
-      if (resolved.length < activities.length) {
-        console.log(`Encontrados ${resolved.length} de ${activities.length} exercícios`);
+      if (exercises.length < activities.length) {
+        console.log(`Encontrados ${exercises.length} exercícios para ${activities.length} atividades`);
       }
 
       // Criar um objeto WeeklyPlan compatível
@@ -264,9 +270,9 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
         dayNumber: new Date().getDay(),
         dayName: ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'][new Date().getDay()],
         shortName: ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'][new Date().getDay()],
-        muscleGroups: Array.from(new Set(resolved.map((e) => e.muscle_group).filter(Boolean))) as string[],
+        muscleGroups: Array.from(new Set(exercises.map((e) => e.muscle_group).filter(Boolean))) as string[],
         title: `Semana ${weekNumber} - Treino do Dia`,
-        exercises: resolved,
+        exercises: exercises,
         isRestDay: false,
         isToday: true
       };
@@ -276,7 +282,7 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
 
       toast({
         title: "🔥 Vamos treinar!",
-        description: `Iniciando treino da Semana ${weekNumber}`,
+        description: `Iniciando treino da Semana ${weekNumber} com ${exercises.length} exercícios`,
       });
     } catch (e: any) {
       console.error('Erro ao iniciar treino salvo:', e);
