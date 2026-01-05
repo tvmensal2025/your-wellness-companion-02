@@ -360,21 +360,256 @@ const SessionTemplates: React.FC = () => {
         case '147-perguntas':
           return {
             title: 'Mapeamento de Sintomas (147 Perguntas)',
-            description: 'Questionário adaptativo de sintomas com frequência e intensidade em 12 sistemas.',
+            description: 'Questionário completo de sintomas com frequência e intensidade em 12 sistemas corporais.',
             type: 'symptoms_assessment',
             content: {
               systems: [
-                { system: 'Digestivo', icon: '🍽️', color: '#f59e0b', questions: ['Sente azia?', 'Inchaço frequente?', 'Refluxo?'] },
-                { system: 'Respiratório', icon: '🫁', color: '#60a5fa', questions: ['Falta de ar?', 'Tosse frequente?', 'Chiado no peito?'] },
-                { system: 'Cardiovascular', icon: '❤️', color: '#ef4444', questions: ['Palpitações?', 'Pressão alta?', 'Cansaço fácil?'] },
-                { system: 'Neurológico', icon: '🧠', color: '#a78bfa', questions: ['Dores de cabeça?', 'Tonturas?', 'Insônia?'] },
-                { system: 'Musculoesquelético', icon: '💪', color: '#22c55e', questions: ['Dores musculares?', 'Rigidez?', 'Cãibras?'] },
-                { system: 'Imunológico', icon: '🛡️', color: '#10b981', questions: ['Infecções recorrentes?', 'Alergias?', 'Cansaço prolongado?'] }
+                { 
+                  system: 'Sistema Digestivo', 
+                  icon: '🍽️', 
+                  color: '#f59e0b', 
+                  questions: [
+                    'Você sente azia ou queimação no estômago?',
+                    'Tem sensação de inchaço abdominal após as refeições?',
+                    'Sofre com refluxo gastroesofágico?',
+                    'Sente náuseas com frequência?',
+                    'Tem dificuldade para engolir alimentos?',
+                    'Apresenta gases intestinais em excesso?',
+                    'Sofre com constipação (intestino preso)?',
+                    'Tem episódios de diarreia frequentes?',
+                    'Sente dor ou desconforto abdominal?',
+                    'Percebe alterações no apetite?',
+                    'Tem má digestão ou sensação de estômago pesado?',
+                    'Apresenta arrotos frequentes?'
+                  ] 
+                },
+                { 
+                  system: 'Sistema Respiratório', 
+                  icon: '🫁', 
+                  color: '#60a5fa', 
+                  questions: [
+                    'Sente falta de ar durante atividades leves?',
+                    'Tem tosse frequente ou persistente?',
+                    'Apresenta chiado no peito ao respirar?',
+                    'Sofre com congestão nasal crônica?',
+                    'Tem crises de espirros frequentes?',
+                    'Sente dificuldade para respirar fundo?',
+                    'Apresenta secreção nasal excessiva?',
+                    'Tem dor no peito ao respirar?',
+                    'Acorda com sensação de sufocamento?',
+                    'Sente o nariz frequentemente entupido?',
+                    'Tem ronco durante o sono?',
+                    'Apresenta apneia do sono (paradas respiratórias)?'
+                  ] 
+                },
+                { 
+                  system: 'Sistema Cardiovascular', 
+                  icon: '❤️', 
+                  color: '#ef4444', 
+                  questions: [
+                    'Sente palpitações ou coração acelerado?',
+                    'Tem pressão arterial alta diagnosticada?',
+                    'Sente cansaço fácil ao fazer esforço físico?',
+                    'Tem inchaço nas pernas ou tornozelos?',
+                    'Sente dor ou aperto no peito?',
+                    'Apresenta extremidades frias (mãos/pés)?',
+                    'Tem varizes visíveis nas pernas?',
+                    'Sente tontura ao levantar rapidamente?',
+                    'Percebe batimentos cardíacos irregulares?',
+                    'Tem histórico familiar de doenças cardíacas?',
+                    'Sente falta de ar quando deitado?',
+                    'Apresenta cansaço excessivo sem motivo aparente?'
+                  ] 
+                },
+                { 
+                  system: 'Sistema Neurológico', 
+                  icon: '🧠', 
+                  color: '#a78bfa', 
+                  questions: [
+                    'Sofre com dores de cabeça frequentes?',
+                    'Tem episódios de tontura ou vertigem?',
+                    'Apresenta dificuldade para dormir (insônia)?',
+                    'Sente formigamento nas mãos ou pés?',
+                    'Tem dificuldade de concentração?',
+                    'Apresenta lapsos de memória frequentes?',
+                    'Sofre com enxaquecas recorrentes?',
+                    'Sente tremores nas mãos?',
+                    'Tem sensibilidade excessiva à luz?',
+                    'Apresenta zumbido nos ouvidos?',
+                    'Sente fraqueza em algum membro do corpo?',
+                    'Tem dificuldade para manter o equilíbrio?',
+                    'Apresenta alterações na visão (pontos, flashes)?'
+                  ] 
+                },
+                { 
+                  system: 'Sistema Musculoesquelético', 
+                  icon: '💪', 
+                  color: '#22c55e', 
+                  questions: [
+                    'Sente dores musculares frequentes?',
+                    'Tem rigidez nas articulações pela manhã?',
+                    'Sofre com cãibras musculares?',
+                    'Apresenta dor na coluna cervical (pescoço)?',
+                    'Tem dor na região lombar (parte baixa das costas)?',
+                    'Sente dor nos joelhos ao caminhar?',
+                    'Apresenta dor nos ombros ou braços?',
+                    'Tem fraqueza muscular generalizada?',
+                    'Sofre com dores articulares que mudam de lugar?',
+                    'Sente estalos frequentes nas articulações?',
+                    'Tem dificuldade para realizar movimentos rotineiros?',
+                    'Apresenta inchaço nas articulações?'
+                  ] 
+                },
+                { 
+                  system: 'Sistema Imunológico', 
+                  icon: '🛡️', 
+                  color: '#10b981', 
+                  questions: [
+                    'Tem infecções respiratórias recorrentes (gripes/resfriados)?',
+                    'Apresenta alergias conhecidas (alimentares, ambientais)?',
+                    'Sente cansaço prolongado sem causa aparente?',
+                    'Tem feridas que demoram a cicatrizar?',
+                    'Apresenta infecções de pele frequentes?',
+                    'Sofre com herpes recorrente?',
+                    'Tem aftas ou feridas na boca frequentes?',
+                    'Apresenta gânglios (ínguas) frequentemente inchados?',
+                    'Sente febre baixa sem motivo aparente?',
+                    'Tem histórico de doenças autoimunes na família?',
+                    'Apresenta reações alérgicas a medicamentos?',
+                    'Sofre com infecções urinárias recorrentes?'
+                  ] 
+                },
+                { 
+                  system: 'Sistema Endócrino', 
+                  icon: '⚡', 
+                  color: '#fbbf24', 
+                  questions: [
+                    'Sente cansaço excessivo mesmo dormindo bem?',
+                    'Tem dificuldade para perder ou ganhar peso?',
+                    'Apresenta alterações de humor frequentes?',
+                    'Sente frio ou calor excessivo sem motivo?',
+                    'Tem queda de cabelo acentuada?',
+                    'Apresenta pele muito seca ou oleosa?',
+                    'Sente sede excessiva frequentemente?',
+                    'Tem necessidade de urinar muitas vezes ao dia?',
+                    'Apresenta sudorese excessiva?',
+                    'Tem ciclo menstrual irregular (mulheres)?',
+                    'Sente diminuição da libido?',
+                    'Apresenta ondas de calor (fogachos)?'
+                  ] 
+                },
+                { 
+                  system: 'Sistema Dermatológico', 
+                  icon: '🧴', 
+                  color: '#ec4899', 
+                  questions: [
+                    'Tem pele muito seca ou descamando?',
+                    'Apresenta acne ou espinhas frequentes?',
+                    'Sofre com coceira na pele sem causa aparente?',
+                    'Tem manchas na pele que aparecem ou mudam?',
+                    'Apresenta vermelhidão facial frequente?',
+                    'Sente sensibilidade excessiva ao sol?',
+                    'Tem eczema ou dermatite diagnosticada?',
+                    'Apresenta urticária (placas vermelhas com coceira)?',
+                    'Sofre com psoríase?',
+                    'Tem unhas fracas ou quebradiças?',
+                    'Apresenta excesso de oleosidade na pele?',
+                    'Sente a pele repuxando ou desconfortável?'
+                  ] 
+                },
+                { 
+                  system: 'Sistema Urinário', 
+                  icon: '💧', 
+                  color: '#06b6d4', 
+                  questions: [
+                    'Sente dor ou ardência ao urinar?',
+                    'Tem necessidade de urinar mais de 8 vezes ao dia?',
+                    'Acorda para urinar durante a noite (mais de 2 vezes)?',
+                    'Apresenta dificuldade para iniciar a micção?',
+                    'Sente que a bexiga não esvazia completamente?',
+                    'Tem urgência para urinar (vontade súbita)?',
+                    'Apresenta incontinência urinária (escapes)?',
+                    'Nota alteração na cor da urina?',
+                    'Sente dor na região dos rins?',
+                    'Tem histórico de pedras nos rins?',
+                    'Apresenta urina com cheiro forte?',
+                    'Sente desconforto na região pélvica?'
+                  ] 
+                },
+                { 
+                  system: 'Sistema Reprodutivo', 
+                  icon: '🌸', 
+                  color: '#f472b6', 
+                  questions: [
+                    'Sente dor durante a relação sexual?',
+                    'Apresenta alterações no ciclo menstrual?',
+                    'Tem fluxo menstrual muito intenso ou prolongado?',
+                    'Sofre com cólicas menstruais intensas?',
+                    'Apresenta corrimento vaginal anormal?',
+                    'Sente coceira ou irritação na região íntima?',
+                    'Tem sintomas de TPM intensos?',
+                    'Apresenta sintomas de menopausa/andropausa?',
+                    'Sente diminuição do desejo sexual?',
+                    'Tem dificuldade para engravidar?',
+                    'Apresenta dor ou desconforto nos seios?',
+                    'Sente alterações de humor relacionadas ao ciclo?'
+                  ] 
+                },
+                { 
+                  system: 'Sistema Sensorial', 
+                  icon: '👁️', 
+                  color: '#8b5cf6', 
+                  questions: [
+                    'Tem dificuldade para enxergar de perto ou de longe?',
+                    'Apresenta olhos secos ou irritados?',
+                    'Sente sensibilidade à luz (fotofobia)?',
+                    'Tem zumbido persistente nos ouvidos?',
+                    'Apresenta diminuição da audição?',
+                    'Sente vertigem ou labirintite?',
+                    'Tem dificuldade para sentir cheiros?',
+                    'Apresenta alteração no paladar?',
+                    'Sente dor nos olhos frequentemente?',
+                    'Tem visão turva ou embaçada?',
+                    'Apresenta pontos ou manchas na visão?',
+                    'Sente pressão nos olhos?'
+                  ] 
+                },
+                { 
+                  system: 'Sistema Psicológico/Emocional', 
+                  icon: '🧘', 
+                  color: '#14b8a6', 
+                  questions: [
+                    'Sente-se frequentemente ansioso ou preocupado?',
+                    'Apresenta sintomas de depressão ou tristeza persistente?',
+                    'Tem dificuldade para controlar a raiva ou irritabilidade?',
+                    'Sente-se frequentemente estressado?',
+                    'Apresenta ataques de pânico ou medo intenso?',
+                    'Tem pensamentos negativos recorrentes?',
+                    'Sente-se emocionalmente esgotado?',
+                    'Apresenta dificuldade para relaxar?',
+                    'Tem alterações no sono por preocupações?',
+                    'Sente-se desmotivado ou sem energia?',
+                    'Apresenta dificuldade de concentração por estresse?',
+                    'Tem compulsões alimentares ou outros comportamentos compulsivos?'
+                  ] 
+                }
+              ],
+              frequencyOptions: [
+                { value: 0, label: 'Nunca', color: '#22c55e' },
+                { value: 1, label: 'Raramente', color: '#84cc16' },
+                { value: 2, label: 'Às vezes', color: '#eab308' },
+                { value: 3, label: 'Frequentemente', color: '#f97316' },
+                { value: 4, label: 'Sempre', color: '#ef4444' }
+              ],
+              intensityOptions: [
+                { value: 1, label: 'Leve', color: '#22c55e' },
+                { value: 2, label: 'Moderada', color: '#eab308' },
+                { value: 3, label: 'Intensa', color: '#ef4444' }
               ]
             },
             target_saboteurs: [],
             difficulty: 'intermediate',
-            estimated_time: 15
+            estimated_time: 20
           };
         case '8-pilares':
           return {
