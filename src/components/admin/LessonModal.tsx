@@ -777,34 +777,40 @@ export const LessonModal = ({ isOpen, onClose, onSubmit, courses, modules }: Les
                 />
               </div>
 
-              {/* Recursos */}
+              {/* Recursos / Materiais de Apoio */}
               <div className="space-y-2">
                 <Label htmlFor="resources" className="text-sm font-medium text-gray-300">
-                  🔗 Recursos
+                  📥 Materiais de Apoio (JSON)
                 </Label>
                 <Textarea
                   id="resources"
                   value={formData.resources}
                   onChange={(e) => handleInputChange("resources", e.target.value)}
-                  placeholder="Links e recursos adicionais..."
-                  rows={3}
-                  className="bg-gray-800 border-gray-600 text-white placeholder-gray-400"
+                  placeholder='[{"title": "PDF da Aula", "url": "https://link.com/arquivo.pdf", "type": "pdf"}]'
+                  rows={4}
+                  className="bg-gray-800 border-gray-600 text-white placeholder-gray-400 font-mono text-sm"
                 />
+                <p className="text-xs text-gray-500">
+                  Formato: [{"{"}"title": "Nome", "url": "link", "type": "pdf/doc/video"{"}"}]
+                </p>
               </div>
 
               {/* Quiz JSON */}
               <div className="space-y-2">
                 <Label htmlFor="quizJson" className="text-sm font-medium text-gray-300">
-                  ❓ Quiz JSON
+                  ❓ Quiz da Aula (JSON)
                 </Label>
                 <Textarea
                   id="quizJson"
                   value={formData.quizJson}
                   onChange={(e) => handleInputChange("quizJson", e.target.value)}
-                  placeholder='{"questions": [{"question": "Pergunta?", "options": ["A", "B", "C"], "correct": 0}]}'
+                  placeholder='{"questions": [{"question": "Qual a resposta?", "options": ["Opção A", "Opção B", "Opção C", "Opção D"], "correct": 0}]}'
                   rows={6}
                   className="bg-gray-800 border-gray-600 text-white placeholder-gray-400 font-mono text-sm"
                 />
+                <p className="text-xs text-gray-500">
+                  O campo "correct" é o índice da resposta correta (0 = primeira opção)
+                </p>
               </div>
 
               {/* Tags */}

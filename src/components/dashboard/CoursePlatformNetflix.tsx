@@ -6,6 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { useToast } from "@/hooks/use-toast";
 import { 
   Play, 
   Clock, 
@@ -26,6 +29,22 @@ import { AdminEditControls, AdminStatsPanel, AdminViewToggle } from "@/component
 import { supabase } from "@/integrations/supabase/client";
 import { getVideoEmbedUrl, detectVideoProvider } from "@/utils/videoUrlParser";
 
+interface Resource {
+  title: string;
+  url: string;
+  type?: string;
+}
+
+interface QuizQuestion {
+  question: string;
+  options: string[];
+  correct: number;
+}
+
+interface QuizData {
+  questions: QuizQuestion[];
+}
+
 interface Lesson {
   id: string;
   title: string;
@@ -34,6 +53,8 @@ interface Lesson {
   thumbnail_url?: string;
   video_url?: string;
   is_completed: boolean;
+  resources?: Resource[];
+  quiz_questions?: QuizData;
 }
 
 interface Course {
@@ -67,6 +88,15 @@ const CoursePlatformNetflix = ({ user }: CoursePlatformNetflixProps) => {
   const [loading, setLoading] = useState<boolean>(true);
   const [dbCourses, setDbCourses] = useState<Course[]>([]);
   const [dbModules, setDbModules] = useState<Module[]>([]);
+  
+  // Estados para Quiz e Material
+  const [showQuizModal, setShowQuizModal] = useState(false);
+  const [showMaterialModal, setShowMaterialModal] = useState(false);
+  const [quizAnswers, setQuizAnswers] = useState<Record<number, number>>({});
+  const [quizSubmitted, setQuizSubmitted] = useState(false);
+  const [quizScore, setQuizScore] = useState(0);
+  
+  const { toast } = useToast();
   
   // Hook para modo admin
   const { isAdmin, adminModeEnabled, toggleAdminMode } = useAdminMode(user);
@@ -385,6 +415,8 @@ const CoursePlatformNetflix = ({ user }: CoursePlatformNetflixProps) => {
               thumbnail_url: l.thumbnail_url ?? '/placeholder.svg',
               video_url: l.video_url ?? undefined,
               is_completed: false,
+              resources: l.resources ?? undefined,
+              quiz_questions: l.quiz_questions ?? undefined,
             }));
 
             courses.push(courseBase);
@@ -750,15 +782,23 @@ const CoursePlatformNetflix = ({ user }: CoursePlatformNetflixProps) => {
                       </div>
                       <div>
                         <h4 className="font-semibold text-white">Material de Apoio</h4>
-                        <p className="text-xs text-gray-400">Arquivos para download</p>
+                        <p className="text-xs text-gray-400">
+                          {selectedLesson.resources && selectedLesson.resources.length > 0 
+                            ? `${selectedLesson.resources.length} arquivo(s) disponível(is)`
+                            : 'Nenhum material disponível'}
+                        </p>
                       </div>
                     </div>
                     <Button 
-                      className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
                       size="sm"
+                      disabled={!selectedLesson.resources || selectedLesson.resources.length === 0}
+                      onClick={() => setShowMaterialModal(true)}
                     >
                       <FileText className="h-4 w-4 mr-2" />
-                      Baixar Material
+                      {selectedLesson.resources && selectedLesson.resources.length > 0 
+                        ? 'Ver Materiais' 
+                        : 'Sem Material'}
                     </Button>
                   </div>
 
@@ -770,15 +810,28 @@ const CoursePlatformNetflix = ({ user }: CoursePlatformNetflixProps) => {
                       </div>
                       <div>
                         <h4 className="font-semibold text-white">Quiz da Aula</h4>
-                        <p className="text-xs text-gray-400">Teste seu conhecimento</p>
+                        <p className="text-xs text-gray-400">
+                          {selectedLesson.quiz_questions?.questions?.length 
+                            ? `${selectedLesson.quiz_questions.questions.length} pergunta(s)`
+                            : 'Nenhum quiz disponível'}
+                        </p>
                       </div>
                     </div>
                     <Button 
-                      className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+                      className="w-full bg-purple-600 hover:bg-purple-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
                       size="sm"
+                      disabled={!selectedLesson.quiz_questions?.questions?.length}
+                      onClick={() => {
+                        setQuizAnswers({});
+                        setQuizSubmitted(false);
+                        setQuizScore(0);
+                        setShowQuizModal(true);
+                      }}
                     >
                       <CheckCircle className="h-4 w-4 mr-2" />
-                      Iniciar Quiz
+                      {selectedLesson.quiz_questions?.questions?.length 
+                        ? 'Iniciar Quiz' 
+                        : 'Sem Quiz'}
                     </Button>
                   </div>
                 </div>
@@ -845,6 +898,149 @@ const CoursePlatformNetflix = ({ user }: CoursePlatformNetflixProps) => {
             </div>
           </div>
         </div>
+
+        {/* Modal de Material de Apoio */}
+        <Dialog open={showMaterialModal} onOpenChange={setShowMaterialModal}>
+          <DialogContent className="bg-zinc-900 border-zinc-700 text-white max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Download className="h-5 w-5 text-blue-400" />
+                Material de Apoio
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-3 mt-4">
+              {selectedLesson.resources?.map((resource, index) => (
+                <a
+                  key={index}
+                  href={resource.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 p-3 bg-zinc-800 rounded-lg hover:bg-zinc-700 transition-colors"
+                  onClick={() => {
+                    toast({
+                      title: "Download iniciado",
+                      description: `Baixando ${resource.title}...`,
+                    });
+                  }}
+                >
+                  <div className="w-10 h-10 rounded-lg bg-blue-600/20 flex items-center justify-center">
+                    <FileText className="h-5 w-5 text-blue-400" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium text-white">{resource.title}</p>
+                    <p className="text-xs text-gray-400">{resource.type || 'Arquivo'}</p>
+                  </div>
+                  <Download className="h-4 w-4 text-gray-400" />
+                </a>
+              ))}
+              {(!selectedLesson.resources || selectedLesson.resources.length === 0) && (
+                <p className="text-center text-gray-400 py-4">
+                  Nenhum material disponível para esta aula.
+                </p>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Modal de Quiz */}
+        <Dialog open={showQuizModal} onOpenChange={setShowQuizModal}>
+          <DialogContent className="bg-zinc-900 border-zinc-700 text-white max-w-lg max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Award className="h-5 w-5 text-purple-400" />
+                Quiz: {selectedLesson.title}
+              </DialogTitle>
+            </DialogHeader>
+            
+            {!quizSubmitted ? (
+              <div className="space-y-6 mt-4">
+                {selectedLesson.quiz_questions?.questions?.map((q, qIndex) => (
+                  <div key={qIndex} className="bg-zinc-800 rounded-lg p-4">
+                    <p className="font-medium text-white mb-3">
+                      {qIndex + 1}. {q.question}
+                    </p>
+                    <RadioGroup
+                      value={quizAnswers[qIndex]?.toString()}
+                      onValueChange={(value) => setQuizAnswers({...quizAnswers, [qIndex]: parseInt(value)})}
+                    >
+                      {q.options.map((option, oIndex) => (
+                        <div key={oIndex} className="flex items-center space-x-2 py-2">
+                          <RadioGroupItem 
+                            value={oIndex.toString()} 
+                            id={`q${qIndex}-o${oIndex}`}
+                            className="border-gray-500 text-purple-500"
+                          />
+                          <Label 
+                            htmlFor={`q${qIndex}-o${oIndex}`} 
+                            className="text-gray-300 cursor-pointer"
+                          >
+                            {option}
+                          </Label>
+                        </div>
+                      ))}
+                    </RadioGroup>
+                  </div>
+                ))}
+                
+                <Button 
+                  className="w-full bg-purple-600 hover:bg-purple-700"
+                  onClick={() => {
+                    const questions = selectedLesson.quiz_questions?.questions || [];
+                    let correct = 0;
+                    questions.forEach((q, i) => {
+                      if (quizAnswers[i] === q.correct) correct++;
+                    });
+                    setQuizScore(correct);
+                    setQuizSubmitted(true);
+                  }}
+                  disabled={Object.keys(quizAnswers).length !== (selectedLesson.quiz_questions?.questions?.length || 0)}
+                >
+                  Enviar Respostas
+                </Button>
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <div className={`w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-4 ${
+                  quizScore >= (selectedLesson.quiz_questions?.questions?.length || 0) * 0.7 
+                    ? 'bg-green-600/20' 
+                    : 'bg-yellow-600/20'
+                }`}>
+                  <Award className={`h-10 w-10 ${
+                    quizScore >= (selectedLesson.quiz_questions?.questions?.length || 0) * 0.7 
+                      ? 'text-green-400' 
+                      : 'text-yellow-400'
+                  }`} />
+                </div>
+                <h3 className="text-2xl font-bold text-white mb-2">
+                  {quizScore} / {selectedLesson.quiz_questions?.questions?.length || 0}
+                </h3>
+                <p className="text-gray-400 mb-6">
+                  {quizScore >= (selectedLesson.quiz_questions?.questions?.length || 0) * 0.7 
+                    ? 'Parabéns! Você foi muito bem!' 
+                    : 'Continue estudando e tente novamente!'}
+                </p>
+                <div className="flex gap-3 justify-center">
+                  <Button 
+                    variant="outline" 
+                    className="border-zinc-600 text-white hover:bg-zinc-800"
+                    onClick={() => {
+                      setQuizAnswers({});
+                      setQuizSubmitted(false);
+                    }}
+                  >
+                    Tentar Novamente
+                  </Button>
+                  <Button 
+                    className="bg-purple-600 hover:bg-purple-700"
+                    onClick={() => setShowQuizModal(false)}
+                  >
+                    Fechar
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     );
   }
