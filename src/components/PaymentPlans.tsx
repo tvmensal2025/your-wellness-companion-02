@@ -64,7 +64,7 @@ const plans: Plan[] = [
     billingPeriod: 'monthly',
     features: [
       '🏆 Tudo do Premium incluído',
-      '👩‍⚕️ Sessões individuais com nutricionista',
+      '👩‍⚕️ Sessões personalizadas',
       '🎯 Plano personalizado exclusivo',
       '📞 Suporte WhatsApp direto',
       '📊 Relatórios mensais detalhados',
