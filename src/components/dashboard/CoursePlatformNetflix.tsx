@@ -473,9 +473,7 @@ const CoursePlatformNetflix = ({ user }: CoursePlatformNetflixProps) => {
           <div 
             className="absolute inset-0 bg-cover bg-center bg-no-repeat"
             style={{ 
-              backgroundImage: dbCourses[0]?.thumbnail_url 
-                ? `url(${dbCourses[0].thumbnail_url?.replace('http://', 'https://')})` 
-                : 'url(https://45.67.221.216:8086/capa01.png)'
+              backgroundImage: 'url(https://45.67.221.216:8086/capa01.png)'
             }}
           >
             {/* Gradientes sobrepostos estilo Netflix */}
