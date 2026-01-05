@@ -20,12 +20,16 @@ import {
   Target,
   Timer,
   WifiOff,
+  ThumbsUp,
+  ThumbsDown,
+  Minus,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import { useToast } from '@/hooks/use-toast';
 import { useRealTimeHeartRate } from '@/hooks/useRealTimeHeartRate';
 import { extractYouTubeId, formatDifficulty } from '@/lib/exercise-format';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ExerciseDetailModalProps {
   isOpen: boolean;
@@ -62,6 +66,44 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
   const [timerSeconds, setTimerSeconds] = useState(0);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [currentSet, setCurrentSet] = useState(1);
+  const [userFeedback, setUserFeedback] = useState<'facil' | 'medio' | 'dificil' | null>(null);
+  const [feedbackSaving, setFeedbackSaving] = useState(false);
+
+  const exerciseId = useMemo(() => exerciseData?.id || '', [exerciseData]);
+
+  // Salvar feedback de dificuldade do usuário
+  const saveDifficultyFeedback = async (perceived: 'facil' | 'medio' | 'dificil') => {
+    if (!exerciseId || feedbackSaving) return;
+    
+    setFeedbackSaving(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { error } = await supabase
+        .from('user_exercise_feedback')
+        .upsert({
+          user_id: user.id,
+          exercise_id: exerciseId,
+          exercise_name: name,
+          perceived_difficulty: perceived,
+          expected_difficulty: difficultyRaw,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'user_id,exercise_id' });
+
+      if (error) throw error;
+      
+      setUserFeedback(perceived);
+      toast({ 
+        title: 'Feedback registrado!', 
+        description: 'Obrigado por nos ajudar a personalizar seu treino.',
+      });
+    } catch (error) {
+      console.error('Error saving feedback:', error);
+    } finally {
+      setFeedbackSaving(false);
+    }
+  };
 
   // Hook para frequência cardíaca (Google Fit)
   const {
@@ -131,7 +173,35 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
     setTimerSeconds(0);
     setIsTimerRunning(false);
     setCurrentSet(1);
+    setUserFeedback(null);
   }, [isOpen, name]);
+
+  // Carregar feedback existente
+  useEffect(() => {
+    if (!isOpen || !exerciseId) return;
+    
+    const loadFeedback = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const { data } = await supabase
+          .from('user_exercise_feedback')
+          .select('perceived_difficulty')
+          .eq('user_id', user.id)
+          .eq('exercise_id', exerciseId)
+          .maybeSingle();
+
+        if (data?.perceived_difficulty) {
+          setUserFeedback(data.perceived_difficulty as 'facil' | 'medio' | 'dificil');
+        }
+      } catch (error) {
+        console.error('Error loading feedback:', error);
+      }
+    };
+    
+    loadFeedback();
+  }, [isOpen, exerciseId]);
 
   // Cronômetro
   useEffect(() => {
@@ -229,7 +299,36 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
       <div className="space-y-1 mt-1">
         <div className="flex items-center justify-between text-xs">
           <span className="font-semibold">Dificuldade</span>
-          <span className="text-muted-foreground">{diff.label || difficultyRaw || '—'}</span>
+          <div className="flex items-center gap-2">
+            <span className="text-muted-foreground">{diff.label || difficultyRaw || '—'}</span>
+            {/* Botões discretos de feedback */}
+            <div className="flex items-center gap-0.5 opacity-50 hover:opacity-100 transition-opacity">
+              <button
+                onClick={() => saveDifficultyFeedback('facil')}
+                disabled={feedbackSaving}
+                className={`p-0.5 rounded transition-colors ${userFeedback === 'facil' ? 'text-green-500' : 'text-muted-foreground hover:text-green-500'}`}
+                title="Achei fácil"
+              >
+                <ThumbsUp className="w-3 h-3" />
+              </button>
+              <button
+                onClick={() => saveDifficultyFeedback('medio')}
+                disabled={feedbackSaving}
+                className={`p-0.5 rounded transition-colors ${userFeedback === 'medio' ? 'text-yellow-500' : 'text-muted-foreground hover:text-yellow-500'}`}
+                title="Moderado"
+              >
+                <Minus className="w-3 h-3" />
+              </button>
+              <button
+                onClick={() => saveDifficultyFeedback('dificil')}
+                disabled={feedbackSaving}
+                className={`p-0.5 rounded transition-colors ${userFeedback === 'dificil' ? 'text-red-500' : 'text-muted-foreground hover:text-red-500'}`}
+                title="Achei difícil"
+              >
+                <ThumbsDown className="w-3 h-3" />
+              </button>
+            </div>
+          </div>
         </div>
         <Progress value={difficultyProgress} className="h-1.5" />
       </div>

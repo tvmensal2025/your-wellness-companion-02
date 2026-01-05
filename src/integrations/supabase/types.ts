@@ -6306,6 +6306,7 @@ export type Database = {
           created_at: string
           current_weight: number | null
           email: string | null
+          fitness_level: string | null
           full_name: string | null
           gender: string | null
           google_fit_enabled: boolean | null
@@ -6329,6 +6330,7 @@ export type Database = {
           created_at?: string
           current_weight?: number | null
           email?: string | null
+          fitness_level?: string | null
           full_name?: string | null
           gender?: string | null
           google_fit_enabled?: boolean | null
@@ -6352,6 +6354,7 @@ export type Database = {
           created_at?: string
           current_weight?: number | null
           email?: string | null
+          fitness_level?: string | null
           full_name?: string | null
           gender?: string | null
           google_fit_enabled?: boolean | null
@@ -8925,6 +8928,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_exercise_feedback: {
+        Row: {
+          created_at: string
+          exercise_id: string
+          exercise_name: string
+          expected_difficulty: string | null
+          id: string
+          perceived_difficulty: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          exercise_id: string
+          exercise_name: string
+          expected_difficulty?: string | null
+          id?: string
+          perceived_difficulty: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          exercise_id?: string
+          exercise_name?: string
+          expected_difficulty?: string | null
+          id?: string
+          perceived_difficulty?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       user_exercise_programs: {
         Row: {
