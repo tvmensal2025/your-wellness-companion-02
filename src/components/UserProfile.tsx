@@ -17,7 +17,7 @@ import {
   FileText, Activity, Settings, Bell, Crown,
   TrendingUp, Eye, Download, Share, Edit2,
   Shield, CreditCard, Clock, Target, Zap,
-  BarChart3, Plus, ExternalLink
+  BarChart3, Plus, ExternalLink, SlidersHorizontal
 } from 'lucide-react';
 
 interface UserProfileData {
@@ -69,7 +69,11 @@ interface NotificationPreference {
   enabled: boolean;
 }
 
-const UserProfile = () => {
+interface UserProfileProps {
+  onOpenLayoutPrefs?: () => void;
+}
+
+const UserProfile = ({ onOpenLayoutPrefs }: UserProfileProps = {}) => {
   const [profile, setProfile] = useState<Partial<UserProfileData>>({});
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [medicalDocuments, setMedicalDocuments] = useState<MedicalDocument[]>([]);
@@ -664,6 +668,31 @@ const UserProfile = () => {
                     />
                   </div>
                 ))}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <SlidersHorizontal className="h-5 w-5" />
+                  <span>Personalizar Menu</span>
+                </CardTitle>
+                <CardDescription>
+                  Customize a ordem e visibilidade dos itens do menu
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  Reorganize os itens do menu lateral, escolha quais seções mostrar e defina qual tela abre por padrão.
+                </p>
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-start"
+                  onClick={onOpenLayoutPrefs}
+                >
+                  <SlidersHorizontal className="h-4 w-4 mr-2" />
+                  Abrir Configurações do Menu
+                </Button>
               </CardContent>
             </Card>
 
