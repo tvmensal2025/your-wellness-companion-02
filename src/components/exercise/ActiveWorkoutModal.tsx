@@ -4,8 +4,10 @@ import {
   Dialog, 
   DialogContent, 
   DialogHeader, 
-  DialogTitle 
+  DialogTitle,
+  DialogDescription
 } from '@/components/ui/dialog';
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -116,6 +118,10 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-lg max-h-[90vh] p-0 overflow-hidden">
+        <VisuallyHidden>
+          <DialogTitle>Treino Ativo - {workout.title}</DialogTitle>
+          <DialogDescription>Acompanhe seu progresso durante o treino</DialogDescription>
+        </VisuallyHidden>
         {/* Header com progresso */}
         <div className="bg-gradient-to-r from-orange-500 to-red-600 text-white p-4">
           <div className="flex items-center justify-between mb-3">
