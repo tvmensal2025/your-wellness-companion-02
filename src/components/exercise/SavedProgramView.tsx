@@ -121,24 +121,13 @@ const parseActivity = (activity: string): { name: string; sets: string; reps: st
   return { name: name || activity, sets, reps, rest, difficulty };
 };
 
-// Buscar detalhes do exercício no banco de instruções
-const getExerciseDetails = (activityName: string, location: string = 'casa') => {
-  const dict = location === 'casa' ? exerciseInstructions.casa : exerciseInstructions.academia;
-  
-  // Busca exata
-  if ((dict as any)[activityName]) {
-    return (dict as any)[activityName];
-  }
-  
-  // Busca parcial
-  const lowerName = activityName.toLowerCase();
-  for (const [key, value] of Object.entries(dict)) {
-    if (key.toLowerCase().includes(lowerName) || lowerName.includes(key.toLowerCase())) {
-      return value;
-    }
-  }
-  
-  return null;
+// Map de labels de limitações
+const limitationLabels: Record<string, string> = {
+  joelho: '🦵 Joelho',
+  coluna: '🦴 Coluna',
+  ombro: '💪 Ombro',
+  quadril: '🦿 Quadril',
+  nenhuma: '',
 };
 
 // Extrair ID do YouTube
@@ -318,7 +307,7 @@ export const SavedProgramView: React.FC<SavedProgramProps> = ({
                   Exercícios Adaptados
                 </p>
                 <p className="text-sm text-amber-700 dark:text-amber-300">
-                  Seu programa foi ajustado para proteger: {limitationLabels[limitation]?.replace(/^[^\s]+\s/, '')}. 
+                  Seu programa foi ajustado para proteger: {limitationLabels[limitation] || limitation}. 
                   Exercícios de impacto ou risco foram substituídos.
                 </p>
               </div>
