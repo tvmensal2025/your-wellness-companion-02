@@ -27,15 +27,14 @@ serve(async (req) => {
 
     const { planId } = await req.json();
     
-    // Map plan IDs to prices
-    const planPrices = {
-      basic: { amount: 2990, name: "Plano Básico" }, // R$ 29.90
-      premium: { amount: 4990, name: "Plano Premium" }, // R$ 49.90
-      pro: { amount: 9990, name: "Plano Professional" }, // R$ 99.90
+    // Map plan IDs to Stripe price IDs - Bem-Estar 360
+    const planPrices: Record<string, { priceId: string; name: string }> = {
+      premium: { priceId: "price_1SmKZXF9NCiqja1VuuUHTIBk", name: "Premium - Bem-Estar 360" }, // R$ 29.90
+      vip: { priceId: "price_1SmKZuF9NCiqja1VVWiK3dsK", name: "VIP Exclusivo - Bem-Estar 360" }, // R$ 99.90
     };
 
-    const selectedPlan = planPrices[planId as keyof typeof planPrices];
-    if (!selectedPlan) throw new Error("Invalid plan selected");
+    const selectedPlan = planPrices[planId];
+    if (!selectedPlan) throw new Error("Plano inválido selecionado");
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", { 
       apiVersion: "2023-10-16" 
@@ -52,18 +51,13 @@ serve(async (req) => {
       customer_email: customerId ? undefined : user.email,
       line_items: [
         {
-          price_data: {
-            currency: "brl",
-            product_data: { name: selectedPlan.name },
-            unit_amount: selectedPlan.amount,
-            recurring: { interval: "month" },
-          },
+          price: selectedPlan.priceId,
           quantity: 1,
         },
       ],
       mode: "subscription",
-      success_url: `${req.headers.get("origin")}/admin?success=true`,
-      cancel_url: `${req.headers.get("origin")}/admin?canceled=true`,
+      success_url: `${req.headers.get("origin")}/subscription?success=true`,
+      cancel_url: `${req.headers.get("origin")}/subscription?canceled=true`,
     });
 
     return new Response(JSON.stringify({ url: session.url }), {

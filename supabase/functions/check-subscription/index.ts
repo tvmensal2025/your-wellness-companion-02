@@ -82,18 +82,14 @@ serve(async (req) => {
       subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
       logStep("Active subscription found", { subscriptionId: subscription.id, endDate: subscriptionEnd });
       
-      // Determine subscription tier from price
-      const priceId = subscription.items.data[0].price.id;
-      const price = await stripe.prices.retrieve(priceId);
-      const amount = price.unit_amount || 0;
-      if (amount <= 2990) {
-        subscriptionTier = "Básico";
-      } else if (amount <= 4990) {
-        subscriptionTier = "Premium";
-      } else {
-        subscriptionTier = "Professional";
-      }
-      logStep("Determined subscription tier", { priceId, amount, subscriptionTier });
+      // Determine subscription tier from product ID - Bem-Estar 360
+      const productId = subscription.items.data[0].price.product as string;
+      const productTiers: Record<string, string> = {
+        "prod_TjoBGs9xzjVuWK": "Premium",
+        "prod_TjoCozWvpcsYKc": "VIP Exclusivo",
+      };
+      subscriptionTier = productTiers[productId] || "Premium";
+      logStep("Determined subscription tier", { productId, subscriptionTier });
     } else {
       logStep("No active subscription found");
     }
