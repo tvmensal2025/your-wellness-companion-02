@@ -1,43 +1,62 @@
-import { useState, useEffect } from 'react';
-import { User } from '@supabase/supabase-js';
+import { useEffect, useState } from 'react';
+import type { User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+
+const AUTH_INIT_TIMEOUT_MS = 2000;
 
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Get initial session
-    const getSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+    let mounted = true;
+
+    const timeoutId = window.setTimeout(() => {
+      if (mounted) setLoading(false);
+    }, AUTH_INIT_TIMEOUT_MS);
+
+    // Listener primeiro (evita perder eventos e reduz “travadas” na inicialização)
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_, session) => {
+      if (!mounted) return;
       setUser(session?.user ?? null);
       setLoading(false);
-    };
+    });
 
-    getSession();
+    // Depois busca sessão inicial
+    (async () => {
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+        if (!mounted) return;
         setUser(session?.user ?? null);
-        setLoading(false);
+      } catch {
+        if (!mounted) return;
+        setUser(null);
+      } finally {
+        window.clearTimeout(timeoutId);
+        if (mounted) setLoading(false);
       }
-    );
+    })();
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      window.clearTimeout(timeoutId);
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
-        password
+        password,
       });
-      
-      if (error) {
-        return { error };
-      }
-      
+
+      if (error) return { error };
       return { data };
     } catch (error) {
       return { error };
@@ -48,13 +67,13 @@ export const useAuth = () => {
     try {
       const { data, error } = await supabase.auth.signUp({
         email,
-        password
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+        },
       });
-      
-      if (error) {
-        return { error };
-      }
-      
+
+      if (error) return { error };
       return { data };
     } catch (error) {
       return { error };
@@ -70,6 +89,6 @@ export const useAuth = () => {
     loading,
     signIn,
     signUp,
-    logout
+    logout,
   };
 };

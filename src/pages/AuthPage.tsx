@@ -183,12 +183,15 @@ const AuthPage = () => {
       // Verificar se o usuário tem role de admin após login bem-sucedido
       if (data.user) {
         try {
-          // Usar RPC para verificar se é admin (evita problemas de tipos)
-          // Check if user is admin by checking profiles table
-          const {
-            data: profileData
-          } = await supabase.from('profiles').select('*').eq('user_id', data.user.id).maybeSingle();
+          // Uma única query (mais rápido): role + nome
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('role, full_name')
+            .eq('user_id', data.user.id)
+            .maybeSingle();
+
           const isAdmin = (profileData as any)?.role === 'admin';
+
           if (isAdmin) {
             toast({
               title: "Acesso administrativo concedido",
@@ -196,13 +199,9 @@ const AuthPage = () => {
             });
             navigate("/admin");
           } else {
-            // Buscar dados do usuário para mostrar no modal
-            const {
-              data: profile
-            } = await supabase.from('profiles').select('full_name').eq('user_id', data.user.id).single();
             setAuthenticatedUser({
               id: data.user.id,
-              name: profile?.full_name || data.user.email?.split('@')[0] || 'Usuário'
+              name: (profileData as any)?.full_name || data.user.email?.split('@')[0] || 'Usuário'
             });
             toast({
               title: "Login realizado!",
@@ -213,7 +212,6 @@ const AuthPage = () => {
             setShowAuthChoiceModal(true);
           }
         } catch (roleError) {
-          console.log('Erro ao verificar role, assumindo usuário comum:', roleError);
           // Se não conseguir verificar role, assume usuário comum
           toast({
             title: "Login realizado!",
