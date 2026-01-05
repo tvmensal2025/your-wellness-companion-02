@@ -21,56 +21,56 @@ interface Plan {
 
 const plans: Plan[] = [
   {
-    id: 'basic',
-    name: 'Básico',
-    description: 'Funcionalidades essenciais para começar sua jornada',
-    price: 29.90,
+    id: 'free',
+    name: 'Gratuito',
+    description: 'Comece sua jornada de saúde sem custo',
+    price: 0,
     billingPeriod: 'monthly',
     features: [
-      'Dashboard completo',
-      'Missões diárias',
-      'Teste de sabotadores',
-      'Gráficos básicos',
-      'Suporte por email'
+      'Registro de peso e medidas',
+      'Dashboard básico',
+      '3 desafios por mês',
+      'Dicas básicas do Dr. Vital',
+      'Gráficos de evolução'
     ],
     icon: Zap,
-    color: 'text-blue-600'
+    color: 'text-emerald-600'
   },
   {
     id: 'premium',
     name: 'Premium',
-    description: 'Tudo do básico + recursos avançados',
-    price: 49.90,
+    description: 'Recursos completos para sua transformação',
+    price: 19.90,
     billingPeriod: 'monthly',
     features: [
-      'Todas as funcionalidades básicas',
-      'Integração Google Fit',
-      'Relatórios semanais personalizados',
-      'Comunidade premium',
-      'Suporte prioritário',
-      'Sessões personalizadas'
+      'Tudo do plano Gratuito',
+      'Desafios ilimitados',
+      'IA Sofia ilimitada',
+      'Análises e gráficos avançados',
+      'Planos alimentares personalizados',
+      'Conquistas e badges exclusivos',
+      'Sem anúncios'
     ],
     highlighted: true,
     icon: Crown,
     color: 'text-purple-600'
   },
   {
-    id: 'pro',
-    name: 'Professional',
-    description: 'Para profissionais da saúde e coaches',
-    price: 99.90,
-    billingPeriod: 'monthly',
+    id: 'annual',
+    name: 'Anual',
+    description: 'Economize 2 meses com o plano anual',
+    price: 149.90,
+    billingPeriod: 'yearly',
     features: [
-      'Todas as funcionalidades premium',
-      'Dashboard administrativo completo',
-      'Gestão de múltiplos clientes',
-      'Relatórios avançados',
-      'API para integrações',
-      'Suporte 24/7',
-      'Treinamentos exclusivos'
+      'Tudo do plano Premium',
+      'Economia de 2 meses',
+      'Acesso antecipado a novos recursos',
+      'Badge VIP exclusivo',
+      'Suporte prioritário',
+      'Sessões exclusivas com especialistas'
     ],
     icon: Star,
-    color: 'text-gold-600'
+    color: 'text-amber-500'
   }
 ];
 
@@ -126,9 +126,9 @@ export const PaymentPlans: React.FC = () => {
           const isSelected = selectedPlan === plan.id;
           const isLoading = status.isLoading && isSelected;
           const isCurrentPlan = status.subscribed && 
-            ((plan.id === 'basic' && status.subscription_tier === 'Básico') ||
+            ((plan.id === 'free' && status.subscription_tier === 'Gratuito') ||
              (plan.id === 'premium' && status.subscription_tier === 'Premium') ||
-             (plan.id === 'pro' && status.subscription_tier === 'Professional'));
+             (plan.id === 'annual' && status.subscription_tier === 'Anual'));
           
           return (
             <Card 
@@ -158,8 +158,16 @@ export const PaymentPlans: React.FC = () => {
                 
                 <div className="pt-4">
                   <div className="text-4xl font-bold">
-                    R$ {plan.price.toFixed(2).replace('.', ',')}
-                    <span className="text-lg text-muted-foreground font-normal">/mês</span>
+                    {plan.price === 0 ? (
+                      <span>Grátis</span>
+                    ) : (
+                      <>
+                        R$ {plan.price.toFixed(2).replace('.', ',')}
+                        <span className="text-lg text-muted-foreground font-normal">
+                          /{plan.billingPeriod === 'yearly' ? 'ano' : 'mês'}
+                        </span>
+                      </>
+                    )}
                   </div>
                 </div>
               </CardHeader>
