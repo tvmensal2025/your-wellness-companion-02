@@ -466,22 +466,33 @@ const CompleteDashboardPage = () => {
 
         {/* Main Content */}
         <div className="flex-1 flex flex-col min-w-0 bg-gradient-to-b from-background via-background to-muted/40 overflow-x-hidden">
-          {/* Mobile Header - Sticky para melhor UX */}
-          <div className="lg:hidden flex items-center justify-between px-3 py-2.5 border-b bg-card/95 backdrop-blur-sm sticky top-0 z-40">
-            <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(true)} className="h-9 w-9">
-              <Menu className="w-5 h-5" />
-            </Button>
-            
-            <h1 className="text-sm font-semibold text-center truncate max-w-[40vw]">
-              {menuItems.find(item => item.id === activeSection)?.label || 'Dashboard'}
-            </h1>
-            
-            <NotificationBell />
-          </div>
+          {/* Mobile Header Premium - Compacto e elegante */}
+          <header className="lg:hidden premium-header safe-area-top">
+            <div className="flex items-center h-14 px-4">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => setSidebarOpen(true)} 
+                className="h-10 w-10 rounded-xl hover:bg-primary/10 transition-colors shrink-0"
+              >
+                <Menu className="w-5 h-5" />
+              </Button>
+              
+              <div className="flex-1 flex items-center justify-center min-w-0 px-3">
+                <h1 className="text-base font-semibold text-foreground text-center leading-tight">
+                  {menuItems.find(item => item.id === activeSection)?.label || 'Dashboard'}
+                </h1>
+              </div>
+              
+              <div className="shrink-0">
+                <NotificationBell />
+              </div>
+            </div>
+          </header>
 
           {/* Content - Otimizado para mobile */}
-          <div className="flex-1 overflow-y-auto overflow-x-hidden pb-20 lg:pb-6">
-            <main className="w-full max-w-6xl mx-auto px-3 sm:px-4 pt-3 pb-6 lg:px-6 lg:pt-6 space-y-3 sm:space-y-4 animate-fade-in">
+          <div className="flex-1 overflow-y-auto overflow-x-hidden safe-area-bottom">
+            <main className="w-full max-w-6xl mx-auto px-4 sm:px-4 pt-4 pb-8 lg:px-6 lg:pt-6 space-y-4 animate-fade-in">
               {renderContent()}
             </main>
           </div>
