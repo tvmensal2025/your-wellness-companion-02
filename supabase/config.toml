@@ -1,5 +1,8 @@
 project_id = "ciszqtlaacrhfwsqnvjr"
 
+[functions.sofia-image-analysis]
+verify_jwt = false
+
 [functions.sofia-enhanced-memory]
 verify_jwt = false
 
@@ -34,5 +37,14 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.repair-auth-metadata]
+verify_jwt = false
+
+[functions.food-analysis]
+verify_jwt = false
+
+[functions.dr-vital-chat]
+verify_jwt = false
+
+[functions.dr-vital-weekly-report]
 verify_jwt = false
 
