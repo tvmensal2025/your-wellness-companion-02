@@ -230,16 +230,19 @@ export const CourseManagementNew = () => {
     try {
       const { data, error } = await supabase
         .from('lessons')
-        .select('id, title, module_id, order_index, duration_minutes, video_url, created_at')
+        .select('id, title, description, module_id, order_index, duration_minutes, video_url, is_free, is_premium, created_at')
         .eq('module_id', moduleId)
         .order('order_index', { ascending: true });
 
       if (error) throw error;
-      setLessons(data?.map(lesson => ({
-        ...lesson,
-        description: '', // Default description since it doesn't exist in DB
-        is_free: true // Default to free
-      })) || []);
+
+      setLessons(
+        (data || []).map((lesson: any) => ({
+          ...lesson,
+          description: lesson.description ?? "",
+          is_free: lesson.is_free ?? true,
+        }))
+      );
     } catch (error) {
       console.error('Erro ao buscar aulas:', error);
     }
@@ -277,11 +280,15 @@ export const CourseManagementNew = () => {
 
   const handleCreateModule = async (moduleData: any) => {
     try {
-      // Converter o campo 'order_index' e remover campos que não existem no banco
-      const { order, structure_type, ...modulePayload } = moduleData;
-      
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) await repairAuthSessionIfTooLarge(session);
+
+      // Remover campos que não existem no banco (ex.: thumbnail_url)
+      const { thumbnail_url, order, structure_type, ...modulePayload } = moduleData;
+
       const finalPayload = {
         ...modulePayload,
+        description: modulePayload.description || "Módulo criado automaticamente",
         order_index: moduleData.order_index || 1,
       };
 
@@ -313,18 +320,39 @@ export const CourseManagementNew = () => {
 
   const handleCreateLesson = async (lessonData: any) => {
     try {
-      // Mapear campos para a estrutura correta do banco
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) await repairAuthSessionIfTooLarge(session);
+
+      // A tabela `lessons` suporta apenas aulas dentro de módulos
+      if (lessonData?.lesson_type === 'course_lesson') {
+        toast({
+          title: "Atenção",
+          description: "Para este formato, crie a aula dentro de um módulo (MÓDULO → AULA).",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      const moduleId = lessonData.moduleId;
+      if (!moduleId) {
+        toast({
+          title: "Erro",
+          description: "Selecione um módulo para criar a aula.",
+          variant: "destructive"
+        });
+        return;
+      }
+
       const lessonToInsert = {
         title: lessonData.title,
-        description: lessonData.description || "Aula criada automaticamente",
-        video_url: lessonData.videoUrl || "",
-        thumbnail_url: (lessonData as any).thumbnailUrl || undefined,
-        content: lessonData.richTextContent || lessonData.mixedContent || "",
-        duration_minutes: lessonData.duration || 0,
-        order_index: lessonData.order || 1,
-        is_free: !lessonData.isActive ? false : true,
-        module_id: lessonData.moduleId,
-        course_id: lessonData.courseId
+        description: lessonData.description || null,
+        video_url: lessonData.videoUrl || null,
+        duration_minutes: Number(lessonData.duration) || 0,
+        order_index: Number(lessonData.order) || 1,
+        // Observação: hoje o switch 'Aula Ativa' está sendo persistido em is_free
+        is_free: lessonData.isActive !== undefined ? !!lessonData.isActive : true,
+        is_premium: false,
+        module_id: moduleId,
       };
 
       const { error } = await supabase
@@ -595,10 +623,15 @@ export const CourseManagementNew = () => {
     if (!editingModule) return;
 
     try {
-      const { order, structure_type, ...modulePayload } = moduleData;
-      
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) await repairAuthSessionIfTooLarge(session);
+
+      // Remover campos que não existem no banco (ex.: thumbnail_url)
+      const { thumbnail_url, order, structure_type, ...modulePayload } = moduleData;
+
       const finalPayload = {
         ...modulePayload,
+        description: modulePayload.description || editingModule.description || "Módulo atualizado",
         order_index: moduleData.order_index || editingModule.order_index,
       };
 
@@ -634,15 +667,27 @@ export const CourseManagementNew = () => {
     if (!editingLesson) return;
 
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) await repairAuthSessionIfTooLarge(session);
+
+      // A tabela `lessons` suporta apenas aulas dentro de módulos
+      if (lessonData?.lesson_type === 'course_lesson') {
+        toast({
+          title: "Atenção",
+          description: "Para editar aqui, mantenha a aula dentro de um módulo (MÓDULO → AULA).",
+          variant: "destructive"
+        });
+        return;
+      }
+
       const lessonToUpdate = {
         title: lessonData.title,
-        description: lessonData.description || editingLesson.description,
-        video_url: lessonData.videoUrl || editingLesson.video_url,
-        thumbnail_url: (lessonData as any).thumbnailUrl,
-        content: lessonData.richTextContent || lessonData.mixedContent || "",
-        duration_minutes: lessonData.duration || editingLesson.duration_minutes,
-        order_index: lessonData.order || editingLesson.order_index,
-        is_free: lessonData.isActive !== undefined ? lessonData.isActive : editingLesson.is_free,
+        description: lessonData.description ?? editingLesson.description ?? null,
+        video_url: lessonData.videoUrl ?? editingLesson.video_url ?? null,
+        duration_minutes: Number(lessonData.duration ?? editingLesson.duration_minutes ?? 0),
+        order_index: Number(lessonData.order ?? editingLesson.order_index ?? 1),
+        is_free: lessonData.isActive !== undefined ? !!lessonData.isActive : (editingLesson as any).is_free,
+        module_id: lessonData.moduleId || (editingLesson as any).module_id,
       };
 
       const { error } = await supabase
