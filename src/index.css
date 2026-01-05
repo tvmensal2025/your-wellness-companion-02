@@ -1001,6 +1001,163 @@ textarea:focus-visible {
   }
 }
 
+/* ================================ */
+/* PREMIUM MOBILE DESIGN SYSTEM */
+/* ================================ */
+
+/* Premium Mobile Header */
+.premium-header {
+  @apply sticky top-0 z-40;
+  background: linear-gradient(180deg, 
+    hsl(var(--card)) 0%, 
+    hsl(var(--card) / 0.97) 100%
+  );
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border-bottom: 1px solid hsl(var(--border) / 0.4);
+  box-shadow: 0 1px 3px 0 hsl(var(--foreground) / 0.04);
+}
+
+/* Premium Cards - Glass effect */
+.premium-card {
+  background: linear-gradient(145deg, 
+    hsl(var(--card)) 0%, 
+    hsl(var(--card) / 0.95) 100%
+  );
+  border: 1px solid hsl(var(--border) / 0.5);
+  border-radius: 1rem;
+  box-shadow: 
+    0 4px 6px -1px hsl(var(--foreground) / 0.04),
+    0 2px 4px -2px hsl(var(--foreground) / 0.04);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.premium-card:hover {
+  box-shadow: 
+    0 10px 15px -3px hsl(var(--foreground) / 0.08),
+    0 4px 6px -4px hsl(var(--foreground) / 0.08);
+  transform: translateY(-2px);
+}
+
+/* Premium gradient text */
+.premium-text-gradient {
+  background: linear-gradient(135deg, 
+    hsl(var(--primary)) 0%, 
+    hsl(var(--primary) / 0.8) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Premium section title */
+.premium-section-title {
+  @apply text-lg font-semibold tracking-tight;
+  letter-spacing: -0.02em;
+}
+
+/* Premium stat display */
+.premium-stat {
+  @apply text-3xl sm:text-4xl font-bold tracking-tight;
+  letter-spacing: -0.03em;
+}
+
+/* Mobile-optimized buttons */
+.premium-button {
+  @apply h-12 px-5 rounded-xl font-medium;
+  @apply transition-all duration-200;
+  @apply active:scale-[0.98];
+  box-shadow: 0 2px 4px 0 hsl(var(--foreground) / 0.06);
+}
+
+.premium-button:hover {
+  box-shadow: 0 4px 8px 0 hsl(var(--foreground) / 0.1);
+}
+
+/* Mobile safe area padding */
+@supports (padding: max(0px)) {
+  .safe-area-bottom {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  }
+  
+  .safe-area-top {
+    padding-top: max(0px, env(safe-area-inset-top));
+  }
+}
+
+/* Premium mobile spacing */
+@media (max-width: 640px) {
+  .premium-mobile-container {
+    @apply px-4 py-3;
+  }
+  
+  .premium-mobile-gap {
+    @apply gap-3;
+  }
+  
+  /* Refined typography for mobile */
+  .premium-title {
+    @apply text-xl font-semibold;
+    letter-spacing: -0.02em;
+  }
+  
+  .premium-subtitle {
+    @apply text-sm text-muted-foreground;
+  }
+  
+  /* Premium input styling */
+  input, textarea, select {
+    @apply text-base;
+    font-size: 16px !important; /* Prevents iOS zoom */
+  }
+}
+
+/* Smooth scroll behavior */
+html {
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Premium loading skeleton */
+.premium-skeleton {
+  background: linear-gradient(
+    90deg,
+    hsl(var(--muted)) 0%,
+    hsl(var(--muted) / 0.6) 50%,
+    hsl(var(--muted)) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Premium divider */
+.premium-divider {
+  @apply h-px w-full;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    hsl(var(--border)) 50%,
+    transparent 100%
+  );
+}
+
+/* Premium badge */
+.premium-badge {
+  @apply px-2.5 py-0.5 rounded-full text-xs font-medium;
+  @apply bg-primary/10 text-primary;
+  box-shadow: 0 1px 2px 0 hsl(var(--primary) / 0.1);
+}
+
+/* Focus states for accessibility */
+.premium-focus:focus-visible {
+  @apply outline-none ring-2 ring-primary ring-offset-2 ring-offset-background;
+}
+
 /* 3D Model iframe optimizations - Prevent scroll interference */
 iframe[title*="Personagem"] {
   pointer-events: none !important;
