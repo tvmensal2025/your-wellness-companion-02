@@ -335,7 +335,7 @@ const UserProfile = ({ onOpenLayoutPrefs }: UserProfileProps = {}) => {
   };
 
   return (
-    <div className="w-full sm:max-w-6xl mx-auto px-2 sm:px-4 py-2 sm:py-8 overflow-hidden">
+    <div className="w-full sm:max-w-6xl mx-auto px-4 sm:px-4 py-3 sm:py-8 overflow-x-hidden">
       {/* Header Section */}
       <div className="mb-3 sm:mb-8">
         <Card className="border-0 shadow-lg bg-gradient-to-r from-primary/5 to-secondary/5">
@@ -438,7 +438,7 @@ const UserProfile = ({ onOpenLayoutPrefs }: UserProfileProps = {}) => {
 
       {/* Main Content Tabs - Scrollable em mobile */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <div className="overflow-x-auto -mx-2 px-2 sm:mx-0 sm:px-0 pb-1">
+        <div className="overflow-x-auto pb-1">
           <TabsList className="inline-flex w-max sm:w-full min-w-full sm:grid sm:grid-cols-5 mb-3 sm:mb-6 h-9 sm:h-10 p-1 gap-0.5 sm:gap-1">
             <TabsTrigger value="overview" className="flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-sm whitespace-nowrap">
               <User className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
@@ -654,28 +654,35 @@ const UserProfile = ({ onOpenLayoutPrefs }: UserProfileProps = {}) => {
               ) : (
                 <div className="space-y-4">
                   {medicalDocuments.map((doc) => (
-                    <div key={doc.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-                      <div className="flex items-center space-x-4">
-                        <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
+                    <div
+                      key={doc.id}
+                      className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                    >
+                      <div className="flex items-start gap-3 sm:items-center sm:gap-4 min-w-0">
+                        <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center shrink-0">
                           <FileText className="h-5 w-5 text-primary" />
                         </div>
-                        <div>
-                          <p className="font-medium">{doc.file_name}</p>
-                          <p className="text-sm text-muted-foreground">
+                        <div className="min-w-0">
+                          <p className="font-medium truncate">{doc.file_name}</p>
+                          <p className="text-sm text-muted-foreground truncate">
                             {doc.document_type} • {new Date(doc.upload_date).toLocaleDateString('pt-BR')}
                           </p>
                         </div>
                       </div>
-                      <div className="flex items-center space-x-2">
+
+                      <div className="flex w-full items-center justify-between gap-2 sm:w-auto sm:justify-start">
                         <Badge variant={doc.analysis_status === 'completed' ? 'default' : 'secondary'}>
                           {doc.analysis_status === 'completed' ? 'Analisado' : 'Processando'}
                         </Badge>
-                        <Button variant="ghost" size="sm">
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="sm">
-                          <Download className="h-4 w-4" />
-                        </Button>
+
+                        <div className="flex items-center gap-1.5 sm:gap-2">
+                          <Button variant="ghost" size="sm">
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="sm">
+                            <Download className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -710,11 +717,11 @@ const UserProfile = ({ onOpenLayoutPrefs }: UserProfileProps = {}) => {
                 <div className="grid md:grid-cols-2 gap-4">
                   {achievements.map((achievement) => (
                     <div key={achievement.id} className="p-4 border rounded-lg hover:shadow-md transition-shadow">
-                      <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-medium">{achievement.title}</h4>
-                        <Badge variant="secondary">{achievement.points} pts</Badge>
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <h4 className="font-medium min-w-0 truncate">{achievement.title}</h4>
+                        <Badge variant="secondary" className="shrink-0">{achievement.points} pts</Badge>
                       </div>
-                      <p className="text-sm text-muted-foreground mb-2">{achievement.description}</p>
+                      <p className="text-sm text-muted-foreground mb-2 break-words">{achievement.description}</p>
                       <p className="text-xs text-muted-foreground">
                         Conquistado em {new Date(achievement.earned_at).toLocaleDateString('pt-BR')}
                       </p>
@@ -741,17 +748,17 @@ const UserProfile = ({ onOpenLayoutPrefs }: UserProfileProps = {}) => {
               </CardHeader>
               <CardContent className="space-y-4">
                 {notificationPrefs.map((pref) => (
-                  <div key={pref.id} className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium">{pref.label}</p>
-                      <p className="text-sm text-muted-foreground">
+                  <div
+                    key={pref.id}
+                    className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"
+                  >
+                    <div className="min-w-0">
+                      <p className="font-medium break-words">{pref.label}</p>
+                      <p className="text-sm text-muted-foreground break-words">
                         Receber {pref.type === 'email' ? 'emails' : pref.type === 'push' ? 'notificações push' : 'lembretes'}
                       </p>
                     </div>
-                    <Switch
-                      checked={pref.enabled}
-                      onCheckedChange={() => toggleNotification(pref.id)}
-                    />
+                    <Switch checked={pref.enabled} onCheckedChange={() => toggleNotification(pref.id)} />
                   </div>
                 ))}
               </CardContent>
@@ -828,23 +835,23 @@ const UserProfile = ({ onOpenLayoutPrefs }: UserProfileProps = {}) => {
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
-                <div className="p-6 bg-gradient-to-r from-yellow-50 to-yellow-100 dark:from-yellow-900/20 dark:to-yellow-800/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
-                  <div className="flex items-center justify-between mb-4">
+                <div className="p-4 sm:p-6 bg-gradient-to-r from-yellow-50 to-yellow-100 dark:from-yellow-900/20 dark:to-yellow-800/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-4">
                     <div className="flex items-center space-x-2">
                       <Crown className="h-6 w-6 text-yellow-600" />
                       <span className="text-lg font-semibold">Plano Premium</span>
                     </div>
-                    <Badge className="bg-green-100 text-green-800 border-green-200">Ativo</Badge>
+                    <Badge className="bg-green-100 text-green-800 border-green-200 sm:self-auto self-start">Ativo</Badge>
                   </div>
                   <p className="text-sm text-muted-foreground mb-4">
                     Próxima cobrança: 15 de outubro, 2024
                   </p>
-                  <div className="flex space-x-2">
-                    <Button variant="outline" size="sm">
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <Button variant="outline" size="sm" className="w-full sm:w-auto">
                       <CreditCard className="h-4 w-4 mr-2" />
                       Gerenciar Pagamento
                     </Button>
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" className="w-full sm:w-auto">
                       <ExternalLink className="h-4 w-4 mr-2" />
                       Ver Faturas
                     </Button>
