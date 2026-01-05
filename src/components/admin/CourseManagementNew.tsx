@@ -247,6 +247,9 @@ export const CourseManagementNew = () => {
   // Handlers de criação
   const handleCreateCourse = async (courseData: any) => {
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) await repairAuthSessionIfTooLarge(session);
+
       const { error } = await supabase
         .from('courses')
         .insert([courseData]);
