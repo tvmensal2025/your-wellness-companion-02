@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { repairAuthSessionIfTooLarge } from '@/lib/auth-token-repair';
 import { 
   BookOpen, 
   Plus, 
