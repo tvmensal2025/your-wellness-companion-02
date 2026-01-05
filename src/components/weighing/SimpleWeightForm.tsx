@@ -20,7 +20,7 @@ const SimpleWeightForm: React.FC<SimpleWeightFormProps> = ({ onSubmit }) => {
   const [waist, setWaist] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const w = parseFloat(weight.replace(',', '.'));
@@ -34,9 +34,9 @@ const SimpleWeightForm: React.FC<SimpleWeightFormProps> = ({ onSubmit }) => {
     setIsSubmitting(true);
 
     try {
-      onSubmit?.({ weight: w, height: h, waist: wc });
+      await onSubmit?.({ weight: w, height: h, waist: wc });
 
-      // Reset form
+      // Reset form (só após sucesso)
       setWeight('');
       setHeight('');
       setWaist('');
