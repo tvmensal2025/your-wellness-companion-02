@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { User } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -16,6 +16,8 @@ import { SavedProgramView } from "./SavedProgramView";
 import { useExerciseProgram } from "@/hooks/useExerciseProgram";
 import { useExercisesLibrary, Exercise, WeeklyPlan } from "@/hooks/useExercisesLibrary";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { normalizeKey, parseActivityTitle } from "@/lib/exercise-format";
 
 interface ExerciseDashboardProps {
   user: User | null;
@@ -110,26 +112,80 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
     setIsWorkoutModalOpen(true);
   };
 
-  const handleStartSavedWorkout = (weekNumber: number, activities: string[]) => {
-    // Criar um objeto WeeklyPlan compatível
-    const workout: WeeklyPlan = {
-      dayNumber: new Date().getDay(),
-      dayName: ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'][new Date().getDay()],
-      shortName: ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'][new Date().getDay()],
-      muscleGroups: [],
-      title: `Semana ${weekNumber} - Treino do Dia`,
-      exercises: [], // Será preenchido com os exercícios da biblioteca se necessário
-      isRestDay: false,
-      isToday: true
-    };
-    
-    setActiveWorkout(workout);
-    setIsWorkoutModalOpen(true);
-    
-    toast({
-      title: "🔥 Vamos treinar!",
-      description: `Iniciando treino da Semana ${weekNumber}`,
-    });
+  const resolveExercisesFromActivities = useCallback(async (activities: string[]) => {
+    const names = activities.map(parseActivityTitle);
+
+    const { data, error } = await supabase
+      .from('exercises_library')
+      .select('*')
+      .eq('is_active', true)
+      .eq('location', location);
+
+    if (error) throw error;
+
+    const library = (data || []) as Exercise[];
+    const keyed = library.map((ex) => ({ key: normalizeKey(ex.name), ex }));
+
+    const result: Exercise[] = [];
+    for (const name of names) {
+      const key = normalizeKey(name);
+      const exact = keyed.find((k) => k.key === key)?.ex;
+      if (exact) {
+        result.push(exact);
+        continue;
+      }
+      const partial = keyed.find((k) => k.key.includes(key) || key.includes(k.key))?.ex;
+      if (partial) result.push(partial);
+    }
+
+    return result;
+  }, [location]);
+
+  const handleStartSavedWorkout = async (weekNumber: number, activities: string[]) => {
+    try {
+      toast({
+        title: "Preparando seu treino…",
+        description: "Carregando exercícios e vídeos.",
+      });
+
+      const resolved = await resolveExercisesFromActivities(activities);
+
+      if (resolved.length === 0) {
+        toast({
+          title: "Não encontrei os exercícios",
+          description: "Não consegui vincular o treino salvo à biblioteca de exercícios.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Criar um objeto WeeklyPlan compatível
+      const workout: WeeklyPlan = {
+        dayNumber: new Date().getDay(),
+        dayName: ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'][new Date().getDay()],
+        shortName: ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'][new Date().getDay()],
+        muscleGroups: Array.from(new Set(resolved.map((e) => e.muscle_group).filter(Boolean))) as string[],
+        title: `Semana ${weekNumber} - Treino do Dia`,
+        exercises: resolved,
+        isRestDay: false,
+        isToday: true
+      };
+
+      setActiveWorkout(workout);
+      setIsWorkoutModalOpen(true);
+
+      toast({
+        title: "🔥 Vamos treinar!",
+        description: `Iniciando treino da Semana ${weekNumber}`,
+      });
+    } catch (e: any) {
+      console.error('Erro ao iniciar treino salvo:', e);
+      toast({
+        title: "Erro ao iniciar treino",
+        description: "Não foi possível carregar os exercícios do treino salvo.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleExerciseClick = (exercise: Exercise) => {
@@ -315,6 +371,7 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
           program={activeProgram as any}
           onStartWorkout={handleStartSavedWorkout}
           onCompleteWorkout={() => {}}
+          onExerciseClick={handleExerciseClick}
         />
       ) : (
         // MOSTRAR BIBLIOTECA DE EXERCÍCIOS

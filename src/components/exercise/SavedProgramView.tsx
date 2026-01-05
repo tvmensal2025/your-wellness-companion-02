@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -7,8 +7,6 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { 
   Dumbbell, 
   Play, 
-  ChevronDown, 
-  ChevronUp, 
   Flame, 
   Clock,
   Zap,
@@ -18,10 +16,13 @@ import {
   CheckCircle2,
   Timer,
   Target,
-  Repeat
+  Repeat,
+  ChevronRight
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { exerciseInstructions } from '@/data/exercise-instructions';
+import { supabase } from '@/integrations/supabase/client';
+import type { Exercise } from '@/hooks/useExercisesLibrary';
+import { formatDifficulty, normalizeKey, parseActivityTitle } from '@/lib/exercise-format';
 
 interface WeekActivity {
   week: number;
@@ -56,6 +57,7 @@ interface SavedProgramProps {
   };
   onStartWorkout: (weekNumber: number, dayActivities: string[]) => void;
   onCompleteWorkout: () => void;
+  onExerciseClick?: (exercise: Exercise) => void;
 }
 
 interface DayPlan {
@@ -160,13 +162,14 @@ const getVideoId = (videoUrl?: string): string | null => {
 export const SavedProgramView: React.FC<SavedProgramProps> = ({
   program,
   onStartWorkout,
-  onCompleteWorkout
+  onCompleteWorkout,
+  onExerciseClick,
 }) => {
   const programData = program.plan_data || program.exercises || {};
   const weeks = programData.weeks || [];
   const currentWeekData = weeks.find((w: WeekActivity) => w.week === program.current_week);
   const limitation = programData.limitation;
-  const location = programData.location || 'casa';
+  const location = (programData.location || 'casa') as 'casa' | 'academia';
   
   const weekDays = useMemo<DayPlan[]>(() => {
     const dayNames = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
@@ -241,14 +244,52 @@ export const SavedProgramView: React.FC<SavedProgramProps> = ({
   const [selectedDay, setSelectedDay] = useState<DayPlan | null>(() => {
     return weekDays.find(d => d.isToday) || weekDays.find(d => !d.isRestDay) || null;
   });
-  
-  const limitationLabels: Record<string, string> = {
-    nenhuma: '',
-    joelho: '🦵 Proteção Joelhos',
-    costas: '🔙 Proteção Coluna',
-    ombro: '💪 Proteção Ombros',
-    cardiaco: '❤️ Cuidado Cardíaco'
-  };
+
+  const [libraryExercises, setLibraryExercises] = useState<Exercise[]>([]);
+  const [libraryLoading, setLibraryLoading] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        setLibraryLoading(true);
+        const { data, error } = await supabase
+          .from('exercises_library')
+          .select('*')
+          .eq('is_active', true)
+          .eq('location', location);
+
+        if (!mounted) return;
+        if (error) throw error;
+        setLibraryExercises((data || []) as Exercise[]);
+      } catch (e) {
+        console.error('Erro ao carregar biblioteca de exercícios:', e);
+        if (mounted) setLibraryExercises([]);
+      } finally {
+        if (mounted) setLibraryLoading(false);
+      }
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, [location]);
+
+  const dayExercises = useMemo(() => {
+    if (!selectedDay || selectedDay.isRestDay) return [] as Exercise[];
+
+    const keyed = libraryExercises.map((ex) => ({ key: normalizeKey(ex.name), ex }));
+
+    return selectedDay.activities
+      .map((activity) => {
+        const name = parseActivityTitle(activity);
+        const key = normalizeKey(name);
+        const exact = keyed.find((k) => k.key === key)?.ex;
+        if (exact) return exact;
+        return keyed.find((k) => k.key.includes(key) || key.includes(k.key))?.ex;
+      })
+      .filter(Boolean) as Exercise[];
+  }, [selectedDay, libraryExercises]);
 
   if (weeks.length === 0) {
     return (
@@ -351,6 +392,9 @@ export const SavedProgramView: React.FC<SavedProgramProps> = ({
                 weekNumber={program.current_week}
                 onStartWorkout={onStartWorkout}
                 location={location}
+                exercises={dayExercises}
+                isLibraryLoading={libraryLoading}
+                onExerciseClick={onExerciseClick}
               />
             )}
           </motion.div>
@@ -394,13 +438,12 @@ const WorkoutDayCard: React.FC<{
   day: DayPlan;
   weekNumber: number;
   onStartWorkout: (weekNumber: number, activities: string[]) => void;
-  location: string;
-}> = ({ day, weekNumber, onStartWorkout, location }) => {
-  const [expandedExercise, setExpandedExercise] = useState<number | null>(null);
-
-  const toggleExpand = (index: number) => {
-    setExpandedExercise(expandedExercise === index ? null : index);
-  };
+  location: 'casa' | 'academia';
+  exercises: Exercise[];
+  isLibraryLoading: boolean;
+  onExerciseClick?: (exercise: Exercise) => void;
+}> = ({ day, weekNumber, onStartWorkout, exercises, isLibraryLoading, onExerciseClick }) => {
+  const exerciseCount = exercises.length || day.activities.length;
 
   return (
     <div className="space-y-4">
@@ -425,11 +468,11 @@ const WorkoutDayCard: React.FC<{
             <div className="text-right space-y-1">
               <div className="flex items-center gap-1.5 text-white/80 text-sm">
                 <Dumbbell className="w-4 h-4" />
-                <span>{day.activities.length} exercícios</span>
+                <span>{exerciseCount} exercícios</span>
               </div>
               <div className="flex items-center gap-1.5 text-white/80 text-sm">
                 <Clock className="w-4 h-4" />
-                <span>~{day.estimatedTime} min</span>
+                <span>~{exerciseCount * 4} min</span>
               </div>
             </div>
           </div>
@@ -452,176 +495,88 @@ const WorkoutDayCard: React.FC<{
           Exercícios do Dia
         </h3>
 
-        {day.activities.map((activity, index) => {
-          const parsed = parseActivity(activity);
-          const exerciseDetails = getExerciseDetails(parsed.name, location);
-          const isExpanded = expandedExercise === index;
-          const videoId = exerciseDetails ? getVideoId(exerciseDetails.video_url) : null;
-          
-          return (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: index * 0.05 }}
-            >
-              <Card className="border overflow-hidden transition-all duration-300">
-                {/* Header do exercício - clicável */}
-                <CardContent 
-                  className={cn(
-                    "p-4 cursor-pointer transition-colors",
-                    isExpanded 
-                      ? "bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-950 dark:to-red-950" 
-                      : "hover:bg-muted/50"
-                  )}
-                  onClick={() => toggleExpand(index)}
+        {isLibraryLoading ? (
+          <div className="space-y-3">
+            {Array.from({ length: Math.min(6, Math.max(3, day.activities.length)) }).map((_, i) => (
+              <Card key={i} className="border">
+                <CardContent className="p-4">
+                  <div className="h-4 w-2/3 bg-muted rounded" />
+                  <div className="h-3 w-1/2 bg-muted rounded mt-2" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          exercises.map((exercise, index) => {
+            const diff = formatDifficulty(exercise.difficulty);
+            return (
+              <motion.div
+                key={exercise.id}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.05 }}
+              >
+                <Card
+                  className="group cursor-pointer border hover:border-orange-300 hover:shadow-md transition-all duration-300"
+                  onClick={() => onExerciseClick?.(exercise)}
                 >
-                  <div className="flex items-center gap-4">
-                    {/* Número */}
+                  <CardContent className="p-4 flex items-center gap-4">
                     <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center text-white font-bold text-sm shadow">
                       {index + 1}
                     </div>
 
-                    {/* Info */}
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-semibold text-foreground">
-                        {parsed.name}
+                      <h4 className="font-semibold text-foreground group-hover:text-orange-600 transition-colors truncate">
+                        {exercise.name}
                       </h4>
                       <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
-                        <span className="capitalize">{day.muscleGroups[0] || 'Funcional'}</span>
+                        <span className="capitalize">{exercise.muscle_group}</span>
                         <span>•</span>
-                        <span>{parsed.sets}x{parsed.reps}</span>
-                        <span>•</span>
-                        <span>{parsed.rest} desc.</span>
+                        <span>{exercise.sets || '3'}x{exercise.reps || '12'}</span>
+                        {exercise.rest_time && (
+                          <>
+                            <span>•</span>
+                            <span>{exercise.rest_time} desc.</span>
+                          </>
+                        )}
                       </div>
                     </div>
 
-                    {/* Badge dificuldade */}
-                    <Badge 
-                      variant="outline" 
+                    <Badge
+                      variant="outline"
                       className={cn(
                         "text-[10px] capitalize flex-shrink-0",
-                        parsed.difficulty === 'Facil' && "border-green-300 text-green-600 bg-green-50 dark:bg-green-950/30",
-                        parsed.difficulty === 'Medio' && "border-yellow-300 text-yellow-600 bg-yellow-50 dark:bg-yellow-950/30",
-                        parsed.difficulty === 'Dificil' && "border-red-300 text-red-600 bg-red-50 dark:bg-red-950/30"
+                        diff.tone === 'easy' && "border-green-300 text-green-600 bg-green-50 dark:bg-green-950/30",
+                        diff.tone === 'medium' && "border-yellow-300 text-yellow-600 bg-yellow-50 dark:bg-yellow-950/30",
+                        diff.tone === 'hard' && "border-red-300 text-red-600 bg-red-50 dark:bg-red-950/30"
                       )}
                     >
-                      {parsed.difficulty}
+                      {diff.label || exercise.difficulty}
                     </Badge>
 
-                    {/* Ícone expandir */}
-                    {isExpanded ? (
-                      <ChevronUp className="w-5 h-5 text-muted-foreground" />
-                    ) : (
-                      <ChevronDown className="w-5 h-5 text-muted-foreground" />
-                    )}
-                  </div>
-                </CardContent>
+                    <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-orange-500 transition-colors flex-shrink-0" />
+                  </CardContent>
+                </Card>
+              </motion.div>
+            );
+          })
+        )}
 
-                {/* Conteúdo expandido */}
-                <AnimatePresence>
-                  {isExpanded && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="overflow-hidden"
-                    >
-                      <div className="p-4 pt-0 space-y-4 border-t">
-                        {/* Vídeo */}
-                        <div className="rounded-xl overflow-hidden bg-black/80 mt-4">
-                          {videoId ? (
-                            <div className="relative w-full pt-[56.25%]">
-                              <iframe
-                                className="absolute inset-0 w-full h-full"
-                                src={`https://www.youtube.com/embed/${videoId}`}
-                                title="Vídeo do exercício"
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                allowFullScreen
-                              />
-                            </div>
-                          ) : (
-                            <div className="flex items-center justify-center min-h-[180px] bg-gradient-to-br from-orange-100 to-red-100 dark:from-orange-950 dark:to-red-950">
-                              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center">
-                                <Dumbbell className="w-10 h-10 text-white" />
-                              </div>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Descrição */}
-                        {exerciseDetails?.descricao && (
-                          <div className="bg-muted/50 rounded-lg p-3">
-                            <div className="flex items-start gap-2">
-                              <Info className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                              <p className="text-sm text-muted-foreground">
-                                {exerciseDetails.descricao}
-                              </p>
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Info Cards */}
-                        <div className="grid grid-cols-3 gap-2">
-                          <Card className="bg-white/50 dark:bg-black/20">
-                            <CardContent className="p-3 text-center">
-                              <Repeat className="w-5 h-5 mx-auto mb-1 text-orange-600" />
-                              <div className="text-sm font-semibold">{parsed.sets}</div>
-                              <div className="text-[10px] text-muted-foreground">Séries</div>
-                            </CardContent>
-                          </Card>
-                          <Card className="bg-white/50 dark:bg-black/20">
-                            <CardContent className="p-3 text-center">
-                              <Target className="w-5 h-5 mx-auto mb-1 text-orange-600" />
-                              <div className="text-sm font-semibold">{parsed.reps}</div>
-                              <div className="text-[10px] text-muted-foreground">Reps</div>
-                            </CardContent>
-                          </Card>
-                          <Card className="bg-white/50 dark:bg-black/20">
-                            <CardContent className="p-3 text-center">
-                              <Timer className="w-5 h-5 mx-auto mb-1 text-orange-600" />
-                              <div className="text-sm font-semibold">{parsed.rest}</div>
-                              <div className="text-[10px] text-muted-foreground">Descanso</div>
-                            </CardContent>
-                          </Card>
-                        </div>
-
-                        {/* Passos */}
-                        {exerciseDetails?.passos && exerciseDetails.passos.length > 0 && (
-                          <div className="space-y-2">
-                            <h4 className="text-sm font-semibold flex items-center gap-2">
-                              <CheckCircle2 className="w-4 h-4 text-green-500" />
-                              Como executar
-                            </h4>
-                            <div className="space-y-1.5">
-                              {exerciseDetails.passos.slice(0, 3).map((passo: string, idx: number) => (
-                                <div key={idx} className="flex items-start gap-2 text-sm text-muted-foreground">
-                                  <span className="font-semibold text-primary">{idx + 1}.</span>
-                                  <span>{passo}</span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Dica */}
-                        {exerciseDetails?.dicas && (
-                          <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
-                            <p className="text-sm text-blue-700 dark:text-blue-300 flex items-start gap-2">
-                              <Flame className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                              <span>{exerciseDetails.dicas}</span>
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </Card>
-            </motion.div>
-          );
-        })}
+        {!isLibraryLoading && exercises.length === 0 && (
+          <Card className="border-amber-200 bg-amber-50 dark:bg-amber-950/20">
+            <CardContent className="p-4">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="w-5 h-5 text-amber-600 mt-0.5" />
+                <div>
+                  <p className="font-semibold text-amber-800 dark:text-amber-200">Exercícios não vinculados</p>
+                  <p className="text-sm text-amber-700 dark:text-amber-300">
+                    Não consegui relacionar este treino salvo com a biblioteca de exercícios.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );
