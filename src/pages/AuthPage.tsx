@@ -181,6 +181,11 @@ const AuthPage = () => {
         return;
       }
 
+      // Repara sessão/token se veio gigante (ex.: avatar base64 em metadata)
+      if (data.session) {
+        await repairAuthSessionIfTooLarge(data.session);
+      }
+
       // Verificar se o usuário tem role de admin após login bem-sucedido
       if (data.user) {
         try {
