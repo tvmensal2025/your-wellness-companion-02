@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Dialog, 
@@ -28,15 +28,11 @@ import {
   ChevronUp,
   Youtube,
   Info,
-  Lightbulb,
-  Timer,
-  Activity
+  Lightbulb
 } from 'lucide-react';
 import { Exercise, WeeklyPlan } from '@/hooks/useExercisesLibrary';
 import { RestTimer } from './RestTimer';
 import { cn } from '@/lib/utils';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
 
 interface ActiveWorkoutModalProps {
   isOpen: boolean;
@@ -49,7 +45,6 @@ interface ExerciseProgress {
   exerciseId: string;
   completed: boolean;
   setsCompleted: number;
-  timeSpentSeconds: number;
 }
 
 // Extrair ID do YouTube
@@ -65,7 +60,6 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
   workout,
   onComplete
 }) => {
-  const { toast } = useToast();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [progress, setProgress] = useState<ExerciseProgress[]>([]);
   const [showTimer, setShowTimer] = useState(false);
@@ -75,9 +69,6 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
   const [showDetailedTips, setShowDetailedTips] = useState(false);
   const [isExerciseStarted, setIsExerciseStarted] = useState(false);
   const [elapsedTime, setElapsedTime] = useState(0);
-  const [exerciseTime, setExerciseTime] = useState(0);
-  const [exerciseStartTime, setExerciseStartTime] = useState<number | null>(null);
-  const [isSyncingGoogleFit, setIsSyncingGoogleFit] = useState(false);
 
   const currentExercise = workout.exercises[currentIndex];
   const totalExercises = workout.exercises.length;
@@ -118,34 +109,20 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
     setProgress(workout.exercises.map(ex => ({
       exerciseId: ex.id,
       completed: false,
-      setsCompleted: 0,
-      timeSpentSeconds: 0
+      setsCompleted: 0
     })));
   }, [workout]);
-
-  // Timer do exercício atual
-  useEffect(() => {
-    if (isExerciseStarted && !isPaused && !showTimer) {
-      const interval = setInterval(() => {
-        setExerciseTime(prev => prev + 1);
-      }, 1000);
-      return () => clearInterval(interval);
-    }
-  }, [isExerciseStarted, isPaused, showTimer]);
 
   // Reset detalhes ao mudar de exercício
   useEffect(() => {
     setShowDetailedInstructions(false);
     setShowDetailedTips(false);
     setIsExerciseStarted(false);
-    setExerciseTime(0);
-    setExerciseStartTime(null);
   }, [currentIndex]);
 
   const handleCompleteExercise = () => {
-    // Salvar tempo gasto no exercício atual
     setProgress(prev => prev.map((p, i) => 
-      i === currentIndex ? { ...p, completed: true, timeSpentSeconds: exerciseTime } : p
+      i === currentIndex ? { ...p, completed: true } : p
     ));
     
     if (currentIndex < totalExercises - 1) {
@@ -169,71 +146,8 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
     }
   };
 
-  // Função para sincronizar com Google Fit
-  const syncWithGoogleFit = useCallback(async (totalMinutes: number, totalCalories: number) => {
-    try {
-      setIsSyncingGoogleFit(true);
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session?.access_token) {
-        console.log('Usuário não autenticado para sync Google Fit');
-        return;
-      }
-
-      // Verificar se o usuário tem Google Fit conectado
-      const { data: fitToken } = await supabase
-        .from('google_fit_tokens')
-        .select('access_token')
-        .eq('user_id', session.user.id)
-        .maybeSingle();
-
-      if (!fitToken?.access_token) {
-        console.log('Google Fit não conectado');
-        return;
-      }
-
-      // Chamar edge function para registrar o treino
-      const { error } = await supabase.functions.invoke('google-fit-sync', {
-        body: {
-          action: 'sync',
-          workout_data: {
-            type: 'strength_training',
-            duration_minutes: totalMinutes,
-            calories_burned: totalCalories,
-            exercises_completed: progress.filter(p => p.completed).length,
-            total_exercises: workout.exercises.length,
-            workout_name: workout.title,
-            timestamp: new Date().toISOString()
-          }
-        }
-      });
-
-      if (error) {
-        console.error('Erro ao sincronizar com Google Fit:', error);
-      } else {
-        toast({
-          title: "📊 Google Fit",
-          description: "Treino sincronizado com sucesso!",
-        });
-      }
-    } catch (error) {
-      console.error('Erro ao sincronizar Google Fit:', error);
-    } finally {
-      setIsSyncingGoogleFit(false);
-    }
-  }, [progress, workout, toast]);
-
-  const handleFinishWorkout = async () => {
+  const handleFinishWorkout = () => {
     const completedIds = progress.filter(p => p.completed).map(p => p.exerciseId);
-    const totalTimeSeconds = progress.reduce((acc, p) => acc + p.timeSpentSeconds, 0) + elapsedTime;
-    const totalMinutes = Math.round(totalTimeSeconds / 60);
-    
-    // Estimar calorias (aproximadamente 5-8 calorias por minuto de treino de força)
-    const estimatedCalories = Math.round(totalMinutes * 6.5);
-    
-    // Tentar sincronizar com Google Fit
-    await syncWithGoogleFit(totalMinutes, estimatedCalories);
-    
     onComplete(completedIds);
     onClose();
   };
@@ -244,19 +158,8 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const getExerciseTime = () => {
-    const mins = Math.floor(exerciseTime / 60);
-    const secs = exerciseTime % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
-
   const handleStartExercise = () => {
     setIsExerciseStarted(true);
-    setExerciseStartTime(Date.now());
-  };
-
-  const handlePauseExercise = () => {
-    setIsPaused(!isPaused);
   };
 
   const parseRestTime = (restTime: string | null): number => {
@@ -334,8 +237,8 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
                     </p>
                   )}
 
-                  {/* Player de Vídeo - sempre visível se disponível */}
-                  {youtubeId ? (
+                  {/* Player de Vídeo */}
+                  {youtubeId && (
                     <div className="rounded-lg overflow-hidden border border-border/50">
                       <div className="aspect-video">
                         <iframe
@@ -347,47 +250,6 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
                         />
                       </div>
                     </div>
-                  ) : (
-                    <div className="aspect-video rounded-lg bg-muted/50 border border-border/50 flex items-center justify-center">
-                      <div className="text-center text-muted-foreground">
-                        <Youtube className="w-12 h-12 mx-auto mb-2 opacity-30" />
-                        <p className="text-sm">Vídeo não disponível</p>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Timer do exercício atual */}
-                  {isExerciseStarted && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      className="bg-gradient-to-r from-orange-500/10 to-red-500/10 border border-orange-500/20 rounded-xl p-4"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="w-12 h-12 rounded-full bg-orange-500 flex items-center justify-center">
-                            <Timer className="w-6 h-6 text-white" />
-                          </div>
-                          <div>
-                            <p className="text-sm text-muted-foreground">Tempo do exercício</p>
-                            <p className="text-3xl font-bold font-mono text-orange-500">{getExerciseTime()}</p>
-                          </div>
-                        </div>
-                        <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={handlePauseExercise}
-                            className={cn(
-                              "rounded-full",
-                              isPaused && "border-orange-500 text-orange-500"
-                            )}
-                          >
-                            {isPaused ? <Play className="w-4 h-4" /> : <Pause className="w-4 h-4" />}
-                          </Button>
-                        </div>
-                      </div>
-                    </motion.div>
                   )}
 
                   {/* Stats Cards: Séries, Repetições, Descanso */}
@@ -423,31 +285,25 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
                     </Card>
                   </div>
 
-                  {/* Dificuldade + Google Fit Status */}
+                  {/* Dificuldade */}
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-muted-foreground">Dificuldade</span>
-                      <Badge 
-                        variant="outline" 
-                        className={cn(
-                          "capitalize",
-                          currentExercise.difficulty === 'easy' && "bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-400",
-                          currentExercise.difficulty === 'intermediate' && "bg-yellow-100 text-yellow-700 dark:bg-yellow-950 dark:text-yellow-400",
-                          currentExercise.difficulty === 'hard' && "bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-400"
-                        )}
-                      >
-                        {currentExercise.difficulty === 'easy' ? 'Fácil' : 
-                         currentExercise.difficulty === 'intermediate' ? 'Intermediário' : 
-                         currentExercise.difficulty === 'hard' ? 'Difícil' : 'Normal'}
-                      </Badge>
-                    </div>
-                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                      <Activity className="w-3 h-3" />
-                      <span>Google Fit</span>
-                    </div>
+                    <span className="text-sm text-muted-foreground">Dificuldade</span>
+                    <Badge 
+                      variant="outline" 
+                      className={cn(
+                        "capitalize",
+                        currentExercise.difficulty === 'easy' && "bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-400",
+                        currentExercise.difficulty === 'intermediate' && "bg-yellow-100 text-yellow-700 dark:bg-yellow-950 dark:text-yellow-400",
+                        currentExercise.difficulty === 'hard' && "bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-400"
+                      )}
+                    >
+                      {currentExercise.difficulty === 'easy' ? 'Fácil' : 
+                       currentExercise.difficulty === 'intermediate' ? 'Intermediário' : 
+                       currentExercise.difficulty === 'hard' ? 'Difícil' : 'Normal'}
+                    </Badge>
                   </div>
 
-                  {/* Botões: Instruções e Começar/Concluir */}
+                  {/* Botões: Instruções e Começar */}
                   <div className="grid grid-cols-2 gap-3">
                     <Button
                       variant="outline"
@@ -457,23 +313,13 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
                       <Info className="w-4 h-4" />
                       Instruções
                     </Button>
-                    {!isExerciseStarted ? (
-                      <Button
-                        className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white gap-2"
-                        onClick={handleStartExercise}
-                      >
-                        <Play className="w-4 h-4" />
-                        Começar
-                      </Button>
-                    ) : (
-                      <Button
-                        className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white gap-2"
-                        onClick={handleCompleteExercise}
-                      >
-                        <Check className="w-4 h-4" />
-                        Concluir
-                      </Button>
-                    )}
+                    <Button
+                      className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white gap-2"
+                      onClick={handleCompleteExercise}
+                    >
+                      <Play className="w-4 h-4" />
+                      Começar
+                    </Button>
                   </div>
 
                   {/* Instruções expandidas */}
