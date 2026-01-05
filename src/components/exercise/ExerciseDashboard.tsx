@@ -19,13 +19,51 @@ interface ExerciseDashboardProps {
 
 export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) => {
   const { activeProgram, completeWorkout } = useExerciseProgram(user?.id);
-  const [location, setLocation] = useState<'casa' | 'academia'>('casa');
-  const [goal, setGoal] = useState<string>('condicionamento');
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [activeWorkout, setActiveWorkout] = useState<WeeklyPlan | null>(null);
   const [isWorkoutModalOpen, setIsWorkoutModalOpen] = useState(false);
   const { toast } = useToast();
+
+  // Extrair localização e objetivo do programa ativo
+  const programData = React.useMemo(() => {
+    if (!activeProgram) return null;
+    return (activeProgram as any).exercises || 
+           (activeProgram as any).plan_data || 
+           (activeProgram as any).planData;
+  }, [activeProgram]);
+
+  const location = React.useMemo<'casa' | 'academia'>(() => {
+    if (!programData?.location) return 'casa';
+    const loc = String(programData.location).toLowerCase();
+    if (loc.includes('academia')) return 'academia';
+    return 'casa';
+  }, [programData]);
+
+  const goal = React.useMemo(() => {
+    const rawGoal = programData?.goal || (activeProgram as any)?.goal;
+    if (!rawGoal) return 'condicionamento';
+    
+    const goalMap: Record<string, string> = {
+      'hipertrofia': 'hipertrofia',
+      'ganhar massa': 'hipertrofia',
+      'massa muscular': 'hipertrofia',
+      'emagrecer': 'emagrecimento',
+      'perder peso': 'emagrecimento',
+      'emagrecimento': 'emagrecimento',
+      'condicionamento': 'condicionamento',
+      'saude': 'saude',
+      'saúde': 'saude'
+    };
+    
+    const normalizedGoal = String(rawGoal).toLowerCase();
+    for (const [key, value] of Object.entries(goalMap)) {
+      if (normalizedGoal.includes(key)) {
+        return value;
+      }
+    }
+    return 'condicionamento';
+  }, [programData, activeProgram]);
 
   // Usar exercícios do banco de dados
   const { 
@@ -35,51 +73,6 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
     error, 
     refreshPlan 
   } = useExercisesLibrary(location, goal);
-
-  // Define a localização e objetivo com base no programa ativo salvo
-  React.useEffect(() => {
-    if (!activeProgram) return;
-
-    const programData = (activeProgram as any).exercises || 
-                        (activeProgram as any).plan_data || 
-                        (activeProgram as any).planData;
-
-    if (!programData) return;
-
-    // Localização
-    const rawLocation = programData.location;
-    if (rawLocation) {
-      const loc = String(rawLocation).toLowerCase();
-      if (loc.startsWith('casa')) {
-        setLocation('casa');
-      } else if (loc.includes('academia')) {
-        setLocation('academia');
-      }
-    }
-
-    // Objetivo
-    const rawGoal = programData.goal || (activeProgram as any).goal;
-    if (rawGoal) {
-      const goalMap: Record<string, string> = {
-        'hipertrofia': 'hipertrofia',
-        'ganhar massa': 'hipertrofia',
-        'massa muscular': 'hipertrofia',
-        'emagrecer': 'emagrecimento',
-        'perder peso': 'emagrecimento',
-        'emagrecimento': 'emagrecimento',
-        'condicionamento': 'condicionamento',
-        'saude': 'saude',
-        'saúde': 'saude'
-      };
-      const normalizedGoal = String(rawGoal).toLowerCase();
-      for (const [key, value] of Object.entries(goalMap)) {
-        if (normalizedGoal.includes(key)) {
-          setGoal(value);
-          break;
-        }
-      }
-    }
-  }, [activeProgram]);
 
   const handleStartWorkout = (day: WeeklyPlan) => {
     setActiveWorkout(day);
