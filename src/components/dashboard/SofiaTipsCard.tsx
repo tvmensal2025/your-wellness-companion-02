@@ -240,7 +240,7 @@ export const SofiaTipsCard: React.FC = () => {
                 <Lightbulb className="w-4 h-4 text-white" />
               </div>
               <div>
-                <h3 className="font-semibold text-sm text-foreground">Dicas da Sofia</h3>
+                <h3 className="font-semibold text-sm text-foreground">Dr. Vital</h3>
                 <p className="text-xs text-muted-foreground">
                   {isOverweight ? 'Dicas personalizadas para você' : 'Nutrição e bem-estar'}
                 </p>
