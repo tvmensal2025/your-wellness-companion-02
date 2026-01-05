@@ -30,8 +30,8 @@ const DashboardOverview: React.FC = () => {
   const [lastMeasurementDays, setLastMeasurementDays] = useState<number>(0);
   const initialFetchDoneRef = useRef(false);
 
-  // Dados do cache centralizado
-  const userName = userData.profile?.fullName || '';
+  // Dados do cache centralizado - fallback para user_metadata se profile não estiver carregado
+  const userName = userData.profile?.fullName || userData.user?.user_metadata?.full_name || '';
   const heightCm = userData.physicalData?.altura_cm || 170;
   const currentStreak = userData.points?.currentStreak || 0;
   const user = userData.user;
