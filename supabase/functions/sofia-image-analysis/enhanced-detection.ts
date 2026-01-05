@@ -1,17 +1,19 @@
 // ========================================
 // 🔧 SISTEMA APRIMORADO DE DETECÇÃO DE ALIMENTOS
+// Prioridade: Google Gemini Vision API direto (mais preciso)
+// Fallback: Lovable AI
 // ========================================
 
 const GOOGLE_AI_API_KEY = Deno.env.get('GOOGLE_AI_API_KEY');
 const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-const RATE_LIMIT_DELAY = 2000; // 2 segundos entre requests
+const RATE_LIMIT_DELAY = 1500; // 1.5 segundos entre requests
 const MAX_RETRIES = 3;
 
 // Configuração de IA (pode ser sobrescrita via parâmetro)
 let AI_MODEL_CONFIG = {
-  model: 'google/gemini-2.5-flash',
-  max_tokens: 2000,
-  temperature: 0.5
+  model: 'gemini-2.0-flash',  // Modelo mais recente e preciso
+  max_tokens: 2500,
+  temperature: 0.3
 };
 
 // ========================================
@@ -19,491 +21,378 @@ let AI_MODEL_CONFIG = {
 // ========================================
 
 export const ENHANCED_FOOD_PROMPTS = {
-  aggressive: `
-🔍 ANÁLISE ESPECIALIZADA DE ALIMENTOS BRASILEIROS - EXPERT AVANÇADO
+  // Prompt principal - foco em precisão e estrutura
+  primary: `
+Você é um especialista em análise nutricional visual de alimentos brasileiros.
+Analise esta imagem com MÁXIMA PRECISÃO.
 
-Você é o especialista líder em identificação visual de alimentos brasileiros. 
-Esta imagem CONTÉM alimentos e você DEVE encontrá-los com máxima precisão e especificidade.
+🎯 INSTRUÇÕES CRÍTICAS:
+1. Identifique TODOS os alimentos visíveis na imagem
+2. Estime as porções em gramas com base no tamanho aparente
+3. Seja ESPECÍFICO: "bife grelhado" em vez de "carne"
+4. Para líquidos, estime em ml e converta (1ml ≈ 1g para água/sucos)
+5. Considere o contexto cultural brasileiro
 
-🎯 ESTRATÉGIA DE DETECÇÃO ULTRA-SISTEMÁTICA:
-1. Escaneie TODA a imagem quadrante por quadrante com zoom mental
-2. Identifique QUALQUER forma, cor ou textura que possa ser comida
-3. Analise sombras, reflexos e contornos típicos de alimentos
-4. Reconheça pratos, recipientes, utensílios, embalagens que indicam refeição
-5. Considere alimentos empilhados, misturados, parcialmente visíveis ou meio comidos
-6. Use conhecimento cultural brasileiro para inferir alimentos típicos
+📋 CATEGORIAS PARA IDENTIFICAR:
+- Proteínas: carnes, frango, peixe, ovos, queijos
+- Carboidratos: arroz, feijão, batata, massas, pães
+- Vegetais: saladas, legumes cozidos ou crus
+- Frutas: in natura ou processadas
+- Bebidas: sucos, refrigerantes, café, água
+- Lanches: pizza, hambúrguer, salgados, sanduíches
+- Doces: sobremesas, bolos, brigadeiros
 
-🍽️ ALIMENTOS BRASILEIROS PARA DETECTAR (FOCO TOTAL EXPANDIDO):
+⚠️ REGRAS OBRIGATÓRIAS:
+- Responda APENAS com JSON válido
+- Mínimo de 30g por item identificado
+- Confidence entre 0.1 e 1.0
+- Se não houver alimentos, retorne foods: [] com is_food_detected: false
 
-🍕 PIZZAS E MASSAS (PRIORIDADE MÁXIMA):
-- Pizza margherita, calabresa, portuguesa, quatro queijos, frango catupiry
-- Pizza bacon, vegetariana, napolitana, pepperoni, doce (banana, chocolate)
-- Fatia de pizza, pizza inteira, borda recheada, bordas douradas
-- Lasanha, nhoque, espaguete, parafuso, penne, ravióli, canelone
+🔄 FORMATO DE RESPOSTA (JSON puro, sem markdown):
+{
+  "foods": [
+    {"name": "nome_do_alimento", "grams": 150, "confidence": 0.85}
+  ],
+  "is_food_detected": true,
+  "meal_type": "almoco|jantar|lanche|cafe_manha",
+  "total_items": 3
+}`,
 
-🥪 SALGADOS BRASILEIROS (ESPECIALIDADE):
-- Coxinha (frango, catupiry, queijo), coxinha grande, mini coxinha
-- Pastel (queijo, carne, frango, palmito, doce de leite), pastel frito
-- Empada, empadinha, empada de frango, empada de palmito
-- Esfiha aberta, esfiha fechada, esfiha de carne, esfiha de queijo
-- Quibe frito, quibe assado, kibbeh nayyeh
-- Risole de frango, risole de queijo, risole de camarão
-- Enroladinho de salsicha, bolinha de queijo
-- Pão de açúcar, pão de queijo mineiro
-- Joelho, croissant salgado, folhado
-
-🥧 TORTAS E QUICHES (EXPANSÃO TOTAL):
-- Torta de frango, torta de palmito, torta de atum, torta de camarão
-- Torta de legumes, torta de brócolis, torta de queijo e presunto
-- Quiche lorraine, quiche de alho-poró, quiche de espinafre
-- Torta doce: torta de maçã, torta de chocolate, torta de limão
-- Torta de morango, torta holandesa, torta de banana, cheesecake
-
-🍔 LANCHES E FAST FOOD (DETALHAMENTO MÁXIMO):
-- Hambúrguer simples, duplo, triplo, artesanal, gourmet
-- X-burger, x-salada, x-bacon, x-tudo, x-frango, x-coração
-- Big Mac, Whopper, McLanche Feliz, Quarteirão
-- Cheeseburger, bacon burger, chicken burger
-- Bauru tradicional, bauru paulista
-- Beirute árabe, beirute com queijo
-- Sanduíche natural, sanduíche vegano, sanduíche de peito de peru
-- Misto quente, tostex, croque monsieur
-- Hot dog, cachorro-quente simples, completo, especial
-- Wrap, tortilla, burrito, taco
-- Subway, sanduíche artesanal, bagel
-
-🧁 DOCES E SOBREMESAS (CULTURA BRASILEIRA):
-- Brigadeiro tradicional, beijinho, casadinho, cajuzinho
-- Bem-casado, olho de sogra, branquinho, negrinho
-- Cupcake, muffin, brownie, cookie, biscoito
-- Petit four, trufa, bombom, chocolate
-- Pudim de leite, pudim de pão, manjar, mousse
-- Bolo de chocolate, bolo de cenoura, bolo de fubá
-- Bolo de aniversário, bolo decorado, naked cake
-- Sorvete, açaí, milk-shake, frappé
-- Pavê, tiramisù, cheesecake individual
-
-🍜 PRATOS TRADICIONAIS BRASILEIROS (REGIONALIDADE):
-- Feijoada completa, tutu de feijão, feijão tropeiro
-- Moqueca baiana, vatapá, acarajé, abará
-- Parmegiana (frango, bife), à milanesa
-- Estrogonofe (carne, frango), fricassê
-- Picadinho, carne de panela, carne seca
-- Galinhada, risotto, paella brasileira
-- Escondidinho de carne seca, shepherds pie
-- Sushi, yakisoba, temaki, hot roll
-- Churrasco, costela, picanha, maminha
-
-🥤 BEBIDAS VARIADAS (BRASILEIRISSIMO):
-- Suco natural (laranja, limão, uva, maçã, manga, acerola)
-- Vitamina de banana, vitamina de abacate, smoothie
-- Açaí na tigela, açaí puro, açaí com granola
-- Café expresso, cappuccino, café com leite, café pingado
-- Refrigerante (coca-cola, guaraná, fanta, sprite)
-- Água de coco, água mineral, água com gás
-- Milkshake, frappuccino, bubble tea
-- Cerveja, caipirinha, drink, soda italiana
-- Leite achocolatado, leite fermentado, iogurte
-
-🍞 PÃES E PADARIA (BRASILEIRO):
-- Pão francês, pão de açúcar, pão doce, sonho
-- Pão de forma, pão integral, pão sírio, pão árabe
-- Brioche, croissant, pão de queijo, biscoito de polvilho
-- Torrada, rabanada, broa de milho
-- Rosca doce, pão de mel, cocada
-
-⚠️ REGRAS CRÍTICAS ATUALIZADAS:
-- SEMPRE identifique pelo menos 2-3 alimentos, mesmo em dúvida
-- Seja ESPECÍFICO: não diga "carne", diga "bife grelhado" ou "frango à parmegiana"
-- Porções devem ser REALISTAS para brasileiros (generosas)
-- Se incerto, use confidence baixa (0.3-0.6) mas SEMPRE IDENTIFIQUE
-- Para pratos compostos, separe cada componente visível
-- Prefira identificar A MAIS do que a menos
-- Use terminologia brasileira: "refrigerante" não "soda"
-- Considere combinações típicas: arroz+feijão, pizza+refrigerante
-
-🎯 RESPOSTA OBRIGATÓRIA (DETALHADA):
-{"foods": [{"name": "nome_específico_brasileiro", "grams": peso_realista, "confidence": 0.1-1.0}], "is_food_detected": true, "meal_type": "tipo_refeicao"}`,
-
+  // Prompt contextual - usa quando o primeiro falha
   contextual: `
-🍽️ ANÁLISE CONTEXTUAL AVANÇADA DE REFEIÇÃO BRASILEIRA
+Você é um nutricionista brasileiro analisando uma foto de refeição.
+FOQUE em encontrar QUALQUER alimento visível, mesmo parcialmente.
 
-Como especialista máximo em nutrição brasileira, analise esta imagem considerando profundamente o contexto cultural e gastronômico do Brasil.
+🍽️ CONTEXTO BRASILEIRO:
+- Refeições típicas: arroz + feijão + proteína + salada
+- Lanches: pizza, hambúrguer, salgados (coxinha, pastel, empada)
+- Café da manhã: pão, queijo, café com leite, frutas
+- Sobremesas: pudim, brigadeiro, bolo
 
-📸 CONTEXTO CULTURAL BRASILEIRO:
-- Brasileiros fazem refeições abundantes, variadas e sociais
-- Pratos típicos: arroz+feijão é base, sempre tem acompanhamentos
-- Lanches são cultura nacional: pizza é refeição, não lanche
-- Salgados de festa são tradição (coxinha, pastel, empada)
-- Doces são celebração social (brigadeiro, beijinho)
-- Bebidas: suco natural, refrigerante, café são essenciais
+🔍 ESTRATÉGIA DE DETECÇÃO:
+1. Examine cada parte da imagem sistematicamente
+2. Identifique recipientes/pratos que indicam comida
+3. Reconheça texturas e cores típicas de alimentos
+4. Use inferência para alimentos parcialmente visíveis
 
-🔍 ABORDAGEM DE DETECÇÃO CULTURAL:
-1. Identifique o tipo de refeição (café manhã, almoço, lanche, jantar, festa)
-2. Procure por combinações típicas brasileiras
-3. Analise porções realistas para nossa cultura (generosas)
-4. Considere alimentos misturados, empilhados ou sobrepostos
-5. Use conhecimento regional: salgados, massas, doces locais
+RESPONDA APENAS EM JSON:
+{
+  "foods": [{"name": "alimento", "grams": 100, "confidence": 0.7}],
+  "is_food_detected": true,
+  "meal_type": "tipo_refeicao"
+}`,
 
-🌎 ESPECIALIZAÇÃO REGIONAL:
-- Sudeste: pizza, parmegiana, salgados fritos, pão de açúcar
-- Nordeste: acarajé, tapioca, cuscuz, vatapá, moqueca
-- Sul: churrasco, chimarrão, cucas, pinhão
-- Norte: açaí, peixes amazônicos, mandioca, cupuaçu
-- Centro-Oeste: pacu, pintado, pequi, farofa de banana
+  // Prompt de emergência - última tentativa
+  emergency: `
+ANÁLISE DE EMERGÊNCIA - Encontre QUALQUER elemento comestível.
 
-RESPOSTA DETALHADA: {"foods": [{"name": "alimento_específico_brasileiro", "grams": porção_realista, "confidence": nível_confiança}], "meal_context": "tipo_refeicao_brasileira", "regional_context": "região_provável"}`,
+Identifique pela forma/cor:
+- Redondo marrom = coxinha, hambúrguer, bolo
+- Redondo vermelho = pizza, tomate
+- Branco granulado = arroz
+- Escuro granulado = feijão
+- Folhas verdes = salada
+- Líquido = bebida
 
-  fallback: `
-🆘 ANÁLISE DE EMERGÊNCIA MÁXIMA - FORÇA TOTAL BRASILEIRA
-
-SITUAÇÃO CRÍTICA: Esta imagem DEVE conter alimentos. Use TODO seu conhecimento cultural brasileiro.
-
-ESTRATÉGIA FINAL BRASILEIRA:
-1. Se vir QUALQUER coisa remotamente comestível, identifique como alimento brasileiro típico
-2. Se vir pratos/recipientes/utensílios, assuma que contêm nossa comida
-3. Use conhecimento profundo de refeições brasileiras para inferir
-4. Em caso de EXTREMA dúvida, baseie-se no contexto cultural forte
-5. Brasileiro come: arroz+feijão+proteína+salada é padrão
-
-ALIMENTOS BRASILEIROS PARA ASSUMIR POR FORMA/COR:
-- Formas redondas claras = pizza, pão de açúcar, empada, queijo
-- Formas redondas escuras = coxinha, hambúrguer, bolo chocolate
-- Massas escuras = carne, feijão preto, chocolate, café
-- Verde = salada, vegetais, suco natural, guaraná
-- Branco = arroz, queijo, leite, pão, açúcar
-- Amarelo/dourado = frango, ovo, milho, queijo, cerveja
-- Vermelho = tomate, carne, molho, catchup, refrigerante
-- Líquidos = bebidas, sucos, café, leite, refrigerante
-- Retangular = sanduíche, bolo, torta, lasanha
-- Triangular = pizza, pastel, torta, sanduíche cortado
-
-🎯 RESPOSTA OBRIGATÓRIA BRASILEIRA (mesmo se incerto):
-{"foods": [{"name": "alimento_brasileiro_típico", "grams": 100, "confidence": 0.2}], "forced_analysis": true, "cultural_inference": "baseado_contexto_brasileiro"}`
+RESPOSTA JSON OBRIGATÓRIA:
+{"foods": [{"name": "item", "grams": 100, "confidence": 0.5}], "is_food_detected": true}`
 };
 
 // ========================================
-// 🤖 FUNÇÃO DE ANÁLISE COM MÚLTIPLAS TENTATIVAS
+// 🤖 FUNÇÃO PRINCIPAL COM GOOGLE GEMINI
 // ========================================
 
-export async function analyzeWithEnhancedAI(imageUrl: string, attempt = 1, config?: { model: string; max_tokens: number; temperature: number }) {
-  // Usar configuração passada ou padrão
+export async function analyzeWithEnhancedAI(
+  imageUrl: string, 
+  attempt = 1, 
+  config?: { model: string; max_tokens: number; temperature: number }
+): Promise<{
+  foods: Array<{ name: string; grams: number; confidence: number }>;
+  total_calories: number;
+  attempt_used: number;
+  detection_method: string;
+  success: boolean;
+  provider?: string;
+}> {
+  // Aplicar configuração se fornecida
   if (config) {
     AI_MODEL_CONFIG = { ...AI_MODEL_CONFIG, ...config };
-    console.log('🔧 Enhanced Detection usando configuração:', AI_MODEL_CONFIG);
-  }
-  
-  const useLovableAI = !!LOVABLE_API_KEY;
-
-  if (!useLovableAI && !GOOGLE_AI_API_KEY) {
-    throw new Error('Nenhuma IA configurada: defina LOVABLE_API_KEY ou GOOGLE_AI_API_KEY');
+    console.log('🔧 Enhanced Detection config:', AI_MODEL_CONFIG);
   }
 
-  console.log(`🤖 Análise aprimorada - Tentativa ${attempt}/${MAX_RETRIES} | Provider: ${useLovableAI ? `Lovable AI (${AI_MODEL_CONFIG.model})` : 'Google Gemini API'}`);
-  
-  // Escolher estratégia baseada na tentativa
-  let prompt = ENHANCED_FOOD_PROMPTS.aggressive;
-  if (attempt === 2) {
-    prompt = ENHANCED_FOOD_PROMPTS.contextual;
-  } else if (attempt >= 3) {
-    prompt = ENHANCED_FOOD_PROMPTS.fallback;
+  // Verificar disponibilidade das APIs
+  const hasGoogleAI = !!GOOGLE_AI_API_KEY;
+  const hasLovableAI = !!LOVABLE_API_KEY;
+
+  if (!hasGoogleAI && !hasLovableAI) {
+    console.error('❌ Nenhuma IA configurada!');
+    return createFallbackAnalysis();
   }
+
+  console.log(`🤖 Análise aprimorada - Tentativa ${attempt}/${MAX_RETRIES}`);
+  console.log(`   Google AI: ${hasGoogleAI ? '✅' : '❌'} | Lovable AI: ${hasLovableAI ? '✅' : '❌'}`);
+
+  // PRIORIDADE: Google Gemini Vision direto (mais preciso para imagens)
+  if (hasGoogleAI) {
+    try {
+      const result = await analyzeWithGoogleGemini(imageUrl, attempt);
+      if (result.success && result.foods.length > 0) {
+        return { ...result, provider: 'google_gemini' };
+      }
+    } catch (error) {
+      console.error('❌ Erro no Google Gemini:', error);
+    }
+  }
+
+  // FALLBACK: Lovable AI
+  if (hasLovableAI) {
+    try {
+      const result = await analyzeWithLovableAI(imageUrl, attempt);
+      if (result.success && result.foods.length > 0) {
+        return { ...result, provider: 'lovable_ai' };
+      }
+    } catch (error) {
+      console.error('❌ Erro no Lovable AI:', error);
+    }
+  }
+
+  // Último recurso
+  console.log('🆘 Todas as tentativas falharam, usando fallback...');
+  return createFallbackAnalysis();
+}
+
+// ========================================
+// 🌐 GOOGLE GEMINI VISION API (PRIORIDADE)
+// ========================================
+
+async function analyzeWithGoogleGemini(imageUrl: string, attempt = 1): Promise<{
+  foods: Array<{ name: string; grams: number; confidence: number }>;
+  total_calories: number;
+  attempt_used: number;
+  detection_method: string;
+  success: boolean;
+}> {
+  console.log(`🌐 Google Gemini Vision - Tentativa ${attempt}/${MAX_RETRIES}`);
+
+  // Escolher prompt baseado na tentativa
+  const prompts = [
+    ENHANCED_FOOD_PROMPTS.primary,
+    ENHANCED_FOOD_PROMPTS.contextual,
+    ENHANCED_FOOD_PROMPTS.emergency
+  ];
+  const prompt = prompts[Math.min(attempt - 1, 2)];
 
   try {
-    // Delay anti-rate-limit
+    // Delay para evitar rate limit
     if (attempt > 1) {
       const delay = RATE_LIMIT_DELAY * attempt;
-      console.log(`⏳ Aguardando ${delay}ms para evitar rate limit...`);
+      console.log(`⏳ Aguardando ${delay}ms...`);
       await new Promise(resolve => setTimeout(resolve, delay));
     }
 
-    let responseText: string;
+    // Converter imagem para base64
+    const imageBase64 = await fetchImageAsBase64(imageUrl);
+    
+    // Usar gemini-1.5-flash por ter mais cota disponível
+    const modelName = 'gemini-1.5-flash';
+    
+    const requestBody = {
+      contents: [{
+        parts: [
+          { text: prompt },
+          { 
+            inline_data: {
+              mime_type: "image/jpeg",
+              data: imageBase64
+            }
+          }
+        ]
+      }],
+      generationConfig: {
+        temperature: attempt >= 3 ? 0.6 : AI_MODEL_CONFIG.temperature,
+        maxOutputTokens: AI_MODEL_CONFIG.max_tokens,
+        topP: 0.95,
+        topK: 40
+      },
+      safetySettings: [
+        { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }
+      ]
+    };
 
-    if (useLovableAI) {
-      // ===============================
-      // 🔗 MODO LOVABLE AI (RECOMENDADO)
-      // ===============================
-      const body = {
-        model: AI_MODEL_CONFIG.model,
-        max_tokens: AI_MODEL_CONFIG.max_tokens,
-        temperature: AI_MODEL_CONFIG.temperature,
-        messages: [
-          {
-            role: 'system',
-            content:
-              'Você é uma IA nutricional especialista em alimentos brasileiros. Sempre responda APENAS com JSON válido, sem explicações adicionais.',
-          },
-          {
-            role: 'user',
-            content: [
-              { type: 'text', text: prompt },
-              {
-                type: 'image_url',
-                image_url: { url: imageUrl },
-              },
-            ],
-          },
-        ],
-      } as const;
-
-      const resp = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    console.log(`🔗 Chamando Google Gemini: ${modelName}`);
+    
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${GOOGLE_AI_API_KEY}`,
+      {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(body),
-      });
-
-      if (!resp.ok) {
-        const errorText = await resp.text();
-        console.error(`❌ Lovable AI error (tentativa ${attempt}):`, resp.status, errorText);
-
-        if ((resp.status === 429 || resp.status === 402) && attempt < MAX_RETRIES) {
-          const backoffDelay = RATE_LIMIT_DELAY * Math.pow(2, attempt);
-          console.log(`⏳ Backoff Lovable AI ${backoffDelay}ms...`);
-          await new Promise(resolve => setTimeout(resolve, backoffDelay));
-          return analyzeWithEnhancedAI(imageUrl, attempt + 1, config);
-        }
-
-        // Se Lovable falhar completamente, tentar fallback para Google, se existir
-        if (GOOGLE_AI_API_KEY) {
-          console.log('🔁 Falha Lovable AI, tentando Google Gemini direto...');
-          return analyzeWithEnhancedAIWithGoogle(imageUrl, attempt);
-        }
-
-        throw new Error(`Lovable AI error: ${resp.status}`);
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestBody),
       }
+    );
 
-      const data = await resp.json();
-      responseText = data.choices?.[0]?.message?.content ?? '';
-    } else {
-      // ===============================
-      // 🌐 MODO GOOGLE GEMINI DIRETO (LEGADO)
-      // ===============================
-      const result = await analyzeWithEnhancedAIWithGoogle(imageUrl, attempt);
-      return result;
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`❌ Google API Error ${response.status}:`, errorText.substring(0, 200));
+      
+      // Rate limit - retry com backoff
+      if (response.status === 429 && attempt < MAX_RETRIES) {
+        const backoffDelay = RATE_LIMIT_DELAY * Math.pow(2, attempt);
+        console.log(`⏳ Rate limit! Aguardando ${backoffDelay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, backoffDelay));
+        return analyzeWithGoogleGemini(imageUrl, attempt + 1);
+      }
+      
+      throw new Error(`Google API error: ${response.status}`);
     }
+
+    const data = await response.json();
+    const responseText = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
     if (!responseText) {
+      console.log('⚠️ Resposta vazia do Google Gemini');
       if (attempt < MAX_RETRIES) {
-        console.log(`⚠️ Resposta vazia na tentativa ${attempt}, tentando novamente...`);
-        return analyzeWithEnhancedAI(imageUrl, attempt + 1);
+        return analyzeWithGoogleGemini(imageUrl, attempt + 1);
       }
-      throw new Error('Resposta vazia da IA após múltiplas tentativas');
+      throw new Error('Resposta vazia');
     }
 
-    console.log(`🤖 Resposta IA (tentativa ${attempt}):`, responseText.substring(0, 200) + '...');
+    console.log(`📝 Resposta Gemini (${responseText.length} chars):`, responseText.substring(0, 150) + '...');
 
-    try {
-      // Limpar e parsear JSON
-      let cleanJson = responseText.replace(/```json|```/g, '').trim();
-      
-      // Tentar extrair JSON se estiver misturado com texto
-      const jsonMatch = cleanJson.match(/\{[^{}]*"foods"[^{}]*\}/s);
-      if (jsonMatch) {
-        cleanJson = jsonMatch[0];
-      }
-      
-      const parsed = JSON.parse(cleanJson);
-      
-      // Validar resultado
-      if (!parsed.foods || !Array.isArray(parsed.foods) || parsed.foods.length === 0) {
-        if (attempt < MAX_RETRIES) {
-          console.log(`⚠️ Nenhum alimento detectado na tentativa ${attempt}, forçando nova análise...`);
-          return analyzeWithEnhancedAI(imageUrl, attempt + 1);
-        }
-        
-        // Último recurso: criar análise genérica
-        return createFallbackAnalysis();
-      }
-      
-      // Melhorar dados detectados
-      const enhancedFoods = (parsed.foods as any[]).map((food: any) => ({
-        name: food.name || 'alimento não identificado',
-        grams: Math.max(Number(food.grams) || 50, 30), // Mínimo 30g
-        confidence: Math.max(Number(food.confidence) || 0.3, 0.1) // Mínimo 0.1
-      }));
-      
-      console.log(`✅ Análise bem-sucedida na tentativa ${attempt}:`, enhancedFoods.length, 'alimentos detectados');
-      
-      return {
-        foods: enhancedFoods,
-        total_calories: enhancedFoods.reduce((sum: number, food: any) => sum + (food.grams * 2.5), 0),
-        attempt_used: attempt,
-        detection_method: attempt === 1 ? 'aggressive' : attempt === 2 ? 'contextual' : 'fallback',
-        success: true
-      };
-      
-    } catch (parseError) {
-      console.error(`❌ Erro ao parsear JSON (tentativa ${attempt}):`, parseError);
-      
-      if (attempt < MAX_RETRIES) {
-        return analyzeWithEnhancedAI(imageUrl, attempt + 1);
-      }
-      
-      // Extrair alimentos do texto como último recurso
-      const extractedFoods = extractFoodsFromText(responseText);
-      return {
-        foods: extractedFoods,
-        total_calories: extractedFoods.reduce((sum: number, food: any) => sum + (food.grams * 2), 0),
-        parsing_error: true,
-        fallback_used: true,
-        attempt_used: attempt
-      };
-    }
+    // Parsear resposta JSON
+    const parsed = parseAIResponse(responseText);
     
+    if (!parsed.foods || parsed.foods.length === 0) {
+      console.log('⚠️ Nenhum alimento detectado');
+      if (attempt < MAX_RETRIES) {
+        return analyzeWithGoogleGemini(imageUrl, attempt + 1);
+      }
+    }
+
+    const foods = normalizeDetectedFoods(parsed.foods || []);
+    const totalCalories = estimateCalories(foods);
+
+    console.log(`✅ Google Gemini detectou ${foods.length} alimentos`);
+
+    return {
+      foods,
+      total_calories: totalCalories,
+      attempt_used: attempt,
+      detection_method: attempt === 1 ? 'primary' : attempt === 2 ? 'contextual' : 'emergency',
+      success: foods.length > 0
+    };
+
   } catch (error) {
-    const err = error as Error;
-    console.error(`❌ Erro na tentativa ${attempt}:`, err.message);
+    console.error(`❌ Erro na tentativa ${attempt} (Google):`, error);
     
     if (attempt < MAX_RETRIES) {
-      // Delay maior para erros de rede
-      const errorDelay = RATE_LIMIT_DELAY * (attempt + 1);
-      console.log(`⏳ Erro detectado, aguardando ${errorDelay}ms antes da próxima tentativa...`);
-      await new Promise(resolve => setTimeout(resolve, errorDelay));
-      return analyzeWithEnhancedAI(imageUrl, attempt + 1);
+      await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_DELAY * attempt));
+      return analyzeWithGoogleGemini(imageUrl, attempt + 1);
     }
     
-    // Último recurso: análise genérica
-    console.log('🆘 Todas as tentativas falharam, criando análise genérica...');
-    return createFallbackAnalysis();
+    throw error;
   }
 }
 
-// Implementação legado isolada para reuso quando Lovable AI não estiver disponível
-async function analyzeWithEnhancedAIWithGoogle(imageUrl: string, attempt = 1) {
-  if (!GOOGLE_AI_API_KEY) {
-    throw new Error('Google AI API key não configurada');
-  }
+// ========================================
+// 🔗 LOVABLE AI (FALLBACK)
+// ========================================
 
-  console.log(`🌐 Google Gemini direto - Tentativa ${attempt}/${MAX_RETRIES}`);
+async function analyzeWithLovableAI(imageUrl: string, attempt = 1): Promise<{
+  foods: Array<{ name: string; grams: number; confidence: number }>;
+  total_calories: number;
+  attempt_used: number;
+  detection_method: string;
+  success: boolean;
+}> {
+  console.log(`🔗 Lovable AI - Tentativa ${attempt}/${MAX_RETRIES}`);
 
-  // Escolher estratégia baseada na tentativa
-  let prompt = ENHANCED_FOOD_PROMPTS.aggressive;
-  if (attempt === 2) {
-    prompt = ENHANCED_FOOD_PROMPTS.contextual;
-  } else if (attempt >= 3) {
-    prompt = ENHANCED_FOOD_PROMPTS.fallback;
-  }
-
-  // Delay anti-rate-limit
-  if (attempt > 1) {
-    const delay = RATE_LIMIT_DELAY * attempt;
-    console.log(`⏳ Aguardando ${delay}ms para evitar rate limit (Google)...`);
-    await new Promise(resolve => setTimeout(resolve, delay));
-  }
-
-  const requestBody = {
-    contents: [{
-      parts: [
-        { text: prompt },
-        { 
-          inline_data: {
-            mime_type: "image/jpeg",
-            data: await fetchImageAsBase64(imageUrl)
-          }
-        }
-      ]
-    }],
-    generationConfig: {
-      temperature: attempt >= 3 ? 0.8 : 0.2, // Mais criativo no fallback
-      maxOutputTokens: 1000,
-    }
-  };
-
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GOOGLE_AI_API_KEY}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(requestBody),
-    }
-  );
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error(`❌ Google AI Error (tentativa ${attempt}):`, response.status, errorText);
-    
-    // Rate limit handling
-    if (response.status === 429 && attempt < MAX_RETRIES) {
-      const backoffDelay = RATE_LIMIT_DELAY * Math.pow(2, attempt); // Exponential backoff
-      console.log(`⏳ Rate limit Google! Aguardando ${backoffDelay}ms...`);
-      await new Promise(resolve => setTimeout(resolve, backoffDelay));
-      return analyzeWithEnhancedAIWithGoogle(imageUrl, attempt + 1);
-    }
-    
-    throw new Error(`Google AI error: ${response.status} - ${errorText}`);
-  }
-
-  const data = await response.json();
-  if (!data.candidates?.[0]?.content?.parts?.[0]?.text) {
-    if (attempt < MAX_RETRIES) {
-      console.log(`⚠️ Resposta inválida na tentativa ${attempt}, tentando novamente (Google)...`);
-      return analyzeWithEnhancedAIWithGoogle(imageUrl, attempt + 1);
-    }
-    throw new Error('Resposta inválida da Google AI após múltiplas tentativas');
-  }
-
-  const responseText = data.candidates[0].content.parts[0].text as string;
-  console.log(`🤖 Resposta Gemini (tentativa ${attempt}):`, responseText.substring(0, 200) + '...');
+  const prompts = [
+    ENHANCED_FOOD_PROMPTS.primary,
+    ENHANCED_FOOD_PROMPTS.contextual,
+    ENHANCED_FOOD_PROMPTS.emergency
+  ];
+  const prompt = prompts[Math.min(attempt - 1, 2)];
 
   try {
-    // Limpar e parsear JSON
-    let cleanJson = responseText.replace(/```json|```/g, '').trim();
-    
-    // Tentar extrair JSON se estiver misturado com texto
-    const jsonMatch = cleanJson.match(/\{[^{}]*"foods"[^{}]*\}/s);
-    if (jsonMatch) {
-      cleanJson = jsonMatch[0];
+    if (attempt > 1) {
+      await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_DELAY * attempt));
     }
-    
-    const parsed = JSON.parse(cleanJson);
-    
-    // Validar resultado
-    if (!parsed.foods || !Array.isArray(parsed.foods) || parsed.foods.length === 0) {
-      if (attempt < MAX_RETRIES) {
-        console.log(`⚠️ Nenhum alimento detectado na tentativa ${attempt}, forçando nova análise (Google)...`);
-        return analyzeWithEnhancedAIWithGoogle(imageUrl, attempt + 1);
+
+    const body = {
+      model: AI_MODEL_CONFIG.model || 'google/gemini-2.5-flash',
+      max_tokens: AI_MODEL_CONFIG.max_tokens,
+      temperature: AI_MODEL_CONFIG.temperature,
+      messages: [
+        {
+          role: 'system',
+          content: 'Você é um especialista em nutrição brasileira. Responda APENAS com JSON válido.'
+        },
+        {
+          role: 'user',
+          content: [
+            { type: 'text', text: prompt },
+            { type: 'image_url', image_url: { url: imageUrl } }
+          ]
+        }
+      ]
+    };
+
+    const resp = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (!resp.ok) {
+      const errorText = await resp.text();
+      console.error(`❌ Lovable AI Error ${resp.status}:`, errorText.substring(0, 200));
+      
+      if ((resp.status === 429 || resp.status === 402) && attempt < MAX_RETRIES) {
+        const backoffDelay = RATE_LIMIT_DELAY * Math.pow(2, attempt);
+        await new Promise(resolve => setTimeout(resolve, backoffDelay));
+        return analyzeWithLovableAI(imageUrl, attempt + 1);
       }
       
-      // Último recurso: criar análise genérica
-      return createFallbackAnalysis();
+      throw new Error(`Lovable AI error: ${resp.status}`);
     }
-    
-    // Melhorar dados detectados
-    const enhancedFoods = (parsed.foods as any[]).map((food: any) => ({
-      name: food.name || 'alimento não identificado',
-      grams: Math.max(Number(food.grams) || 50, 30), // Mínimo 30g
-      confidence: Math.max(Number(food.confidence) || 0.3, 0.1) // Mínimo 0.1
-    }));
-    
-    console.log(`✅ Análise bem-sucedida na tentativa ${attempt}:`, enhancedFoods.length, 'alimentos detectados (Google)');
-    
+
+    const data = await resp.json();
+    const responseText = data.choices?.[0]?.message?.content ?? '';
+
+    if (!responseText) {
+      if (attempt < MAX_RETRIES) {
+        return analyzeWithLovableAI(imageUrl, attempt + 1);
+      }
+      throw new Error('Resposta vazia');
+    }
+
+    console.log(`📝 Resposta Lovable AI:`, responseText.substring(0, 150) + '...');
+
+    const parsed = parseAIResponse(responseText);
+    const foods = normalizeDetectedFoods(parsed.foods || []);
+    const totalCalories = estimateCalories(foods);
+
+    console.log(`✅ Lovable AI detectou ${foods.length} alimentos`);
+
     return {
-      foods: enhancedFoods,
-      total_calories: enhancedFoods.reduce((sum: number, food: any) => sum + (food.grams * 2.5), 0),
+      foods,
+      total_calories: totalCalories,
       attempt_used: attempt,
-      detection_method: attempt === 1 ? 'aggressive' : attempt === 2 ? 'contextual' : 'fallback',
-      success: true
+      detection_method: `lovable_${attempt === 1 ? 'primary' : 'contextual'}`,
+      success: foods.length > 0
     };
-    
-  } catch (parseError) {
-    console.error(`❌ Erro ao parsear JSON (tentativa ${attempt}, Google):`, parseError);
+
+  } catch (error) {
+    console.error(`❌ Erro Lovable AI tentativa ${attempt}:`, error);
     
     if (attempt < MAX_RETRIES) {
-      return analyzeWithEnhancedAIWithGoogle(imageUrl, attempt + 1);
+      return analyzeWithLovableAI(imageUrl, attempt + 1);
     }
     
-    // Extrair alimentos do texto como último recurso
-    const extractedFoods = extractFoodsFromText(responseText);
-    return {
-      foods: extractedFoods,
-      total_calories: extractedFoods.reduce((sum: number, food: any) => sum + (food.grams * 2), 0),
-      parsing_error: true,
-      fallback_used: true,
-      attempt_used: attempt
-    };
+    throw error;
   }
 }
 
@@ -511,71 +400,169 @@ async function analyzeWithEnhancedAIWithGoogle(imageUrl: string, attempt = 1) {
 // 🛠️ FUNÇÕES AUXILIARES
 // ========================================
 
-function createFallbackAnalysis() {
-  console.log('🔄 Criando análise de fallback genérica...');
+function parseAIResponse(text: string): any {
+  try {
+    // Remover markdown code blocks
+    let clean = text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+    
+    // Tentar encontrar JSON no texto
+    const jsonPatterns = [
+      /\{[\s\S]*"foods"[\s\S]*\}/,
+      /\{[\s\S]*\}/
+    ];
+    
+    for (const pattern of jsonPatterns) {
+      const match = clean.match(pattern);
+      if (match) {
+        try {
+          return JSON.parse(match[0]);
+        } catch {
+          continue;
+        }
+      }
+    }
+    
+    // Tentar parsear diretamente
+    return JSON.parse(clean);
+  } catch (e) {
+    console.error('❌ Erro ao parsear JSON:', e);
+    // Tentar extrair alimentos do texto
+    return { foods: extractFoodsFromText(text) };
+  }
+}
+
+function normalizeDetectedFoods(foods: any[]): Array<{ name: string; grams: number; confidence: number }> {
+  if (!Array.isArray(foods)) return [];
   
-  const genericFoods = [
-    { name: 'refeição mista', grams: 200, confidence: 0.3 },
-    { name: 'acompanhamento', grams: 100, confidence: 0.2 }
-  ];
+  return foods
+    .filter(f => f && (f.name || f.nome))
+    .map(food => ({
+      name: String(food.name || food.nome || 'alimento').toLowerCase().trim(),
+      grams: Math.max(Number(food.grams || food.gramas || food.quantidade) || 80, 30),
+      confidence: Math.min(Math.max(Number(food.confidence || food.confianca) || 0.5, 0.1), 1.0)
+    }))
+    .filter(f => f.name.length > 1 && f.name !== 'undefined');
+}
+
+function estimateCalories(foods: Array<{ name: string; grams: number; confidence: number }>): number {
+  // Estimativa simples: média de 2 kcal/g para refeições mistas
+  const caloriesPerGram: Record<string, number> = {
+    'arroz': 1.3, 'feijão': 0.77, 'carne': 2.5, 'frango': 1.9,
+    'peixe': 1.5, 'salada': 0.2, 'vegetais': 0.3, 'legumes': 0.4,
+    'pizza': 2.7, 'hambúrguer': 2.5, 'pão': 2.6, 'macarrão': 1.3,
+    'bolo': 3.5, 'refrigerante': 0.4, 'suco': 0.45, 'café': 0.02,
+    'ovo': 1.5, 'queijo': 3.5, 'batata': 0.9, 'banana': 0.9
+  };
+  
+  let total = 0;
+  for (const food of foods) {
+    const name = food.name.toLowerCase();
+    let cal = 2.0; // default
+    
+    for (const [key, value] of Object.entries(caloriesPerGram)) {
+      if (name.includes(key)) {
+        cal = value;
+        break;
+      }
+    }
+    
+    total += food.grams * cal;
+  }
+  
+  return Math.round(total);
+}
+
+function createFallbackAnalysis() {
+  console.log('🔄 Criando análise de fallback...');
   
   return {
-    foods: genericFoods,
-    total_calories: 600, // Estimativa conservadora
-    fallback_used: true,
-    detection_method: 'generic_fallback'
+    foods: [
+      { name: 'refeição mista', grams: 200, confidence: 0.3 }
+    ],
+    total_calories: 400,
+    attempt_used: MAX_RETRIES,
+    detection_method: 'fallback',
+    success: false
   };
 }
 
-function extractFoodsFromText(text: string) {
-  console.log('🔍 Extraindo alimentos do texto...');
-  
-  const brazilianFoods = [
+function extractFoodsFromText(text: string): Array<{ name: string; grams: number; confidence: number }> {
+  const commonFoods = [
     'arroz', 'feijão', 'carne', 'frango', 'peixe', 'ovo', 'salada',
     'batata', 'macarrão', 'pão', 'pizza', 'hambúrguer', 'bolo', 'torta',
     'coxinha', 'pastel', 'empada', 'suco', 'café', 'leite', 'queijo',
-    'tomate', 'alface', 'cenoura', 'banana', 'maçã', 'laranja'
+    'tomate', 'alface', 'cenoura', 'banana', 'maçã', 'laranja',
+    'refrigerante', 'água', 'legumes', 'vegetais'
   ];
   
-  const detectedFoods = [];
+  const portions: Record<string, number> = {
+    'arroz': 150, 'feijão': 100, 'carne': 150, 'frango': 150,
+    'pizza': 150, 'hambúrguer': 200, 'bolo': 100, 'pão': 50,
+    'suco': 250, 'café': 100, 'salada': 80
+  };
+  
+  const detected: Array<{ name: string; grams: number; confidence: number }> = [];
   const lowerText = text.toLowerCase();
   
-  for (const food of brazilianFoods) {
+  for (const food of commonFoods) {
     if (lowerText.includes(food)) {
-      detectedFoods.push({
+      detected.push({
         name: food,
-        grams: getTypicalPortionSize(food),
+        grams: portions[food] || 100,
         confidence: 0.4
       });
     }
   }
   
-  // Se não encontrou nada, retorna algo genérico
-  if (detectedFoods.length === 0) {
-    detectedFoods.push({
-      name: 'refeição brasileira',
-      grams: 250,
-      confidence: 0.3
-    });
-  }
-  
-  return detectedFoods;
-}
-
-function getTypicalPortionSize(food: string): number {
-  const portions: Record<string, number> = {
-    'arroz': 120, 'feijão': 80, 'carne': 120, 'frango': 120,
-    'pizza': 130, 'hambúrguer': 180, 'bolo': 80, 'torta': 120,
-    'coxinha': 70, 'pastel': 60, 'empada': 50, 'pão': 50,
-    'suco': 200, 'café': 150, 'leite': 200, 'salada': 60
-  };
-  
-  return portions[food] || 100;
+  return detected.length > 0 ? detected : [{ name: 'refeição', grams: 200, confidence: 0.2 }];
 }
 
 async function fetchImageAsBase64(imageUrl: string): Promise<string> {
-  const response = await fetch(imageUrl);
-  const arrayBuffer = await response.arrayBuffer();
-  const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
-  return base64;
+  console.log('📥 Baixando imagem para análise...');
+  
+  try {
+    // Adicionar headers para evitar bloqueios
+    const response = await fetch(imageUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; NutritionBot/1.0)',
+        'Accept': 'image/*',
+        'Referer': imageUrl
+      }
+    });
+    
+    if (!response.ok) {
+      console.error(`❌ Erro HTTP ${response.status} ao baixar imagem`);
+      throw new Error(`HTTP ${response.status}`);
+    }
+    
+    const contentType = response.headers.get('content-type');
+    if (contentType && !contentType.includes('image')) {
+      console.error(`❌ Tipo de conteúdo inválido: ${contentType}`);
+      throw new Error(`Tipo inválido: ${contentType}`);
+    }
+    
+    const arrayBuffer = await response.arrayBuffer();
+    const uint8Array = new Uint8Array(arrayBuffer);
+    
+    if (uint8Array.length < 1000) {
+      throw new Error('Imagem muito pequena ou inválida');
+    }
+    
+    // Converter para base64 em chunks
+    let binary = '';
+    const chunkSize = 32768;
+    
+    for (let i = 0; i < uint8Array.length; i += chunkSize) {
+      const chunk = uint8Array.subarray(i, Math.min(i + chunkSize, uint8Array.length));
+      binary += String.fromCharCode(...chunk);
+    }
+    
+    const base64 = btoa(binary);
+    console.log(`✅ Imagem convertida: ${Math.round(base64.length / 1024)}KB`);
+    
+    return base64;
+  } catch (error) {
+    console.error('❌ Erro ao converter imagem:', error);
+    throw error;
+  }
 }

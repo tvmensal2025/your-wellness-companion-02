@@ -286,129 +286,101 @@ async function tryYoloDetect(imageUrl: string): Promise<{
   detectionQuality: string;
   confidenceUsed: number;
 } | null> {
-  if (!yoloEnabled) return null;
+  if (!yoloEnabled) {
+    console.log('⚠️ YOLO desabilitado');
+    return null;
+  }
+  
+  console.log(`🦾 YOLO: Iniciando detecção em ${yoloServiceUrl}...`);
+  
+  // Tentar uma única chamada rápida com confiança otimizada
+  const confidenceLevel = 0.35; // Nível balanceado
   
   try {
-    console.log('🦾 YOLO: Iniciando detecção otimizada de objetos...');
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
     
-    // 🚀 ESTRATÉGIA DE MÚLTIPLAS PASSADAS PARA MÁXIMA PRECISÃO
-    let bestDetection = null;
-    let bestConfidence = 0;
-    let detectionQuality = 'low';
+    const resp = await fetch(`${yoloServiceUrl}/detect`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      signal: controller.signal,
+      body: JSON.stringify({ 
+        image_url: imageUrl, 
+        task: 'detect', // Usar detect simples, mais rápido que segment
+        confidence: confidenceLevel
+      })
+    });
     
-    // Tentar diferentes níveis de confiança (do mais alto ao mais baixo)
-    for (const confidence of yoloConfidenceLevels) {
-      console.log(`🔄 YOLO: Tentativa com confiança ${confidence.toFixed(2)}...`);
-      
-        try {
-          const resp = await fetch(`${yoloServiceUrl}/detect`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-              image_url: imageUrl, 
-              task: 'segment', 
-              confidence: confidence,
-              // Configurações específicas para alimentos brasileiros
-              model: 'yolo11s.pt', // Modelo mais leve e rápido
-              iou: 0.45, // IoU threshold para melhor separação de objetos
-              max_det: 300, // Detectar mais objetos por imagem
-              classes: [39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67], // Classes relacionadas a comida no COCO
-              verbose: false
-            })
-          });
-        
-        if (!resp.ok) {
-          console.log(`⚠️ YOLO: Falha na confiança ${confidence.toFixed(2)}`);
-          continue;
-        }
-        
-        const data = await resp.json();
-        const objects: Array<{ class_name: string; score: number }> = Array.isArray(data?.objects) ? data.objects : [];
-        
-        console.log(`📊 YOLO: Confiança ${confidence.toFixed(2)} detectou ${objects.length} objetos`);
-        
-        // Filtrar objetos com confiança adequada
-        const mapped = objects
-          .map(o => ({ 
-            class_name: o.class_name,
-            score: Number(o.score) || 0,
-            name: YOLO_CLASS_MAP[o.class_name] || ''
-          }))
-          .filter(o => !!o.name && o.score >= confidence * 0.8); // Filtro mais rigoroso
-        
-        if (mapped.length > 0) {
-          const foods: string[] = [];
-          const liquids: string[] = [];
-          let maxConfidence = 0;
-          
-          for (const m of mapped) {
-            maxConfidence = Math.max(maxConfidence, m.score);
-            
-            // Classificar como líquido ou alimento sólido (expandido para mais precisão)
-            const liquidKeywords = ['copo', 'garrafa', 'taça', 'vinho', 'café', 'chá', 'suco', 'refrigerante', 'cerveja', 'leite', 'iogurte', 'água', 'energético', 'isotônico'];
-            const solidFoodKeywords = ['pizza', 'torta', 'coxinha', 'pastel', 'hambúrguer', 'sanduíche', 'bolo', 'pão', 'queijo', 'carne', 'frango', 'peixe'];
-            const isLiquid = liquidKeywords.some(keyword => m.name.includes(keyword));
-            const isSolidFood = solidFoodKeywords.some(keyword => m.name.includes(keyword));
-            
-            if (isLiquid) {
-              liquids.push(m.name);
-            } else if (isSolidFood || !isLiquid) {
-              // Priorizar alimentos sólidos, especialmente pizzas, tortas e salgados
-              foods.push(m.name);
-            }
-          }
-          
-          const result = {
-            foods,
-            liquids,
-            objects: mapped,
-            maxConfidence,
-            totalObjects: mapped.length,
-            detectionQuality: getDetectionQuality(confidence, mapped.length, maxConfidence),
-            confidenceUsed: confidence
-          };
-          
-          // Avaliar qualidade da detecção
-          const qualityScore = calculateQualityScore(mapped.length, maxConfidence, confidence);
-          
-          if (qualityScore > bestConfidence) {
-            bestDetection = result;
-            bestConfidence = qualityScore;
-            detectionQuality = result.detectionQuality;
-            console.log(`🏆 YOLO: Nova melhor detecção encontrada (qualidade: ${qualityScore.toFixed(2)})`);
-          }
-          
-          // Se encontrou detecção de alta qualidade, parar aqui
-          if (qualityScore > 0.8) {
-            console.log(`🎯 YOLO: Detecção de alta qualidade alcançada, parando otimização`);
-            break;
-          }
-        }
-        
-      } catch (error) {
-        console.log(`⚠️ YOLO: Erro na confiança ${confidence.toFixed(2)}:`, error);
-        continue;
-      }
-    }
+    clearTimeout(timeoutId);
     
-    if (bestDetection) {
-      console.log('✅ YOLO: Detecção otimizada concluída:', {
-        foods: bestDetection.foods.length,
-        liquids: bestDetection.liquids.length,
-        maxConfidence: bestDetection.maxConfidence.toFixed(2),
-        totalObjects: bestDetection.totalObjects,
-        quality: detectionQuality,
-        confidenceUsed: bestDetection.confidenceUsed.toFixed(2)
-      });
-      
-      return bestDetection;
-    } else {
-      console.log('⚠️ YOLO: Nenhuma detecção válida encontrada em nenhum nível de confiança');
+    if (!resp.ok) {
+      console.log(`⚠️ YOLO: Resposta ${resp.status}`);
       return null;
     }
     
+    const data = await resp.json();
+    const objects: Array<{ class_name: string; score: number }> = Array.isArray(data?.objects) ? data.objects : [];
+    
+    console.log(`📊 YOLO: Detectou ${objects.length} objetos brutos`);
+    
+    if (objects.length === 0) {
+      console.log('⚠️ YOLO: Nenhum objeto detectado');
+      return null;
+    }
+    
+    // Mapear e filtrar objetos
+    const mapped = objects
+      .map(o => ({ 
+        class_name: o.class_name,
+        score: Number(o.score) || 0,
+        name: YOLO_CLASS_MAP[o.class_name?.toLowerCase()] || YOLO_CLASS_MAP[o.class_name] || ''
+      }))
+      .filter(o => o.name && o.score >= 0.25);
+    
+    console.log(`📊 YOLO: ${mapped.length} objetos mapeados para alimentos`);
+    
+    if (mapped.length === 0) {
+      return null;
+    }
+    
+    const foods: string[] = [];
+    const liquids: string[] = [];
+    let maxConfidence = 0;
+    
+    const liquidKeywords = ['copo', 'garrafa', 'taça', 'vinho', 'café', 'chá', 'suco', 'refrigerante', 'cerveja', 'leite', 'água'];
+    
+    for (const m of mapped) {
+      maxConfidence = Math.max(maxConfidence, m.score);
+      const isLiquid = liquidKeywords.some(k => m.name.includes(k));
+      
+      if (isLiquid) {
+        if (!liquids.includes(m.name)) liquids.push(m.name);
+      } else {
+        if (!foods.includes(m.name)) foods.push(m.name);
+      }
+    }
+    
+    const quality = maxConfidence >= 0.7 ? 'excellent' : maxConfidence >= 0.5 ? 'good' : 'fair';
+    
+    console.log(`✅ YOLO: Detecção concluída - ${foods.length} alimentos, ${liquids.length} bebidas, confiança ${maxConfidence.toFixed(2)}`);
+    
+    return {
+      foods,
+      liquids,
+      objects: mapped,
+      maxConfidence,
+      totalObjects: mapped.length,
+      detectionQuality: quality,
+      confidenceUsed: confidenceLevel
+    };
+    
   } catch (error) {
-    console.error('❌ YOLO: Erro crítico na detecção:', error);
+    const err = error as Error;
+    if (err.name === 'AbortError') {
+      console.log('⏱️ YOLO: Timeout após 15s');
+    } else {
+      console.error('❌ YOLO: Erro na detecção:', err.message);
+    }
     return null;
   }
 }
