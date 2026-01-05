@@ -4611,6 +4611,8 @@ export type Database = {
           is_premium: boolean | null
           module_id: string
           order_index: number
+          quiz_questions: Json | null
+          resources: Json | null
           title: string
           video_url: string | null
         }
@@ -4623,6 +4625,8 @@ export type Database = {
           is_premium?: boolean | null
           module_id: string
           order_index: number
+          quiz_questions?: Json | null
+          resources?: Json | null
           title: string
           video_url?: string | null
         }
@@ -4635,6 +4639,8 @@ export type Database = {
           is_premium?: boolean | null
           module_id?: string
           order_index?: number
+          quiz_questions?: Json | null
+          resources?: Json | null
           title?: string
           video_url?: string | null
         }
