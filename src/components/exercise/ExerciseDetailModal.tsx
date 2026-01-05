@@ -4,15 +4,20 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   ArrowLeft,
   ArrowRight,
   CheckCircle2,
+  ChevronDown,
+  ChevronUp,
   Clock,
   Dumbbell,
   Flame,
   Heart,
   Info,
+  Lightbulb,
   Pause,
   Play,
   RefreshCw,
@@ -22,7 +27,8 @@ import {
   WifiOff,
   ThumbsUp,
   ThumbsDown,
-  Minus,
+  Home,
+  Building2,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -49,8 +55,16 @@ function asText(input: unknown): string {
 function asStringList(input: unknown): string[] {
   if (!input) return [];
   if (Array.isArray(input)) return input.map(String).filter(Boolean);
-  // If it's a long string, keep as single bullet.
   return [String(input)].filter(Boolean);
+}
+
+// Cria resumo inteligente da descrição
+function createSummary(description: string, maxLength = 120): string {
+  if (!description) return '';
+  if (description.length <= maxLength) return description;
+  const trimmed = description.substring(0, maxLength);
+  const lastSpace = trimmed.lastIndexOf(' ');
+  return trimmed.substring(0, lastSpace > 80 ? lastSpace : maxLength) + '...';
 }
 
 export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
@@ -68,10 +82,12 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
   const [currentSet, setCurrentSet] = useState(1);
   const [userFeedback, setUserFeedback] = useState<'facil' | 'medio' | 'dificil' | null>(null);
   const [feedbackSaving, setFeedbackSaving] = useState(false);
+  const [showFullDescription, setShowFullDescription] = useState(false);
+  const [showInstructions, setShowInstructions] = useState(false);
+  const [showTips, setShowTips] = useState(false);
 
   const exerciseId = useMemo(() => exerciseData?.id || '', [exerciseData]);
 
-  // Salvar feedback de dificuldade do usuário
   const saveDifficultyFeedback = async (perceived: 'facil' | 'medio' | 'dificil') => {
     if (!exerciseId || feedbackSaving) return;
     
@@ -105,7 +121,6 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
     }
   };
 
-  // Hook para frequência cardíaca (Google Fit)
   const {
     heartRate,
     isLoading: isHeartRateLoading,
@@ -118,6 +133,7 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
     () => asText(exerciseData?.descricao ?? exerciseData?.description),
     [exerciseData]
   );
+  const descriptionSummary = useMemo(() => createSummary(description), [description]);
 
   const sets = useMemo(() => asText(exerciseData?.series ?? exerciseData?.sets) || '3', [exerciseData]);
   const reps = useMemo(() => asText(exerciseData?.repeticoes ?? exerciseData?.reps) || '12', [exerciseData]);
@@ -166,7 +182,6 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
     return 60;
   }, [diff.tone]);
 
-  // Reset ao abrir
   useEffect(() => {
     if (!isOpen) return;
     setCurrentStep('overview');
@@ -174,9 +189,11 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
     setIsTimerRunning(false);
     setCurrentSet(1);
     setUserFeedback(null);
+    setShowFullDescription(false);
+    setShowInstructions(false);
+    setShowTips(false);
   }, [isOpen, name]);
 
-  // Carregar feedback existente
   useEffect(() => {
     if (!isOpen || !exerciseId) return;
     
@@ -203,10 +220,9 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
     loadFeedback();
   }, [isOpen, exerciseId]);
 
-  // Cronômetro
   useEffect(() => {
     if (!isTimerRunning) return;
-    const interval: ReturnType<typeof setInterval> = setInterval(() => {
+    const interval = setInterval(() => {
       setTimerSeconds((prev) => prev + 1);
     }, 1000);
     return () => clearInterval(interval);
@@ -229,344 +245,334 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
     setIsTimerRunning(true);
     setCurrentSet(1);
     setCurrentStep('execution');
-
-    // Ao iniciar o exercício, puxa o dado mais recente do Google Fit (se conectado)
-    if (isGoogleFitConnected) {
-      syncHeartRate();
-    }
+    if (isGoogleFitConnected) syncHeartRate();
   };
 
   const renderVideoBlock = () => (
-    <div className="rounded-xl overflow-hidden bg-black/80">
+    <div className="rounded-xl overflow-hidden bg-muted/50 shadow-sm">
       {videoId ? (
-        <div className="relative w-full pt-[50%]">
+        <div className="relative w-full pt-[56.25%]">
           <iframe
             className="absolute inset-0 w-full h-full"
             src={`https://www.youtube.com/embed/${videoId}`}
-            title={`Vídeo do exercício: ${name}`}
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            title={`Vídeo: ${name}`}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
           />
         </div>
       ) : (
-        <div className="flex items-center justify-center min-h-[200px] bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950 dark:to-red-950">
-          <div className="w-28 h-28 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center">
-            <Dumbbell className="w-14 h-14 text-white" />
+        <div className="flex items-center justify-center h-40 bg-gradient-to-br from-orange-100 to-red-100 dark:from-orange-950/50 dark:to-red-950/50">
+          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center shadow-lg">
+            <Dumbbell className="w-10 h-10 text-white" />
           </div>
         </div>
       )}
     </div>
   );
+
+  const FeedbackButtons = ({ size = 'sm' }: { size?: 'sm' | 'md' }) => {
+    const iconSize = size === 'sm' ? 'w-3.5 h-3.5' : 'w-4 h-4';
+    const textSize = size === 'sm' ? 'text-[9px]' : 'text-xs';
+    const padding = size === 'sm' ? 'px-2 py-1' : 'px-3 py-1.5';
+
+    return (
+      <div className="flex items-center gap-1">
+        <button
+          onClick={() => saveDifficultyFeedback('facil')}
+          disabled={feedbackSaving}
+          className={`flex flex-col items-center ${padding} rounded-lg transition-all ${
+            userFeedback === 'facil' 
+              ? 'bg-green-500/20 text-green-600 ring-1 ring-green-500/50' 
+              : 'hover:bg-green-500/10 text-muted-foreground hover:text-green-600'
+          }`}
+        >
+          <ThumbsUp className={iconSize} />
+          <span className={`${textSize} font-medium mt-0.5`}>Fácil</span>
+        </button>
+        <button
+          onClick={() => saveDifficultyFeedback('medio')}
+          disabled={feedbackSaving}
+          className={`flex flex-col items-center ${padding} rounded-lg transition-all ${
+            userFeedback === 'medio' 
+              ? 'bg-yellow-500/20 text-yellow-600 ring-1 ring-yellow-500/50' 
+              : 'hover:bg-yellow-500/10 text-muted-foreground hover:text-yellow-600'
+          }`}
+        >
+          <Target className={iconSize} />
+          <span className={`${textSize} font-medium mt-0.5`}>Ok</span>
+        </button>
+        <button
+          onClick={() => saveDifficultyFeedback('dificil')}
+          disabled={feedbackSaving}
+          className={`flex flex-col items-center ${padding} rounded-lg transition-all ${
+            userFeedback === 'dificil' 
+              ? 'bg-red-500/20 text-red-600 ring-1 ring-red-500/50' 
+              : 'hover:bg-red-500/10 text-muted-foreground hover:text-red-600'
+          }`}
+        >
+          <ThumbsDown className={iconSize} />
+          <span className={`${textSize} font-medium mt-0.5`}>Difícil</span>
+        </button>
+      </div>
+    );
+  };
 
   const renderOverview = () => (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-primary">{name}</h2>
-          {description && <p className="text-muted-foreground">{description}</p>}
+      {/* Header elegante */}
+      <div className="space-y-2">
+        <div className="flex items-start justify-between gap-3">
+          <h2 className="text-xl font-bold text-foreground leading-tight">{name}</h2>
+          <Badge 
+            variant="secondary" 
+            className="shrink-0 gap-1.5 px-2.5 py-1 bg-primary/10 text-primary border-0"
+          >
+            {location === 'casa' ? <Home className="w-3.5 h-3.5" /> : <Building2 className="w-3.5 h-3.5" />}
+            {location === 'casa' ? 'Casa' : 'Academia'}
+          </Badge>
         </div>
-        <Badge variant="outline" className="text-primary border-primary">
-          {location === 'casa' ? '🏠 Em Casa' : '🏋️ Academia'}
-        </Badge>
+        
+        {/* Descrição resumida com expansão */}
+        {description && (
+          <div className="space-y-1">
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              {showFullDescription ? description : descriptionSummary}
+            </p>
+            {description.length > 120 && (
+              <button
+                onClick={() => setShowFullDescription(!showFullDescription)}
+                className="text-xs text-primary font-medium hover:underline flex items-center gap-1"
+              >
+                {showFullDescription ? (
+                  <>Ver menos <ChevronUp className="w-3 h-3" /></>
+                ) : (
+                  <>Ver mais <ChevronDown className="w-3 h-3" /></>
+                )}
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
+      {/* Vídeo */}
       {renderVideoBlock()}
 
-      <div className="grid grid-cols-3 gap-2 mt-2">
-        <Card className="bg-white/50 dark:bg-black/20">
-          <CardContent className="p-2.5 text-center">
+      {/* Stats em cards elegantes */}
+      <div className="grid grid-cols-3 gap-2">
+        <Card className="border-0 bg-gradient-to-br from-orange-50 to-orange-100/50 dark:from-orange-950/30 dark:to-orange-900/20">
+          <CardContent className="p-3 text-center">
             <Repeat className="w-5 h-5 mx-auto mb-1 text-orange-600" />
-            <div className="text-sm font-semibold">{sets}</div>
-            <div className="text-[10px] text-muted-foreground">Séries</div>
+            <div className="text-lg font-bold text-orange-700 dark:text-orange-400">{sets}</div>
+            <div className="text-[10px] text-orange-600/70 dark:text-orange-400/70 font-medium">Séries</div>
           </CardContent>
         </Card>
-        <Card className="bg-white/50 dark:bg-black/20">
-          <CardContent className="p-2.5 text-center">
-            <Target className="w-5 h-5 mx-auto mb-1 text-orange-600" />
-            <div className="text-sm font-semibold">{reps}</div>
-            <div className="text-[10px] text-muted-foreground">Repetições</div>
+        <Card className="border-0 bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/30 dark:to-blue-900/20">
+          <CardContent className="p-3 text-center">
+            <Target className="w-5 h-5 mx-auto mb-1 text-blue-600" />
+            <div className="text-lg font-bold text-blue-700 dark:text-blue-400">{reps}</div>
+            <div className="text-[10px] text-blue-600/70 dark:text-blue-400/70 font-medium">Repetições</div>
           </CardContent>
         </Card>
-        <Card className="bg-white/50 dark:bg-black/20">
-          <CardContent className="p-2.5 text-center">
-            <Clock className="w-5 h-5 mx-auto mb-1 text-orange-600" />
-            <div className="text-sm font-semibold">{rest}</div>
-            <div className="text-[10px] text-muted-foreground">Descanso</div>
+        <Card className="border-0 bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-purple-950/30 dark:to-purple-900/20">
+          <CardContent className="p-3 text-center">
+            <Clock className="w-5 h-5 mx-auto mb-1 text-purple-600" />
+            <div className="text-lg font-bold text-purple-700 dark:text-purple-400">{rest}</div>
+            <div className="text-[10px] text-purple-600/70 dark:text-purple-400/70 font-medium">Descanso</div>
           </CardContent>
         </Card>
       </div>
 
-      <div className="space-y-1 mt-1">
-        <div className="flex items-center justify-between text-xs">
-          <span className="font-semibold">Dificuldade</span>
-          <div className="flex items-center gap-2">
-            <span className="text-muted-foreground">{diff.label || difficultyRaw || '—'}</span>
-            {/* Botões de feedback com legendas */}
-            <div className="flex items-center gap-1">
-              <button
-                onClick={() => saveDifficultyFeedback('facil')}
-                disabled={feedbackSaving}
-                className={`flex flex-col items-center px-1.5 py-0.5 rounded transition-colors ${userFeedback === 'facil' ? 'text-green-600 bg-green-500/20' : 'text-muted-foreground hover:text-green-600 hover:bg-green-500/10'}`}
-                title="Fácil"
-              >
-                <ThumbsUp className="w-3 h-3" />
-                <span className="text-[7px] font-medium">Fácil</span>
-              </button>
-              <button
-                onClick={() => saveDifficultyFeedback('medio')}
-                disabled={feedbackSaving}
-                className={`flex flex-col items-center px-1.5 py-0.5 rounded transition-colors ${userFeedback === 'medio' ? 'text-yellow-600 bg-yellow-500/20' : 'text-muted-foreground hover:text-yellow-600 hover:bg-yellow-500/10'}`}
-                title="Moderado"
-              >
-                <Target className="w-3 h-3" />
-                <span className="text-[7px] font-medium">Ok</span>
-              </button>
-              <button
-                onClick={() => saveDifficultyFeedback('dificil')}
-                disabled={feedbackSaving}
-                className={`flex flex-col items-center px-1.5 py-0.5 rounded transition-colors ${userFeedback === 'dificil' ? 'text-red-600 bg-red-500/20' : 'text-muted-foreground hover:text-red-600 hover:bg-red-500/10'}`}
-                title="Difícil"
-              >
-                <ThumbsDown className="w-3 h-3" />
-                <span className="text-[7px] font-medium">Difícil</span>
-              </button>
+      {/* Dificuldade e Feedback */}
+      <Card className="border-0 bg-muted/30">
+        <CardContent className="p-3">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold">Dificuldade:</span>
+              <Badge variant="outline" className="text-xs">
+                {diff.label || difficultyRaw || 'Médio'}
+              </Badge>
             </div>
+            <FeedbackButtons size="sm" />
           </div>
-        </div>
-        <Progress value={difficultyProgress} className="h-1.5" />
-      </div>
+          <Progress value={difficultyProgress} className="h-1.5" />
+        </CardContent>
+      </Card>
 
-      <div className="flex justify-between gap-2 mt-2">
-        <Button variant="outline" className="flex-1 py-2" onClick={() => setCurrentStep('instructions')}>
-          <Info className="w-4 h-4 mr-1" />
-          Instruções
-        </Button>
-        <Button
-          className="flex-1 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 py-2"
-          onClick={startExecution}
-        >
-          <Play className="w-4 h-4 mr-1" />
-          Começar
-        </Button>
-      </div>
-    </div>
-  );
-
-  const renderInstructions = () => (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-primary">{name}</h2>
-        <Button variant="ghost" size="sm" onClick={() => setCurrentStep('overview')}>
-          <ArrowLeft className="w-4 h-4 mr-1" />
-          Voltar
-        </Button>
-      </div>
-
-      {description && (
-        <div>
-          <h3 className="text-lg font-semibold flex items-center gap-2 mb-2">
-            <Info className="w-5 h-5 text-orange-600" />
-            Descrição
-          </h3>
-          <p className="text-muted-foreground">{description}</p>
-        </div>
-      )}
-
+      {/* Seção colapsável de Instruções */}
       {instructions.length > 0 && (
-        <div>
-          <h3 className="text-lg font-semibold flex items-center gap-2 mb-2">
-            <Target className="w-5 h-5 text-orange-600" />
-            Passos de Execução
-          </h3>
-          <div className="space-y-2">
-            {instructions.map((step, index) => (
-              <div
-                key={index}
-                className="flex items-start gap-2 bg-white/50 dark:bg-black/20 p-3 rounded-lg"
-              >
-                <CheckCircle2 className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                <span className="text-sm">{step}</span>
-              </div>
-            ))}
-          </div>
-        </div>
+        <Collapsible open={showInstructions} onOpenChange={setShowInstructions}>
+          <CollapsibleTrigger asChild>
+            <Card className="border-0 bg-green-50/50 dark:bg-green-950/20 cursor-pointer hover:bg-green-50 dark:hover:bg-green-950/30 transition-colors">
+              <CardContent className="p-3 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center">
+                    <CheckCircle2 className="w-4 h-4 text-green-600" />
+                  </div>
+                  <div>
+                    <span className="text-sm font-semibold text-green-700 dark:text-green-400">
+                      Passo a Passo
+                    </span>
+                    <p className="text-[10px] text-green-600/70 dark:text-green-500/70">
+                      {instructions.length} passos detalhados
+                    </p>
+                  </div>
+                </div>
+                {showInstructions ? (
+                  <ChevronUp className="w-5 h-5 text-green-600" />
+                ) : (
+                  <ChevronDown className="w-5 h-5 text-green-600" />
+                )}
+              </CardContent>
+            </Card>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <div className="mt-2 space-y-2 pl-2">
+              {instructions.map((step, index) => (
+                <div
+                  key={index}
+                  className="flex items-start gap-3 p-3 bg-white/50 dark:bg-white/5 rounded-lg border border-green-100 dark:border-green-900/30"
+                >
+                  <div className="w-6 h-6 rounded-full bg-green-500 text-white flex items-center justify-center text-xs font-bold shrink-0">
+                    {index + 1}
+                  </div>
+                  <span className="text-sm text-foreground leading-relaxed">{step}</span>
+                </div>
+              ))}
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
       )}
 
+      {/* Seção colapsável de Dicas */}
       {tips.length > 0 && (
-        <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-          <h3 className="text-lg font-semibold flex items-center gap-2 mb-2 text-blue-700 dark:text-blue-300">
-            <Flame className="w-5 h-5" />
-            Dica do Personal
-          </h3>
-          <div className="space-y-1.5">
-            {tips.map((tip, i) => (
-              <p key={i} className="text-blue-700 dark:text-blue-300 text-sm">{tip}</p>
-            ))}
-          </div>
-        </div>
+        <Collapsible open={showTips} onOpenChange={setShowTips}>
+          <CollapsibleTrigger asChild>
+            <Card className="border-0 bg-blue-50/50 dark:bg-blue-950/20 cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-950/30 transition-colors">
+              <CardContent className="p-3 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center">
+                    <Lightbulb className="w-4 h-4 text-blue-600" />
+                  </div>
+                  <div>
+                    <span className="text-sm font-semibold text-blue-700 dark:text-blue-400">
+                      Dicas do Personal
+                    </span>
+                    <p className="text-[10px] text-blue-600/70 dark:text-blue-500/70">
+                      {tips.length} dicas importantes
+                    </p>
+                  </div>
+                </div>
+                {showTips ? (
+                  <ChevronUp className="w-5 h-5 text-blue-600" />
+                ) : (
+                  <ChevronDown className="w-5 h-5 text-blue-600" />
+                )}
+              </CardContent>
+            </Card>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <div className="mt-2 space-y-2 pl-2">
+              {tips.map((tip, index) => (
+                <div
+                  key={index}
+                  className="flex items-start gap-3 p-3 bg-white/50 dark:bg-white/5 rounded-lg border border-blue-100 dark:border-blue-900/30"
+                >
+                  <Flame className="w-4 h-4 text-blue-500 mt-0.5 shrink-0" />
+                  <span className="text-sm text-foreground leading-relaxed">{tip}</span>
+                </div>
+              ))}
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
       )}
 
+      {/* Botão principal */}
       <Button
-        className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
+        className="w-full h-12 text-base font-semibold bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 shadow-lg shadow-orange-500/25"
         onClick={startExecution}
       >
-        <Play className="w-4 h-4 mr-2" />
-        Começar
+        <Play className="w-5 h-5 mr-2" />
+        Começar Exercício
       </Button>
     </div>
   );
 
   const renderExecution = () => (
-    <div className="space-y-3">
+    <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold text-primary">{name}</h2>
+        <h2 className="text-lg font-bold text-foreground">{name}</h2>
         <Button variant="ghost" size="sm" onClick={() => setCurrentStep('overview')}>
+          <ArrowLeft className="w-4 h-4 mr-1" />
           Voltar
         </Button>
       </div>
 
       {renderVideoBlock()}
 
-      <Card className="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950 dark:to-red-950 border border-orange-200 dark:border-orange-800">
-        <CardContent className="p-3 text-center space-y-2">
-          <Timer className="w-6 h-6 mx-auto text-orange-600" />
-          <div className="text-2xl font-bold text-orange-600">{formatTime(timerSeconds)}</div>
-          <div className="text-[11px] text-muted-foreground">Tempo de exercício</div>
-          <div className="flex gap-2 justify-center items-center">
+      {/* Timer elegante */}
+      <Card className="border-0 bg-gradient-to-br from-orange-100 to-red-100 dark:from-orange-950/50 dark:to-red-950/50">
+        <CardContent className="p-4 text-center space-y-3">
+          <Timer className="w-8 h-8 mx-auto text-orange-600" />
+          <div className="text-4xl font-bold text-orange-600">{formatTime(timerSeconds)}</div>
+          <div className="flex gap-2 justify-center">
             <Button
               size="sm"
               onClick={toggleTimer}
-              className="px-3 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
+              className="px-6 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
             >
-              {isTimerRunning ? (
-                <>
-                  <Pause className="w-3 h-3 mr-1" />
-                  Pausar
-                </>
-              ) : (
-                <>
-                  <Play className="w-3 h-3 mr-1" />
-                  Iniciar
-                </>
-              )}
+              {isTimerRunning ? <><Pause className="w-4 h-4 mr-1" />Pausar</> : <><Play className="w-4 h-4 mr-1" />Iniciar</>}
             </Button>
-            <Button size="sm" onClick={resetTimer} variant="outline" className="px-3">
-              Resetar
+            <Button size="sm" onClick={resetTimer} variant="outline">
+              <RefreshCw className="w-4 h-4" />
             </Button>
-            {/* Botões de avaliação com legendas */}
-            <div className="flex items-center gap-1 border-l border-orange-200 dark:border-orange-700 pl-2 ml-1">
-              <button
-                onClick={() => saveDifficultyFeedback('facil')}
-                disabled={feedbackSaving}
-                className={`flex flex-col items-center px-1.5 py-0.5 rounded transition-colors ${userFeedback === 'facil' ? 'text-green-600 bg-green-500/20' : 'text-muted-foreground hover:text-green-600 hover:bg-green-500/10'}`}
-                title="Fácil"
-              >
-                <ThumbsUp className="w-3.5 h-3.5" />
-                <span className="text-[8px] font-medium">Fácil</span>
-              </button>
-              <button
-                onClick={() => saveDifficultyFeedback('medio')}
-                disabled={feedbackSaving}
-                className={`flex flex-col items-center px-1.5 py-0.5 rounded transition-colors ${userFeedback === 'medio' ? 'text-yellow-600 bg-yellow-500/20' : 'text-muted-foreground hover:text-yellow-600 hover:bg-yellow-500/10'}`}
-                title="Moderado"
-              >
-                <Target className="w-3.5 h-3.5" />
-                <span className="text-[8px] font-medium">Ok</span>
-              </button>
-              <button
-                onClick={() => saveDifficultyFeedback('dificil')}
-                disabled={feedbackSaving}
-                className={`flex flex-col items-center px-1.5 py-0.5 rounded transition-colors ${userFeedback === 'dificil' ? 'text-red-600 bg-red-500/20' : 'text-muted-foreground hover:text-red-600 hover:bg-red-500/10'}`}
-                title="Difícil"
-              >
-                <ThumbsDown className="w-3.5 h-3.5" />
-                <span className="text-[8px] font-medium">Difícil</span>
-              </button>
-            </div>
+          </div>
+          <div className="pt-2 border-t border-orange-200 dark:border-orange-800">
+            <p className="text-xs text-muted-foreground mb-2">Como foi?</p>
+            <FeedbackButtons size="md" />
           </div>
         </CardContent>
       </Card>
 
-      <Card className="bg-white/50 dark:bg-black/20">
-        <CardContent className="p-3 text-center space-y-2">
-          <div className="flex items-center justify-center gap-1">
-            <Heart
-              className={
-                `w-5 h-5 ${heartRate.current > 0 ? 'text-red-500 animate-pulse' : 'text-orange-600'}`
-              }
-            />
-            {isGoogleFitConnected && (
-              <button
-                onClick={syncHeartRate}
-                disabled={isHeartRateLoading}
-                className="p-0.5 hover:bg-muted rounded-full transition-colors"
-                title="Sincronizar frequência cardíaca"
-              >
-                <RefreshCw
-                  className={`w-3 h-3 text-muted-foreground ${isHeartRateLoading ? 'animate-spin' : ''}`}
-                />
-              </button>
-            )}
+      {/* Heart Rate */}
+      <Card className="border-0 bg-muted/30">
+        <CardContent className="p-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Heart className={`w-6 h-6 ${heartRate.current > 0 ? 'text-red-500 animate-pulse' : 'text-muted-foreground'}`} />
+            <div>
+              <div className="font-semibold">
+                {isGoogleFitConnected ? (heartRate.current > 0 ? `${heartRate.current} bpm` : '--') : 'Não conectado'}
+              </div>
+              <div className="text-xs text-muted-foreground">Frequência Cardíaca</div>
+            </div>
           </div>
-
-          {isGoogleFitConnected ? (
-            <>
-              <div className="text-base font-semibold">
-                {heartRate.current > 0 ? `${heartRate.current} bpm` : '--'}
-              </div>
-              <div className="text-[11px] text-muted-foreground">Frequência Cardíaca</div>
-            </>
-          ) : (
-            <>
-              <div className="flex items-center justify-center gap-1 text-muted-foreground">
-                <WifiOff className="w-3 h-3" />
-                <span className="text-xs">Sem conexão</span>
-              </div>
-              <div className="text-[10px] text-muted-foreground">
-                Conecte o Google Fit para ver dados reais
-              </div>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => {
-                  toast({
-                    title: 'Conectar Google Fit',
-                    description: 'Conecte para registrar dados do exercício automaticamente.',
-                  });
-                  navigate('/google-fit-oauth?auto=1');
-                }}
-                className="mx-auto"
-              >
-                Conectar
-              </Button>
-            </>
+          {!isGoogleFitConnected && (
+            <Button size="sm" variant="outline" onClick={() => navigate('/google-fit-oauth?auto=1')}>
+              Conectar
+            </Button>
           )}
         </CardContent>
       </Card>
 
-      <div className="space-y-1">
-        <div className="flex items-center justify-between text-xs">
-          <span className="font-semibold">Série atual</span>
-          <span className="text-muted-foreground">{currentSet}/{totalSets}</span>
+      {/* Série atual */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between text-sm">
+          <span className="font-semibold">Série {currentSet} de {totalSets}</span>
+          <span className="text-muted-foreground">{reps} repetições</span>
         </div>
-        <Progress value={(currentSet / Math.max(1, totalSets)) * 100} className="h-1.5" />
-        <div className="text-[11px] text-muted-foreground">
-          Repetições por série: <span className="font-medium text-foreground">{reps}</span>
-        </div>
+        <Progress value={(currentSet / Math.max(1, totalSets)) * 100} className="h-2" />
       </div>
 
-      <div className="flex justify-between gap-2">
+      {/* Controles */}
+      <div className="grid grid-cols-3 gap-2">
         <Button
           variant="outline"
-          className="flex-1 py-2 text-xs"
           disabled={currentSet <= 1}
           onClick={() => setCurrentSet((prev) => Math.max(1, prev - 1))}
         >
-          <ArrowLeft className="w-4 h-4 mr-1" />
-          Anterior
+          <ArrowLeft className="w-4 h-4" />
         </Button>
         <Button
-          className="flex-1 py-2 text-xs bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600"
+          className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600"
           onClick={() => {
             if (currentSet < totalSets) {
               toast({
@@ -576,22 +582,19 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
               setCurrentSet((prev) => Math.min(totalSets, prev + 1));
               return;
             }
-
             toast({ title: '✅ Exercício concluído!', description: 'Boa! Vamos para o próximo.' });
             onClose();
           }}
         >
           <CheckCircle2 className="w-4 h-4 mr-1" />
-          Concluído
+          Concluir
         </Button>
         <Button
           variant="outline"
-          className="flex-1 py-2 text-xs"
           disabled={currentSet >= totalSets}
           onClick={() => setCurrentSet((prev) => Math.min(totalSets, prev + 1))}
         >
-          Próximo
-          <ArrowRight className="w-4 h-4 ml-1" />
+          <ArrowRight className="w-4 h-4" />
         </Button>
       </div>
     </div>
@@ -599,20 +602,22 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="w-full max-w-md max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center justify-between">
-            <span className="flex items-center gap-2">
-              <Dumbbell className="w-5 h-5 text-orange-600" />
-              Detalhes do Exercício
-            </span>
-            {/* Mantemos o layout do topo (sem navegação global) */}
+      <DialogContent className="w-full max-w-md p-0 gap-0 max-h-[90vh] overflow-hidden">
+        <DialogHeader className="px-4 pt-4 pb-2 border-b">
+          <DialogTitle className="flex items-center gap-2 text-base">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center">
+              <Dumbbell className="w-4 h-4 text-white" />
+            </div>
+            Detalhes do Exercício
           </DialogTitle>
         </DialogHeader>
 
-        {currentStep === 'overview' && renderOverview()}
-        {currentStep === 'instructions' && renderInstructions()}
-        {currentStep === 'execution' && renderExecution()}
+        <ScrollArea className="flex-1 max-h-[calc(90vh-60px)]">
+          <div className="p-4">
+            {currentStep === 'overview' && renderOverview()}
+            {currentStep === 'execution' && renderExecution()}
+          </div>
+        </ScrollArea>
       </DialogContent>
     </Dialog>
   );

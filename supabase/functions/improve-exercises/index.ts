@@ -21,18 +21,30 @@ serve(async (req) => {
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    const { batchStart = 0, batchSize = 10 } = await req.json();
+    const { batchSize = 5 } = await req.json().catch(() => ({}));
 
-    // Buscar exercícios para melhorar
+    // Buscar APENAS exercícios SEM tips (que ainda não foram melhorados)
     const { data: exercises, error: fetchError } = await supabase
       .from("exercises_library")
       .select("id, name, description, instructions, muscle_group, difficulty, sets, reps, rest_time, tips, equipment_needed, location")
+      .or("tips.is.null,tips.eq.[]")
       .order("name")
-      .range(batchStart, batchStart + batchSize - 1);
+      .limit(batchSize);
 
     if (fetchError) throw fetchError;
+    
+    // Contar quantos ainda faltam
+    const { count: remaining } = await supabase
+      .from("exercises_library")
+      .select("*", { count: "exact", head: true })
+      .or("tips.is.null,tips.eq.[]");
+
     if (!exercises || exercises.length === 0) {
-      return new Response(JSON.stringify({ message: "Nenhum exercício para processar", completed: true }), {
+      return new Response(JSON.stringify({ 
+        message: "Todos os 285 exercícios foram melhorados!", 
+        completed: true,
+        remaining: 0
+      }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -65,16 +77,21 @@ RETORNE um JSON válido com EXATAMENTE esta estrutura:
     "Passo 5 com respiração correta",
     "Passo 6 com dica de segurança"
   ],
-  "tips": "Dica importante: erro comum a evitar e como fazer corretamente. Respiração: quando inspirar e expirar."
+  "tips": [
+    "⚠️ ERRO COMUM: [descreva o erro mais frequente e como evitar]",
+    "💡 DICA PRO: [dica avançada de performance]",
+    "🫁 RESPIRAÇÃO: [quando inspirar e expirar durante o movimento]",
+    "🎯 FOCO: [onde concentrar a atenção durante a execução]"
+  ]
 }
 
 IMPORTANTE:
-- Instruções devem ter 6-8 passos DETALHADOS
+- Instruções devem ter 6-8 passos MUITO DETALHADOS
 - Incluir posição dos pés, mãos, costas, olhar
 - Explicar a respiração (inspire ao descer, expire ao subir, etc)
 - Mencionar erros comuns a evitar
 - Usar linguagem simples para iniciantes
-- Tips deve ter dicas de segurança e erros comuns`;
+- Tips deve ser um ARRAY com 4 dicas usando os emojis indicados`;
 
       try {
         const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -106,13 +123,19 @@ IMPORTANTE:
         
         const improved = JSON.parse(content);
 
+        // Garantir que tips seja array
+        let tipsArray = improved.tips;
+        if (typeof tipsArray === 'string') {
+          tipsArray = [tipsArray];
+        }
+
         // Atualizar no banco
         const { error: updateError } = await supabase
           .from("exercises_library")
           .update({
             description: improved.description,
             instructions: improved.instructions,
-            tips: improved.tips,
+            tips: tipsArray,
             updated_at: new Date().toISOString()
           })
           .eq("id", exercise.id);
@@ -124,7 +147,7 @@ IMPORTANTE:
         }
 
         // Delay para evitar rate limit
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise(resolve => setTimeout(resolve, 300));
 
       } catch (parseError) {
         console.error(`Parse error for ${exercise.name}:`, parseError);
@@ -132,14 +155,13 @@ IMPORTANTE:
       }
     }
 
-    const nextBatch = batchStart + batchSize;
-    const hasMore = exercises.length === batchSize;
+    const newRemaining = (remaining || 0) - improvedExercises.filter(e => e.success).length;
 
     return new Response(JSON.stringify({
       processed: improvedExercises.length,
       improved: improvedExercises,
-      nextBatch: hasMore ? nextBatch : null,
-      completed: !hasMore
+      remaining: Math.max(0, newRemaining),
+      completed: newRemaining <= 0
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
