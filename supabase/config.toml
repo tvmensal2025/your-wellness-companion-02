@@ -1,5 +1,8 @@
 project_id = "ciszqtlaacrhfwsqnvjr"
 
+[functions.sofia-enhanced-memory]
+verify_jwt = false
+
 [functions.mealie-real]
 verify_jwt = false
 
