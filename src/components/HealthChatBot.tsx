@@ -543,44 +543,37 @@ Clique no botão abaixo para começar! ⬇️`,
       exit={{ opacity: 0, y: 20, scale: 0.95 }}
       className={`fixed z-50 ${
         isMinimized 
-          ? 'bottom-4 right-4 w-80 h-16' 
-          : 'bottom-4 right-4 w-96 h-[600px]'
+          ? 'bottom-2 right-2 sm:bottom-4 sm:right-4 w-72 sm:w-80 h-16' 
+          : 'bottom-0 right-0 sm:bottom-4 sm:right-4 w-full sm:w-96 sm:max-w-[calc(100vw-2rem)] h-[100dvh] sm:h-[600px] sm:max-h-[calc(100dvh-2rem)] sm:rounded-lg'
       }`}
     >
-      <Card className="h-full flex flex-col bg-white shadow-xl border border-purple-200">
+      <Card className={`h-full flex flex-col bg-white shadow-xl border border-purple-200 ${isMinimized ? 'rounded-lg' : 'rounded-none sm:rounded-lg'}`}>
         {/* Header */}
-        <CardHeader className="bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-t-lg py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="relative">
+        <CardHeader className={`bg-gradient-to-r from-purple-500 to-pink-500 text-white py-2 sm:py-3 flex-shrink-0 ${isMinimized ? 'rounded-t-lg' : 'rounded-none sm:rounded-t-lg'}`}>
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+              <div className="relative flex-shrink-0">
                 <img 
                   src={sofiaAvatar} 
                   alt="Sofia"
-                  className="w-8 h-8 rounded-full object-cover"
+                  className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover"
                 />
                 {voiceEnabled && (
                   <motion.div
-                    className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full"
+                    className="absolute -top-1 -right-1 w-2.5 h-2.5 sm:w-3 sm:h-3 bg-green-400 rounded-full"
                     animate={{ scale: [1, 1.2, 1] }}
                     transition={{ repeat: Infinity, duration: 2 }}
                   />
                 )}
               </div>
-              <div className="flex-1">
-                <CardTitle className="text-sm">Sofia - Instituto dos Sonhos</CardTitle>
-                <p className="text-xs opacity-90">
-                  {voiceEnabled ? 'Voz ativa - Online!' : 'Online e pronta para ajudar!'}
+              <div className="flex-1 min-w-0">
+                <CardTitle className="text-xs sm:text-sm truncate">Sofia - Instituto dos Sonhos</CardTitle>
+                <p className="text-[10px] sm:text-xs opacity-90 truncate">
+                  {voiceEnabled ? 'Voz ativa' : 'Online e pronta para ajudar!'}
                 </p>
               </div>
-              <div className="flex items-center">
-                <img 
-                  src="/images/instituto-logo.png" 
-                  alt="Instituto dos Sonhos" 
-                  className="h-6 w-6 object-contain opacity-80"
-                />
-              </div>
             </div>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-0.5 sm:gap-1 flex-shrink-0">
               {/* Controle de voz */}
               <Button
                 variant="ghost"
@@ -645,7 +638,7 @@ Clique no botão abaixo para começar! ⬇️`,
         {!isMinimized && (
           <>
             {/* Mensagens */}
-            <CardContent className="flex-1 overflow-y-auto p-3 space-y-3 bg-gradient-to-b from-purple-50/50 to-pink-50/50">
+            <CardContent className="flex-1 overflow-y-auto p-2 sm:p-3 space-y-2 sm:space-y-3 bg-gradient-to-b from-purple-50/50 to-pink-50/50 min-h-0">
               <AnimatePresence>
                 {messages.map((message) => (
                   <motion.div
@@ -656,7 +649,7 @@ Clique no botão abaixo para começar! ⬇️`,
                     className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
                     <div
-                      className={`max-w-[85%] p-3 rounded-2xl break-words ${
+                      className={`max-w-[90%] sm:max-w-[85%] p-2 sm:p-3 rounded-2xl break-words ${
                         message.type === 'user'
                           ? 'bg-purple-500 text-white rounded-br-sm'
                           : 'bg-white border border-purple-200 text-gray-800 rounded-bl-sm shadow-sm'
@@ -730,18 +723,18 @@ Clique no botão abaixo para começar! ⬇️`,
             </CardContent>
 
             {/* Input de Mensagem */}
-            <div className="p-3 border-t border-border/50 bg-white">
-              <div className="flex items-center gap-2">
-                <div className="flex-1 relative">
+            <div className="p-2 sm:p-3 border-t border-border/50 bg-white flex-shrink-0 safe-area-inset-bottom">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <div className="flex-1 relative min-w-0">
                   <Input
                     value={transcript || inputMessage}
                     onChange={(e) => setInputMessage(e.target.value)}
-                    placeholder={voiceEnabled ? "Digite ou fale sua mensagem..." : "Digite sua mensagem..."}
-                    className="pr-24 h-9 text-xs border-purple-200 focus:border-purple-400"
+                    placeholder={voiceEnabled ? "Digite ou fale..." : "Digite sua mensagem..."}
+                    className="pr-16 sm:pr-24 h-9 sm:h-10 text-xs sm:text-sm border-purple-200 focus:border-purple-400"
                     onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
                     disabled={isLoading || isListening}
                   />
-                  <div className="absolute right-1 top-1/2 -translate-y-1/2 flex gap-1">
+                  <div className="absolute right-1 top-1/2 -translate-y-1/2 flex gap-0.5 sm:gap-1">
                     {voiceEnabled && hasSpeechRecognition && (
                       <Button
                         variant="ghost"
@@ -771,11 +764,11 @@ Clique no botão abaixo para começar! ⬇️`,
                 </div>
                 <Button 
                   onClick={handleSendMessage}
-                  className="bg-purple-500 hover:bg-purple-600 text-white h-9 px-3"
+                  className="bg-purple-500 hover:bg-purple-600 text-white h-9 sm:h-10 px-2.5 sm:px-3 flex-shrink-0"
                   disabled={(!inputMessage.trim() && !transcript) || isLoading}
                   size="sm"
                 >
-                  <Send className="w-3 h-3" />
+                  <Send className="w-3 h-3 sm:w-4 sm:h-4" />
                 </Button>
               </div>
               
