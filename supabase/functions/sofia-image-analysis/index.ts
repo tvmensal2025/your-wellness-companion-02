@@ -1558,41 +1558,44 @@ serve(async (req) => {
       console.log('⚠️ YOLO: Nenhum objeto detectado ou serviço indisponível');
     }
 
-    // 🤖 ANÁLISE APRIMORADA COM SISTEMA ANTI-RATE-LIMIT
-    if (googleAIApiKey || aiConfig.service === 'lovable' || aiConfig.service === 'google') {
-      console.log('🤖 Iniciando análise aprimorada com múltiplas estratégias (modelo:', aiConfig.model, ')...');
-      try {
-        // Passar configurações do banco para o enhanced detection
-        const enhancedResult = await analyzeWithEnhancedAI(imageUrl, 1, {
-          model: aiConfig.model,
-          max_tokens: aiConfig.max_tokens,
-          temperature: aiConfig.temperature
-        });
+    // 🤖 ANÁLISE COM TABELA TACO
+    let tacoNutritionData: any = null;
+    
+    console.log('🤖 Iniciando análise com Lovable AI + TACO (modelo:', aiConfig.model, ')...');
+    try {
+      const enhancedResult = await analyzeWithEnhancedAI(imageUrl, 1, {
+        model: aiConfig.model,
+        max_tokens: aiConfig.max_tokens,
+        temperature: aiConfig.temperature
+      });
+      
+      if (enhancedResult && enhancedResult.foods && enhancedResult.foods.length > 0) {
+        isFood = true;
+        confidence = enhancedResult.foods.reduce((sum: number, f: any) => sum + f.confidence, 0) / enhancedResult.foods.length;
+        detectedFoods = enhancedResult.foods.map((food: any) => ({
+          nome: food.name,
+          quantidade: food.grams
+        }));
+        estimatedCalories = enhancedResult.total_calories || 0;
         
-        // Processar resultado da análise aprimorada
-        if (enhancedResult && enhancedResult.foods && enhancedResult.foods.length > 0) {
-          isFood = true;
-          confidence = enhancedResult.foods.reduce((sum: number, f: any) => sum + f.confidence, 0) / enhancedResult.foods.length;
-          detectedFoods = enhancedResult.foods.map((food: any) => ({
-            nome: food.name,
-            quantidade: food.grams
-          }));
-          estimatedCalories = enhancedResult.total_calories || 0;
-          
-          console.log(`✅ Análise aprimorada detectou ${detectedFoods.length} alimentos com confiança média ${confidence.toFixed(2)}`);
-        } else {
-          console.log('⚠️ Análise aprimorada não detectou alimentos válidos');
-          isFood = false;
-          confidence = 0;
-        }
-
-      } catch (error) {
-        console.log('❌ Erro na análise da imagem:', error);
+        // 🎯 GUARDAR DADOS TACO PARA USO POSTERIOR
+        tacoNutritionData = {
+          total_kcal: enhancedResult.total_calories || 0,
+          total_protein: enhancedResult.total_protein || 0,
+          total_carbs: enhancedResult.total_carbs || 0,
+          total_fat: enhancedResult.total_fat || 0,
+          taco_details: enhancedResult.taco_details || []
+        };
+        
+        console.log(`✅ TACO: ${tacoNutritionData.total_kcal} kcal | P: ${tacoNutritionData.total_protein}g | C: ${tacoNutritionData.total_carbs}g | G: ${tacoNutritionData.total_fat}g`);
+      } else {
+        console.log('⚠️ Análise não detectou alimentos válidos');
         isFood = false;
+        confidence = 0;
       }
-    } else {
-      // YOLO já cobriu
-      // nada a fazer
+    } catch (error) {
+      console.log('❌ Erro na análise:', error);
+      isFood = false;
     }
 
     // 🍽️ PREPARAR RESPOSTA FINAL DA ANÁLISE
@@ -1769,17 +1772,38 @@ Ou você pode me contar o que está comendo! 😉✨`,
       }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
-    // ✅ NOVA REGRA: Calcular APENAS com 4×P + 4×C + 9×G usando dados da TACO
+    // ✅ USAR DADOS DA TACO DIRETAMENTE
     let newRuleMacros = '';
     
-    if (localDeterministic && localDeterministic.grams_total > 0) {
+    if (tacoNutritionData && tacoNutritionData.total_kcal > 0) {
+      const P = Number(tacoNutritionData.total_protein) || 0;
+      const C = Number(tacoNutritionData.total_carbs) || 0; 
+      const G = Number(tacoNutritionData.total_fat) || 0;
+      // Usar fórmula 4×P + 4×C + 9×G para calorias
+      const calculatedKcal = Math.round(4 * P + 4 * C + 9 * G);
+      
+      newRuleMacros = `📊 **NUTRIENTES (Tabela TACO):**
+💪 Proteínas: ${P.toFixed(1)} g
+🍞 Carboidratos: ${C.toFixed(1)} g
+🥑 Gorduras: ${G.toFixed(1)} g
+🔥 **Calorias: ${calculatedKcal} kcal**
+
+`;
+      
+      // Atualizar estimatedCalories com o cálculo correto
+      estimatedCalories = calculatedKcal;
+    } else if (localDeterministic && localDeterministic.grams_total > 0) {
+      // Fallback para localDeterministic se TACO não tiver dados
       const P = Number(localDeterministic.totals.protein) || 0;
       const C = Number(localDeterministic.totals.carbs) || 0; 
       const G = Number(localDeterministic.totals.fat) || 0;
       const totalKcal = Math.round(4 * P + 4 * C + 9 * G);
       
-      newRuleMacros = `📊 Nutrientes (TACO):
-${P.toFixed(1)} g P, ${C.toFixed(1)} g C, ${G.toFixed(1)} g G → ${totalKcal} kcal
+      newRuleMacros = `📊 **NUTRIENTES:**
+💪 Proteínas: ${P.toFixed(1)} g
+🍞 Carboidratos: ${C.toFixed(1)} g
+🥑 Gorduras: ${G.toFixed(1)} g
+🔥 **Calorias: ${totalKcal} kcal**
 
 `;
     }
@@ -1788,15 +1812,13 @@ ${P.toFixed(1)} g P, ${C.toFixed(1)} g C, ${G.toFixed(1)} g G → ${totalKcal} k
     let finalMessage = '';
     
     if (isFood) {
-      // Mensagem para comida usando NOVA REGRA
       finalMessage = `Oi ${actualUserName}! 😊
 
-📸 Analisei sua refeição e identifiquei:
+📸 **Analisei sua refeição e identifiquei:**
 ${foodList}
 
 ${newRuleMacros}🤔 Esses alimentos estão corretos?`;
     } else {
-      // Mensagem para outros tipos de conteúdo
       finalMessage = `Oi querido(a)! 💕 Que foto interessante! 😊
 
 📸 Vi sua imagem e estou aqui para te ajudar!

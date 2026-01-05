@@ -1,107 +1,287 @@
 // ========================================
 // 🔧 SISTEMA APRIMORADO DE DETECÇÃO DE ALIMENTOS
-// Prioridade: Google Gemini Vision API direto (mais preciso)
-// Fallback: Lovable AI
+// Usa tabela TACO para cálculos nutricionais precisos
+// Prioridade: Lovable AI (google/gemini-2.5-flash)
 // ========================================
 
-const GOOGLE_AI_API_KEY = Deno.env.get('GOOGLE_AI_API_KEY');
-const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-const RATE_LIMIT_DELAY = 1500; // 1.5 segundos entre requests
-const MAX_RETRIES = 3;
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.55.0';
 
-// Configuração de IA (pode ser sobrescrita via parâmetro)
+const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+const RATE_LIMIT_DELAY = 1000;
+const MAX_RETRIES = 2;
+
+// Supabase client
+const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+// Configuração de IA
 let AI_MODEL_CONFIG = {
-  model: 'gemini-2.0-flash',  // Modelo mais recente e preciso
-  max_tokens: 2500,
+  model: 'google/gemini-2.5-flash',
+  max_tokens: 2000,
   temperature: 0.3
 };
 
 // ========================================
-// 🤖 PROMPTS MELHORADOS PARA DETECÇÃO
+// 🍽️ MAPEAMENTO DE SINÔNIMOS PARA TACO
 // ========================================
-
-export const ENHANCED_FOOD_PROMPTS = {
-  // Prompt principal - foco em precisão e estrutura
-  primary: `
-Você é um especialista em análise nutricional visual de alimentos brasileiros.
-Analise esta imagem com MÁXIMA PRECISÃO.
-
-🎯 INSTRUÇÕES CRÍTICAS:
-1. Identifique TODOS os alimentos visíveis na imagem
-2. Estime as porções em gramas com base no tamanho aparente
-3. Seja ESPECÍFICO: "bife grelhado" em vez de "carne"
-4. Para líquidos, estime em ml e converta (1ml ≈ 1g para água/sucos)
-5. Considere o contexto cultural brasileiro
-
-📋 CATEGORIAS PARA IDENTIFICAR:
-- Proteínas: carnes, frango, peixe, ovos, queijos
-- Carboidratos: arroz, feijão, batata, massas, pães
-- Vegetais: saladas, legumes cozidos ou crus
-- Frutas: in natura ou processadas
-- Bebidas: sucos, refrigerantes, café, água
-- Lanches: pizza, hambúrguer, salgados, sanduíches
-- Doces: sobremesas, bolos, brigadeiros
-
-⚠️ REGRAS OBRIGATÓRIAS:
-- Responda APENAS com JSON válido
-- Mínimo de 30g por item identificado
-- Confidence entre 0.1 e 1.0
-- Se não houver alimentos, retorne foods: [] com is_food_detected: false
-
-🔄 FORMATO DE RESPOSTA (JSON puro, sem markdown):
-{
-  "foods": [
-    {"name": "nome_do_alimento", "grams": 150, "confidence": 0.85}
-  ],
-  "is_food_detected": true,
-  "meal_type": "almoco|jantar|lanche|cafe_manha",
-  "total_items": 3
-}`,
-
-  // Prompt contextual - usa quando o primeiro falha
-  contextual: `
-Você é um nutricionista brasileiro analisando uma foto de refeição.
-FOQUE em encontrar QUALQUER alimento visível, mesmo parcialmente.
-
-🍽️ CONTEXTO BRASILEIRO:
-- Refeições típicas: arroz + feijão + proteína + salada
-- Lanches: pizza, hambúrguer, salgados (coxinha, pastel, empada)
-- Café da manhã: pão, queijo, café com leite, frutas
-- Sobremesas: pudim, brigadeiro, bolo
-
-🔍 ESTRATÉGIA DE DETECÇÃO:
-1. Examine cada parte da imagem sistematicamente
-2. Identifique recipientes/pratos que indicam comida
-3. Reconheça texturas e cores típicas de alimentos
-4. Use inferência para alimentos parcialmente visíveis
-
-RESPONDA APENAS EM JSON:
-{
-  "foods": [{"name": "alimento", "grams": 100, "confidence": 0.7}],
-  "is_food_detected": true,
-  "meal_type": "tipo_refeicao"
-}`,
-
-  // Prompt de emergência - última tentativa
-  emergency: `
-ANÁLISE DE EMERGÊNCIA - Encontre QUALQUER elemento comestível.
-
-Identifique pela forma/cor:
-- Redondo marrom = coxinha, hambúrguer, bolo
-- Redondo vermelho = pizza, tomate
-- Branco granulado = arroz
-- Escuro granulado = feijão
-- Folhas verdes = salada
-- Líquido = bebida
-
-RESPOSTA JSON OBRIGATÓRIA:
-{"foods": [{"name": "item", "grams": 100, "confidence": 0.5}], "is_food_detected": true}`
+const TACO_SYNONYMS: Record<string, string> = {
+  // Proteínas
+  'frango': 'Frango',
+  'frango grelhado': 'Frango, peito, sem pele, grelhado',
+  'peito de frango': 'Frango, peito, sem pele, grelhado',
+  'carne': 'Carne, bovina',
+  'carne bovina': 'Carne, bovina, contra-filé, grelhado',
+  'bife': 'Carne, bovina, contra-filé, grelhado',
+  'picanha': 'Carne, bovina, picanha, grelhada',
+  'carne moída': 'Carne, bovina, moída, cozida',
+  'peixe': 'Peixe',
+  'salmão': 'Salmão, filé, grelhado',
+  'atum': 'Atum, enlatado',
+  'ovo': 'Ovo, de galinha, inteiro, cozido',
+  'ovos': 'Ovo, de galinha, inteiro, cozido',
+  'ovo frito': 'Ovo, de galinha, inteiro, frito',
+  'omelete': 'Ovo, de galinha, inteiro, mexido',
+  
+  // Carboidratos
+  'arroz': 'Arroz, tipo 1, cozido',
+  'arroz branco': 'Arroz, tipo 1, cozido',
+  'arroz integral': 'Arroz, integral, cozido',
+  'feijão': 'Feijão, carioca, cozido',
+  'feijão preto': 'Feijão, preto, cozido',
+  'feijão carioca': 'Feijão, carioca, cozido',
+  'batata': 'Batata, cozida',
+  'batata frita': 'Batata, frita',
+  'batata doce': 'Batata doce, cozida',
+  'macarrão': 'Macarrão, trigo, cozido',
+  'massa': 'Macarrão, trigo, cozido',
+  'pão': 'Pão, francês',
+  'pão francês': 'Pão, francês',
+  'pão integral': 'Pão, de forma, integral',
+  
+  // Vegetais
+  'salada': 'Alface, crespa, crua',
+  'alface': 'Alface, crespa, crua',
+  'tomate': 'Tomate',
+  'cenoura': 'Cenoura, crua',
+  'brócolis': 'Brócolis, cozido',
+  'couve': 'Couve, manteiga, crua',
+  'repolho': 'Repolho, cru',
+  'beterraba': 'Beterraba, crua',
+  'pepino': 'Pepino, cru',
+  
+  // Lanches e salgados
+  'pizza': 'Pizza, de mussarela',
+  'hambúrguer': 'Hambúrguer, bovino, grelhado',
+  'hamburger': 'Hambúrguer, bovino, grelhado',
+  'coxinha': 'Coxinha de frango, frita',
+  'pastel': 'Pastel, de carne, frito',
+  'empada': 'Empada de frango, pré-cozida, assada',
+  'pão de queijo': 'Pão de queijo, assado',
+  
+  // Bebidas
+  'café': 'Café, infusão',
+  'suco': 'Suco de laranja, integral',
+  'suco de laranja': 'Suco de laranja, integral',
+  'leite': 'Leite, de vaca, integral',
+  'refrigerante': 'Refrigerante, tipo cola',
+  
+  // Frutas
+  'banana': 'Banana, prata, crua',
+  'maçã': 'Maçã, fuji, crua',
+  'laranja': 'Laranja, pêra, crua',
+  'manga': 'Manga, palmer, crua',
+  'mamão': 'Mamão, papaia, cru',
+  
+  // Laticínios
+  'queijo': 'Queijo, minas, frescal',
+  'queijo minas': 'Queijo, minas, frescal',
+  'queijo mussarela': 'Queijo, mussarela',
+  'iogurte': 'Iogurte, natural',
+  
+  // Outros
+  'farofa': 'Farinha, de mandioca, torrada',
+  'mandioca': 'Mandioca, cozida',
+  'milho': 'Milho, verde, cru'
 };
 
 // ========================================
-// 🤖 FUNÇÃO PRINCIPAL COM GOOGLE GEMINI
+// 🔍 BUSCAR DADOS NUTRICIONAIS NA TACO
 // ========================================
+async function findInTaco(foodName: string): Promise<{
+  found: boolean;
+  food_name: string;
+  energy_kcal: number;
+  protein_g: number;
+  carbohydrate_g: number;
+  lipids_g: number;
+  fiber_g: number;
+  sodium_mg: number;
+} | null> {
+  const normalizedName = foodName.toLowerCase().trim();
+  
+  // 1. Tentar sinônimo direto
+  const synonym = TACO_SYNONYMS[normalizedName];
+  if (synonym) {
+    const { data } = await supabase
+      .from('taco_foods')
+      .select('food_name, energy_kcal, protein_g, carbohydrate_g, lipids_g, fiber_g, sodium_mg')
+      .ilike('food_name', `%${synonym}%`)
+      .limit(1);
+    
+    if (data && data.length > 0) {
+      return { found: true, ...data[0] };
+    }
+  }
+  
+  // 2. Busca direta pelo nome
+  const { data: directMatch } = await supabase
+    .from('taco_foods')
+    .select('food_name, energy_kcal, protein_g, carbohydrate_g, lipids_g, fiber_g, sodium_mg')
+    .ilike('food_name', `%${normalizedName}%`)
+    .limit(1);
+  
+  if (directMatch && directMatch.length > 0) {
+    return { found: true, ...directMatch[0] };
+  }
+  
+  // 3. Busca por palavras-chave
+  const keywords = normalizedName.split(' ').filter(k => k.length > 3);
+  for (const keyword of keywords) {
+    const { data: keywordMatch } = await supabase
+      .from('taco_foods')
+      .select('food_name, energy_kcal, protein_g, carbohydrate_g, lipids_g, fiber_g, sodium_mg')
+      .ilike('food_name', `%${keyword}%`)
+      .limit(1);
+    
+    if (keywordMatch && keywordMatch.length > 0) {
+      return { found: true, ...keywordMatch[0] };
+    }
+  }
+  
+  return null;
+}
 
+// ========================================
+// 📊 CALCULAR NUTRIENTES COM TACO
+// ========================================
+async function calculateNutritionFromTaco(foods: Array<{ name: string; grams: number; confidence: number }>): Promise<{
+  total_kcal: number;
+  total_protein: number;
+  total_carbs: number;
+  total_fat: number;
+  total_fiber: number;
+  foods_matched: number;
+  foods_details: Array<{
+    name: string;
+    grams: number;
+    kcal: number;
+    protein: number;
+    carbs: number;
+    fat: number;
+    taco_match: string | null;
+  }>;
+}> {
+  let total_kcal = 0;
+  let total_protein = 0;
+  let total_carbs = 0;
+  let total_fat = 0;
+  let total_fiber = 0;
+  let foods_matched = 0;
+  const foods_details: Array<any> = [];
+
+  for (const food of foods) {
+    const tacoData = await findInTaco(food.name);
+    const grams = food.grams;
+    const factor = grams / 100; // TACO é por 100g
+    
+    if (tacoData) {
+      foods_matched++;
+      const kcal = (tacoData.energy_kcal || 0) * factor;
+      const protein = (tacoData.protein_g || 0) * factor;
+      const carbs = (tacoData.carbohydrate_g || 0) * factor;
+      const fat = (tacoData.lipids_g || 0) * factor;
+      const fiber = (tacoData.fiber_g || 0) * factor;
+      
+      total_kcal += kcal;
+      total_protein += protein;
+      total_carbs += carbs;
+      total_fat += fat;
+      total_fiber += fiber;
+      
+      foods_details.push({
+        name: food.name,
+        grams: grams,
+        kcal: Math.round(kcal),
+        protein: Math.round(protein * 10) / 10,
+        carbs: Math.round(carbs * 10) / 10,
+        fat: Math.round(fat * 10) / 10,
+        taco_match: tacoData.food_name
+      });
+      
+      console.log(`✅ TACO: ${food.name} (${grams}g) → ${tacoData.food_name}: ${Math.round(kcal)} kcal`);
+    } else {
+      // Estimativa fallback se não encontrar na TACO
+      const estimatedKcal = grams * 1.5; // ~150 kcal/100g média
+      total_kcal += estimatedKcal;
+      
+      foods_details.push({
+        name: food.name,
+        grams: grams,
+        kcal: Math.round(estimatedKcal),
+        protein: 0,
+        carbs: 0,
+        fat: 0,
+        taco_match: null
+      });
+      
+      console.log(`⚠️ TACO: ${food.name} não encontrado, usando estimativa: ${Math.round(estimatedKcal)} kcal`);
+    }
+  }
+
+  return {
+    total_kcal: Math.round(total_kcal),
+    total_protein: Math.round(total_protein * 10) / 10,
+    total_carbs: Math.round(total_carbs * 10) / 10,
+    total_fat: Math.round(total_fat * 10) / 10,
+    total_fiber: Math.round(total_fiber * 10) / 10,
+    foods_matched,
+    foods_details
+  };
+}
+
+// ========================================
+// 🤖 PROMPTS PARA DETECÇÃO
+// ========================================
+const FOOD_DETECTION_PROMPT = `
+Você é um especialista em nutrição brasileira analisando uma foto de refeição.
+
+🎯 INSTRUÇÕES:
+1. Identifique TODOS os alimentos visíveis
+2. Estime as porções em GRAMAS baseado no tamanho visual
+3. Use nomes específicos (ex: "arroz branco", "frango grelhado", "feijão carioca")
+
+📋 PORÇÕES TÍPICAS BRASILEIRAS:
+- Arroz: 100-150g (4-6 colheres de sopa)
+- Feijão: 80-100g (concha média)
+- Carne/Frango: 100-150g (bife médio)
+- Salada: 50-80g
+- Batata frita: 60-100g
+- Pizza (fatia): 100-130g
+- Hambúrguer: 150-200g
+
+⚠️ RESPONDA APENAS COM JSON:
+{
+  "foods": [
+    {"name": "nome_alimento", "grams": 150, "confidence": 0.9}
+  ],
+  "is_food_detected": true,
+  "meal_type": "almoco"
+}`;
+
+// ========================================
+// 🤖 FUNÇÃO PRINCIPAL
+// ========================================
 export async function analyzeWithEnhancedAI(
   imageUrl: string, 
   attempt = 1, 
@@ -109,234 +289,44 @@ export async function analyzeWithEnhancedAI(
 ): Promise<{
   foods: Array<{ name: string; grams: number; confidence: number }>;
   total_calories: number;
+  total_protein?: number;
+  total_carbs?: number;
+  total_fat?: number;
   attempt_used: number;
   detection_method: string;
   success: boolean;
   provider?: string;
+  taco_details?: any;
 }> {
-  // Aplicar configuração se fornecida
   if (config) {
     AI_MODEL_CONFIG = { ...AI_MODEL_CONFIG, ...config };
-    console.log('🔧 Enhanced Detection config:', AI_MODEL_CONFIG);
   }
 
-  // Verificar disponibilidade das APIs
-  const hasGoogleAI = !!GOOGLE_AI_API_KEY;
-  const hasLovableAI = !!LOVABLE_API_KEY;
-
-  if (!hasGoogleAI && !hasLovableAI) {
-    console.error('❌ Nenhuma IA configurada!');
+  if (!LOVABLE_API_KEY) {
+    console.error('❌ LOVABLE_API_KEY não configurada!');
     return createFallbackAnalysis();
   }
 
-  console.log(`🤖 Análise aprimorada - Tentativa ${attempt}/${MAX_RETRIES}`);
-  console.log(`   Google AI: ${hasGoogleAI ? '✅' : '❌'} | Lovable AI: ${hasLovableAI ? '✅' : '❌'}`);
-
-  // PRIORIDADE: Google Gemini Vision direto (mais preciso para imagens)
-  if (hasGoogleAI) {
-    try {
-      const result = await analyzeWithGoogleGemini(imageUrl, attempt);
-      if (result.success && result.foods.length > 0) {
-        return { ...result, provider: 'google_gemini' };
-      }
-    } catch (error) {
-      console.error('❌ Erro no Google Gemini:', error);
-    }
-  }
-
-  // FALLBACK: Lovable AI
-  if (hasLovableAI) {
-    try {
-      const result = await analyzeWithLovableAI(imageUrl, attempt);
-      if (result.success && result.foods.length > 0) {
-        return { ...result, provider: 'lovable_ai' };
-      }
-    } catch (error) {
-      console.error('❌ Erro no Lovable AI:', error);
-    }
-  }
-
-  // Último recurso
-  console.log('🆘 Todas as tentativas falharam, usando fallback...');
-  return createFallbackAnalysis();
-}
-
-// ========================================
-// 🌐 GOOGLE GEMINI VISION API (PRIORIDADE)
-// ========================================
-
-async function analyzeWithGoogleGemini(imageUrl: string, attempt = 1): Promise<{
-  foods: Array<{ name: string; grams: number; confidence: number }>;
-  total_calories: number;
-  attempt_used: number;
-  detection_method: string;
-  success: boolean;
-}> {
-  console.log(`🌐 Google Gemini Vision - Tentativa ${attempt}/${MAX_RETRIES}`);
-
-  // Escolher prompt baseado na tentativa
-  const prompts = [
-    ENHANCED_FOOD_PROMPTS.primary,
-    ENHANCED_FOOD_PROMPTS.contextual,
-    ENHANCED_FOOD_PROMPTS.emergency
-  ];
-  const prompt = prompts[Math.min(attempt - 1, 2)];
+  console.log(`🤖 Análise com Lovable AI - Tentativa ${attempt}/${MAX_RETRIES}`);
 
   try {
-    // Delay para evitar rate limit
-    if (attempt > 1) {
-      const delay = RATE_LIMIT_DELAY * attempt;
-      console.log(`⏳ Aguardando ${delay}ms...`);
-      await new Promise(resolve => setTimeout(resolve, delay));
-    }
-
-    // Converter imagem para base64
-    const imageBase64 = await fetchImageAsBase64(imageUrl);
-    
-    // Usar gemini-1.5-flash por ter mais cota disponível
-    const modelName = 'gemini-1.5-flash';
-    
-    const requestBody = {
-      contents: [{
-        parts: [
-          { text: prompt },
-          { 
-            inline_data: {
-              mime_type: "image/jpeg",
-              data: imageBase64
-            }
-          }
-        ]
-      }],
-      generationConfig: {
-        temperature: attempt >= 3 ? 0.6 : AI_MODEL_CONFIG.temperature,
-        maxOutputTokens: AI_MODEL_CONFIG.max_tokens,
-        topP: 0.95,
-        topK: 40
-      },
-      safetySettings: [
-        { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }
-      ]
-    };
-
-    console.log(`🔗 Chamando Google Gemini: ${modelName}`);
-    
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${GOOGLE_AI_API_KEY}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(requestBody),
-      }
-    );
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`❌ Google API Error ${response.status}:`, errorText.substring(0, 200));
-      
-      // Rate limit - retry com backoff
-      if (response.status === 429 && attempt < MAX_RETRIES) {
-        const backoffDelay = RATE_LIMIT_DELAY * Math.pow(2, attempt);
-        console.log(`⏳ Rate limit! Aguardando ${backoffDelay}ms...`);
-        await new Promise(resolve => setTimeout(resolve, backoffDelay));
-        return analyzeWithGoogleGemini(imageUrl, attempt + 1);
-      }
-      
-      throw new Error(`Google API error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    const responseText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-
-    if (!responseText) {
-      console.log('⚠️ Resposta vazia do Google Gemini');
-      if (attempt < MAX_RETRIES) {
-        return analyzeWithGoogleGemini(imageUrl, attempt + 1);
-      }
-      throw new Error('Resposta vazia');
-    }
-
-    console.log(`📝 Resposta Gemini (${responseText.length} chars):`, responseText.substring(0, 150) + '...');
-
-    // Parsear resposta JSON
-    const parsed = parseAIResponse(responseText);
-    
-    if (!parsed.foods || parsed.foods.length === 0) {
-      console.log('⚠️ Nenhum alimento detectado');
-      if (attempt < MAX_RETRIES) {
-        return analyzeWithGoogleGemini(imageUrl, attempt + 1);
-      }
-    }
-
-    const foods = normalizeDetectedFoods(parsed.foods || []);
-    const totalCalories = estimateCalories(foods);
-
-    console.log(`✅ Google Gemini detectou ${foods.length} alimentos`);
-
-    return {
-      foods,
-      total_calories: totalCalories,
-      attempt_used: attempt,
-      detection_method: attempt === 1 ? 'primary' : attempt === 2 ? 'contextual' : 'emergency',
-      success: foods.length > 0
-    };
-
-  } catch (error) {
-    console.error(`❌ Erro na tentativa ${attempt} (Google):`, error);
-    
-    if (attempt < MAX_RETRIES) {
-      await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_DELAY * attempt));
-      return analyzeWithGoogleGemini(imageUrl, attempt + 1);
-    }
-    
-    throw error;
-  }
-}
-
-// ========================================
-// 🔗 LOVABLE AI (FALLBACK)
-// ========================================
-
-async function analyzeWithLovableAI(imageUrl: string, attempt = 1): Promise<{
-  foods: Array<{ name: string; grams: number; confidence: number }>;
-  total_calories: number;
-  attempt_used: number;
-  detection_method: string;
-  success: boolean;
-}> {
-  console.log(`🔗 Lovable AI - Tentativa ${attempt}/${MAX_RETRIES}`);
-
-  const prompts = [
-    ENHANCED_FOOD_PROMPTS.primary,
-    ENHANCED_FOOD_PROMPTS.contextual,
-    ENHANCED_FOOD_PROMPTS.emergency
-  ];
-  const prompt = prompts[Math.min(attempt - 1, 2)];
-
-  try {
-    if (attempt > 1) {
-      await new Promise(resolve => setTimeout(resolve, RATE_LIMIT_DELAY * attempt));
-    }
-
     const body = {
-      model: AI_MODEL_CONFIG.model || 'google/gemini-2.5-flash',
+      model: AI_MODEL_CONFIG.model,
       max_tokens: AI_MODEL_CONFIG.max_tokens,
       temperature: AI_MODEL_CONFIG.temperature,
       messages: [
         {
-          role: 'system',
-          content: 'Você é um especialista em nutrição brasileira. Responda APENAS com JSON válido.'
-        },
-        {
           role: 'user',
           content: [
-            { type: 'text', text: prompt },
+            { type: 'text', text: FOOD_DETECTION_PROMPT },
             { type: 'image_url', image_url: { url: imageUrl } }
           ]
         }
       ]
     };
 
+    console.log(`🔗 Chamando Lovable AI: ${AI_MODEL_CONFIG.model}`);
+    
     const resp = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -350,49 +340,61 @@ async function analyzeWithLovableAI(imageUrl: string, attempt = 1): Promise<{
       const errorText = await resp.text();
       console.error(`❌ Lovable AI Error ${resp.status}:`, errorText.substring(0, 200));
       
-      if ((resp.status === 429 || resp.status === 402) && attempt < MAX_RETRIES) {
-        const backoffDelay = RATE_LIMIT_DELAY * Math.pow(2, attempt);
-        await new Promise(resolve => setTimeout(resolve, backoffDelay));
-        return analyzeWithLovableAI(imageUrl, attempt + 1);
+      if (resp.status === 429 && attempt < MAX_RETRIES) {
+        await new Promise(r => setTimeout(r, RATE_LIMIT_DELAY * attempt));
+        return analyzeWithEnhancedAI(imageUrl, attempt + 1, config);
       }
       
-      throw new Error(`Lovable AI error: ${resp.status}`);
+      throw new Error(`API error: ${resp.status}`);
     }
 
     const data = await resp.json();
     const responseText = data.choices?.[0]?.message?.content ?? '';
 
     if (!responseText) {
-      if (attempt < MAX_RETRIES) {
-        return analyzeWithLovableAI(imageUrl, attempt + 1);
-      }
       throw new Error('Resposta vazia');
     }
 
-    console.log(`📝 Resposta Lovable AI:`, responseText.substring(0, 150) + '...');
+    console.log(`📝 Resposta IA:`, responseText.substring(0, 200) + '...');
 
+    // Parsear resposta
     const parsed = parseAIResponse(responseText);
     const foods = normalizeDetectedFoods(parsed.foods || []);
-    const totalCalories = estimateCalories(foods);
 
-    console.log(`✅ Lovable AI detectou ${foods.length} alimentos`);
+    if (foods.length === 0) {
+      console.log('⚠️ Nenhum alimento detectado');
+      return createFallbackAnalysis();
+    }
+
+    // 🎯 CALCULAR NUTRIENTES COM TABELA TACO
+    console.log(`📊 Calculando nutrientes para ${foods.length} alimentos com tabela TACO...`);
+    const tacoNutrition = await calculateNutritionFromTaco(foods);
+    
+    console.log(`✅ RESULTADO TACO: ${tacoNutrition.total_kcal} kcal | P: ${tacoNutrition.total_protein}g | C: ${tacoNutrition.total_carbs}g | G: ${tacoNutrition.total_fat}g`);
+    console.log(`   ${tacoNutrition.foods_matched}/${foods.length} alimentos encontrados na TACO`);
 
     return {
       foods,
-      total_calories: totalCalories,
+      total_calories: tacoNutrition.total_kcal,
+      total_protein: tacoNutrition.total_protein,
+      total_carbs: tacoNutrition.total_carbs,
+      total_fat: tacoNutrition.total_fat,
       attempt_used: attempt,
-      detection_method: `lovable_${attempt === 1 ? 'primary' : 'contextual'}`,
-      success: foods.length > 0
+      detection_method: 'lovable_taco',
+      success: true,
+      provider: 'lovable_ai',
+      taco_details: tacoNutrition.foods_details
     };
 
   } catch (error) {
-    console.error(`❌ Erro Lovable AI tentativa ${attempt}:`, error);
+    console.error(`❌ Erro na tentativa ${attempt}:`, error);
     
     if (attempt < MAX_RETRIES) {
-      return analyzeWithLovableAI(imageUrl, attempt + 1);
+      await new Promise(r => setTimeout(r, RATE_LIMIT_DELAY));
+      return analyzeWithEnhancedAI(imageUrl, attempt + 1, config);
     }
     
-    throw error;
+    return createFallbackAnalysis();
   }
 }
 
@@ -402,32 +404,17 @@ async function analyzeWithLovableAI(imageUrl: string, attempt = 1): Promise<{
 
 function parseAIResponse(text: string): any {
   try {
-    // Remover markdown code blocks
     let clean = text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
     
-    // Tentar encontrar JSON no texto
-    const jsonPatterns = [
-      /\{[\s\S]*"foods"[\s\S]*\}/,
-      /\{[\s\S]*\}/
-    ];
-    
-    for (const pattern of jsonPatterns) {
-      const match = clean.match(pattern);
-      if (match) {
-        try {
-          return JSON.parse(match[0]);
-        } catch {
-          continue;
-        }
-      }
+    const jsonMatch = clean.match(/\{[\s\S]*"foods"[\s\S]*\}/);
+    if (jsonMatch) {
+      return JSON.parse(jsonMatch[0]);
     }
     
-    // Tentar parsear diretamente
     return JSON.parse(clean);
   } catch (e) {
     console.error('❌ Erro ao parsear JSON:', e);
-    // Tentar extrair alimentos do texto
-    return { foods: extractFoodsFromText(text) };
+    return { foods: [] };
   }
 }
 
@@ -438,131 +425,21 @@ function normalizeDetectedFoods(foods: any[]): Array<{ name: string; grams: numb
     .filter(f => f && (f.name || f.nome))
     .map(food => ({
       name: String(food.name || food.nome || 'alimento').toLowerCase().trim(),
-      grams: Math.max(Number(food.grams || food.gramas || food.quantidade) || 80, 30),
-      confidence: Math.min(Math.max(Number(food.confidence || food.confianca) || 0.5, 0.1), 1.0)
+      grams: Math.max(Number(food.grams || food.gramas || food.quantidade) || 100, 30),
+      confidence: Math.min(Math.max(Number(food.confidence || food.confianca) || 0.7, 0.1), 1.0)
     }))
     .filter(f => f.name.length > 1 && f.name !== 'undefined');
 }
 
-function estimateCalories(foods: Array<{ name: string; grams: number; confidence: number }>): number {
-  // Estimativa simples: média de 2 kcal/g para refeições mistas
-  const caloriesPerGram: Record<string, number> = {
-    'arroz': 1.3, 'feijão': 0.77, 'carne': 2.5, 'frango': 1.9,
-    'peixe': 1.5, 'salada': 0.2, 'vegetais': 0.3, 'legumes': 0.4,
-    'pizza': 2.7, 'hambúrguer': 2.5, 'pão': 2.6, 'macarrão': 1.3,
-    'bolo': 3.5, 'refrigerante': 0.4, 'suco': 0.45, 'café': 0.02,
-    'ovo': 1.5, 'queijo': 3.5, 'batata': 0.9, 'banana': 0.9
-  };
-  
-  let total = 0;
-  for (const food of foods) {
-    const name = food.name.toLowerCase();
-    let cal = 2.0; // default
-    
-    for (const [key, value] of Object.entries(caloriesPerGram)) {
-      if (name.includes(key)) {
-        cal = value;
-        break;
-      }
-    }
-    
-    total += food.grams * cal;
-  }
-  
-  return Math.round(total);
-}
-
 function createFallbackAnalysis() {
-  console.log('🔄 Criando análise de fallback...');
-  
   return {
-    foods: [
-      { name: 'refeição mista', grams: 200, confidence: 0.3 }
-    ],
-    total_calories: 400,
+    foods: [{ name: 'refeição mista', grams: 300, confidence: 0.3 }],
+    total_calories: 450,
+    total_protein: 20,
+    total_carbs: 50,
+    total_fat: 15,
     attempt_used: MAX_RETRIES,
     detection_method: 'fallback',
     success: false
   };
-}
-
-function extractFoodsFromText(text: string): Array<{ name: string; grams: number; confidence: number }> {
-  const commonFoods = [
-    'arroz', 'feijão', 'carne', 'frango', 'peixe', 'ovo', 'salada',
-    'batata', 'macarrão', 'pão', 'pizza', 'hambúrguer', 'bolo', 'torta',
-    'coxinha', 'pastel', 'empada', 'suco', 'café', 'leite', 'queijo',
-    'tomate', 'alface', 'cenoura', 'banana', 'maçã', 'laranja',
-    'refrigerante', 'água', 'legumes', 'vegetais'
-  ];
-  
-  const portions: Record<string, number> = {
-    'arroz': 150, 'feijão': 100, 'carne': 150, 'frango': 150,
-    'pizza': 150, 'hambúrguer': 200, 'bolo': 100, 'pão': 50,
-    'suco': 250, 'café': 100, 'salada': 80
-  };
-  
-  const detected: Array<{ name: string; grams: number; confidence: number }> = [];
-  const lowerText = text.toLowerCase();
-  
-  for (const food of commonFoods) {
-    if (lowerText.includes(food)) {
-      detected.push({
-        name: food,
-        grams: portions[food] || 100,
-        confidence: 0.4
-      });
-    }
-  }
-  
-  return detected.length > 0 ? detected : [{ name: 'refeição', grams: 200, confidence: 0.2 }];
-}
-
-async function fetchImageAsBase64(imageUrl: string): Promise<string> {
-  console.log('📥 Baixando imagem para análise...');
-  
-  try {
-    // Adicionar headers para evitar bloqueios
-    const response = await fetch(imageUrl, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; NutritionBot/1.0)',
-        'Accept': 'image/*',
-        'Referer': imageUrl
-      }
-    });
-    
-    if (!response.ok) {
-      console.error(`❌ Erro HTTP ${response.status} ao baixar imagem`);
-      throw new Error(`HTTP ${response.status}`);
-    }
-    
-    const contentType = response.headers.get('content-type');
-    if (contentType && !contentType.includes('image')) {
-      console.error(`❌ Tipo de conteúdo inválido: ${contentType}`);
-      throw new Error(`Tipo inválido: ${contentType}`);
-    }
-    
-    const arrayBuffer = await response.arrayBuffer();
-    const uint8Array = new Uint8Array(arrayBuffer);
-    
-    if (uint8Array.length < 1000) {
-      throw new Error('Imagem muito pequena ou inválida');
-    }
-    
-    // Converter para base64 em chunks
-    let binary = '';
-    const chunkSize = 32768;
-    
-    for (let i = 0; i < uint8Array.length; i += chunkSize) {
-      const chunk = uint8Array.subarray(i, Math.min(i + chunkSize, uint8Array.length));
-      binary += String.fromCharCode(...chunk);
-    }
-    
-    const base64 = btoa(binary);
-    console.log(`✅ Imagem convertida: ${Math.round(base64.length / 1024)}KB`);
-    
-    return base64;
-  } catch (error) {
-    console.error('❌ Erro ao converter imagem:', error);
-    throw error;
-  }
 }
