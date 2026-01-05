@@ -13,26 +13,35 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Progress } from '@/components/ui/progress';
-import { 
-  Play, 
-  Pause, 
-  SkipForward, 
-  Check, 
-  X,
-  Dumbbell,
-  Clock,
-  Flame,
-  Trophy,
-  ChevronRight,
+import {
+  ArrowLeft,
+  ArrowRight,
+  Check,
   ChevronDown,
+  ChevronRight,
   ChevronUp,
-  Youtube,
+  Clock,
+  Dumbbell,
+  Flame,
+  Heart,
   Info,
-  Lightbulb
+  Lightbulb,
+  Minus,
+  Pause,
+  Play,
+  RefreshCw,
+  SkipForward,
+  ThumbsDown,
+  ThumbsUp,
+  Timer,
+  Trophy,
+  X,
+  Youtube,
 } from 'lucide-react';
 import { Exercise, WeeklyPlan } from '@/hooks/useExercisesLibrary';
 import { RestTimer } from './RestTimer';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
 
 interface ActiveWorkoutModalProps {
   isOpen: boolean;
@@ -60,6 +69,8 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
   workout,
   onComplete
 }) => {
+  const { toast } = useToast();
+
   const [currentIndex, setCurrentIndex] = useState(0);
   const [progress, setProgress] = useState<ExerciseProgress[]>([]);
   const [showTimer, setShowTimer] = useState(false);
@@ -68,11 +79,28 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
   const [showDetailedInstructions, setShowDetailedInstructions] = useState(false);
   const [showDetailedTips, setShowDetailedTips] = useState(false);
   const [isExerciseStarted, setIsExerciseStarted] = useState(false);
+
+  const [exerciseSeconds, setExerciseSeconds] = useState(0);
+  const [isExerciseTimerRunning, setIsExerciseTimerRunning] = useState(false);
+  const [currentSet, setCurrentSet] = useState(1);
+  const [exerciseFeedback, setExerciseFeedback] = useState<'facil' | 'ok' | 'dificil' | null>(null);
+
   const [elapsedTime, setElapsedTime] = useState(0);
 
   const currentExercise = workout.exercises[currentIndex];
+
+  const totalSetsForExercise = useMemo(() => {
+    const raw = currentExercise?.sets;
+    const nums = (String(raw ?? '').match(/\d+/g) || [])
+      .map((n) => Number(n))
+      .filter((n) => Number.isFinite(n) && n > 0);
+    return nums.length ? Math.max(...nums) : 3;
+  }, [currentExercise?.sets]);
+
+  const repsLabel = useMemo(() => String(currentExercise?.reps ?? '12'), [currentExercise?.reps]);
+
   const totalExercises = workout.exercises.length;
-  const completedCount = progress.filter(p => p.completed).length;
+  const completedCount = progress.filter((p) => p.completed).length;
   const progressPercentage = (completedCount / totalExercises) * 100;
 
   // Timer atualizado a cada segundo
@@ -118,23 +146,52 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
     setShowDetailedInstructions(false);
     setShowDetailedTips(false);
     setIsExerciseStarted(false);
+    setExerciseSeconds(0);
+    setIsExerciseTimerRunning(false);
+    setCurrentSet(1);
+    setExerciseFeedback(null);
   }, [currentIndex]);
 
+  // Cronômetro do exercício (conta para cima)
+  useEffect(() => {
+    if (!isOpen || !isExerciseStarted || !isExerciseTimerRunning) return;
+    const interval = setInterval(() => {
+      setExerciseSeconds((prev) => prev + 1);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [isOpen, isExerciseStarted, isExerciseTimerRunning, currentIndex]);
+
+  const handleFinishWorkout = (progressOverride?: ExerciseProgress[]) => {
+    const base = progressOverride ?? progress;
+    const completedIds = base.filter((p) => p.completed).map((p) => p.exerciseId);
+    onComplete(completedIds);
+    onClose();
+  };
+
   const handleCompleteExercise = () => {
-    setProgress(prev => prev.map((p, i) => 
-      i === currentIndex ? { ...p, completed: true } : p
-    ));
-    
+    const nextProgress = progress.map((p, i) =>
+      i === currentIndex
+        ? {
+            ...p,
+            completed: true,
+            setsCompleted: Math.max(p.setsCompleted, totalSetsForExercise),
+          }
+        : p
+    );
+
+    setProgress(nextProgress);
+    setIsExerciseTimerRunning(false);
+
     if (currentIndex < totalExercises - 1) {
       setShowTimer(true);
     } else {
-      handleFinishWorkout();
+      handleFinishWorkout(nextProgress);
     }
   };
 
   const handleSkipExercise = () => {
     if (currentIndex < totalExercises - 1) {
-      setCurrentIndex(prev => prev + 1);
+      setCurrentIndex((prev) => prev + 1);
       setShowTimer(false);
     }
   };
@@ -142,14 +199,8 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
   const handleTimerComplete = () => {
     setShowTimer(false);
     if (currentIndex < totalExercises - 1) {
-      setCurrentIndex(prev => prev + 1);
+      setCurrentIndex((prev) => prev + 1);
     }
-  };
-
-  const handleFinishWorkout = () => {
-    const completedIds = progress.filter(p => p.completed).map(p => p.exerciseId);
-    onComplete(completedIds);
-    onClose();
   };
 
   const getElapsedTime = () => {
@@ -158,8 +209,54 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const formatExerciseTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const toggleExerciseTimer = () => setIsExerciseTimerRunning((prev) => !prev);
+
+  const resetExerciseTimer = () => {
+    setExerciseSeconds(0);
+    setIsExerciseTimerRunning(false);
+  };
+
+  const handleBackToOverview = () => {
+    setIsExerciseTimerRunning(false);
+    setIsExerciseStarted(false);
+  };
+
   const handleStartExercise = () => {
     setIsExerciseStarted(true);
+    setExerciseSeconds(0);
+    setIsExerciseTimerRunning(true);
+    setCurrentSet(Math.max(1, (progress[currentIndex]?.setsCompleted ?? 0) + 1));
+  };
+
+  const handleConcludeSetOrExercise = () => {
+    setProgress((prev) =>
+      prev.map((p, i) =>
+        i === currentIndex
+          ? {
+              ...p,
+              setsCompleted: Math.min(totalSetsForExercise, (p.setsCompleted ?? 0) + 1),
+            }
+          : p
+      )
+    );
+
+    if (currentSet < totalSetsForExercise) {
+      toast({
+        title: `Série ${currentSet} concluída!`,
+        description: `Descanse ${parseRestTime(currentExercise?.rest_time)}s e siga para a próxima.`,
+      });
+      setCurrentSet((prev) => Math.min(totalSetsForExercise, prev + 1));
+      return;
+    }
+
+    toast({ title: '✅ Exercício concluído!', description: 'Boa! Vamos para o próximo.' });
+    handleCompleteExercise();
   };
 
   const parseRestTime = (restTime: string | number | null | undefined): number => {
@@ -259,120 +356,255 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
                     </div>
                   )}
 
-                  {/* Stats Cards: Séries, Repetições, Descanso */}
-                  <div className="grid grid-cols-3 gap-3">
-                    <Card className="border border-border/50">
-                      <CardContent className="p-3 text-center">
-                        <div className="w-8 h-8 mx-auto mb-1 rounded-full bg-orange-100 dark:bg-orange-950 flex items-center justify-center">
-                          <svg className="w-4 h-4 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                          </svg>
-                        </div>
-                        <p className="text-2xl font-bold">{currentExercise.sets || '3'}</p>
-                        <p className="text-xs text-muted-foreground">Séries</p>
-                      </CardContent>
-                    </Card>
-                    <Card className="border border-border/50">
-                      <CardContent className="p-3 text-center">
-                        <div className="w-8 h-8 mx-auto mb-1 rounded-full bg-orange-100 dark:bg-orange-950 flex items-center justify-center">
-                          <Dumbbell className="w-4 h-4 text-orange-500" />
-                        </div>
-                        <p className="text-2xl font-bold">{currentExercise.reps || '12'}</p>
-                        <p className="text-xs text-muted-foreground">Repetições</p>
-                      </CardContent>
-                    </Card>
-                    <Card className="border border-border/50">
-                      <CardContent className="p-3 text-center">
-                        <div className="w-8 h-8 mx-auto mb-1 rounded-full bg-orange-100 dark:bg-orange-950 flex items-center justify-center">
-                          <Clock className="w-4 h-4 text-orange-500" />
-                        </div>
-                        <p className="text-2xl font-bold">{currentExercise.rest_time || '60'}s</p>
-                        <p className="text-xs text-muted-foreground">Descanso</p>
-                      </CardContent>
-                    </Card>
-                  </div>
-
-                  {/* Dificuldade */}
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Dificuldade</span>
-                    <Badge 
-                      variant="outline" 
-                      className={cn(
-                        "capitalize",
-                        currentExercise.difficulty === 'easy' && "bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-400",
-                        currentExercise.difficulty === 'intermediate' && "bg-yellow-100 text-yellow-700 dark:bg-yellow-950 dark:text-yellow-400",
-                        currentExercise.difficulty === 'hard' && "bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-400"
-                      )}
-                    >
-                      {currentExercise.difficulty === 'easy' ? 'Fácil' : 
-                       currentExercise.difficulty === 'intermediate' ? 'Intermediário' : 
-                       currentExercise.difficulty === 'hard' ? 'Difícil' : 'Normal'}
-                    </Badge>
-                  </div>
-
-                  {/* Botões: Instruções e Começar/Concluir */}
-                  <div className="grid grid-cols-2 gap-3">
-                    <Button
-                      variant="outline"
-                      onClick={() => setShowDetailedInstructions(!showDetailedInstructions)}
-                      className="gap-2"
-                    >
-                      <Info className="w-4 h-4" />
-                      Instruções
-                    </Button>
-                    
-                    {!isExerciseStarted ? (
-                      <Button
-                        className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white gap-2"
-                        onClick={handleStartExercise}
-                      >
-                        <Play className="w-4 h-4" />
-                        Começar
-                      </Button>
-                    ) : (
-                      <Button
-                        className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white gap-2"
-                        onClick={handleCompleteExercise}
-                      >
-                        <Check className="w-4 h-4" />
-                        Concluir
-                      </Button>
-                    )}
-                  </div>
-
-                  {/* Instruções expandidas */}
-                  <AnimatePresence>
-                    {showDetailedInstructions && currentExercise.instructions && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        exit={{ opacity: 0, height: 0 }}
-                      >
-                        <Card className="border border-border/50 bg-muted/30">
-                          <CardContent className="p-4 space-y-3">
-                            <div className="flex items-center gap-2 mb-2">
-                              <Info className="w-4 h-4 text-orange-500" />
-                              <span className="font-medium">Como fazer</span>
+                  {!isExerciseStarted ? (
+                    <>
+                      {/* Stats Cards: Séries, Repetições, Descanso */}
+                      <div className="grid grid-cols-3 gap-3">
+                        <Card className="border border-border/50">
+                          <CardContent className="p-3 text-center">
+                            <div className="w-8 h-8 mx-auto mb-1 rounded-full bg-orange-100 dark:bg-orange-950 flex items-center justify-center">
+                              <svg className="w-4 h-4 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                              </svg>
                             </div>
-                            <ol className="text-sm text-muted-foreground space-y-2 list-decimal list-inside">
-                              {currentExercise.instructions.map((step, i) => (
-                                <li key={i} className="leading-relaxed">{step}</li>
-                              ))}
-                            </ol>
-                            {currentExercise.tips && (
-                              <div className="pt-3 border-t border-border/50">
-                                <div className="flex items-center gap-2 mb-2">
-                                  <Lightbulb className="w-4 h-4 text-amber-500" />
-                                  <span className="font-medium text-sm">Dica do Personal</span>
-                                </div>
-                                <p className="text-sm text-muted-foreground">{currentExercise.tips}</p>
-                              </div>
-                            )}
+                            <p className="text-2xl font-bold">{currentExercise.sets || '3'}</p>
+                            <p className="text-xs text-muted-foreground">Séries</p>
                           </CardContent>
                         </Card>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                        <Card className="border border-border/50">
+                          <CardContent className="p-3 text-center">
+                            <div className="w-8 h-8 mx-auto mb-1 rounded-full bg-orange-100 dark:bg-orange-950 flex items-center justify-center">
+                              <Dumbbell className="w-4 h-4 text-orange-500" />
+                            </div>
+                            <p className="text-2xl font-bold">{currentExercise.reps || '12'}</p>
+                            <p className="text-xs text-muted-foreground">Repetições</p>
+                          </CardContent>
+                        </Card>
+                        <Card className="border border-border/50">
+                          <CardContent className="p-3 text-center">
+                            <div className="w-8 h-8 mx-auto mb-1 rounded-full bg-orange-100 dark:bg-orange-950 flex items-center justify-center">
+                              <Clock className="w-4 h-4 text-orange-500" />
+                            </div>
+                            <p className="text-2xl font-bold">{parseRestTime(currentExercise.rest_time)}s</p>
+                            <p className="text-xs text-muted-foreground">Descanso</p>
+                          </CardContent>
+                        </Card>
+                      </div>
+
+                      {/* Dificuldade */}
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-muted-foreground">Dificuldade</span>
+                        <Badge 
+                          variant="outline" 
+                          className={cn(
+                            "capitalize",
+                            currentExercise.difficulty === 'easy' && "bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-400",
+                            currentExercise.difficulty === 'intermediate' && "bg-yellow-100 text-yellow-700 dark:bg-yellow-950 dark:text-yellow-400",
+                            currentExercise.difficulty === 'hard' && "bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-400"
+                          )}
+                        >
+                          {currentExercise.difficulty === 'easy' ? 'Fácil' : 
+                           currentExercise.difficulty === 'intermediate' ? 'Intermediário' : 
+                           currentExercise.difficulty === 'hard' ? 'Difícil' : 'Normal'}
+                        </Badge>
+                      </div>
+
+                      {/* Botões: Instruções e Começar */}
+                      <div className="grid grid-cols-2 gap-3">
+                        <Button
+                          variant="outline"
+                          onClick={() => setShowDetailedInstructions(!showDetailedInstructions)}
+                          className="gap-2"
+                        >
+                          <Info className="w-4 h-4" />
+                          Instruções
+                        </Button>
+                        
+                        <Button
+                          className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white gap-2"
+                          onClick={handleStartExercise}
+                        >
+                          <Play className="w-4 h-4" />
+                          Começar
+                        </Button>
+                      </div>
+
+                      {/* Instruções expandidas */}
+                      <AnimatePresence>
+                        {showDetailedInstructions && currentExercise.instructions && (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                          >
+                            <Card className="border border-border/50 bg-muted/30">
+                              <CardContent className="p-4 space-y-3">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <Info className="w-4 h-4 text-orange-500" />
+                                  <span className="font-medium">Como fazer</span>
+                                </div>
+                                <ol className="text-sm text-muted-foreground space-y-2 list-decimal list-inside">
+                                  {currentExercise.instructions.map((step, i) => (
+                                    <li key={i} className="leading-relaxed">{step}</li>
+                                  ))}
+                                </ol>
+                                {currentExercise.tips && (
+                                  <div className="pt-3 border-t border-border/50">
+                                    <div className="flex items-center gap-2 mb-2">
+                                      <Lightbulb className="w-4 h-4 text-amber-500" />
+                                      <span className="font-medium text-sm">Dica do Personal</span>
+                                    </div>
+                                    <p className="text-sm text-muted-foreground">{currentExercise.tips}</p>
+                                  </div>
+                                )}
+                              </CardContent>
+                            </Card>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </>
+                  ) : (
+                    <div className="space-y-4">
+                      <div className="flex justify-end">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={handleBackToOverview}
+                          className="h-8 px-2 gap-1"
+                        >
+                          <ArrowLeft className="w-4 h-4" />
+                          Voltar
+                        </Button>
+                      </div>
+
+                      {/* Timer elegante */}
+                      <Card className="border-0 bg-gradient-to-br from-primary/15 to-accent/15">
+                        <CardContent className="p-4 text-center space-y-3">
+                          <Timer className="w-8 h-8 mx-auto text-primary" />
+                          <div className="text-4xl font-bold text-primary font-mono">
+                            {formatExerciseTime(exerciseSeconds)}
+                          </div>
+
+                          <div className="flex gap-2 justify-center">
+                            <Button size="sm" onClick={toggleExerciseTimer} className="px-6">
+                              {isExerciseTimerRunning ? (
+                                <>
+                                  <Pause className="w-4 h-4 mr-1" />
+                                  Pausar
+                                </>
+                              ) : (
+                                <>
+                                  <Play className="w-4 h-4 mr-1" />
+                                  Iniciar
+                                </>
+                              )}
+                            </Button>
+                            <Button size="sm" variant="outline" onClick={resetExerciseTimer}>
+                              <RefreshCw className="w-4 h-4" />
+                            </Button>
+                          </div>
+
+                          <div className="pt-2 border-t border-border/50">
+                            <p className="text-xs text-muted-foreground mb-2">Como foi?</p>
+                            <div className="grid grid-cols-3 gap-2">
+                              <button
+                                type="button"
+                                onClick={() => setExerciseFeedback('facil')}
+                                className={cn(
+                                  "rounded-lg border p-2 text-center transition-colors",
+                                  exerciseFeedback === 'facil'
+                                    ? "border-primary bg-primary/10 text-primary"
+                                    : "border-border bg-background/50 text-muted-foreground hover:bg-muted/30"
+                                )}
+                              >
+                                <ThumbsUp className="w-4 h-4 mx-auto mb-1" />
+                                <span className="text-[10px] font-medium">Fácil</span>
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => setExerciseFeedback('ok')}
+                                className={cn(
+                                  "rounded-lg border p-2 text-center transition-colors",
+                                  exerciseFeedback === 'ok'
+                                    ? "border-primary bg-primary/10 text-primary"
+                                    : "border-border bg-background/50 text-muted-foreground hover:bg-muted/30"
+                                )}
+                              >
+                                <Minus className="w-4 h-4 mx-auto mb-1" />
+                                <span className="text-[10px] font-medium">OK</span>
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => setExerciseFeedback('dificil')}
+                                className={cn(
+                                  "rounded-lg border p-2 text-center transition-colors",
+                                  exerciseFeedback === 'dificil'
+                                    ? "border-primary bg-primary/10 text-primary"
+                                    : "border-border bg-background/50 text-muted-foreground hover:bg-muted/30"
+                                )}
+                              >
+                                <ThumbsDown className="w-4 h-4 mx-auto mb-1" />
+                                <span className="text-[10px] font-medium">Difícil</span>
+                              </button>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      {/* Heart Rate (placeholder) */}
+                      <Card className="border-0 bg-muted/30">
+                        <CardContent className="p-3 flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <Heart
+                              className={cn(
+                                "w-6 h-6",
+                                isExerciseTimerRunning ? "text-destructive animate-pulse" : "text-muted-foreground"
+                              )}
+                            />
+                            <div>
+                              <div className="font-semibold">--</div>
+                              <div className="text-xs text-muted-foreground">Frequência Cardíaca</div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      {/* Série atual */}
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="font-semibold">
+                            Série {currentSet} de {totalSetsForExercise}
+                          </span>
+                          <span className="text-muted-foreground">{repsLabel} repetições</span>
+                        </div>
+                        <Progress value={(currentSet / Math.max(1, totalSetsForExercise)) * 100} className="h-2" />
+                      </div>
+
+                      {/* Controles */}
+                      <div className="grid grid-cols-3 gap-2">
+                        <Button
+                          variant="outline"
+                          disabled={currentSet <= 1}
+                          onClick={() => setCurrentSet((prev) => Math.max(1, prev - 1))}
+                        >
+                          <ArrowLeft className="w-4 h-4" />
+                        </Button>
+                        <Button onClick={handleConcludeSetOrExercise} className="gap-2">
+                          <Check className="w-4 h-4" />
+                          Concluir
+                        </Button>
+                        <Button
+                          variant="outline"
+                          disabled={currentSet >= totalSetsForExercise}
+                          onClick={() => setCurrentSet((prev) => Math.min(totalSetsForExercise, prev + 1))}
+                        >
+                          <ArrowRight className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </motion.div>
               ) : null}
             </AnimatePresence>
@@ -430,7 +662,7 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
                             {ex.name}
                           </p>
                           <p className="text-xs text-muted-foreground capitalize">
-                            {ex.muscle_group} • {ex.sets || '3'}x{ex.reps || '12'} • {ex.rest_time || '60'}s desc
+                            {ex.muscle_group} • {ex.sets || '3'}x{ex.reps || '12'} • {parseRestTime(ex.rest_time)}s desc
                           </p>
                         </div>
 
