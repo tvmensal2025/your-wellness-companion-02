@@ -2,483 +2,433 @@ import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
-  Heart,
-  MessageCircle,
-  Share2,
-  Camera,
-  MapPin,
-  Trophy,
-  TrendingUp,
-  Plus,
   Search,
   Crown,
   Star,
   Flame,
   Target,
+  Bell,
+  Settings,
+  Filter,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useRanking } from '@/hooks/useRanking';
+import { StoriesSection } from '@/components/community/StoriesSection';
+import { CreatePostCard } from '@/components/community/CreatePostCard';
+import { FeedPostCard } from '@/components/community/FeedPostCard';
+import { RightSidebar } from '@/components/community/RightSidebar';
 
-// Mock data para demonstração do feed (será substituído por dados reais futuramente)
-const mockUsers = [
-  {
-    id: '1',
-    name: 'Ana Silva',
-    avatar: '',
-    level: 'Iniciante',
-    points: 150,
-    badges: ['🏃‍♀️', '💧', '🎯'],
-  },
-  {
-    id: '2',
-    name: 'Carlos Santos',
-    avatar: '',
-    level: 'Intermediário',
-    points: 420,
-    badges: ['🔥', '💪', '🏆'],
-  },
+// Mock data
+const mockStories = [
+  { id: '1', userName: 'Ana Silva', userAvatar: '', hasNewStory: true, isViewed: false },
+  { id: '2', userName: 'Carlos Santos', userAvatar: '', hasNewStory: true, isViewed: false },
+  { id: '3', userName: 'Maria Oliveira', userAvatar: '', hasNewStory: true, isViewed: true },
+  { id: '4', userName: 'João Pedro', userAvatar: '', hasNewStory: false, isViewed: true },
+  { id: '5', userName: 'Fernanda Costa', userAvatar: '', hasNewStory: true, isViewed: false },
 ];
 
 const mockPosts = [
   {
     id: '1',
-    userId: '1',
-    profiles: {
-      full_name: 'Ana Silva',
-      avatar_url: '',
-      level: 'Iniciante',
-    },
-    content: 'Consegui completar minha meta de passos hoje! 10.000 passos ✅',
-    post_type: 'achievement',
-    media_urls: [],
-    achievements_data: { steps: 10000, goal: 10000 },
-    progress_data: null,
+    userName: 'Ana Silva',
+    userAvatar: '',
+    userLevel: 'Iniciante',
+    content: 'Consegui completar minha meta de passos hoje! 10.000 passos ✅ Estou muito feliz com meu progresso!',
     location: 'São Paulo, SP',
-    tags: ['passos', 'meta'],
-    created_at: new Date().toISOString(),
-    is_story: false,
-    reactions: {
-      likes: 12,
-      comments: 3,
+    tags: ['passos', 'meta', 'saúde'],
+    likes: 24,
+    comments: 5,
+    shares: 2,
+    isLiked: false,
+    isSaved: false,
+    createdAt: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
+    achievementData: {
+      title: 'Meta de Passos Atingida',
+      value: 10000,
+      unit: 'passos'
     },
+    commentsList: [
+      { id: 'c1', userName: 'Carlos Santos', content: 'Parabéns! Continue assim! 💪', createdAt: new Date().toISOString() },
+      { id: 'c2', userName: 'Maria Oliveira', content: 'Inspirador demais!', createdAt: new Date().toISOString() },
+    ]
   },
   {
     id: '2',
-    userId: '2',
-    profiles: {
-      full_name: 'Carlos Santos',
-      avatar_url: '',
-      level: 'Intermediário',
+    userName: 'Carlos Santos',
+    userAvatar: '',
+    userLevel: 'Intermediário',
+    content: 'Treino de hoje concluído! Focando na constância 💪 O segredo é não desistir, mesmo nos dias difíceis.',
+    tags: ['treino', 'constância', 'academia'],
+    likes: 42,
+    comments: 8,
+    shares: 5,
+    isLiked: true,
+    isSaved: false,
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
+    progressData: {
+      type: 'Treino de Força',
+      duration: '45 min',
+      calories: 320
     },
-    content: 'Treino de hoje concluído! Focando na constância 💪',
-    post_type: 'workout',
-    media_urls: [],
-    achievements_data: null,
-    progress_data: { workout_duration: '45 min', calories: 320 },
-    location: null,
-    tags: ['treino', 'constância'],
-    created_at: new Date().toISOString(),
-    is_story: false,
-    reactions: {
-      likes: 8,
-      comments: 5,
+    commentsList: []
+  },
+  {
+    id: '3',
+    userName: 'Maria Oliveira',
+    userAvatar: '',
+    userLevel: 'Avançado',
+    content: '7 dias de meditação completos! 🧘‍♀️ A paz interior está começando a fazer diferença no meu dia a dia.',
+    location: 'Rio de Janeiro, RJ',
+    tags: ['meditação', 'mindfulness', 'sequência'],
+    likes: 56,
+    comments: 12,
+    shares: 8,
+    isLiked: false,
+    isSaved: true,
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString(),
+    achievementData: {
+      title: 'Sequência de Meditação',
+      value: 7,
+      unit: 'dias consecutivos'
     },
+    commentsList: []
   },
 ];
 
+const mockTopUsers = [
+  { id: '1', name: 'Rafael Dias', points: 2450, position: 1, streak: 15, isOnline: true },
+  { id: '2', name: 'Juliana Lima', points: 2120, position: 2, streak: 12, isOnline: true },
+  { id: '3', name: 'Pedro Henrique', points: 1890, position: 3, streak: 10, isOnline: false },
+  { id: '4', name: 'Camila Rocha', points: 1750, position: 4, streak: 8, isOnline: true },
+  { id: '5', name: 'Lucas Mendes', points: 1680, position: 5, streak: 7, isOnline: false },
+];
+
+const mockSuggestedUsers = [
+  { id: '1', name: 'Beatriz Santos', mutualFriends: 5, level: 'Intermediário' },
+  { id: '2', name: 'Gabriel Costa', mutualFriends: 3, level: 'Avançado' },
+  { id: '3', name: 'Larissa Pereira', mutualFriends: 8, level: 'Iniciante' },
+];
+
+const mockEvents = [
+  { id: '1', title: 'Desafio de Hidratação', date: 'Começa amanhã', participants: 124 },
+  { id: '2', title: 'Corrida Virtual 5K', date: 'Em 3 dias', participants: 89 },
+  { id: '3', title: 'Semana do Sono', date: 'Próxima semana', participants: 256 },
+];
+
 export default function HealthFeedPage() {
-  const [newPost, setNewPost] = useState('');
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [activeTab, setActiveTab] = useState('feed');
   const [sortMode, setSortMode] = useState<'position' | 'points' | 'missions' | 'streak'>('position');
+  const [posts, setPosts] = useState(mockPosts);
 
   const { ranking, loading } = useRanking();
 
-  const popularTags = [
-    '🏃‍♀️ Corrida',
-    '💪 Musculação',
-    '🧘‍♀️ Meditação',
-    '💧 Hidratação',
-    '🥗 Alimentação',
-    '😴 Sono',
-  ];
-
   const sortedRanking = useMemo(() => {
     const base = [...ranking];
-
     switch (sortMode) {
-      case 'points':
-        return base.sort((a, b) => b.total_points - a.total_points);
-      case 'missions':
-        return base.sort((a, b) => b.missions_completed - a.missions_completed);
-      case 'streak':
-        return base.sort((a, b) => b.streak_days - a.streak_days);
-      case 'position':
-      default:
-        return base.sort((a, b) => a.position - b.position);
+      case 'points': return base.sort((a, b) => b.total_points - a.total_points);
+      case 'missions': return base.sort((a, b) => b.missions_completed - a.missions_completed);
+      case 'streak': return base.sort((a, b) => b.streak_days - a.streak_days);
+      default: return base.sort((a, b) => a.position - b.position);
     }
   }, [ranking, sortMode]);
 
   const filteredRanking = useMemo(() => {
     if (!searchTerm.trim()) return sortedRanking;
-    const term = searchTerm.toLowerCase();
-    return sortedRanking.filter((user) => user.user_name.toLowerCase().includes(term));
+    return sortedRanking.filter((user) => 
+      user.user_name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
   }, [sortedRanking, searchTerm]);
 
   const topUser = filteredRanking[0];
-
   const totalMembers = ranking.length;
   const totalMissions = ranking.reduce((sum, user) => sum + user.missions_completed, 0);
   const totalPoints = ranking.reduce((sum, user) => sum + user.total_points, 0);
 
-  const handleCreatePost = () => {
-    if (!newPost.trim()) return;
-
-    // Aqui será feita a criação real do post na comunidade
-    console.log('Criando post:', { content: newPost, tags: selectedTags });
-    setNewPost('');
-    setSelectedTags([]);
+  const handleCreatePost = (content: string, tags: string[]) => {
+    const newPost = {
+      id: Date.now().toString(),
+      userName: 'Você',
+      userAvatar: '',
+      userLevel: 'Iniciante',
+      content,
+      location: undefined,
+      tags,
+      likes: 0,
+      comments: 0,
+      shares: 0,
+      isLiked: false,
+      isSaved: false,
+      createdAt: new Date().toISOString(),
+      achievementData: undefined,
+      progressData: undefined,
+      commentsList: [] as { id: string; userName: string; userAvatar?: string; content: string; createdAt: string }[]
+    };
+    setPosts([newPost, ...posts]);
   };
 
-  const handleTagClick = (tag: string) => {
-    setSelectedTags((prev) =>
-      prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag],
-    );
+  const handleLike = (postId: string) => {
+    setPosts(prev => prev.map(p => 
+      p.id === postId ? { ...p, isLiked: !p.isLiked, likes: p.isLiked ? p.likes - 1 : p.likes + 1 } : p
+    ));
+  };
+
+  const handleComment = (postId: string, comment: string) => {
+    setPosts(prev => prev.map(p => 
+      p.id === postId ? { 
+        ...p, 
+        comments: p.comments + 1,
+        commentsList: [...(p.commentsList || []), {
+          id: Date.now().toString(),
+          userName: 'Você',
+          content: comment,
+          createdAt: new Date().toISOString()
+        }]
+      } : p
+    ));
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-primary/10">
-      <div className="container mx-auto px-4 py-6 max-w-4xl">
-        {/* Hero Comunidade */}
-        <motion.section
+    <div className="min-h-screen bg-muted/30">
+      <div className="max-w-7xl mx-auto px-4 py-6">
+        {/* Header */}
+        <motion.header
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-6 space-y-4"
+          className="flex items-center justify-between mb-6"
         >
-          <header className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight">Comunidade</h1>
-              <p className="text-sm text-muted-foreground">
-                Top 10 membros mais engajados da plataforma
-              </p>
-            </div>
-            <Button variant="outline" size="icon" className="rounded-full">
-              <MessageCircle className="w-4 h-4" />
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Comunidade</h1>
+            <p className="text-sm text-muted-foreground">
+              Conecte-se, compartilhe e inspire outros
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="icon" className="relative">
+              <Bell className="w-5 h-5" />
+              <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-[10px] text-white flex items-center justify-center">
+                3
+              </span>
             </Button>
-          </header>
+            <Button variant="ghost" size="icon">
+              <Settings className="w-5 h-5" />
+            </Button>
+          </div>
+        </motion.header>
 
-          <div className="h-px bg-border" />
+        {/* Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
+          <TabsList className="w-full max-w-md bg-background border">
+            <TabsTrigger value="feed" className="flex-1">Feed</TabsTrigger>
+            <TabsTrigger value="ranking" className="flex-1">Ranking</TabsTrigger>
+            <TabsTrigger value="discover" className="flex-1">Descobrir</TabsTrigger>
+          </TabsList>
 
-          <Card className="border-none shadow-sm bg-card/80 backdrop-blur-sm">
-            <CardContent className="pt-4 space-y-4">
-              <div className="rounded-2xl bg-primary/5 border border-primary/10 px-4 py-3">
-                <p className="text-sm font-semibold text-primary">
-                  Top 10 membros mais engajados
-                </p>
-              </div>
+          {/* Feed Tab */}
+          <TabsContent value="feed" className="mt-6">
+            <div className="flex gap-6">
+              {/* Main Feed */}
+              <div className="flex-1 max-w-2xl">
+                {/* Stories */}
+                <StoriesSection
+                  stories={mockStories}
+                  currentUserName="Você"
+                />
 
-              <div className="flex items-center gap-2">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Buscar membro..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-9 text-sm"
-                  />
+                {/* Create Post */}
+                <CreatePostCard
+                  userName="Você"
+                  onCreatePost={handleCreatePost}
+                />
+
+                {/* Feed Posts */}
+                <div className="space-y-4">
+                  {posts.map((post) => (
+                    <FeedPostCard
+                      key={post.id}
+                      post={post}
+                      onLike={handleLike}
+                      onComment={handleComment}
+                      onShare={() => {}}
+                      onSave={() => {}}
+                    />
+                  ))}
                 </div>
               </div>
 
-              <Tabs value={sortMode} onValueChange={(value) => setSortMode(value as typeof sortMode)}>
-                <TabsList className="w-full justify-start bg-transparent p-0 gap-2">
-                  <TabsTrigger
-                    value="position"
-                    className="flex-1 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-                  >
-                    Posição
-                  </TabsTrigger>
-                  <TabsTrigger value="points" className="flex-1 rounded-xl">
-                    Pontos
-                  </TabsTrigger>
-                  <TabsTrigger value="missions" className="flex-1 rounded-xl">
-                    Missões
-                  </TabsTrigger>
-                  <TabsTrigger value="streak" className="flex-1 rounded-xl">
-                    Sequência
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
+              {/* Right Sidebar - Hidden on mobile */}
+              <div className="hidden lg:block">
+                <RightSidebar
+                  topUsers={mockTopUsers}
+                  suggestedUsers={mockSuggestedUsers}
+                  upcomingEvents={mockEvents}
+                  onFollowUser={() => {}}
+                />
+              </div>
+            </div>
+          </TabsContent>
 
-              <div className="mt-2">
-                {loading || !topUser ? (
-                  <div className="h-16 rounded-2xl bg-muted/40 animate-pulse" />
-                ) : (
-                  <div className="flex items-center gap-3 rounded-2xl bg-background shadow-sm px-4 py-3">
-                    <div className="flex items-center justify-center w-9 h-9 rounded-full border border-yellow-400/70 text-yellow-500">
-                      <Crown className="w-4 h-4" />
+          {/* Ranking Tab */}
+          <TabsContent value="ranking" className="mt-6">
+            <Card className="max-w-2xl mx-auto">
+              <CardContent className="pt-6 space-y-4">
+                <div className="rounded-2xl bg-primary/5 border border-primary/10 px-4 py-3">
+                  <p className="text-sm font-semibold text-primary">
+                    Top 10 membros mais engajados
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Buscar membro..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-9"
+                    />
+                  </div>
+                  <Button variant="outline" size="icon">
+                    <Filter className="w-4 h-4" />
+                  </Button>
+                </div>
+
+                <Tabs value={sortMode} onValueChange={(v) => setSortMode(v as typeof sortMode)}>
+                  <TabsList className="w-full justify-start bg-transparent p-0 gap-2">
+                    <TabsTrigger value="position" className="flex-1 rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                      Posição
+                    </TabsTrigger>
+                    <TabsTrigger value="points" className="flex-1 rounded-xl">Pontos</TabsTrigger>
+                    <TabsTrigger value="missions" className="flex-1 rounded-xl">Missões</TabsTrigger>
+                    <TabsTrigger value="streak" className="flex-1 rounded-xl">Sequência</TabsTrigger>
+                  </TabsList>
+                </Tabs>
+
+                {/* Top User Card */}
+                {!loading && topUser && (
+                  <div className="flex items-center gap-3 rounded-2xl bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-950/30 dark:to-amber-950/30 border border-yellow-200/50 dark:border-yellow-800/50 shadow-sm px-4 py-4">
+                    <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-yellow-400 to-amber-500 text-white shadow-lg">
+                      <Crown className="w-5 h-5" />
                     </div>
                     <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-sm font-semibold text-primary">
+                      <Avatar className="w-12 h-12 border-2 border-yellow-400/50">
+                        <AvatarFallback className="bg-primary/10 text-primary font-semibold">
                           {topUser.user_name.charAt(0).toUpperCase()}
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-sm font-medium truncate">{topUser.user_name}</p>
-                          <p className="text-xs text-muted-foreground">
-                            #{topUser.position} no ranking geral
-                          </p>
-                        </div>
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-semibold truncate">{topUser.user_name}</p>
+                        <p className="text-xs text-muted-foreground">Líder do ranking</p>
                       </div>
-                      <div className="flex items-center gap-3 text-xs sm:text-sm">
+                      <div className="flex items-center gap-4 text-sm">
                         <div className="flex items-center gap-1">
-                          <Star className="w-3 h-3 text-yellow-500" />
-                          <span>{topUser.total_points}</span>
+                          <Star className="w-4 h-4 text-yellow-500" />
+                          <span className="font-semibold">{topUser.total_points}</span>
                         </div>
                         <div className="flex items-center gap-1">
-                          <Target className="w-3 h-3 text-primary" />
+                          <Target className="w-4 h-4 text-primary" />
                           <span>{topUser.missions_completed}</span>
                         </div>
                         <div className="flex items-center gap-1">
-                          <Flame className="w-3 h-3 text-orange-500" />
+                          <Flame className="w-4 h-4 text-orange-500" />
                           <span>{topUser.streak_days}</span>
                         </div>
                       </div>
                     </div>
                   </div>
                 )}
-              </div>
 
-              <div className="grid grid-cols-3 gap-2 pt-1">
-                <div className="rounded-2xl bg-muted/40 px-3 py-3 text-center">
-                  <p className="text-lg font-bold text-primary">{totalMembers}</p>
-                  <p className="text-[11px] text-muted-foreground">Membros</p>
-                </div>
-                <div className="rounded-2xl bg-muted/40 px-3 py-3 text-center">
-                  <p className="text-lg font-bold text-emerald-600">{totalMissions}</p>
-                  <p className="text-[11px] text-muted-foreground">Missões</p>
-                </div>
-                <div className="rounded-2xl bg-muted/40 px-3 py-3 text-center">
-                  <p className="text-lg font-bold text-amber-600">{totalPoints.toLocaleString()}</p>
-                  <p className="text-[11px] text-muted-foreground">Pontos</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.section>
-
-        {/* Criar Post */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-        >
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Plus className="w-5 h-5" />
-                Compartilhar Progresso
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <Textarea
-                placeholder="O que você conquistou hoje? Compartilhe sua jornada..."
-                value={newPost}
-                onChange={(e) => setNewPost(e.target.value)}
-                className="min-h-[100px]"
-              />
-
-              <div className="flex flex-wrap gap-2">
-                {popularTags.map((tag) => (
-                  <Badge
-                    key={tag}
-                    variant={selectedTags.includes(tag) ? 'default' : 'outline'}
-                    className="cursor-pointer transition-all"
-                    onClick={() => handleTagClick(tag)}
-                  >
-                    {tag}
-                  </Badge>
-                ))}
-              </div>
-
-              <div className="flex gap-2 justify-between">
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm">
-                    <Camera className="w-4 h-4 mr-2" />
-                    Foto
-                  </Button>
-                  <Button variant="outline" size="sm">
-                    <MapPin className="w-4 h-4 mr-2" />
-                    Local
-                  </Button>
-                  <Button variant="outline" size="sm">
-                    <Trophy className="w-4 h-4 mr-2" />
-                    Conquista
-                  </Button>
-                </div>
-                <Button onClick={handleCreatePost} disabled={!newPost.trim()}>
-                  Publicar
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        {/* Usuários ativos */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle>Usuários Ativos</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex gap-3 sm:gap-4 overflow-x-auto pb-2 -mx-4 px-4 sm:mx-0 sm:px-0">
-                {mockUsers.map((user) => (
-                  <div
-                    key={user.id}
-                    className="flex flex-col items-center min-w-[80px] sm:min-w-[100px] text-center"
-                  >
-                    <Avatar className="w-16 h-16 mb-2 border-2 border-primary/20">
-                      <AvatarImage src={user.avatar} />
-                      <AvatarFallback>
-                        {user.name
-                          .split(' ')
-                          .map((n) => n[0])
-                          .join('')}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="text-sm font-medium">{user.name.split(' ')[0]}</span>
-                    <span className="text-xs text-muted-foreground">{user.level}</span>
-                    <div className="flex gap-1 mt-1">
-                      {user.badges.map((badge, i) => (
-                        <span key={i} className="text-xs">
-                          {badge}
+                {/* Ranking List */}
+                <div className="space-y-2">
+                  {filteredRanking.slice(1, 10).map((user, index) => (
+                    <motion.div
+                      key={user.user_id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                      className="flex items-center gap-3 p-3 rounded-xl bg-muted/50 hover:bg-muted transition-colors"
+                    >
+                      <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center font-bold text-muted-foreground">
+                        {user.position}
+                      </div>
+                      <Avatar className="w-10 h-10">
+                        <AvatarFallback className="bg-primary/10 text-primary">
+                          {user.user_name?.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium truncate">{user.user_name}</p>
+                      </div>
+                      <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                        <span className="flex items-center gap-1">
+                          <Star className="w-3 h-3 text-yellow-500" />
+                          {user.total_points}
                         </span>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
+                        <span className="flex items-center gap-1">
+                          <Flame className="w-3 h-3 text-orange-500" />
+                          {user.streak_days}d
+                        </span>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
 
-        {/* Feed de posts */}
-        <div className="space-y-6">
-          {mockPosts.map((post, index) => (
-            <motion.div
-              key={post.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 + index * 0.1 }}
-            >
+                {/* Stats */}
+                <div className="grid grid-cols-3 gap-3 pt-4">
+                  <div className="rounded-xl bg-primary/5 p-4 text-center">
+                    <p className="text-2xl font-bold text-primary">{totalMembers}</p>
+                    <p className="text-xs text-muted-foreground">Membros</p>
+                  </div>
+                  <div className="rounded-xl bg-emerald-500/10 p-4 text-center">
+                    <p className="text-2xl font-bold text-emerald-600">{totalMissions}</p>
+                    <p className="text-xs text-muted-foreground">Missões</p>
+                  </div>
+                  <div className="rounded-xl bg-amber-500/10 p-4 text-center">
+                    <p className="text-2xl font-bold text-amber-600">{totalPoints.toLocaleString()}</p>
+                    <p className="text-xs text-muted-foreground">Pontos</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Discover Tab */}
+          <TabsContent value="discover" className="mt-6">
+            <div className="max-w-2xl mx-auto">
               <Card>
                 <CardHeader>
-                  <div className="flex items-start gap-3">
-                    <Avatar>
-                      <AvatarImage src={post.profiles.avatar_url} />
-                      <AvatarFallback>
-                        {post.profiles.full_name
-                          .split(' ')
-                          .map((n) => n[0])
-                          .join('')}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="font-semibold">{post.profiles.full_name}</span>
-                        <Badge variant="outline" className="text-xs">
-                          {post.profiles.level}
-                        </Badge>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <span>{new Date(post.created_at).toLocaleDateString('pt-BR')}</span>
-                        {post.location && (
-                          <>
-                            <span>•</span>
-                            <span className="flex items-center gap-1">
-                              <MapPin className="w-3 h-3" />
-                              {post.location}
-                            </span>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </div>
+                  <CardTitle>Descubra Novos Membros</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <p>{post.content}</p>
-
-                  {post.achievements_data && (
-                    <div className="bg-primary/5 p-3 rounded-lg border-l-4 border-primary">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Trophy className="w-4 h-4 text-primary" />
-                        <span className="font-medium text-primary">Conquista Desbloqueada!</span>
-                      </div>
-                      <p className="text-sm">
-                        Meta de passos atingida:{' '}
-                        {post.achievements_data.steps?.toLocaleString()} passos
-                      </p>
-                    </div>
-                  )}
-
-                  {post.progress_data && (
-                    <div className="bg-secondary/20 p-3 rounded-lg">
-                      <div className="flex items-center gap-2 mb-2">
-                        <TrendingUp className="w-4 h-4 text-secondary" />
-                        <span className="font-medium">Progresso do Treino</span>
-                      </div>
-                      <div className="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                          <span className="text-muted-foreground">Duração:</span>
-                          <span className="ml-2 font-medium">
-                            {post.progress_data.workout_duration}
-                          </span>
+                <CardContent>
+                  <div className="grid gap-4">
+                    {mockSuggestedUsers.map((user) => (
+                      <div key={user.id} className="flex items-center gap-4 p-4 rounded-xl bg-muted/50">
+                        <Avatar className="w-14 h-14">
+                          <AvatarFallback className="bg-primary/10 text-primary text-lg">
+                            {user.name?.charAt(0)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                          <p className="font-semibold">{user.name}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {user.mutualFriends} amigos em comum • {user.level}
+                          </p>
                         </div>
-                        <div>
-                          <span className="text-muted-foreground">Calorias:</span>
-                          <span className="ml-2 font-medium">{post.progress_data.calories} kcal</span>
-                        </div>
+                        <Button variant="default" size="sm" className="rounded-full">
+                          Seguir
+                        </Button>
                       </div>
-                    </div>
-                  )}
-
-                  {post.tags && post.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-2">
-                      {post.tags.map((tag) => (
-                        <Badge key={tag} variant="secondary" className="text-xs">
-                          #{tag}
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
-
-                  <div className="flex items-center gap-4 pt-2 border-t">
-                    <Button variant="ghost" size="sm" className="flex items-center gap-2">
-                      <Heart className="w-4 h-4" />
-                      <span>{post.reactions.likes}</span>
-                    </Button>
-                    <Button variant="ghost" size="sm" className="flex items-center gap-2">
-                      <MessageCircle className="w-4 h-4" />
-                      <span>{post.reactions.comments}</span>
-                    </Button>
-                    <Button variant="ghost" size="sm" className="flex items-center gap-2">
-                      <Share2 className="w-4 h-4" />
-                      Compartilhar
-                    </Button>
+                    ))}
                   </div>
                 </CardContent>
               </Card>
-            </motion.div>
-          ))}
-        </div>
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
