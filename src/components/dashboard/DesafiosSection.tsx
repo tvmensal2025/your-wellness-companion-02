@@ -15,6 +15,7 @@ import { User } from '@supabase/supabase-js';
 import { VisualEffectsManager } from '@/components/gamification/VisualEffectsManager';
 import { useCelebrationEffects } from '@/hooks/useCelebrationEffects';
 import { AppleFitnessChallengeCard } from './AppleFitnessChallengeCard';
+import { ChallengesHero } from './ChallengesHero';
 interface Desafio {
   id: string;
   title: string;
@@ -930,7 +931,17 @@ const DesafiosSection: React.FC<DesafiosSectionProps> = ({
         </div>
       </Card>;
   }
+  const totalPoints = desafios.reduce((acc, d) => acc + (d.user_participation?.is_completed ? d.points_reward : 0), 0);
+  const activeChallenges = desafios.filter(d => d.user_participation && !d.user_participation.is_completed).length;
+  const streak = 7; // TODO: Calculate actual streak from user data
+
   return <div className="space-y-4">
+      <ChallengesHero
+        totalChallenges={desafios.length + desafiosPublicos.length}
+        activeChallenges={activeChallenges}
+        totalPoints={totalPoints}
+        streak={streak}
+      />
 
       <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
         <TabsList className="grid w-full grid-cols-3 bg-muted/50 p-1 rounded-xl h-11">
