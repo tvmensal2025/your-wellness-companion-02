@@ -269,9 +269,7 @@ const CompleteDashboardPage = () => {
             <UserSessions user={user} />
           </div></Suspense>;
       case 'comunidade':
-        return <Suspense fallback={<SectionLoader />}><div key="comunidade" className="p-6">
-            <RankingCommunity user={user} />
-          </div></Suspense>;
+        return <Suspense fallback={<SectionLoader />}><HealthFeedPage key="comunidade" /></Suspense>;
       case 'challenges':
         return <Suspense fallback={<SectionLoader />}><div key="challenges" className="p-6">
             <DesafiosSection user={user} />
