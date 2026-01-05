@@ -429,7 +429,7 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
           <Timer className="w-6 h-6 mx-auto text-orange-600" />
           <div className="text-2xl font-bold text-orange-600">{formatTime(timerSeconds)}</div>
           <div className="text-[11px] text-muted-foreground">Tempo de exercício</div>
-          <div className="flex gap-2 justify-center">
+          <div className="flex gap-2 justify-center items-center">
             <Button
               size="sm"
               onClick={toggleTimer}
@@ -450,6 +450,33 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
             <Button size="sm" onClick={resetTimer} variant="outline" className="px-3">
               Resetar
             </Button>
+            {/* Botões de avaliação ao lado */}
+            <div className="flex items-center gap-1 border-l border-orange-200 dark:border-orange-700 pl-2 ml-1">
+              <button
+                onClick={() => saveDifficultyFeedback('facil')}
+                disabled={feedbackSaving}
+                className={`p-1 rounded transition-colors ${userFeedback === 'facil' ? 'text-green-500 bg-green-500/20' : 'text-muted-foreground hover:text-green-500 hover:bg-green-500/10'}`}
+                title="Fácil"
+              >
+                <ThumbsUp className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => saveDifficultyFeedback('medio')}
+                disabled={feedbackSaving}
+                className={`p-1 rounded transition-colors ${userFeedback === 'medio' ? 'text-yellow-500 bg-yellow-500/20' : 'text-muted-foreground hover:text-yellow-500 hover:bg-yellow-500/10'}`}
+                title="Moderado"
+              >
+                <Minus className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => saveDifficultyFeedback('dificil')}
+                disabled={feedbackSaving}
+                className={`p-1 rounded transition-colors ${userFeedback === 'dificil' ? 'text-red-500 bg-red-500/20' : 'text-muted-foreground hover:text-red-500 hover:bg-red-500/10'}`}
+                title="Difícil"
+              >
+                <ThumbsDown className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -514,37 +541,7 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
       <div className="space-y-1">
         <div className="flex items-center justify-between text-xs">
           <span className="font-semibold">Série atual</span>
-          <div className="flex items-center gap-2">
-            <span className="text-muted-foreground">{currentSet}/{totalSets}</span>
-            {/* Botões de avaliação discretos */}
-            <div className="flex items-center gap-0.5 opacity-60 hover:opacity-100 transition-opacity border-l border-border pl-2">
-              <span className="text-[10px] text-muted-foreground mr-1">Avaliar:</span>
-              <button
-                onClick={() => saveDifficultyFeedback('facil')}
-                disabled={feedbackSaving}
-                className={`p-0.5 rounded transition-colors ${userFeedback === 'facil' ? 'text-green-500 bg-green-500/10' : 'text-muted-foreground hover:text-green-500'}`}
-                title="Fácil"
-              >
-                <ThumbsUp className="w-3.5 h-3.5" />
-              </button>
-              <button
-                onClick={() => saveDifficultyFeedback('medio')}
-                disabled={feedbackSaving}
-                className={`p-0.5 rounded transition-colors ${userFeedback === 'medio' ? 'text-yellow-500 bg-yellow-500/10' : 'text-muted-foreground hover:text-yellow-500'}`}
-                title="Moderado"
-              >
-                <Minus className="w-3.5 h-3.5" />
-              </button>
-              <button
-                onClick={() => saveDifficultyFeedback('dificil')}
-                disabled={feedbackSaving}
-                className={`p-0.5 rounded transition-colors ${userFeedback === 'dificil' ? 'text-red-500 bg-red-500/10' : 'text-muted-foreground hover:text-red-500'}`}
-                title="Difícil"
-              >
-                <ThumbsDown className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          </div>
+          <span className="text-muted-foreground">{currentSet}/{totalSets}</span>
         </div>
         <Progress value={(currentSet / Math.max(1, totalSets)) * 100} className="h-1.5" />
         <div className="text-[11px] text-muted-foreground">
