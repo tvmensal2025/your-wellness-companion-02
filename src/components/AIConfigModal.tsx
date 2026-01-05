@@ -1,10 +1,10 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
-import { X } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { X, Sparkles, Zap, Brain, Cpu } from 'lucide-react';
 
 interface AIConfiguration {
   id: string;
@@ -25,6 +25,77 @@ interface AIConfigModalProps {
   onSave: (config: AIConfiguration) => void;
 }
 
+// Modelos disponíveis por serviço
+interface ModelOption {
+  value: string;
+  label: string;
+  description: string;
+  recommended?: boolean;
+}
+
+const serviceModels: Record<string, ModelOption[]> = {
+  lovable: [
+    { value: 'google/gemini-2.5-flash', label: 'Gemini 2.5 Flash', description: 'Balanceado: rápido e eficiente', recommended: true },
+    { value: 'google/gemini-2.5-flash-lite', label: 'Gemini 2.5 Flash Lite', description: 'Mais rápido e econômico' },
+    { value: 'google/gemini-2.5-pro', label: 'Gemini 2.5 Pro', description: 'Mais poderoso para tarefas complexas' },
+    { value: 'google/gemini-3-pro-preview', label: 'Gemini 3 Pro Preview', description: 'Nova geração experimental' },
+    { value: 'openai/gpt-5', label: 'GPT-5', description: 'Mais preciso e avançado' },
+    { value: 'openai/gpt-5-mini', label: 'GPT-5 Mini', description: 'Balanceado custo/performance' },
+    { value: 'openai/gpt-5-nano', label: 'GPT-5 Nano', description: 'Rápido e econômico' },
+  ],
+  openai: [
+    { value: 'gpt-4o', label: 'GPT-4o', description: 'Modelo mais recente', recommended: true },
+    { value: 'gpt-4', label: 'GPT-4', description: 'Alta precisão' },
+    { value: 'gpt-3.5-turbo', label: 'GPT-3.5 Turbo', description: 'Rápido e econômico' },
+    { value: 'o1-pro', label: 'O1 Pro', description: 'Raciocínio avançado' },
+  ],
+  gemini: [
+    { value: 'gemini-1.5-pro', label: 'Gemini 1.5 Pro', description: 'Alta capacidade', recommended: true },
+    { value: 'gemini-1.5-flash', label: 'Gemini 1.5 Flash', description: 'Rápido e eficiente' },
+  ],
+  ollama: [
+    { value: 'llama3.1:8b-instruct-q5_K_M', label: 'Llama 3.1 8B', description: 'Local, sem custo', recommended: true },
+    { value: 'deepseek-r1:8b', label: 'DeepSeek R1', description: 'Raciocínio local' },
+    { value: 'qwen2.5', label: 'Qwen 2.5', description: 'Multilingue' },
+    { value: 'mistral', label: 'Mistral', description: 'Eficiente' },
+  ]
+};
+
+const serviceInfo = {
+  lovable: { 
+    icon: Sparkles, 
+    color: 'text-purple-600', 
+    bgColor: 'bg-purple-50', 
+    borderColor: 'border-purple-200',
+    label: 'Lovable AI',
+    description: 'IA integrada - sem necessidade de API key'
+  },
+  openai: { 
+    icon: Brain, 
+    color: 'text-green-600', 
+    bgColor: 'bg-green-50', 
+    borderColor: 'border-green-200',
+    label: 'OpenAI',
+    description: 'Requer OPENAI_API_KEY configurada'
+  },
+  gemini: { 
+    icon: Zap, 
+    color: 'text-blue-600', 
+    bgColor: 'bg-blue-50', 
+    borderColor: 'border-blue-200',
+    label: 'Google Gemini',
+    description: 'Requer GOOGLE_AI_API_KEY configurada'
+  },
+  ollama: { 
+    icon: Cpu, 
+    color: 'text-orange-600', 
+    bgColor: 'bg-orange-50', 
+    borderColor: 'border-orange-200',
+    label: 'Ollama',
+    description: 'Modelos locais - sem custo de API'
+  }
+};
+
 export const AIConfigModal: React.FC<AIConfigModalProps> = ({
   isOpen,
   onClose,
@@ -32,33 +103,10 @@ export const AIConfigModal: React.FC<AIConfigModalProps> = ({
   onSave
 }) => {
   const [localConfig, setLocalConfig] = useState<AIConfiguration | null>(config);
-  const [ollamaModels, setOllamaModels] = useState<string[]>([]);
-  const [loadingOllama, setLoadingOllama] = useState(false);
 
   React.useEffect(() => {
     setLocalConfig(config);
   }, [config]);
-
-  React.useEffect(() => {
-    const loadOllamaTags = async () => {
-      if (!localConfig || localConfig.service_name !== 'ollama') return;
-      setLoadingOllama(true);
-      try {
-        // Se existir variável do frontend, utiliza; caso contrário, usa host padrão
-        const base = (import.meta as any).env?.VITE_OLLAMA_PROXY_URL || 'https://ids-ollama.ifrhb3.easypanel.host';
-        const resp = await fetch(`${String(base).replace(/\/$/, '')}/api/tags`);
-        if (!resp.ok) throw new Error('Falha ao ler tags');
-        const data = await resp.json();
-        const names: string[] = (data?.models || []).map((m: any) => m?.name).filter(Boolean);
-        if (Array.isArray(names) && names.length) setOllamaModels(names);
-      } catch (_) {
-        // Silencioso: usa fallback
-      } finally {
-        setLoadingOllama(false);
-      }
-    };
-    loadOllamaTags();
-  }, [localConfig?.service_name]);
 
   if (!localConfig) return null;
 
@@ -67,8 +115,18 @@ export const AIConfigModal: React.FC<AIConfigModalProps> = ({
     onClose();
   };
 
+  const handleServiceChange = (service: string) => {
+    const models = serviceModels[service as keyof typeof serviceModels] || [];
+    const defaultModel = models.find(m => m.recommended)?.value || models[0]?.value || '';
+    setLocalConfig({ 
+      ...localConfig, 
+      service_name: service,
+      model: defaultModel
+    });
+  };
+
   const getFunctionTitle = (functionality: string) => {
-    const titles = {
+    const titles: Record<string, string> = {
       chat_daily: 'Chat Diário',
       weekly_report: 'Relatórios Semanais', 
       monthly_report: 'Relatórios Mensais',
@@ -78,27 +136,23 @@ export const AIConfigModal: React.FC<AIConfigModalProps> = ({
       daily_missions: 'Missões Diárias',
       whatsapp_reports: 'Relatórios WhatsApp',
       email_reports: 'Relatórios Email'
-    } as Record<string, string>;
+    };
     return titles[functionality] || functionality;
   };
 
-  // Fallback estático para Ollama quando lista dinâmica não estiver disponível
-  const ollamaFallback = [
-    'llama3.1:8b-instruct-q5_K_M',
-    'deepseek-r1:8b',
-    'llama3.1:8b',
-    'qwen2.5',
-    'mistral'
-  ];
-
-  const availableOllamaModels = ollamaModels.length ? ollamaModels : ollamaFallback;
+  const currentService = serviceInfo[localConfig.service_name as keyof typeof serviceInfo] || serviceInfo.lovable;
+  const currentModels = serviceModels[localConfig.service_name as keyof typeof serviceModels] || serviceModels.lovable;
+  const ServiceIcon = currentService.icon;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" aria-describedby="config-dialog-description">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto" aria-describedby="config-dialog-description">
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">
-            Configuração Avançada: {getFunctionTitle(localConfig.functionality)}
+            <div className="flex items-center gap-2">
+              <ServiceIcon className={`h-5 w-5 ${currentService.color}`} />
+              Configuração: {getFunctionTitle(localConfig.functionality)}
+            </div>
             <Button variant="ghost" size="sm" onClick={onClose}>
               <X className="h-4 w-4" />
             </Button>
@@ -109,13 +163,13 @@ export const AIConfigModal: React.FC<AIConfigModalProps> = ({
         </DialogHeader>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Coluna Esquerda - Status e Configuração */}
+          {/* Coluna Esquerda - Status e Serviço */}
           <div className="space-y-6">
             {/* Status */}
             <div>
               <h3 className="font-semibold mb-4">Status</h3>
               <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <span className="font-medium">Ativo</span>
+                <span className="font-medium">Funcionalidade Ativa</span>
                 <Switch
                   checked={localConfig.is_active}
                   onCheckedChange={(checked) =>
@@ -125,63 +179,79 @@ export const AIConfigModal: React.FC<AIConfigModalProps> = ({
               </div>
             </div>
 
-            {/* Configuração de IA */}
+            {/* Seleção de Serviço */}
             <div>
-              <h3 className="font-semibold mb-4">Configuração de IA</h3>
-              
+              <h3 className="font-semibold mb-4">Serviço de IA</h3>
+              <div className="grid grid-cols-2 gap-3">
+                {Object.entries(serviceInfo).map(([key, info]) => {
+                  const Icon = info.icon;
+                  const isSelected = localConfig.service_name === key;
+                  return (
+                    <button
+                      key={key}
+                      onClick={() => handleServiceChange(key)}
+                      className={`p-3 rounded-lg border-2 transition-all text-left ${
+                        isSelected 
+                          ? `${info.bgColor} ${info.borderColor} ring-2 ring-offset-1 ring-${info.color.replace('text-', '')}`
+                          : 'bg-white border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 mb-1">
+                        <Icon className={`h-4 w-4 ${isSelected ? info.color : 'text-gray-500'}`} />
+                        <span className={`font-medium text-sm ${isSelected ? 'text-gray-900' : 'text-gray-700'}`}>
+                          {info.label}
+                        </span>
+                        {key === 'lovable' && (
+                          <Badge variant="secondary" className="text-[10px] px-1 py-0 bg-purple-100 text-purple-700">
+                            Recomendado
+                          </Badge>
+                        )}
+                      </div>
+                      <p className="text-xs text-gray-500">{info.description}</p>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Seleção de Modelo */}
+            <div>
+              <h3 className="font-semibold mb-4">Modelo</h3>
+              <div className="space-y-2 max-h-48 overflow-y-auto">
+                {currentModels.map((model) => (
+                  <button
+                    key={model.value}
+                    onClick={() => setLocalConfig({ ...localConfig, model: model.value })}
+                    className={`w-full p-3 rounded-lg border text-left transition-all ${
+                      localConfig.model === model.value
+                        ? `${currentService.bgColor} ${currentService.borderColor}`
+                        : 'bg-white border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium text-sm">{model.label}</span>
+                      {model.recommended && (
+                        <Badge variant="outline" className="text-[10px] px-1 py-0">
+                          Recomendado
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">{model.description}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Coluna Direita - Parâmetros e Prompt */}
+          <div className="space-y-6">
+            {/* Parâmetros */}
+            <div>
+              <h3 className="font-semibold mb-4">Parâmetros</h3>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2">Serviço</label>
-                  <select
-                    value={localConfig.service_name}
-                    onChange={(e) =>
-                      setLocalConfig({ ...localConfig, service_name: e.target.value })
-                    }
-                    className="w-full p-2 border rounded-md"
-                  >
-                    <option value="openai">OpenAI</option>
-                    <option value="gemini">Google Gemini</option>
-                    <option value="ollama">Ollama</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-2">Modelo</label>
-                  <select
-                    value={localConfig.model}
-                    onChange={(e) =>
-                      setLocalConfig({ ...localConfig, model: e.target.value })
-                    }
-                    className="w-full p-2 border rounded-md"
-                  >
-                    {localConfig.service_name === 'openai' && (
-                      <>
-                        <option value="gpt-4o">GPT-4o</option>
-                        <option value="gpt-4">GPT-4</option>
-                        <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
-                        <option value="o1-pro">O1 Pro</option>
-                      </>
-                    )}
-                    {localConfig.service_name === 'gemini' && (
-                      <>
-                        <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
-                        <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
-                      </>
-                    )}
-                    {localConfig.service_name === 'ollama' && (
-                      <>
-                        {loadingOllama && <option value="">Carregando modelos...</option>}
-                        {!loadingOllama && availableOllamaModels.map((m) => (
-                          <option key={m} value={m}>{m}</option>
-                        ))}
-                      </>
-                    )}
-                  </select>
-                </div>
-
-                <div>
                   <label className="block text-sm font-medium mb-2">
-                    Tokens Máximos: {localConfig.max_tokens}
+                    Tokens Máximos: <span className="font-mono text-purple-600">{localConfig.max_tokens}</span>
                   </label>
                   <Slider
                     value={[localConfig.max_tokens]}
@@ -193,14 +263,15 @@ export const AIConfigModal: React.FC<AIConfigModalProps> = ({
                     step={50}
                     className="w-full"
                   />
-                  <div className="text-xs text-gray-500 mt-1">
-                    Mínimo: 50 tokens • Máximo: 8192 tokens
+                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                    <span>50 (curto)</span>
+                    <span>8192 (longo)</span>
                   </div>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium mb-2">
-                    Temperatura: {localConfig.temperature}
+                    Temperatura: <span className="font-mono text-purple-600">{localConfig.temperature}</span>
                   </label>
                   <Slider
                     value={[localConfig.temperature]}
@@ -212,35 +283,36 @@ export const AIConfigModal: React.FC<AIConfigModalProps> = ({
                     step={0.1}
                     className="w-full"
                   />
-                  <div className="text-xs text-gray-500 mt-1">
-                    0.0 (determinístico) • 2.0 (muito criativo)
+                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                    <span>0.0 (preciso)</span>
+                    <span>2.0 (criativo)</span>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Coluna Direita - Métricas e Prompt */}
-          <div className="space-y-6">
-            {/* Métricas */}
-            <div>
-              <h3 className="font-semibold mb-4">Métricas</h3>
-              <div className="space-y-3">
+            {/* Resumo da Configuração */}
+            <div className={`p-4 rounded-lg ${currentService.bgColor} ${currentService.borderColor} border`}>
+              <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
+                <ServiceIcon className={`h-4 w-4 ${currentService.color}`} />
+                Configuração Atual
+              </h4>
+              <div className="space-y-1 text-sm">
                 <div className="flex justify-between">
-                  <span>Tokens:</span>
+                  <span className="text-gray-600">Serviço:</span>
+                  <span className="font-medium">{currentService.label}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Modelo:</span>
+                  <span className="font-mono text-xs">{localConfig.model}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Tokens:</span>
                   <span className="font-mono">{localConfig.max_tokens}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Temperatura:</span>
+                  <span className="text-gray-600">Temperatura:</span>
                   <span className="font-mono">{localConfig.temperature}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Custo:</span>
-                  <span className="font-mono text-green-600">$0.002</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Prioridade:</span>
-                  <span className="font-mono">Alta</span>
                 </div>
               </div>
             </div>
@@ -253,12 +325,9 @@ export const AIConfigModal: React.FC<AIConfigModalProps> = ({
                 onChange={(e) =>
                   setLocalConfig({ ...localConfig, system_prompt: e.target.value })
                 }
-                className="w-full h-32 p-3 border rounded-md text-sm resize-none"
+                className="w-full h-32 p-3 border rounded-md text-sm resize-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                 placeholder="Digite o prompt do sistema para esta funcionalidade..."
               />
-              <div className="mt-2 text-xs text-gray-500">
-                Usado nesta funcionalidade: {getFunctionTitle(localConfig.functionality)}
-              </div>
             </div>
           </div>
         </div>
@@ -266,10 +335,11 @@ export const AIConfigModal: React.FC<AIConfigModalProps> = ({
         {/* Botões de Ação */}
         <div className="flex justify-end gap-3 mt-6 pt-4 border-t">
           <Button variant="outline" onClick={onClose}>
-            Fechar
+            Cancelar
           </Button>
           <Button onClick={handleSave} className="bg-purple-600 hover:bg-purple-700">
-            Salvar
+            <Sparkles className="h-4 w-4 mr-2" />
+            Salvar Configuração
           </Button>
         </div>
       </DialogContent>

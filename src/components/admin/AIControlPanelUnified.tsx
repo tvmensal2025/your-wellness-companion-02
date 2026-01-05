@@ -125,7 +125,18 @@ const AIControlPanelUnified = () => {
       setActivating(true);
       const { data, error } = await supabase.functions.invoke('activate-ai');
       if (error) throw error;
-      toast.success(`IA ativada: OpenAI ${data?.openai?.ok ? '✅' : '❌'} • Google ${data?.google?.ok ? '✅' : '❌'} • Ollama ${data?.ollama?.ok ? '✅' : '❌'}`);
+      
+      const lovableOk = data?.lovable?.ok ? '✅' : '❌';
+      const openaiOk = data?.openai?.ok ? '✅' : '❌';
+      const googleOk = data?.google?.ok ? '✅' : '❌';
+      const ollamaOk = data?.ollama?.ok ? '✅' : '❌';
+      
+      toast.success(`IA ativada: Lovable ${lovableOk} • OpenAI ${openaiOk} • Google ${googleOk} • Ollama ${ollamaOk}`);
+      
+      if (data?.summary?.recommended_service) {
+        toast.info(`Serviço recomendado: ${data.summary.recommended_service.toUpperCase()}`);
+      }
+      
       await loadConfigurations();
     } catch (err) {
       console.error('Erro ao ativar IA:', err);
