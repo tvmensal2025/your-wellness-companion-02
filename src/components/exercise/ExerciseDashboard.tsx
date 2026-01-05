@@ -4,13 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Flame, Target, Zap, Clock, Calendar, RefreshCw } from "lucide-react";
+import { Flame, Target, Zap, Clock, Calendar, RefreshCw, AlertTriangle } from "lucide-react";
 import { motion } from "framer-motion";
 
 import { ExerciseDetailModal } from "./ExerciseDetailModal";
 import { WeeklyPlanView } from "./WeeklyPlanView";
 import { ActiveWorkoutModal } from "./ActiveWorkoutModal";
 import { WorkoutHistory } from "./WorkoutHistory";
+import { SavedProgramView } from "./SavedProgramView";
 
 import { useExerciseProgram } from "@/hooks/useExerciseProgram";
 import { useExercisesLibrary, Exercise, WeeklyPlan } from "@/hooks/useExercisesLibrary";
@@ -21,12 +22,20 @@ interface ExerciseDashboardProps {
 }
 
 export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) => {
-  const { activeProgram, completeWorkout, workoutLogs } = useExerciseProgram(user?.id);
+  const { activeProgram, completeWorkout, workoutLogs, loading: programLoading } = useExerciseProgram(user?.id);
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [activeWorkout, setActiveWorkout] = useState<WeeklyPlan | null>(null);
   const [isWorkoutModalOpen, setIsWorkoutModalOpen] = useState(false);
+  const [showLibraryPlan, setShowLibraryPlan] = useState(false);
   const { toast } = useToast();
+
+  // Verificar se o programa salvo tem plano semanal detalhado
+  const hasSavedWeekPlan = useMemo(() => {
+    if (!activeProgram) return false;
+    const programData = (activeProgram as any).plan_data || (activeProgram as any).exercises;
+    return programData?.weeks && programData.weeks.length > 0;
+  }, [activeProgram]);
 
   const programData = useMemo(() => {
     if (!activeProgram) return null;
@@ -85,15 +94,42 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
     return undefined;
   }, [activeProgram, programData]);
 
-  const { weeklyPlan, todayWorkout, loading, error, refreshPlan } = useExercisesLibrary(
+  // Só usar biblioteca se não tiver plano salvo OU se usuário quiser ver
+  const shouldUseLibrary = !hasSavedWeekPlan || showLibraryPlan;
+  
+  const { weeklyPlan, todayWorkout, loading: libraryLoading, error, refreshPlan } = useExercisesLibrary(
     location,
     goal,
     difficulty
   );
 
+  const loading = programLoading || (shouldUseLibrary && libraryLoading);
+
   const handleStartWorkout = (day: WeeklyPlan) => {
     setActiveWorkout(day);
     setIsWorkoutModalOpen(true);
+  };
+
+  const handleStartSavedWorkout = (weekNumber: number, activities: string[]) => {
+    // Criar um objeto WeeklyPlan compatível
+    const workout: WeeklyPlan = {
+      dayNumber: new Date().getDay(),
+      dayName: ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'][new Date().getDay()],
+      shortName: ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'][new Date().getDay()],
+      muscleGroups: [],
+      title: `Semana ${weekNumber} - Treino do Dia`,
+      exercises: [], // Será preenchido com os exercícios da biblioteca se necessário
+      isRestDay: false,
+      isToday: true
+    };
+    
+    setActiveWorkout(workout);
+    setIsWorkoutModalOpen(true);
+    
+    toast({
+      title: "🔥 Vamos treinar!",
+      description: `Iniciando treino da Semana ${weekNumber}`,
+    });
   };
 
   const handleExerciseClick = (exercise: Exercise) => {
@@ -122,8 +158,18 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
   const todayExerciseCount = todayWorkout?.exercises.length || 0;
   const estimatedDuration = Math.round(todayExerciseCount * 4);
 
+  // Labels para exibição
+  const goalLabels: Record<string, string> = {
+    hipertrofia: "💪 Hipertrofia",
+    emagrecimento: "🔥 Emagrecimento",
+    condicionamento: "🏃 Condicionamento",
+    saude: "❤️ Saúde",
+    estresse: "🧘 Anti-Estresse"
+  };
+
   return (
     <div className="p-4 md:p-6 space-y-6">
+      {/* Header com informações do treino */}
       <motion.section
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -132,8 +178,7 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
       >
         <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
         <div className="absolute bottom-0 left-0 w-48 h-48 bg-black/10 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2" />
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMiIvPjwvZz48L2c+PC9zdmc+')] opacity-50" />
-
+        
         <div className="relative z-10 flex flex-col md:flex-row md:items-center gap-5">
           <motion.div
             initial={{ scale: 0 }}
@@ -148,43 +193,47 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
             <div className="flex items-center gap-2 flex-wrap">
               <Badge className="bg-white/20 text-white border-0 backdrop-blur-sm text-[10px] md:text-xs font-semibold tracking-wide">
                 <Zap className="w-3 h-3 mr-1" />
-                {todayWorkout?.isRestDay ? "DIA DE DESCANSO" : "TREINO DO DIA"}
+                {hasSavedWeekPlan ? "MEU PROGRAMA" : "TREINO DO DIA"}
               </Badge>
-              <Badge className="bg-white/10 text-white/80 border-0 text-[10px]">
-                <Calendar className="w-3 h-3 mr-1" />
-                {todayWorkout?.dayName}
-              </Badge>
+              {activeProgram && (
+                <Badge className="bg-white/10 text-white/80 border-0 text-[10px]">
+                  <Calendar className="w-3 h-3 mr-1" />
+                  Semana {activeProgram.current_week}/{activeProgram.duration_weeks}
+                </Badge>
+              )}
             </div>
             <h2 className="text-xl md:text-3xl font-bold text-white leading-tight">
-              {todayWorkout?.isRestDay
-                ? "Hora de recuperar! 💤"
-                : todayWorkout?.title || "Sua melhor versão começa agora! 💪"}
+              {activeProgram 
+                ? (activeProgram as any).plan_name || (activeProgram as any).name || "Meu Programa"
+                : "Sua melhor versão começa agora! 💪"}
             </h2>
             <p className="text-sm md:text-base text-white/80 max-w-lg">
-              {todayWorkout?.isRestDay
-                ? "Seu corpo precisa de descanso para ficar mais forte. Aproveite!"
+              {hasSavedWeekPlan 
+                ? "Siga seu programa personalizado. Cada treino foi pensado para suas necessidades."
                 : "Cada treino é uma conquista. Foco no movimento, não na perfeição."}
             </p>
           </div>
 
-          {!todayWorkout?.isRestDay && (
+          {activeProgram && (
             <div className="flex gap-3 md:flex-col">
               <div className="flex items-center gap-2 bg-white/15 backdrop-blur-sm rounded-xl px-3 py-2 md:px-4 md:py-3">
                 <Target className="w-4 h-4 text-white" />
                 <div>
                   <p className="text-[10px] text-white/70 uppercase tracking-wide">
-                    Exercícios
+                    Progresso
                   </p>
-                  <p className="text-lg font-bold text-white">{todayExerciseCount}</p>
+                  <p className="text-lg font-bold text-white">
+                    {activeProgram.completed_workouts}/{activeProgram.total_workouts}
+                  </p>
                 </div>
               </div>
               <div className="flex items-center gap-2 bg-white/15 backdrop-blur-sm rounded-xl px-3 py-2 md:px-4 md:py-3">
                 <Clock className="w-4 h-4 text-white" />
                 <div>
                   <p className="text-[10px] text-white/70 uppercase tracking-wide">
-                    Duração
+                    Treinos/Sem
                   </p>
-                  <p className="text-lg font-bold text-white">~{estimatedDuration}min</p>
+                  <p className="text-lg font-bold text-white">{activeProgram.workouts_per_week}x</p>
                 </div>
               </div>
             </div>
@@ -192,6 +241,7 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
         </div>
       </motion.section>
 
+      {/* Badges de contexto */}
       <motion.section
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -203,7 +253,7 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
             {location === "casa" ? "🏠 Em Casa" : "🏋️ Academia"}
           </Badge>
           <Badge variant="outline" className="px-3 py-1.5 capitalize">
-            🎯 {goal}
+            {goalLabels[goal] || `🎯 ${goal}`}
           </Badge>
           {difficulty && (
             <Badge variant="secondary" className="px-3 py-1.5 capitalize">
@@ -211,20 +261,35 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
             </Badge>
           )}
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={refreshPlan}
-          disabled={loading}
-          className="text-muted-foreground hover:text-foreground"
-        >
-          <RefreshCw className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`} />
-          Atualizar
-        </Button>
+        
+        <div className="flex items-center gap-2">
+          {hasSavedWeekPlan && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowLibraryPlan(!showLibraryPlan)}
+              className="text-xs"
+            >
+              {showLibraryPlan ? "📋 Ver Meu Programa" : "📚 Ver Biblioteca"}
+            </Button>
+          )}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={refreshPlan}
+            disabled={loading}
+            className="text-muted-foreground hover:text-foreground"
+          >
+            <RefreshCw className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`} />
+            Atualizar
+          </Button>
+        </div>
       </motion.section>
 
+      {/* Histórico de treinos */}
       <WorkoutHistory logs={workoutLogs as any} />
 
+      {/* Conteúdo principal */}
       {loading ? (
         <div className="space-y-4">
           <Skeleton className="h-20 w-full rounded-xl" />
@@ -235,7 +300,7 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
           </div>
           <Skeleton className="h-48 w-full rounded-xl" />
         </div>
-      ) : error ? (
+      ) : error && shouldUseLibrary ? (
         <Card className="border-red-200 bg-red-50 dark:bg-red-950/20">
           <CardContent className="p-6 text-center">
             <p className="text-red-600 dark:text-red-400">{error}</p>
@@ -244,7 +309,15 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
             </Button>
           </CardContent>
         </Card>
+      ) : hasSavedWeekPlan && !showLibraryPlan ? (
+        // MOSTRAR PROGRAMA SALVO
+        <SavedProgramView
+          program={activeProgram as any}
+          onStartWorkout={handleStartSavedWorkout}
+          onCompleteWorkout={() => {}}
+        />
       ) : (
+        // MOSTRAR BIBLIOTECA DE EXERCÍCIOS
         <WeeklyPlanView
           weeklyPlan={weeklyPlan}
           todayWorkout={todayWorkout}
@@ -253,6 +326,7 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
         />
       )}
 
+      {/* Modais */}
       {selectedExercise && (
         <ExerciseDetailModal
           isOpen={isDetailModalOpen}
