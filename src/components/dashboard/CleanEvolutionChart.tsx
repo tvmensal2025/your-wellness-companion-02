@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useMemo, memo } from 'react';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { TrendingUp } from 'lucide-react';
 
 interface WeightRecord {
   id: string;
@@ -16,63 +17,100 @@ interface CleanEvolutionChartProps {
   loading?: boolean;
 }
 
-export const CleanEvolutionChart: React.FC<CleanEvolutionChartProps> = ({
-  measurements,
-  loading = false
-}) => {
-  if (loading) {
+// Memoized mini stat component
+const MiniStat = memo(({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) => (
+  <div className="py-3 text-center">
+    <p className="text-[10px] text-muted-foreground uppercase tracking-wide">{label}</p>
+    <p className={`text-sm font-semibold mt-0.5 ${highlight ? 'text-primary' : 'text-foreground'}`}>
+      {value}
+    </p>
+  </div>
+));
+
+MiniStat.displayName = 'MiniStat';
+
+// Memoized tooltip component - defined outside to prevent re-creation
+const CustomTooltip = memo(({ active, payload }: any) => {
+  if (active && payload && payload.length) {
     return (
-      <div className="rounded-2xl bg-card p-4 animate-pulse">
-        <div className="h-4 bg-muted rounded w-1/4 mb-4" />
-        <div className="h-36 bg-muted/50 rounded-xl" />
+      <div className="bg-popover/95 backdrop-blur-sm border border-border rounded-lg px-3 py-2 shadow-lg">
+        <p className="text-sm font-semibold text-foreground">
+          {payload[0].value.toFixed(1)} kg
+        </p>
+        <p className="text-xs text-muted-foreground">{payload[0].payload.date}</p>
       </div>
     );
   }
+  return null;
+});
 
-  if (!measurements || measurements.length === 0) {
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="rounded-2xl bg-card border border-border/50 p-4"
-      >
-        <h3 className="text-sm font-medium text-foreground mb-3">Evolução</h3>
-        <div className="h-28 flex items-center justify-center text-sm text-muted-foreground">
-          Registre seu peso para acompanhar
-        </div>
-      </motion.div>
-    );
+CustomTooltip.displayName = 'CustomTooltip';
+
+// Empty state component - lightweight and fast
+const EmptyState = memo(() => (
+  <motion.div
+    initial={{ opacity: 0, y: 10 }}
+    animate={{ opacity: 1, y: 0 }}
+    className="rounded-2xl bg-card border border-border/50 p-4"
+  >
+    <h3 className="text-sm font-medium text-foreground mb-3">Evolução</h3>
+    <div className="h-28 flex flex-col items-center justify-center gap-2 text-muted-foreground">
+      <TrendingUp className="h-6 w-6 opacity-50" />
+      <span className="text-sm">Registre seu peso para acompanhar</span>
+    </div>
+  </motion.div>
+));
+
+EmptyState.displayName = 'EmptyState';
+
+// Loading skeleton - super lightweight
+const LoadingSkeleton = memo(() => (
+  <div className="rounded-2xl bg-card p-4 animate-pulse">
+    <div className="h-4 bg-muted rounded w-1/4 mb-4" />
+    <div className="h-36 bg-muted/50 rounded-xl" />
+  </div>
+));
+
+LoadingSkeleton.displayName = 'LoadingSkeleton';
+
+export const CleanEvolutionChart: React.FC<CleanEvolutionChartProps> = memo(({
+  measurements,
+  loading = false
+}) => {
+  // Fast early returns - no computation needed
+  if (loading) {
+    return <LoadingSkeleton />;
   }
 
-  // Prepare chart data - last 14 entries
-  const chartData = measurements
-    .slice(0, 14)
-    .reverse()
-    .map(m => ({
-      date: format(new Date(m.measurement_date || m.created_at), 'dd/MM', { locale: ptBR }),
-      weight: Number(m.peso_kg)
-    }));
+  if (!measurements || measurements.length === 0) {
+    return <EmptyState />;
+  }
 
-  const weights = chartData.map(d => d.weight);
-  const minWeight = Math.min(...weights);
-  const maxWeight = Math.max(...weights);
-  const lastWeight = weights[weights.length - 1];
-  const firstWeight = weights[0];
-  const change = lastWeight - firstWeight;
+  // Memoize all expensive computations
+  const { chartData, minWeight, maxWeight, lastWeight, change } = useMemo(() => {
+    // Prepare chart data - last 14 entries
+    const data = measurements
+      .slice(0, 14)
+      .reverse()
+      .map(m => ({
+        date: format(new Date(m.measurement_date || m.created_at), 'dd/MM', { locale: ptBR }),
+        weight: Number(m.peso_kg)
+      }));
 
-  const CustomTooltip = ({ active, payload }: any) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-popover/95 backdrop-blur-sm border border-border rounded-lg px-3 py-2 shadow-lg">
-          <p className="text-sm font-semibold text-foreground">
-            {payload[0].value.toFixed(1)} kg
-          </p>
-          <p className="text-xs text-muted-foreground">{payload[0].payload.date}</p>
-        </div>
-      );
-    }
-    return null;
-  };
+    const weights = data.map(d => d.weight);
+    const min = Math.min(...weights);
+    const max = Math.max(...weights);
+    const last = weights[weights.length - 1];
+    const first = weights[0];
+
+    return {
+      chartData: data,
+      minWeight: min,
+      maxWeight: max,
+      lastWeight: last,
+      change: last - first
+    };
+  }, [measurements]);
 
   return (
     <motion.div
@@ -135,6 +173,7 @@ export const CleanEvolutionChart: React.FC<CleanEvolutionChartProps> = ({
                 strokeWidth: 2,
                 fill: 'hsl(var(--background))'
               }}
+              isAnimationActive={false}
             />
           </AreaChart>
         </ResponsiveContainer>
@@ -148,17 +187,6 @@ export const CleanEvolutionChart: React.FC<CleanEvolutionChartProps> = ({
       </div>
     </motion.div>
   );
-};
+});
 
-const MiniStat: React.FC<{ label: string; value: string; highlight?: boolean }> = ({ 
-  label, 
-  value, 
-  highlight 
-}) => (
-  <div className="py-3 text-center">
-    <p className="text-[10px] text-muted-foreground uppercase tracking-wide">{label}</p>
-    <p className={`text-sm font-semibold mt-0.5 ${highlight ? 'text-primary' : 'text-foreground'}`}>
-      {value}
-    </p>
-  </div>
-);
+CleanEvolutionChart.displayName = 'CleanEvolutionChart';
