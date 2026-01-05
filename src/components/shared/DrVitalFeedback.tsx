@@ -1,9 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Stethoscope, RefreshCw, User, Download, Share2, Mail, MessageCircle, Printer } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { 
+  Stethoscope, 
+  RefreshCw, 
+  User, 
+  Download, 
+  Share2, 
+  Mail, 
+  MessageCircle, 
+  Printer,
+  TrendingUp,
+  TrendingDown,
+  Target,
+  Award,
+  ChevronLeft,
+  ChevronRight,
+  Sparkles,
+  Heart,
+  Brain,
+  Shield
+} from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { getCharacterImageUrl } from '@/lib/character-images';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface DrVitalFeedbackProps {
   assessmentType: 'abundance' | 'competency' | 'health' | 'life';
@@ -34,75 +55,93 @@ export const DrVitalFeedback: React.FC<DrVitalFeedbackProps> = ({
 }) => {
   const [currentMessage, setCurrentMessage] = useState(0);
   const [showActions, setShowActions] = useState(false);
-  const [showShareOptions, setShowShareOptions] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(true);
   const { toast } = useToast();
 
-  // Obter URL da imagem do Dr. Vital
   const drVitalImageUrl = getCharacterImageUrl('dr-vital');
 
-  // Calcular estatísticas gerais
+  // Calcular estatísticas - converter para escala 0-100
   const scoreValues = Object.values(scores);
-  const averageScore = scoreValues.reduce((a, b) => a + b, 0) / scoreValues.length;
+  const maxPossible = assessmentType === 'abundance' ? 5 : 10;
+  const normalizedScores = scoreValues.map(s => (s / maxPossible) * 100);
+  const averageScore = normalizedScores.reduce((a, b) => a + b, 0) / normalizedScores.length;
   
-  // Identificar áreas críticas e fortes
-  const criticalAreas = areas.filter(area => scores[area.id] <= 2);
-  const strongAreas = areas.filter(area => scores[area.id] >= 4);
+  // Identificar áreas (usando threshold de 40% para críticas e 70% para fortes)
+  const criticalAreas = areas.filter(area => {
+    const score = (scores[area.id] / maxPossible) * 100;
+    return score <= 40;
+  });
+  const strongAreas = areas.filter(area => {
+    const score = (scores[area.id] / maxPossible) * 100;
+    return score >= 70;
+  });
+  const mediumAreas = areas.filter(area => {
+    const score = (scores[area.id] / maxPossible) * 100;
+    return score > 40 && score < 70;
+  });
 
-  // Gerar feedback personalizado baseado no tipo de avaliação
+  // Função para determinar classificação do score
+  const getScoreClassification = (score: number) => {
+    if (score >= 80) return { label: 'Excelente', color: 'from-emerald-500 to-green-600', icon: '🏆' };
+    if (score >= 60) return { label: 'Bom', color: 'from-blue-500 to-indigo-600', icon: '👍' };
+    if (score >= 40) return { label: 'Regular', color: 'from-amber-500 to-orange-600', icon: '📊' };
+    return { label: 'Necessita Atenção', color: 'from-red-500 to-rose-600', icon: '⚠️' };
+  };
+
+  const classification = getScoreClassification(averageScore);
+
+  // Gerar feedback personalizado
   const generateFeedback = () => {
-    const feedbackMessages = {
-      abundance: [
-        `Olá! Sou o Dr. Vital, e analisei sua Roda da Abundância. 💰`,
-        `Seu score geral é de ${Math.round(averageScore * 20)}%. ${averageScore >= 4 ? 'Parabéns pelo progresso!' : 'Vamos trabalhar juntos para melhorar!'}`,
-        criticalAreas.length > 0 
-          ? `Identifiquei ${criticalAreas.length} área(s) que precisam de atenção especial: ${criticalAreas.map(a => a.name).join(', ')}.`
-          : 'Suas finanças estão bem equilibradas! Continue assim.',
-        strongAreas.length > 0
-          ? `Suas áreas mais fortes são: ${strongAreas.map(a => a.name).join(', ')}. Use-as como base para crescer!`
-          : 'Vamos fortalecer suas competências financeiras gradualmente.',
-        'Agora vou mostrar seus resultados detalhados para você acompanhar sua evolução.'
-      ],
-      competency: [
-        `Olá! Sou o Dr. Vital, e analisei sua Roda das Competências. 🎯`,
-        `Seu nível geral é de ${Math.round(averageScore * 10)}%. ${averageScore >= 7 ? 'Excelente desenvolvimento profissional!' : 'Há muito potencial para crescer!'}`,
-        criticalAreas.length > 0
-          ? `Recomendo focar no desenvolvimento de: ${criticalAreas.map(a => a.name).join(', ')}.`
-          : 'Suas competências estão bem desenvolvidas!',
-        strongAreas.length > 0
-          ? `Suas competências destaque são: ${strongAreas.map(a => a.name).join(', ')}. São seus diferenciais!`
-          : 'Vamos identificar e desenvolver suas competências naturais.',
-        'Agora vou mostrar sua análise detalhada para você acompanhar seu desenvolvimento.'
-      ],
-      health: [
-        `Olá! Sou o Dr. Vital, e analisei sua Roda da Saúde. 🏥`,
-        `Seu índice geral de saúde é ${Math.round(averageScore * 10)}%. ${averageScore >= 7 ? 'Ótimo cuidado com sua saúde!' : 'Vamos cuidar melhor de você!'}`,
-        criticalAreas.length > 0
-          ? `Áreas que precisam de atenção imediata: ${criticalAreas.map(a => a.name).join(', ')}.`
-          : 'Sua saúde está bem equilibrada!',
-        strongAreas.length > 0
-          ? `Pontos fortes da sua saúde: ${strongAreas.map(a => a.name).join(', ')}. Mantenha esses hábitos!`
-          : 'Vamos construir hábitos saudáveis gradualmente.',
-        'Agora vou mostrar seus indicadores detalhados para acompanharmos sua jornada de bem-estar.'
-      ],
-      life: [
-        `Olá! Sou o Dr. Vital, e analisei sua Roda da Vida. 🌟`,
-        `Seu índice de satisfação é ${Math.round(averageScore * 10)}%. ${averageScore >= 7 ? 'Vida bem equilibrada!' : 'Vamos buscar mais equilíbrio!'}`,
-        criticalAreas.length > 0
-          ? `Áreas da vida que merecem mais atenção: ${criticalAreas.map(a => a.name).join(', ')}.`
-          : 'Sua vida está bem balanceada entre as diferentes áreas!',
-        strongAreas.length > 0
-          ? `Seus pilares mais sólidos: ${strongAreas.map(a => a.name).join(', ')}. Use-os como apoio!`
-          : 'Vamos fortalecer cada área da sua vida de forma equilibrada.',
-        'Agora vou mostrar sua análise detalhada para você acompanhar seu crescimento pessoal.'
-      ]
+    const assessmentNames = {
+      abundance: 'Roda da Abundância Financeira',
+      competency: 'Roda das 8 Competências',
+      health: 'Avaliação de Saúde',
+      life: 'Roda da Vida'
     };
 
-    return feedbackMessages[assessmentType] || feedbackMessages.health;
+    const name = userProfile?.full_name?.split(' ')[0] || 'você';
+    const scoreText = Math.round(averageScore);
+    
+    const baseMessages = [
+      `Olá, ${name}! 👋 Sou o Dr. Vital e acabei de analisar sua ${assessmentNames[assessmentType]} com todo carinho e atenção científica.`,
+      
+      `📊 Seu score geral é de ${scoreText}% - classificado como "${classification.label}". ${
+        averageScore >= 70 
+          ? 'Você está no caminho certo!' 
+          : averageScore >= 50 
+            ? 'Há oportunidades de melhoria que vamos trabalhar juntos.' 
+            : 'Identifiquei algumas áreas prioritárias que precisamos focar.'
+      }`,
+      
+      strongAreas.length > 0 
+        ? `💪 Suas maiores forças são: ${strongAreas.slice(0, 3).map(a => a.name).join(', ')}. ${
+            strongAreas.length > 3 ? `E mais ${strongAreas.length - 3} áreas!` : ''
+          } Esses são pilares sólidos para seu crescimento!`
+        : `💡 Vamos construir seus pontos fortes! Com as estratégias certas, você pode transformar qualquer área em um pilar de sucesso.`,
+      
+      criticalAreas.length > 0
+        ? `🎯 Áreas para focar: ${criticalAreas.slice(0, 3).map(a => a.name).join(', ')}. ${
+            criticalAreas.length > 1 
+              ? 'Recomendo começar por uma de cada vez para resultados sustentáveis.' 
+              : 'Com dedicação, você pode transformar isso rapidamente!'
+          }`
+        : `✨ Parabéns! Não há áreas críticas. Seu foco agora é manter e elevar ainda mais!`,
+      
+      `🚀 Vamos ver seus resultados detalhados? Preparei gráficos, insights e um plano de ação personalizado para você!`
+    ];
+
+    return baseMessages;
   };
 
   const messages = generateFeedback();
 
-  // Controle manual das mensagens - removido useEffect automático
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsAnimating(false);
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, []);
+
   const handleNextMessage = () => {
     if (currentMessage < messages.length - 1) {
       setCurrentMessage(prev => prev + 1);
@@ -117,19 +156,15 @@ export const DrVitalFeedback: React.FC<DrVitalFeedbackProps> = ({
     }
   };
 
-  const handleShowResults = () => {
-    onShowResults();
-  };
-
   const handleShare = (method: 'email' | 'whatsapp' | 'print') => {
     const assessmentName = {
       abundance: 'Roda da Abundância',
       competency: 'Roda das Competências', 
-      health: 'Roda da Saúde',
+      health: 'Avaliação de Saúde',
       life: 'Roda da Vida'
     }[assessmentType];
 
-    const score = Math.round(averageScore * (assessmentType === 'abundance' ? 20 : 10));
+    const score = Math.round(averageScore);
     
     switch (method) {
       case 'email':
@@ -160,7 +195,7 @@ export const DrVitalFeedback: React.FC<DrVitalFeedbackProps> = ({
     }
 
     toast({
-      title: "Compartilhado com sucesso!",
+      title: "Compartilhado!",
       description: `Sua avaliação foi ${method === 'print' ? 'enviada para impressão' : 'compartilhada'}.`,
     });
   };
@@ -169,28 +204,44 @@ export const DrVitalFeedback: React.FC<DrVitalFeedbackProps> = ({
     const assessmentName = {
       abundance: 'Roda da Abundância',
       competency: 'Roda das Competências',
-      health: 'Roda da Saúde', 
+      health: 'Avaliação de Saúde', 
       life: 'Roda da Vida'
     }[assessmentType];
 
-    const score = Math.round(averageScore * (assessmentType === 'abundance' ? 20 : 10));
+    const score = Math.round(averageScore);
     
     const reportContent = `
-AVALIAÇÃO - ${assessmentName.toUpperCase()}
-Data: ${new Date().toLocaleDateString('pt-BR')}
-Score Geral: ${score}%
+═══════════════════════════════════════════════════════════
+                    ${assessmentName.toUpperCase()}
+═══════════════════════════════════════════════════════════
 
-ÁREAS FORTES:
-${strongAreas.map(area => `- ${area.name}: ${scores[area.id] * 20}%`).join('\n')}
+📅 Data: ${new Date().toLocaleDateString('pt-BR')}
+👤 Paciente: ${userProfile?.full_name || 'Não informado'}
+📧 Email: ${userProfile?.email || 'Não informado'}
 
-ÁREAS PARA MELHORAR:
-${criticalAreas.map(area => `- ${area.name}: ${scores[area.id] * 20}%`).join('\n')}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                      SCORE GERAL: ${score}%
+                    Classificação: ${classification.label}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-TODAS AS ÁREAS:
-${areas.map(area => `- ${area.name}: ${scores[area.id] * 20}%`).join('\n')}
+💪 ÁREAS FORTES (${strongAreas.length}):
+${strongAreas.length > 0 ? strongAreas.map(area => `   ✓ ${area.name}: ${Math.round((scores[area.id] / maxPossible) * 100)}%`).join('\n') : '   Nenhuma área acima de 70%'}
 
----
-Instituto dos Sonhos - Avaliação Personalizada
+📊 ÁREAS INTERMEDIÁRIAS (${mediumAreas.length}):
+${mediumAreas.length > 0 ? mediumAreas.map(area => `   ○ ${area.name}: ${Math.round((scores[area.id] / maxPossible) * 100)}%`).join('\n') : '   Nenhuma área entre 40-70%'}
+
+🎯 ÁREAS PARA MELHORAR (${criticalAreas.length}):
+${criticalAreas.length > 0 ? criticalAreas.map(area => `   ⚠ ${area.name}: ${Math.round((scores[area.id] / maxPossible) * 100)}%`).join('\n') : '   Nenhuma área abaixo de 40%'}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                    TODAS AS ÁREAS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${areas.map(area => `   ${area.icon} ${area.name}: ${Math.round((scores[area.id] / maxPossible) * 100)}%`).join('\n')}
+
+═══════════════════════════════════════════════════════════
+              Instituto dos Sonhos - Dr. Vital
+            Avaliação Personalizada de Saúde
+═══════════════════════════════════════════════════════════
     `.trim();
 
     const blob = new Blob([reportContent], { type: 'text/plain' });
@@ -200,7 +251,6 @@ Instituto dos Sonhos - Avaliação Personalizada
     a.download = `avaliacao-${assessmentType}-${new Date().toISOString().split('T')[0]}.txt`;
     document.body.appendChild(a);
     a.click();
-    // Usar setTimeout para garantir que o click foi processado antes de remover
     setTimeout(() => {
       if (a.parentNode === document.body) {
         document.body.removeChild(a);
@@ -214,41 +264,153 @@ Instituto dos Sonhos - Avaliação Personalizada
     });
   };
 
-  return (
-    <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
-      <Card className="max-w-2xl w-full bg-gradient-to-br from-blue-900/90 to-slate-900/90 border-blue-700/50 backdrop-blur-lg">
-        <CardHeader className="text-center pb-4">
-          <div className="mx-auto w-20 h-20 bg-blue-500/20 rounded-full flex items-center justify-center mb-4 overflow-hidden">
-            <img 
-              src={drVitalImageUrl}
-              alt="Dr. Vital"
-              className="w-full h-full object-cover rounded-full"
-            />
-          </div>
-          <CardTitle className="text-2xl text-white flex items-center justify-center gap-2">
-            <User className="w-6 h-6" />
-            Dr. Vital - Feedback Personalizado
-          </CardTitle>
-          
-          {/* Dados do Usuário */}
-          {userProfile && (
-            <div className="mt-4 p-3 bg-slate-800/30 rounded-lg text-sm text-slate-300">
-              <div className="grid grid-cols-1 gap-1">
-                <div><strong>Nome:</strong> {userProfile.full_name || 'Não informado'}</div>
-                <div><strong>Email:</strong> {userProfile.email || 'Não informado'}</div>
-                <div><strong>Telefone:</strong> {userProfile.phone || 'Não informado'}</div>
-                <div><strong>Data/Hora:</strong> {new Date().toLocaleString('pt-BR')}</div>
-              </div>
-            </div>
-          )}
-        </CardHeader>
+  // Animated score ring
+  const circumference = 2 * Math.PI * 45;
+  const strokeDashoffset = circumference - (averageScore / 100) * circumference;
 
-        <CardContent className="space-y-6">
-          {/* Mensagem atual do Dr. Vital */}
-          <div className="bg-slate-800/50 rounded-lg p-6 min-h-[120px] flex items-center">
-            <div className="w-full">
+  return (
+    <div className="fixed inset-0 bg-black/90 flex items-center justify-center p-4 z-50 overflow-y-auto">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5 }}
+        className="max-w-3xl w-full my-4"
+      >
+        <Card className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 border-0 shadow-2xl overflow-hidden">
+          {/* Header decorativo */}
+          <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-br from-primary/30 via-blue-600/20 to-purple-600/20 blur-xl" />
+          
+          <CardHeader className="text-center pb-4 relative">
+            {/* Avatar do Dr. Vital com glow effect */}
+            <motion.div 
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+              className="mx-auto w-24 h-24 relative mb-4"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-green-400 to-emerald-600 rounded-full blur-xl opacity-50 animate-pulse" />
+              <div className="relative w-full h-full bg-gradient-to-br from-emerald-500 to-green-600 rounded-full p-1">
+                <img 
+                  src={drVitalImageUrl}
+                  alt="Dr. Vital"
+                  className="w-full h-full object-cover rounded-full border-2 border-white/20"
+                />
+              </div>
+              <motion.div 
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.5 }}
+                className="absolute -bottom-1 -right-1 bg-green-500 text-white p-1.5 rounded-full shadow-lg"
+              >
+                <Stethoscope className="w-4 h-4" />
+              </motion.div>
+            </motion.div>
+
+            <CardTitle className="text-2xl text-white flex items-center justify-center gap-2">
+              <Sparkles className="w-6 h-6 text-amber-400" />
+              Dr. Vital - Análise Personalizada
+            </CardTitle>
+            
+            {/* Badge do tipo de avaliação */}
+            <Badge className={`mt-2 bg-gradient-to-r ${classification.color} text-white border-0`}>
+              {classification.icon} {classification.label}
+            </Badge>
+            
+            {/* Dados do Usuário */}
+            {userProfile && (
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="mt-4 p-3 bg-white/5 backdrop-blur-sm rounded-xl text-sm text-slate-300 border border-white/10"
+              >
+                <div className="flex items-center justify-center gap-4 flex-wrap">
+                  <span className="flex items-center gap-1.5">
+                    <User className="w-4 h-4 text-blue-400" />
+                    {userProfile.full_name || 'Usuário'}
+                  </span>
+                  <span className="text-slate-500">•</span>
+                  <span className="text-slate-400">
+                    {new Date().toLocaleDateString('pt-BR', { 
+                      day: '2-digit', 
+                      month: 'long', 
+                      year: 'numeric' 
+                    })}
+                  </span>
+                </div>
+              </motion.div>
+            )}
+          </CardHeader>
+
+          <CardContent className="space-y-6 relative">
+            {/* Score Visual Principal */}
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4 }}
+              className="flex justify-center"
+            >
+              <div className="relative">
+                <svg className="w-36 h-36 transform -rotate-90">
+                  {/* Background circle */}
+                  <circle
+                    cx="72"
+                    cy="72"
+                    r="45"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="8"
+                    className="text-slate-700"
+                  />
+                  {/* Animated progress circle */}
+                  <motion.circle
+                    cx="72"
+                    cy="72"
+                    r="45"
+                    fill="none"
+                    stroke="url(#scoreGradient)"
+                    strokeWidth="8"
+                    strokeLinecap="round"
+                    initial={{ strokeDashoffset: circumference }}
+                    animate={{ strokeDashoffset }}
+                    transition={{ duration: 1.5, ease: "easeOut" }}
+                    strokeDasharray={circumference}
+                  />
+                  <defs>
+                    <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#10b981" />
+                      <stop offset="50%" stopColor="#3b82f6" />
+                      <stop offset="100%" stopColor="#8b5cf6" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="text-center">
+                    <motion.span 
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 1 }}
+                      className="text-4xl font-bold bg-gradient-to-br from-white to-slate-300 bg-clip-text text-transparent"
+                    >
+                      {Math.round(averageScore)}%
+                    </motion.span>
+                    <p className="text-xs text-slate-400 mt-1">Score Geral</p>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Mensagem atual do Dr. Vital */}
+            <motion.div 
+              key={currentMessage}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.3 }}
+              className="bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-sm rounded-2xl p-6 border border-white/10"
+            >
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-blue-500/20 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden">
+                <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-green-600 rounded-full flex items-center justify-center flex-shrink-0">
                   <img 
                     src={drVitalImageUrl}
                     alt="Dr. Vital"
@@ -256,152 +418,183 @@ Instituto dos Sonhos - Avaliação Personalizada
                   />
                 </div>
                 <div className="flex-1">
-                  <p className="text-white text-lg leading-relaxed">
+                  <p className="text-white text-base leading-relaxed">
                     {messages[currentMessage]}
                   </p>
-                  
-                  {/* Controles de navegação e indicador de progresso */}
-                  <div className="mt-4 space-y-3">
-                    <div className="flex gap-1">
-                      {messages.map((_, index) => (
-                        <div
-                          key={index}
-                          className={`h-1 rounded-full transition-all duration-500 ${
-                            index <= currentMessage 
-                              ? 'bg-blue-400 w-8' 
-                              : 'bg-slate-600 w-2'
-                          }`}
-                        />
-                      ))}
-                    </div>
-                    
-                    {/* Botões de navegação */}
-                    <div className="flex justify-between items-center">
-                      <Button
-                        onClick={handlePrevMessage}
-                        disabled={currentMessage === 0}
-                        variant="outline"
-                        size="sm"
-                        className="text-white border-slate-600"
-                      >
-                        ← Anterior
-                      </Button>
-                      
-                      <span className="text-slate-400 text-sm">
-                        {currentMessage + 1} de {messages.length}
-                      </span>
-                      
-                      <Button
-                        onClick={handleNextMessage}
-                        disabled={currentMessage === messages.length - 1}
-                        variant="outline"
-                        size="sm"
-                        className="text-white border-slate-600"
-                      >
-                        Próximo →
-                      </Button>
-                    </div>
-                  </div>
                 </div>
               </div>
-            </div>
-          </div>
-
-          {/* Resumo visual dos scores */}
-          {currentMessage >= 1 && (
-            <div className="grid grid-cols-3 gap-4 animate-in slide-in-from-bottom-4 duration-500">
-              <div className="text-center p-4 bg-slate-800/30 rounded-lg">
-                <div className="text-2xl font-bold text-blue-400">
-                  {Math.round(averageScore * (assessmentType === 'abundance' ? 20 : 10))}%
-                </div>
-                <div className="text-sm text-slate-300">Score Geral</div>
-              </div>
-              <div className="text-center p-4 bg-slate-800/30 rounded-lg">
-                <div className="text-2xl font-bold text-green-400">
-                  {strongAreas.length}
-                </div>
-                <div className="text-sm text-slate-300">Áreas Fortes</div>
-              </div>
-              <div className="text-center p-4 bg-slate-800/30 rounded-lg">
-                <div className="text-2xl font-bold text-orange-400">
-                  {criticalAreas.length}
-                </div>
-                <div className="text-sm text-slate-300">A Melhorar</div>
-              </div>
-            </div>
-          )}
-
-          {/* Ações */}
-          {showActions && (
-            <div className="space-y-4 animate-in slide-in-from-bottom-4 duration-500">
-              {/* Ação principal */}
-              <Button
-                onClick={handleShowResults}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center gap-2"
-                size="lg"
-              >
-                <User className="w-5 h-5" />
-                Ver Resultados Detalhados
-              </Button>
               
-              {/* Opções de compartilhamento */}
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  onClick={handleDownload}
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center gap-2"
-                >
-                  <Download className="w-4 h-4" />
-                  Baixar
-                </Button>
+              {/* Progress dots and navigation */}
+              <div className="mt-6 space-y-4">
+                <div className="flex justify-center gap-2">
+                  {messages.map((_, index) => (
+                    <button
+                      key={index}
+                      onClick={() => setCurrentMessage(index)}
+                      className={`h-2 rounded-full transition-all duration-300 ${
+                        index === currentMessage 
+                          ? 'bg-gradient-to-r from-blue-400 to-purple-500 w-8' 
+                          : index < currentMessage
+                            ? 'bg-emerald-500/50 w-2'
+                            : 'bg-slate-600 w-2'
+                      }`}
+                    />
+                  ))}
+                </div>
                 
-                <Button
-                  onClick={() => handleShare('email')}
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center gap-2"
-                >
-                  <Mail className="w-4 h-4" />
-                  Email
-                </Button>
-                
-                <Button
-                  onClick={() => handleShare('whatsapp')}
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center gap-2"
-                >
-                  <MessageCircle className="w-4 h-4" />
-                  WhatsApp
-                </Button>
-                
-                <Button
-                  onClick={() => handleShare('print')}
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center gap-2"
-                >
-                  <Printer className="w-4 h-4" />
-                  Imprimir
-                </Button>
+                <div className="flex justify-between items-center">
+                  <Button
+                    onClick={handlePrevMessage}
+                    disabled={currentMessage === 0}
+                    variant="ghost"
+                    size="sm"
+                    className="text-white/70 hover:text-white hover:bg-white/10 disabled:opacity-30"
+                  >
+                    <ChevronLeft className="w-4 h-4 mr-1" />
+                    Anterior
+                  </Button>
+                  
+                  <span className="text-slate-500 text-sm">
+                    {currentMessage + 1} / {messages.length}
+                  </span>
+                  
+                  <Button
+                    onClick={handleNextMessage}
+                    disabled={currentMessage === messages.length - 1 && showActions}
+                    variant="ghost"
+                    size="sm"
+                    className="text-white/70 hover:text-white hover:bg-white/10 disabled:opacity-30"
+                  >
+                    Próximo
+                    <ChevronRight className="w-4 h-4 ml-1" />
+                  </Button>
+                </div>
               </div>
-            </div>
-          )}
+            </motion.div>
 
-          {/* Botão para mostrar ações quando chegar na última mensagem */}
-          {currentMessage === messages.length - 1 && !showActions && (
-            <div className="flex justify-center">
-              <Button
-                onClick={() => setShowActions(true)}
-                className="bg-green-600 hover:bg-green-700 text-white"
+            {/* Resumo visual compacto */}
+            {currentMessage >= 1 && (
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="grid grid-cols-3 gap-3"
               >
-                Ver Opções
-              </Button>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                <div className="text-center p-4 bg-gradient-to-br from-emerald-500/20 to-green-600/10 rounded-xl border border-emerald-500/20">
+                  <div className="flex justify-center mb-2">
+                    <TrendingUp className="w-5 h-5 text-emerald-400" />
+                  </div>
+                  <div className="text-2xl font-bold text-emerald-400">
+                    {strongAreas.length}
+                  </div>
+                  <div className="text-xs text-slate-400">Áreas Fortes</div>
+                </div>
+                
+                <div className="text-center p-4 bg-gradient-to-br from-blue-500/20 to-indigo-600/10 rounded-xl border border-blue-500/20">
+                  <div className="flex justify-center mb-2">
+                    <Target className="w-5 h-5 text-blue-400" />
+                  </div>
+                  <div className="text-2xl font-bold text-blue-400">
+                    {mediumAreas.length}
+                  </div>
+                  <div className="text-xs text-slate-400">Em Progresso</div>
+                </div>
+                
+                <div className="text-center p-4 bg-gradient-to-br from-amber-500/20 to-orange-600/10 rounded-xl border border-amber-500/20">
+                  <div className="flex justify-center mb-2">
+                    <TrendingDown className="w-5 h-5 text-amber-400" />
+                  </div>
+                  <div className="text-2xl font-bold text-amber-400">
+                    {criticalAreas.length}
+                  </div>
+                  <div className="text-xs text-slate-400">A Melhorar</div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Ações */}
+            <AnimatePresence>
+              {(showActions || currentMessage === messages.length - 1) && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 20 }}
+                  className="space-y-4"
+                >
+                  {/* Ação principal */}
+                  <Button
+                    onClick={onShowResults}
+                    className="w-full bg-gradient-to-r from-emerald-500 via-blue-500 to-purple-500 hover:from-emerald-600 hover:via-blue-600 hover:to-purple-600 text-white py-6 text-lg font-semibold shadow-lg shadow-blue-500/25"
+                    size="lg"
+                  >
+                    <Award className="w-5 h-5 mr-2" />
+                    Ver Resultados Detalhados
+                  </Button>
+                  
+                  {/* Opções de compartilhamento */}
+                  <div className="flex flex-wrap gap-2 justify-center">
+                    <Button
+                      onClick={handleDownload}
+                      variant="outline"
+                      size="sm"
+                      className="bg-white/5 border-white/20 text-white hover:bg-white/10"
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      Baixar
+                    </Button>
+                    
+                    <Button
+                      onClick={() => handleShare('email')}
+                      variant="outline"
+                      size="sm"
+                      className="bg-white/5 border-white/20 text-white hover:bg-white/10"
+                    >
+                      <Mail className="w-4 h-4 mr-2" />
+                      Email
+                    </Button>
+                    
+                    <Button
+                      onClick={() => handleShare('whatsapp')}
+                      variant="outline"
+                      size="sm"
+                      className="bg-white/5 border-white/20 text-white hover:bg-white/10"
+                    >
+                      <MessageCircle className="w-4 h-4 mr-2" />
+                      WhatsApp
+                    </Button>
+                    
+                    <Button
+                      onClick={() => handleShare('print')}
+                      variant="outline"
+                      size="sm"
+                      className="bg-white/5 border-white/20 text-white hover:bg-white/10"
+                    >
+                      <Printer className="w-4 h-4 mr-2" />
+                      Imprimir
+                    </Button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Botão para mostrar ações */}
+            {currentMessage === messages.length - 1 && !showActions && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="flex justify-center"
+              >
+                <Button
+                  onClick={() => setShowActions(true)}
+                  className="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white"
+                >
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Ver Opções
+                </Button>
+              </motion.div>
+            )}
+          </CardContent>
+        </Card>
+      </motion.div>
     </div>
   );
 };
