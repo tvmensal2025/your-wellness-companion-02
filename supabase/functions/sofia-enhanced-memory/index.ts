@@ -21,6 +21,65 @@ Deno.serve(async (req) => {
     console.log('🧠 Sofia Enhanced Memory - Usando contexto UNIFICADO para usuário:', userId);
 
     // ============================================
+    // BUSCAR CONFIGURAÇÕES DE IA SALVAS NO BANCO
+    // ============================================
+    console.log('📋 Buscando configurações de IA do banco...');
+    const { data: aiConfig, error: configError } = await supabase
+      .from('ai_configurations')
+      .select('*')
+      .eq('functionality', 'chat_daily')
+      .single();
+    
+    let aiSettings = {
+      service: 'lovable',
+      model: 'google/gemini-2.5-flash',
+      maxTokens: 1024,
+      temperature: 0.7,
+      systemPrompt: ''
+    };
+    
+    if (aiConfig && !configError) {
+      console.log('✅ Configurações encontradas:', {
+        service: aiConfig.service,
+        model: aiConfig.model,
+        maxTokens: aiConfig.max_tokens,
+        temperature: aiConfig.temperature,
+        isEnabled: aiConfig.is_enabled
+      });
+      
+      // Mapear serviço para modelo Lovable AI correto
+      let mappedModel = 'google/gemini-2.5-flash'; // default
+      
+      if (aiConfig.service === 'google' || aiConfig.service === 'gemini') {
+        if (aiConfig.model?.includes('pro')) {
+          mappedModel = 'google/gemini-2.5-pro';
+        } else if (aiConfig.model?.includes('flash')) {
+          mappedModel = 'google/gemini-2.5-flash';
+        }
+      } else if (aiConfig.service === 'openai') {
+        if (aiConfig.model?.includes('gpt-5')) {
+          mappedModel = 'openai/gpt-5';
+        } else if (aiConfig.model?.includes('gpt-5-mini')) {
+          mappedModel = 'openai/gpt-5-mini';
+        } else {
+          mappedModel = 'openai/gpt-5-mini';
+        }
+      }
+      
+      aiSettings = {
+        service: aiConfig.service || 'lovable',
+        model: mappedModel,
+        maxTokens: aiConfig.max_tokens || 1024,
+        temperature: aiConfig.temperature || 0.7,
+        systemPrompt: aiConfig.system_prompt || ''
+      };
+      
+      console.log('🎯 Configurações aplicadas:', aiSettings);
+    } else {
+      console.log('⚠️ Usando configurações padrão (sem config no banco)');
+    }
+
+    // ============================================
     // USAR SISTEMA UNIFICADO DE CONTEXTO
     // Busca TODOS os dados do usuário de TODAS as tabelas
     // ============================================
@@ -34,9 +93,15 @@ Deno.serve(async (req) => {
     });
 
     // Gerar system prompt com contexto completo
-    const systemPrompt = buildSystemPrompt(userContext, contextSummary);
+    // Se tiver prompt customizado, usar ele como base
+    const baseSystemPrompt = aiSettings.systemPrompt || '';
+    const systemPrompt = buildSystemPrompt(userContext, contextSummary, baseSystemPrompt);
     
-    console.log('🤖 Gerando resposta da IA...');
+    console.log('🤖 Gerando resposta da IA com configurações:', {
+      model: aiSettings.model,
+      maxTokens: aiSettings.maxTokens,
+      temperature: aiSettings.temperature
+    });
     
     let response = '';
     let apiUsed = 'none';
@@ -45,7 +110,7 @@ Deno.serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (LOVABLE_API_KEY) {
       try {
-        console.log('🤖 Sofia usando Lovable AI (google/gemini-2.5-flash)...');
+        console.log(`🤖 Sofia usando Lovable AI (${aiSettings.model})...`);
         const lovableResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
           method: 'POST',
           headers: {
@@ -53,13 +118,13 @@ Deno.serve(async (req) => {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            model: 'google/gemini-2.5-flash',
+            model: aiSettings.model,
             messages: [
               { role: 'system', content: systemPrompt },
               { role: 'user', content: message }
             ],
-            temperature: 0.7,
-            max_tokens: 300
+            temperature: aiSettings.temperature,
+            max_tokens: aiSettings.maxTokens
           })
         });
 
@@ -68,7 +133,7 @@ Deno.serve(async (req) => {
           console.error('❌ Erro Lovable AI:', data.error);
         } else if (data?.choices?.[0]?.message?.content) {
           response = data.choices[0].message.content;
-          apiUsed = 'lovable-gemini-2.5-flash';
+          apiUsed = `lovable-${aiSettings.model}`;
           console.log('✅ Lovable AI funcionou!');
         }
       } catch (error) {
@@ -238,7 +303,7 @@ Deno.serve(async (req) => {
   }
 });
 
-function buildSystemPrompt(userContext: any, contextSummary: string): string {
+function buildSystemPrompt(userContext: any, contextSummary: string, customPrompt: string = ''): string {
   const firstName = userContext.profile?.firstName || 'amor';
   
   // Criar contexto da empresa
@@ -271,7 +336,13 @@ ${item.content?.substring(0, 200)}...
     `${f.meal_type || 'Refeição'}: ${f.total_calories || 0}kcal`
   ).join(' | ');
   
-  return `Você é Sofia, nutricionista carinhosa do Instituto dos Sonhos! 💚
+  // Se tiver prompt customizado, adicionar no início
+  const customInstructions = customPrompt ? `
+📝 INSTRUÇÕES ESPECIAIS DO ADMIN:
+${customPrompt}
+` : '';
+
+  return `${customInstructions}Você é Sofia, nutricionista carinhosa do Instituto dos Sonhos! 💚
 ${companyContext}
 
 🌟 SUA PERSONALIDADE:
