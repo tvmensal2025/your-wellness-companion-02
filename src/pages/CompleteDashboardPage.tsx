@@ -28,7 +28,7 @@ const DesafiosSection = lazy(() => import('@/components/dashboard/DesafiosSectio
 const RankingCommunity = lazy(() => import('@/components/RankingCommunity'));
 const ExerciseOnboardingModal = lazy(() => import('@/components/exercise/ExerciseOnboardingModal').then(m => ({ default: m.ExerciseOnboardingModal })));
 const ExerciseDashboard = lazy(() => import('@/components/exercise/ExerciseDashboard').then(m => ({ default: m.ExerciseDashboard })));
-const HealthFeedPage = lazy(() => import('@/pages/HealthFeedPage'));
+
 const PaymentPlans = lazy(() => import('@/components/PaymentPlans'));
 const UserDrVitalPage = lazy(() => import('@/pages/UserDrVitalPage'));
 const SofiaNutricionalPage = lazy(() => import('@/pages/SofiaNutricionalPage').then(m => ({ default: m.SofiaNutricionalPage })));
@@ -269,7 +269,7 @@ const CompleteDashboardPage = () => {
             <UserSessions user={user} />
           </div></Suspense>;
       case 'comunidade':
-        return <Suspense fallback={<SectionLoader />}><HealthFeedPage key="comunidade" /></Suspense>;
+        return <Suspense fallback={<SectionLoader />}><RankingCommunity key="comunidade" user={user} /></Suspense>;
       case 'challenges':
         return <Suspense fallback={<SectionLoader />}><div key="challenges" className="p-6">
             <DesafiosSection user={user} />
