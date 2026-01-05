@@ -556,26 +556,26 @@ const UserProfile = ({ onOpenLayoutPrefs }: UserProfileProps = {}) => {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label className="text-sm text-muted-foreground">Nome</Label>
-                        <p className="font-medium">{profile.full_name || 'Não informado'}</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                      <div className="min-w-0">
+                        <Label className="text-xs sm:text-sm text-muted-foreground">Nome</Label>
+                        <p className="font-medium break-words">{profile.full_name || 'Não informado'}</p>
                       </div>
-                      <div>
-                        <Label className="text-sm text-muted-foreground">Data de Nascimento</Label>
-                        <p className="font-medium">
+                      <div className="min-w-0">
+                        <Label className="text-xs sm:text-sm text-muted-foreground">Data de Nascimento</Label>
+                        <p className="font-medium break-words">
                           {profile.birth_date ? new Date(profile.birth_date).toLocaleDateString('pt-BR') : 'Não informado'}
                         </p>
                       </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label className="text-sm text-muted-foreground">Sexo</Label>
-                        <p className="font-medium">{profile.gender || 'Não informado'}</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                      <div className="min-w-0">
+                        <Label className="text-xs sm:text-sm text-muted-foreground">Sexo</Label>
+                        <p className="font-medium break-words">{profile.gender || 'Não informado'}</p>
                       </div>
-                      <div>
-                        <Label className="text-sm text-muted-foreground">Contato de Emergência</Label>
-                        <p className="font-medium">{profile.emergency_contact || 'Não informado'}</p>
+                      <div className="min-w-0">
+                        <Label className="text-xs sm:text-sm text-muted-foreground">Contato de Emergência</Label>
+                        <p className="font-medium break-words">{profile.emergency_contact || 'Não informado'}</p>
                       </div>
                     </div>
                     {profile.address && (
