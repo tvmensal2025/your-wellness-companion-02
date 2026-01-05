@@ -113,70 +113,124 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
   };
 
   const resolveExercisesFromActivities = useCallback(async (activities: string[]) => {
-    const names = activities.map(parseActivityTitle);
+    const names = activities.map(parseActivityTitle).filter(Boolean);
 
     // Busca em TODA a biblioteca, não apenas na localização atual
     // para garantir que encontramos os exercícios do plano salvo
     const { data, error } = await supabase
-      .from('exercises_library')
-      .select('*')
-      .eq('is_active', true);
+      .from("exercises_library")
+      .select("*")
+      .eq("is_active", true);
 
     if (error) throw error;
 
     const library = (data || []) as Exercise[];
-    
-    // Criar índice com múltiplas variações do nome para melhor matching
-    const keyed = library.map((ex) => ({ 
-      key: normalizeKey(ex.name), 
-      words: normalizeKey(ex.name).split(' '),
-      ex 
-    }));
+
+    // Índices de busca (nome e grupo muscular)
+    const keyed = library.map((ex) => {
+      const nameKey = normalizeKey(ex.name);
+      const groupKey = normalizeKey(ex.muscle_group || "");
+      return {
+        ex,
+        nameKey,
+        nameWords: nameKey.split(" "),
+        groupKey,
+        groupWords: groupKey.split(" "),
+      };
+    });
 
     const result: Exercise[] = [];
     const usedIds = new Set<string>();
-    
+
+    const addIfNotUsed = (ex: Exercise) => {
+      if (usedIds.has(ex.id)) return false;
+      usedIds.add(ex.id);
+      result.push(ex);
+      return true;
+    };
+
+    // Quando a atividade não é um nome exato de exercício (ex: "Ombros", "Mobilidade"),
+    // traz 2-3 exercícios do mesmo grupo muscular.
+    const pickByMuscleGroup = (key: string, limit = 3) => {
+      let added = 0;
+
+      const directMatches = keyed
+        .filter((k) => k.groupKey && !usedIds.has(k.ex.id))
+        .filter((k) => k.groupKey === key || k.groupKey.includes(key) || key.includes(k.groupKey))
+        .map((k) => k.ex);
+
+      for (const ex of directMatches) {
+        if (added >= limit) break;
+        if (addIfNotUsed(ex)) added++;
+      }
+
+      if (added > 0) return;
+
+      const words = key.split(" ").filter((w) => w.length > 2);
+      const importantWords = words.filter(
+        (w) => !["com", "de", "do", "da", "na", "no", "em", "para"].includes(w)
+      );
+
+      if (!importantWords.length) return;
+
+      const fuzzyMatches = keyed
+        .filter((k) => k.groupKey && !usedIds.has(k.ex.id))
+        .filter((k) => importantWords.some((w) => k.groupKey.includes(w)))
+        .map((k) => k.ex);
+
+      for (const ex of fuzzyMatches) {
+        if (added >= limit) break;
+        if (addIfNotUsed(ex)) added++;
+      }
+    };
+
     for (const name of names) {
       const key = normalizeKey(name);
-      const words = key.split(' ').filter(w => w.length > 2);
-      
-      // 1. Busca exata
-      let match = keyed.find((k) => k.key === key && !usedIds.has(k.ex.id))?.ex;
-      
+      if (!key) continue;
+
+      const words = key.split(" ").filter((w) => w.length > 2);
+
+      // 1. Busca exata por nome
+      let match = keyed.find((k) => k.nameKey === key && !usedIds.has(k.ex.id))?.ex;
+
       // 2. Busca parcial - nome contém ou está contido
       if (!match) {
-        match = keyed.find((k) => 
-          !usedIds.has(k.ex.id) && 
-          (k.key.includes(key) || key.includes(k.key))
+        match = keyed.find(
+          (k) =>
+            !usedIds.has(k.ex.id) &&
+            (k.nameKey.includes(key) || key.includes(k.nameKey))
         )?.ex;
       }
-      
+
       // 3. Busca por palavras-chave (pelo menos 2 palavras coincidentes)
       if (!match && words.length >= 1) {
         match = keyed.find((k) => {
           if (usedIds.has(k.ex.id)) return false;
-          const matchingWords = words.filter(w => k.words.includes(w) || k.key.includes(w));
+          const matchingWords = words.filter((w) => k.nameWords.includes(w) || k.nameKey.includes(w));
           return matchingWords.length >= Math.min(2, words.length);
         })?.ex;
       }
-      
+
       // 4. Busca flexível - qualquer palavra importante coincide
       if (!match && words.length >= 1) {
-        const importantWords = words.filter(w => 
-          !['com', 'de', 'do', 'da', 'na', 'no', 'em', 'para', 'perna', 'braco'].includes(w)
+        const importantWords = words.filter(
+          (w) => !["com", "de", "do", "da", "na", "no", "em", "para", "perna", "braco"].includes(w)
         );
         if (importantWords.length > 0) {
           match = keyed.find((k) => {
             if (usedIds.has(k.ex.id)) return false;
-            return importantWords.some(w => k.key.includes(w));
+            return importantWords.some((w) => k.nameKey.includes(w));
           })?.ex;
         }
       }
-      
+
       if (match) {
-        result.push(match);
-        usedIds.add(match.id);
+        addIfNotUsed(match);
+        continue;
       }
+
+      // Fallback: tratar "activity" como grupo muscular e puxar múltiplos exercícios
+      pickByMuscleGroup(key, 3);
     }
 
     return result;
