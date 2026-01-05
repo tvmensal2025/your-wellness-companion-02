@@ -991,6 +991,55 @@ textarea:focus-visible {
   body {
     -webkit-print-color-adjust: exact !important;
     color-adjust: exact !important;
+    background: white !important;
+  }
+
+  /* Sessions print styles */
+  .print\:text-gray-900 {
+    color: #111827 !important;
+    background: none !important;
+    -webkit-text-fill-color: #111827 !important;
+  }
+
+  .print\:bg-none {
+    background: none !important;
+  }
+
+  .print\:text-gray-600 {
+    color: #4B5563 !important;
+  }
+
+  /* Hide sidebar and navigation on print */
+  [data-sidebar],
+  nav,
+  .sidebar,
+  aside {
+    display: none !important;
+  }
+
+  /* Make main content full width */
+  main {
+    margin: 0 !important;
+    padding: 1rem !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* Session cards print optimization */
+  .print\:break-inside-avoid {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  /* Footer for sessions print */
+  .sessions-print-footer {
+    display: block !important;
+    text-align: center;
+    font-size: 0.75rem;
+    color: #6B7280;
+    border-top: 1px solid #E5E7EB;
+    padding-top: 1rem;
+    margin-top: 2rem;
   }
 }
 
