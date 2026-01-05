@@ -1,17 +1,12 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Scale, FileText, ChevronRight } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { useAnamnesisStatus } from '@/hooks/useAnamnesisStatus';
+import { Scale, ChevronRight } from 'lucide-react';
 
 interface QuickActionsGridProps {
   onWeightClick: () => void;
 }
 
 export const QuickActionsGrid: React.FC<QuickActionsGridProps> = ({ onWeightClick }) => {
-  const navigate = useNavigate();
-  const { hasCompletedAnamnesis } = useAnamnesisStatus();
-
   return (
     <div className="space-y-3">
       {/* Primary CTA - Registrar Peso */}
@@ -34,29 +29,6 @@ export const QuickActionsGrid: React.FC<QuickActionsGridProps> = ({ onWeightClic
         </div>
         <ChevronRight className="h-5 w-5 text-white/70" />
       </motion.button>
-
-      {/* Anamnesis button - only show if not completed */}
-      {!hasCompletedAnamnesis && (
-        <motion.button
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={() => navigate('/anamnesis')}
-          className="w-full flex items-center justify-between p-4 rounded-2xl bg-gradient-to-r from-blue-500 to-cyan-600 shadow-blue-500/20 shadow-lg text-white"
-        >
-          <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-white/20">
-              <FileText className="h-5 w-5" />
-            </div>
-            <div className="text-left">
-              <p className="font-semibold">Anamnese</p>
-              <p className="text-xs text-white/70">Complete seu perfil</p>
-            </div>
-          </div>
-          <ChevronRight className="h-5 w-5 text-white/70" />
-        </motion.button>
-      )}
     </div>
   );
 };
