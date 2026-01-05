@@ -14,6 +14,7 @@ import { UpdateDesafioProgressModal } from '@/components/gamification/UpdateDesa
 import { User } from '@supabase/supabase-js';
 import { VisualEffectsManager } from '@/components/gamification/VisualEffectsManager';
 import { useCelebrationEffects } from '@/hooks/useCelebrationEffects';
+import { AppleFitnessChallengeCard } from './AppleFitnessChallengeCard';
 interface Desafio {
   id: string;
   title: string;
@@ -891,86 +892,35 @@ const DesafiosSection: React.FC<DesafiosSectionProps> = ({
     }
   };
   const renderDesafioCard = (desafio: Desafio, isPublic = false) => {
-    const progress = desafio.user_participation ? desafio.user_participation.progress / desafio.daily_log_target * 100 : 0;
+    const progress = desafio.user_participation?.progress || 0;
     const isCompleted = desafio.user_participation?.is_completed || false;
     const isParticipating = !!desafio.user_participation;
-    return <motion.div key={desafio.id} initial={{
-      opacity: 0,
-      y: 20
-    }} animate={{
-      opacity: 1,
-      y: 0
-    }} transition={{
-      duration: 0.3
-    }}>
-        <Card className={`cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-105 border-2 ${isCompleted ? 'border-emerald-400 bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-950 dark:to-green-950 shadow-emerald-200 dark:shadow-emerald-900' : isPublic ? 'border-purple-300 bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 dark:from-purple-950 dark:via-pink-950 dark:to-blue-950 shadow-purple-200 dark:shadow-purple-900' : 'border-blue-200 bg-gradient-to-br from-white to-blue-50 dark:from-slate-800 dark:to-slate-900 hover:border-blue-300 shadow-blue-100 dark:shadow-slate-800'}`} onClick={() => isParticipating ? handleDesafioClick(desafio) : undefined}>
-          <CardHeader className="pb-3 bg-cyan-50">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <span className="text-2xl">{desafio.badge_icon}</span>
-                {isPublic && <Badge className="bg-gradient-to-r from-purple-100 to-pink-100 text-purple-800 dark:from-purple-900 dark:to-pink-900 dark:text-purple-300 border border-purple-200 dark:border-purple-700 shadow-sm">
-                    <Users className="w-3 h-3 mr-1" />
-                    {desafio.participants_count || 0}
-                  </Badge>}
-              </div>
-              <Badge className={difficultyColors[desafio.difficulty as keyof typeof difficultyColors]}>
-                {difficultyLabels[desafio.difficulty as keyof typeof difficultyLabels]}
-              </Badge>
-            </div>
-            <CardTitle className="leading-tight text-slate-900 text-lg">{desafio.title}</CardTitle>
-            <CardDescription className="text-sm">
-              {desafio.description}
-            </CardDescription>
-            {isPublic && <div className="flex items-center gap-2 text-xs text-muted-foreground mt-2">
-                <Users className="w-3 h-3" />
-                <span>{desafio.participants_count}/{desafio.total_participants} participantes</span>
-              </div>}
-          </CardHeader>
-
-          <CardContent className="space-y-4 bg-cyan-50">
-            <div className="flex items-center justify-between text-sm text-muted-foreground">
-              <span>🎯 {desafio.daily_log_target} {desafio.daily_log_unit}/dia</span>
-              <span>⏱️ {desafio.duration_days} dias</span>
-            </div>
-
-            {isParticipating && <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span>Progresso</span>
-                  <span>{Math.round(progress)}%</span>
-                </div>
-                <Progress value={progress} className="h-2" />
-                <div className="text-xs text-muted-foreground text-center">
-                  {desafio.user_participation!.progress} / {desafio.daily_log_target} {desafio.daily_log_unit}
-                </div>
-              </div>}
-
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                <Trophy className="h-4 w-4" />
-                <span>{desafio.points_reward} pontos</span>
-              </div>
-              
-              {!isParticipating ? <Button size="sm" onClick={e => {
-              e.stopPropagation();
-              if (isPublic) {
-                handleJoinPublicChallenge(desafio);
-              } else {
-                handleStartIndividualChallenge(desafio);
-              }
-            }} className={`touch-manipulation transform hover:scale-105 transition-all duration-200 shadow-md hover:shadow-lg ${isPublic ? 'bg-gradient-to-r from-purple-500 via-pink-500 to-rose-500 hover:from-purple-600 hover:via-pink-600 hover:to-rose-600 text-white' : 'bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 hover:from-blue-600 hover:via-indigo-600 hover:to-purple-600 text-white'}`}>
-                  {isPublic ? '✨ Participar' : '🚀 Iniciar'}
-                </Button> : isCompleted ? <Badge className="bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-md border border-emerald-400">
-                  ✅ Completo
-                </Badge> : <Button size="sm" onClick={e => {
-              e.stopPropagation();
-              handleDesafioClick(desafio);
-            }} className="bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-500 hover:from-cyan-600 hover:via-blue-600 hover:to-indigo-600 text-white touch-manipulation transform hover:scale-105 transition-all duration-200 shadow-md hover:shadow-lg">
-                  📊 Atualizar
-                </Button>}
-            </div>
-          </CardContent>
-        </Card>
-      </motion.div>;
+    
+    return (
+      <AppleFitnessChallengeCard
+        key={desafio.id}
+        id={desafio.id}
+        title={desafio.title}
+        badgeIcon={desafio.badge_icon}
+        progress={progress}
+        target={desafio.daily_log_target}
+        unit={desafio.daily_log_unit}
+        pointsReward={desafio.points_reward}
+        isCompleted={isCompleted}
+        isParticipating={isParticipating}
+        isPublic={isPublic}
+        participantsCount={desafio.participants_count}
+        difficulty={desafio.difficulty}
+        onStart={() => {
+          if (isPublic) {
+            handleJoinPublicChallenge(desafio);
+          } else {
+            handleStartIndividualChallenge(desafio);
+          }
+        }}
+        onUpdate={() => handleDesafioClick(desafio)}
+      />
+    );
   };
   if (loading) {
     return <Card className="h-64 flex items-center justify-center">
@@ -983,33 +933,47 @@ const DesafiosSection: React.FC<DesafiosSectionProps> = ({
   return <div className="space-y-4">
 
       <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3 bg-gray-100 p-1 rounded-lg">
-          <TabsTrigger value="individuais" className="flex items-center gap-2">
+        <TabsList className="grid w-full grid-cols-3 bg-muted/50 p-1 rounded-xl h-11">
+          <TabsTrigger value="individuais" className="flex items-center gap-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">
             <Target className="w-4 h-4" />
             <span className="hidden sm:inline">Desafios</span>
             <span className="sm:hidden">Meus</span>
           </TabsTrigger>
-          <TabsTrigger value="publicos" className="flex items-center gap-2">
+          <TabsTrigger value="publicos" className="flex items-center gap-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">
             <Users className="w-4 h-4" />
             <span className="hidden sm:inline">Públicos</span>
             <span className="sm:hidden">Grupo</span>
           </TabsTrigger>
-          <TabsTrigger value="ranking" className="flex items-center gap-2">
+          <TabsTrigger value="ranking" className="flex items-center gap-2 rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm">
             <Trophy className="w-4 h-4" />
             <span>Ranking</span>
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="individuais" className="space-y-6">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {desafios.map(desafio => renderDesafioCard(desafio, false))}
-          </div>
+        <TabsContent value="individuais" className="space-y-3 mt-4">
+          {desafios.length === 0 ? (
+            <Card className="p-8 text-center">
+              <Target className="w-12 h-12 mx-auto text-muted-foreground/50 mb-3" />
+              <p className="text-muted-foreground">Nenhum desafio disponível</p>
+            </Card>
+          ) : (
+            <div className="space-y-3">
+              {desafios.map(desafio => renderDesafioCard(desafio, false))}
+            </div>
+          )}
         </TabsContent>
 
-        <TabsContent value="publicos" className="space-y-6">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {desafiosPublicos.map(desafio => renderDesafioCard(desafio, true))}
-          </div>
+        <TabsContent value="publicos" className="space-y-3 mt-4">
+          {desafiosPublicos.length === 0 ? (
+            <Card className="p-8 text-center">
+              <Users className="w-12 h-12 mx-auto text-muted-foreground/50 mb-3" />
+              <p className="text-muted-foreground">Nenhum desafio público disponível</p>
+            </Card>
+          ) : (
+            <div className="space-y-3">
+              {desafiosPublicos.map(desafio => renderDesafioCard(desafio, true))}
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="ranking" className="space-y-6">
