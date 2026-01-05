@@ -152,13 +152,19 @@ export default {
     				'100%': {
     					transform: 'rotate(0deg)'
     				}
+    			},
+    			shimmer: {
+    				'100%': {
+    					transform: 'translateX(100%)'
+    				}
     			}
     		},
     		animation: {
     			'accordion-down': 'accordion-down 0.2s ease-out',
     			'accordion-up': 'accordion-up 0.2s ease-out',
     			blob: 'blob 7s infinite',
-    			'bell-ring': 'bell-ring 1s ease-in-out infinite'
+    			'bell-ring': 'bell-ring 1s ease-in-out infinite',
+    			shimmer: 'shimmer 1.5s infinite'
     		},
     		boxShadow: {
     			'2xs': 'var(--shadow-2xs)',

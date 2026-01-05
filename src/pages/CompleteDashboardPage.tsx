@@ -490,9 +490,9 @@ const CompleteDashboardPage = () => {
             </div>
           </header>
 
-          {/* Content - Otimizado para mobile */}
+          {/* Content - Otimizado para mobile com espaçamento refinado */}
           <div className="flex-1 overflow-y-auto overflow-x-hidden safe-area-bottom">
-            <main className="w-full max-w-6xl mx-auto px-4 sm:px-4 pt-4 pb-8 lg:px-6 lg:pt-6 space-y-4 animate-fade-in">
+            <main className="w-full max-w-6xl mx-auto px-3 sm:px-4 pt-3 pb-6 lg:px-6 lg:pt-6 space-y-3 sm:space-y-4 animate-fade-in">
               {renderContent()}
             </main>
           </div>

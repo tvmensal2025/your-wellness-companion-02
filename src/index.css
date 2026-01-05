@@ -1085,30 +1085,53 @@ textarea:focus-visible {
   }
 }
 
-/* Premium mobile spacing */
+/* Premium mobile spacing - Refinado */
 @media (max-width: 640px) {
   .premium-mobile-container {
-    @apply px-4 py-3;
+    @apply px-3 py-2.5;
   }
   
   .premium-mobile-gap {
-    @apply gap-3;
+    @apply gap-2;
   }
   
   /* Refined typography for mobile */
   .premium-title {
-    @apply text-xl font-semibold;
+    @apply text-lg font-semibold;
     letter-spacing: -0.02em;
   }
   
   .premium-subtitle {
-    @apply text-sm text-muted-foreground;
+    @apply text-xs text-muted-foreground;
   }
   
   /* Premium input styling */
   input, textarea, select {
     @apply text-base;
     font-size: 16px !important; /* Prevents iOS zoom */
+  }
+  
+  /* Compact cards on mobile */
+  .card, [data-slot="card"] {
+    @apply rounded-xl;
+  }
+  
+  /* Tighter spacing for mobile sections */
+  main > .space-y-4 {
+    --tw-space-y-reverse: 0;
+    margin-top: calc(0.75rem * calc(1 - var(--tw-space-y-reverse)));
+    margin-bottom: calc(0.75rem * var(--tw-space-y-reverse));
+  }
+}
+
+/* Extra small mobile refinements */
+@media (max-width: 375px) {
+  .premium-mobile-container {
+    @apply px-2.5 py-2;
+  }
+  
+  .premium-title {
+    @apply text-base;
   }
 }
 
@@ -1118,21 +1141,30 @@ html {
   -webkit-overflow-scrolling: touch;
 }
 
-/* Premium loading skeleton */
+/* Premium loading skeleton with shimmer */
 .premium-skeleton {
+  position: relative;
+  overflow: hidden;
+  background: hsl(var(--muted));
+  border-radius: 0.75rem;
+}
+
+.premium-skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
   background: linear-gradient(
     90deg,
-    hsl(var(--muted)) 0%,
-    hsl(var(--muted) / 0.6) 50%,
-    hsl(var(--muted)) 100%
+    transparent 0%,
+    hsl(var(--foreground) / 0.04) 50%,
+    transparent 100%
   );
-  background-size: 200% 100%;
   animation: skeleton-shimmer 1.5s ease-in-out infinite;
 }
 
 @keyframes skeleton-shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
 }
 
 /* Premium divider */
