@@ -335,7 +335,7 @@ const UserProfile = ({ onOpenLayoutPrefs }: UserProfileProps = {}) => {
   };
 
   return (
-    <div className="w-full max-w-[440px] sm:max-w-6xl mx-auto px-3 sm:px-4 py-3 sm:py-8 overflow-x-hidden">
+    <div className="w-full sm:max-w-6xl mx-auto px-2 sm:px-4 py-2 sm:py-8 overflow-hidden">
       {/* Header Section */}
       <div className="mb-3 sm:mb-8">
         <Card className="border-0 shadow-lg bg-gradient-to-r from-primary/5 to-secondary/5">
