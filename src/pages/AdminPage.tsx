@@ -600,37 +600,11 @@ const AdminPage = () => {
               <p className="text-muted-foreground">Configurações globais do sistema</p>
             </div>
             
-            <div className="grid gap-6">
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Integrações Externas</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="flex justify-between items-center p-3 border rounded-lg">
-                    <div>
-                      <p className="font-medium">Supabase</p>
-                      <p className="text-sm text-muted-foreground">Banco de dados e autenticação</p>
-                    </div>
-                    <Badge>Conectado</Badge>
-                  </div>
-                  <div className="flex justify-between items-center p-3 border rounded-lg">
-                    <div>
-                      <p className="font-medium">OpenAI</p>
-                      <p className="text-sm text-muted-foreground">Análise de dados e IA</p>
-                    </div>
-                    <Badge variant="secondary">Configurar</Badge>
-                  </div>
-                  <div className="flex justify-between items-center p-3 border rounded-lg">
-                    <div>
-                      <p className="font-medium">Asaas</p>
-                      <p className="text-sm text-muted-foreground">Gateway de pagamentos</p>
-                    </div>
-                    <Badge variant="outline">Pendente</Badge>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+            <Card>
+              <CardContent className="py-8 text-center">
+                <p className="text-muted-foreground">As configurações do sistema são gerenciadas automaticamente.</p>
+              </CardContent>
+            </Card>
           </div>
         );
       case 'security':
