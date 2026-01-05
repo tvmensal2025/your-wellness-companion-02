@@ -303,7 +303,7 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
                     </Badge>
                   </div>
 
-                  {/* Botões: Instruções e Começar */}
+                  {/* Botões: Instruções e Começar/Concluir */}
                   <div className="grid grid-cols-2 gap-3">
                     <Button
                       variant="outline"
@@ -313,13 +313,24 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
                       <Info className="w-4 h-4" />
                       Instruções
                     </Button>
-                    <Button
-                      className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white gap-2"
-                      onClick={handleCompleteExercise}
-                    >
-                      <Play className="w-4 h-4" />
-                      Começar
-                    </Button>
+                    
+                    {!isExerciseStarted ? (
+                      <Button
+                        className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white gap-2"
+                        onClick={handleStartExercise}
+                      >
+                        <Play className="w-4 h-4" />
+                        Começar
+                      </Button>
+                    ) : (
+                      <Button
+                        className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white gap-2"
+                        onClick={handleCompleteExercise}
+                      >
+                        <Check className="w-4 h-4" />
+                        Concluir
+                      </Button>
+                    )}
                   </div>
 
                   {/* Instruções expandidas */}
