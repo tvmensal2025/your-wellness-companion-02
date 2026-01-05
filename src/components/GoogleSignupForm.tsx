@@ -223,10 +223,8 @@ export const GoogleSignupForm: React.FC<GoogleSignupFormProps> = ({ onComplete }
                 <SelectValue placeholder="Selecione" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="masculino">Masculino</SelectItem>
-                <SelectItem value="feminino">Feminino</SelectItem>
-                <SelectItem value="outro">Outro</SelectItem>
-                <SelectItem value="prefiro_nao_dizer">Prefiro não dizer</SelectItem>
+                <SelectItem value="masculino">Homem</SelectItem>
+                <SelectItem value="feminino">Mulher</SelectItem>
               </SelectContent>
             </Select>
           </div>
