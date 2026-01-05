@@ -95,115 +95,186 @@ const HomePage = memo(() => {
         </div>
       </motion.header>
 
-      {/* Hero Section Premium */}
-      <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
-        {/* Background Elements */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full -z-10 overflow-hidden pointer-events-none">
-          <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-emerald-100/50 rounded-full blur-[100px] mix-blend-multiply animate-blob" />
-          <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-amber-100/50 rounded-full blur-[100px] mix-blend-multiply animate-blob animation-delay-2000" />
-          <div className="absolute -bottom-32 left-1/2 w-[600px] h-[600px] bg-blue-50/50 rounded-full blur-[100px] mix-blend-multiply animate-blob animation-delay-4000" />
+      {/* Hero Section Premium - Redesigned */}
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-900">
+        {/* Animated Background */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-emerald-500/20 rounded-full blur-[150px] animate-pulse" />
+          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-amber-500/10 rounded-full blur-[150px] animate-pulse animation-delay-2000" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-emerald-600/5 rounded-full blur-[200px]" />
+          {/* Grid Pattern */}
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:100px_100px]" />
         </div>
 
-        <div className="container mx-auto px-6 text-center relative z-10">
-          <motion.div initial={{
-          opacity: 0,
-          y: 20
-        }} animate={{
-          opacity: 1,
-          y: 0
-        }} transition={{
-          duration: 0.6
-        }} className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm border border-emerald-100 rounded-full px-4 py-1.5 shadow-sm mb-8">
-            <div className="flex -space-x-2">
-               {[1, 2, 3].map(i => <div key={i} className="w-6 h-6 rounded-full bg-gray-200 border-2 border-white" />)}
-            </div>
-            <span className="text-sm font-medium text-slate-600">
-              Junte-se a <span className="text-emerald-600 font-bold">+1.200</span> membros
-            </span>
-          </motion.div>
+        <div className="container mx-auto px-6 py-32 relative z-10">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            {/* Left Content */}
+            <motion.div
+              initial={{ opacity: 0, x: -50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8 }}
+              className="text-left"
+            >
+              {/* Badge Promo */}
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="inline-flex items-center gap-3 bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-400/30 rounded-full px-5 py-2 mb-8"
+              >
+                <span className="flex h-2 w-2 relative">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                </span>
+                <span className="text-amber-300 text-sm font-semibold">🔥 OFERTA LIMITADA - 70% OFF</span>
+              </motion.div>
 
-          <motion.h1 style={{
-          y,
-          opacity
-        }} className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-slate-900 mb-8 max-w-4xl mx-auto leading-[1.1]">
-            Transforme seu corpo e <br className="hidden md:block" />
-            <span className="bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-success">
-              sua vida por completo
-            </span>
-          </motion.h1>
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-6 leading-tight">
+                Emagreça de forma
+                <span className="block bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-400 bg-clip-text text-transparent">
+                  inteligente e definitiva
+                </span>
+              </h1>
 
-          <motion.p initial={{
-          opacity: 0,
-          y: 20
-        }} animate={{
-          opacity: 1,
-          y: 0
-        }} transition={{
-          duration: 0.6,
-          delay: 0.2
-        }} className="text-lg md:text-xl text-slate-600 mb-10 max-w-2xl mx-auto leading-relaxed">
-            A primeira plataforma que une Inteligência Artificial, Nutricionistas especializados e Ciência Comportamental para um emagrecimento definitivo e saudável.
-          </motion.p>
+              <p className="text-lg md:text-xl text-slate-300 mb-8 leading-relaxed max-w-xl">
+                A única plataforma com <span className="text-emerald-400 font-semibold">IA nutricional</span> que 
+                cria seu plano personalizado, acompanha seu progresso e te motiva a cada passo.
+              </p>
 
-          <motion.div initial={{
-          opacity: 0,
-          y: 20
-        }} animate={{
-          opacity: 1,
-          y: 0
-        }} transition={{
-          duration: 0.6,
-          delay: 0.4
-        }} className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Link to="/auth" className="w-full sm:w-auto">
-              <Button size="lg" className="w-full h-14 px-8 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-lg shadow-xl shadow-emerald-200 transition-all hover:-translate-y-1">
-                Começar Transformação Grátis
-                <ArrowRight className="ml-2 w-5 h-5" />
-              </Button>
-            </Link>
-            <div className="flex items-center gap-2 text-sm text-slate-500 mt-2 sm:mt-0">
-              <CheckCircle className="w-4 h-4 text-emerald-500" />
-              <span>7 dias grátis</span>
-              <span className="mx-1">•</span>
-              <span>Sem cartão necessário</span>
-            </div>
-          </motion.div>
-        </div>
-
-        {/* Floating Stats UI Mockup */}
-        <motion.div initial={{
-        opacity: 0,
-        y: 100
-      }} animate={{
-        opacity: 1,
-        y: 0
-      }} transition={{
-        duration: 1,
-        delay: 0.6
-      }} className="mt-20 container mx-auto px-4 max-w-5xl relative">
-          <div className="relative bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden aspect-[16/9] md:aspect-[21/9]">
-             <div className="absolute inset-0 bg-gradient-to-br from-slate-50 to-slate-100/50" />
-             <div className="absolute inset-0 flex items-center justify-center">
-                {/* Abstract Representation of the Dashboard */}
-                <div className="grid grid-cols-3 gap-4 w-3/4 opacity-90 transform scale-95 hover:scale-100 transition-transform duration-700">
-                   <div className="col-span-2 bg-white p-4 rounded-xl shadow-lg border border-slate-100 space-y-3">
-                      <div className="h-4 w-1/3 bg-slate-100 rounded animate-pulse" />
-                      <div className="h-32 bg-emerald-50/50 rounded-lg border border-emerald-100 flex items-end p-2 gap-2">
-                         {[40, 60, 50, 70, 55, 80, 75].map((h, i) => <div key={i} className="w-full bg-emerald-200 rounded-t-sm" style={{
-                    height: `${h}%`
-                  }} />)}
-                      </div>
-                   </div>
-                   <div className="bg-white p-4 rounded-xl shadow-lg border border-slate-100 flex flex-col items-center justify-center gap-3">
-                      <div className="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center text-2xl">🏆</div>
-                      <div className="text-center">
-                        <div className="h-4 w-16 bg-slate-100 rounded mx-auto mb-1" />
-                        <div className="h-3 w-12 bg-slate-100 rounded mx-auto" />
-                      </div>
-                   </div>
+              {/* Pricing */}
+              <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 mb-8 max-w-md">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="flex flex-col">
+                    <span className="text-slate-400 text-sm line-through">De R$ 197/mês</span>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-4xl font-black text-white">R$ 59</span>
+                      <span className="text-slate-400">/mês</span>
+                    </div>
+                  </div>
+                  <div className="ml-auto bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-xs font-bold px-3 py-1.5 rounded-full">
+                    ECONOMIZE R$138
+                  </div>
                 </div>
-             </div>
+                <ul className="space-y-2 mb-6">
+                  {[
+                    'IA Sofia disponível 24h',
+                    'Cardápios personalizados ilimitados',
+                    'Acompanhamento por nutricionistas',
+                    'Sistema de gamificação completo'
+                  ].map((item, i) => (
+                    <li key={i} className="flex items-center gap-2 text-slate-300 text-sm">
+                      <Check className="w-4 h-4 text-emerald-400" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+                <Link to="/auth" className="block">
+                  <Button className="w-full h-14 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white text-lg font-bold shadow-lg shadow-emerald-500/25 transition-all hover:scale-[1.02] hover:shadow-emerald-500/40">
+                    Começar Agora com 70% OFF
+                    <ArrowRight className="ml-2 w-5 h-5" />
+                  </Button>
+                </Link>
+                <p className="text-center text-slate-400 text-xs mt-3">
+                  ✓ 7 dias de garantia • Cancele quando quiser
+                </p>
+              </div>
+
+              {/* Social Proof */}
+              <div className="flex items-center gap-6">
+                <div className="flex -space-x-3">
+                  {['😊', '💪', '🎯', '⭐'].map((emoji, i) => (
+                    <div key={i} className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-700 to-slate-800 border-2 border-slate-900 flex items-center justify-center text-lg">
+                      {emoji}
+                    </div>
+                  ))}
+                </div>
+                <div>
+                  <div className="flex items-center gap-1 text-amber-400">
+                    {[...Array(5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-current" />)}
+                  </div>
+                  <p className="text-slate-400 text-sm"><span className="text-white font-semibold">+2.500</span> transformações</p>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Right Content - Stats Card */}
+            <motion.div
+              initial={{ opacity: 0, x: 50 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, delay: 0.3 }}
+              className="relative hidden lg:block"
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 rounded-3xl blur-3xl" />
+              <div className="relative bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8 shadow-2xl">
+                {/* Header */}
+                <div className="flex items-center justify-between mb-8">
+                  <div>
+                    <p className="text-slate-400 text-sm">Seu progresso</p>
+                    <h3 className="text-white text-2xl font-bold">Maria Silva</h3>
+                  </div>
+                  <div className="w-14 h-14 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-2xl shadow-lg shadow-emerald-500/30">
+                    👩‍💼
+                  </div>
+                </div>
+
+                {/* Progress Chart */}
+                <div className="bg-slate-800/50 rounded-2xl p-6 mb-6">
+                  <div className="flex justify-between items-center mb-4">
+                    <span className="text-slate-400 text-sm">Peso perdido</span>
+                    <span className="text-emerald-400 font-bold">-18kg</span>
+                  </div>
+                  <div className="h-32 flex items-end gap-2">
+                    {[85, 82, 78, 75, 72, 70, 67].map((h, i) => (
+                      <div key={i} className="flex-1 flex flex-col items-center gap-2">
+                        <div 
+                          className="w-full bg-gradient-to-t from-emerald-500 to-teal-400 rounded-t-sm transition-all"
+                          style={{ height: `${(h / 85) * 100}%` }}
+                        />
+                        <span className="text-[10px] text-slate-500">S{i + 1}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Stats Grid */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="bg-slate-800/50 rounded-xl p-4 text-center">
+                    <div className="text-3xl mb-1">🔥</div>
+                    <p className="text-white text-xl font-bold">45</p>
+                    <p className="text-slate-400 text-xs">Dias de sequência</p>
+                  </div>
+                  <div className="bg-slate-800/50 rounded-xl p-4 text-center">
+                    <div className="text-3xl mb-1">🏆</div>
+                    <p className="text-white text-xl font-bold">12</p>
+                    <p className="text-slate-400 text-xs">Conquistas</p>
+                  </div>
+                </div>
+
+                {/* Badge */}
+                <div className="mt-6 flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500/20 to-orange-500/20 rounded-xl p-3">
+                  <Trophy className="w-5 h-5 text-amber-400" />
+                  <span className="text-amber-300 text-sm font-semibold">Top 5% do ranking</span>
+                </div>
+              </div>
+            </motion.div>
           </div>
+        </div>
+
+        {/* Scroll Indicator */}
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.5 }}
+          className="absolute bottom-8 left-1/2 -translate-x-1/2"
+        >
+          <motion.div 
+            animate={{ y: [0, 10, 0] }}
+            transition={{ repeat: Infinity, duration: 2 }}
+            className="flex flex-col items-center gap-2 cursor-pointer"
+          >
+            <span className="text-slate-400 text-xs uppercase tracking-widest">Descubra mais</span>
+            <ChevronDown className="w-5 h-5 text-slate-400" />
+          </motion.div>
         </motion.div>
       </section>
 
