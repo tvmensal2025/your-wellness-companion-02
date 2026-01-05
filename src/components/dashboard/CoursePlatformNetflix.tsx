@@ -426,7 +426,7 @@ const CoursePlatformNetflix = ({ user }: CoursePlatformNetflixProps) => {
         )}
 
         {/* Banner/Video no topo - Responsivo */}
-        <div className="relative h-48 sm:h-64 md:h-80 lg:h-96 mb-4 sm:mb-6 md:mb-8 rounded-lg sm:rounded-xl md:rounded-2xl overflow-hidden mx-3 sm:mx-4 md:mx-6 mt-3 sm:mt-4 md:mt-6">
+        <div className="relative h-32 sm:h-48 md:h-64 lg:h-80 mb-3 sm:mb-4 md:mb-6 rounded-lg overflow-hidden mx-2 sm:mx-4 md:mx-6 mt-2 sm:mt-4">
           {/* Controles admin do banner */}
           {adminModeEnabled && (
             <AdminEditControls 
@@ -457,53 +457,43 @@ const CoursePlatformNetflix = ({ user }: CoursePlatformNetflixProps) => {
             </div>
           )}
           
-          <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between h-full p-4 sm:p-6 md:p-8">
+          <div className="relative z-10 flex items-end justify-between h-full p-4 sm:p-6 md:p-8">
             <div className="flex-1">
-              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-2 sm:mb-3 md:mb-4">
+              <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold mb-1 sm:mb-2">
                 PLATAFORMA DOS SONHOS
                 {adminModeEnabled && (
-                  <Badge className="ml-2 sm:ml-4 bg-red-600 text-white text-xs sm:text-sm">
-                    [ADMIN MODE]
+                  <Badge className="ml-2 bg-red-600 text-white text-[10px] sm:text-xs">
+                    ADMIN
                   </Badge>
                 )}
               </h1>
-              <p className="text-sm sm:text-lg md:text-xl mb-4 sm:mb-6 opacity-90">Novo conteúdo mensalmente</p>
-              <Button size="sm" className="sm:size-default md:size-lg bg-white text-black hover:bg-white/90 text-sm sm:text-base">
-                <Play className="h-3 w-3 sm:h-4 md:h-5 w-3 sm:w-4 md:w-5 mr-1 sm:mr-2" />
-                Começar Agora
-              </Button>
+              <p className="text-xs sm:text-sm md:text-base opacity-90">Novo conteúdo mensalmente</p>
             </div>
             
             <Button
               variant="outline"
-              size="sm"
+              size="icon"
               onClick={() => setShowVideo(!showVideo)}
-              className="bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30 mt-4 sm:mt-0 ml-0 sm:ml-4"
+              className="bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30 h-8 w-8 sm:h-9 sm:w-9"
             >
               {showVideo ? (
-                <>
-                  <BookOpen className="h-3 w-3 sm:h-4 w-3 sm:w-4 mr-1 sm:mr-2" />
-                  <span className="text-xs sm:text-sm">Imagem</span>
-                </>
+                <BookOpen className="h-4 w-4" />
               ) : (
-                <>
-                  <Play className="h-3 w-3 sm:h-4 w-3 sm:w-4 mr-1 sm:mr-2" />
-                  <span className="text-xs sm:text-sm">Vídeo</span>
-                </>
+                <Play className="h-4 w-4" />
               )}
             </Button>
           </div>
         </div>
 
         {/* Grid de cursos - Cards Responsivos */}
-        <div className="px-3 sm:px-4 md:px-6">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6 gap-2">
-            <h2 className="text-xl sm:text-2xl font-bold">
+        <div className="px-2 sm:px-4 md:px-6">
+          <div className="flex items-center justify-between mb-3 sm:mb-4">
+            <h2 className="text-base sm:text-lg md:text-xl font-bold">
               {dashboardViewMode === 'courses' ? 'Todos os Cursos' : 'Módulos do Sistema'}
             </h2>
             {adminModeEnabled && (
-              <Badge className="bg-yellow-600 text-black text-xs sm:text-sm">
-                Exibindo: {dashboardViewMode === 'courses' ? 'Cursos' : 'Módulos'}
+              <Badge className="bg-yellow-600 text-black text-[10px] sm:text-xs">
+                {dashboardViewMode === 'courses' ? 'Cursos' : 'Módulos'}
               </Badge>
             )}
           </div>
@@ -520,11 +510,11 @@ const CoursePlatformNetflix = ({ user }: CoursePlatformNetflixProps) => {
                       <Badge className="bg-blue-600">Curso</Badge>
                     )}
                   </div>
-                  {/* Sempre padrão Netflix: cards grandes com capa do curso (clicando abre módulos/aulas) */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 sm:gap-4 md:gap-6">
+                  {/* Grid de cursos - Cards responsivos */}
+                  <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3 md:gap-4">
                     <Card 
                       key={course.id} 
-                      className="w-full max-w-sm mx-auto sm:max-w-none h-auto sm:h-[400px] md:h-[450px] lg:h-[480px] bg-gray-900 border-gray-700 cursor-pointer hover:scale-105 transition-all duration-300 group relative"
+                      className="w-full h-[180px] sm:h-[220px] md:h-[280px] lg:h-[320px] bg-gray-900 border-gray-700 cursor-pointer hover:scale-[1.02] sm:hover:scale-105 transition-all duration-300 group relative overflow-hidden"
                       onClick={() => handleCourseClick(course)}
                     >
                       {adminModeEnabled && (
@@ -534,16 +524,21 @@ const CoursePlatformNetflix = ({ user }: CoursePlatformNetflixProps) => {
                           onSave={handleSaveEdit}
                         />
                       )}
-                      <div className="relative h-48 sm:h-56 md:h-64">
+                      <div className="relative h-full">
                         <img 
                           src={course.thumbnail_url || '/placeholder.svg'} 
                           alt={course.title}
-                          className="w-full h-full object-cover rounded-t-lg"
+                          className="w-full h-full object-cover"
                         />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                        <div className="absolute bottom-0 left-0 right-0 p-2 sm:p-3">
+                          <h4 className="text-xs sm:text-sm font-semibold line-clamp-2">{course.title}</h4>
+                          <p className="text-[10px] sm:text-xs text-gray-400 mt-0.5 line-clamp-1">{course.lessons.length} aulas</p>
+                        </div>
                         {!adminModeEnabled && (
                           <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-300 flex items-center justify-center">
-                            <Button size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white text-black hover:bg-white/90">
-                              <Play className="h-5 w-5 sm:h-6 w-5 sm:w-6" />
+                            <Button size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-white text-black hover:bg-white/90 h-8 w-8 sm:h-10 sm:w-10">
+                              <Play className="h-4 w-4 sm:h-5 sm:w-5" />
                             </Button>
                           </div>
                         )}
