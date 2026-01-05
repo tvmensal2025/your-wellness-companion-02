@@ -315,101 +315,103 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
 
   const renderOverview = () => (
     <div className="space-y-4">
-      {/* Header elegante */}
-      <div className="space-y-2">
+      {/* Header */}
+      <div className="space-y-1">
         <div className="flex items-start justify-between gap-3">
           <h2 className="text-xl font-bold text-foreground leading-tight">{name}</h2>
           <Badge 
-            variant="secondary" 
-            className="shrink-0 gap-1.5 px-2.5 py-1 bg-primary/10 text-primary border-0"
+            variant="outline" 
+            className="shrink-0 gap-1.5 px-3 py-1.5 bg-background border-border"
           >
             {location === 'casa' ? <Home className="w-3.5 h-3.5" /> : <Building2 className="w-3.5 h-3.5" />}
-            {location === 'casa' ? 'Casa' : 'Academia'}
+            {location === 'casa' ? 'Em Casa' : 'Academia'}
           </Badge>
         </div>
         
-        {/* Descrição resumida com expansão */}
         {description && (
-          <div className="space-y-1">
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              {showFullDescription ? description : descriptionSummary}
-            </p>
-            {description.length > 120 && (
-              <button
-                onClick={() => setShowFullDescription(!showFullDescription)}
-                className="text-xs text-primary font-medium hover:underline flex items-center gap-1"
-              >
-                {showFullDescription ? (
-                  <>Ver menos <ChevronUp className="w-3 h-3" /></>
-                ) : (
-                  <>Ver mais <ChevronDown className="w-3 h-3" /></>
-                )}
-              </button>
-            )}
-          </div>
+          <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
         )}
       </div>
 
       {/* Vídeo */}
       {renderVideoBlock()}
 
-      {/* Stats em cards elegantes */}
-      <div className="grid grid-cols-3 gap-2">
-        <Card className="border-0 bg-gradient-to-br from-orange-50 to-orange-100/50 dark:from-orange-950/30 dark:to-orange-900/20">
+      {/* Stats em cards */}
+      <div className="grid grid-cols-3 gap-3">
+        <Card className="border bg-background">
           <CardContent className="p-3 text-center">
-            <Repeat className="w-5 h-5 mx-auto mb-1 text-orange-600" />
-            <div className="text-lg font-bold text-orange-700 dark:text-orange-400">{sets}</div>
-            <div className="text-[10px] text-orange-600/70 dark:text-orange-400/70 font-medium">Séries</div>
+            <Repeat className="w-5 h-5 mx-auto mb-1 text-orange-500" />
+            <div className="text-lg font-bold">{sets}</div>
+            <div className="text-[10px] text-muted-foreground font-medium">Séries</div>
           </CardContent>
         </Card>
-        <Card className="border-0 bg-gradient-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/30 dark:to-blue-900/20">
+        <Card className="border bg-background">
           <CardContent className="p-3 text-center">
-            <Target className="w-5 h-5 mx-auto mb-1 text-blue-600" />
-            <div className="text-lg font-bold text-blue-700 dark:text-blue-400">{reps}</div>
-            <div className="text-[10px] text-blue-600/70 dark:text-blue-400/70 font-medium">Repetições</div>
+            <Target className="w-5 h-5 mx-auto mb-1 text-orange-500" />
+            <div className="text-lg font-bold">{reps}</div>
+            <div className="text-[10px] text-muted-foreground font-medium">Repetições</div>
           </CardContent>
         </Card>
-        <Card className="border-0 bg-gradient-to-br from-purple-50 to-purple-100/50 dark:from-purple-950/30 dark:to-purple-900/20">
+        <Card className="border bg-background">
           <CardContent className="p-3 text-center">
-            <Clock className="w-5 h-5 mx-auto mb-1 text-purple-600" />
-            <div className="text-lg font-bold text-purple-700 dark:text-purple-400">{rest}</div>
-            <div className="text-[10px] text-purple-600/70 dark:text-purple-400/70 font-medium">Descanso</div>
+            <Clock className="w-5 h-5 mx-auto mb-1 text-orange-500" />
+            <div className="text-lg font-bold">{rest}</div>
+            <div className="text-[10px] text-muted-foreground font-medium">Descanso</div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Dificuldade e Feedback */}
-      <Card className="border-0 bg-muted/30">
-        <CardContent className="p-3">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold">Dificuldade:</span>
-              <Badge variant="outline" className="text-xs">
-                {diff.label || difficultyRaw || 'Médio'}
-              </Badge>
-            </div>
-            <FeedbackButtons size="sm" />
-          </div>
-          <Progress value={difficultyProgress} className="h-1.5" />
-        </CardContent>
-      </Card>
+      {/* Dificuldade */}
+      <div className="flex items-center justify-between text-sm">
+        <span className="text-muted-foreground">Dificuldade</span>
+        <span className="font-medium">{diff.label || difficultyRaw || 'Intermediário'}</span>
+      </div>
 
-      {/* Instruções - exibidas diretamente */}
+      {/* Botões - Instruções e Começar */}
+      <div className="flex gap-3 pt-2">
+        <Button
+          variant="outline"
+          className="flex-1 h-12"
+          onClick={() => setCurrentStep('instructions')}
+        >
+          <Info className="w-4 h-4 mr-2" />
+          Instruções
+        </Button>
+        <Button
+          className="flex-1 h-12 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
+          onClick={startExecution}
+        >
+          <Play className="w-4 h-4 mr-2" />
+          Começar
+        </Button>
+      </div>
+    </div>
+  );
+
+  const renderInstructions = () => (
+    <div className="space-y-4">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-bold text-foreground">{name}</h2>
+        <Button variant="ghost" size="sm" onClick={() => setCurrentStep('overview')}>
+          <ArrowLeft className="w-4 h-4 mr-1" />
+          Voltar
+        </Button>
+      </div>
+
+      {/* Instruções */}
       {instructions.length > 0 && (
         <Card className="border-0 bg-green-50/50 dark:bg-green-950/20">
           <CardContent className="p-4 space-y-3">
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex items-center gap-2">
               <CheckCircle2 className="w-5 h-5 text-green-600" />
               <span className="font-semibold text-green-700 dark:text-green-400">
                 Passo a Passo
               </span>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-3">
               {instructions.map((step, index) => (
-                <div
-                  key={index}
-                  className="flex items-start gap-3"
-                >
+                <div key={index} className="flex items-start gap-3">
                   <div className="w-6 h-6 rounded-full bg-green-500 text-white flex items-center justify-center text-xs font-bold shrink-0 mt-0.5">
                     {index + 1}
                   </div>
@@ -421,11 +423,11 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
         </Card>
       )}
 
-      {/* Dicas - exibidas diretamente */}
+      {/* Dicas */}
       {tips.length > 0 && (
         <Card className="border-0 bg-blue-50/50 dark:bg-blue-950/20">
           <CardContent className="p-4 space-y-3">
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex items-center gap-2">
               <Lightbulb className="w-5 h-5 text-blue-600" />
               <span className="font-semibold text-blue-700 dark:text-blue-400">
                 Dicas do Personal
@@ -433,10 +435,7 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
             </div>
             <div className="space-y-2">
               {tips.map((tip, index) => (
-                <div
-                  key={index}
-                  className="flex items-start gap-2"
-                >
+                <div key={index} className="flex items-start gap-2">
                   <Flame className="w-4 h-4 text-blue-500 mt-0.5 shrink-0" />
                   <span className="text-sm text-foreground leading-relaxed">{tip}</span>
                 </div>
@@ -446,12 +445,12 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
         </Card>
       )}
 
-      {/* Botão principal */}
+      {/* Botão Começar */}
       <Button
-        className="w-full h-12 text-base font-semibold bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 shadow-lg shadow-orange-500/25"
+        className="w-full h-12 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
         onClick={startExecution}
       >
-        <Play className="w-5 h-5 mr-2" />
+        <Play className="w-4 h-4 mr-2" />
         Começar Exercício
       </Button>
     </div>
@@ -575,6 +574,7 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
         <ScrollArea className="flex-1 max-h-[calc(90vh-60px)]">
           <div className="p-4">
             {currentStep === 'overview' && renderOverview()}
+            {currentStep === 'instructions' && renderInstructions()}
             {currentStep === 'execution' && renderExecution()}
           </div>
         </ScrollArea>
