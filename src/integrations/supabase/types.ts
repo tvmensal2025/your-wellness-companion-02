@@ -8968,6 +8968,54 @@ export type Database = {
         }
         Relationships: []
       }
+      user_exercise_history: {
+        Row: {
+          calories_burned: number | null
+          completed_at: string | null
+          created_at: string | null
+          difficulty_level: string | null
+          duration_seconds: number | null
+          exercise_name: string
+          exercise_type: string | null
+          id: string
+          notes: string | null
+          reps_completed: number | null
+          sets_completed: number | null
+          user_id: string
+          weight_used: number | null
+        }
+        Insert: {
+          calories_burned?: number | null
+          completed_at?: string | null
+          created_at?: string | null
+          difficulty_level?: string | null
+          duration_seconds?: number | null
+          exercise_name: string
+          exercise_type?: string | null
+          id?: string
+          notes?: string | null
+          reps_completed?: number | null
+          sets_completed?: number | null
+          user_id: string
+          weight_used?: number | null
+        }
+        Update: {
+          calories_burned?: number | null
+          completed_at?: string | null
+          created_at?: string | null
+          difficulty_level?: string | null
+          duration_seconds?: number | null
+          exercise_name?: string
+          exercise_type?: string | null
+          id?: string
+          notes?: string | null
+          reps_completed?: number | null
+          sets_completed?: number | null
+          user_id?: string
+          weight_used?: number | null
+        }
+        Relationships: []
+      }
       user_exercise_programs: {
         Row: {
           completed_at: string | null

@@ -43,6 +43,7 @@ import { RestTimer } from './RestTimer';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import confetti from 'canvas-confetti';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ActiveWorkoutModalProps {
   isOpen: boolean;
@@ -185,7 +186,30 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
     });
   }, []);
 
-  const handleCompleteExercise = () => {
+  // Salvar exercício no histórico para análise da Sofia e Dr. Vital
+  const saveExerciseToHistory = useCallback(async (exercise: Exercise, setsCompleted: number, durationSeconds: number) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      await supabase.from('user_exercise_history').insert({
+        user_id: user.id,
+        exercise_name: exercise.name,
+        exercise_type: exercise.muscle_group || 'general',
+        sets_completed: setsCompleted,
+        reps_completed: parseInt(String(exercise.reps || '0').replace(/\D/g, '')) || 0,
+        duration_seconds: durationSeconds,
+        calories_burned: 0,
+        difficulty_level: exerciseFeedback || 'ok',
+        notes: `Treino: ${workout.dayName}`,
+        completed_at: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Erro ao salvar exercício no histórico:', error);
+    }
+  }, [workout.dayName, exerciseFeedback]);
+
+  const handleCompleteExercise = async () => {
     const nextProgress = progress.map((p, i) =>
       i === currentIndex
         ? {
@@ -198,6 +222,9 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
 
     setProgress(nextProgress);
     setIsExerciseTimerRunning(false);
+    
+    // Salvar no histórico para Sofia e Dr. Vital analisarem
+    await saveExerciseToHistory(currentExercise, totalSetsForExercise, exerciseSeconds);
     
     // Animação de sucesso
     triggerSuccessAnimation();
