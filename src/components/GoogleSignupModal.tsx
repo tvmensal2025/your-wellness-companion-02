@@ -288,9 +288,8 @@ export const GoogleSignupModal: React.FC<GoogleSignupModalProps> = ({
                 required
               >
                 <option value="">Selecione seu gênero</option>
-                <option value="masculino">Masculino</option>
-                <option value="feminino">Feminino</option>
-                <option value="outro">Outro</option>
+                <option value="masculino">Homem</option>
+                <option value="feminino">Mulher</option>
               </select>
             </div>
           </div>
