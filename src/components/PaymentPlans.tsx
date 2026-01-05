@@ -64,6 +64,7 @@ const plans: Plan[] = [
     billingPeriod: 'monthly',
     features: [
       '🏆 Tudo do Premium incluído',
+      '👩‍⚕️ Sessões personalizadas',
       '🩺 Protocolo mensal com Dr. Vital',
       '🎓 Masterclasses mensais',
       '📊 Relatórios mensais detalhados',
