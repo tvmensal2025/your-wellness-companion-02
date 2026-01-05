@@ -181,13 +181,23 @@ export const useWorkoutPlanGenerator = () => {
         return false;
       }
 
+      if (!activePlan?.id) {
+        toast.error('Nenhum plano ativo para registrar o treino');
+        return false;
+      }
+
       const { error } = await supabase
         .from('sport_workout_logs')
         .insert({
           user_id: user.id,
-          training_plan_id: activePlan?.id,
-          ...workoutData,
-          completed_at: new Date().toISOString()
+          plan_id: activePlan.id,
+          workout_name: workoutData?.workout_name || workoutData?.name || 'Treino',
+          exercises_completed:
+            workoutData?.exercises_completed || workoutData?.exercises || workoutData || {},
+          duration_minutes: workoutData?.duration_minutes ?? null,
+          calories_burned: workoutData?.calories_burned ?? null,
+          notes: workoutData?.notes ?? null,
+          rating: workoutData?.rating ?? null,
         });
 
       if (error) throw error;
@@ -214,7 +224,6 @@ export const useWorkoutPlanGenerator = () => {
         .from('sport_training_plans')
         .update({
           current_week: newWeek,
-          current_day: newDay,
           updated_at: new Date().toISOString()
         })
         .eq('id', planId);
