@@ -33,70 +33,52 @@ const DashboardOverview: React.FC = () => {
   const [targetWeight, setTargetWeight] = useState<number | undefined>();
   const [lastMeasurementDays, setLastMeasurementDays] = useState<number>(0);
 
+  // Consolidated data fetching - all queries in parallel for speed
   useEffect(() => {
-    const getCurrentUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
+    const fetchAllData = async () => {
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      if (!authUser) return;
       
-      if (user) {
-        // Get user name from profile
-        const { data: profile } = await supabase
+      setUser(authUser);
+      
+      // Execute ALL queries in parallel for maximum speed
+      const [profileResult, trackingResult, physicalResult, goalResult] = await Promise.all([
+        supabase
           .from('profiles')
           .select('full_name')
-          .eq('id', user.id)
-          .single();
-        
-        if (profile?.full_name) {
-          setUserName(profile.full_name);
-        }
-      }
-    };
-    getCurrentUser();
-  }, []);
-
-  // Fetch health data
-  useEffect(() => {
-    const fetchHealthData = async () => {
-      if (!user) return;
+          .eq('id', authUser.id)
+          .single(),
+        supabase
+          .from('advanced_daily_tracking')
+          .select('waist_cm')
+          .eq('user_id', authUser.id)
+          .order('tracking_date', { ascending: false })
+          .limit(1)
+          .maybeSingle(),
+        supabase
+          .from('dados_físicos_do_usuário')
+          .select('altura_cm')
+          .eq('user_id', authUser.id)
+          .maybeSingle(),
+        supabase
+          .from('user_goals')
+          .select('target_value')
+          .eq('user_id', authUser.id)
+          .eq('goal_type', 'weight')
+          .eq('status', 'active')
+          .limit(1)
+          .maybeSingle()
+      ]);
       
-      const { data: trackingData } = await supabase
-        .from('advanced_daily_tracking')
-        .select('waist_cm')
-        .eq('user_id', user.id)
-        .order('tracking_date', { ascending: false })
-        .limit(1)
-        .single();
-
-      if (trackingData?.waist_cm) {
-        setWaistCircumference(trackingData.waist_cm);
-      }
-
-      const { data: profileData } = await supabase
-        .from('dados_físicos_do_usuário')
-        .select('altura_cm')
-        .eq('user_id', user.id)
-        .single();
-
-      if (profileData?.altura_cm) {
-        setHeightCm(profileData.altura_cm);
-      }
-
-      const { data: goalData } = await supabase
-        .from('user_goals')
-        .select('target_value')
-        .eq('user_id', user.id)
-        .eq('goal_type', 'weight')
-        .eq('status', 'active')
-        .limit(1)
-        .single();
-
-      if (goalData?.target_value) {
-        setTargetWeight(goalData.target_value);
-      }
+      // Set all state at once
+      if (profileResult.data?.full_name) setUserName(profileResult.data.full_name);
+      if (trackingResult.data?.waist_cm) setWaistCircumference(trackingResult.data.waist_cm);
+      if (physicalResult.data?.altura_cm) setHeightCm(physicalResult.data.altura_cm);
+      if (goalResult.data?.target_value) setTargetWeight(goalResult.data.target_value);
     };
 
-    fetchHealthData();
-  }, [user]);
+    fetchAllData();
+  }, []);
 
   // Calculate days since last measurement
   useEffect(() => {
