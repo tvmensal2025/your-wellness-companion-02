@@ -215,9 +215,10 @@ export default function UserSessions({ user }: UserSessionsProps) {
     try {
       const userSession = userSessions.find(us => us.id === sessionId);
       
-      // Check if it's a Health Wheel session (both types)
+      // Check if it's a Health Wheel session or similar interactive assessment
       if (userSession?.sessions.type === 'health_wheel_assessment' || 
-          userSession?.sessions.type === 'life_wheel_assessment') {
+          userSession?.sessions.type === 'life_wheel_assessment' ||
+          userSession?.sessions.type === 'symptoms_assessment') {
         setActiveHealthWheelSession(userSession);
         return;
       }
