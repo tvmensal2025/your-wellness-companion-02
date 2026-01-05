@@ -1,13 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useWeightMeasurement } from '@/hooks/useWeightMeasurement';
-import { useUserGender } from '@/hooks/useUserGender';
-import { useUserStreak } from '@/hooks/useUserStreak';
-import { useUserXP } from '@/hooks/useUserXP';
 import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
 import { repairAuthSessionIfTooLarge } from '@/lib/auth-token-repair';
+import { useUserDataCache, getUserDataFromCache } from '@/hooks/useUserDataCache';
 import SimpleWeightForm from '@/components/weighing/SimpleWeightForm';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { toast } from 'sonner';
@@ -19,80 +17,62 @@ import { MotivationalMascot } from './MotivationalMascot';
 
 const DashboardOverview: React.FC = () => {
   const { measurements, stats, loading, fetchMeasurements } = useWeightMeasurement();
-  const { currentStreak } = useUserStreak();
-  const { totalXP, level, levelTitle } = useUserXP();
+  const { data: userData, loading: userDataLoading } = useUserDataCache();
+  
   const [isWeightModalOpen, setIsWeightModalOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const navigate = useNavigate();
 
-  const [user, setUser] = useState<User | null>(null);
-  const [userName, setUserName] = useState<string>('');
-  const { gender } = useUserGender(user);
   const [waistCircumference, setWaistCircumference] = useState<number>(0);
-  const [heightCm, setHeightCm] = useState<number>(170);
   const [healthScore, setHealthScore] = useState<number>(0);
   const [targetWeight, setTargetWeight] = useState<number | undefined>();
   const [lastMeasurementDays, setLastMeasurementDays] = useState<number>(0);
+  const initialFetchDoneRef = useRef(false);
 
-  // Consolidated data fetching - all queries in parallel for speed
+  // Dados do cache centralizado
+  const userName = userData.profile?.fullName || '';
+  const heightCm = userData.physicalData?.altura_cm || 170;
+  const currentStreak = userData.points?.currentStreak || 0;
+  const user = userData.user;
+  const gender = userData.profile?.gender;
+
+  // Buscar dados adicionais apenas uma vez (waist, targetWeight)
   useEffect(() => {
-    let mounted = true;
+    if (initialFetchDoneRef.current || !user) return;
+    initialFetchDoneRef.current = true;
 
-    const fetchAllData = async () => {
-      // Evita “parece desconectado” quando o token está gigante: repara ANTES das queries.
+    const fetchAdditionalData = async () => {
+      // Repara token gigante antes das queries
       const { data: { session } } = await supabase.auth.getSession();
-      const authUser = session?.user ?? null;
-      if (!authUser || !mounted) return;
-
       if (session) {
         await repairAuthSessionIfTooLarge(session);
       }
 
-      if (!mounted) return;
-      setUser(authUser);
-
-      // Execute ALL queries in parallel for maximum speed
-      const [profileResult, trackingResult, physicalResult, goalResult] = await Promise.all([
-        supabase
-          .from('profiles')
-          .select('full_name')
-          .eq('user_id', authUser.id)
-          .single(),
+      // Queries em paralelo
+      const [trackingResult, goalResult] = await Promise.all([
         supabase
           .from('advanced_daily_tracking')
           .select('waist_cm')
-          .eq('user_id', authUser.id)
+          .eq('user_id', user.id)
           .order('tracking_date', { ascending: false })
           .limit(1)
           .maybeSingle(),
         supabase
-          .from('dados_físicos_do_usuário')
-          .select('altura_cm')
-          .eq('user_id', authUser.id)
-          .maybeSingle(),
-        supabase
           .from('user_goals')
           .select('target_value')
-          .eq('user_id', authUser.id)
+          .eq('user_id', user.id)
           .eq('goal_type', 'weight')
           .eq('status', 'active')
           .limit(1)
           .maybeSingle()
       ]);
 
-      // Set all state at once
-      if (profileResult.data?.full_name) setUserName(profileResult.data.full_name);
       if (trackingResult.data?.waist_cm) setWaistCircumference(trackingResult.data.waist_cm);
-      if (physicalResult.data?.altura_cm) setHeightCm(physicalResult.data.altura_cm);
       if (goalResult.data?.target_value) setTargetWeight(goalResult.data.target_value);
     };
 
-    fetchAllData();
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
+    fetchAdditionalData();
+  }, [user]);
 
   // Calculate days since last measurement
   useEffect(() => {

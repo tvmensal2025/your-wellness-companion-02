@@ -1,31 +1,23 @@
 // @ts-nocheck
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { getUserDataFromCache, invalidateUserDataCache } from './useUserDataCache';
 
 interface XPData {
   currentXP: number;
   totalXP: number;
   level: number;
   xpToNextLevel: number;
-  xpProgress: number; // 0-100%
+  xpProgress: number;
   levelTitle: string;
 }
 
 const LEVEL_TITLES = [
-  'Iniciante',
-  'Explorador',
-  'Dedicado',
-  'Comprometido',
-  'Focado',
-  'Guerreiro',
-  'Mestre',
-  'Campeão',
-  'Lenda',
-  'Imortal'
+  'Iniciante', 'Explorador', 'Dedicado', 'Comprometido', 'Focado',
+  'Guerreiro', 'Mestre', 'Campeão', 'Lenda', 'Imortal'
 ];
 
 const calculateLevel = (totalXP: number): { level: number; xpInLevel: number; xpToNext: number } => {
-  // Fórmula: XP necessário = level * 100 + (level - 1) * 50
   let level = 1;
   let xpNeeded = 0;
   
@@ -34,10 +26,7 @@ const calculateLevel = (totalXP: number): { level: number; xpInLevel: number; xp
     level++;
   }
   
-  const xpInLevel = totalXP - xpNeeded;
-  const xpToNext = level * 100;
-  
-  return { level, xpInLevel, xpToNext };
+  return { level, xpInLevel: totalXP - xpNeeded, xpToNext: level * 100 };
 };
 
 export const useUserXP = () => {
@@ -51,17 +40,42 @@ export const useUserXP = () => {
   });
   const [loading, setLoading] = useState(true);
   const [xpGained, setXPGained] = useState<number | null>(null);
+  const initializedRef = useRef(false);
 
   const fetchXP = useCallback(async () => {
     try {
+      // Tenta cache primeiro
+      const cachedData = getUserDataFromCache();
+      
+      if (cachedData?.points) {
+        const totalXP = cachedData.points.totalPoints;
+        const { level, xpInLevel, xpToNext } = calculateLevel(totalXP);
+        const xpProgress = Math.round((xpInLevel / xpToNext) * 100);
+
+        setXPData({
+          currentXP: xpInLevel,
+          totalXP,
+          level,
+          xpToNextLevel: xpToNext,
+          xpProgress,
+          levelTitle: LEVEL_TITLES[Math.min(level - 1, LEVEL_TITLES.length - 1)]
+        });
+        setLoading(false);
+        return;
+      }
+
+      // Fallback: busca do DB
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        setLoading(false);
+        return;
+      }
 
       const { data: userPoints } = await supabase
         .from('user_points')
         .select('total_points')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       const totalXP = userPoints?.total_points || 0;
       const { level, xpInLevel, xpToNext } = calculateLevel(totalXP);
@@ -91,7 +105,7 @@ export const useUserXP = () => {
         .from('user_points')
         .select('total_points, daily_points')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       const newTotal = (userPoints?.total_points || 0) + amount;
       const newDaily = (userPoints?.daily_points || 0) + amount;
@@ -105,11 +119,12 @@ export const useUserXP = () => {
         })
         .eq('user_id', user.id);
 
-      // Mostrar animação de XP ganho
+      // Invalida cache
+      invalidateUserDataCache();
+
       setXPGained(amount);
       setTimeout(() => setXPGained(null), 3000);
 
-      // Atualizar estado
       const { level, xpInLevel, xpToNext } = calculateLevel(newTotal);
       const xpProgress = Math.round((xpInLevel / xpToNext) * 100);
 
@@ -130,7 +145,10 @@ export const useUserXP = () => {
   }, []);
 
   useEffect(() => {
-    fetchXP();
+    if (!initializedRef.current) {
+      initializedRef.current = true;
+      fetchXP();
+    }
   }, [fetchXP]);
 
   return { ...xpData, loading, addXP, xpGained, refetch: fetchXP };
