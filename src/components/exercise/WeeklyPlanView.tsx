@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { WeeklyPlan, Exercise } from '@/hooks/useExercisesLibrary';
 import { cn } from '@/lib/utils';
+import { formatDifficulty } from '@/lib/exercise-format';
 
 interface WeeklyPlanViewProps {
   weeklyPlan: WeeklyPlan[];
@@ -234,17 +235,22 @@ const WorkoutDayCard: React.FC<{
               </div>
 
               {/* Badge dificuldade */}
-              <Badge 
-                variant="outline" 
-                className={cn(
-                  "text-[10px] capitalize flex-shrink-0",
-                  exercise.difficulty === 'iniciante' && "border-green-300 text-green-600 bg-green-50 dark:bg-green-950/30",
-                  exercise.difficulty === 'intermediario' && "border-yellow-300 text-yellow-600 bg-yellow-50 dark:bg-yellow-950/30",
-                  exercise.difficulty === 'avancado' && "border-red-300 text-red-600 bg-red-50 dark:bg-red-950/30"
-                )}
-              >
-                {exercise.difficulty}
-              </Badge>
+              {(() => {
+                const diff = formatDifficulty(exercise.difficulty);
+                return (
+                  <Badge 
+                    variant="outline" 
+                    className={cn(
+                      "text-[10px] capitalize flex-shrink-0",
+                      diff.tone === 'easy' && "border-green-300 text-green-600 bg-green-50 dark:bg-green-950/30",
+                      diff.tone === 'medium' && "border-yellow-300 text-yellow-600 bg-yellow-50 dark:bg-yellow-950/30",
+                      diff.tone === 'hard' && "border-red-300 text-red-600 bg-red-50 dark:bg-red-950/30"
+                    )}
+                  >
+                    {diff.label || exercise.difficulty}
+                  </Badge>
+                );
+              })()}
 
               <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-orange-500 transition-colors flex-shrink-0" />
             </CardContent>
