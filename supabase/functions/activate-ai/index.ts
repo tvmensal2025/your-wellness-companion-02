@@ -22,9 +22,11 @@ serve(async (req) => {
 
     const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY") ?? "";
     const GOOGLE_AI_API_KEY = Deno.env.get("GOOGLE_AI_API_KEY") ?? "";
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY") ?? "";
     const OLLAMA_URL = "https://ids-ollama-web.ifrhb3.easypanel.host";
     
     console.log('🔥 Ativando e testando APIs de IA...');
+    console.log('🔑 Lovable AI Key exists:', !!LOVABLE_API_KEY);
     console.log('🔑 OpenAI Key exists:', !!OPENAI_API_KEY);
     console.log('🔑 Google AI Key exists:', !!GOOGLE_AI_API_KEY);
     console.log('🔑 Ollama URL:', OLLAMA_URL);
@@ -54,10 +56,43 @@ serve(async (req) => {
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    // 1) Test OpenAI
+    // 1) Test Lovable AI (PRINCIPAL - sem necessidade de API key externa)
+    let lovableResult: { ok: boolean; status?: number; message?: string } = { ok: false };
+    if (LOVABLE_API_KEY) {
+      try {
+        console.log('🧪 Testando Lovable AI...');
+        const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${LOVABLE_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model: "google/gemini-2.5-flash",
+            messages: [
+              { role: "system", content: "Você é um verificador de saúde da API." },
+              { role: "user", content: "Responda apenas: ok" },
+            ],
+            max_tokens: 10,
+          }),
+        });
+        const j = await r.json();
+        const text = j?.choices?.[0]?.message?.content ?? "";
+        lovableResult = { ok: r.ok && typeof text === "string", status: r.status, message: text };
+        console.log(lovableResult.ok ? '✅ Lovable AI conectado!' : '❌ Lovable AI falhou:', text);
+      } catch (e) {
+        lovableResult = { ok: false, message: (e as Error).message };
+        console.log('❌ Lovable AI exception:', e);
+      }
+    } else {
+      console.log('⚠️ LOVABLE_API_KEY não configurada');
+    }
+
+    // 2) Test OpenAI
     let openaiResult: { ok: boolean; status?: number; message?: string } = { ok: false };
     if (OPENAI_API_KEY) {
       try {
+        console.log('🧪 Testando OpenAI...');
         const r = await fetch("https://api.openai.com/v1/chat/completions", {
           method: "POST",
           headers: {
@@ -77,12 +112,14 @@ serve(async (req) => {
         const j = await r.json();
         const text = j?.choices?.[0]?.message?.content ?? "";
         openaiResult = { ok: r.ok && typeof text === "string", status: r.status, message: text };
+        console.log(openaiResult.ok ? '✅ OpenAI conectado!' : '❌ OpenAI falhou:', text);
       } catch (e) {
         openaiResult = { ok: false, message: (e as Error).message };
+        console.log('❌ OpenAI exception:', e);
       }
     }
 
-    // 2) Test Google Gemini
+    // 3) Test Google Gemini
     let googleResult: { ok: boolean; status?: number; message?: string } = { ok: false };
     if (GOOGLE_AI_API_KEY) {
       try {
@@ -108,7 +145,7 @@ serve(async (req) => {
       }
     }
 
-    // 3) Test Ollama
+    // 4) Test Ollama
     let ollamaResult: { ok: boolean; status?: number; message?: string; models?: number } = { ok: false };
     try {
       console.log('🧪 Testando Ollama...');
@@ -136,37 +173,42 @@ serve(async (req) => {
       console.log('❌ Ollama exception:', e);
     }
 
-    // 4) Upsert/ativar configurações nas funcionalidades principais - TODAS ATIVAS
-    const configs = [
-      { functionality: "chat_daily", service: "openai", model: "gpt-4o", max_tokens: 1000, temperature: 0.8, is_enabled: true, level: "maximo", personality: "sofia", system_prompt: "Você é a Sofia, nutricionista virtual do Instituto dos Sonhos. Seja EMPÁTICA, MOTIVACIONAL e CONCISA. Use linguagem simples e direta, como uma amiga conversando. Foque no bem-estar e motivação do usuário." },
-      { functionality: "weekly_report", service: "openai", model: "gpt-4o", max_tokens: 2000, temperature: 0.8, is_enabled: true, level: "maximo", personality: "sofia", system_prompt: "Você é especialista em relatórios semanais de saúde. Crie análises detalhadas e personalizadas baseadas nos dados do usuário." },
-      { functionality: "monthly_report", service: "openai", model: "gpt-4o", max_tokens: 2000, temperature: 0.7, is_enabled: true, level: "maximo", personality: "drvital", system_prompt: "Você é especialista em relatórios mensais de saúde. Forneça insights abrangentes sobre o progresso do usuário." },
-      { functionality: "medical_analysis", service: "openai", model: "gpt-4o", max_tokens: 2000, temperature: 0.3, is_enabled: true, level: "maximo", personality: "drvital", system_prompt: "Você é o Dr. Vital, médico virtual do Instituto dos Sonhos. Seja DIRETO, PROFISSIONAL e CONCISO. Use linguagem simples, evite textos longos. Foque em recomendações práticas e seguras." },
-      { functionality: "preventive_analysis", service: "openai", model: "gpt-4o", max_tokens: 2000, temperature: 0.5, is_enabled: true, level: "maximo", personality: "drvital", system_prompt: "Você é especialista em análise preventiva de saúde. Identifique riscos e forneça recomendações preventivas baseadas em evidências." },
-      { functionality: "food_analysis", service: "gemini", model: "gemini-1.5-pro", max_tokens: 1000, temperature: 0.6, is_enabled: true, level: "maximo", personality: "sofia", system_prompt: "Você é especialista em análise nutricional. Avalie alimentos de forma precisa e forneça orientações nutricionais práticas." },
-      { functionality: "daily_missions", service: "openai", model: "gpt-4o", max_tokens: 1500, temperature: 0.7, is_enabled: true, level: "maximo", personality: "sofia", system_prompt: "Você é especialista em criar missões diárias personalizadas. Gere tarefas motivacionais e alcançáveis baseadas no perfil do usuário." },
-      { functionality: "whatsapp_reports", service: "openai", model: "gpt-4o", max_tokens: 1000, temperature: 0.6, is_enabled: true, level: "maximo", personality: "sofia", system_prompt: "Você é especialista em relatórios concisos para WhatsApp. Crie mensagens claras, motivacionais e direcionadas." },
-      { functionality: "email_reports", service: "openai", model: "gpt-4o", max_tokens: 2000, temperature: 0.7, is_enabled: true, level: "maximo", personality: "drvital", system_prompt: "Você é especialista em relatórios detalhados por email. Forneça análises completas e recomendações profissionais." },
-    ];
+    // 5) Update configurations to use Lovable AI as default if available
+    if (lovableResult.ok) {
+      console.log('📝 Atualizando configurações para usar Lovable AI...');
+      
+      const lovableConfigs = [
+        { functionality: "chat_daily", service: "lovable", model: "google/gemini-2.5-flash", max_tokens: 2048, temperature: 0.8, is_enabled: true, level: "maximo", personality: "sofia", system_prompt: "Você é a Sofia, nutricionista virtual do Instituto dos Sonhos. Seja EMPÁTICA, MOTIVACIONAL e CONCISA. Use linguagem simples e direta, como uma amiga conversando. Foque no bem-estar e motivação do usuário." },
+        { functionality: "weekly_report", service: "lovable", model: "google/gemini-2.5-flash", max_tokens: 4096, temperature: 0.7, is_enabled: true, level: "maximo", personality: "sofia", system_prompt: "Você é a Sofia. Gere relatórios semanais detalhados e motivacionais sobre o progresso do paciente." },
+        { functionality: "monthly_report", service: "lovable", model: "google/gemini-2.5-pro", max_tokens: 8192, temperature: 0.7, is_enabled: true, level: "maximo", personality: "sofia", system_prompt: "Você é a Sofia. Gere relatórios mensais completos com análise profunda do progresso." },
+        { functionality: "medical_analysis", service: "lovable", model: "google/gemini-2.5-pro", max_tokens: 4096, temperature: 0.5, is_enabled: true, level: "maximo", personality: "drvital", system_prompt: "Você é o Dr. Vital, médico virtual do Instituto dos Sonhos. Analise exames médicos de forma profissional e segura." },
+        { functionality: "preventive_analysis", service: "lovable", model: "google/gemini-2.5-flash", max_tokens: 2048, temperature: 0.6, is_enabled: true, level: "maximo", personality: "drvital", system_prompt: "Você é o Dr. Vital. Analise dados de saúde e identifique riscos potenciais de forma preventiva." },
+        { functionality: "food_analysis", service: "lovable", model: "google/gemini-2.5-flash", max_tokens: 2048, temperature: 0.7, is_enabled: true, level: "maximo", personality: "sofia", system_prompt: "Você é a Sofia. Analise fotos de refeições e forneça estimativas nutricionais." },
+        { functionality: "daily_missions", service: "lovable", model: "google/gemini-2.5-flash-lite", max_tokens: 1024, temperature: 0.8, is_enabled: true, level: "medio", personality: "sofia", system_prompt: "Você é a Sofia. Gere missões diárias personalizadas e motivadoras." },
+        { functionality: "whatsapp_reports", service: "lovable", model: "google/gemini-2.5-flash-lite", max_tokens: 512, temperature: 0.7, is_enabled: true, level: "minimo", personality: "sofia", system_prompt: "Você é a Sofia. Gere mensagens curtas e motivacionais para WhatsApp." },
+        { functionality: "email_reports", service: "lovable", model: "google/gemini-2.5-flash", max_tokens: 2048, temperature: 0.7, is_enabled: true, level: "medio", personality: "sofia", system_prompt: "Você é a Sofia. Gere emails personalizados com relatórios e orientações." },
+      ];
 
-    // Upsert configurações básicas
-    for (const config of configs) {
-      const { error } = await supabase
-        .from("ai_configurations")
-        .upsert(config, { onConflict: "functionality" });
-        
-      if (error) {
-        console.error("Erro ao criar config:", config.functionality, error);
-      } else {
-        console.log("✅ Config criada/atualizada:", config.functionality);
+      for (const config of lovableConfigs) {
+        const { error } = await supabase
+          .from("ai_configurations")
+          .upsert(config, { onConflict: "functionality" });
+          
+        if (error) {
+          console.error("Erro ao criar config:", config.functionality, error);
+        } else {
+          console.log("✅ Config Lovable AI criada:", config.functionality);
+        }
       }
     }
 
     const summary = {
+      lovable_working: lovableResult.ok,
       openai_working: openaiResult.ok,
       google_working: googleResult.ok,
       ollama_working: ollamaResult.ok,
-      all_working: openaiResult.ok && googleResult.ok && ollamaResult.ok
+      recommended_service: lovableResult.ok ? 'lovable' : (openaiResult.ok ? 'openai' : (googleResult.ok ? 'gemini' : 'ollama')),
+      all_working: lovableResult.ok && openaiResult.ok && googleResult.ok && ollamaResult.ok
     };
     
     console.log('📊 Resumo final:', summary);
@@ -175,11 +217,14 @@ serve(async (req) => {
       JSON.stringify({
         success: true,
         user: userData.user.email,
+        lovable: lovableResult,
         openai: openaiResult,
         google: googleResult,
         ollama: ollamaResult,
         summary,
-        message: "IAs validadas e configurações criadas",
+        message: lovableResult.ok 
+          ? "✅ Lovable AI configurado como padrão! Todas as funcionalidades ativas." 
+          : "IAs validadas e configurações criadas",
         timestamp: new Date().toISOString()
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
