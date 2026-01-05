@@ -209,10 +209,6 @@ serve(async (req) => {
       }
     };
 
-    const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
-    const MODEL = Deno.env.get("OPENAI_DR_VITAL_MODEL") || Deno.env.get("OPENAI_MODEL_PRIMARY") || "gpt-4o";
-    if (!OPENAI_API_KEY) throw new Error("OPENAI_API_KEY não configurada");
-
     const systemPrompt = `Você é o Dr. Vital, médico virtual especialista do Instituto dos Sonhos. Responda em português do Brasil,
 com linguagem simples e humana, sem diagnóstico/prescrição médica. Use TODOS OS DADOS DO PACIENTE abaixo para personalizar completamente sua resposta.
 
@@ -267,35 +263,83 @@ INSTRUÇÕES FINAIS:
 - Mantenha tom acolhedor mas profissional
 - Resuma em 200-300 palavras, mas seja preciso e útil`;
 
-    // Configurar parâmetros baseados no modelo
-    const isNewModel = MODEL.includes('gpt-4o') || MODEL.includes('gpt-4-turbo');
-    
-    const requestBody: any = {
-      model: MODEL,
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: String(message) },
-      ],
-    };
+    let answer = "";
+    let modelUsed = "none";
 
-    // Novos modelos usam max_completion_tokens sem temperature
-    if (isNewModel) {
-      requestBody.max_completion_tokens = 800;
-    } else {
-      // Modelos antigos usam max_tokens com temperature
-      requestBody.max_tokens = 800;
-      requestBody.temperature = 0.2;
+    // 1. LOVABLE AI como provedor PRINCIPAL
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    if (LOVABLE_API_KEY) {
+      try {
+        console.log(`Dr. Vital usando Lovable AI (google/gemini-2.5-pro)...`);
+        const lovableResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
+          body: JSON.stringify({
+            model: "google/gemini-2.5-pro",
+            messages: [
+              { role: "system", content: systemPrompt },
+              { role: "user", content: String(message) },
+            ],
+            max_tokens: 800,
+            temperature: 0.3
+          }),
+        });
+        const lovableData = await lovableResp.json();
+        if (lovableData?.choices?.[0]?.message?.content) {
+          answer = lovableData.choices[0].message.content;
+          modelUsed = "lovable-gemini-2.5-pro";
+          console.log("✅ Lovable AI funcionou!");
+        }
+      } catch (e) {
+        console.error("❌ Erro Lovable AI:", e);
+      }
     }
 
-    console.log(`Dr. Vital usando modelo: ${MODEL}, userId: ${userId}`);
+    // 2. Fallback: OpenAI
+    if (!answer) {
+      const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
+      const MODEL = Deno.env.get("OPENAI_DR_VITAL_MODEL") || "gpt-4o";
+      if (OPENAI_API_KEY) {
+        try {
+          console.log(`Dr. Vital usando OpenAI ${MODEL} (fallback)...`);
+          const isNewModel = MODEL.includes('gpt-4o') || MODEL.includes('gpt-4-turbo');
+          const requestBody: any = {
+            model: MODEL,
+            messages: [
+              { role: "system", content: systemPrompt },
+              { role: "user", content: String(message) },
+            ],
+          };
+          if (isNewModel) {
+            requestBody.max_completion_tokens = 800;
+          } else {
+            requestBody.max_tokens = 800;
+            requestBody.temperature = 0.2;
+          }
+          const resp = await fetch("https://api.openai.com/v1/chat/completions", {
+            method: "POST",
+            headers: { Authorization: `Bearer ${OPENAI_API_KEY}`, "Content-Type": "application/json" },
+            body: JSON.stringify(requestBody),
+          });
+          const data = await resp.json();
+          if (data?.choices?.[0]?.message?.content) {
+            answer = data.choices[0].message.content;
+            modelUsed = `openai-${MODEL}`;
+            console.log("✅ OpenAI funcionou!");
+          }
+        } catch (e) {
+          console.error("❌ Erro OpenAI:", e);
+        }
+      }
+    }
+
+    // 3. Resposta padrão
+    if (!answer) {
+      answer = "Certo! Estou com seus dados aqui. Como posso te ajudar agora?";
+      modelUsed = "fallback";
+    }
     
-    const resp = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${OPENAI_API_KEY}`, "Content-Type": "application/json" },
-      body: JSON.stringify(requestBody),
-    });
-    const data = await resp.json();
-    const answer = data?.choices?.[0]?.message?.content || "Certo! Estou com seus dados aqui. Como posso te ajudar agora?";
+    console.log(`Dr. Vital resposta via: ${modelUsed}, userId: ${userId}`);
 
     // Persistência da conversa (conversations + conversation_messages)
     let conversationId: string | null = null;
@@ -322,7 +366,7 @@ INSTRUÇÕES FINAIS:
         if (conversationId) {
           await db.from('conversation_messages').insert([
             { conversation_id: conversationId, role: 'user', content: String(message), model: 'client' },
-            { conversation_id: conversationId, role: 'assistant', content: String(answer), model: MODEL },
+            { conversation_id: conversationId, role: 'assistant', content: String(answer), model: modelUsed },
           ]);
         }
       }
@@ -339,24 +383,45 @@ INSTRUÇÕES FINAIS:
           value: { last_update: new Date().toISOString(), snippet },
         });
 
-        // 2) Extrator leve de fatos (gpt-4o-mini) — opcional e barato
-        const OPENAI_KEY = OPENAI_API_KEY;
-        const extractor = await fetch('https://api.openai.com/v1/chat/completions', {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${OPENAI_KEY}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            model: 'gpt-4o-mini',
-            max_completion_tokens: 200,
-            response_format: { type: 'json_object' },
-            messages: [
-              { role: 'system', content: 'Extraia fatos estruturados de saúde sem inventar. Retorne JSON com as chaves presentes: allergies{list[]}, chronic_flags{conditions[]}, medications{list[]}, pain_mood{pain_score?, pain_location?, mood?, triggers[]}, food_preferences{likes[], dislikes[], intolerances[]}, habits{sleep?, training?, hydration?}, goals{active:[{type,target?,due?}], adherence?}. Só traga o que foi explicitamente dito. Se nada, retorne {}.' },
-              { role: 'user', content: `Usuário: ${message}\nAssistente: ${answer}` }
-            ]
-          })
-        });
-        const extJson = await extractor.json();
+        // 2) Extrator leve de fatos — usa Lovable AI ou OpenAI
+        const LOVABLE_KEY = Deno.env.get("LOVABLE_API_KEY");
+        const OPENAI_KEY = Deno.env.get("OPENAI_API_KEY");
+        
+        let extractorResponse;
+        if (LOVABLE_KEY) {
+          extractorResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${LOVABLE_KEY}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              model: 'google/gemini-2.5-flash-lite',
+              max_tokens: 200,
+              messages: [
+                { role: 'system', content: 'Extraia fatos estruturados de saúde sem inventar. Retorne JSON com as chaves presentes: allergies{list[]}, chronic_flags{conditions[]}, medications{list[]}, pain_mood{pain_score?, pain_location?, mood?, triggers[]}, food_preferences{likes[], dislikes[], intolerances[]}, habits{sleep?, training?, hydration?}, goals{active:[{type,target?,due?}], adherence?}. Só traga o que foi explicitamente dito. Se nada, retorne {}.' },
+                { role: 'user', content: `Usuário: ${message}\nAssistente: ${answer}` }
+              ]
+            })
+          });
+        } else if (OPENAI_KEY) {
+          extractorResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${OPENAI_KEY}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              model: 'gpt-4o-mini',
+              max_completion_tokens: 200,
+              response_format: { type: 'json_object' },
+              messages: [
+                { role: 'system', content: 'Extraia fatos estruturados de saúde sem inventar. Retorne JSON com as chaves presentes: allergies{list[]}, chronic_flags{conditions[]}, medications{list[]}, pain_mood{pain_score?, pain_location?, mood?, triggers[]}, food_preferences{likes[], dislikes[], intolerances[]}, habits{sleep?, training?, hydration?}, goals{active:[{type,target?,due?}], adherence?}. Só traga o que foi explicitamente dito. Se nada, retorne {}.' },
+                { role: 'user', content: `Usuário: ${message}\nAssistente: ${answer}` }
+              ]
+            })
+          });
+        }
+        
         let facts: any = {};
-        try { facts = JSON.parse(extJson?.choices?.[0]?.message?.content || '{}'); } catch { facts = {}; }
+        if (extractorResponse) {
+          const extJson = await extractorResponse.json();
+          try { facts = JSON.parse(extJson?.choices?.[0]?.message?.content || '{}'); } catch { facts = {}; }
+        }
 
         const upserts: Array<{ key: string; value: any }> = [];
         if (facts.allergies) upserts.push({ key: 'allergies', value: facts.allergies });

@@ -41,19 +41,19 @@ Deno.serve(async (req) => {
     let response = '';
     let apiUsed = 'none';
 
-    // OpenAI GPT-4o como provedor principal
-    const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
-    if (openaiApiKey) {
+    // 1. LOVABLE AI como provedor PRINCIPAL
+    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    if (LOVABLE_API_KEY) {
       try {
-        console.log('🤖 Sofia usando OpenAI GPT-4o...');
-        const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+        console.log('🤖 Sofia usando Lovable AI (google/gemini-2.5-flash)...');
+        const lovableResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${openaiApiKey}`,
+            'Authorization': `Bearer ${LOVABLE_API_KEY}`,
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            model: 'gpt-4o',
+            model: 'google/gemini-2.5-flash',
             messages: [
               { role: 'system', content: systemPrompt },
               { role: 'user', content: message }
@@ -63,25 +63,62 @@ Deno.serve(async (req) => {
           })
         });
 
-        const data = await openaiResponse.json();
+        const data = await lovableResponse.json();
         if (data?.error) {
-          console.error('❌ Erro OpenAI:', data.error);
+          console.error('❌ Erro Lovable AI:', data.error);
         } else if (data?.choices?.[0]?.message?.content) {
           response = data.choices[0].message.content;
-          apiUsed = 'openai-gpt-4o';
-          console.log('✅ OpenAI funcionou!');
+          apiUsed = 'lovable-gemini-2.5-flash';
+          console.log('✅ Lovable AI funcionou!');
         }
       } catch (error) {
-        console.error('❌ Erro OpenAI:', error);
+        console.error('❌ Erro Lovable AI:', error);
       }
     }
 
-    // Fallback para Google AI se OpenAI falhar
+    // 2. Fallback: OpenAI GPT-4o
+    if (!response) {
+      const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
+      if (openaiApiKey) {
+        try {
+          console.log('🤖 Sofia usando OpenAI GPT-4o (fallback)...');
+          const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${openaiApiKey}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              model: 'gpt-4o',
+              messages: [
+                { role: 'system', content: systemPrompt },
+                { role: 'user', content: message }
+              ],
+              temperature: 0.7,
+              max_tokens: 300
+            })
+          });
+
+          const data = await openaiResponse.json();
+          if (data?.error) {
+            console.error('❌ Erro OpenAI:', data.error);
+          } else if (data?.choices?.[0]?.message?.content) {
+            response = data.choices[0].message.content;
+            apiUsed = 'openai-gpt-4o';
+            console.log('✅ OpenAI funcionou!');
+          }
+        } catch (error) {
+          console.error('❌ Erro OpenAI:', error);
+        }
+      }
+    }
+
+    // 3. Fallback: Google AI
     if (!response) {
       const googleApiKey = Deno.env.get('GOOGLE_AI_API_KEY');
       if (googleApiKey) {
         try {
-          console.log('🤖 Sofia usando Google AI...');
+          console.log('🤖 Sofia usando Google AI (fallback)...');
           const googleResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${googleApiKey}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -115,7 +152,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Resposta padrão se nenhuma IA funcionar
+    // 4. Resposta padrão se nenhuma IA funcionar
     if (!response) {
       response = `Olá ${userContext.profile.firstName}! Sou a Sofia, sua assistente de saúde. 💚 Como posso ajudar você hoje?`;
       apiUsed = 'fallback';

@@ -262,10 +262,11 @@ async function generateSofiaAnalysis(
   anamnesis: any
 ): Promise<SofiaFoodAnalysis> {
   
-  // Buscar configuração de IA
+  // Buscar configuração de IA - Lovable AI primeiro, depois OpenAI
+  const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
   const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
-  if (!openaiApiKey) {
-    throw new Error('OPENAI_API_KEY não configurada');
+  if (!lovableApiKey && !openaiApiKey) {
+    throw new Error('Nenhuma API de IA configurada (LOVABLE_API_KEY ou OPENAI_API_KEY)');
   }
 
   // Buscar nome do usuário
@@ -447,41 +448,69 @@ FORMATO DA RESPOSTA (JSON):
 Seja sempre positiva e encorajadora, mesmo quando há pontos a melhorar.`;
 
   try {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openaiApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          {
-            role: "system",
-            content: systemPrompt
+    let response;
+    let reply = "";
+    
+    // 1. LOVABLE AI como provedor PRINCIPAL
+    if (lovableApiKey) {
+      try {
+        console.log('🍎 Food Analysis usando Lovable AI...');
+        response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${lovableApiKey}`,
+            'Content-Type': 'application/json',
           },
-          {
-            role: "user",
-            content: "Analise esta refeição com a personalidade da Sofia"
-          }
-        ],
-        max_tokens: 1500,
-        temperature: 0.7,
-        stream: false,
-      }),
-    });
+          body: JSON.stringify({
+            model: 'google/gemini-2.5-flash',
+            messages: [
+              { role: "system", content: systemPrompt },
+              { role: "user", content: "Analise esta refeição com a personalidade da Sofia" }
+            ],
+            max_tokens: 1500,
+            temperature: 0.7,
+          }),
+        });
 
-    if (!response.ok) {
-      const error = await response.text();
-      console.error('OpenAI API error:', error);
-      throw new Error(`OpenAI API error: ${error}`);
+        if (response.ok) {
+          const data = await response.json();
+          reply = data.choices?.[0]?.message?.content || "";
+          console.log('✅ Lovable AI funcionou!');
+        }
+      } catch (e) {
+        console.error('❌ Erro Lovable AI:', e);
+      }
     }
 
-    const data = await response.json();
-    const reply = data.choices?.[0]?.message?.content;
+    // 2. Fallback: OpenAI
+    if (!reply && openaiApiKey) {
+      console.log('🍎 Food Analysis usando OpenAI (fallback)...');
+      response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openaiApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: "Analise esta refeição com a personalidade da Sofia" }
+          ],
+          max_tokens: 1500,
+          temperature: 0.7,
+        }),
+      });
+
+      if (response?.ok) {
+        const data = await response.json();
+        reply = data.choices?.[0]?.message?.content || "";
+        console.log('✅ OpenAI funcionou!');
+      }
+    }
     
     if (!reply) {
-      throw new Error('Nenhuma resposta gerada pela OpenAI');
+      throw new Error('Nenhuma resposta gerada pela IA');
     }
 
     // Tentar parsear JSON da resposta
