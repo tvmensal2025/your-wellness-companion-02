@@ -17,15 +17,14 @@ import {
   Calendar,
   Clock,
   Award,
-  Sparkles
+  Sparkles,
+  FileText
 } from 'lucide-react';
 import SessionManager from './SessionManager';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
-// Imports dinâmicos para HTML2Canvas e jsPDF
-// import html2canvas from 'html2canvas';
-// import jsPDF from 'jspdf';
+import { exportMedicalReportPDF } from '@/utils/exportMedicalReportPDF';
 
 interface HealthSystemData {
   systemName: string;
@@ -139,35 +138,32 @@ const HealthDashboardResults: React.FC<HealthDashboardResultsProps> = ({
   const handleDownloadPDF = async () => {
     setIsExporting(true);
     try {
-      // Import dinâmico para reduzir bundle size
-      const html2canvas = (await import('html2canvas')).default;
-      const jsPDF = (await import('jspdf')).default;
-      
-      if (!dashboardRef.current) return;
+      // Converter mockHealthData para formato compatível com o relatório
+      const systemsForReport = mockHealthData.map(item => ({
+        name: item.systemName,
+        score: item.score,
+        color: item.color,
+        icon: item.icon,
+        insights: item.symptoms
+      }));
 
-      const canvas = await html2canvas(dashboardRef.current, {
-        scale: 2,
-        allowTaint: true,
-        useCORS: true,
-        backgroundColor: '#ffffff'
+      await exportMedicalReportPDF({
+        score: finalScore,
+        systems: systemsForReport,
+        userProfile: userProfile,
+        sessionDate: new Date(),
+        sessionName: sessionData?.name || 'Avaliação de Saúde'
       });
 
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const imgWidth = 210;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-      pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
-      pdf.save(`relatorio-saude-${format(new Date(), 'dd-MM-yyyy')}.pdf`);
-
       toast({
-        title: "Download concluído",
-        description: "Seu relatório foi baixado com sucesso!",
+        title: "Relatório gerado",
+        description: "PDF profissional baixado com sucesso!",
       });
     } catch (error) {
+      console.error('Error generating PDF:', error);
       toast({
         title: "Erro no download",
-        description: "Não foi possível baixar o relatório.",
+        description: "Não foi possível gerar o relatório.",
         variant: "destructive"
       });
     } finally {
@@ -255,8 +251,8 @@ const HealthDashboardResults: React.FC<HealthDashboardResultsProps> = ({
             disabled={isExporting}
             className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
           >
-            <Download className="w-4 h-4" />
-            {isExporting ? 'Gerando...' : 'Baixar PDF'}
+            <FileText className="w-4 h-4" />
+            {isExporting ? 'Gerando...' : 'Relatório Médico (PDF)'}
           </Button>
         </div>
       </div>
