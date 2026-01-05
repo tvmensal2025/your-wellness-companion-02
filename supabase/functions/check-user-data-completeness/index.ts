@@ -49,7 +49,7 @@ serve(async (req) => {
 
     // Verificar dados físicos
     const { data: physicalData } = await supabase
-      .from('user_physical_profiles')
+      .from('user_physical_data')
       .select('id')
       .eq('user_id', userId)
       .single();
@@ -96,7 +96,7 @@ serve(async (req) => {
 
     // Verificar humor
     const { data: moodData } = await supabase
-      .from('mood_tracking')
+      .from('mood_monitoring')
       .select('id')
       .eq('user_id', userId)
       .limit(1)
