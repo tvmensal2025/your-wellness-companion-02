@@ -103,17 +103,47 @@ export const useUserProfile = (user: User | null) => {
 
     try {
       setSaving(true);
-      
+
       const updatedData = { ...profileData, ...newData };
-      
-      console.log('🔄 Atualizando perfil...', { 
-        user_id: user.id, 
-        avatar_url: updatedData.avatarUrl,
-        hasAvatarUrl: !!updatedData.avatarUrl 
+
+      const rawAvatarUrl = typeof updatedData.avatarUrl === 'string' ? updatedData.avatarUrl : '';
+      const hasDataUriAvatar = rawAvatarUrl.startsWith('data:image');
+
+      // Nunca persistir data-uri gigante em metadata (isso incha o token e quebra requests)
+      let avatarUrlToSave = rawAvatarUrl;
+
+      // Se vier data-uri, tenta converter para upload no bucket de avatars e troca por URL pública
+      if (hasDataUriAvatar) {
+        try {
+          const blob = await (await fetch(rawAvatarUrl)).blob();
+          const ext = blob.type?.split('/')[1] || 'png';
+          const filePath = `${user.id}/${Date.now()}_avatar.${ext}`;
+
+          const { error: uploadErr } = await supabase.storage
+            .from('avatars')
+            .upload(filePath, blob, {
+              cacheControl: '3600',
+              upsert: true,
+              contentType: blob.type || 'image/png',
+            });
+
+          if (!uploadErr) {
+            const { data: pub } = supabase.storage.from('avatars').getPublicUrl(filePath);
+            if (pub?.publicUrl) avatarUrlToSave = pub.publicUrl;
+          }
+        } catch (e) {
+          console.warn('Falha ao converter avatar base64 para URL. Limpando avatar na metadata.', e);
+          avatarUrlToSave = '';
+        }
+      }
+
+      console.log('🔄 Atualizando perfil...', {
+        user_id: user.id,
+        avatar_url_length: avatarUrlToSave?.length || 0,
+        avatar_is_data_uri: hasDataUriAvatar,
       });
-      
-      // Atualizar no Supabase usando tabela profiles unificada
-      // Apenas colunas que existem na tabela
+
+      // Atualizar na tabela profiles
       const { error } = await supabase
         .from('profiles')
         .update({
@@ -122,8 +152,8 @@ export const useUserProfile = (user: User | null) => {
           birth_date: updatedData.birthDate,
           city: updatedData.city,
           state: updatedData.state,
-          avatar_url: updatedData.avatarUrl,
-          updated_at: new Date().toISOString()
+          avatar_url: avatarUrlToSave,
+          updated_at: new Date().toISOString(),
         })
         .eq('user_id', user.id);
 
@@ -132,41 +162,24 @@ export const useUserProfile = (user: User | null) => {
         throw error;
       }
 
-      console.log('✅ Perfil atualizado com sucesso');
-
       // Atualizar estado local
-      setProfileData(updatedData);
-      
-      // Atualizar metadata do usuário
-      await supabase.auth.updateUser({
-        data: {
-          full_name: updatedData.fullName,
-          phone: updatedData.phone,
-          birth_date: updatedData.birthDate,
-          city: updatedData.city,
-          state: updatedData.state,
-          avatar_url: updatedData.avatarUrl,
-          bio: updatedData.bio,
-          goals: updatedData.goals,
-          achievements: updatedData.achievements
-        }
-      });
+      setProfileData({ ...updatedData, avatarUrl: avatarUrlToSave });
 
-      // Verificar se a atualização foi persistida
-      const { data: verifyData, error: verifyError } = await supabase
-        .from('profiles')
-        .select('avatar_url')
-        .eq('user_id', user.id)
-        .single();
+      // Atualizar metadata do usuário (NUNCA enviar data-uri)
+      const authData: Record<string, any> = {
+        full_name: updatedData.fullName,
+        phone: updatedData.phone,
+        birth_date: updatedData.birthDate,
+        city: updatedData.city,
+        state: updatedData.state,
+        bio: updatedData.bio,
+        goals: updatedData.goals,
+        achievements: updatedData.achievements,
+        avatar_url: avatarUrlToSave || '',
+      };
 
-      if (verifyError) {
-        console.error('❌ Erro ao verificar persistência:', verifyError);
-      } else {
-        console.log('✅ Verificação de persistência:', {
-          avatar_url_saved: !!verifyData.avatar_url,
-          avatar_url_length: verifyData.avatar_url?.length || 0
-        });
-      }
+      await supabase.auth.updateUser({ data: authData });
+      await supabase.auth.refreshSession();
 
       return { success: true };
     } catch (error) {
@@ -191,32 +204,42 @@ export const useUserProfile = (user: User | null) => {
         throw new Error('Arquivo muito grande. Máximo 5MB permitido');
       }
 
-      console.log('🔄 Iniciando upload do avatar...', { 
-        fileName: file.name, 
+      console.log('🔄 Iniciando upload do avatar...', {
+        fileName: file.name,
         fileSize: file.size,
-        fileType: file.type 
+        fileType: file.type,
       });
 
-      // Converter para base64 (solução mais confiável)
-      const avatarUrl = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-      });
+      const fileExt = (file.name.split('.').pop() || 'png').toLowerCase();
+      const safeExt = fileExt.match(/^[a-z0-9]+$/) ? fileExt : 'png';
+      const filePath = `${user.id}/${Date.now()}_avatar.${safeExt}`;
 
-      console.log('✅ Avatar convertido para base64');
+      const { error: uploadErr } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: true,
+        });
 
-      // Atualizar perfil com a nova URL
+      if (uploadErr) {
+        console.error('❌ Erro no upload do avatar:', uploadErr);
+        throw uploadErr;
+      }
+
+      const { data: pub } = supabase.storage.from('avatars').getPublicUrl(filePath);
+      const avatarUrl = pub?.publicUrl || '';
+
+      if (!avatarUrl) {
+        throw new Error('Não foi possível gerar URL pública do avatar');
+      }
+
       const result = await updateProfile({ avatarUrl });
-      
       if (result.success) {
         console.log('✅ Avatar atualizado com sucesso');
         return avatarUrl;
-      } else {
-        throw new Error('Falha ao atualizar avatar no perfil');
       }
 
+      throw new Error('Falha ao atualizar avatar no perfil');
     } catch (error) {
       console.error('❌ Erro ao fazer upload do avatar:', error);
       throw error;
