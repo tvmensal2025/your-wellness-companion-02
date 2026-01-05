@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Users, Clock, Target, Brain, DollarSign, Star, Zap, Send, CheckCircle, Database, BarChart3 } from 'lucide-react';
+import { Users, Clock, Target, Brain, DollarSign, Star, Zap, Send, CheckCircle, Database, BarChart3, Moon, Heart, Sparkles, Scale } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -105,6 +105,10 @@ const SessionTemplates: React.FC = () => {
     if (title.includes('147')) return '147-perguntas';
     if (title.includes('8 Pilares') || title.includes('Financeiro')) return '8-pilares';
     if (title.includes('8 Competências') || title.includes('Competências')) return '8-competencias';
+    if (title.includes('Sabotadores') || title.includes('24 Sabotadores')) return 'sabotadores';
+    if (title.includes('Sono') || title.includes('Sleep')) return 'sono';
+    if (title.includes('Estresse') || title.includes('Ansiedade')) return 'estresse';
+    if (title.includes('Bem-estar') || title.includes('Mindfulness')) return 'bem-estar';
     return 'other';
   };
 
@@ -127,9 +131,9 @@ const SessionTemplates: React.FC = () => {
       title: 'Mapeamento de Sintomas (147 Perguntas)',
       description: 'Mapeamento completo de sintomas em 12 sistemas corporais com avaliação de frequência e intensidade. Sistema adaptativo que coleta dados para visualização em roda e evolução temporal.',
       duration: '12-15 minutos',
-      category: 'Sintomas',
+      category: 'Saúde',
       icon: <Brain className="w-6 h-6" />,
-      features: ['Frequência + Intensidade', 'Roda Visual de Resultados', 'Evolução Temporal'],
+      features: ['Frequência + Intensidade', 'Roda Visual', 'Evolução Temporal'],
       color: 'bg-purple-500',
       questions: 147,
       dbCount: stats.sessionsByType['147-perguntas']?.count || 0,
@@ -142,7 +146,7 @@ const SessionTemplates: React.FC = () => {
       duration: '10-15 minutos',
       category: 'Financeiro',
       icon: <DollarSign className="w-6 h-6" />,
-      features: ['8 Pilares Financeiros', 'Roda Visual de Resultados', 'Plano de Ação Personalizado'],
+      features: ['8 Pilares', 'Roda Visual', 'Plano de Ação'],
       color: 'bg-yellow-500',
       areas: 8,
       dbCount: stats.sessionsByType['8-pilares']?.count || 0,
@@ -152,14 +156,66 @@ const SessionTemplates: React.FC = () => {
       id: '8-competencias',
       title: 'Roda das 8 Competências',
       description: 'Avaliação das 8 competências profissionais fundamentais. Interface interativa com análise personalizada e plano de desenvolvimento para impulsionar sua carreira.',
-      duration: '9-15 minutos',
+      duration: '9-12 minutos',
       category: 'Profissional',
       icon: <Star className="w-6 h-6" />,
-      features: ['8 Competências Profissionais', 'Roda Visual de Resultados', 'Plano de Desenvolvimento'],
+      features: ['8 Competências', 'Roda Visual', 'Plano de Desenvolvimento'],
       color: 'bg-red-500',
       areas: 8,
       dbCount: stats.sessionsByType['8-competencias']?.count || 0,
       assignedCount: stats.sessionsByType['8-competencias']?.assignments || 0
+    },
+    {
+      id: 'sabotadores',
+      title: '24 Sabotadores do Emagrecimento',
+      description: 'Identifique os 24 principais sabotadores mentais que impedem o emagrecimento. Baseado em psicologia comportamental, incluindo categorias: comportamentais, psicológicos, relacionais, físicos, temporais e socioeconômicos.',
+      duration: '15-20 minutos',
+      category: 'Emagrecimento',
+      icon: <Scale className="w-6 h-6" />,
+      features: ['24 Sabotadores', 'Análise Comportamental', 'Estratégias'],
+      color: 'bg-orange-500',
+      questions: 24,
+      dbCount: stats.sessionsByType['sabotadores']?.count || 0,
+      assignedCount: stats.sessionsByType['sabotadores']?.assignments || 0
+    },
+    {
+      id: 'sono',
+      title: 'Avaliação de Qualidade do Sono',
+      description: 'Questionário completo para avaliar qualidade, duração e padrões de sono. Identifique fatores que afetam seu descanso e receba recomendações personalizadas.',
+      duration: '8-10 minutos',
+      category: 'Sono',
+      icon: <Moon className="w-6 h-6" />,
+      features: ['Qualidade do Sono', 'Padrões Noturnos', 'Recomendações'],
+      color: 'bg-indigo-500',
+      questions: 15,
+      dbCount: stats.sessionsByType['sono']?.count || 0,
+      assignedCount: stats.sessionsByType['sono']?.assignments || 0
+    },
+    {
+      id: 'estresse',
+      title: 'Avaliação de Estresse e Ansiedade',
+      description: 'Avalie seus níveis de estresse e ansiedade através de escalas validadas. Identifique gatilhos e receba estratégias práticas de gerenciamento emocional.',
+      duration: '10-12 minutos',
+      category: 'Emocional',
+      icon: <Heart className="w-6 h-6" />,
+      features: ['Níveis de Estresse', 'Gatilhos', 'Estratégias'],
+      color: 'bg-pink-500',
+      questions: 18,
+      dbCount: stats.sessionsByType['estresse']?.count || 0,
+      assignedCount: stats.sessionsByType['estresse']?.assignments || 0
+    },
+    {
+      id: 'bem-estar',
+      title: 'Avaliação de Bem-estar e Mindfulness',
+      description: 'Avalie seu nível de bem-estar geral, presença plena e práticas de autocuidado. Receba um plano personalizado para aumentar sua qualidade de vida.',
+      duration: '10-15 minutos',
+      category: 'Bem-estar',
+      icon: <Sparkles className="w-6 h-6" />,
+      features: ['Bem-estar Geral', 'Mindfulness', 'Autocuidado'],
+      color: 'bg-teal-500',
+      areas: 6,
+      dbCount: stats.sessionsByType['bem-estar']?.count || 0,
+      assignedCount: stats.sessionsByType['bem-estar']?.assignments || 0
     }
   ];
 
@@ -265,6 +321,160 @@ const SessionTemplates: React.FC = () => {
               ].map(area => ({
                 ...area,
                 question: { id: `${area.id}_q1`, text: `Como você avalia sua competência de ${area.name}?`, type: 'emoji_scale' },
+                emoji_options: emojiOptions
+              }))
+            },
+            target_saboteurs: [],
+            difficulty: 'beginner',
+            estimated_time: 12
+          };
+        case 'sabotadores':
+          return {
+            title: '24 Sabotadores do Emagrecimento',
+            description: 'Identifique os sabotadores mentais que impedem o emagrecimento baseado em psicologia comportamental.',
+            type: 'saboteurs_assessment',
+            content: {
+              categories: [
+                {
+                  id: 'comportamentais',
+                  name: 'Comportamentais',
+                  icon: '📦',
+                  color: '#f59e0b',
+                  saboteurs: [
+                    { id: 'roupas', name: 'Sabotador das Roupas', question: 'Você mantém roupas antigas esperando emagrecer?' },
+                    { id: 'dinheiro', name: 'Sabotador do Dinheiro', question: 'Você associa gastar dinheiro com comida como recompensa?' },
+                    { id: 'escape', name: 'Válvula de Escape', question: 'Você usa comida para fugir de emoções negativas?' },
+                    { id: 'prazer', name: 'Prazer da Comida', question: 'A comida é sua principal fonte de prazer?' }
+                  ]
+                },
+                {
+                  id: 'psicologicos',
+                  name: 'Psicológicos',
+                  icon: '🧠',
+                  color: '#a78bfa',
+                  saboteurs: [
+                    { id: 'critico', name: 'Crítico Interno', question: 'Você costuma se criticar severamente?' },
+                    { id: 'boazinha', name: 'Boazinha Demais', question: 'Você tem dificuldade em dizer não para os outros?' },
+                    { id: 'crencas', name: 'Falta de Crenças', question: 'Você duvida da sua capacidade de emagrecer?' },
+                    { id: 'autoimagem', name: 'Apego à Autoimagem', question: 'Você tem medo de como será sua vida após emagrecer?' }
+                  ]
+                },
+                {
+                  id: 'relacionais',
+                  name: 'Relacionais',
+                  icon: '👥',
+                  color: '#ec4899',
+                  saboteurs: [
+                    { id: 'conjuge', name: 'Problemas com Cônjuge', question: 'Seu parceiro(a) demonstra ciúmes quando você emagrece?' },
+                    { id: 'filhos', name: 'Proteção dos Filhos', question: 'Você negligencia sua saúde para cuidar da família?' },
+                    { id: 'afetiva', name: 'Fuga Afetiva', question: 'Você usa o peso como barreira emocional?' },
+                    { id: 'afeto', name: 'Comida como Afeto', question: 'Você associa comida com demonstração de amor?' }
+                  ]
+                },
+                {
+                  id: 'fisicos',
+                  name: 'Físicos',
+                  icon: '🏃',
+                  color: '#22c55e',
+                  saboteurs: [
+                    { id: 'atividade', name: 'Aversão ao Exercício', question: 'Você tem aversão a atividades físicas?' },
+                    { id: 'dieta', name: 'Crença Contrária', question: 'Você acredita que dieta é tortura?' },
+                    { id: 'fortaleza', name: 'Tamanho como Fortaleza', question: 'Você sente que seu tamanho lhe dá proteção?' }
+                  ]
+                },
+                {
+                  id: 'temporais',
+                  name: 'Temporais',
+                  icon: '🕰️',
+                  color: '#06b6d4',
+                  saboteurs: [
+                    { id: 'mudanca', name: 'Estranheza da Mudança', question: 'Você se sente desconfortável com mudanças?' },
+                    { id: 'infancia_magra', name: 'Magreza da Infância', question: 'Você tem traumas relacionados à magreza na infância?' },
+                    { id: 'perdas_presente', name: 'Perdas no Presente', question: 'Você está passando por luto ou tristeza?' },
+                    { id: 'perdas_infancia', name: 'Perdas na Infância', question: 'Você teve perdas significativas na infância?' }
+                  ]
+                },
+                {
+                  id: 'socioeconomicos',
+                  name: 'Socioeconômicos',
+                  icon: '💰',
+                  color: '#8b5cf6',
+                  saboteurs: [
+                    { id: 'riqueza', name: 'Obesidade como Riqueza', question: 'Na sua família, peso é associado a prosperidade?' },
+                    { id: 'identidade', name: 'Biotipo e Identidade', question: 'Seu peso faz parte da sua identidade?' },
+                    { id: 'beleza', name: 'Fuga da Beleza', question: 'Você tem medo de ser considerado(a) bonito(a)?' }
+                  ]
+                }
+              ]
+            },
+            target_saboteurs: [],
+            difficulty: 'intermediate',
+            estimated_time: 20
+          };
+        case 'sono':
+          return {
+            title: 'Avaliação de Qualidade do Sono',
+            description: 'Questionário para avaliar qualidade, duração e padrões de sono.',
+            type: 'life_wheel_assessment',
+            content: {
+              areas: [
+                { id: 'duracao', name: 'Duração do Sono', icon: '⏰', color: '#6366f1' },
+                { id: 'qualidade', name: 'Qualidade do Sono', icon: '😴', color: '#8b5cf6' },
+                { id: 'latencia', name: 'Facilidade para Dormir', icon: '🛏️', color: '#a78bfa' },
+                { id: 'despertar', name: 'Despertar', icon: '🌅', color: '#f59e0b' },
+                { id: 'energia', name: 'Energia ao Acordar', icon: '⚡', color: '#22c55e' },
+                { id: 'regularidade', name: 'Regularidade', icon: '📅', color: '#0ea5e9' }
+              ].map(area => ({
+                ...area,
+                question: { id: `${area.id}_q1`, text: `Como está sua ${area.name}?`, type: 'emoji_scale' },
+                emoji_options: emojiOptions
+              }))
+            },
+            target_saboteurs: [],
+            difficulty: 'beginner',
+            estimated_time: 10
+          };
+        case 'estresse':
+          return {
+            title: 'Avaliação de Estresse e Ansiedade',
+            description: 'Avalie seus níveis de estresse e ansiedade e identifique gatilhos.',
+            type: 'life_wheel_assessment',
+            content: {
+              areas: [
+                { id: 'estresse_geral', name: 'Nível de Estresse', icon: '😰', color: '#ef4444' },
+                { id: 'ansiedade', name: 'Ansiedade', icon: '😟', color: '#f97316' },
+                { id: 'tensao', name: 'Tensão Muscular', icon: '💪', color: '#eab308' },
+                { id: 'preocupacao', name: 'Preocupações', icon: '🤔', color: '#a78bfa' },
+                { id: 'irritabilidade', name: 'Irritabilidade', icon: '😤', color: '#ec4899' },
+                { id: 'concentracao', name: 'Concentração', icon: '🎯', color: '#0ea5e9' },
+                { id: 'sono_estresse', name: 'Sono e Descanso', icon: '😴', color: '#6366f1' },
+                { id: 'respiracao', name: 'Padrão Respiratório', icon: '🌬️', color: '#10b981' }
+              ].map(area => ({
+                ...area,
+                question: { id: `${area.id}_q1`, text: `Como está seu(sua) ${area.name}?`, type: 'emoji_scale' },
+                emoji_options: emojiOptions
+              }))
+            },
+            target_saboteurs: [],
+            difficulty: 'beginner',
+            estimated_time: 12
+          };
+        case 'bem-estar':
+          return {
+            title: 'Avaliação de Bem-estar e Mindfulness',
+            description: 'Avalie seu nível de bem-estar geral e práticas de autocuidado.',
+            type: 'life_wheel_assessment',
+            content: {
+              areas: [
+                { id: 'presenca', name: 'Presença Plena', icon: '🧘', color: '#14b8a6' },
+                { id: 'gratidao', name: 'Gratidão', icon: '🙏', color: '#22c55e' },
+                { id: 'autocuidado', name: 'Autocuidado', icon: '💆', color: '#ec4899' },
+                { id: 'conexao', name: 'Conexão Social', icon: '🤝', color: '#0ea5e9' },
+                { id: 'proposito', name: 'Propósito', icon: '🎯', color: '#f59e0b' },
+                { id: 'paz', name: 'Paz Interior', icon: '☮️', color: '#8b5cf6' }
+              ].map(area => ({
+                ...area,
+                question: { id: `${area.id}_q1`, text: `Como está seu(sua) ${area.name}?`, type: 'emoji_scale' },
                 emoji_options: emojiOptions
               }))
             },
@@ -397,6 +607,26 @@ const SessionTemplates: React.FC = () => {
       tags: ['Liderança', 'Comunicação', 'Inovação', 'Estratégia', 'Execução', 'Relacionamento', 'Adaptabilidade'],
       bgColor: 'bg-red-100',
       textColor: 'text-red-800'
+    },
+    'sabotadores': {
+      tags: ['Comportamentais', 'Psicológicos', 'Relacionais', 'Físicos', 'Temporais', 'Socioeconômicos'],
+      bgColor: 'bg-orange-100',
+      textColor: 'text-orange-800'
+    },
+    'sono': {
+      tags: ['Duração', 'Qualidade', 'Facilidade', 'Despertar', 'Energia', 'Regularidade'],
+      bgColor: 'bg-indigo-100',
+      textColor: 'text-indigo-800'
+    },
+    'estresse': {
+      tags: ['Estresse', 'Ansiedade', 'Tensão', 'Preocupações', 'Irritabilidade', 'Concentração'],
+      bgColor: 'bg-pink-100',
+      textColor: 'text-pink-800'
+    },
+    'bem-estar': {
+      tags: ['Presença', 'Gratidão', 'Autocuidado', 'Conexão', 'Propósito', 'Paz'],
+      bgColor: 'bg-teal-100',
+      textColor: 'text-teal-800'
     }
   };
 
