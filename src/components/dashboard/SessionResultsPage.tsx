@@ -16,7 +16,8 @@ import {
   Activity,
   Clock,
   Calendar,
-  User
+  User,
+  FileText
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { format } from 'date-fns';
@@ -38,6 +39,7 @@ import {
   BarChart,
   Bar
 } from 'recharts';
+import { exportMedicalReportPDF } from '@/utils/exportMedicalReportPDF';
 
 interface SessionResultsData {
   score: number;
@@ -102,34 +104,23 @@ const SessionResultsPage: React.FC<SessionResultsPageProps> = ({
   const handleDownloadPDF = async () => {
     setIsExporting(true);
     try {
-      const html2canvas = (await import('html2canvas')).default;
-      const jsPDF = (await import('jspdf')).default;
-      
-      if (!resultsRef.current) return;
-
-      const canvas = await html2canvas(resultsRef.current, {
-        scale: 2,
-        allowTaint: true,
-        useCORS: true,
-        backgroundColor: '#ffffff'
+      await exportMedicalReportPDF({
+        score: resultsData.score,
+        systems: resultsData.systems,
+        userProfile: resultsData.userProfile,
+        sessionDate: new Date(),
+        sessionName: 'Mapeamento de Sintomas'
       });
 
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const imgWidth = 210;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-      pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
-      pdf.save(`relatorio-saude-${format(new Date(), 'dd-MM-yyyy')}.pdf`);
-
       toast({
-        title: "Download concluído",
-        description: "Seu relatório foi baixado com sucesso!",
+        title: "Relatório gerado",
+        description: "PDF profissional baixado com sucesso!",
       });
     } catch (error) {
+      console.error('Error generating PDF:', error);
       toast({
         title: "Erro no download",
-        description: "Não foi possível baixar o relatório.",
+        description: "Não foi possível gerar o relatório.",
         variant: "destructive"
       });
     } finally {
@@ -212,8 +203,8 @@ const SessionResultsPage: React.FC<SessionResultsPageProps> = ({
                 disabled={isExporting}
                 className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
               >
-                <Download className="w-4 h-4" />
-                {isExporting ? 'Gerando...' : 'Baixar PDF'}
+                <FileText className="w-4 h-4" />
+                {isExporting ? 'Gerando...' : 'Relatório Médico (PDF)'}
               </Button>
             </div>
           </div>
