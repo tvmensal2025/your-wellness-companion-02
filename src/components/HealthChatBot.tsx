@@ -544,12 +544,12 @@ Clique no botão abaixo para começar! ⬇️`,
       className={`fixed z-50 ${
         isMinimized 
           ? 'bottom-2 right-2 sm:bottom-4 sm:right-4 w-72 sm:w-80 h-16' 
-          : 'bottom-0 right-0 sm:bottom-4 sm:right-4 w-full sm:w-96 sm:max-w-[calc(100vw-2rem)] h-[100dvh] sm:h-[600px] sm:max-h-[calc(100dvh-2rem)] sm:rounded-lg'
+          : 'bottom-4 right-2 left-2 sm:left-auto sm:right-4 sm:w-96 h-[60vh] max-h-[500px] sm:h-[600px] sm:max-h-[calc(100dvh-2rem)]'
       }`}
     >
-      <Card className={`h-full flex flex-col bg-white shadow-xl border border-purple-200 ${isMinimized ? 'rounded-lg' : 'rounded-none sm:rounded-lg'}`}>
+      <Card className={`h-full flex flex-col bg-white shadow-xl border border-purple-200 rounded-lg`}>
         {/* Header */}
-        <CardHeader className={`bg-gradient-to-r from-purple-500 to-pink-500 text-white py-2 sm:py-3 flex-shrink-0 ${isMinimized ? 'rounded-t-lg' : 'rounded-none sm:rounded-t-lg'}`}>
+        <CardHeader className={`bg-gradient-to-r from-purple-500 to-pink-500 text-white py-2 sm:py-3 flex-shrink-0 rounded-t-lg`}>
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
               <div className="relative flex-shrink-0">
