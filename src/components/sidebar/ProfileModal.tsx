@@ -13,6 +13,7 @@ const UserProfile = lazy(() => import('@/components/UserProfile'));
 interface ProfileModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onOpenLayoutPrefs?: () => void;
 }
 
 const ModalLoader = () => (
@@ -21,7 +22,7 @@ const ModalLoader = () => (
   </div>
 );
 
-export const ProfileModal: React.FC<ProfileModalProps> = ({ open, onOpenChange }) => {
+export const ProfileModal: React.FC<ProfileModalProps> = ({ open, onOpenChange, onOpenLayoutPrefs }) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0">
@@ -42,7 +43,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({ open, onOpenChange }
         <div className="p-0">
           <Suspense fallback={<ModalLoader />}>
             <div className="[&_.container]:max-w-none [&_.container]:px-0 [&_.container]:py-0">
-              <UserProfile />
+              <UserProfile onOpenLayoutPrefs={onOpenLayoutPrefs} />
             </div>
           </Suspense>
         </div>

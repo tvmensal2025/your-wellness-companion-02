@@ -363,23 +363,6 @@ const CompleteDashboardPage = () => {
 
         {/* Menu Items */}
         <div className="flex-1 overflow-y-auto p-2">
-          {/* Botão de Personalização - No topo */}
-          {isExpanded && (
-            <div className="mb-4 pb-4 border-b border-border/50">
-              <Button 
-                variant="ghost" 
-                className="w-full justify-start h-10 px-3 text-muted-foreground hover:text-foreground"
-                onClick={() => {
-                  setLayoutPrefsModalOpen(true);
-                  if (isMobile) setSidebarOpen(false);
-                }}
-              >
-                <SlidersHorizontal className="w-4 h-4 mr-3" />
-                <span className="text-sm font-medium">Personalizar Menu</span>
-              </Button>
-            </div>
-          )}
-          
           <div className="space-y-1">
             {orderedMenuItems.map(item => {
             const Icon = item.icon;
@@ -464,7 +447,14 @@ const CompleteDashboardPage = () => {
       </Suspense>
       
       {/* Modal de Perfil */}
-      <ProfileModal open={profileModalOpen} onOpenChange={setProfileModalOpen} />
+      <ProfileModal 
+        open={profileModalOpen} 
+        onOpenChange={setProfileModalOpen}
+        onOpenLayoutPrefs={() => {
+          setProfileModalOpen(false);
+          setLayoutPrefsModalOpen(true);
+        }}
+      />
       
       {/* Modal de Preferências de Layout */}
       <Suspense fallback={null}>
