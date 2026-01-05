@@ -7,6 +7,13 @@ const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
 const RATE_LIMIT_DELAY = 2000; // 2 segundos entre requests
 const MAX_RETRIES = 3;
 
+// Configuração de IA (pode ser sobrescrita via parâmetro)
+let AI_MODEL_CONFIG = {
+  model: 'google/gemini-2.5-flash',
+  max_tokens: 2000,
+  temperature: 0.5
+};
+
 // ========================================
 // 🤖 PROMPTS MELHORADOS PARA DETECÇÃO
 // ========================================
@@ -179,14 +186,20 @@ ALIMENTOS BRASILEIROS PARA ASSUMIR POR FORMA/COR:
 // 🤖 FUNÇÃO DE ANÁLISE COM MÚLTIPLAS TENTATIVAS
 // ========================================
 
-export async function analyzeWithEnhancedAI(imageUrl: string, attempt = 1) {
+export async function analyzeWithEnhancedAI(imageUrl: string, attempt = 1, config?: { model: string; max_tokens: number; temperature: number }) {
+  // Usar configuração passada ou padrão
+  if (config) {
+    AI_MODEL_CONFIG = { ...AI_MODEL_CONFIG, ...config };
+    console.log('🔧 Enhanced Detection usando configuração:', AI_MODEL_CONFIG);
+  }
+  
   const useLovableAI = !!LOVABLE_API_KEY;
 
   if (!useLovableAI && !GOOGLE_AI_API_KEY) {
     throw new Error('Nenhuma IA configurada: defina LOVABLE_API_KEY ou GOOGLE_AI_API_KEY');
   }
 
-  console.log(`🤖 Análise aprimorada - Tentativa ${attempt}/${MAX_RETRIES} | Provider: ${useLovableAI ? 'Lovable AI (Gemini 2.5 Flash)' : 'Google Gemini API'}`);
+  console.log(`🤖 Análise aprimorada - Tentativa ${attempt}/${MAX_RETRIES} | Provider: ${useLovableAI ? `Lovable AI (${AI_MODEL_CONFIG.model})` : 'Google Gemini API'}`);
   
   // Escolher estratégia baseada na tentativa
   let prompt = ENHANCED_FOOD_PROMPTS.aggressive;
@@ -211,7 +224,9 @@ export async function analyzeWithEnhancedAI(imageUrl: string, attempt = 1) {
       // 🔗 MODO LOVABLE AI (RECOMENDADO)
       // ===============================
       const body = {
-        model: 'google/gemini-2.5-flash',
+        model: AI_MODEL_CONFIG.model,
+        max_tokens: AI_MODEL_CONFIG.max_tokens,
+        temperature: AI_MODEL_CONFIG.temperature,
         messages: [
           {
             role: 'system',
@@ -248,7 +263,7 @@ export async function analyzeWithEnhancedAI(imageUrl: string, attempt = 1) {
           const backoffDelay = RATE_LIMIT_DELAY * Math.pow(2, attempt);
           console.log(`⏳ Backoff Lovable AI ${backoffDelay}ms...`);
           await new Promise(resolve => setTimeout(resolve, backoffDelay));
-          return analyzeWithEnhancedAI(imageUrl, attempt + 1);
+          return analyzeWithEnhancedAI(imageUrl, attempt + 1, config);
         }
 
         // Se Lovable falhar completamente, tentar fallback para Google, se existir
