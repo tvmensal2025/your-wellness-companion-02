@@ -14,7 +14,7 @@ import { UnifiedAnalysisHistory } from '@/components/analysis/UnifiedAnalysisHis
 import { useMealPlanGeneratorV2 } from '@/hooks/useMealPlanGeneratorV2';
 import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
-import { AnamnesisStatusCard } from '@/components/sofia/AnamnesisStatusCard';
+
 import { PersonalizedSupplementsCard } from '@/components/sofia/PersonalizedSupplementsCard';
 export const SofiaNutricionalPage: React.FC = () => {
   const {
@@ -109,11 +109,8 @@ export const SofiaNutricionalPage: React.FC = () => {
         </TabsList>
 
         <TabsContent value="tracker" className="space-y-6">
-          {/* Anamnese e Suplementos Personalizados */}
-          <div className="grid gap-6 md:grid-cols-2">
-            <AnamnesisStatusCard />
-            <PersonalizedSupplementsCard />
-          </div>
+          {/* Suplementos Personalizados */}
+          <PersonalizedSupplementsCard />
 
           <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
             {/* Resumo diário */}
