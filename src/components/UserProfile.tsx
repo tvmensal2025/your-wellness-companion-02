@@ -335,21 +335,22 @@ const UserProfile = ({ onOpenLayoutPrefs }: UserProfileProps = {}) => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-6xl">
+    <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-6xl">
       {/* Header Section */}
-      <div className="mb-8">
+      <div className="mb-4 sm:mb-8">
         <Card className="border-0 shadow-lg bg-gradient-to-r from-primary/5 to-secondary/5">
-          <CardContent className="p-6">
-            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-              <div className="flex items-center space-x-6">
-                <div className="relative group">
-                  <Avatar className="h-24 w-24 border-4 border-white shadow-lg">
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex flex-col gap-4 sm:gap-6">
+              {/* Avatar e Info - Layout responsivo */}
+              <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
+                <div className="relative group shrink-0">
+                  <Avatar className="h-20 w-20 sm:h-24 sm:w-24 border-4 border-white shadow-lg">
                     <AvatarImage src={profile.avatar_url} />
-                    <AvatarFallback className="text-xl bg-primary text-primary-foreground">
+                    <AvatarFallback className="text-lg sm:text-xl bg-primary text-primary-foreground">
                       {profile.full_name ? getInitials(profile.full_name) : 'U'}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-2 border-white"></div>
+                  <div className="absolute -bottom-1 -right-1 w-5 h-5 sm:w-6 sm:h-6 bg-green-500 rounded-full border-2 border-white"></div>
                   
                   {/* Botão de upload de foto */}
                   <label className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
@@ -361,46 +362,49 @@ const UserProfile = ({ onOpenLayoutPrefs }: UserProfileProps = {}) => {
                       disabled={uploadingPhoto}
                     />
                     {uploadingPhoto ? (
-                      <Loader2 className="h-8 w-8 text-white animate-spin" />
+                      <Loader2 className="h-6 w-6 sm:h-8 sm:w-8 text-white animate-spin" />
                     ) : (
-                      <Camera className="h-8 w-8 text-white" />
+                      <Camera className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
                     )}
                   </label>
                 </div>
-                <div>
-                  <h1 className="text-3xl font-bold text-foreground mb-1">
+                
+                <div className="flex-1 text-center sm:text-left min-w-0">
+                  <h1 className="text-xl sm:text-3xl font-bold text-foreground mb-1 truncate">
                     {profile.full_name || 'Usuário'}
                   </h1>
-                  <p className="text-muted-foreground mb-2">
+                  <p className="text-sm sm:text-base text-muted-foreground mb-2">
                     Membro desde {profile.created_at ? new Date(profile.created_at).toLocaleDateString('pt-BR') : 'hoje'}
                   </p>
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                  <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
                     {profile.email && (
-                      <div className="flex items-center space-x-1">
-                        <Mail className="h-4 w-4" />
-                        <span>{profile.email}</span>
+                      <div className="flex items-center space-x-1 truncate max-w-full">
+                        <Mail className="h-3 w-3 sm:h-4 sm:w-4 shrink-0" />
+                        <span className="truncate">{profile.email}</span>
                       </div>
                     )}
                     {profile.phone && (
                       <div className="flex items-center space-x-1">
-                        <Phone className="h-4 w-4" />
+                        <Phone className="h-3 w-3 sm:h-4 sm:w-4 shrink-0" />
                         <span>{profile.phone}</span>
                       </div>
                     )}
                     {(profile.city || profile.state) && (
                       <div className="flex items-center space-x-1">
-                        <MapPin className="h-4 w-4" />
+                        <MapPin className="h-3 w-3 sm:h-4 sm:w-4 shrink-0" />
                         <span>{[profile.city, profile.state].filter(Boolean).join(', ')}</span>
                       </div>
                     )}
                   </div>
                 </div>
               </div>
+              
+              {/* Botão Editar - Sempre visível */}
               <Button
-                size="lg"
+                size="default"
                 variant={editing ? "outline" : "default"}
                 onClick={() => setEditing(!editing)}
-                className="shrink-0"
+                className="w-full sm:w-auto sm:self-end"
               >
                 <Edit2 className="h-4 w-4 mr-2" />
                 {editing ? 'Cancelar' : 'Editar'}
@@ -411,18 +415,18 @@ const UserProfile = ({ onOpenLayoutPrefs }: UserProfileProps = {}) => {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 gap-2 sm:gap-4 mb-4 sm:mb-8">
         {activityStats.map((stat, index) => {
           const IconComponent = stat.icon;
           return (
             <Card key={index} className="hover:shadow-md transition-shadow">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-2xl font-bold text-foreground">{stat.value}</p>
-                    <p className="text-xs text-muted-foreground mt-1">{stat.label}</p>
+              <CardContent className="p-3 sm:p-4">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="text-lg sm:text-2xl font-bold text-foreground">{stat.value}</p>
+                    <p className="text-[10px] sm:text-xs text-muted-foreground mt-1 truncate">{stat.label}</p>
                   </div>
-                  <IconComponent className={`h-8 w-8 ${stat.color}`} />
+                  <IconComponent className={`h-6 w-6 sm:h-8 sm:w-8 shrink-0 ${stat.color}`} />
                 </div>
               </CardContent>
             </Card>
@@ -432,26 +436,31 @@ const UserProfile = ({ onOpenLayoutPrefs }: UserProfileProps = {}) => {
 
       {/* Main Content Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-5 mb-6">
-          <TabsTrigger value="overview" className="flex items-center gap-2">
-            <User className="h-4 w-4" />
-            Visão Geral
+        <TabsList className="flex w-full overflow-x-auto mb-4 sm:mb-6 h-auto p-1 gap-1">
+          <TabsTrigger value="overview" className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 text-xs sm:text-sm whitespace-nowrap flex-1 min-w-0">
+            <User className="h-3 w-3 sm:h-4 sm:w-4 shrink-0" />
+            <span className="hidden xs:inline sm:inline">Visão Geral</span>
+            <span className="xs:hidden sm:hidden">Geral</span>
           </TabsTrigger>
-          <TabsTrigger value="medical" className="flex items-center gap-2">
-            <FileText className="h-4 w-4" />
-            Meus Exames
+          <TabsTrigger value="medical" className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 text-xs sm:text-sm whitespace-nowrap flex-1 min-w-0">
+            <FileText className="h-3 w-3 sm:h-4 sm:w-4 shrink-0" />
+            <span className="hidden sm:inline">Meus Exames</span>
+            <span className="sm:hidden">Exames</span>
           </TabsTrigger>
-          <TabsTrigger value="achievements" className="flex items-center gap-2">
-            <Award className="h-4 w-4" />
-            Conquistas
+          <TabsTrigger value="achievements" className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 text-xs sm:text-sm whitespace-nowrap flex-1 min-w-0">
+            <Award className="h-3 w-3 sm:h-4 sm:w-4 shrink-0" />
+            <span className="hidden sm:inline">Conquistas</span>
+            <span className="sm:hidden">🏆</span>
           </TabsTrigger>
-          <TabsTrigger value="settings" className="flex items-center gap-2">
-            <Settings className="h-4 w-4" />
-            Configurações
+          <TabsTrigger value="settings" className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 text-xs sm:text-sm whitespace-nowrap flex-1 min-w-0">
+            <Settings className="h-3 w-3 sm:h-4 sm:w-4 shrink-0" />
+            <span className="hidden sm:inline">Configurações</span>
+            <span className="sm:hidden">⚙️</span>
           </TabsTrigger>
-          <TabsTrigger value="subscription" className="flex items-center gap-2">
-            <Crown className="h-4 w-4" />
-            Assinatura
+          <TabsTrigger value="subscription" className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-2 text-xs sm:text-sm whitespace-nowrap flex-1 min-w-0">
+            <Crown className="h-3 w-3 sm:h-4 sm:w-4 shrink-0" />
+            <span className="hidden sm:inline">Assinatura</span>
+            <span className="sm:hidden">👑</span>
           </TabsTrigger>
         </TabsList>
 
@@ -466,7 +475,7 @@ const UserProfile = ({ onOpenLayoutPrefs }: UserProfileProps = {}) => {
               <CardContent>
                 {editing ? (
                   <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <Label htmlFor="full_name">Nome Completo</Label>
                         <Input
@@ -484,7 +493,7 @@ const UserProfile = ({ onOpenLayoutPrefs }: UserProfileProps = {}) => {
                         />
                       </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <Label htmlFor="birth_date">Data de Nascimento</Label>
                         <Input
