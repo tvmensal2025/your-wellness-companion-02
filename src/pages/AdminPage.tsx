@@ -59,6 +59,8 @@ import MedicalDocumentsSection from "@/components/dashboard/MedicalDocumentsSect
 import { TutorialDeviceConfig } from "@/components/admin/TutorialDeviceConfig";
 import SofiaDataTestPanel from "@/components/admin/SofiaDataTestPanel";
 
+import { repairAuthSessionIfTooLarge } from "@/lib/auth-token-repair";
+
 const AdminPage = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -81,91 +83,55 @@ const AdminPage = () => {
     let alive = true;
 
     (async () => {
-      // Get initial session
-      const { data: { session } } = await supabase.auth.getSession();
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
 
-      if (!alive) return;
+        if (!alive) return;
 
-      if (!session) {
-        setUser(null);
-        setLoading(false);
-        navigate("/auth");
-        return;
-      }
-
-      // ⚠️ Se o avatar estiver salvo como base64 na metadata, o token fica enorme e alguns requests falham com "Failed to fetch"
-      const avatarMeta = session.user?.user_metadata?.avatar_url;
-      const hasHugeAvatarInToken =
-        typeof avatarMeta === 'string' &&
-        avatarMeta.startsWith('data:image') &&
-        avatarMeta.length > 4000;
-
-      if (hasHugeAvatarInToken) {
-        const avatarDataUri = avatarMeta as string;
-
-        toast({
-          title: 'Otimizando seu perfil…',
-          description: 'Detectei um avatar muito pesado no login. Vou corrigir para evitar erros no admin.',
-        });
-
-        // 1) Limpa avatar_url da metadata para reduzir o token
-        const { error: clearErr } = await supabase.auth.updateUser({
-          data: { avatar_url: '' },
-        });
-
-        if (!clearErr) {
-          await supabase.auth.refreshSession();
-        } else {
-          console.warn('Falha ao limpar avatar_url da metadata:', clearErr);
+        if (!session) {
+          setUser(null);
+          setLoading(false);
+          navigate("/auth");
+          return;
         }
 
-        // 2) Sobe o avatar para o storage e salva uma URL curta (mantém o avatar sem inchar o token)
-        try {
-          const blob = await (await fetch(avatarDataUri)).blob();
-          const ext = blob.type?.split('/')[1] || 'png';
-          const filePath = `${session.user.id}/${Date.now()}_avatar.${ext}`;
+        // Se o token estiver gigante (ex.: avatar base64 na metadata), o browser pode falhar com CORS/"Failed to fetch".
+        const repair = await repairAuthSessionIfTooLarge(session);
 
-          const { error: uploadErr } = await supabase.storage
-            .from('avatars')
-            .upload(filePath, blob, {
-              cacheControl: '3600',
-              upsert: true,
-              contentType: blob.type || 'image/png',
-            });
-
-          if (!uploadErr) {
-            const { data: pub } = supabase.storage.from('avatars').getPublicUrl(filePath);
-            const publicUrl = pub?.publicUrl;
-
-            if (publicUrl) {
-              await supabase
-                .from('profiles')
-                .update({ avatar_url: publicUrl, updated_at: new Date().toISOString() })
-                .eq('user_id', session.user.id);
-
-              await supabase.auth.updateUser({ data: { avatar_url: publicUrl } });
-              await supabase.auth.refreshSession();
-
-              toast({
-                title: 'Perfil otimizado',
-                description: 'Avatar ajustado. Tente criar o curso novamente.',
-              });
-            }
-          } else {
-            console.warn('Falha ao subir avatar para o storage:', uploadErr);
-          }
-        } catch (e) {
-          console.warn('Falha ao migrar avatar base64 para URL:', e);
+        if (repair.status === "repaired") {
+          toast({
+            title: "Login otimizado",
+            description: "Removi dados muito pesados do perfil para evitar erros no admin.",
+          });
+        } else if (repair.status === "failed") {
+          toast({
+            title: "Atenção",
+            description: "Não consegui otimizar seu login automaticamente. Faça login novamente.",
+            variant: "destructive",
+          });
         }
 
-        const { data: { session: refreshed } } = await supabase.auth.getSession();
-        setUser(refreshed?.user ?? session.user);
+        const {
+          data: { session: finalSession },
+        } = await supabase.auth.getSession();
+
+        if (!alive) return;
+
+        if (!finalSession) {
+          setUser(null);
+          setLoading(false);
+          navigate("/auth");
+          return;
+        }
+
+        setUser(finalSession.user);
         setLoading(false);
-      } else {
-        setUser(session.user);
+      } catch (e) {
+        console.error("Falha ao inicializar AdminPage:", e);
         setLoading(false);
       }
-
     })();
 
     // Listen for auth changes
