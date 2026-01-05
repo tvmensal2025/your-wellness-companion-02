@@ -274,7 +274,14 @@ const CoursePlatformNetflix = ({ user }: CoursePlatformNetflixProps) => {
 
   const handleCourseClick = (course: Course) => {
     setSelectedCourse(course);
-    setCurrentView('course');
+    // Se o curso tem aulas, ir direto para a primeira aula (player)
+    if (course.lessons && course.lessons.length > 0) {
+      setSelectedLesson(course.lessons[0]);
+      setCurrentView('player');
+    } else {
+      // Se não tem aulas, mostra a tela do curso
+      setCurrentView('course');
+    }
   };
 
   const handleLessonClick = (lesson: Lesson) => {
