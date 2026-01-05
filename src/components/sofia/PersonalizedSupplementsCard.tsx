@@ -15,6 +15,24 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
+// Imagens dos produtos MaxNutrition
+import dtoxImg from '@/assets/products/dtox.jpeg';
+import moroComplexImg from '@/assets/products/moro-complex.jpeg';
+import vitalGreenImg from '@/assets/products/vital-green.jpeg';
+import creatinaImg from '@/assets/products/creatina.jpeg';
+import amargoImg from '@/assets/products/amargo.jpeg';
+import cromoMaxImg from '@/assets/products/cromo-max.jpeg';
+
+// Mapa de imagens por nome do produto
+const productImages: Record<string, string> = {
+  'D-TOX 1000mg': dtoxImg,
+  'Moro Complex 500mg': moroComplexImg,
+  'Vital Green Spirulina': vitalGreenImg,
+  'Creatina com Coenzima Q10': creatinaImg,
+  'Amargo 500ml': amargoImg,
+  'Cromo Max': cromoMaxImg,
+};
+
 interface Supplement {
   id: string;
   name: string;
@@ -403,7 +421,13 @@ export const PersonalizedSupplementsCard: React.FC = () => {
                   <div className="flex gap-4 pr-20">
                     {/* Imagem do Produto */}
                     <div className="w-20 h-20 bg-gray-100 rounded-lg flex-shrink-0 flex items-center justify-center overflow-hidden">
-                      {rec.supplement.image_url ? (
+                      {productImages[rec.supplement.name] ? (
+                        <img 
+                          src={productImages[rec.supplement.name]} 
+                          alt={rec.supplement.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : rec.supplement.image_url ? (
                         <img 
                           src={rec.supplement.image_url} 
                           alt={rec.supplement.name}
