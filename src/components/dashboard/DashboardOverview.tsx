@@ -14,6 +14,7 @@ import { AppleHealthHeroCard } from './AppleHealthHeroCard';
 import { CleanEvolutionChart } from './CleanEvolutionChart';
 import { QuickActionsGrid } from './QuickActionsGrid';
 import { MotivationalMascot } from './MotivationalMascot';
+import { SofiaTipsCard } from './SofiaTipsCard';
 
 const DashboardOverview: React.FC = () => {
   const { measurements, stats, loading, fetchMeasurements } = useWeightMeasurement();
@@ -210,6 +211,9 @@ const DashboardOverview: React.FC = () => {
 
         {/* Quick Actions */}
         <QuickActionsGrid onWeightClick={() => setIsWeightModalOpen(true)} />
+
+        {/* Sofia Tips - Dicas personalizadas */}
+        <SofiaTipsCard />
 
         {/* Motivational Mascot */}
         <MotivationalMascot />
