@@ -207,17 +207,7 @@ export default function HealthFeedPage() {
               Conecte-se, compartilhe e inspire outros
             </p>
           </div>
-          <div className="flex items-center gap-1 sm:gap-2">
-            <Button variant="ghost" size="icon" className="relative h-9 w-9 sm:h-10 sm:w-10 text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900/30">
-              <Bell className="w-4 h-4 sm:w-5 sm:h-5" />
-              <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-[10px] text-white flex items-center justify-center">
-                3
-              </span>
-            </Button>
-            <Button variant="ghost" size="icon" className="h-9 w-9 sm:h-10 sm:w-10 text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900/30">
-              <Settings className="w-4 h-4 sm:w-5 sm:h-5" />
-            </Button>
-          </div>
+          {/* Removido - sino e configurações já existem no header principal */}
         </motion.header>
 
         {/* Tabs */}
