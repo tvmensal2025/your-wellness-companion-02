@@ -79,6 +79,7 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
   const [showDetailedInstructions, setShowDetailedInstructions] = useState(false);
   const [showDetailedTips, setShowDetailedTips] = useState(false);
   const [isExerciseStarted, setIsExerciseStarted] = useState(false);
+  const [showVideo, setShowVideo] = useState(false);
 
   const [exerciseSeconds, setExerciseSeconds] = useState(0);
   const [isExerciseTimerRunning, setIsExerciseTimerRunning] = useState(false);
@@ -148,6 +149,7 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
     setIsExerciseStarted(false);
     setExerciseSeconds(0);
     setIsExerciseTimerRunning(false);
+    setShowVideo(false);
     setCurrentSet(1);
     setExerciseFeedback(null);
   }, [currentIndex]);
@@ -341,18 +343,45 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
                     </p>
                   )}
 
-                  {/* Player de Vídeo */}
+                  {/* Player de Vídeo - Collapsible */}
                   {youtubeId && (
                     <div className="rounded-lg overflow-hidden border border-border/50">
-                      <div className="aspect-video">
-                        <iframe
-                          src={`https://www.youtube.com/embed/${youtubeId}?rel=0&modestbranding=1`}
-                          title={`Vídeo: ${currentExercise.name}`}
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                          allowFullScreen
-                          className="w-full h-full"
-                        />
-                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setShowVideo(!showVideo)}
+                        className="w-full flex items-center justify-between p-3 bg-muted/30 hover:bg-muted/50 transition-colors"
+                      >
+                        <div className="flex items-center gap-2">
+                          <Youtube className="w-5 h-5 text-red-500" />
+                          <span className="text-sm font-medium">Ver vídeo do exercício</span>
+                        </div>
+                        {showVideo ? (
+                          <ChevronUp className="w-5 h-5 text-muted-foreground" />
+                        ) : (
+                          <ChevronDown className="w-5 h-5 text-muted-foreground" />
+                        )}
+                      </button>
+                      
+                      <AnimatePresence>
+                        {showVideo && (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            transition={{ duration: 0.2 }}
+                          >
+                            <div className="aspect-video">
+                              <iframe
+                                src={`https://www.youtube.com/embed/${youtubeId}?rel=0&modestbranding=1`}
+                                title={`Vídeo: ${currentExercise.name}`}
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowFullScreen
+                                className="w-full h-full"
+                              />
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </div>
                   )}
 
@@ -700,7 +729,7 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
                   <Button
                     size="sm"
                     className="flex-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
-                    onClick={handleFinishWorkout}
+                    onClick={() => handleFinishWorkout()}
                   >
                     <Trophy className="w-4 h-4 mr-1" />
                     Finalizar
