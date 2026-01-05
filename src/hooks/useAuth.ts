@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
-import type { User } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
+import { useEffect, useState } from "react";
+import type { User } from "@supabase/supabase-js";
+import { supabase } from "@/integrations/supabase/client";
+import { repairAuthSessionIfTooLarge } from "@/lib/auth-token-repair";
 
 const AUTH_INIT_TIMEOUT_MS = 2000;
 
@@ -20,8 +21,25 @@ export const useAuth = () => {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_, session) => {
       if (!mounted) return;
+
       setUser(session?.user ?? null);
       setLoading(false);
+
+      // Se o token estiver gigante (ex.: avatar base64 na metadata), repara em background.
+      if (!session) return;
+
+      window.setTimeout(() => {
+        void (async () => {
+          const repair = await repairAuthSessionIfTooLarge(session);
+          if (!mounted || repair.status !== "repaired") return;
+
+          const {
+            data: { session: latest },
+          } = await supabase.auth.getSession();
+
+          if (mounted) setUser(latest?.user ?? null);
+        })();
+      }, 0);
     });
 
     // Depois busca sessão inicial
@@ -31,8 +49,16 @@ export const useAuth = () => {
           data: { session },
         } = await supabase.auth.getSession();
 
+        if (session) {
+          await repairAuthSessionIfTooLarge(session);
+        }
+
+        const {
+          data: { session: finalSession },
+        } = await supabase.auth.getSession();
+
         if (!mounted) return;
-        setUser(session?.user ?? null);
+        setUser(finalSession?.user ?? null);
       } catch {
         if (!mounted) return;
         setUser(null);
@@ -57,6 +83,11 @@ export const useAuth = () => {
       });
 
       if (error) return { error };
+
+      if (data?.session) {
+        await repairAuthSessionIfTooLarge(data.session);
+      }
+
       return { data };
     } catch (error) {
       return { error };

@@ -29,3 +29,7 @@ verify_jwt = false
 
 [functions.improve-exercises]
 verify_jwt = false
+
+[functions.repair-auth-metadata]
+verify_jwt = false
+

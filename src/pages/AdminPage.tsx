@@ -76,8 +76,8 @@ const AdminPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   
-  // Verificação de admin usando hook existente
-  const { isAdmin } = useAdminMode(user);
+  // Verificação de admin (validada no backend)
+  const { isAdmin, isChecking: isAdminChecking } = useAdminMode(user);
 
   useEffect(() => {
     let alive = true;
@@ -234,7 +234,7 @@ const AdminPage = () => {
     { id: 'tutorials', icon: Play, label: 'Configuração de Tutoriais', color: 'text-yellow-500', description: 'Tutoriais específicos para Mobile, Tablet e PC' },
   ];
 
-  if (loading) {
+  if (loading || isAdminChecking) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
@@ -249,15 +249,14 @@ const AdminPage = () => {
     return null; // Will redirect to auth
   }
 
-  // Acesso liberado APENAS para rafael.ids@icloud.com
-  const ALLOWED_ADMIN_EMAIL = "rafael.ids@icloud.com";
-  
-  if (user.email !== ALLOWED_ADMIN_EMAIL) {
+  if (!isAdmin) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4 text-center">
         <Shield className="h-16 w-16 text-red-500 mb-4" />
         <h1 className="text-2xl font-bold mb-2">Acesso Negado</h1>
-        <p className="text-muted-foreground mb-4">Apenas o superadministrador tem permissão para acessar esta área.</p>
+        <p className="text-muted-foreground mb-4">
+          Você não tem permissão para acessar esta área.
+        </p>
         <Button onClick={() => navigate("/")}>Voltar para o Início</Button>
       </div>
     );
