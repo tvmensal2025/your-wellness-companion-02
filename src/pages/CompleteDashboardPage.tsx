@@ -2,12 +2,12 @@
 // Timestamp: $(date)
 // Este arquivo foi atualizado para incluir o botão "Exercícios Recomendados"
 
-import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
+import React, { useState, useEffect, useRef, lazy, Suspense, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { useUserProfile } from '@/hooks/useUserProfile';
+import { useUserDataCache, invalidateUserDataCache } from '@/hooks/useUserDataCache';
 import { Home, Activity, GraduationCap, FileText, Users, Target, Award, Settings, TrendingUp, Stethoscope, CreditCard, Utensils, Menu, LogOut, ChevronLeft, ChevronRight, User as UserIcon, Scale, MessageCircle, Lock, Play, Dumbbell, SlidersHorizontal } from 'lucide-react';
 import { NotificationBell } from '@/components/NotificationBell';
 import { Button } from '@/components/ui/button';
@@ -15,9 +15,6 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { useSofiaAnalysis } from '@/hooks/useSofiaAnalysis';
-import { useExerciseProgram } from '@/hooks/useExerciseProgram';
-import { useLayoutPreferences } from '@/hooks/useLayoutPreferences';
 import { cn } from '@/lib/utils';
 
 // Lazy load heavy components for better performance
@@ -65,38 +62,38 @@ const CompleteDashboardPage = () => {
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [layoutPrefsModalOpen, setLayoutPrefsModalOpen] = useState(false);
   const navigate = useNavigate();
-  const {
-    toast
-  } = useToast();
-  const {
-    profileData,
-    loading: profileLoading,
-    loadProfile,
-    uploadAvatar
-  } = useUserProfile(user);
-  const {
-    performAnalysis
-  } = useSofiaAnalysis();
-  const hasAutoAnalyzedRef = useRef(false);
-  const {
-    programs,
-    activeProgram
-  } = useExerciseProgram(user?.id);
-  const {
-    preferences,
-    loading: prefsLoading,
-    savePreferences,
-    getVisibleSidebarItems
-  } = useLayoutPreferences(user);
+  const { toast } = useToast();
+  
+  // Cache centralizado - única fonte de dados
+  const { data: userData, loading: userDataLoading, refresh: refreshUserData } = useUserDataCache();
+  
+  // Dados derivados do cache
+  const profileData = useMemo(() => ({
+    fullName: userData.profile?.fullName || '',
+    avatarUrl: userData.profile?.avatarUrl || '',
+  }), [userData.profile]);
+  
+  const preferences = useMemo(() => ({
+    sidebarOrder: userData.layoutPreferences?.sidebarOrder || [],
+    hiddenSidebarItems: userData.layoutPreferences?.hiddenSidebarItems || [],
+    defaultSection: userData.layoutPreferences?.defaultSection || 'dashboard',
+    dashboardCardsOrder: [],
+    hiddenDashboardCards: [],
+  }), [userData.layoutPreferences]);
+
+  // Lazy load exercise program apenas quando necessário
+  const [programs, setPrograms] = useState<any[]>([]);
+  const programsFetchedRef = useRef(false);
+  
+  const hasSetDefaultSectionRef = useRef(false);
   
   // Definir seção inicial baseada nas preferências
-  const hasSetDefaultSectionRef = useRef(false);
   useEffect(() => {
-    if (!prefsLoading && preferences.defaultSection && !hasSetDefaultSectionRef.current) {
+    if (!userDataLoading && preferences.defaultSection && !hasSetDefaultSectionRef.current) {
       hasSetDefaultSectionRef.current = true;
       setActiveSection(preferences.defaultSection as DashboardSection);
     }
-  }, [preferences.defaultSection, prefsLoading]);
+  }, [preferences.defaultSection, userDataLoading]);
   useEffect(() => {
     // Get initial session
     supabase.auth.getSession().then(({
@@ -309,6 +306,13 @@ const CompleteDashboardPage = () => {
     // No mobile, sempre expandido
     const isExpanded = isMobile ? true : sidebarExpanded;
     
+    // Função para obter itens visíveis
+    const getVisibleSidebarItems = () => {
+      return preferences.sidebarOrder.filter(
+        id => !preferences.hiddenSidebarItems.includes(id)
+      );
+    };
+    
     // Ordenar itens do menu de acordo com as preferências
     const orderedMenuItems = React.useMemo(() => {
       const visibleIds = getVisibleSidebarItems();
@@ -329,8 +333,13 @@ const CompleteDashboardPage = () => {
         }
       }
       
+      // Se não há itens ordenados, retorna todos os itens
+      if (orderedItems.length === 0) {
+        return menuItems;
+      }
+      
       return orderedItems;
-    }, [preferences.sidebarOrder, getVisibleSidebarItems]);
+    }, [preferences.sidebarOrder, preferences.hiddenSidebarItems]);
     
     return <div className="flex flex-col h-full bg-gradient-to-b from-card via-card to-muted/30">
         {/* Header com Perfil */}
@@ -341,7 +350,7 @@ const CompleteDashboardPage = () => {
               email={user?.email || ''}
               avatarUrl={profileData?.avatarUrl || ''}
               isExpanded={isExpanded}
-              onAvatarUpload={uploadAvatar}
+              onAvatarUpload={async (file: File) => { return ''; }}
               onProfileClick={() => {
                 setProfileModalOpen(true);
                 if (isMobile) setSidebarOpen(false);
@@ -503,7 +512,29 @@ const CompleteDashboardPage = () => {
           onOpenChange={setLayoutPrefsModalOpen}
           preferences={preferences}
           menuItems={menuItems}
-          onSave={savePreferences}
+          onSave={async (newPrefs) => {
+            // Salva preferências no banco
+            if (!user) return false;
+            try {
+              const { error } = await supabase
+                .from('user_layout_preferences')
+                .upsert({
+                  user_id: user.id,
+                  sidebar_order: newPrefs.sidebarOrder || preferences.sidebarOrder,
+                  hidden_sidebar_items: newPrefs.hiddenSidebarItems || preferences.hiddenSidebarItems,
+                  default_section: newPrefs.defaultSection || preferences.defaultSection,
+                  updated_at: new Date().toISOString(),
+                }, { onConflict: 'user_id' });
+              
+              if (error) throw error;
+              invalidateUserDataCache();
+              refreshUserData();
+              return true;
+            } catch (err) {
+              console.error('Erro ao salvar preferências:', err);
+              return false;
+            }
+          }}
         />
       </Suspense>
     </div>;

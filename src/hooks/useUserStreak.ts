@@ -1,13 +1,14 @@
 // @ts-nocheck
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { getUserDataFromCache, invalidateUserDataCache } from './useUserDataCache';
 
 interface StreakData {
   currentStreak: number;
   bestStreak: number;
   lastActivityDate: string | null;
   isActiveToday: boolean;
-  streakExpiresIn: number; // horas até expirar
+  streakExpiresIn: number;
 }
 
 const DEFAULT_STREAK: StreakData = {
@@ -21,58 +22,67 @@ const DEFAULT_STREAK: StreakData = {
 const toIsoDate = (value: any): string | null => {
   if (!value) return null;
   const str = String(value);
-  // normaliza date/time → YYYY-MM-DD
   return str.length >= 10 ? str.slice(0, 10) : str;
-};
-
-const ensureUserPointsRow = async (userId: string) => {
-  const { data, error } = await supabase
-    .from('user_points')
-    .select('current_streak, best_streak, last_activity_date')
-    .eq('user_id', userId)
-    .maybeSingle();
-
-  if (error) throw error;
-
-  if (data) return data;
-
-  const { data: inserted, error: insertError } = await supabase
-    .from('user_points')
-    .insert({
-      user_id: userId,
-      total_points: 0,
-      daily_points: 0,
-      weekly_points: 0,
-      monthly_points: 0,
-      current_streak: 0,
-      best_streak: 0,
-      completed_challenges: 0,
-      level: 1,
-      last_activity_date: null,
-    })
-    .select('current_streak, best_streak, last_activity_date')
-    .single();
-
-  if (insertError) throw insertError;
-  return inserted;
 };
 
 export const useUserStreak = () => {
   const [streakData, setStreakData] = useState<StreakData>(DEFAULT_STREAK);
   const [loading, setLoading] = useState(true);
+  const initializedRef = useRef(false);
 
   const fetchStreak = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      // Tenta usar cache centralizado primeiro
+      const cachedData = getUserDataFromCache();
+      
+      if (cachedData?.points) {
+        const today = new Date().toISOString().split('T')[0];
+        const lastActivity = toIsoDate(cachedData.points.lastActivityDate);
+        const isActiveToday = lastActivity === today;
 
-      const userPoints = await ensureUserPointsRow(user.id);
+        let streakExpiresIn = 24;
+        if (lastActivity) {
+          const lastDate = new Date(lastActivity);
+          const tomorrow = new Date(lastDate);
+          tomorrow.setDate(tomorrow.getDate() + 1);
+          tomorrow.setHours(23, 59, 59);
+          const now = new Date();
+          streakExpiresIn = Math.max(0, Math.floor((tomorrow.getTime() - now.getTime()) / (1000 * 60 * 60)));
+        }
+
+        setStreakData({
+          currentStreak: cachedData.points.currentStreak,
+          bestStreak: cachedData.points.bestStreak,
+          lastActivityDate: lastActivity,
+          isActiveToday,
+          streakExpiresIn,
+        });
+        setLoading(false);
+        return;
+      }
+
+      // Fallback: busca do DB se cache não disponível
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setLoading(false);
+        return;
+      }
+
+      const { data: userPoints } = await supabase
+        .from('user_points')
+        .select('current_streak, best_streak, last_activity_date')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (!userPoints) {
+        setLoading(false);
+        return;
+      }
 
       const today = new Date().toISOString().split('T')[0];
       const lastActivity = toIsoDate(userPoints.last_activity_date);
       const isActiveToday = lastActivity === today;
 
-      // Calcular horas até expirar o streak
       let streakExpiresIn = 24;
       if (lastActivity) {
         const lastDate = new Date(lastActivity);
@@ -80,10 +90,7 @@ export const useUserStreak = () => {
         tomorrow.setDate(tomorrow.getDate() + 1);
         tomorrow.setHours(23, 59, 59);
         const now = new Date();
-        streakExpiresIn = Math.max(
-          0,
-          Math.floor((tomorrow.getTime() - now.getTime()) / (1000 * 60 * 60))
-        );
+        streakExpiresIn = Math.max(0, Math.floor((tomorrow.getTime() - now.getTime()) / (1000 * 60 * 60)));
       }
 
       setStreakData({
@@ -110,14 +117,16 @@ export const useUserStreak = () => {
       yesterday.setDate(yesterday.getDate() - 1);
       const yesterdayStr = yesterday.toISOString().split('T')[0];
 
-      const userPoints = await ensureUserPointsRow(user.id);
+      const { data: userPoints } = await supabase
+        .from('user_points')
+        .select('current_streak, best_streak, last_activity_date')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (!userPoints) return;
 
       const lastActivity = toIsoDate(userPoints.last_activity_date);
-
-      if (lastActivity === today) {
-        // Já registrou hoje
-        return;
-      }
+      if (lastActivity === today) return;
 
       const newStreak = lastActivity === yesterdayStr
         ? (userPoints.current_streak || 0) + 1
@@ -135,6 +144,9 @@ export const useUserStreak = () => {
         })
         .eq('user_id', user.id);
 
+      // Invalida cache para próximo fetch
+      invalidateUserDataCache();
+
       setStreakData((prev) => ({
         ...prev,
         currentStreak: newStreak,
@@ -149,7 +161,10 @@ export const useUserStreak = () => {
   };
 
   useEffect(() => {
-    fetchStreak();
+    if (!initializedRef.current) {
+      initializedRef.current = true;
+      fetchStreak();
+    }
   }, []);
 
   return { ...streakData, loading, updateStreak, refetch: fetchStreak };
