@@ -944,11 +944,19 @@ textarea:focus-visible {
   overflow-x: hidden;
 }
 
-/* Print styles for meal plans */
+/* Print styles for meal plans and sessions */
 @media print {
   @page {
     size: A4;
-    margin: 15mm;
+    margin: 10mm;
+  }
+
+  html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    color-adjust: exact !important;
+    background: white !important;
   }
 
   .print\\:hidden {
@@ -986,12 +994,7 @@ textarea:focus-visible {
 
   .print\\:break-inside-avoid {
     break-inside: avoid !important;
-  }
-
-  body {
-    -webkit-print-color-adjust: exact !important;
-    color-adjust: exact !important;
-    background: white !important;
+    page-break-inside: avoid !important;
   }
 
   /* Sessions print styles */
@@ -1009,26 +1012,26 @@ textarea:focus-visible {
     color: #4B5563 !important;
   }
 
-  /* Hide sidebar and navigation on print */
+  /* Hide sidebar, header, and navigation on print */
   [data-sidebar],
   nav,
   .sidebar,
-  aside {
+  aside,
+  header,
+  .fixed {
     display: none !important;
   }
 
-  /* Make main content full width */
+  /* Make main content full width and start from top */
   main {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
     margin: 0 !important;
-    padding: 1rem !important;
+    padding: 0.5rem !important;
     width: 100% !important;
     max-width: 100% !important;
-  }
-
-  /* Session cards print optimization */
-  .print\:break-inside-avoid {
-    break-inside: avoid !important;
-    page-break-inside: avoid !important;
   }
 
   /* Footer for sessions print */
