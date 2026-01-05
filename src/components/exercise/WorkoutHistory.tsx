@@ -29,105 +29,92 @@ const formatDateTime = (iso: string) => {
 
 export const WorkoutHistory: React.FC<{
   logs: WorkoutLog[] | null | undefined;
-}> = ({ logs }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
+  isExpanded?: boolean;
+  onToggle?: () => void;
+}> = ({ logs, isExpanded: controlledExpanded, onToggle }) => {
+  const [internalExpanded, setInternalExpanded] = useState(false);
+  const isExpanded = controlledExpanded ?? internalExpanded;
+  const setIsExpanded = onToggle ? () => onToggle() : setInternalExpanded;
   const safeLogs = (logs || []).slice(0, 12);
 
   return (
-    <section aria-labelledby="workout-history-title" className="space-y-2">
-      {/* Botão compacto para abrir/fechar histórico */}
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full justify-between bg-background/50 backdrop-blur-sm border-border/50 hover:bg-muted/50 transition-all"
-      >
-        <span className="flex items-center gap-2 text-sm font-medium">
-          <History className="w-4 h-4 text-orange-500" />
-          Histórico de Treinos
-          {safeLogs.length > 0 && (
-            <Badge variant="secondary" className="ml-1 text-xs px-1.5 py-0">
-              {safeLogs.length}
-            </Badge>
-          )}
-        </span>
-        {isExpanded ? (
-          <ChevronUp className="w-4 h-4 text-muted-foreground" />
-        ) : (
-          <ChevronDown className="w-4 h-4 text-muted-foreground" />
-        )}
-      </Button>
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={() => setIsExpanded(!isExpanded)}
+      className="h-8 px-3 gap-1.5 text-xs font-medium bg-muted/50 hover:bg-muted border border-border/40 rounded-lg transition-all"
+    >
+      <History className="w-3.5 h-3.5 text-orange-500" />
+      <span className="hidden xs:inline">Histórico</span>
+      {safeLogs.length > 0 && (
+        <Badge variant="secondary" className="h-4 px-1 text-[10px] bg-orange-500/10 text-orange-600 border-0">
+          {safeLogs.length}
+        </Badge>
+      )}
+      {isExpanded ? (
+        <ChevronUp className="w-3 h-3 text-muted-foreground" />
+      ) : (
+        <ChevronDown className="w-3 h-3 text-muted-foreground" />
+      )}
+    </Button>
+  );
+};
 
-      {/* Conteúdo expandível */}
-      <AnimatePresence>
-        {isExpanded && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2, ease: "easeInOut" }}
-            className="overflow-hidden"
-          >
-            {safeLogs.length === 0 ? (
-              <Card className="border-dashed border-border/50">
-                <CardContent className="p-4 text-sm text-muted-foreground text-center">
-                  <Calendar className="w-8 h-8 mx-auto mb-2 text-muted-foreground/50" />
-                  Nenhum treino registrado ainda.
-                  <br />
-                  <span className="text-xs">Conclua um treino para aparecer aqui.</span>
-                </CardContent>
-              </Card>
-            ) : (
-              <Card className="border-border/50 bg-card/50 backdrop-blur-sm">
-                <CardContent className="p-0">
-                  <ScrollArea className="max-h-56">
-                    <ul className="divide-y divide-border/30">
-                      {safeLogs.map((log, index) => {
-                        const meta = log.exercises_completed || {};
-                        const exercises =
-                          meta?.exercises || meta?.exercise_ids || meta?.exercises_completed || [];
-                        const exerciseCount = Array.isArray(exercises) ? exercises.length : 0;
+// Modal/Dropdown de histórico separado para uso no topo
+export const WorkoutHistoryContent: React.FC<{
+  logs: WorkoutLog[] | null | undefined;
+}> = ({ logs }) => {
+  const safeLogs = (logs || []).slice(0, 12);
 
-                        const week = meta?.week_number;
-                        const day = meta?.day_number;
+  if (safeLogs.length === 0) {
+    return (
+      <div className="p-4 text-sm text-muted-foreground text-center">
+        <Calendar className="w-6 h-6 mx-auto mb-2 text-muted-foreground/50" />
+        <p>Nenhum treino registrado.</p>
+        <p className="text-xs mt-1">Conclua um treino para aparecer aqui.</p>
+      </div>
+    );
+  }
 
-                        return (
-                          <motion.li
-                            key={log.id}
-                            initial={{ opacity: 0, x: -10 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ delay: index * 0.05 }}
-                            className="p-3 flex items-start justify-between gap-3 hover:bg-muted/30 transition-colors"
-                          >
-                            <div className="min-w-0 flex-1">
-                              <p className="font-medium text-foreground text-sm truncate">
-                                {log.workout_name || "Treino"}
-                              </p>
-                              <p className="text-xs text-muted-foreground">
-                                {formatDateTime(log.created_at)}
-                                {typeof week === "number" ? ` • Sem ${week}` : ""}
-                                {typeof day === "number" ? ` • Dia ${day}` : ""}
-                              </p>
-                            </div>
+  return (
+    <ScrollArea className="max-h-64">
+      <ul className="divide-y divide-border/30">
+        {safeLogs.map((log, index) => {
+          const meta = log.exercises_completed || {};
+          const week = meta?.week_number;
+          const day = meta?.day_number;
 
-                            <Badge 
-                              variant="secondary" 
-                              className="shrink-0 text-xs bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20"
-                            >
-                              <CheckCircle2 className="w-3 h-3 mr-1" />
-                              Concluído
-                            </Badge>
-                          </motion.li>
-                        );
-                      })}
-                    </ul>
-                  </ScrollArea>
-                </CardContent>
-              </Card>
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </section>
+          return (
+            <motion.li
+              key={log.id}
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.03 }}
+              className="px-3 py-2.5 hover:bg-muted/40 transition-colors"
+            >
+              <div className="flex items-center justify-between gap-2">
+                <div className="min-w-0 flex-1">
+                  <p className="font-medium text-foreground text-sm truncate">
+                    {log.workout_name || "Treino"}
+                  </p>
+                  <p className="text-[11px] text-muted-foreground">
+                    {formatDateTime(log.created_at)}
+                    {typeof week === "number" ? ` • Sem ${week}` : ""}
+                    {typeof day === "number" ? ` • Dia ${day}` : ""}
+                  </p>
+                </div>
+                <Badge 
+                  variant="secondary" 
+                  className="shrink-0 h-5 text-[10px] bg-green-500/10 text-green-600 dark:text-green-400 border-0"
+                >
+                  <CheckCircle2 className="w-2.5 h-2.5 mr-0.5" />
+                  OK
+                </Badge>
+              </div>
+            </motion.li>
+          );
+        })}
+      </ul>
+    </ScrollArea>
   );
 };

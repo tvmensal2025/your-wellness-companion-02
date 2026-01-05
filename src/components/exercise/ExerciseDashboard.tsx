@@ -10,7 +10,9 @@ import { motion } from "framer-motion";
 import { ExerciseDetailModal } from "./ExerciseDetailModal";
 import { WeeklyPlanView } from "./WeeklyPlanView";
 import { ActiveWorkoutModal } from "./ActiveWorkoutModal";
-import { WorkoutHistory } from "./WorkoutHistory";
+import { WorkoutHistory, WorkoutHistoryContent } from "./WorkoutHistory";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Library } from "lucide-react";
 import { SavedProgramView } from "./SavedProgramView";
 
 import { useExerciseProgram } from "@/hooks/useExerciseProgram";
@@ -403,64 +405,74 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
         </div>
       </motion.section>
 
-      {/* Badges de contexto */}
+      {/* Barra de ações compacta */}
       <motion.section
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.3 }}
-        className="flex justify-between items-center flex-wrap gap-3"
+        className="flex items-center justify-between gap-2 flex-wrap"
       >
-        <div className="flex items-center gap-3 flex-wrap">
-          <Badge className="bg-gradient-to-r from-orange-100 to-red-100 dark:from-orange-950/50 dark:to-red-950/50 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-800 px-4 py-2 text-sm font-medium">
-            {location === "casa" ? "🏠 Em Casa" : "🏋️ Academia"}
+        {/* Badges de contexto - mais compactos */}
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <Badge className="bg-gradient-to-r from-orange-100 to-red-100 dark:from-orange-950/50 dark:to-red-950/50 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-800 h-7 px-2.5 text-xs font-medium">
+            {location === "casa" ? "🏠 Casa" : "🏋️ Academia"}
           </Badge>
-          <Badge variant="outline" className="px-3 py-1.5 capitalize">
+          <Badge variant="outline" className="h-7 px-2 text-xs capitalize">
             {goalLabels[goal] || `🎯 ${goal}`}
           </Badge>
-          {difficulty && (
-            <Badge variant="secondary" className="px-3 py-1.5 capitalize">
-              ⚡ {difficulty}
-            </Badge>
-          )}
         </div>
         
-        <div className="flex items-center gap-2">
+        {/* Ações compactas no topo */}
+        <div className="flex items-center gap-1.5">
+          {/* Botão Histórico */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <WorkoutHistory logs={workoutLogs as any} />
+            </PopoverTrigger>
+            <PopoverContent className="w-80 p-0" align="end">
+              <div className="p-3 border-b border-border/50">
+                <h4 className="font-semibold text-sm">Histórico de Treinos</h4>
+              </div>
+              <WorkoutHistoryContent logs={workoutLogs as any} />
+            </PopoverContent>
+          </Popover>
+
+          {/* Botão Biblioteca */}
           {hasSavedWeekPlan && (
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
               onClick={() => setShowLibraryPlan(!showLibraryPlan)}
-              className="text-xs"
+              className="h-8 px-3 gap-1.5 text-xs font-medium bg-muted/50 hover:bg-muted border border-border/40 rounded-lg"
             >
-              {showLibraryPlan ? "📋 Ver Meu Programa" : "📚 Ver Biblioteca"}
+              <Library className="w-3.5 h-3.5 text-primary" />
+              <span className="hidden xs:inline">{showLibraryPlan ? "Programa" : "Biblioteca"}</span>
             </Button>
           )}
+          
+          {/* Botão Atualizar */}
           <Button
             variant="ghost"
-            size="sm"
+            size="icon"
             onClick={refreshPlan}
             disabled={loading}
-            className="text-muted-foreground hover:text-foreground"
+            className="h-8 w-8 rounded-lg bg-muted/50 hover:bg-muted border border-border/40"
           >
-            <RefreshCw className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`} />
-            Atualizar
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
           </Button>
         </div>
       </motion.section>
 
-      {/* Histórico de treinos */}
-      <WorkoutHistory logs={workoutLogs as any} />
-
       {/* Conteúdo principal */}
       {loading ? (
-        <div className="space-y-4">
-          <Skeleton className="h-20 w-full rounded-xl" />
-          <div className="grid grid-cols-7 gap-2">
+        <div className="space-y-3">
+          <Skeleton variant="shimmer" className="h-16 w-full rounded-xl" />
+          <div className="grid grid-cols-7 gap-1.5">
             {[...Array(7)].map((_, i) => (
-              <Skeleton key={i} className="h-16 rounded-xl" />
+              <Skeleton variant="shimmer" key={i} className="h-12 rounded-lg" />
             ))}
           </div>
-          <Skeleton className="h-48 w-full rounded-xl" />
+          <Skeleton variant="shimmer" className="h-40 w-full rounded-xl" />
         </div>
       ) : error && shouldUseLibrary ? (
         <Card className="border-red-200 bg-red-50 dark:bg-red-950/20">
