@@ -476,9 +476,9 @@ const CoursePlatformNetflix = ({ user }: CoursePlatformNetflixProps) => {
               backgroundImage: 'url(/images/capa02.png)'
             }}
           >
-            {/* Gradientes sobrepostos estilo Netflix */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent" />
-            <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-transparent to-transparent" />
+            {/* Gradientes sobrepostos estilo Netflix - mais leves */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-transparent to-transparent" />
           </div>
 
           {/* Conteúdo do Hero - Simples */}
