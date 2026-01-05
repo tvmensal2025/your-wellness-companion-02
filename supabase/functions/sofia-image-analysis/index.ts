@@ -1394,7 +1394,38 @@ serve(async (req) => {
     
     console.log('📸 Recebida imagem para análise:', { imageUrl, userId, userContext });
 
-    // Cliente Supabase já inicializado globalmente
+    // 🔧 BUSCAR CONFIGURAÇÕES DO BANCO DE DADOS
+    let aiConfig = {
+      service: 'lovable',
+      model: 'google/gemini-2.5-flash',
+      max_tokens: 2000,
+      temperature: 0.5,
+      system_prompt: ''
+    };
+
+    try {
+      const { data: configData } = await supabase
+        .from('ai_configurations')
+        .select('service, model, max_tokens, temperature, system_prompt')
+        .eq('functionality', 'image_analysis')
+        .eq('is_enabled', true)
+        .single();
+
+      if (configData) {
+        aiConfig = {
+          service: configData.service || aiConfig.service,
+          model: configData.model || aiConfig.model,
+          max_tokens: configData.max_tokens || aiConfig.max_tokens,
+          temperature: configData.temperature ?? aiConfig.temperature,
+          system_prompt: configData.system_prompt || ''
+        };
+        console.log('✅ Sofia Image Analysis - Configurações carregadas do banco:', aiConfig);
+      } else {
+        console.log('⚠️ Sofia Image Analysis - Usando configurações padrão');
+      }
+    } catch (configError) {
+      console.log('⚠️ Sofia Image Analysis - Erro ao buscar configurações, usando padrão:', configError);
+    }
 
     // Buscar dados do usuário
     let userProfile = null;
@@ -1504,10 +1535,15 @@ serve(async (req) => {
     }
 
     // 🤖 ANÁLISE APRIMORADA COM SISTEMA ANTI-RATE-LIMIT
-    if (googleAIApiKey) {
-      console.log('🤖 Iniciando análise aprimorada com múltiplas estratégias...');
+    if (googleAIApiKey || aiConfig.service === 'lovable' || aiConfig.service === 'google') {
+      console.log('🤖 Iniciando análise aprimorada com múltiplas estratégias (modelo:', aiConfig.model, ')...');
       try {
-        const enhancedResult = await analyzeWithEnhancedAI(imageUrl);
+        // Passar configurações do banco para o enhanced detection
+        const enhancedResult = await analyzeWithEnhancedAI(imageUrl, 1, {
+          model: aiConfig.model,
+          max_tokens: aiConfig.max_tokens,
+          temperature: aiConfig.temperature
+        });
         
         // Processar resultado da análise aprimorada
         if (enhancedResult && enhancedResult.foods && enhancedResult.foods.length > 0) {

@@ -205,15 +205,48 @@ serve(async (req) => {
       console.log('⚠️ Erro ao buscar dados:', message);
     }
 
+    // 🔧 BUSCAR CONFIGURAÇÕES DO BANCO DE DADOS
+    let aiConfig = {
+      service: 'lovable',
+      model: 'google/gemini-2.5-pro',
+      max_tokens: 1500,
+      temperature: 0.3,
+      system_prompt: ''
+    };
+
+    try {
+      const { data: configData } = await supabase
+        .from('ai_configurations')
+        .select('service, model, max_tokens, temperature, system_prompt')
+        .eq('functionality', 'weekly_report')
+        .eq('is_enabled', true)
+        .single();
+
+      if (configData) {
+        aiConfig = {
+          service: configData.service || aiConfig.service,
+          model: configData.model || aiConfig.model,
+          max_tokens: configData.max_tokens || aiConfig.max_tokens,
+          temperature: configData.temperature ?? aiConfig.temperature,
+          system_prompt: configData.system_prompt || ''
+        };
+        console.log('✅ Dr. Vital Weekly Report - Configurações carregadas do banco:', aiConfig);
+      } else {
+        console.log('⚠️ Dr. Vital Weekly Report - Usando configurações padrão');
+      }
+    } catch (configError) {
+      console.log('⚠️ Dr. Vital Weekly Report - Erro ao buscar configurações, usando padrão:', configError);
+    }
+
     // 🤖 Gerar análise do Dr. Vital
     let drVitalAnalysis = '';
     let recommendations: string[] = [];
+    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
 
-    if (OPENAI_API_KEY) {
-      console.log('🩺 Dr. Vital analisando dados...');
+    console.log('🩺 Dr. Vital analisando dados com modelo:', aiConfig.model);
       
-      try {
-        const analysisPrompt = `
+    try {
+      const analysisPrompt = `
 Você é o Dr. Vital, um médico especialista em medicina preventiva e análise de dados de saúde.
 
 DADOS DO PACIENTE: ${reportData.user?.full_name || 'Paciente'}
@@ -242,48 +275,78 @@ Responda com uma análise médica completa em 2-3 parágrafos, seguida de recome
 
 ANÁLISE DR. VITAL:`;
 
-        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      // Usar Lovable AI como principal
+      let response;
+      if (LOVABLE_API_KEY && (aiConfig.service === 'lovable' || aiConfig.service === 'google')) {
+        console.log('🩺 Dr. Vital usando Lovable AI...');
+        response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${OPENAI_API_KEY}`,
+            'Authorization': `Bearer ${LOVABLE_API_KEY}`,
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            model: 'gpt-4o',
+            model: aiConfig.model,
             messages: [
               { 
                 role: 'system', 
-                content: 'Você é o Dr. Vital, um médico especialista em medicina preventiva. Analise dados de saúde e forneça insights médicos baseados em evidências.' 
+                content: aiConfig.system_prompt || 'Você é o Dr. Vital, um médico especialista em medicina preventiva. Analise dados de saúde e forneça insights médicos baseados em evidências.' 
               },
               { role: 'user', content: analysisPrompt }
             ],
-            temperature: 0.3,
-            max_tokens: 1500
+            temperature: aiConfig.temperature,
+            max_tokens: aiConfig.max_tokens
           }),
         });
-
-        if (response.ok) {
-          const data = await response.json();
-          drVitalAnalysis = data.choices[0].message.content;
-          
-          // Extrair recomendações
-          const recoMatch = drVitalAnalysis.match(/(?:RECOMENDAÇÕES|RECOMENDACOES|RECOMMENDATIONS):(.*)/is);
-          if (recoMatch) {
-            const recoText = recoMatch[1];
-            recommendations = recoText.split(/\d+\./)
-              .filter(r => r.trim())
-              .map(r => r.trim())
-              .slice(0, 5);
-          }
-          
-          console.log('✅ Análise Dr. Vital gerada');
-        } else {
-          throw new Error(`Erro na API: ${response.status}`);
+      } else {
+        // Fallback para OpenAI
+        const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
+        if (OPENAI_API_KEY) {
+          console.log('🩺 Dr. Vital usando OpenAI (fallback)...');
+          response = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${OPENAI_API_KEY}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              model: aiConfig.model.includes('gpt') ? aiConfig.model : 'gpt-4o',
+              messages: [
+                { 
+                  role: 'system', 
+                  content: aiConfig.system_prompt || 'Você é o Dr. Vital, um médico especialista em medicina preventiva. Analise dados de saúde e forneça insights médicos baseados em evidências.' 
+                },
+                { role: 'user', content: analysisPrompt }
+              ],
+              temperature: aiConfig.temperature,
+              max_tokens: aiConfig.max_tokens
+            }),
+          });
         }
-      } catch (error: unknown) {
-        const message = error instanceof Error ? error.message : 'Erro na análise';
-        console.log('⚠️ Erro na análise:', message);
-        drVitalAnalysis = `Prezado(a) ${reportData.user?.full_name || 'Paciente'},
+      }
+
+      if (response && response.ok) {
+        const data = await response.json();
+        drVitalAnalysis = data.choices[0].message.content;
+        
+        // Extrair recomendações
+        const recoMatch = drVitalAnalysis.match(/(?:RECOMENDAÇÕES|RECOMENDACOES|RECOMMENDATIONS):(.*)/is);
+        if (recoMatch) {
+          const recoText = recoMatch[1];
+          recommendations = recoText.split(/\d+\./)
+            .filter(r => r.trim())
+            .map(r => r.trim())
+            .slice(0, 5);
+        }
+        
+        console.log('✅ Análise Dr. Vital gerada com modelo:', aiConfig.model);
+      } else {
+        throw new Error(`Erro na API: ${response?.status || 'sem resposta'}`);
+      }
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Erro na análise';
+      console.log('⚠️ Erro na análise:', message);
+      drVitalAnalysis = `Prezado(a) ${reportData.user?.full_name || 'Paciente'},
 
 Com base nos dados coletados nesta semana, observo um health score de ${reportData.healthScore}/100. 
 
@@ -293,18 +356,14 @@ Recomendo manter o foco na consistência dos hábitos saudáveis para otimizar s
 
 Dr. Vital
 Medicina Preventiva`;
-        
-        recommendations = [
-          'Manter hidratação adequada (2L/dia)',
-          'Priorizar 7-8 horas de sono qualitativo',
-          'Exercitar-se pelo menos 3x por semana',
-          'Monitorar peso regularmente',
-          'Manter consistência nas missões diárias'
-        ];
-      }
-    } else {
-      drVitalAnalysis = `Análise semanal não disponível - configuração de IA necessária.`;
-      recommendations = ['Configurar sistema de IA para análises completas'];
+      
+      recommendations = [
+        'Manter hidratação adequada (2L/dia)',
+        'Priorizar 7-8 horas de sono qualitativo',
+        'Exercitar-se pelo menos 3x por semana',
+        'Monitorar peso regularmente',
+        'Manter consistência nas missões diárias'
+      ];
     }
 
     // Salvar relatório no banco

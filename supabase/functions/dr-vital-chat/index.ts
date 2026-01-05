@@ -18,6 +18,39 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const db = createClient(supabaseUrl, supabaseKey);
 
+    // 🔧 BUSCAR CONFIGURAÇÕES DO BANCO DE DADOS
+    let aiConfig = {
+      service: 'lovable',
+      model: 'google/gemini-2.5-pro',
+      max_tokens: 800,
+      temperature: 0.3,
+      system_prompt: ''
+    };
+
+    try {
+      const { data: configData } = await db
+        .from('ai_configurations')
+        .select('service, model, max_tokens, temperature, system_prompt')
+        .eq('functionality', 'dr_vital_chat')
+        .eq('is_enabled', true)
+        .single();
+
+      if (configData) {
+        aiConfig = {
+          service: configData.service || aiConfig.service,
+          model: configData.model || aiConfig.model,
+          max_tokens: configData.max_tokens || aiConfig.max_tokens,
+          temperature: configData.temperature ?? aiConfig.temperature,
+          system_prompt: configData.system_prompt || ''
+        };
+        console.log('✅ Dr. Vital Chat - Configurações carregadas do banco:', aiConfig);
+      } else {
+        console.log('⚠️ Dr. Vital Chat - Usando configurações padrão');
+      }
+    } catch (configError) {
+      console.log('⚠️ Dr. Vital Chat - Erro ao buscar configurações, usando padrão:', configError);
+    }
+
     // CARREGAR TODOS OS DADOS DO PACIENTE
     console.log('📊 Dr. Vital Chat - Carregando TODOS os dados...');
     let profile: any = null;
@@ -209,7 +242,8 @@ serve(async (req) => {
       }
     };
 
-    const systemPrompt = `Você é o Dr. Vital, médico virtual especialista do Instituto dos Sonhos. Responda em português do Brasil,
+    // Usar system_prompt do banco se existir, senão usar o padrão
+    const systemPrompt = aiConfig.system_prompt || `Você é o Dr. Vital, médico virtual especialista do Instituto dos Sonhos. Responda em português do Brasil,
 com linguagem simples e humana, sem diagnóstico/prescrição médica. Use TODOS OS DADOS DO PACIENTE abaixo para personalizar completamente sua resposta.
 
 📊 DADOS COMPLETOS DO PACIENTE:
@@ -266,28 +300,28 @@ INSTRUÇÕES FINAIS:
     let answer = "";
     let modelUsed = "none";
 
-    // 1. LOVABLE AI como provedor PRINCIPAL
+    // 1. LOVABLE AI como provedor PRINCIPAL (usa configurações do banco)
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (LOVABLE_API_KEY) {
+    if (LOVABLE_API_KEY && (aiConfig.service === 'lovable' || aiConfig.service === 'google')) {
       try {
-        console.log(`Dr. Vital usando Lovable AI (google/gemini-2.5-pro)...`);
+        console.log(`Dr. Vital usando Lovable AI (${aiConfig.model})...`);
         const lovableResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
           method: "POST",
           headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
           body: JSON.stringify({
-            model: "google/gemini-2.5-pro",
+            model: aiConfig.model,
             messages: [
               { role: "system", content: systemPrompt },
               { role: "user", content: String(message) },
             ],
-            max_tokens: 800,
-            temperature: 0.3
+            max_tokens: aiConfig.max_tokens,
+            temperature: aiConfig.temperature
           }),
         });
         const lovableData = await lovableResp.json();
         if (lovableData?.choices?.[0]?.message?.content) {
           answer = lovableData.choices[0].message.content;
-          modelUsed = "lovable-gemini-2.5-pro";
+          modelUsed = `lovable-${aiConfig.model}`;
           console.log("✅ Lovable AI funcionou!");
         }
       } catch (e) {
@@ -295,13 +329,13 @@ INSTRUÇÕES FINAIS:
       }
     }
 
-    // 2. Fallback: OpenAI
+    // 2. Fallback: OpenAI (usa configurações do banco)
     if (!answer) {
       const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
-      const MODEL = Deno.env.get("OPENAI_DR_VITAL_MODEL") || "gpt-4o";
-      if (OPENAI_API_KEY) {
+      if (OPENAI_API_KEY && aiConfig.service === 'openai') {
         try {
-          console.log(`Dr. Vital usando OpenAI ${MODEL} (fallback)...`);
+          const MODEL = aiConfig.model.includes('gpt') ? aiConfig.model : 'gpt-4o';
+          console.log(`Dr. Vital usando OpenAI ${MODEL}...`);
           const isNewModel = MODEL.includes('gpt-4o') || MODEL.includes('gpt-4-turbo');
           const requestBody: any = {
             model: MODEL,
@@ -311,10 +345,10 @@ INSTRUÇÕES FINAIS:
             ],
           };
           if (isNewModel) {
-            requestBody.max_completion_tokens = 800;
+            requestBody.max_completion_tokens = aiConfig.max_tokens;
           } else {
-            requestBody.max_tokens = 800;
-            requestBody.temperature = 0.2;
+            requestBody.max_tokens = aiConfig.max_tokens;
+            requestBody.temperature = aiConfig.temperature;
           }
           const resp = await fetch("https://api.openai.com/v1/chat/completions", {
             method: "POST",

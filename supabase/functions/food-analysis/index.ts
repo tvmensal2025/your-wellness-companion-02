@@ -78,6 +78,39 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
+    // 🔧 BUSCAR CONFIGURAÇÕES DO BANCO DE DADOS
+    let aiConfig = {
+      service: 'lovable',
+      model: 'google/gemini-2.5-flash',
+      max_tokens: 1500,
+      temperature: 0.7,
+      system_prompt: ''
+    };
+
+    try {
+      const { data: configData } = await supabase
+        .from('ai_configurations')
+        .select('service, model, max_tokens, temperature, system_prompt')
+        .eq('functionality', 'food_analysis')
+        .eq('is_enabled', true)
+        .single();
+
+      if (configData) {
+        aiConfig = {
+          service: configData.service || aiConfig.service,
+          model: configData.model || aiConfig.model,
+          max_tokens: configData.max_tokens || aiConfig.max_tokens,
+          temperature: configData.temperature ?? aiConfig.temperature,
+          system_prompt: configData.system_prompt || ''
+        };
+        console.log('✅ Food Analysis - Configurações carregadas do banco:', aiConfig);
+      } else {
+        console.log('⚠️ Food Analysis - Usando configurações padrão');
+      }
+    } catch (configError) {
+      console.log('⚠️ Food Analysis - Erro ao buscar configurações, usando padrão:', configError);
+    }
+
     // Buscar dados do usuário
     const [
       { data: profile },
@@ -110,7 +143,8 @@ serve(async (req) => {
       safeMeasurements,
       safeHealthDiary,
       safeGoals,
-      anamnesis
+      anamnesis,
+      aiConfig
     );
 
     // Salvar análise no banco
@@ -259,7 +293,8 @@ async function generateSofiaAnalysis(
   measurements: any[],
   healthDiary: any[],
   goals: any[],
-  anamnesis: any
+  anamnesis: any,
+  aiConfig: { service: string; model: string; max_tokens: number; temperature: number; system_prompt: string }
 ): Promise<SofiaFoodAnalysis> {
   
   // Buscar configuração de IA - Lovable AI primeiro, depois OpenAI
@@ -451,10 +486,10 @@ Seja sempre positiva e encorajadora, mesmo quando há pontos a melhorar.`;
     let response;
     let reply = "";
     
-    // 1. LOVABLE AI como provedor PRINCIPAL
-    if (lovableApiKey) {
+    // 1. LOVABLE AI como provedor PRINCIPAL (usa configurações do banco)
+    if (lovableApiKey && (aiConfig.service === 'lovable' || aiConfig.service === 'google')) {
       try {
-        console.log('🍎 Food Analysis usando Lovable AI...');
+        console.log(`🍎 Food Analysis usando Lovable AI (${aiConfig.model})...`);
         response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
           method: 'POST',
           headers: {
@@ -462,13 +497,13 @@ Seja sempre positiva e encorajadora, mesmo quando há pontos a melhorar.`;
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            model: 'google/gemini-2.5-flash',
+            model: aiConfig.model,
             messages: [
-              { role: "system", content: systemPrompt },
+              { role: "system", content: aiConfig.system_prompt || systemPrompt },
               { role: "user", content: "Analise esta refeição com a personalidade da Sofia" }
             ],
-            max_tokens: 1500,
-            temperature: 0.7,
+            max_tokens: aiConfig.max_tokens,
+            temperature: aiConfig.temperature,
           }),
         });
 
@@ -482,9 +517,10 @@ Seja sempre positiva e encorajadora, mesmo quando há pontos a melhorar.`;
       }
     }
 
-    // 2. Fallback: OpenAI
-    if (!reply && openaiApiKey) {
-      console.log('🍎 Food Analysis usando OpenAI (fallback)...');
+    // 2. Fallback: OpenAI (usa configurações do banco)
+    if (!reply && openaiApiKey && aiConfig.service === 'openai') {
+      console.log(`🍎 Food Analysis usando OpenAI (${aiConfig.model})...`);
+      const model = aiConfig.model.includes('gpt') ? aiConfig.model : 'gpt-4o-mini';
       response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -492,13 +528,13 @@ Seja sempre positiva e encorajadora, mesmo quando há pontos a melhorar.`;
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'gpt-4o-mini',
+          model: model,
           messages: [
-            { role: "system", content: systemPrompt },
+            { role: "system", content: aiConfig.system_prompt || systemPrompt },
             { role: "user", content: "Analise esta refeição com a personalidade da Sofia" }
           ],
-          max_tokens: 1500,
-          temperature: 0.7,
+          max_tokens: aiConfig.max_tokens,
+          temperature: aiConfig.temperature,
         }),
       });
 

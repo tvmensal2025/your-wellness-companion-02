@@ -11,13 +11,14 @@ const corsHeaders = {
   'Access-Control-Expose-Headers': 'Content-Length, Content-Range',
 };
 
-// 📊 CONFIGURAÇÃO DO MODELO PREMIUM
-const AI_CONFIG = {
+// 📊 CONFIGURAÇÃO DO MODELO PREMIUM (valores padrão, serão sobrescritos pelo banco)
+let AI_CONFIG = {
   // Modelo premium principal
   premium_model: "gpt-4o",
   fallback_models: ["gpt-4-vision-preview", "gpt-4-turbo"],
   max_completion_tokens: 4096,
-  temperature: 0.2
+  temperature: 0.2,
+  system_prompt: ''
 };
 
 // 🎯 TEMPLATE PARA ANÁLISE PREMIUM HUMANIZADA DE EXAMES
@@ -1227,6 +1228,31 @@ serve(async (req) => {
     supabase = createClient(supabaseUrl, supabaseKey);
     console.log('✅ Supabase client criado com sucesso');
     console.log('⏰ Timestamp:', new Date().toISOString());
+
+    // 🔧 BUSCAR CONFIGURAÇÕES DO BANCO DE DADOS
+    try {
+      const { data: configData } = await supabase
+        .from('ai_configurations')
+        .select('service, model, max_tokens, temperature, system_prompt')
+        .eq('functionality', 'medical_analysis')
+        .eq('is_enabled', true)
+        .single();
+
+      if (configData) {
+        AI_CONFIG = {
+          premium_model: configData.model || AI_CONFIG.premium_model,
+          fallback_models: AI_CONFIG.fallback_models,
+          max_completion_tokens: configData.max_tokens || AI_CONFIG.max_completion_tokens,
+          temperature: configData.temperature ?? AI_CONFIG.temperature,
+          system_prompt: configData.system_prompt || ''
+        };
+        console.log('✅ Medical Analysis - Configurações carregadas do banco:', AI_CONFIG);
+      } else {
+        console.log('⚠️ Medical Analysis - Usando configurações padrão');
+      }
+    } catch (configError) {
+      console.log('⚠️ Medical Analysis - Erro ao buscar configurações, usando padrão:', configError);
+    }
     
     // Validar se a requisição tem body
     let requestBody;
