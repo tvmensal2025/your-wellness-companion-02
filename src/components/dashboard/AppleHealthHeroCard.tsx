@@ -73,41 +73,49 @@ export const AppleHealthHeroCard: React.FC<AppleHealthHeroCardProps> = ({
       
       {/* Content */}
       <div className="relative">
-        {/* Greeting */}
-        <div className="mb-5">
-          <p className="text-slate-400 text-sm">{getGreeting()}</p>
-          <h2 className="text-xl font-semibold text-white mt-0.5">
-            {userName.split(' ')[0]}
-          </h2>
+        {/* Elegant Greeting */}
+        <div className="mb-4">
+          <div className="flex items-center gap-2">
+            <span className="text-slate-400 text-sm font-light tracking-wide">{getGreeting()},</span>
+            <motion.div
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              <span className="text-lg font-medium bg-gradient-to-r from-white via-slate-100 to-slate-300 bg-clip-text text-transparent">
+                {userName.split(' ')[0]}
+              </span>
+            </motion.div>
+          </div>
         </div>
 
-        {/* Main content grid */}
-        <div className="flex items-center gap-5">
+        {/* Main content grid - Score and Weight side by side */}
+        <div className="flex items-stretch gap-4">
           
-          {/* Apple Health Ring */}
-          <div className="relative flex-shrink-0">
-            <svg className="w-28 h-28 -rotate-90" viewBox="0 0 100 100">
+          {/* Apple Health Ring - Larger */}
+          <div className="relative flex-shrink-0 flex items-center justify-center">
+            <svg className="w-32 h-32 -rotate-90" viewBox="0 0 100 100">
               {/* Background ring */}
               <circle
                 cx="50"
                 cy="50"
-                r="45"
+                r="42"
                 fill="none"
-                stroke="rgba(255,255,255,0.1)"
-                strokeWidth="8"
+                stroke="rgba(255,255,255,0.08)"
+                strokeWidth="10"
               />
               {/* Progress ring */}
               <motion.circle
                 cx="50"
                 cy="50"
-                r="45"
+                r="42"
                 fill="none"
                 stroke="url(#healthGradient)"
-                strokeWidth="8"
+                strokeWidth="10"
                 strokeLinecap="round"
-                strokeDasharray={circumference}
-                initial={{ strokeDashoffset: circumference }}
-                animate={{ strokeDashoffset }}
+                strokeDasharray={2 * Math.PI * 42}
+                initial={{ strokeDashoffset: 2 * Math.PI * 42 }}
+                animate={{ strokeDashoffset: 2 * Math.PI * 42 - (ringPercentage / 100) * 2 * Math.PI * 42 }}
                 transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1] }}
               />
               <defs>
@@ -119,40 +127,57 @@ export const AppleHealthHeroCard: React.FC<AppleHealthHeroCardProps> = ({
               </defs>
             </svg>
             
-            {/* Center content */}
+            {/* Center content - Larger */}
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-2xl font-bold text-white">{healthScore}</span>
-              <span className="text-[10px] text-slate-400 uppercase tracking-wide">Score</span>
+              <motion.span 
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ delay: 0.3, duration: 0.5 }}
+                className="text-4xl font-bold text-white"
+              >
+                {healthScore}
+              </motion.span>
+              <span className="text-[11px] text-slate-400 uppercase tracking-widest font-medium">Score</span>
             </div>
           </div>
 
-          {/* Weight info */}
-          <div className="flex-1 space-y-3">
+          {/* Weight info - Larger and more prominent */}
+          <div className="flex-1 flex flex-col justify-center space-y-2">
             {/* Current weight */}
             <div>
-              <p className="text-xs text-slate-400 mb-0.5">Peso atual</p>
-              <div className="flex items-baseline gap-1">
-                <span className="text-4xl font-light text-white tracking-tight">
+              <p className="text-xs text-slate-400 mb-1 tracking-wide">Peso atual</p>
+              <div className="flex items-baseline gap-1.5">
+                <motion.span 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 }}
+                  className="text-5xl font-light text-white tracking-tight"
+                >
                   {currentWeight.toFixed(1)}
-                </span>
-                <span className="text-sm text-slate-400">kg</span>
+                </motion.span>
+                <span className="text-lg text-slate-400 font-light">kg</span>
               </div>
             </div>
 
             {/* Trend badge */}
-            <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full ${trend.bg}`}>
-              <TrendIcon className={`h-3.5 w-3.5 ${trend.color}`} />
-              <span className={`text-xs font-medium ${trend.color}`}>
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.5 }}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full w-fit ${trend.bg}`}
+            >
+              <TrendIcon className={`h-4 w-4 ${trend.color}`} />
+              <span className={`text-sm font-medium ${trend.color}`}>
                 {weightChange !== 0 && (weightChange > 0 ? '+' : '')}{weightChange.toFixed(1)}kg
               </span>
-            </div>
+            </motion.div>
 
             {/* Goal info */}
             {targetWeight && (
-              <div className="flex items-center gap-2 text-xs text-slate-400">
-                <Target className="h-3.5 w-3.5" />
+              <div className="flex items-center gap-2 text-xs text-slate-400 mt-1">
+                <Target className="h-3.5 w-3.5 text-slate-500" />
                 <span>Meta: <span className="text-white font-medium">{targetWeight}kg</span></span>
-                <span className="text-slate-500">•</span>
+                <span className="text-slate-600">•</span>
                 <span>Faltam <span className="text-emerald-400 font-medium">{weightToGo}kg</span></span>
               </div>
             )}
