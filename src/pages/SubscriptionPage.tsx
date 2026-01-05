@@ -1,48 +1,49 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Check, Zap, Crown, Star } from 'lucide-react';
-import { useAsaasPayment } from '@/hooks/useAsaasPayment';
+import { Check, Zap, Crown, Star, Settings } from 'lucide-react';
+import { useStripeCheckout } from '@/hooks/useStripeCheckout';
 import FeatureLockGuard from '@/components/FeatureLockGuard';
+import { useSearchParams } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
 
 const plans = [
   {
-    id: 'basic',
-    name: 'Básico',
+    id: 'premium',
+    name: 'Premium',
     price: 'R$ 29,90',
     period: '/mês',
-    description: 'Acesso aos recursos básicos',
+    description: 'Acesso completo à Sofia IA e rastreamento',
     icon: Zap,
     features: [
-      'Sofia: 25 análises de refeições/mês',
-      'Dr. Vital: 5 consultas/mês',
-      'Relatório mensal completo',
-      '2 cardápios personalizados/mês',
-      '1 exame médico por ano',
-      'Histórico de 3 meses',
+      'Sofia IA: Análises ilimitadas',
+      'Dr. Vital: Consultas ilimitadas',
+      'Rastreamento completo de saúde',
+      'Gamificação e desafios',
+      'Protocolos personalizados',
+      'Relatórios semanais',
       'Suporte por email'
     ],
     popular: false,
     color: 'from-blue-500 to-blue-600'
   },
   {
-    id: 'premium',
-    name: 'Premium',
-    price: 'R$ 97,90',
+    id: 'vip',
+    name: 'VIP Exclusivo',
+    price: 'R$ 99,90',
     period: '/mês',
-    description: 'Acesso completo + coaching',
+    description: 'Tudo do Premium + atendimento exclusivo',
     icon: Crown,
     features: [
-      'Sofia: Análises ilimitadas de refeições',
-      'Dr. Vital: Consultas ilimitadas',
-      'Relatórios semanais completos',
-      'Cardápios personalizados ilimitados',
-      'Exames médicos a cada 6 meses',
-      'Coaching personalizado mensal (60 min)',
-      'Análises preditivas de saúde',
+      'Tudo do plano Premium',
+      'Protocolo mensal com Dr. Vital',
+      'Masterclasses exclusivas',
+      'Relatórios detalhados avançados',
       'Suporte prioritário 24/7',
-      'Histórico completo'
+      'Acesso antecipado a novidades',
+      'Consultoria personalizada',
+      'Comunidade VIP exclusiva'
     ],
     popular: true,
     color: 'from-purple-500 to-purple-600'
@@ -68,10 +69,34 @@ const benefits = [
 ];
 
 export default function SubscriptionPage() {
-  const { createPayment, isLoading } = useAsaasPayment();
+  const { createCheckout, checkSubscription, openCustomerPortal, isLoading } = useStripeCheckout();
+  const [searchParams] = useSearchParams();
+  const { toast } = useToast();
+  const [currentSubscription, setCurrentSubscription] = useState<any>(null);
+
+  useEffect(() => {
+    // Check for success/cancel from Stripe redirect
+    if (searchParams.get('success') === 'true') {
+      toast({
+        title: "Assinatura realizada!",
+        description: "Bem-vindo ao Bem-Estar 360! Aproveite todos os recursos.",
+      });
+    } else if (searchParams.get('canceled') === 'true') {
+      toast({
+        title: "Checkout cancelado",
+        description: "Você pode tentar novamente quando quiser.",
+        variant: "destructive",
+      });
+    }
+
+    // Check current subscription
+    checkSubscription().then(data => {
+      if (data) setCurrentSubscription(data);
+    });
+  }, [searchParams]);
 
   const handleSubscribe = async (planId: string) => {
-    await createPayment(planId);
+    await createCheckout(planId);
   };
 
   return (
@@ -80,10 +105,27 @@ export default function SubscriptionPage() {
         <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
           {/* Header - Mobile Optimized */}
           <div className="text-center mb-6 sm:mb-12">
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2 sm:mb-4">Escolha seu Plano</h1>
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2 sm:mb-4">Bem-Estar 360</h1>
             <p className="text-sm sm:text-base lg:text-xl text-muted-foreground">
               Transforme sua saúde com as ferramentas certas
             </p>
+            
+            {currentSubscription?.subscribed && (
+              <div className="mt-4 flex flex-col items-center gap-2">
+                <Badge className="bg-green-500 text-white">
+                  Plano Ativo: {currentSubscription.subscription_tier}
+                </Badge>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={openCustomerPortal}
+                  disabled={isLoading}
+                >
+                  <Settings className="w-4 h-4 mr-2" />
+                  Gerenciar Assinatura
+                </Button>
+              </div>
+            )}
           </div>
 
           {/* Planos - Mobile Grid */}
