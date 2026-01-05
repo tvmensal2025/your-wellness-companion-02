@@ -26,3 +26,6 @@ verify_jwt = false
 
 [functions.check-user-data-completeness]
 verify_jwt = false
+
+[functions.improve-exercises]
+verify_jwt = false
