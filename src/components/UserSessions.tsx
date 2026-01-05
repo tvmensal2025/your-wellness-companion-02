@@ -584,16 +584,6 @@ export default function UserSessions({ user }: UserSessionsProps) {
           <p className="text-muted-foreground text-lg print:text-gray-600">
             Acompanhe seu progresso nas sessões personalizadas
           </p>
-          {/* Botão de Download */}
-          <Button 
-            onClick={() => window.print()}
-            variant="outline"
-            size="sm"
-            className="mt-4 print:hidden"
-          >
-            <Download className="w-4 h-4 mr-2" />
-            Baixar Sessões
-          </Button>
         </div>
 
         {/* Estatísticas */}
@@ -680,7 +670,8 @@ export default function UserSessions({ user }: UserSessionsProps) {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 print:grid-cols-2 print:gap-4">
           {userSessions.map((userSession) => (
             <Card 
-              key={userSession.id} 
+              key={userSession.id}
+              id={`session-${userSession.id}`}
               className={`
                 group relative overflow-hidden cursor-pointer transition-all duration-300 
                 hover:scale-[1.02] hover:shadow-2xl border-0 shadow-lg backdrop-blur-sm
@@ -860,6 +851,24 @@ export default function UserSessions({ user }: UserSessionsProps) {
                       >
                         <Eye className="w-4 h-4 mr-2" />
                         Revisar Sessão
+                      </Button>
+                      <Button 
+                        onClick={() => {
+                          // Trigger print for this specific session
+                          const sessionCard = document.getElementById(`session-${userSession.id}`);
+                          if (sessionCard) {
+                            sessionCard.classList.add('print-single-session');
+                            window.print();
+                            sessionCard.classList.remove('print-single-session');
+                          }
+                        }}
+                        variant="outline" 
+                        size="sm"
+                        className="w-full rounded-full border-blue-200 text-blue-600 hover:bg-blue-50 
+                                 transition-all duration-300 shadow-sm"
+                      >
+                        <Download className="w-4 h-4 mr-2" />
+                        Baixar Respostas
                       </Button>
                       {userSession.review_count > 0 && (
                         <div className="text-xs text-center p-2 bg-blue-50 rounded-lg text-blue-600">
