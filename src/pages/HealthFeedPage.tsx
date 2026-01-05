@@ -193,46 +193,46 @@ export default function HealthFeedPage() {
   };
 
   return (
-    <div className="min-h-screen bg-muted/30">
-      <div className="max-w-7xl mx-auto px-4 py-6">
+    <div className="min-h-screen bg-gradient-to-b from-blue-50/50 via-background to-blue-50/30 dark:from-blue-950/20 dark:via-background dark:to-blue-950/10">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
         {/* Header */}
         <motion.header
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-center justify-between mb-6"
+          className="flex items-center justify-between mb-4 sm:mb-6"
         >
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Comunidade</h1>
-            <p className="text-sm text-muted-foreground">
+            <h1 className="text-xl sm:text-2xl font-bold text-blue-700 dark:text-blue-400">Comunidade</h1>
+            <p className="text-xs sm:text-sm text-muted-foreground">
               Conecte-se, compartilhe e inspire outros
             </p>
           </div>
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="relative">
-              <Bell className="w-5 h-5" />
+          <div className="flex items-center gap-1 sm:gap-2">
+            <Button variant="ghost" size="icon" className="relative h-9 w-9 sm:h-10 sm:w-10 text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900/30">
+              <Bell className="w-4 h-4 sm:w-5 sm:h-5" />
               <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-[10px] text-white flex items-center justify-center">
                 3
               </span>
             </Button>
-            <Button variant="ghost" size="icon">
-              <Settings className="w-5 h-5" />
+            <Button variant="ghost" size="icon" className="h-9 w-9 sm:h-10 sm:w-10 text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900/30">
+              <Settings className="w-4 h-4 sm:w-5 sm:h-5" />
             </Button>
           </div>
         </motion.header>
 
         {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
-          <TabsList className="w-full max-w-md bg-background border">
-            <TabsTrigger value="feed" className="flex-1">Feed</TabsTrigger>
-            <TabsTrigger value="ranking" className="flex-1">Ranking</TabsTrigger>
-            <TabsTrigger value="discover" className="flex-1">Descobrir</TabsTrigger>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-4 sm:mb-6">
+          <TabsList className="w-full max-w-md bg-blue-100/50 dark:bg-blue-900/20 border border-blue-200/50 dark:border-blue-800/50">
+            <TabsTrigger value="feed" className="flex-1 data-[state=active]:bg-blue-600 data-[state=active]:text-white">Feed</TabsTrigger>
+            <TabsTrigger value="ranking" className="flex-1 data-[state=active]:bg-blue-600 data-[state=active]:text-white">Ranking</TabsTrigger>
+            <TabsTrigger value="discover" className="flex-1 data-[state=active]:bg-blue-600 data-[state=active]:text-white">Descobrir</TabsTrigger>
           </TabsList>
 
           {/* Feed Tab */}
-          <TabsContent value="feed" className="mt-6">
-            <div className="flex gap-6">
+          <TabsContent value="feed" className="mt-4 sm:mt-6">
+            <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
               {/* Main Feed */}
-              <div className="flex-1 max-w-2xl">
+              <div className="flex-1 lg:max-w-2xl">
                 {/* Stories */}
                 <StoriesSection
                   stories={mockStories}
@@ -246,7 +246,7 @@ export default function HealthFeedPage() {
                 />
 
                 {/* Feed Posts */}
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   {posts.map((post) => (
                     <FeedPostCard
                       key={post.id}

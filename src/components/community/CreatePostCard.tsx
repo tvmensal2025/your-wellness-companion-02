@@ -57,12 +57,12 @@ export const CreatePostCard: React.FC<CreatePostCardProps> = ({
   };
 
   return (
-    <Card className="mb-4 overflow-hidden">
-      <CardContent className="p-4">
-        <div className="flex gap-3">
-          <Avatar className="w-10 h-10">
+    <Card className="mb-3 sm:mb-4 overflow-hidden border-blue-200/50 dark:border-blue-800/50 bg-white dark:bg-card">
+      <CardContent className="p-3 sm:p-4">
+        <div className="flex gap-2 sm:gap-3">
+          <Avatar className="w-8 h-8 sm:w-10 sm:h-10">
             <AvatarImage src={userAvatar} />
-            <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+            <AvatarFallback className="bg-blue-100 dark:bg-blue-900/50 text-blue-600 font-semibold text-xs sm:text-sm">
               {userName?.charAt(0)?.toUpperCase()}
             </AvatarFallback>
           </Avatar>
@@ -72,9 +72,9 @@ export const CreatePostCard: React.FC<CreatePostCardProps> = ({
               <motion.div
                 whileHover={{ scale: 1.01 }}
                 onClick={() => setIsExpanded(true)}
-                className="w-full px-4 py-3 bg-muted/50 rounded-full cursor-pointer hover:bg-muted transition-colors"
+                className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-blue-50 dark:bg-blue-950/30 rounded-full cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors border border-blue-200/50 dark:border-blue-800/50"
               >
-                <span className="text-muted-foreground">
+                <span className="text-muted-foreground text-sm">
                   O que você está pensando, {userName?.split(' ')[0]}?
                 </span>
               </motion.div>
@@ -91,13 +91,13 @@ export const CreatePostCard: React.FC<CreatePostCardProps> = ({
                       value={content}
                       onChange={(e) => setContent(e.target.value)}
                       placeholder={`O que você está pensando, ${userName?.split(' ')[0]}?`}
-                      className="min-h-[120px] resize-none border-none bg-transparent focus-visible:ring-0 text-base"
+                      className="min-h-[100px] sm:min-h-[120px] resize-none border-none bg-transparent focus-visible:ring-0 text-sm sm:text-base"
                       autoFocus
                     />
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="absolute top-0 right-0"
+                      className="absolute top-0 right-0 h-8 w-8"
                       onClick={() => setIsExpanded(false)}
                     >
                       <X className="w-4 h-4" />
@@ -105,12 +105,16 @@ export const CreatePostCard: React.FC<CreatePostCardProps> = ({
                   </div>
 
                   {/* Tags */}
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-1.5 sm:gap-2">
                     {tags.map((tag) => (
                       <Badge
                         key={tag}
                         variant={selectedTags.includes(tag) ? 'default' : 'outline'}
-                        className="cursor-pointer transition-all hover:scale-105"
+                        className={`cursor-pointer transition-all hover:scale-105 text-xs ${
+                          selectedTags.includes(tag) 
+                            ? 'bg-blue-600 hover:bg-blue-700' 
+                            : 'border-blue-300 dark:border-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950'
+                        }`}
                         onClick={() => toggleTag(tag)}
                       >
                         {tag}
@@ -119,34 +123,30 @@ export const CreatePostCard: React.FC<CreatePostCardProps> = ({
                   </div>
 
                   {/* Divider */}
-                  <div className="h-px bg-border" />
+                  <div className="h-px bg-blue-200/50 dark:bg-blue-800/50" />
 
                   {/* Actions */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex gap-1">
-                      <Button variant="ghost" size="sm" className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50">
-                        <Image className="w-5 h-5 mr-1" />
-                        <span className="hidden sm:inline">Foto</span>
+                  <div className="flex items-center justify-between flex-wrap gap-2">
+                    <div className="flex gap-0.5 sm:gap-1">
+                      <Button variant="ghost" size="sm" className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 h-8 px-2 sm:px-3">
+                        <Image className="w-4 h-4 sm:w-5 sm:h-5 sm:mr-1" />
+                        <span className="hidden sm:inline text-xs">Foto</span>
                       </Button>
-                      <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-600 hover:bg-red-50">
-                        <Video className="w-5 h-5 mr-1" />
-                        <span className="hidden sm:inline">Vídeo</span>
+                      <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-600 hover:bg-red-50 h-8 px-2 sm:px-3">
+                        <Video className="w-4 h-4 sm:w-5 sm:h-5 sm:mr-1" />
+                        <span className="hidden sm:inline text-xs">Vídeo</span>
                       </Button>
-                      <Button variant="ghost" size="sm" className="text-amber-500 hover:text-amber-600 hover:bg-amber-50">
-                        <Smile className="w-5 h-5 mr-1" />
-                        <span className="hidden sm:inline">Sentimento</span>
-                      </Button>
-                      <Button variant="ghost" size="sm" className="text-rose-500 hover:text-rose-600 hover:bg-rose-50">
-                        <MapPin className="w-5 h-5 mr-1" />
-                        <span className="hidden sm:inline">Local</span>
+                      <Button variant="ghost" size="sm" className="text-amber-500 hover:text-amber-600 hover:bg-amber-50 h-8 px-2 sm:px-3">
+                        <Smile className="w-4 h-4 sm:w-5 sm:h-5 sm:mr-1" />
+                        <span className="hidden sm:inline text-xs">Sentimento</span>
                       </Button>
                     </div>
                     <Button 
                       onClick={handleSubmit}
                       disabled={!content.trim()}
-                      className="rounded-full px-6"
+                      className="rounded-full px-4 sm:px-6 h-8 sm:h-9 bg-blue-600 hover:bg-blue-700 text-xs sm:text-sm"
                     >
-                      <Send className="w-4 h-4 mr-2" />
+                      <Send className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                       Publicar
                     </Button>
                   </div>
@@ -158,18 +158,18 @@ export const CreatePostCard: React.FC<CreatePostCardProps> = ({
 
         {/* Quick Actions when collapsed */}
         {!isExpanded && (
-          <div className="flex items-center justify-between mt-3 pt-3 border-t border-border">
-            <Button variant="ghost" size="sm" className="flex-1 text-muted-foreground hover:text-emerald-600">
-              <Image className="w-5 h-5 mr-2" />
-              Foto
+          <div className="flex items-center justify-between mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-blue-200/50 dark:border-blue-800/50">
+            <Button variant="ghost" size="sm" className="flex-1 text-muted-foreground hover:text-blue-600 hover:bg-blue-50 h-9">
+              <Image className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
+              <span className="text-xs sm:text-sm">Foto</span>
             </Button>
-            <Button variant="ghost" size="sm" className="flex-1 text-muted-foreground hover:text-red-500">
-              <Video className="w-5 h-5 mr-2" />
-              Vídeo
+            <Button variant="ghost" size="sm" className="flex-1 text-muted-foreground hover:text-blue-600 hover:bg-blue-50 h-9">
+              <Video className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
+              <span className="text-xs sm:text-sm">Vídeo</span>
             </Button>
-            <Button variant="ghost" size="sm" className="flex-1 text-muted-foreground hover:text-amber-500">
-              <Trophy className="w-5 h-5 mr-2" />
-              Conquista
+            <Button variant="ghost" size="sm" className="flex-1 text-muted-foreground hover:text-blue-600 hover:bg-blue-50 h-9">
+              <Trophy className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
+              <span className="text-xs sm:text-sm">Conquista</span>
             </Button>
           </div>
         )}
