@@ -8,6 +8,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { DrVitalImage } from '@/components/shared/CharacterImage';
+import { getCharacterImageUrls } from '@/lib/character-images';
 
 interface DataAvailable {
   profile: boolean;
@@ -504,11 +506,7 @@ export const DrVitalEnhancedChat: React.FC = () => {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-indigo-100 p-1 border border-indigo-200 flex items-center justify-center">
-                      <img 
-                        src="http://45.67.221.216:8086/Dr.Vital.png"
-                        alt="Dr. Vital" 
-                        className="w-8 h-8 rounded-full"
-                      />
+                      <DrVitalImage size="sm" />
                     </div>
                     <div>
                       <CardTitle className="text-lg flex items-center gap-1 text-indigo-900">
@@ -555,7 +553,7 @@ export const DrVitalEnhancedChat: React.FC = () => {
                   <div className="relative flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
                     <div className="flex items-center gap-3 w-full sm:w-auto">
                       <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-full bg-white/20 p-1.5 sm:p-2 border-2 border-white/30 flex-shrink-0">
-                        <img src="http://45.67.221.216:8086/Dr.Vital.png" alt="Dr. Vital" className="w-full h-full rounded-full object-cover" />
+                        <DrVitalImage size="lg" className="w-full h-full" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <h1 className="text-base sm:text-xl font-bold mb-0.5 sm:mb-1 truncate">Dr. Vital IA</h1>

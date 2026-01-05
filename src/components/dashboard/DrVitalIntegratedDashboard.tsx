@@ -31,6 +31,7 @@ import SofiaConversationTracker from './SofiaConversationTracker';
 import MedicalDocumentsSection from './MedicalDocumentsSection';
 import DrVitalChat from './DrVitalChat';
 import { useTrackingData } from '@/hooks/useTrackingData';
+import { DrVitalImage } from '@/components/shared/CharacterImage';
 
 interface SofiaConversation {
   id: string;
@@ -211,11 +212,7 @@ const DrVitalIntegratedDashboard: React.FC = () => {
       <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-3 xs:gap-4">
         <div className="flex items-center space-x-3 xs:space-x-4">
           <div className="w-10 h-10 xs:w-12 xs:h-12 bg-blue-500/20 rounded-full flex items-center justify-center overflow-hidden">
-            <img 
-              src="http://45.67.221.216:8086/Dr.Vital.png"
-              alt="Dr. Vital"
-              className="w-full h-full object-cover rounded-full"
-            />
+            <DrVitalImage size="md" className="xs:w-12 xs:h-12" />
           </div>
           <div>
             <h1 className="text-xl xs:text-2xl sm:text-3xl font-bold">Dr. Vital - Dashboard Integrado</h1>

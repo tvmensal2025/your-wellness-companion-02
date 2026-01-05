@@ -19,6 +19,8 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { DrVitalImage } from '@/components/shared/CharacterImage';
+import { getCharacterImageUrls } from '@/lib/character-images';
 
 interface PreventiveAnalysis {
   id: string;
@@ -201,11 +203,7 @@ const DrVitalAnalysis: React.FC = () => {
         <CardHeader>
           <div className="flex items-center space-x-2">
             <div className="w-8 h-8 bg-blue-500/20 rounded-full flex items-center justify-center overflow-hidden">
-              <img 
-                src="http://45.67.221.216:8086/Dr.Vital.png"
-                alt="Dr. Vital"
-                className="w-full h-full object-cover rounded-full"
-              />
+              <DrVitalImage size="sm" />
             </div>
             <CardTitle className="text-lg">Dr. Vital - Análise Preventiva</CardTitle>
           </div>
@@ -227,11 +225,7 @@ const DrVitalAnalysis: React.FC = () => {
         <CardHeader className="p-4 xs:p-5 sm:p-6">
           <div className="flex items-center space-x-2 xs:space-x-3">
             <div className="w-8 h-8 xs:w-10 xs:h-10 bg-blue-500/20 rounded-full flex items-center justify-center overflow-hidden">
-              <img 
-                src="http://45.67.221.216:8086/Dr.Vital.png"
-                alt="Dr. Vital"
-                className="w-full h-full object-cover rounded-full"
-              />
+              <DrVitalImage size="sm" className="xs:w-10 xs:h-10" />
             </div>
             <CardTitle className="text-lg xs:text-xl">Dr. Vital - Análise Preventiva</CardTitle>
           </div>
@@ -277,11 +271,7 @@ const DrVitalAnalysis: React.FC = () => {
         <div className="flex flex-col xs:flex-row xs:items-center justify-between gap-3 xs:gap-4">
           <div className="flex items-center space-x-2 xs:space-x-3">
             <div className="w-8 h-8 xs:w-10 xs:h-10 bg-blue-500/20 rounded-full flex items-center justify-center overflow-hidden">
-              <img 
-                src="http://45.67.221.216:8086/Dr.Vital.png"
-                alt="Dr. Vital"
-                className="w-full h-full object-cover rounded-full"
-              />
+              <DrVitalImage size="md" />
             </div>
             <div>
               <CardTitle className="text-lg xs:text-xl">Dr. Vital - Análise Preventiva</CardTitle>
@@ -453,7 +443,7 @@ const DrVitalAnalysis: React.FC = () => {
             <div className="absolute inset-0 bg-black/10"></div>
             <div className="relative flex items-center gap-4">
               <div className="w-14 h-14 rounded-full bg-white/20 p-2 border-2 border-white/30">
-                <img src="http://45.67.221.216:8086/Dr.Vital.png" alt="Dr. Vital" className="w-full h-full rounded-full object-cover" />
+                <DrVitalImage size="lg" />
               </div>
               <div className="flex-1">
                 <h1 className="text-xl font-bold mb-1">Dr. Vital IA do Instituto dos Sonhos</h1>

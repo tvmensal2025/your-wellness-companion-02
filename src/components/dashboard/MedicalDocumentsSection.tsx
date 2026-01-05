@@ -38,6 +38,7 @@ import {
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
+import { DrVitalImage } from '@/components/shared/CharacterImage';
 import { useExamAccess } from '@/hooks/useExamAccess';
 
 interface MedicalDocument {
@@ -1041,11 +1042,7 @@ const MedicalDocumentsSection: React.FC = () => {
                         <div className="flex items-center gap-3">
                           <div className="relative">
                             <span className="absolute inset-0 rounded-full bg-purple-500 opacity-30 animate-ping"></span>
-                            <img
-                              src="http://45.67.221.216:8086/Dr.Vital.png"
-                              alt="Dr. Vital"
-                              className="relative w-8 h-8 rounded-full ring-2 ring-purple-500"
-                            />
+                            <DrVitalImage size="sm" className="relative ring-2 ring-purple-500" />
                           </div>
                           <div className="flex flex-col">
                             <div className="text-xs text-gray-600 font-medium">Dr. Vital está analisando…</div>
