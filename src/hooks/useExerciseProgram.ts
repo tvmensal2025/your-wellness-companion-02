@@ -10,6 +10,7 @@ interface ProgramData {
   time: string;
   description: string;
   level: string;
+  experience?: string;
   location: string;
   goal: string;
   limitation: string;
