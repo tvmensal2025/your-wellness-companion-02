@@ -47,8 +47,8 @@ const plans: Plan[] = [
       '✨ Cardápios ilimitados personalizados',
       '🤖 Sofia IA Premium ilimitada',
       '🩺 Protocolo Dr. Vital completo',
-      'Desafios ilimitados + badges',
-      'Análises e gráficos avançados',
+      'Desafios ilimitados',
+      'Gráficos avançados',
       'Suporte prioritário',
       'Sem anúncios'
     ],
@@ -59,17 +59,15 @@ const plans: Plan[] = [
   {
     id: 'vip',
     name: 'VIP Exclusivo',
-    description: 'Acompanhamento completo + Comunidade Elite',
+    description: 'Acompanhamento completo + Masterclasses',
     price: 99.90,
     billingPeriod: 'monthly',
     features: [
       '🏆 Tudo do Premium incluído',
-      '🩺 Análise mensal com Dr. Vital',
-      '🤖 Consultoria 1:1 com Sofia IA',
-      '👥 Comunidade VIP exclusiva',
+      '🩺 Protocolo mensal com Dr. Vital',
       '🎓 Masterclasses mensais',
-      '📞 Suporte WhatsApp direto',
-      '🥇 Badge + Certificados exclusivos'
+      '📊 Relatórios mensais detalhados',
+      'Acesso antecipado a novidades'
     ],
     icon: Star,
     color: 'text-amber-500'
