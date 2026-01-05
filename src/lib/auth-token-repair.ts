@@ -31,9 +31,15 @@ export async function repairAuthSessionIfTooLarge(
         return { status: "failed" as const, reason: "missing_refresh_token" };
       }
 
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
-      const apiKey = import.meta.env
-        .VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined;
+      const supabaseUrl =
+        (import.meta.env.VITE_SUPABASE_URL as string | undefined) ||
+        ((supabase as any).supabaseUrl as string | undefined) ||
+        ((supabase as any).rest?.url as string | undefined)?.replace(/\/rest\/v1\/?$/, "");
+
+      const apiKey =
+        (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined) ||
+        ((supabase as any).supabaseKey as string | undefined) ||
+        ((supabase as any).rest?.headers?.apikey as string | undefined);
 
       if (!supabaseUrl || !apiKey) {
         return { status: "failed" as const, reason: "missing_env" };
