@@ -263,10 +263,8 @@ export const useConversation = (options: UseConversationOptions = {}) => {
     }
   }, [options]);
 
-  // Parar fala atual
+  // Parar fala atual - sem dependências para evitar re-renders em loop
   const stopSpeaking = useCallback(() => {
-    console.log('🛑 Parando todas as vozes...');
-    
     // Parar áudio do Google TTS de forma segura
     if (audioRef.current) {
       try {
@@ -278,7 +276,6 @@ export const useConversation = (options: UseConversationOptions = {}) => {
         }
         audioRef.current.src = '';
         audioRef.current = null;
-        console.log('🛑 Áudio do Google TTS parado');
       } catch (error) {
         console.warn('Erro ao parar áudio:', error);
         audioRef.current = null;
@@ -289,7 +286,6 @@ export const useConversation = (options: UseConversationOptions = {}) => {
     try {
       if (window.speechSynthesis) {
         window.speechSynthesis.cancel();
-        console.log('🛑 Web Speech API parado');
       }
     } catch (error) {
       console.warn('Erro ao parar Web Speech API:', error);
@@ -309,34 +305,22 @@ export const useConversation = (options: UseConversationOptions = {}) => {
     }
     
     setIsSpeaking(false);
-    options.onSpeechEnd?.();
-    console.log('🛑 Todas as vozes paradas');
-  }, [options]);
+  }, []); // Sem dependências para manter estável
 
   // Função principal de fala (Google TTS como padrão)
   const speak = useCallback(async (text: string) => {
     try {
-      console.log('🎤 [SPEAK] Iniciando fala...');
-      console.log('🎤 [SPEAK] Texto recebido:', text);
-      console.log('🎤 [SPEAK] isSpeaking atual:', isSpeaking);
-      
-      // Se já está falando, parar primeiro
-      if (isSpeaking) {
-        console.log('🎤 [SPEAK] Já está falando, parando primeiro...');
-        stopSpeaking();
-        // Aguardar um pouco para garantir que parou
-        await new Promise(resolve => setTimeout(resolve, 200));
-      }
+      // Parar qualquer fala anterior
+      stopSpeaking();
+      // Aguardar um pouco para garantir que parou
+      await new Promise(resolve => setTimeout(resolve, 100));
       
       // Tentar Google TTS primeiro (voz natural via Edge Function segura)
-      console.log('🎤 [TTS] Tentando Google TTS...');
       try {
         await speakWithGoogleTTS(text);
         setUsingFreeFallback(false);
-        console.log('✅ [TTS] Google TTS funcionou!');
       } catch (error) {
         console.error('❌ [TTS] Erro no Google TTS:', error);
-        console.log('🔄 [TTS] Fallback para Web Speech API...');
         setUsingFreeFallback(true);
         await speakWithWebSpeech(text);
       }
@@ -348,7 +332,7 @@ export const useConversation = (options: UseConversationOptions = {}) => {
       setError(errorMsg);
       options.onError?.(errorMsg);
     }
-  }, [options, speakWithGoogleTTS, speakWithWebSpeech, isSpeaking, stopSpeaking]);
+  }, [speakWithGoogleTTS, speakWithWebSpeech, stopSpeaking, options]);
 
   // Limpar recursos
   const cleanup = useCallback(() => {

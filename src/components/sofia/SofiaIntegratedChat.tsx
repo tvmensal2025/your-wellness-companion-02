@@ -134,7 +134,7 @@ O que você gostaria de conversar hoje? Pode me enviar uma foto da sua refeiçã
     }
   }, [isListening, transcript]);
 
-  // Cleanup apenas na desmontagem (evita cancelar voz a cada re-render)
+  // Cleanup apenas na desmontagem (sem cleanup como dependência para evitar loop)
   useEffect(() => {
     return () => {
       try {
@@ -143,7 +143,8 @@ O que você gostaria de conversar hoje? Pode me enviar uma foto da sua refeiçã
         console.warn('Erro no cleanup do SofiaIntegratedChat:', error);
       }
     };
-  }, [cleanup]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Executar apenas na desmontagem
 
   const handleSendMessage = async (messageContent: string, imageFile?: File) => {
     if (!messageContent.trim() && !imageFile) return;
