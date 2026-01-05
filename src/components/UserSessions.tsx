@@ -16,7 +16,7 @@ import { SessionTool, ToolResponse } from '@/types/session-tools';
 import {
   Clock, CheckCircle, PlayCircle, BookOpen, 
   Target, Calendar, FileText, AlertCircle,
-  Lock, Unlock, Timer, Eye, Send, Wrench, Printer
+  Lock, Unlock, Timer, Eye, Send, Wrench, Download
 } from 'lucide-react';
 
 interface Session {
@@ -583,15 +583,15 @@ export default function UserSessions({ user }: UserSessionsProps) {
           <p className="text-muted-foreground text-lg print:text-gray-600">
             Acompanhe seu progresso nas sessões personalizadas
           </p>
-          {/* Botão de Impressão */}
+          {/* Botão de Download */}
           <Button 
             onClick={() => window.print()}
             variant="outline"
             size="sm"
             className="mt-4 print:hidden"
           >
-            <Printer className="w-4 h-4 mr-2" />
-            Imprimir Sessões
+            <Download className="w-4 h-4 mr-2" />
+            Baixar Sessões
           </Button>
         </div>
 
