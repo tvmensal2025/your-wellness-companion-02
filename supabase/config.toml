@@ -48,3 +48,6 @@ verify_jwt = false
 [functions.dr-vital-weekly-report]
 verify_jwt = false
 
+[functions.sofia-deterministic]
+verify_jwt = false
+
