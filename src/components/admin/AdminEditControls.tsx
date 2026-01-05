@@ -106,7 +106,7 @@ export const AdminEditControls = ({ course, lesson, onSave, type }: AdminEditCon
                     onChange={(e) => setEditData({...editData, banner_url: e.target.value})}
                   />
                   <p className="text-xs text-gray-400 mt-1">
-                    📐 Tamanho recomendado: <strong>750 x 500px</strong> (3:2 horizontal)
+                    📱 Mobile: <strong>750 x 500px</strong> | 💻 Desktop: <strong>1920 x 800px</strong>
                   </p>
                 </div>
                 <div>
@@ -188,7 +188,7 @@ export const AdminEditControls = ({ course, lesson, onSave, type }: AdminEditCon
                       onChange={(e) => setEditData({...editData, thumbnail_url: e.target.value})}
                     />
                     <p className="text-xs text-gray-400 mt-1">
-                      📐 Tamanho recomendado: <strong>400 x 600px</strong> (2:3 vertical)
+                      📱 Mobile: <strong>400 x 600px</strong> | 💻 Desktop: <strong>600 x 900px</strong>
                     </p>
                   </div>
                   <div className="p-4 border rounded-lg">
@@ -273,7 +273,7 @@ export const AdminEditControls = ({ course, lesson, onSave, type }: AdminEditCon
                       onChange={(e) => setEditData({...editData, thumbnail_url: e.target.value})}
                     />
                     <p className="text-xs text-gray-400 mt-1">
-                      📐 Tamanho recomendado: <strong>400 x 600px</strong> (2:3)
+                      📱 Mobile: <strong>400 x 600px</strong> | 💻 Desktop: <strong>600 x 900px</strong>
                     </p>
                   </div>
                 </div>
