@@ -7,6 +7,7 @@ import { useUserStreak } from '@/hooks/useUserStreak';
 import { useUserXP } from '@/hooks/useUserXP';
 import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
+import { repairAuthSessionIfTooLarge } from '@/lib/auth-token-repair';
 import SimpleWeightForm from '@/components/weighing/SimpleWeightForm';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { toast } from 'sonner';
@@ -35,18 +36,27 @@ const DashboardOverview: React.FC = () => {
 
   // Consolidated data fetching - all queries in parallel for speed
   useEffect(() => {
+    let mounted = true;
+
     const fetchAllData = async () => {
-      const { data: { user: authUser } } = await supabase.auth.getUser();
-      if (!authUser) return;
-      
+      // Evita “parece desconectado” quando o token está gigante: repara ANTES das queries.
+      const { data: { session } } = await supabase.auth.getSession();
+      const authUser = session?.user ?? null;
+      if (!authUser || !mounted) return;
+
+      if (session) {
+        await repairAuthSessionIfTooLarge(session);
+      }
+
+      if (!mounted) return;
       setUser(authUser);
-      
+
       // Execute ALL queries in parallel for maximum speed
       const [profileResult, trackingResult, physicalResult, goalResult] = await Promise.all([
         supabase
           .from('profiles')
           .select('full_name')
-          .eq('id', authUser.id)
+          .eq('user_id', authUser.id)
           .single(),
         supabase
           .from('advanced_daily_tracking')
@@ -69,7 +79,7 @@ const DashboardOverview: React.FC = () => {
           .limit(1)
           .maybeSingle()
       ]);
-      
+
       // Set all state at once
       if (profileResult.data?.full_name) setUserName(profileResult.data.full_name);
       if (trackingResult.data?.waist_cm) setWaistCircumference(trackingResult.data.waist_cm);
@@ -78,6 +88,10 @@ const DashboardOverview: React.FC = () => {
     };
 
     fetchAllData();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   // Calculate days since last measurement
@@ -127,13 +141,25 @@ const DashboardOverview: React.FC = () => {
   };
 
   const handleWeightSubmit = async (data: { weight: number; height: number; waist: number }) => {
-    if (!user) {
-      toast.error('Você precisa estar logado para registrar peso');
-      return;
-    }
-
     setIsSaving(true);
+
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const sessionUser = session?.user ?? null;
+
+      if (!sessionUser) {
+        toast.error('Você precisa estar logado para registrar peso');
+        return;
+      }
+
+      // Repara token gigante antes do insert (evita 520/CORS/Failed to fetch)
+      if (session) {
+        await repairAuthSessionIfTooLarge(session);
+      }
+
+      const { data: { session: latestSession } } = await supabase.auth.getSession();
+      const userId = latestSession?.user?.id ?? sessionUser.id;
+
       // Calculate IMC
       const heightM = data.height / 100;
       const imc = data.weight / (heightM * heightM);
@@ -156,7 +182,7 @@ const DashboardOverview: React.FC = () => {
       else if (rce >= 0.6) riscoCardiometabolico = 'MUITO ALTO';
 
       const { error } = await supabase.from('weight_measurements').insert({
-        user_id: user.id,
+        user_id: userId,
         peso_kg: data.weight,
         circunferencia_abdominal_cm: data.waist,
         imc: parseFloat(imc.toFixed(2)),
@@ -171,9 +197,10 @@ const DashboardOverview: React.FC = () => {
       toast.success('Peso registrado com sucesso!');
       setIsWeightModalOpen(false);
       fetchMeasurements(30, true);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving weight:', error);
-      toast.error('Erro ao registrar peso');
+      const msg = typeof error?.message === 'string' ? error.message : '';
+      toast.error(msg ? `Erro ao registrar peso: ${msg}` : 'Erro ao registrar peso');
     } finally {
       setIsSaving(false);
     }
