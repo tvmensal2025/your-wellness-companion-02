@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useWeightMeasurement } from '@/hooks/useWeightMeasurement';
 import { Badge } from '@/components/ui/badge';
-
+import { DrVitalImage } from '@/components/shared/CharacterImage';
 // Declare global for RGraph
 declare global {
   interface Window {
@@ -303,7 +303,7 @@ const SessionDashboardPage: React.FC = () => {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <img src="http://45.67.221.216:8086/Dr.Vital.png" alt="Dr.Vital" className="h-14 w-14 object-contain" />
+            <DrVitalImage size="lg" className="h-14 w-14" />
             <div className="text-right">
               <div className="text-base font-semibold">b.i.a</div>
               <div className="text-sm text-gray-400">TeraScience</div>

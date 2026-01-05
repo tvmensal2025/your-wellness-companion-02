@@ -35,6 +35,7 @@ import {
   Pie,
   Cell
 } from 'recharts';
+import { DrVitalImage } from '@/components/shared/CharacterImage';
 
 interface PreventiveAnalysis {
   id: string;
@@ -209,11 +210,7 @@ const PreventiveAnalyticsDashboard: React.FC = () => {
         <div>
           <h2 className="text-2xl font-bold flex items-center gap-2">
             <div className="w-8 h-8 bg-blue-500/20 rounded-full flex items-center justify-center overflow-hidden">
-              <img 
-                src="http://45.67.221.216:8086/Dr.Vital.png"
-                alt="Dr. Vital"
-                className="w-full h-full object-cover rounded-full"
-              />
+              <DrVitalImage size="sm" />
             </div>
             Análises Preventivas - Dr. Vital
           </h2>

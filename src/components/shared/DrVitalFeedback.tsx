@@ -23,8 +23,9 @@ import {
   Shield
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { getCharacterImageUrl } from '@/lib/character-images';
+import { getCharacterImageUrls } from '@/lib/character-images';
 import { motion, AnimatePresence } from 'framer-motion';
+import { DrVitalImage } from '@/components/shared/CharacterImage';
 
 interface DrVitalFeedbackProps {
   assessmentType: 'abundance' | 'competency' | 'health' | 'life';
@@ -58,7 +59,7 @@ export const DrVitalFeedback: React.FC<DrVitalFeedbackProps> = ({
   const [isAnimating, setIsAnimating] = useState(true);
   const { toast } = useToast();
 
-  const drVitalImageUrl = getCharacterImageUrl('dr-vital');
+  const drVitalUrls = getCharacterImageUrls('dr-vital');
 
   // Calcular estatísticas - converter para escala 0-100
   const scoreValues = Object.values(scores);
@@ -290,10 +291,9 @@ ${areas.map(area => `   ${area.icon} ${area.name}: ${Math.round((scores[area.id]
             >
               <div className="absolute inset-0 bg-gradient-to-br from-green-400 to-emerald-600 rounded-full blur-xl opacity-50 animate-pulse" />
               <div className="relative w-full h-full bg-gradient-to-br from-emerald-500 to-green-600 rounded-full p-1">
-                <img 
-                  src={drVitalImageUrl}
-                  alt="Dr. Vital"
-                  className="w-full h-full object-cover rounded-full border-2 border-white/20"
+                <DrVitalImage 
+                  size="xl"
+                  className="w-full h-full border-2 border-white/20"
                 />
               </div>
               <motion.div 
@@ -411,10 +411,9 @@ ${areas.map(area => `   ${area.icon} ${area.name}: ${Math.round((scores[area.id]
             >
               <div className="flex items-start gap-4">
                 <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-green-600 rounded-full flex items-center justify-center flex-shrink-0">
-                  <img 
-                    src={drVitalImageUrl}
-                    alt="Dr. Vital"
-                    className="w-full h-full object-cover rounded-full"
+                  <DrVitalImage 
+                    size="md"
+                    className="w-full h-full"
                   />
                 </div>
                 <div className="flex-1">
