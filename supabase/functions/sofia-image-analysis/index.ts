@@ -1791,16 +1791,32 @@ ${newRuleMacros}🤔 Esses alimentos estão corretos?`;
         ? detectedFoods.map(food => food.nome)
         : detectedFoods;
 
+      // Preparar macros finais
+      const finalMacros = tacoNutritionData || (localDeterministic && localDeterministic.grams_total > 0 ? {
+        total_protein: localDeterministic.totals.protein,
+        total_carbs: localDeterministic.totals.carbs,
+        total_fat: localDeterministic.totals.fat,
+        total_fiber: localDeterministic.totals.fiber || 0
+      } : null);
+
       const analysisRecord = {
         user_id: userId,
         user_name: actualUserName,
-        image_url: imageUrl,
-        foods_detected: foodNames,
+        image_url: imageUrl, // Será deletado após confirmação
+        foods_detected: detectedFoods, // JSONB com detalhes completos
         total_calories: estimatedCalories,
+        total_protein: finalMacros?.total_protein || 0,
+        total_carbs: finalMacros?.total_carbs || 0,
+        total_fat: finalMacros?.total_fat || 0,
+        total_fiber: finalMacros?.total_fiber || 0,
+        meal_type: userContext?.currentMeal || 'refeicao',
+        meal_date: new Date().toISOString().split('T')[0],
+        meal_time: new Date().toTimeString().split(' ')[0],
         sofia_analysis: finalMessage,
         confirmed_by_user: false,
         confirmation_prompt_sent: true,
         confirmation_status: 'pending',
+        image_deleted: false,
         label_studio_task_id: labelStudioResult.taskId || null,
         created_at: new Date().toISOString()
       };
