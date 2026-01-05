@@ -64,10 +64,10 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
   return (
     <div className="w-80 space-y-4 sticky top-4">
       {/* Top 5 Ranking */}
-      <Card>
+      <Card className="border-blue-200/50 dark:border-blue-800/50 bg-white dark:bg-card">
         <CardHeader className="pb-2">
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Trophy className="w-5 h-5 text-primary" />
+          <CardTitle className="flex items-center gap-2 text-base text-blue-700 dark:text-blue-400">
+            <Trophy className="w-5 h-5" />
             Top 5 da Semana
           </CardTitle>
         </CardHeader>
@@ -78,7 +78,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: index * 0.1 }}
-              className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors"
+              className="flex items-center gap-3 p-2 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-950/30 transition-colors"
             >
               <div className="w-6 flex items-center justify-center">
                 {getPositionIcon(user.position)}
@@ -86,7 +86,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
               <div className="relative">
                 <Avatar className="w-8 h-8">
                   <AvatarImage src={user.avatar} />
-                  <AvatarFallback className="text-xs bg-primary/10 text-primary">
+                  <AvatarFallback className="text-xs bg-blue-100 dark:bg-blue-900/50 text-blue-600">
                     {user.name?.charAt(0)}
                   </AvatarFallback>
                 </Avatar>
@@ -113,10 +113,10 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
       </Card>
 
       {/* Suggestions */}
-      <Card>
+      <Card className="border-blue-200/50 dark:border-blue-800/50 bg-white dark:bg-card">
         <CardHeader className="pb-2">
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Users className="w-5 h-5 text-primary" />
+          <CardTitle className="flex items-center gap-2 text-base text-blue-700 dark:text-blue-400">
+            <Users className="w-5 h-5" />
             Pessoas que você pode conhecer
           </CardTitle>
         </CardHeader>
@@ -131,7 +131,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
             >
               <Avatar className="w-10 h-10">
                 <AvatarImage src={user.avatar} />
-                <AvatarFallback className="bg-muted">
+                <AvatarFallback className="bg-blue-100 dark:bg-blue-900/50 text-blue-600">
                   {user.name?.charAt(0)}
                 </AvatarFallback>
               </Avatar>
@@ -144,7 +144,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
               <Button
                 size="sm"
                 variant="outline"
-                className="h-8 rounded-full"
+                className="h-8 rounded-full border-blue-300 dark:border-blue-700 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950"
                 onClick={() => onFollowUser(user.id)}
               >
                 <UserPlus className="w-3 h-3 mr-1" />
@@ -156,10 +156,10 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
       </Card>
 
       {/* Upcoming Events */}
-      <Card>
+      <Card className="border-blue-200/50 dark:border-blue-800/50 bg-white dark:bg-card">
         <CardHeader className="pb-2">
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Calendar className="w-5 h-5 text-primary" />
+          <CardTitle className="flex items-center gap-2 text-base text-blue-700 dark:text-blue-400">
+            <Calendar className="w-5 h-5" />
             Próximos Eventos
           </CardTitle>
         </CardHeader>
@@ -170,7 +170,7 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: index * 0.1 }}
-              className="p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors cursor-pointer"
+              className="p-3 rounded-lg bg-blue-50/50 dark:bg-blue-950/20 hover:bg-blue-100/50 dark:hover:bg-blue-900/30 transition-colors cursor-pointer border border-blue-200/30 dark:border-blue-800/30"
             >
               <p className="font-medium text-sm">{event.title}</p>
               <div className="flex items-center justify-between mt-1 text-xs text-muted-foreground">
@@ -182,18 +182,18 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
               </div>
             </motion.div>
           ))}
-          <Button variant="ghost" size="sm" className="w-full">
+          <Button variant="ghost" size="sm" className="w-full text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950">
             Ver todos os eventos
           </Button>
         </CardContent>
       </Card>
 
       {/* Quick Stats */}
-      <Card className="bg-gradient-to-br from-primary/10 to-primary/5">
+      <Card className="bg-gradient-to-br from-blue-100 to-blue-50 dark:from-blue-950/50 dark:to-blue-900/30 border-blue-200/50 dark:border-blue-800/50">
         <CardContent className="p-4">
           <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-              <TrendingUp className="w-5 h-5 text-primary" />
+            <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
+              <TrendingUp className="w-5 h-5 text-blue-600" />
             </div>
             <div>
               <p className="font-semibold text-sm">Sua Evolução</p>
@@ -201,11 +201,11 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <div className="text-center p-2 bg-background/50 rounded-lg">
-              <p className="text-lg font-bold text-primary">+15%</p>
+            <div className="text-center p-2 bg-white/70 dark:bg-background/50 rounded-lg">
+              <p className="text-lg font-bold text-blue-600">+15%</p>
               <p className="text-xs text-muted-foreground">Engajamento</p>
             </div>
-            <div className="text-center p-2 bg-background/50 rounded-lg">
+            <div className="text-center p-2 bg-white/70 dark:bg-background/50 rounded-lg">
               <p className="text-lg font-bold text-emerald-600">+230</p>
               <p className="text-xs text-muted-foreground">Pontos</p>
             </div>

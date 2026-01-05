@@ -113,32 +113,32 @@ export const FeedPostCard: React.FC<FeedPostCardProps> = ({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <Card className="mb-4 overflow-hidden hover:shadow-md transition-shadow">
+      <Card className="mb-3 sm:mb-4 overflow-hidden hover:shadow-md transition-shadow border-blue-200/50 dark:border-blue-800/50 bg-white dark:bg-card">
         {/* Header */}
-        <CardHeader className="pb-2">
+        <CardHeader className="pb-2 px-3 sm:px-6 pt-3 sm:pt-6">
           <div className="flex items-start justify-between">
-            <div className="flex gap-3">
-              <Avatar className="w-10 h-10">
+            <div className="flex gap-2 sm:gap-3">
+              <Avatar className="w-9 h-9 sm:w-10 sm:h-10">
                 <AvatarImage src={post.userAvatar} />
-                <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                <AvatarFallback className="bg-blue-100 dark:bg-blue-900/50 text-blue-600 font-semibold text-xs sm:text-sm">
                   {post.userName?.charAt(0)?.toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               <div>
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold text-foreground">{post.userName}</span>
-                  <Badge variant="secondary" className="text-xs">
+                <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
+                  <span className="font-semibold text-foreground text-sm sm:text-base">{post.userName}</span>
+                  <Badge variant="secondary" className="text-[10px] sm:text-xs bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300">
                     {post.userLevel}
                   </Badge>
                 </div>
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <div className="flex items-center gap-1 sm:gap-2 text-[10px] sm:text-xs text-muted-foreground">
                   <span>{formatTimeAgo(post.createdAt)}</span>
                   {post.location && (
                     <>
                       <span>•</span>
-                      <span className="flex items-center gap-1">
-                        <MapPin className="w-3 h-3" />
-                        {post.location}
+                      <span className="flex items-center gap-0.5 sm:gap-1">
+                        <MapPin className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                        <span className="truncate max-w-[100px] sm:max-w-none">{post.location}</span>
                       </span>
                     </>
                   )}
@@ -148,7 +148,7 @@ export const FeedPostCard: React.FC<FeedPostCardProps> = ({
             
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
+                <Button variant="ghost" size="icon" className="h-7 w-7 sm:h-8 sm:w-8 text-blue-600 hover:bg-blue-50">
                   <MoreHorizontal className="w-4 h-4" />
                 </Button>
               </DropdownMenuTrigger>
@@ -163,45 +163,45 @@ export const FeedPostCard: React.FC<FeedPostCardProps> = ({
           </div>
         </CardHeader>
 
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-2 sm:space-y-3 px-3 sm:px-6 pb-3 sm:pb-6">
           {/* Content */}
-          <p className="text-foreground leading-relaxed">{post.content}</p>
+          <p className="text-foreground leading-relaxed text-sm sm:text-base">{post.content}</p>
 
           {/* Achievement Card */}
           {post.achievementData && (
             <motion.div
               initial={{ scale: 0.95 }}
               animate={{ scale: 1 }}
-              className="bg-gradient-to-r from-primary/10 to-primary/5 p-4 rounded-xl border border-primary/20"
+              className="bg-gradient-to-r from-blue-100 to-blue-50 dark:from-blue-950/50 dark:to-blue-900/30 p-3 sm:p-4 rounded-xl border border-blue-200/50 dark:border-blue-800/50"
             >
               <div className="flex items-center gap-2 mb-2">
-                <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
-                  <Trophy className="w-4 h-4 text-primary" />
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-blue-500/20 flex items-center justify-center">
+                  <Trophy className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600" />
                 </div>
-                <span className="font-semibold text-primary">Conquista Desbloqueada!</span>
+                <span className="font-semibold text-blue-700 dark:text-blue-400 text-sm sm:text-base">Conquista Desbloqueada!</span>
               </div>
-              <p className="text-2xl font-bold text-foreground">
+              <p className="text-xl sm:text-2xl font-bold text-foreground">
                 {post.achievementData.value.toLocaleString()} {post.achievementData.unit}
               </p>
-              <p className="text-sm text-muted-foreground">{post.achievementData.title}</p>
+              <p className="text-xs sm:text-sm text-muted-foreground">{post.achievementData.title}</p>
             </motion.div>
           )}
 
           {/* Progress Card */}
           {post.progressData && (
-            <div className="bg-muted/50 p-4 rounded-xl">
-              <div className="flex items-center gap-2 mb-3">
-                <TrendingUp className="w-4 h-4 text-emerald-600" />
-                <span className="font-medium text-foreground">{post.progressData.type}</span>
+            <div className="bg-blue-50/50 dark:bg-blue-950/20 p-3 sm:p-4 rounded-xl border border-blue-200/30 dark:border-blue-800/30">
+              <div className="flex items-center gap-2 mb-2 sm:mb-3">
+                <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600" />
+                <span className="font-medium text-foreground text-sm">{post.progressData.type}</span>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-3 sm:gap-4">
                 <div>
-                  <p className="text-xs text-muted-foreground">Duração</p>
-                  <p className="font-semibold">{post.progressData.duration}</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground">Duração</p>
+                  <p className="font-semibold text-sm sm:text-base">{post.progressData.duration}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-muted-foreground">Calorias</p>
-                  <p className="font-semibold">{post.progressData.calories} kcal</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground">Calorias</p>
+                  <p className="font-semibold text-sm sm:text-base">{post.progressData.calories} kcal</p>
                 </div>
               </div>
             </div>
@@ -213,18 +213,18 @@ export const FeedPostCard: React.FC<FeedPostCardProps> = ({
               whileHover={{ scale: 1.02 }}
               src={post.imageUrl}
               alt="Post"
-              className="w-full rounded-xl object-cover max-h-[400px] cursor-pointer"
+              className="w-full rounded-xl object-cover max-h-[300px] sm:max-h-[400px] cursor-pointer"
             />
           )}
 
           {/* Tags */}
           {post.tags.length > 0 && (
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-1 sm:gap-2">
               {post.tags.map((tag) => (
                 <Badge 
                   key={tag} 
                   variant="outline" 
-                  className="text-xs cursor-pointer hover:bg-primary/10"
+                  className="text-[10px] sm:text-xs cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-950 border-blue-300 dark:border-blue-700 text-blue-600 dark:text-blue-400"
                 >
                   #{tag}
                 </Badge>
@@ -233,20 +233,20 @@ export const FeedPostCard: React.FC<FeedPostCardProps> = ({
           )}
 
           {/* Stats */}
-          <div className="flex items-center justify-between text-sm text-muted-foreground pt-2">
+          <div className="flex items-center justify-between text-xs sm:text-sm text-muted-foreground pt-1 sm:pt-2">
             <div className="flex items-center gap-1">
               {likesCount > 0 && (
                 <>
                   <div className="flex -space-x-1">
-                    <div className="w-5 h-5 rounded-full bg-red-500 flex items-center justify-center">
-                      <Heart className="w-3 h-3 text-white fill-white" />
+                    <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-blue-500 flex items-center justify-center">
+                      <Heart className="w-2 h-2 sm:w-3 sm:h-3 text-white fill-white" />
                     </div>
                   </div>
                   <span>{likesCount}</span>
                 </>
               )}
             </div>
-            <div className="flex gap-4">
+            <div className="flex gap-3 sm:gap-4">
               {post.comments > 0 && (
                 <button 
                   onClick={() => setShowComments(!showComments)}
@@ -256,44 +256,44 @@ export const FeedPostCard: React.FC<FeedPostCardProps> = ({
                 </button>
               )}
               {post.shares > 0 && (
-                <span>{post.shares} compartilhamentos</span>
+                <span className="hidden sm:inline">{post.shares} compartilhamentos</span>
               )}
             </div>
           </div>
 
           {/* Actions */}
-          <div className="flex items-center justify-between border-t border-b border-border py-1">
+          <div className="flex items-center justify-between border-t border-b border-blue-200/50 dark:border-blue-800/50 py-1">
             <Button
               variant="ghost"
               size="sm"
-              className={`flex-1 gap-2 ${isLiked ? 'text-red-500' : 'text-muted-foreground'}`}
+              className={`flex-1 gap-1 sm:gap-2 h-9 sm:h-10 ${isLiked ? 'text-blue-600' : 'text-muted-foreground hover:text-blue-600 hover:bg-blue-50'}`}
               onClick={handleLike}
             >
               <motion.div
                 whileTap={{ scale: 1.4 }}
                 transition={{ type: 'spring', stiffness: 400 }}
               >
-                <Heart className={`w-5 h-5 ${isLiked ? 'fill-current' : ''}`} />
+                <Heart className={`w-4 h-4 sm:w-5 sm:h-5 ${isLiked ? 'fill-current' : ''}`} />
               </motion.div>
-              Curtir
+              <span className="text-xs sm:text-sm">Curtir</span>
             </Button>
             <Button
               variant="ghost"
               size="sm"
-              className="flex-1 gap-2 text-muted-foreground"
+              className="flex-1 gap-1 sm:gap-2 h-9 sm:h-10 text-muted-foreground hover:text-blue-600 hover:bg-blue-50"
               onClick={() => setShowComments(!showComments)}
             >
-              <MessageCircle className="w-5 h-5" />
-              Comentar
+              <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5" />
+              <span className="text-xs sm:text-sm">Comentar</span>
             </Button>
             <Button
               variant="ghost"
               size="sm"
-              className="flex-1 gap-2 text-muted-foreground"
+              className="flex-1 gap-1 sm:gap-2 h-9 sm:h-10 text-muted-foreground hover:text-blue-600 hover:bg-blue-50"
               onClick={() => onShare(post.id)}
             >
-              <Share2 className="w-5 h-5" />
-              Compartilhar
+              <Share2 className="w-4 h-4 sm:w-5 sm:h-5" />
+              <span className="text-xs sm:text-sm">Compartilhar</span>
             </Button>
           </div>
 
