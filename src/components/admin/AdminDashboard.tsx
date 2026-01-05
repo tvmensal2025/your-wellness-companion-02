@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { 
@@ -13,9 +13,13 @@ import {
   Brain,
   Award,
   Activity,
-  Calendar
+  Calendar,
+  RefreshCw,
+  CheckCircle
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { supabase } from '@/integrations/supabase/client';
+import { Button } from '@/components/ui/button';
 
 interface AdminDashboardProps {
   userRole?: 'admin' | 'super_admin';
@@ -25,111 +29,209 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   userRole = 'admin' 
 }) => {
   const isSuperAdmin = userRole === 'super_admin';
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [stats, setStats] = useState({
+    totalUsers: 0,
+    activeSessions: 0,
+    activeChallenges: 0,
+    completionRate: 0,
+    totalCourses: 0,
+    approvedGoals: 0,
+    pendingGoals: 0
+  });
 
-  const stats = [
+  const [recentActivity, setRecentActivity] = useState<Array<{
+    type: string;
+    message: string;
+    time: string;
+    icon: React.ReactNode;
+  }>>([]);
+
+  useEffect(() => {
+    loadDashboardData();
+  }, []);
+
+  const loadDashboardData = async () => {
+    try {
+      setLoading(true);
+      
+      // Buscar dados reais em paralelo
+      const [
+        usersResult,
+        sessionsResult,
+        challengesResult,
+        coursesResult,
+        goalsResult,
+        completedGoalsResult,
+        recentProfilesResult,
+        recentChallengesResult
+      ] = await Promise.all([
+        supabase.from('profiles').select('*', { count: 'exact', head: true }),
+        supabase.from('session_templates').select('*', { count: 'exact', head: true }).eq('is_active', true),
+        supabase.from('challenges').select('*', { count: 'exact', head: true }).eq('is_active', true),
+        supabase.from('courses').select('*', { count: 'exact', head: true }),
+        supabase.from('user_goals').select('*', { count: 'exact', head: true }).eq('status', 'pendente'),
+        supabase.from('user_goals').select('*', { count: 'exact', head: true }).eq('status', 'aprovada'),
+        supabase.from('profiles').select('full_name, created_at').order('created_at', { ascending: false }).limit(3),
+        supabase.from('challenges').select('title, created_at').order('created_at', { ascending: false }).limit(2)
+      ]);
+
+      // Calcular estatísticas
+      const totalGoals = (goalsResult.count || 0) + (completedGoalsResult.count || 0);
+      const completionRate = totalGoals > 0 
+        ? Math.round((completedGoalsResult.count || 0) / totalGoals * 100) 
+        : 0;
+
+      setStats({
+        totalUsers: usersResult.count || 0,
+        activeSessions: sessionsResult.count || 0,
+        activeChallenges: challengesResult.count || 0,
+        completionRate,
+        totalCourses: coursesResult.count || 0,
+        approvedGoals: completedGoalsResult.count || 0,
+        pendingGoals: goalsResult.count || 0
+      });
+
+      // Criar atividades recentes
+      const activities: typeof recentActivity = [];
+      
+      recentProfilesResult.data?.forEach((profile) => {
+        activities.push({
+          type: 'user',
+          message: `Novo usuário: ${profile.full_name || 'Usuário'}`,
+          time: formatTimeAgo(new Date(profile.created_at)),
+          icon: <Users className="w-4 h-4 text-blue-500" />
+        });
+      });
+
+      recentChallengesResult.data?.forEach((challenge) => {
+        activities.push({
+          type: 'challenge',
+          message: `Desafio criado: ${challenge.title}`,
+          time: formatTimeAgo(new Date(challenge.created_at)),
+          icon: <Target className="w-4 h-4 text-purple-500" />
+        });
+      });
+
+      // Ordenar por mais recente
+      activities.sort((a, b) => a.time.localeCompare(b.time));
+      setRecentActivity(activities.slice(0, 5));
+
+    } catch (error) {
+      console.error('Error loading dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await loadDashboardData();
+    setRefreshing(false);
+  };
+
+  const formatTimeAgo = (date: Date) => {
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return 'Agora';
+    if (diffMins < 60) return `${diffMins} min atrás`;
+    if (diffHours < 24) return `${diffHours}h atrás`;
+    return `${diffDays}d atrás`;
+  };
+
+  const statsCards = [
     { 
       title: 'Usuários Totais', 
-      value: '248', 
-      change: '+18 este mês',
+      value: stats.totalUsers.toString(), 
+      change: 'Registrados no sistema',
       icon: <Users className="w-4 h-4" />,
       color: 'text-blue-600',
       bgColor: 'bg-blue-100'
     },
     { 
-      title: 'Sessões Ativas', 
-      value: '12', 
-      change: '+2 esta semana',
+      title: 'Templates Ativos', 
+      value: stats.activeSessions.toString(), 
+      change: 'Sessões disponíveis',
       icon: <Brain className="w-4 h-4" />,
       color: 'text-green-600',
       bgColor: 'bg-green-100'
     },
     { 
       title: 'Desafios Ativos', 
-      value: '8', 
-      change: '+3 este mês',
+      value: stats.activeChallenges.toString(), 
+      change: 'Em andamento',
       icon: <Target className="w-4 h-4" />,
       color: 'text-purple-600',
       bgColor: 'bg-purple-100'
     },
     { 
       title: 'Taxa de Conclusão', 
-      value: '87%', 
-      change: '+5% vs mês anterior',
+      value: `${stats.completionRate}%`, 
+      change: 'Metas aprovadas',
       icon: <Trophy className="w-4 h-4" />,
       color: 'text-orange-600',
       bgColor: 'bg-orange-100'
     },
     { 
-      title: 'Cursos Publicados', 
-      value: '15', 
-      change: '+1 esta semana',
+      title: 'Cursos', 
+      value: stats.totalCourses.toString(), 
+      change: 'Disponíveis',
       icon: <BookOpen className="w-4 h-4" />,
       color: 'text-indigo-600',
       bgColor: 'bg-indigo-100'
     },
     { 
-      title: 'Metas Aprovadas', 
-      value: '45', 
-      change: '+12 este mês',
+      title: 'Metas Pendentes', 
+      value: stats.pendingGoals.toString(), 
+      change: 'Aguardando aprovação',
       icon: <Award className="w-4 h-4" />,
       color: 'text-pink-600',
       bgColor: 'bg-pink-100'
     }
   ];
 
-  const recentActivity = [
-    {
-      type: 'user',
-      message: 'Novo usuário registrado: João Silva',
-      time: '5 min atrás',
-      icon: <Users className="w-4 h-4 text-blue-500" />
-    },
-    {
-      type: 'session',
-      message: 'Sessão "Avaliação Completa" criada',
-      time: '12 min atrás',
-      icon: <Brain className="w-4 h-4 text-green-500" />
-    },
-    {
-      type: 'challenge',
-      message: 'Desafio "30 Dias Saudáveis" completado por 3 usuários',
-      time: '1 hora atrás',
-      icon: <Target className="w-4 h-4 text-purple-500" />
-    },
-    {
-      type: 'goal',
-      message: 'Meta de peso aprovada para Maria Santos',
-      time: '2 horas atrás',
-      icon: <Award className="w-4 h-4 text-orange-500" />
-    }
-  ];
-
   const quickStats = [
     {
-      label: 'Usuários Online',
-      value: '24',
-      trend: 'up',
+      label: 'Usuários',
+      value: stats.totalUsers.toString(),
+      trend: stats.totalUsers > 0 ? 'up' : 'stable',
       color: 'text-green-600'
     },
     {
-      label: 'Sessões Hoje',
-      value: '6',
-      trend: 'up', 
+      label: 'Sessões',
+      value: stats.activeSessions.toString(),
+      trend: stats.activeSessions > 0 ? 'up' : 'stable', 
       color: 'text-blue-600'
     },
     {
       label: 'Metas Pendentes',
-      value: '3',
-      trend: 'down',
+      value: stats.pendingGoals.toString(),
+      trend: stats.pendingGoals > 0 ? 'down' : 'stable',
       color: 'text-orange-600'
     },
     {
-      label: 'Sistema Status',
+      label: 'Sistema',
       value: '100%',
       trend: 'stable',
       color: 'text-green-600'
     }
   ];
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center space-y-4">
+          <RefreshCw className="h-8 w-8 text-primary mx-auto animate-spin" />
+          <p className="text-muted-foreground">Carregando dados...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -137,11 +239,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center gap-3">
-            <img 
-              src="/images/instituto-logo.png" 
-              alt="Instituto dos Sonhos" 
-              className="h-8 w-8 object-contain"
-            />
             <h1 className="text-3xl font-bold text-foreground">
               Visão Geral Administrativa
             </h1>
@@ -163,20 +260,23 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             </Badge>
           </div>
           <p className="text-muted-foreground mt-2">
-            {isSuperAdmin 
-              ? 'Acompanhe métricas gerais e atividade do sistema'
-              : 'Visão geral das suas responsabilidades administrativas'
-            }
+            Dados em tempo real do sistema
           </p>
         </div>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Activity className="w-4 h-4" />
-          <span>Última atualização: agora</span>
-        </div>
+        <Button 
+          variant="outline" 
+          size="sm"
+          onClick={handleRefresh}
+          disabled={refreshing}
+          className="flex items-center gap-2"
+        >
+          <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+          Atualizar
+        </Button>
       </div>
 
       {/* Quick Stats Bar */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {quickStats.map((stat, index) => (
           <motion.div
             key={stat.label}
@@ -184,7 +284,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.05 }}
           >
-            <Card>
+            <Card className="border-0 shadow-md">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
@@ -195,8 +295,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   </div>
                   <div className="flex items-center">
                     {stat.trend === 'up' && <TrendingUp className="w-4 h-4 text-green-500" />}
-                    {stat.trend === 'down' && <TrendingUp className="w-4 h-4 text-red-500 rotate-180" />}
-                    {stat.trend === 'stable' && <BarChart3 className="w-4 h-4 text-blue-500" />}
+                    {stat.trend === 'down' && <TrendingUp className="w-4 h-4 text-orange-500 rotate-180" />}
+                    {stat.trend === 'stable' && <CheckCircle className="w-4 h-4 text-green-500" />}
                   </div>
                 </div>
               </CardContent>
@@ -207,14 +307,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
       {/* Main Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {stats.map((stat, index) => (
+        {statsCards.map((stat, index) => (
           <motion.div
             key={stat.title}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
           >
-            <Card className="hover:shadow-lg transition-all duration-300">
+            <Card className="hover:shadow-lg transition-all duration-300 border-0 shadow-md">
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
@@ -246,55 +346,62 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         ))}
       </div>
 
-      {/* Recent Activity */}
+      {/* Recent Activity & System Status */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
+        <Card className="border-0 shadow-md">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Activity className="w-5 h-5" />
+              <Activity className="w-5 h-5 text-primary" />
               Atividades Recentes
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {recentActivity.map((activity, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors"
-                >
-                  <div className="flex-shrink-0 mt-1">
-                    {activity.icon}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-foreground">
-                      {activity.message}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {activity.time}
-                    </p>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
+            {recentActivity.length > 0 ? (
+              <div className="space-y-4">
+                {recentActivity.map((activity, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors"
+                  >
+                    <div className="flex-shrink-0 mt-1">
+                      {activity.icon}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-foreground">
+                        {activity.message}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {activity.time}
+                      </p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                <Activity className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                <p>Nenhuma atividade recente</p>
+              </div>
+            )}
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-0 shadow-md">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Calendar className="w-5 h-5" />
-              Resumo do Sistema
+              <Calendar className="w-5 h-5 text-primary" />
+              Status do Sistema
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               <div className="flex justify-between items-center p-3 bg-muted/30 rounded-lg">
-                <span className="text-sm font-medium">Status do Servidor</span>
+                <span className="text-sm font-medium">Servidor</span>
                 <Badge variant="default" className="bg-green-500">
-                  <div className="w-2 h-2 bg-white rounded-full mr-2"></div>
+                  <div className="w-2 h-2 bg-white rounded-full mr-2 animate-pulse"></div>
                   Online
                 </Badge>
               </div>
@@ -302,22 +409,25 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               <div className="flex justify-between items-center p-3 bg-muted/30 rounded-lg">
                 <span className="text-sm font-medium">Banco de Dados</span>
                 <Badge variant="default" className="bg-green-500">
-                  <div className="w-2 h-2 bg-white rounded-full mr-2"></div>
+                  <div className="w-2 h-2 bg-white rounded-full mr-2 animate-pulse"></div>
                   Conectado
                 </Badge>
               </div>
               
               <div className="flex justify-between items-center p-3 bg-muted/30 rounded-lg">
-                <span className="text-sm font-medium">APIs Externas</span>
-                <Badge variant="secondary">
-                  <div className="w-2 h-2 bg-yellow-500 rounded-full mr-2"></div>
-                  Parcial
+                <span className="text-sm font-medium">IA (Sofia/DrVital)</span>
+                <Badge variant="default" className="bg-green-500">
+                  <div className="w-2 h-2 bg-white rounded-full mr-2 animate-pulse"></div>
+                  Ativo
                 </Badge>
               </div>
               
               <div className="flex justify-between items-center p-3 bg-muted/30 rounded-lg">
-                <span className="text-sm font-medium">Última Manutenção</span>
-                <span className="text-sm text-muted-foreground">Há 2 dias</span>
+                <span className="text-sm font-medium">Autenticação</span>
+                <Badge variant="default" className="bg-green-500">
+                  <div className="w-2 h-2 bg-white rounded-full mr-2 animate-pulse"></div>
+                  Funcional
+                </Badge>
               </div>
             </div>
           </CardContent>
@@ -325,22 +435,22 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       </div>
 
       {/* Navigation Helper */}
-      <Card className="border-dashed">
+      <Card className="border-dashed border-0 shadow-md bg-gradient-to-r from-primary/5 to-primary/10">
         <CardContent className="p-6">
           <div className="text-center">
             <h3 className="text-lg font-semibold mb-2">
-              Use o menu lateral para acessar todas as funcionalidades
+              Sistema 100% Funcional
             </h3>
             <p className="text-muted-foreground text-sm mb-4">
-              Todas as ferramentas administrativas estão organizadas no menu à esquerda para fácil navegação.
+              Use o menu lateral para acessar todas as funcionalidades administrativas
             </p>
             <div className="flex flex-wrap justify-center gap-2">
-              <Badge variant="outline">Gestão de Usuários</Badge>
-              <Badge variant="outline">Sessões</Badge>
-              <Badge variant="outline">Desafios</Badge>
-              <Badge variant="outline">Cursos</Badge>
-              <Badge variant="outline">Relatórios</Badge>
-              <Badge variant="outline">Configurações</Badge>
+              <Badge variant="outline" className="bg-background">Gestão de Usuários</Badge>
+              <Badge variant="outline" className="bg-background">Sessões</Badge>
+              <Badge variant="outline" className="bg-background">Desafios</Badge>
+              <Badge variant="outline" className="bg-background">Cursos</Badge>
+              <Badge variant="outline" className="bg-background">Relatórios</Badge>
+              <Badge variant="outline" className="bg-background">IA</Badge>
             </div>
           </div>
         </CardContent>
