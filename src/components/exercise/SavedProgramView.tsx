@@ -158,7 +158,9 @@ export const SavedProgramView: React.FC<SavedProgramProps> = ({
   const weeks = programData.weeks || [];
   const currentWeekData = weeks.find((w: WeekActivity) => w.week === program.current_week);
   const limitation = programData.limitation;
-  const location = (programData.location || 'casa') as 'casa' | 'academia';
+  const rawLocation = programData.location || 'casa';
+  // Normalizar location: casa_sem, casa_com -> 'casa'; academia -> 'academia'
+  const location = rawLocation.startsWith('casa') ? 'casa' : rawLocation === 'academia' ? 'academia' : 'casa';
   
   const weekDays = useMemo<DayPlan[]>(() => {
     const dayNames = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
