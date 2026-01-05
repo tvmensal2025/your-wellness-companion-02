@@ -293,96 +293,148 @@ async function tryYoloDetect(imageUrl: string): Promise<{
   
   console.log(`🦾 YOLO: Iniciando detecção em ${yoloServiceUrl}...`);
   
-  // Tentar uma única chamada rápida com confiança otimizada
-  const confidenceLevel = 0.35; // Nível balanceado
+  // Configurações otimizadas
+  const confidenceLevel = 0.30; // Mais sensível para pegar mais objetos
+  const maxRetries = 2;
   
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
-    
-    const resp = await fetch(`${yoloServiceUrl}/detect`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      signal: controller.signal,
-      body: JSON.stringify({ 
-        image_url: imageUrl, 
-        task: 'detect', // Usar detect simples, mais rápido que segment
-        confidence: confidenceLevel
-      })
-    });
-    
-    clearTimeout(timeoutId);
-    
-    if (!resp.ok) {
-      console.log(`⚠️ YOLO: Resposta ${resp.status}`);
-      return null;
-    }
-    
-    const data = await resp.json();
-    const objects: Array<{ class_name: string; score: number }> = Array.isArray(data?.objects) ? data.objects : [];
-    
-    console.log(`📊 YOLO: Detectou ${objects.length} objetos brutos`);
-    
-    if (objects.length === 0) {
-      console.log('⚠️ YOLO: Nenhum objeto detectado');
-      return null;
-    }
-    
-    // Mapear e filtrar objetos
-    const mapped = objects
-      .map(o => ({ 
-        class_name: o.class_name,
-        score: Number(o.score) || 0,
-        name: YOLO_CLASS_MAP[o.class_name?.toLowerCase()] || YOLO_CLASS_MAP[o.class_name] || ''
-      }))
-      .filter(o => o.name && o.score >= 0.25);
-    
-    console.log(`📊 YOLO: ${mapped.length} objetos mapeados para alimentos`);
-    
-    if (mapped.length === 0) {
-      return null;
-    }
-    
-    const foods: string[] = [];
-    const liquids: string[] = [];
-    let maxConfidence = 0;
-    
-    const liquidKeywords = ['copo', 'garrafa', 'taça', 'vinho', 'café', 'chá', 'suco', 'refrigerante', 'cerveja', 'leite', 'água'];
-    
-    for (const m of mapped) {
-      maxConfidence = Math.max(maxConfidence, m.score);
-      const isLiquid = liquidKeywords.some(k => m.name.includes(k));
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 20000); // 20s timeout
       
-      if (isLiquid) {
-        if (!liquids.includes(m.name)) liquids.push(m.name);
+      // Primeiro verificar se o serviço está disponível
+      if (attempt === 1) {
+        try {
+          const healthResp = await fetch(`${yoloServiceUrl}/health`, {
+            method: 'GET',
+            signal: AbortSignal.timeout(3000) // 3s para health check
+          });
+          if (healthResp.ok) {
+            const healthData = await healthResp.json();
+            console.log(`✅ YOLO Health: ${JSON.stringify(healthData)}`);
+          }
+        } catch (e) {
+          console.log(`⚠️ YOLO Health check falhou, tentando detecção mesmo assim...`);
+        }
+      }
+      
+      console.log(`🔄 YOLO: Tentativa ${attempt}/${maxRetries} com confiança ${confidenceLevel}`);
+      
+      const resp = await fetch(`${yoloServiceUrl}/detect`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        signal: controller.signal,
+        body: JSON.stringify({ 
+          image_url: imageUrl, 
+          task: 'detect',
+          confidence: confidenceLevel,
+          model: 'yolo11s-seg.pt' // Especificar modelo
+        })
+      });
+      
+      clearTimeout(timeoutId);
+      
+      if (!resp.ok) {
+        const errorText = await resp.text().catch(() => 'No error body');
+        console.log(`⚠️ YOLO: Resposta ${resp.status} - ${errorText}`);
+        
+        // Se for 500, tentar novamente
+        if (resp.status >= 500 && attempt < maxRetries) {
+          console.log(`🔄 YOLO: Erro de servidor, tentando novamente em 1s...`);
+          await new Promise(r => setTimeout(r, 1000));
+          continue;
+        }
+        return null;
+      }
+      
+      const data = await resp.json();
+      console.log(`📊 YOLO Raw Response: ${JSON.stringify(data).substring(0, 500)}`);
+      
+      const objects: Array<{ class_name: string; score: number }> = Array.isArray(data?.objects) ? data.objects : [];
+      
+      console.log(`📊 YOLO: Detectou ${objects.length} objetos brutos`);
+      
+      if (objects.length === 0) {
+        console.log('⚠️ YOLO: Nenhum objeto detectado nesta tentativa');
+        if (attempt < maxRetries) {
+          await new Promise(r => setTimeout(r, 500));
+          continue;
+        }
+        return null;
+      }
+      
+      // Mapear e filtrar objetos
+      const mapped = objects
+        .map(o => ({ 
+          class_name: o.class_name,
+          score: Number(o.score) || 0,
+          name: YOLO_CLASS_MAP[o.class_name?.toLowerCase()] || YOLO_CLASS_MAP[o.class_name] || ''
+        }))
+        .filter(o => o.name && o.score >= 0.20); // Aceitar confiança mais baixa
+      
+      console.log(`📊 YOLO: ${mapped.length} objetos mapeados para alimentos`);
+      
+      if (mapped.length === 0) {
+        // Log dos objetos não mapeados para debug
+        const unmapped = objects.filter(o => !YOLO_CLASS_MAP[o.class_name?.toLowerCase()] && !YOLO_CLASS_MAP[o.class_name]);
+        if (unmapped.length > 0) {
+          console.log(`⚠️ YOLO: ${unmapped.length} objetos sem mapeamento: ${unmapped.map(o => o.class_name).join(', ')}`);
+        }
+        return null;
+      }
+      
+      const foods: string[] = [];
+      const liquids: string[] = [];
+      let maxConfidence = 0;
+      
+      const liquidKeywords = ['copo', 'garrafa', 'taça', 'vinho', 'café', 'chá', 'suco', 'refrigerante', 'cerveja', 'leite', 'água', 'drink', 'bebida'];
+      
+      for (const m of mapped) {
+        maxConfidence = Math.max(maxConfidence, m.score);
+        const isLiquid = liquidKeywords.some(k => m.name.toLowerCase().includes(k));
+        
+        if (isLiquid) {
+          if (!liquids.includes(m.name)) liquids.push(m.name);
+        } else {
+          if (!foods.includes(m.name)) foods.push(m.name);
+        }
+      }
+      
+      const quality = maxConfidence >= 0.7 ? 'excellent' : maxConfidence >= 0.5 ? 'good' : 'fair';
+      
+      console.log(`✅ YOLO: Detecção concluída - ${foods.length} alimentos, ${liquids.length} bebidas, confiança ${maxConfidence.toFixed(2)}`);
+      
+      return {
+        foods,
+        liquids,
+        objects: mapped,
+        maxConfidence,
+        totalObjects: mapped.length,
+        detectionQuality: quality,
+        confidenceUsed: confidenceLevel
+      };
+      
+    } catch (error) {
+      const err = error as Error;
+      if (err.name === 'AbortError') {
+        console.log(`⏱️ YOLO: Timeout na tentativa ${attempt}`);
       } else {
-        if (!foods.includes(m.name)) foods.push(m.name);
+        console.error(`❌ YOLO: Erro na tentativa ${attempt}:`, err.message);
+      }
+      
+      if (attempt < maxRetries) {
+        console.log(`🔄 YOLO: Aguardando 1s antes da próxima tentativa...`);
+        await new Promise(r => setTimeout(r, 1000));
+        continue;
       }
     }
-    
-    const quality = maxConfidence >= 0.7 ? 'excellent' : maxConfidence >= 0.5 ? 'good' : 'fair';
-    
-    console.log(`✅ YOLO: Detecção concluída - ${foods.length} alimentos, ${liquids.length} bebidas, confiança ${maxConfidence.toFixed(2)}`);
-    
-    return {
-      foods,
-      liquids,
-      objects: mapped,
-      maxConfidence,
-      totalObjects: mapped.length,
-      detectionQuality: quality,
-      confidenceUsed: confidenceLevel
-    };
-    
-  } catch (error) {
-    const err = error as Error;
-    if (err.name === 'AbortError') {
-      console.log('⏱️ YOLO: Timeout após 15s');
-    } else {
-      console.error('❌ YOLO: Erro na detecção:', err.message);
-    }
-    return null;
   }
+  
+  console.log('❌ YOLO: Todas as tentativas falharam');
+  return null;
 }
 
 // 🎯 Função para calcular qualidade da detecção
