@@ -301,31 +301,34 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
           <span className="font-semibold">Dificuldade</span>
           <div className="flex items-center gap-2">
             <span className="text-muted-foreground">{diff.label || difficultyRaw || '—'}</span>
-            {/* Botões discretos de feedback */}
-            <div className="flex items-center gap-0.5 opacity-50 hover:opacity-100 transition-opacity">
+            {/* Botões de feedback com legendas */}
+            <div className="flex items-center gap-1">
               <button
                 onClick={() => saveDifficultyFeedback('facil')}
                 disabled={feedbackSaving}
-                className={`p-0.5 rounded transition-colors ${userFeedback === 'facil' ? 'text-green-500' : 'text-muted-foreground hover:text-green-500'}`}
-                title="Achei fácil"
+                className={`flex flex-col items-center px-1.5 py-0.5 rounded transition-colors ${userFeedback === 'facil' ? 'text-green-600 bg-green-500/20' : 'text-muted-foreground hover:text-green-600 hover:bg-green-500/10'}`}
+                title="Fácil"
               >
                 <ThumbsUp className="w-3 h-3" />
+                <span className="text-[7px] font-medium">Fácil</span>
               </button>
               <button
                 onClick={() => saveDifficultyFeedback('medio')}
                 disabled={feedbackSaving}
-                className={`p-0.5 rounded transition-colors ${userFeedback === 'medio' ? 'text-yellow-500' : 'text-muted-foreground hover:text-yellow-500'}`}
+                className={`flex flex-col items-center px-1.5 py-0.5 rounded transition-colors ${userFeedback === 'medio' ? 'text-yellow-600 bg-yellow-500/20' : 'text-muted-foreground hover:text-yellow-600 hover:bg-yellow-500/10'}`}
                 title="Moderado"
               >
-                <Minus className="w-3 h-3" />
+                <Target className="w-3 h-3" />
+                <span className="text-[7px] font-medium">Ok</span>
               </button>
               <button
                 onClick={() => saveDifficultyFeedback('dificil')}
                 disabled={feedbackSaving}
-                className={`p-0.5 rounded transition-colors ${userFeedback === 'dificil' ? 'text-red-500' : 'text-muted-foreground hover:text-red-500'}`}
-                title="Achei difícil"
+                className={`flex flex-col items-center px-1.5 py-0.5 rounded transition-colors ${userFeedback === 'dificil' ? 'text-red-600 bg-red-500/20' : 'text-muted-foreground hover:text-red-600 hover:bg-red-500/10'}`}
+                title="Difícil"
               >
                 <ThumbsDown className="w-3 h-3" />
+                <span className="text-[7px] font-medium">Difícil</span>
               </button>
             </div>
           </div>
@@ -450,31 +453,34 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
             <Button size="sm" onClick={resetTimer} variant="outline" className="px-3">
               Resetar
             </Button>
-            {/* Botões de avaliação ao lado */}
+            {/* Botões de avaliação com legendas */}
             <div className="flex items-center gap-1 border-l border-orange-200 dark:border-orange-700 pl-2 ml-1">
               <button
                 onClick={() => saveDifficultyFeedback('facil')}
                 disabled={feedbackSaving}
-                className={`p-1 rounded transition-colors ${userFeedback === 'facil' ? 'text-green-500 bg-green-500/20' : 'text-muted-foreground hover:text-green-500 hover:bg-green-500/10'}`}
+                className={`flex flex-col items-center px-1.5 py-0.5 rounded transition-colors ${userFeedback === 'facil' ? 'text-green-600 bg-green-500/20' : 'text-muted-foreground hover:text-green-600 hover:bg-green-500/10'}`}
                 title="Fácil"
               >
-                <ThumbsUp className="w-4 h-4" />
+                <ThumbsUp className="w-3.5 h-3.5" />
+                <span className="text-[8px] font-medium">Fácil</span>
               </button>
               <button
                 onClick={() => saveDifficultyFeedback('medio')}
                 disabled={feedbackSaving}
-                className={`p-1 rounded transition-colors ${userFeedback === 'medio' ? 'text-yellow-500 bg-yellow-500/20' : 'text-muted-foreground hover:text-yellow-500 hover:bg-yellow-500/10'}`}
+                className={`flex flex-col items-center px-1.5 py-0.5 rounded transition-colors ${userFeedback === 'medio' ? 'text-yellow-600 bg-yellow-500/20' : 'text-muted-foreground hover:text-yellow-600 hover:bg-yellow-500/10'}`}
                 title="Moderado"
               >
-                <Minus className="w-4 h-4" />
+                <Target className="w-3.5 h-3.5" />
+                <span className="text-[8px] font-medium">Ok</span>
               </button>
               <button
                 onClick={() => saveDifficultyFeedback('dificil')}
                 disabled={feedbackSaving}
-                className={`p-1 rounded transition-colors ${userFeedback === 'dificil' ? 'text-red-500 bg-red-500/20' : 'text-muted-foreground hover:text-red-500 hover:bg-red-500/10'}`}
+                className={`flex flex-col items-center px-1.5 py-0.5 rounded transition-colors ${userFeedback === 'dificil' ? 'text-red-600 bg-red-500/20' : 'text-muted-foreground hover:text-red-600 hover:bg-red-500/10'}`}
                 title="Difícil"
               >
-                <ThumbsDown className="w-4 h-4" />
+                <ThumbsDown className="w-3.5 h-3.5" />
+                <span className="text-[8px] font-medium">Difícil</span>
               </button>
             </div>
           </div>
