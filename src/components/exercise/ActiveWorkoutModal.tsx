@@ -184,8 +184,9 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
     setProgress(nextProgress);
     setIsExerciseTimerRunning(false);
 
+    // Ir direto para o próximo exercício
     if (currentIndex < totalExercises - 1) {
-      setShowTimer(true);
+      setCurrentIndex((prev) => prev + 1);
     } else {
       handleFinishWorkout(nextProgress);
     }
