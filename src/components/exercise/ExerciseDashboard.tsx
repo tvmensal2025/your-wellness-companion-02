@@ -115,31 +115,72 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
   const resolveExercisesFromActivities = useCallback(async (activities: string[]) => {
     const names = activities.map(parseActivityTitle);
 
+    // Busca em TODA a biblioteca, não apenas na localização atual
+    // para garantir que encontramos os exercícios do plano salvo
     const { data, error } = await supabase
       .from('exercises_library')
       .select('*')
-      .eq('is_active', true)
-      .eq('location', location);
+      .eq('is_active', true);
 
     if (error) throw error;
 
     const library = (data || []) as Exercise[];
-    const keyed = library.map((ex) => ({ key: normalizeKey(ex.name), ex }));
+    
+    // Criar índice com múltiplas variações do nome para melhor matching
+    const keyed = library.map((ex) => ({ 
+      key: normalizeKey(ex.name), 
+      words: normalizeKey(ex.name).split(' '),
+      ex 
+    }));
 
     const result: Exercise[] = [];
+    const usedIds = new Set<string>();
+    
     for (const name of names) {
       const key = normalizeKey(name);
-      const exact = keyed.find((k) => k.key === key)?.ex;
-      if (exact) {
-        result.push(exact);
-        continue;
+      const words = key.split(' ').filter(w => w.length > 2);
+      
+      // 1. Busca exata
+      let match = keyed.find((k) => k.key === key && !usedIds.has(k.ex.id))?.ex;
+      
+      // 2. Busca parcial - nome contém ou está contido
+      if (!match) {
+        match = keyed.find((k) => 
+          !usedIds.has(k.ex.id) && 
+          (k.key.includes(key) || key.includes(k.key))
+        )?.ex;
       }
-      const partial = keyed.find((k) => k.key.includes(key) || key.includes(k.key))?.ex;
-      if (partial) result.push(partial);
+      
+      // 3. Busca por palavras-chave (pelo menos 2 palavras coincidentes)
+      if (!match && words.length >= 1) {
+        match = keyed.find((k) => {
+          if (usedIds.has(k.ex.id)) return false;
+          const matchingWords = words.filter(w => k.words.includes(w) || k.key.includes(w));
+          return matchingWords.length >= Math.min(2, words.length);
+        })?.ex;
+      }
+      
+      // 4. Busca flexível - qualquer palavra importante coincide
+      if (!match && words.length >= 1) {
+        const importantWords = words.filter(w => 
+          !['com', 'de', 'do', 'da', 'na', 'no', 'em', 'para', 'perna', 'braco'].includes(w)
+        );
+        if (importantWords.length > 0) {
+          match = keyed.find((k) => {
+            if (usedIds.has(k.ex.id)) return false;
+            return importantWords.some(w => k.key.includes(w));
+          })?.ex;
+        }
+      }
+      
+      if (match) {
+        result.push(match);
+        usedIds.add(match.id);
+      }
     }
 
     return result;
-  }, [location]);
+  }, []);
 
   const handleStartSavedWorkout = async (weekNumber: number, activities: string[]) => {
     try {
@@ -152,11 +193,16 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
 
       if (resolved.length === 0) {
         toast({
-          title: "Não encontrei os exercícios",
-          description: "Não consegui vincular o treino salvo à biblioteca de exercícios.",
+          title: "Nenhum exercício encontrado",
+          description: "Os exercícios deste treino ainda não estão na biblioteca. Tente gerar um novo plano.",
           variant: "destructive",
         });
         return;
+      }
+
+      // Se encontramos alguns mas não todos, avisa mas continua
+      if (resolved.length < activities.length) {
+        console.log(`Encontrados ${resolved.length} de ${activities.length} exercícios`);
       }
 
       // Criar um objeto WeeklyPlan compatível
