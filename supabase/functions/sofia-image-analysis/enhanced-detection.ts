@@ -26,126 +26,278 @@ let AI_MODEL_CONFIG = {
 };
 
 // ========================================
-// 🍽️ MAPEAMENTO DE SINÔNIMOS PARA TACO
+// 🍽️ MAPEAMENTO PRECISO PARA TACO COM MÉTODO DE PREPARO
 // ========================================
-const TACO_SYNONYMS: Record<string, string> = {
-  // Proteínas
-  'frango': 'Frango',
-  'frango grelhado': 'Frango, peito, sem pele, grelhado',
-  'peito de frango': 'Frango, peito, sem pele, grelhado',
-  'carne': 'Carne, bovina',
-  'carne bovina': 'Carne, bovina, contra-filé, grelhado',
+
+// Mapeamento de preparação específica
+const TACO_PREPARO: Record<string, string> = {
+  // BATATA - diferenciar preparo (CRÍTICO!)
+  'batata frita': 'Batata, frita',
+  'batata palha': 'Batata, frita',
+  'batata chips': 'Batata, frita',
+  'batata cozida': 'Batata, cozida',
+  'batata assada': 'Batata, assada',
+  'purê de batata': 'Batata, cozida',
+  'batata': 'Batata, cozida', // default se não especificado
+  
+  // CARNE BOVINA - não confundir com frango!
   'bife': 'Carne, bovina, contra-filé, grelhado',
+  'bife grelhado': 'Carne, bovina, contra-filé, grelhado',
+  'bife frito': 'Carne, bovina, contra-filé, frito',
+  'bife acebolado': 'Carne, bovina, contra-filé, grelhado',
+  'carne bovina': 'Carne, bovina, contra-filé, grelhado',
+  'carne vermelha': 'Carne, bovina, contra-filé, grelhado',
+  'carne grelhada': 'Carne, bovina, contra-filé, grelhado',
+  'carne frita': 'Carne, bovina, contra-filé, frito',
+  'carne moída': 'Carne, bovina, moída, refogada',
+  'carne assada': 'Carne, bovina, assada',
   'picanha': 'Carne, bovina, picanha, grelhada',
-  'carne moída': 'Carne, bovina, moída, cozida',
-  'peixe': 'Peixe',
-  'salmão': 'Salmão, filé, grelhado',
-  'atum': 'Atum, enlatado',
+  'filé mignon': 'Carne, bovina, filé mignon, grelhado',
+  'alcatra': 'Carne, bovina, alcatra, grelhada',
+  'contra-filé': 'Carne, bovina, contra-filé, grelhado',
+  'costela': 'Carne, bovina, costela, assada',
+  'maminha': 'Carne, bovina, maminha, grelhada',
+  'patinho': 'Carne, bovina, patinho, grelhado',
+  'acém': 'Carne, bovina, acém, moído, refogado',
+  'lagarto': 'Carne, bovina, lagarto, cozido',
+  'cupim': 'Carne, bovina, cupim, cozido',
+  'músculo': 'Carne, bovina, músculo, cozido',
+  'carne': 'Carne, bovina, contra-filé, grelhado', // default = bovina
+  
+  // FRANGO - específico
+  'frango grelhado': 'Frango, peito, sem pele, grelhado',
+  'frango frito': 'Frango, coxa, com pele, frita',
+  'frango assado': 'Frango, inteiro, assado',
+  'frango desfiado': 'Frango, peito, sem pele, cozido',
+  'peito de frango': 'Frango, peito, sem pele, grelhado',
+  'coxa de frango': 'Frango, coxa, com pele, assada',
+  'sobrecoxa': 'Frango, sobrecoxa, com pele, assada',
+  'asa de frango': 'Frango, asa, com pele, assada',
+  'file de frango': 'Frango, peito, sem pele, grelhado',
+  'filé de frango': 'Frango, peito, sem pele, grelhado',
+  'frango empanado': 'Frango, filé, à milanesa',
+  'frango à milanesa': 'Frango, filé, à milanesa',
+  'frango': 'Frango, peito, sem pele, grelhado', // default
+  
+  // OVO - diferente por preparo
+  'ovo frito': 'Ovo, de galinha, inteiro, frito',
+  'ovo cozido': 'Ovo, de galinha, inteiro, cozido',
+  'ovo mexido': 'Ovo, de galinha, inteiro, mexido',
+  'omelete': 'Ovo, de galinha, inteiro, mexido',
   'ovo': 'Ovo, de galinha, inteiro, cozido',
   'ovos': 'Ovo, de galinha, inteiro, cozido',
-  'ovo frito': 'Ovo, de galinha, inteiro, frito',
-  'omelete': 'Ovo, de galinha, inteiro, mexido',
   
-  // Carboidratos
-  'arroz': 'Arroz, tipo 1, cozido',
+  // PEIXE
+  'peixe frito': 'Peixe, frito',
+  'peixe grelhado': 'Peixe, grelhado',
+  'salmão': 'Salmão, filé, grelhado',
+  'salmão grelhado': 'Salmão, filé, grelhado',
+  'tilápia': 'Tilápia, filé, grelhado',
+  'atum': 'Atum, enlatado',
+  'sardinha': 'Sardinha, enlatada',
+  'bacalhau': 'Bacalhau, salgado, cozido',
+  'peixe': 'Peixe, grelhado',
+  
+  // PORCO
+  'bacon': 'Bacon, grelhado',
+  'linguiça': 'Lingüiça, de porco, frita',
+  'pernil': 'Carne, suína, pernil, assado',
+  'lombo': 'Carne, suína, lombo, assado',
+  'torresmo': 'Torresmo',
+  'costelinha': 'Carne, suína, costela, assada',
+  
+  // ARROZ
   'arroz branco': 'Arroz, tipo 1, cozido',
+  'arroz': 'Arroz, tipo 1, cozido',
   'arroz integral': 'Arroz, integral, cozido',
+  'arroz carreteiro': 'Arroz, tipo 1, cozido',
+  'arroz de forno': 'Arroz, tipo 1, cozido',
+  
+  // FEIJÃO
   'feijão': 'Feijão, carioca, cozido',
   'feijão preto': 'Feijão, preto, cozido',
   'feijão carioca': 'Feijão, carioca, cozido',
-  'batata': 'Batata, cozida',
-  'batata frita': 'Batata, frita',
-  'batata doce': 'Batata doce, cozida',
-  'macarrão': 'Macarrão, trigo, cozido',
-  'massa': 'Macarrão, trigo, cozido',
-  'pão': 'Pão, francês',
-  'pão francês': 'Pão, francês',
-  'pão integral': 'Pão, de forma, integral',
+  'feijoada': 'Feijoada',
+  'tutu de feijão': 'Feijão, carioca, cozido',
   
-  // Vegetais
+  // SALGADOS E FRITURAS
+  'coxinha': 'Coxinha de frango, frita',
+  'pastel': 'Pastel, de carne, frito',
+  'empada': 'Empada de frango, pré-cozida, assada',
+  'kibe': 'Kibe, frito',
+  'bolinha de queijo': 'Bolinha de queijo, frita',
+  'risoles': 'Risoles, frito',
+  
+  // MASSAS
+  'macarrão': 'Macarrão, trigo, cozido',
+  'espaguete': 'Macarrão, trigo, cozido',
+  'lasanha': 'Lasanha, à bolonhesa',
+  'nhoque': 'Nhoque, de batata',
+  'massa': 'Macarrão, trigo, cozido',
+  
+  // VEGETAIS
   'salada': 'Alface, crespa, crua',
   'alface': 'Alface, crespa, crua',
   'tomate': 'Tomate',
   'cenoura': 'Cenoura, crua',
   'brócolis': 'Brócolis, cozido',
   'couve': 'Couve, manteiga, crua',
+  'couve refogada': 'Couve, manteiga, refogada',
   'repolho': 'Repolho, cru',
   'beterraba': 'Beterraba, crua',
   'pepino': 'Pepino, cru',
+  'abobrinha': 'Abobrinha, crua',
+  'berinjela': 'Berinjela, crua',
   
-  // Lanches e salgados
+  // LANCHES
   'pizza': 'Pizza, de mussarela',
   'hambúrguer': 'Hambúrguer, bovino, grelhado',
   'hamburger': 'Hambúrguer, bovino, grelhado',
-  'coxinha': 'Coxinha de frango, frita',
-  'pastel': 'Pastel, de carne, frito',
-  'empada': 'Empada de frango, pré-cozida, assada',
+  'sanduíche': 'Sanduíche, hambúrguer',
+  'hot dog': 'Cachorro-quente',
+  'cachorro quente': 'Cachorro-quente',
   'pão de queijo': 'Pão de queijo, assado',
+  'pão francês': 'Pão, francês',
+  'pão': 'Pão, francês',
+  'pão integral': 'Pão, de forma, integral',
   
-  // Bebidas
+  // FRUTAS
+  'banana': 'Banana, prata, crua',
+  'maçã': 'Maçã, fuji, crua',
+  'laranja': 'Laranja, pêra, crua',
+  'manga': 'Manga, palmer, crua',
+  'mamão': 'Mamão, papaia, cru',
+  'abacate': 'Abacate, cru',
+  'melancia': 'Melancia, crua',
+  'uva': 'Uva, itália, crua',
+  'morango': 'Morango, cru',
+  
+  // BEBIDAS
   'café': 'Café, infusão',
   'suco': 'Suco de laranja, integral',
   'suco de laranja': 'Suco de laranja, integral',
   'leite': 'Leite, de vaca, integral',
   'refrigerante': 'Refrigerante, tipo cola',
   
-  // Frutas
-  'banana': 'Banana, prata, crua',
-  'maçã': 'Maçã, fuji, crua',
-  'laranja': 'Laranja, pêra, crua',
-  'manga': 'Manga, palmer, crua',
-  'mamão': 'Mamão, papaia, cru',
-  
-  // Laticínios
+  // LATICÍNIOS
   'queijo': 'Queijo, minas, frescal',
   'queijo minas': 'Queijo, minas, frescal',
   'queijo mussarela': 'Queijo, mussarela',
   'iogurte': 'Iogurte, natural',
+  'requeijão': 'Requeijão, cremoso',
   
-  // Outros
+  // OUTROS
   'farofa': 'Farinha, de mandioca, torrada',
   'mandioca': 'Mandioca, cozida',
-  'milho': 'Milho, verde, cru'
+  'mandioca frita': 'Mandioca, frita',
+  'milho': 'Milho, verde, cru',
+  'polenta': 'Polenta, cozida'
+};
+
+// Aliases adicionais (sinônimos regionais)
+const TACO_SYNONYMS: Record<string, string> = {
+  ...TACO_PREPARO,
+  'macaxeira': 'mandioca',
+  'aipim': 'mandioca',
+  'churrasco': 'carne bovina',
+  'steak': 'bife',
+  'beef': 'carne bovina',
+  'chicken': 'frango',
+  'rice': 'arroz',
+  'beans': 'feijão',
+  'french fries': 'batata frita',
+  'potato': 'batata',
+  'egg': 'ovo',
+  'eggs': 'ovos'
 };
 
 // ========================================
 // 🔍 BUSCAR DADOS NUTRICIONAIS NA TACO (OTIMIZADO)
 // ========================================
 
-// Valores pré-carregados para alimentos mais comuns (evita consulta ao banco)
+// Valores TACO pré-carregados com PREPARO específico (por 100g)
 const TACO_QUICK_LOOKUP: Record<string, { kcal: number; protein: number; carbs: number; fat: number; fiber: number }> = {
+  // ARROZ
   'arroz': { kcal: 128, protein: 2.5, carbs: 28.1, fat: 0.2, fiber: 1.6 },
   'arroz branco': { kcal: 128, protein: 2.5, carbs: 28.1, fat: 0.2, fiber: 1.6 },
+  'arroz integral': { kcal: 124, protein: 2.6, carbs: 25.8, fat: 1.0, fiber: 2.7 },
+  
+  // FEIJÃO
   'feijão': { kcal: 77, protein: 4.5, carbs: 14, fat: 0.5, fiber: 8.5 },
   'feijão carioca': { kcal: 77, protein: 4.5, carbs: 14, fat: 0.5, fiber: 8.5 },
   'feijão preto': { kcal: 77, protein: 4.5, carbs: 14, fat: 0.5, fiber: 8.4 },
+  
+  // CARNE BOVINA (DIFERENTE DE FRANGO!)
+  'bife': { kcal: 219, protein: 32.8, carbs: 0, fat: 9.3, fiber: 0 },
+  'bife grelhado': { kcal: 219, protein: 32.8, carbs: 0, fat: 9.3, fiber: 0 },
+  'bife frito': { kcal: 289, protein: 28.9, carbs: 3.2, fat: 17.5, fiber: 0 },
+  'carne': { kcal: 219, protein: 32.8, carbs: 0, fat: 9.3, fiber: 0 },
+  'carne bovina': { kcal: 219, protein: 32.8, carbs: 0, fat: 9.3, fiber: 0 },
+  'carne vermelha': { kcal: 219, protein: 32.8, carbs: 0, fat: 9.3, fiber: 0 },
+  'carne grelhada': { kcal: 219, protein: 32.8, carbs: 0, fat: 9.3, fiber: 0 },
+  'carne moída': { kcal: 212, protein: 26.7, carbs: 0, fat: 11.5, fiber: 0 },
+  'picanha': { kcal: 289, protein: 27.0, carbs: 0, fat: 20.0, fiber: 0 },
+  
+  // FRANGO (SEPARADO!)
   'frango': { kcal: 159, protein: 32, carbs: 0, fat: 3.2, fiber: 0 },
   'frango grelhado': { kcal: 159, protein: 32, carbs: 0, fat: 3.2, fiber: 0 },
   'peito de frango': { kcal: 159, protein: 32, carbs: 0, fat: 3.2, fiber: 0 },
-  'carne': { kcal: 219, protein: 32.8, carbs: 0, fat: 9.3, fiber: 0 },
-  'carne bovina': { kcal: 219, protein: 32.8, carbs: 0, fat: 9.3, fiber: 0 },
-  'bife': { kcal: 219, protein: 32.8, carbs: 0, fat: 9.3, fiber: 0 },
+  'frango frito': { kcal: 249, protein: 26.8, carbs: 7.5, fat: 12.4, fiber: 0 },
+  'frango assado': { kcal: 215, protein: 28.6, carbs: 0, fat: 10.8, fiber: 0 },
+  'coxa de frango': { kcal: 215, protein: 28.6, carbs: 0, fat: 10.8, fiber: 0 },
+  
+  // BATATA (CRÍTICO: FRITA ≠ COZIDA!)
+  'batata frita': { kcal: 267, protein: 4.1, carbs: 36, fat: 12.4, fiber: 3.3 },
+  'batata palha': { kcal: 540, protein: 4.8, carbs: 52, fat: 35, fiber: 4.0 },
+  'batata': { kcal: 52, protein: 1.2, carbs: 11.9, fat: 0.1, fiber: 1.3 },
+  'batata cozida': { kcal: 52, protein: 1.2, carbs: 11.9, fat: 0.1, fiber: 1.3 },
+  'batata assada': { kcal: 86, protein: 2.0, carbs: 18.5, fat: 0.4, fiber: 1.8 },
+  'purê de batata': { kcal: 83, protein: 2.0, carbs: 12, fat: 3.0, fiber: 1.0 },
+  
+  // OVO
   'ovo': { kcal: 146, protein: 13.3, carbs: 0.6, fat: 9.5, fiber: 0 },
   'ovos': { kcal: 146, protein: 13.3, carbs: 0.6, fat: 9.5, fiber: 0 },
+  'ovo frito': { kcal: 240, protein: 15.6, carbs: 1.2, fat: 19.4, fiber: 0 },
+  'ovo cozido': { kcal: 146, protein: 13.3, carbs: 0.6, fat: 9.5, fiber: 0 },
+  'omelete': { kcal: 180, protein: 12.0, carbs: 1.5, fat: 14.0, fiber: 0 },
+  
+  // VEGETAIS
   'salada': { kcal: 11, protein: 1.3, carbs: 1.7, fat: 0.2, fiber: 1.8 },
   'alface': { kcal: 11, protein: 1.3, carbs: 1.7, fat: 0.2, fiber: 1.8 },
   'tomate': { kcal: 15, protein: 1.1, carbs: 3.1, fat: 0.2, fiber: 1.2 },
-  'batata frita': { kcal: 267, protein: 4.1, carbs: 36, fat: 12, fiber: 3.3 },
-  'batata': { kcal: 52, protein: 1.2, carbs: 11.9, fat: 0.1, fiber: 1.3 },
+  'brócolis': { kcal: 25, protein: 2.1, carbs: 4.4, fat: 0.5, fiber: 3.4 },
+  'couve': { kcal: 27, protein: 2.9, carbs: 4.3, fat: 0.5, fiber: 3.1 },
+  
+  // MASSAS E PÃES
+  'macarrão': { kcal: 102, protein: 3.4, carbs: 19.9, fat: 0.5, fiber: 1.5 },
   'pão': { kcal: 300, protein: 8, carbs: 58.6, fat: 3.1, fiber: 2.3 },
   'pão francês': { kcal: 300, protein: 8, carbs: 58.6, fat: 3.1, fiber: 2.3 },
-  'macarrão': { kcal: 102, protein: 3.4, carbs: 19.9, fat: 0.5, fiber: 1.5 },
+  
+  // SALGADOS E FRITURAS
   'pizza': { kcal: 247, protein: 10.9, carbs: 29.3, fat: 9.5, fiber: 2.1 },
   'hambúrguer': { kcal: 258, protein: 17, carbs: 3.3, fat: 20, fiber: 0 },
   'hamburger': { kcal: 258, protein: 17, carbs: 3.3, fat: 20, fiber: 0 },
+  'coxinha': { kcal: 279, protein: 9.4, carbs: 27.4, fat: 14.7, fiber: 0.8 },
+  'pastel': { kcal: 342, protein: 8.7, carbs: 28.2, fat: 21.7, fiber: 1.4 },
+  'pão de queijo': { kcal: 363, protein: 5.2, carbs: 34.2, fat: 22.7, fiber: 0.5 },
+  
+  // FRUTAS
   'banana': { kcal: 98, protein: 1.3, carbs: 26, fat: 0.1, fiber: 2 },
   'maçã': { kcal: 56, protein: 0.3, carbs: 15.2, fat: 0, fiber: 1.3 },
+  
+  // BEBIDAS
   'café': { kcal: 9, protein: 0.5, carbs: 1.5, fat: 0, fiber: 0 },
   'leite': { kcal: 61, protein: 3, carbs: 4.5, fat: 3.5, fiber: 0 },
   'suco': { kcal: 45, protein: 0.8, carbs: 10.4, fat: 0.1, fiber: 0.1 },
-  'coxinha': { kcal: 279, protein: 9.4, carbs: 27.4, fat: 14.7, fiber: 0.8 },
-  'pastel': { kcal: 342, protein: 8.7, carbs: 28.2, fat: 21.7, fiber: 1.4 },
-  'pão de queijo': { kcal: 363, protein: 5.2, carbs: 34.2, fat: 22.7, fiber: 0.5 }
+  
+  // MANDIOCA/AIPIM
+  'mandioca': { kcal: 125, protein: 0.6, carbs: 30.1, fat: 0.3, fiber: 1.9 },
+  'mandioca frita': { kcal: 304, protein: 1.1, carbs: 42, fat: 14.5, fiber: 2.1 },
+  'farofa': { kcal: 365, protein: 1.2, carbs: 82, fat: 0.7, fiber: 4.5 },
+  
+  // PORCO
+  'bacon': { kcal: 541, protein: 37, carbs: 0, fat: 42, fiber: 0 },
+  'linguiça': { kcal: 230, protein: 16, carbs: 2, fat: 18, fiber: 0 }
 };
 
 async function findInTaco(foodName: string): Promise<{
@@ -293,16 +445,29 @@ async function calculateNutritionFromTaco(foods: Array<{ name: string; grams: nu
 }
 
 // ========================================
-// 🤖 PROMPTS PARA DETECÇÃO
+// 🤖 PROMPTS PARA DETECÇÃO PRECISA
 // ========================================
-// Prompt otimizado e mais curto para resposta mais rápida
-const FOOD_DETECTION_PROMPT = `Analise esta foto de refeição brasileira.
+const FOOD_DETECTION_PROMPT = `Analise esta foto de refeição brasileira COM MÁXIMA PRECISÃO.
 
-RESPONDA APENAS JSON (sem explicação):
-{"foods":[{"name":"alimento","grams":100,"confidence":0.9}],"meal_type":"refeicao"}
+REGRAS CRÍTICAS:
+1. DIFERENCIE carne vermelha (bife, picanha) de frango - são DIFERENTES!
+2. IDENTIFIQUE o método de preparo: frito, grelhado, cozido, assado
+3. BATATA FRITA ≠ batata cozida (calorias MUITO diferentes)
+4. Se é carne marrom/escura = carne bovina. Se é clara/branca = frango.
+5. Se vir óleo/fritura = adicione "frito" ao nome
 
-Porções típicas: arroz 120g, feijão 80g, carne 120g, salada 50g, batata frita 80g, pizza fatia 120g.
-Use nomes simples: arroz, feijão, frango, carne, salada, tomate.`;
+RESPONDA APENAS JSON:
+{"foods":[{"name":"alimento com preparo","grams":100,"confidence":0.9}],"meal_type":"refeicao","needs_confirmation":false,"ambiguous_items":[]}
+
+EXEMPLOS de nomes CORRETOS:
+- "bife grelhado" (não apenas "carne")
+- "frango grelhado" (não confunda com bife)
+- "batata frita" (não apenas "batata")
+- "ovo frito" (não apenas "ovo")
+
+Porções típicas: arroz 120g, feijão 80g, bife 120g, frango 120g, batata frita 100g, salada 50g.
+
+Se houver DÚVIDA entre carne bovina e frango, defina needs_confirmation=true e liste em ambiguous_items.`;
 
 // ========================================
 // 🤖 FUNÇÃO PRINCIPAL
@@ -322,6 +487,9 @@ export async function analyzeWithEnhancedAI(
   success: boolean;
   provider?: string;
   taco_details?: any;
+  needs_confirmation?: boolean;
+  confirmation_message?: string;
+  ambiguous_items?: string[];
 }> {
   if (config) {
     AI_MODEL_CONFIG = { ...AI_MODEL_CONFIG, ...config };
@@ -380,11 +548,15 @@ export async function analyzeWithEnhancedAI(
       throw new Error('Resposta vazia');
     }
 
-    console.log(`📝 Resposta IA:`, responseText.substring(0, 200) + '...');
+    console.log(`📝 Resposta IA:`, responseText.substring(0, 300) + '...');
 
     // Parsear resposta
     const parsed = parseAIResponse(responseText);
     const foods = normalizeDetectedFoods(parsed.foods || []);
+    
+    // Verificar se precisa confirmação
+    const needsConfirmation = parsed.needs_confirmation === true;
+    const ambiguousItems = parsed.ambiguous_items || [];
 
     if (foods.length === 0) {
       console.log('⚠️ Nenhum alimento detectado');
@@ -398,6 +570,20 @@ export async function analyzeWithEnhancedAI(
     console.log(`✅ RESULTADO TACO: ${tacoNutrition.total_kcal} kcal | P: ${tacoNutrition.total_protein}g | C: ${tacoNutrition.total_carbs}g | G: ${tacoNutrition.total_fat}g`);
     console.log(`   ${tacoNutrition.foods_matched}/${foods.length} alimentos encontrados na TACO`);
 
+    // Gerar mensagem de confirmação se necessário
+    let confirmationMessage: string | undefined;
+    if (needsConfirmation && ambiguousItems.length > 0) {
+      confirmationMessage = generateConfirmationMessage(foods, ambiguousItems);
+      console.log(`⚠️ Confirmação necessária: ${confirmationMessage}`);
+    }
+
+    // Detectar automaticamente se há itens que podem causar confusão
+    const autoDetectedAmbiguous = detectAmbiguousItems(foods);
+    if (!needsConfirmation && autoDetectedAmbiguous.length > 0) {
+      confirmationMessage = generateConfirmationMessage(foods, autoDetectedAmbiguous);
+      console.log(`🔍 Auto-detecção de ambiguidade: ${confirmationMessage}`);
+    }
+
     return {
       foods,
       total_calories: tacoNutrition.total_kcal,
@@ -405,10 +591,13 @@ export async function analyzeWithEnhancedAI(
       total_carbs: tacoNutrition.total_carbs,
       total_fat: tacoNutrition.total_fat,
       attempt_used: attempt,
-      detection_method: 'lovable_taco',
+      detection_method: 'lovable_taco_precision',
       success: true,
       provider: 'lovable_ai',
-      taco_details: tacoNutrition.foods_details
+      taco_details: tacoNutrition.foods_details,
+      needs_confirmation: needsConfirmation || autoDetectedAmbiguous.length > 0,
+      confirmation_message: confirmationMessage,
+      ambiguous_items: ambiguousItems.length > 0 ? ambiguousItems : autoDetectedAmbiguous
     };
 
   } catch (error) {
@@ -421,6 +610,58 @@ export async function analyzeWithEnhancedAI(
     
     return createFallbackAnalysis();
   }
+}
+
+// ========================================
+// 🔍 DETECTAR ITENS AMBÍGUOS AUTOMATICAMENTE
+// ========================================
+function detectAmbiguousItems(foods: Array<{ name: string; grams: number; confidence: number }>): string[] {
+  const ambiguous: string[] = [];
+  
+  for (const food of foods) {
+    const name = food.name.toLowerCase();
+    
+    // Carne genérica sem especificar tipo
+    if (name === 'carne' && food.confidence < 0.85) {
+      ambiguous.push('carne (bovina ou frango?)');
+    }
+    
+    // Batata sem especificar preparo
+    if (name === 'batata' && food.confidence < 0.85) {
+      ambiguous.push('batata (frita ou cozida?)');
+    }
+    
+    // Ovo sem especificar preparo
+    if (name === 'ovo' || name === 'ovos') {
+      if (food.confidence < 0.85) {
+        ambiguous.push('ovo (frito, cozido ou mexido?)');
+      }
+    }
+    
+    // Baixa confiança geral
+    if (food.confidence < 0.6) {
+      ambiguous.push(`${food.name} (confirmação necessária)`);
+    }
+  }
+  
+  return [...new Set(ambiguous)]; // Remove duplicatas
+}
+
+// ========================================
+// 💬 GERAR MENSAGEM DE CONFIRMAÇÃO
+// ========================================
+function generateConfirmationMessage(
+  foods: Array<{ name: string; grams: number; confidence: number }>,
+  ambiguousItems: string[]
+): string {
+  const foodList = foods.map(f => `${f.name} (~${f.grams}g)`).join(', ');
+  
+  if (ambiguousItems.length === 0) {
+    return `Identifiquei: ${foodList}. Está correto?`;
+  }
+  
+  const ambiguousList = ambiguousItems.join(', ');
+  return `Identifiquei: ${foodList}.\n\n⚠️ **Preciso confirmar:** ${ambiguousList}\n\nPode me dizer qual está certo?`;
 }
 
 // ========================================
@@ -448,12 +689,43 @@ function normalizeDetectedFoods(foods: any[]): Array<{ name: string; grams: numb
   
   return foods
     .filter(f => f && (f.name || f.nome))
-    .map(food => ({
-      name: String(food.name || food.nome || 'alimento').toLowerCase().trim(),
-      grams: Math.max(Number(food.grams || food.gramas || food.quantidade) || 100, 30),
-      confidence: Math.min(Math.max(Number(food.confidence || food.confianca) || 0.7, 0.1), 1.0)
-    }))
+    .map(food => {
+      let name = String(food.name || food.nome || 'alimento').toLowerCase().trim();
+      
+      // Aplicar correções de preparo automáticas
+      name = applyPreparationCorrections(name);
+      
+      return {
+        name,
+        grams: Math.max(Number(food.grams || food.gramas || food.quantidade) || 100, 30),
+        confidence: Math.min(Math.max(Number(food.confidence || food.confianca) || 0.7, 0.1), 1.0)
+      };
+    })
     .filter(f => f.name.length > 1 && f.name !== 'undefined');
+}
+
+// ========================================
+// 🔧 CORREÇÕES AUTOMÁTICAS DE PREPARO
+// ========================================
+function applyPreparationCorrections(name: string): string {
+  // Se mencionou "frito/frita" no contexto, garantir que fica no nome
+  if (name.includes('frit')) {
+    // Já tem frito, ok
+    return name;
+  }
+  
+  // Correções específicas baseadas em contexto comum
+  const corrections: Record<string, string> = {
+    // Se alguém diz apenas "batatas" em refeição de lanchonete, provavelmente são fritas
+    'batatas': 'batata frita',
+    'french fries': 'batata frita',
+    'chips': 'batata frita',
+    // Mandioca em restaurante geralmente é frita
+    'macaxeira': 'mandioca frita',
+    'aipim': 'mandioca frita',
+  };
+  
+  return corrections[name] || name;
 }
 
 function createFallbackAnalysis() {
@@ -465,6 +737,8 @@ function createFallbackAnalysis() {
     total_fat: 15,
     attempt_used: MAX_RETRIES,
     detection_method: 'fallback',
-    success: false
+    success: false,
+    needs_confirmation: true,
+    confirmation_message: 'Não consegui identificar os alimentos com precisão. Pode descrever o que está no prato?'
   };
 }
