@@ -28,9 +28,9 @@ const plans: Plan[] = [
     billingPeriod: 'monthly',
     features: [
       '🎁 Cardápio personalizado por 2 semanas',
+      '🩺 Dicas básicas do Dr. Vital',
       'Dashboard completo',
       'Registro de peso e medidas',
-      'Dicas do Dr. Vital',
       'Gráficos de evolução',
       '3 desafios por mês'
     ],
@@ -40,15 +40,15 @@ const plans: Plan[] = [
   {
     id: 'premium',
     name: 'Premium',
-    description: 'Cardápio ilimitado + todos os recursos',
+    description: 'Método Completo + Sofia IA ilimitada',
     price: 29.90,
     billingPeriod: 'monthly',
     features: [
       '✨ Cardápios ilimitados personalizados',
-      'IA Sofia sem limites',
-      'Desafios ilimitados',
+      '🤖 Sofia IA Premium ilimitada',
+      '🩺 Protocolo Dr. Vital completo',
+      'Desafios ilimitados + badges',
       'Análises e gráficos avançados',
-      'Conquistas e badges exclusivos',
       'Suporte prioritário',
       'Sem anúncios'
     ],
@@ -58,18 +58,18 @@ const plans: Plan[] = [
   },
   {
     id: 'vip',
-    name: 'VIP',
-    description: 'Acompanhamento individual com especialistas',
+    name: 'VIP Exclusivo',
+    description: 'Acompanhamento completo + Comunidade Elite',
     price: 99.90,
     billingPeriod: 'monthly',
     features: [
       '🏆 Tudo do Premium incluído',
-      '👩‍⚕️ Sessões personalizadas',
-      '🎯 Plano personalizado exclusivo',
+      '🩺 Análise mensal com Dr. Vital',
+      '🤖 Consultoria 1:1 com Sofia IA',
+      '👥 Comunidade VIP exclusiva',
+      '🎓 Masterclasses mensais',
       '📞 Suporte WhatsApp direto',
-      '📊 Relatórios mensais detalhados',
-      '🥇 Badge VIP exclusivo',
-      'Acesso antecipado a novidades'
+      '🥇 Badge + Certificados exclusivos'
     ],
     icon: Star,
     color: 'text-amber-500'
