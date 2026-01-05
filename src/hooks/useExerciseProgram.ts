@@ -55,15 +55,23 @@ interface WorkoutLog {
   id: string;
   user_id: string;
   plan_id: string;
-  week_number: number;
-  day_number: number;
-  workout_type: string;
-  exercises: any;
-  completed: boolean;
-  completed_at?: string;
-  notes?: string;
+  workout_name: string | null;
+  exercises_completed: any | null;
+  duration_minutes: number | null;
+  calories_burned: number | null;
+  notes: string | null;
+  rating: number | null;
   created_at: string;
 }
+
+const parseWorkoutsPerWeek = (input: string): number => {
+  const nums = (input.match(/\d+/g) || [])
+    .map((n) => parseInt(n, 10))
+    .filter((n) => !Number.isNaN(n));
+
+  if (nums.length === 0) return 3;
+  return nums.length === 1 ? nums[0] : nums[nums.length - 1];
+};
 
 export const useExerciseProgram = (userId: string | undefined) => {
   const [programs, setPrograms] = useState<SavedProgram[]>([]);
@@ -160,7 +168,7 @@ export const useExerciseProgram = (userId: string | undefined) => {
       const durationWeeks = parseInt(programData.duration.split(' ')[0]) || 4;
       console.log('📊 Duração extraída:', durationWeeks, 'semanas');
       
-      const frequency = parseInt(programData.frequency.split('x')[0].replace(/\D/g, '')) || 3;
+      const frequency = parseWorkoutsPerWeek(programData.frequency);
       const totalWorkouts = durationWeeks * frequency;
 
       console.log('📋 Dados do programa:', {
@@ -259,12 +267,12 @@ export const useExerciseProgram = (userId: string | undefined) => {
         .insert({
           user_id: userId,
           plan_id: planId,
-          week_number: weekNumber,
-          day_number: dayNumber,
-          workout_type: workoutType,
-          exercises: exercises,
-          completed: true,
-          completed_at: new Date().toISOString()
+          workout_name: workoutType,
+          exercises_completed: {
+            ...exercises,
+            week_number: weekNumber,
+            day_number: dayNumber,
+          },
         });
 
       if (logError) {
@@ -278,13 +286,14 @@ export const useExerciseProgram = (userId: string | undefined) => {
       console.log('📊 Buscando dados do programa...');
       const { data: plan } = await supabase
         .from('sport_training_plans')
-        .select('completed_workouts, total_workouts, current_week, duration_weeks')
+        .select('completed_workouts, total_workouts, current_week, duration_weeks, workouts_per_week')
         .eq('id', planId)
         .single();
 
       if (plan) {
         const newCompletedWorkouts = (plan.completed_workouts || 0) + 1;
-        const shouldAdvanceWeek = newCompletedWorkouts % 3 === 0; // A cada 3 treinos avança semana
+        const workoutsPerWeek = Math.min(Math.max(plan.workouts_per_week || 3, 1), 7);
+        const shouldAdvanceWeek = newCompletedWorkouts % workoutsPerWeek === 0;
         const newWeek = shouldAdvanceWeek && plan.current_week < plan.duration_weeks
           ? plan.current_week + 1
           : plan.current_week;
@@ -301,12 +310,13 @@ export const useExerciseProgram = (userId: string | undefined) => {
 
         const { error: updateError } = await supabase
           .from('sport_training_plans')
-          .update({
-            completed_workouts: newCompletedWorkouts,
-            current_week: newWeek,
-            status: isCompleted ? 'completed' : 'active',
-            completion_date: isCompleted ? new Date().toISOString() : null
-          })
+           .update({
+             completed_workouts: newCompletedWorkouts,
+             current_week: newWeek,
+             status: isCompleted ? 'completed' : 'active',
+             completed_at: isCompleted ? new Date().toISOString() : null,
+             updated_at: new Date().toISOString()
+           })
           .eq('id', planId);
 
         if (updateError) {

@@ -81,7 +81,7 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
   const progress = (currentStep / (totalSteps + 1)) * 100;
 
   const handleAnswer = (question: keyof Answers, value: string) => {
-    setAnswers({ ...answers, [question]: value });
+    setAnswers((prev) => ({ ...prev, [question]: value }));
   };
 
   // Função para adaptar exercícios baseado na limitação
@@ -1047,8 +1047,7 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
                 experience: answers.experience,
                 location: answers.location,
                 goal: answers.goal,
-                limitation: answers.limitation,
-                frequency: answers.frequency
+                limitation: answers.limitation
               });
               setSaving(false);
               onClose();

@@ -10,14 +10,55 @@ interface StreakData {
   streakExpiresIn: number; // horas até expirar
 }
 
+const DEFAULT_STREAK: StreakData = {
+  currentStreak: 0,
+  bestStreak: 0,
+  lastActivityDate: null,
+  isActiveToday: false,
+  streakExpiresIn: 24,
+};
+
+const toIsoDate = (value: any): string | null => {
+  if (!value) return null;
+  const str = String(value);
+  // normaliza date/time → YYYY-MM-DD
+  return str.length >= 10 ? str.slice(0, 10) : str;
+};
+
+const ensureUserPointsRow = async (userId: string) => {
+  const { data, error } = await supabase
+    .from('user_points')
+    .select('current_streak, best_streak, last_activity_date')
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (error) throw error;
+
+  if (data) return data;
+
+  const { data: inserted, error: insertError } = await supabase
+    .from('user_points')
+    .insert({
+      user_id: userId,
+      total_points: 0,
+      daily_points: 0,
+      weekly_points: 0,
+      monthly_points: 0,
+      current_streak: 0,
+      best_streak: 0,
+      completed_challenges: 0,
+      level: 1,
+      last_activity_date: null,
+    })
+    .select('current_streak, best_streak, last_activity_date')
+    .single();
+
+  if (insertError) throw insertError;
+  return inserted;
+};
+
 export const useUserStreak = () => {
-  const [streakData, setStreakData] = useState<StreakData>({
-    currentStreak: 0,
-    bestStreak: 0,
-    lastActivityDate: null,
-    isActiveToday: false,
-    streakExpiresIn: 24
-  });
+  const [streakData, setStreakData] = useState<StreakData>(DEFAULT_STREAK);
   const [loading, setLoading] = useState(true);
 
   const fetchStreak = async () => {
@@ -25,36 +66,33 @@ export const useUserStreak = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { data: userPoints } = await supabase
-        .from('user_points')
-        .select('current_streak, best_streak, last_activity_date')
-        .eq('user_id', user.id)
-        .single();
+      const userPoints = await ensureUserPointsRow(user.id);
 
-      if (userPoints) {
-        const today = new Date().toISOString().split('T')[0];
-        const lastActivity = userPoints.last_activity_date;
-        const isActiveToday = lastActivity === today;
+      const today = new Date().toISOString().split('T')[0];
+      const lastActivity = toIsoDate(userPoints.last_activity_date);
+      const isActiveToday = lastActivity === today;
 
-        // Calcular horas até expirar o streak
-        let streakExpiresIn = 24;
-        if (lastActivity) {
-          const lastDate = new Date(lastActivity);
-          const tomorrow = new Date(lastDate);
-          tomorrow.setDate(tomorrow.getDate() + 1);
-          tomorrow.setHours(23, 59, 59);
-          const now = new Date();
-          streakExpiresIn = Math.max(0, Math.floor((tomorrow.getTime() - now.getTime()) / (1000 * 60 * 60)));
-        }
-
-        setStreakData({
-          currentStreak: userPoints.current_streak || 0,
-          bestStreak: userPoints.best_streak || 0,
-          lastActivityDate: lastActivity,
-          isActiveToday,
-          streakExpiresIn
-        });
+      // Calcular horas até expirar o streak
+      let streakExpiresIn = 24;
+      if (lastActivity) {
+        const lastDate = new Date(lastActivity);
+        const tomorrow = new Date(lastDate);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        tomorrow.setHours(23, 59, 59);
+        const now = new Date();
+        streakExpiresIn = Math.max(
+          0,
+          Math.floor((tomorrow.getTime() - now.getTime()) / (1000 * 60 * 60))
+        );
       }
+
+      setStreakData({
+        currentStreak: userPoints.current_streak || 0,
+        bestStreak: userPoints.best_streak || 0,
+        lastActivityDate: lastActivity,
+        isActiveToday,
+        streakExpiresIn,
+      });
     } catch (error) {
       console.error('Erro ao buscar streak:', error);
     } finally {
@@ -72,46 +110,39 @@ export const useUserStreak = () => {
       yesterday.setDate(yesterday.getDate() - 1);
       const yesterdayStr = yesterday.toISOString().split('T')[0];
 
-      const { data: userPoints } = await supabase
-        .from('user_points')
-        .select('*')
-        .eq('user_id', user.id)
-        .single();
+      const userPoints = await ensureUserPointsRow(user.id);
 
-      if (userPoints) {
-        const lastActivity = userPoints.last_activity_date;
-        let newStreak = 1;
-        
-        if (lastActivity === today) {
-          // Já registrou hoje
-          return;
-        } else if (lastActivity === yesterdayStr) {
-          // Continuando streak
-          newStreak = (userPoints.current_streak || 0) + 1;
-        }
-        // Se não for ontem, streak reseta para 1
+      const lastActivity = toIsoDate(userPoints.last_activity_date);
 
-        const newBest = Math.max(newStreak, userPoints.best_streak || 0);
-
-        await supabase
-          .from('user_points')
-          .update({
-            current_streak: newStreak,
-            best_streak: newBest,
-            last_activity_date: today,
-            updated_at: new Date().toISOString()
-          })
-          .eq('user_id', user.id);
-
-        setStreakData(prev => ({
-          ...prev,
-          currentStreak: newStreak,
-          bestStreak: newBest,
-          lastActivityDate: today,
-          isActiveToday: true,
-          streakExpiresIn: 24
-        }));
+      if (lastActivity === today) {
+        // Já registrou hoje
+        return;
       }
+
+      const newStreak = lastActivity === yesterdayStr
+        ? (userPoints.current_streak || 0) + 1
+        : 1;
+
+      const newBest = Math.max(newStreak, userPoints.best_streak || 0);
+
+      await supabase
+        .from('user_points')
+        .update({
+          current_streak: newStreak,
+          best_streak: newBest,
+          last_activity_date: today,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('user_id', user.id);
+
+      setStreakData((prev) => ({
+        ...prev,
+        currentStreak: newStreak,
+        bestStreak: newBest,
+        lastActivityDate: today,
+        isActiveToday: true,
+        streakExpiresIn: 24,
+      }));
     } catch (error) {
       console.error('Erro ao atualizar streak:', error);
     }
