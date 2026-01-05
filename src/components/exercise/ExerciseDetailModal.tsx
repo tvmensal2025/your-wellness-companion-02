@@ -514,7 +514,37 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
       <div className="space-y-1">
         <div className="flex items-center justify-between text-xs">
           <span className="font-semibold">Série atual</span>
-          <span className="text-muted-foreground">{currentSet}/{totalSets}</span>
+          <div className="flex items-center gap-2">
+            <span className="text-muted-foreground">{currentSet}/{totalSets}</span>
+            {/* Botões de avaliação discretos */}
+            <div className="flex items-center gap-0.5 opacity-60 hover:opacity-100 transition-opacity border-l border-border pl-2">
+              <span className="text-[10px] text-muted-foreground mr-1">Avaliar:</span>
+              <button
+                onClick={() => saveDifficultyFeedback('facil')}
+                disabled={feedbackSaving}
+                className={`p-0.5 rounded transition-colors ${userFeedback === 'facil' ? 'text-green-500 bg-green-500/10' : 'text-muted-foreground hover:text-green-500'}`}
+                title="Fácil"
+              >
+                <ThumbsUp className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={() => saveDifficultyFeedback('medio')}
+                disabled={feedbackSaving}
+                className={`p-0.5 rounded transition-colors ${userFeedback === 'medio' ? 'text-yellow-500 bg-yellow-500/10' : 'text-muted-foreground hover:text-yellow-500'}`}
+                title="Moderado"
+              >
+                <Minus className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={() => saveDifficultyFeedback('dificil')}
+                disabled={feedbackSaving}
+                className={`p-0.5 rounded transition-colors ${userFeedback === 'dificil' ? 'text-red-500 bg-red-500/10' : 'text-muted-foreground hover:text-red-500'}`}
+                title="Difícil"
+              >
+                <ThumbsDown className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
         </div>
         <Progress value={(currentSet / Math.max(1, totalSets)) * 100} className="h-1.5" />
         <div className="text-[11px] text-muted-foreground">
