@@ -15,7 +15,7 @@ import { SplashScreen, useSplashScreen } from "@/components/pwa/SplashScreen";
 
 // Core pages
 import AuthPage from "./pages/AuthPage";
-import HomePage from "./pages/HomePage";
+import AutoRedirect from "@/components/AutoRedirect";
 import NotFound from "./pages/NotFound";
 import TermsPage from "./pages/TermsPage";
 
@@ -65,7 +65,7 @@ const App: React.FC = () => {
           <BrowserRouter>
             <Suspense fallback={<PageLoader />}>
               <Routes>
-              <Route path="/" element={<HomePage />} />
+              <Route path="/" element={<AutoRedirect />} />
               <Route path="/auth" element={<AuthPage />} />
               <Route path="/terms" element={<TermsPage />} />
               <Route path="/termos" element={<TermsPage />} />
