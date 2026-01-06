@@ -4,7 +4,12 @@ import { useState, useEffect } from 'react';
  * Hook to detect user's preference for reduced motion
  * Respects system settings and provides performance optimization
  */
-export const useReducedMotion = (): boolean => {
+interface UseReducedMotionReturn {
+  prefersReducedMotion: boolean;
+  shouldReduceMotion: boolean;
+}
+
+export const useReducedMotion = (): UseReducedMotionReturn => {
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(() => {
     // Check on initial render
     if (typeof window === 'undefined') return false;
@@ -26,7 +31,10 @@ export const useReducedMotion = (): boolean => {
     };
   }, []);
 
-  return prefersReducedMotion;
+  return {
+    prefersReducedMotion,
+    shouldReduceMotion: prefersReducedMotion,
+  };
 };
 
 /**

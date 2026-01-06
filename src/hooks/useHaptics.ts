@@ -8,6 +8,9 @@ interface HapticsAPI {
   notification: (type: 'success' | 'warning' | 'error') => Promise<void>;
   selection: () => Promise<void>;
   vibrate: (duration?: number) => Promise<void>;
+  lightImpact: () => Promise<void>;
+  mediumImpact: () => Promise<void>;
+  heavyImpact: () => Promise<void>;
   isSupported: boolean;
 }
 
@@ -77,6 +80,19 @@ export const useHaptics = (): HapticsAPI => {
     }
   }, [isCapacitorAvailable, isVibrationSupported, haptics, isSupported]);
 
+  // Shorthand methods
+  const lightImpact = useCallback(async () => {
+    await impact('light');
+  }, [impact]);
+
+  const mediumImpact = useCallback(async () => {
+    await impact('medium');
+  }, [impact]);
+
+  const heavyImpact = useCallback(async () => {
+    await impact('heavy');
+  }, [impact]);
+
   // Notification feedback (success, warning, error)
   const notification = useCallback(async (type: 'success' | 'warning' | 'error') => {
     if (!isSupported) return;
@@ -134,6 +150,9 @@ export const useHaptics = (): HapticsAPI => {
     notification,
     selection,
     vibrate,
+    lightImpact,
+    mediumImpact,
+    heavyImpact,
     isSupported,
   };
 };
