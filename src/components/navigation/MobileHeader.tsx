@@ -28,9 +28,10 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
       style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
     >
       <div className="flex items-center justify-between h-12 px-3 relative">
-        {/* Offline Indicator */}
-        <div className="shrink-0 z-10">
+        {/* Left side - Offline Indicator + Theme Toggle */}
+        <div className="flex items-center gap-2 shrink-0 z-10">
           <OfflineIndicatorCompact />
+          <ThemeToggle variant="icon" className="h-8 w-8" />
         </div>
         
         {/* Title - Centered with absolute positioning */}
@@ -40,9 +41,8 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
           </h1>
         </div>
         
-        {/* Actions */}
+        {/* Right side - Notifications + Avatar */}
         <div className="flex items-center gap-2 shrink-0 justify-end z-10">
-          <ThemeToggle variant="icon" className="h-8 w-8" />
           <NotificationBell />
           
           {/* Avatar */}
