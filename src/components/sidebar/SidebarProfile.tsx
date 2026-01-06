@@ -63,15 +63,14 @@ export const SidebarProfile: React.FC<SidebarProfileProps> = ({
   return (
     <div className="flex flex-col items-center pt-8 pb-4 px-4 gap-3">
       <div className="relative group">
-        {/* Gradient ring around avatar */}
-        <div className="absolute -inset-1.5 bg-gradient-to-tr from-primary via-primary/50 to-primary/20 rounded-full opacity-75 group-hover:opacity-100 transition-opacity blur-sm" />
-        
         <Avatar 
-          className="relative h-16 w-16 cursor-pointer ring-2 ring-background shadow-lg hover:scale-105 transition-transform duration-200"
+          className="h-16 w-16 cursor-pointer hover:scale-105 transition-transform duration-200"
           onClick={onProfileClick}
         >
-          <AvatarImage src={avatarUrl} alt={fullName} className="object-cover" />
-          <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/40 text-primary font-bold text-lg">
+          {avatarUrl && avatarUrl.trim() ? (
+            <AvatarImage src={avatarUrl} alt={fullName} className="object-cover" />
+          ) : null}
+          <AvatarFallback className="bg-primary/10 text-primary font-bold text-lg">
             {fullName ? getInitials(fullName) : <User className="w-7 h-7" />}
           </AvatarFallback>
         </Avatar>
@@ -91,9 +90,6 @@ export const SidebarProfile: React.FC<SidebarProfileProps> = ({
             <Camera className="w-5 h-5 text-white drop-shadow-md" />
           )}
         </button>
-
-        {/* Online indicator */}
-        <div className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 rounded-full border-2 border-background shadow-sm" />
 
         <input
           ref={fileInputRef}

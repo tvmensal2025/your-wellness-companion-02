@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Upload, Camera, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { invalidateUserDataCache } from '@/hooks/useUserDataCache';
 
 interface AvatarUploadProps {
   currentAvatar?: string;
@@ -121,6 +122,9 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
       if (onAvatarUpdate) {
         onAvatarUpdate(avatarUrl);
       }
+
+      // Invalidar cache global para atualizar header imediatamente
+      invalidateUserDataCache();
 
       toast({
         title: "Sucesso!",

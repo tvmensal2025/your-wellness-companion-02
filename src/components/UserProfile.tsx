@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { invalidateUserDataCache } from '@/hooks/useUserDataCache';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -323,6 +324,10 @@ const UserProfile = ({ onOpenLayoutPrefs }: UserProfileProps = {}) => {
 
       // Atualizar estado local
       setProfile(prev => ({ ...prev, avatar_url: publicUrl }));
+      
+      // Invalidar cache global para atualizar header imediatamente
+      invalidateUserDataCache();
+      
       toast.success('Foto atualizada com sucesso!');
     } catch (error: any) {
       console.error('Error uploading avatar:', error);
@@ -344,13 +349,14 @@ const UserProfile = ({ onOpenLayoutPrefs }: UserProfileProps = {}) => {
               {/* Avatar e Info - Layout mobile first */}
               <div className="flex items-center gap-4 sm:gap-6">
                 <div className="relative group shrink-0">
-                  <Avatar className="h-16 w-16 sm:h-24 sm:w-24 border-2 sm:border-4 border-background shadow-lg">
-                    <AvatarImage src={profile.avatar_url} className="object-cover" />
-                    <AvatarFallback className="text-lg sm:text-xl bg-primary text-primary-foreground">
+                  <Avatar className="h-16 w-16 sm:h-24 sm:w-24">
+                    {profile.avatar_url && profile.avatar_url.trim() ? (
+                      <AvatarImage src={profile.avatar_url} className="object-cover" />
+                    ) : null}
+                    <AvatarFallback className="text-lg sm:text-xl bg-primary/10 text-primary">
                       {profile.full_name ? getInitials(profile.full_name) : 'U'}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 sm:w-6 sm:h-6 bg-green-500 rounded-full border-2 border-background"></div>
                   
                   {/* Botão de upload de foto */}
                   <label className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 active:opacity-100 transition-opacity cursor-pointer">
