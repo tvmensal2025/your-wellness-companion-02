@@ -31,7 +31,7 @@ const ExerciseDashboard = lazy(() => import('@/components/exercise/ExerciseDashb
 const HealthFeedPage = lazy(() => import('@/pages/HealthFeedPage'));
 const PaymentPlans = lazy(() => import('@/components/PaymentPlans'));
 const UserDrVitalPage = lazy(() => import('@/pages/UserDrVitalPage'));
-const SofiaNutricionalPage = lazy(() => import('@/pages/SofiaNutricionalPage').then(m => ({ default: m.SofiaNutricionalPage })));
+const SofiaNutricionalSection = lazy(() => import('@/components/sofia/SofiaNutricionalSection').then(m => ({ default: m.SofiaNutricionalSection })));
 const UserProfile = lazy(() => import('@/components/UserProfile'));
 const MyProgress = lazy(() => import('@/components/MyProgress'));
 const SaboteurTest = lazy(() => import('@/components/SaboteurTest'));
@@ -275,7 +275,11 @@ const CompleteDashboardPage = () => {
             <DesafiosSection user={user} />
           </div></Suspense>;
       case 'sofia-nutricional':
-        return <Suspense fallback={<SectionLoader />}><SofiaNutricionalPage key="sofia-nutricional" /></Suspense>;
+        return <Suspense fallback={<SectionLoader />}>
+          <div key="sofia-nutricional" className="p-2 sm:p-4">
+            <SofiaNutricionalSection embedded={true} />
+          </div>
+        </Suspense>;
       case 'dr-vital':
         return <Suspense fallback={<SectionLoader />}><UserDrVitalPage key="dr-vital" /></Suspense>;
       case 'exercicios':
