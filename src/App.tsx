@@ -9,6 +9,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
 import SofiaFloatingButton from "@/components/SofiaFloatingButton";
 import { createQueryClient } from "@/lib/queryConfig";
+import { InstallPrompt } from "@/components/pwa/InstallPrompt";
+import { UpdatePrompt } from "@/components/pwa/UpdatePrompt";
+import { SplashScreen, useSplashScreen } from "@/components/pwa/SplashScreen";
 
 // Core pages
 import AuthPage from "./pages/AuthPage";
@@ -47,6 +50,8 @@ const PageLoader = () => (
 const queryClient = createQueryClient();
 
 const App: React.FC = () => {
+  const { showSplash, hideSplash } = useSplashScreen();
+
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
@@ -54,6 +59,9 @@ const App: React.FC = () => {
           <Toaster />
           <Sonner />
           <OfflineIndicator />
+          <UpdatePrompt />
+          <InstallPrompt delay={60000} />
+          {showSplash && <SplashScreen onComplete={hideSplash} />}
           <BrowserRouter>
             <Suspense fallback={<PageLoader />}>
               <Routes>
