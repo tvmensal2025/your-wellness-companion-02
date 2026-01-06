@@ -229,13 +229,13 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
   };
 
   return (
-    <div className="p-2 sm:p-4 md:p-6 space-y-3 sm:space-y-5 overflow-hidden max-w-full">
+    <div className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6">
       {/* Header com informações do treino */}
       <motion.section
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="relative overflow-hidden rounded-xl sm:rounded-2xl bg-gradient-to-br from-orange-500 via-red-500 to-pink-600 px-3 py-4 sm:px-5 sm:py-6 md:px-6 md:py-8"
+        className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-orange-500 via-red-500 to-pink-600 px-4 py-5 sm:px-5 sm:py-8 md:px-8 md:py-10"
       >
         <div className="absolute top-0 right-0 w-40 sm:w-64 h-40 sm:h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
         <div className="absolute bottom-0 left-0 w-32 sm:w-48 h-32 sm:h-48 bg-black/10 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2" />

@@ -317,14 +317,14 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="w-[calc(100vw-24px)] max-w-md max-h-[85vh] p-0 overflow-hidden mx-3">
+      <DialogContent className="max-w-lg max-h-[90vh] p-0 overflow-hidden">
         <VisuallyHidden>
           <DialogTitle>Treino Ativo - {workout.title}</DialogTitle>
           <DialogDescription>Acompanhe seu progresso durante o treino</DialogDescription>
         </VisuallyHidden>
         
-        <ScrollArea className="max-h-[85vh]">
-          <div className="p-3 space-y-3">
+        <ScrollArea className="max-h-[90vh]">
+          <div className="p-4 space-y-4">
             <AnimatePresence mode="wait">
               {showTimer ? (
                 <motion.div
@@ -434,34 +434,34 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
                   {!isExerciseStarted ? (
                     <>
                       {/* Stats Cards: Séries, Repetições, Descanso */}
-                      <div className="grid grid-cols-3 gap-2">
+                      <div className="grid grid-cols-3 gap-3">
                         <Card className="border border-border/50">
-                          <CardContent className="p-2 text-center">
-                            <div className="w-6 h-6 mx-auto mb-1 rounded-full bg-orange-100 dark:bg-orange-950 flex items-center justify-center">
-                              <svg className="w-3 h-3 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <CardContent className="p-3 text-center">
+                            <div className="w-8 h-8 mx-auto mb-1 rounded-full bg-orange-100 dark:bg-orange-950 flex items-center justify-center">
+                              <svg className="w-4 h-4 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                               </svg>
                             </div>
-                            <p className="text-lg font-bold">{currentExercise.sets || '3'}</p>
-                            <p className="text-[10px] text-muted-foreground">Séries</p>
+                            <p className="text-2xl font-bold">{currentExercise.sets || '3'}</p>
+                            <p className="text-xs text-muted-foreground">Séries</p>
                           </CardContent>
                         </Card>
                         <Card className="border border-border/50">
-                          <CardContent className="p-2 text-center">
-                            <div className="w-6 h-6 mx-auto mb-1 rounded-full bg-orange-100 dark:bg-orange-950 flex items-center justify-center">
-                              <Dumbbell className="w-3 h-3 text-orange-500" />
+                          <CardContent className="p-3 text-center">
+                            <div className="w-8 h-8 mx-auto mb-1 rounded-full bg-orange-100 dark:bg-orange-950 flex items-center justify-center">
+                              <Dumbbell className="w-4 h-4 text-orange-500" />
                             </div>
-                            <p className="text-lg font-bold">{currentExercise.reps || '12'}</p>
-                            <p className="text-[10px] text-muted-foreground">Repetições</p>
+                            <p className="text-2xl font-bold">{currentExercise.reps || '12'}</p>
+                            <p className="text-xs text-muted-foreground">Repetições</p>
                           </CardContent>
                         </Card>
                         <Card className="border border-border/50">
-                          <CardContent className="p-2 text-center">
-                            <div className="w-6 h-6 mx-auto mb-1 rounded-full bg-orange-100 dark:bg-orange-950 flex items-center justify-center">
-                              <Clock className="w-3 h-3 text-orange-500" />
+                          <CardContent className="p-3 text-center">
+                            <div className="w-8 h-8 mx-auto mb-1 rounded-full bg-orange-100 dark:bg-orange-950 flex items-center justify-center">
+                              <Clock className="w-4 h-4 text-orange-500" />
                             </div>
-                            <p className="text-lg font-bold">{parseRestTime(currentExercise.rest_time)}s</p>
-                            <p className="text-[10px] text-muted-foreground">Descanso</p>
+                            <p className="text-2xl font-bold">{parseRestTime(currentExercise.rest_time)}s</p>
+                            <p className="text-xs text-muted-foreground">Descanso</p>
                           </CardContent>
                         </Card>
                       </div>
