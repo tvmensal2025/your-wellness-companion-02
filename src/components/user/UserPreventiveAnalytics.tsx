@@ -210,13 +210,15 @@ const UserPreventiveAnalytics: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 overflow-x-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-3xl font-bold">Análises Preventivas - Dr. Vital</h2>
-          <p className="text-muted-foreground">
-            Análises automáticas quinzenais e mensais da sua saúde
+      <div className="flex flex-col gap-3 sm:gap-4">
+        <div className="min-w-0">
+          <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold leading-tight">
+            Análises Preventivas
+          </h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            Análises automáticas quinzenais e mensais
           </p>
         </div>
         
@@ -225,76 +227,78 @@ const UserPreventiveAnalytics: React.FC = () => {
             onClick={() => generateAnalysis('quinzenal')}
             disabled={generating}
             variant="outline"
-            className="flex items-center gap-2"
+            size="sm"
+            className="flex items-center gap-1.5 text-xs sm:text-sm h-8 sm:h-9 px-2 sm:px-3"
           >
             {generating ? (
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+              <div className="animate-spin rounded-full h-3.5 w-3.5 border-b-2 border-blue-600"></div>
             ) : (
-              <Zap className="h-4 w-4" />
+              <Zap className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             )}
-            Gerar Quinzenal
+            <span className="hidden xs:inline">Gerar</span> Quinzenal
           </Button>
           
           <Button 
             onClick={() => generateAnalysis('mensal')}
             disabled={generating}
-            className="flex items-center gap-2"
+            size="sm"
+            className="flex items-center gap-1.5 text-xs sm:text-sm h-8 sm:h-9 px-2 sm:px-3"
           >
             {generating ? (
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              <div className="animate-spin rounded-full h-3.5 w-3.5 border-b-2 border-white"></div>
             ) : (
-              <Stethoscope className="h-4 w-4" />
+              <Stethoscope className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             )}
-            Gerar Mensal
+            <span className="hidden xs:inline">Gerar</span> Mensal
           </Button>
         </div>
       </div>
 
       {/* Tabs */}
       <Tabs value={selectedPeriod} onValueChange={(value) => setSelectedPeriod(value as any)}>
-        <TabsList>
-          <TabsTrigger value="todos">Todos</TabsTrigger>
-          <TabsTrigger value="quinzenal">Quinzenal</TabsTrigger>
-          <TabsTrigger value="mensal">Mensal</TabsTrigger>
+        <TabsList className="w-full grid grid-cols-3 h-9 sm:h-10">
+          <TabsTrigger value="todos" className="text-xs sm:text-sm px-2">Todos</TabsTrigger>
+          <TabsTrigger value="quinzenal" className="text-xs sm:text-sm px-2">Quinzenal</TabsTrigger>
+          <TabsTrigger value="mensal" className="text-xs sm:text-sm px-2">Mensal</TabsTrigger>
         </TabsList>
 
-        <TabsContent value={selectedPeriod} className="space-y-6">
+        <TabsContent value={selectedPeriod} className="space-y-4 sm:space-y-6 mt-3 sm:mt-4">
           {/* Gráficos */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 gap-4 sm:gap-6">
             {/* Tendência de Risco */}
-            <Card className="lg:col-span-2">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5" />
-                  Tendência de Risco ao Longo do Tempo
+            <Card>
+              <CardHeader className="px-3 sm:px-6 py-3 sm:py-4">
+                <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
+                  <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
+                  <span className="truncate">Tendência de Risco</span>
                 </CardTitle>
-                <CardDescription>
-                  Evolução do seu score de saúde nas últimas análises
+                <CardDescription className="text-xs sm:text-sm">
+                  Evolução do seu score de saúde
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="px-2 sm:px-6 pb-3 sm:pb-4">
                 {riskTrendData.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={300}>
+                  <ResponsiveContainer width="100%" height={200}>
                     <RechartsLineChart data={riskTrendData}>
                       <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="period" />
-                      <YAxis domain={[0, 100]} />
+                      <XAxis dataKey="period" tick={{ fontSize: 10 }} />
+                      <YAxis domain={[0, 100]} tick={{ fontSize: 10 }} width={30} />
                       <Tooltip />
                       <Line 
                         type="monotone" 
                         dataKey="score" 
                         stroke="#8884d8" 
                         strokeWidth={2}
-                        dot={{ fill: '#8884d8', strokeWidth: 2, r: 4 }}
+                        dot={{ fill: '#8884d8', strokeWidth: 2, r: 3 }}
                       />
                     </RechartsLineChart>
                   </ResponsiveContainer>
                 ) : (
-                  <div className="flex items-center justify-center h-64 text-muted-foreground">
-                    <div className="text-center">
-                      <BarChart3 className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                      <p>Nenhuma análise disponível</p>
-                      <p className="text-sm">Gere sua primeira análise para ver os gráficos</p>
+                  <div className="flex items-center justify-center h-40 sm:h-48 text-muted-foreground">
+                    <div className="text-center px-4">
+                      <BarChart3 className="h-8 w-8 sm:h-10 sm:w-10 mx-auto mb-2 opacity-50" />
+                      <p className="text-xs sm:text-sm">Nenhuma análise disponível</p>
+                      <p className="text-xs text-muted-foreground">Gere sua primeira análise</p>
                     </div>
                   </div>
                 )}
@@ -303,22 +307,22 @@ const UserPreventiveAnalytics: React.FC = () => {
 
             {/* Métricas de Saúde */}
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Heart className="h-5 w-5" />
+              <CardHeader className="px-3 sm:px-6 py-3 sm:py-4">
+                <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
+                  <Heart className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0" />
                   Métricas de Saúde
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-xs sm:text-sm">
                   Principais indicadores de bem-estar
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="px-2 sm:px-6 pb-3 sm:pb-4">
                 {metricsData.length > 0 ? (
-                  <ResponsiveContainer width="100%" height={300}>
+                  <ResponsiveContainer width="100%" height={200}>
                     <RechartsBarChart data={metricsData}>
                       <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="period" />
-                      <YAxis />
+                      <XAxis dataKey="period" tick={{ fontSize: 10 }} />
+                      <YAxis tick={{ fontSize: 10 }} width={30} />
                       <Tooltip />
                       <Bar dataKey="sleep" fill="#8884d8" />
                       <Bar dataKey="mood" fill="#82ca9d" />
@@ -326,10 +330,10 @@ const UserPreventiveAnalytics: React.FC = () => {
                     </RechartsBarChart>
                   </ResponsiveContainer>
                 ) : (
-                  <div className="flex items-center justify-center h-64 text-muted-foreground">
-                    <div className="text-center">
-                      <Activity className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                      <p>Nenhuma métrica disponível</p>
+                  <div className="flex items-center justify-center h-40 sm:h-48 text-muted-foreground">
+                    <div className="text-center px-4">
+                      <Activity className="h-8 w-8 sm:h-10 sm:w-10 mx-auto mb-2 opacity-50" />
+                      <p className="text-xs sm:text-sm">Nenhuma métrica disponível</p>
                     </div>
                   </div>
                 )}
