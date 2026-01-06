@@ -56,12 +56,12 @@ export const MotivationalMascot: React.FC = () => {
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 rounded-xl sm:rounded-2xl bg-gradient-to-r from-primary/5 to-accent/5 border border-border/30"
+      className="flex items-center gap-3 sm:gap-4 px-4 sm:px-5 py-3 sm:py-4 rounded-xl sm:rounded-2xl bg-gradient-to-r from-primary/5 to-accent/5 border border-border/30"
     >
       <motion.img
         src={mascotImage}
         alt="Instituto dos Sonhos"
-        className="w-10 h-10 sm:w-12 sm:h-12 object-contain flex-shrink-0"
+        className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 object-contain flex-shrink-0"
         animate={{ 
           y: [0, -3, 0],
         }}
@@ -71,7 +71,7 @@ export const MotivationalMascot: React.FC = () => {
           ease: "easeInOut" 
         }}
       />
-      <p className="text-xs sm:text-sm text-muted-foreground font-medium flex-1 line-clamp-2">
+      <p className="text-sm sm:text-base text-muted-foreground font-medium flex-1 line-clamp-2">
         {phrase}
       </p>
     </motion.div>

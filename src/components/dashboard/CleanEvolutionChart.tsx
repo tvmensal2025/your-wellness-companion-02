@@ -19,9 +19,9 @@ interface CleanEvolutionChartProps {
 
 // Memoized mini stat component
 const MiniStat = memo(({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) => (
-  <div className="py-2 sm:py-3 text-center">
-    <p className="text-[9px] sm:text-[10px] text-muted-foreground uppercase tracking-wide truncate">{label}</p>
-    <p className={`text-xs sm:text-sm font-semibold mt-0.5 truncate ${highlight ? 'text-primary' : 'text-foreground'}`}>
+  <div className="py-3 sm:py-4 text-center">
+    <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide truncate">{label}</p>
+    <p className={`text-sm sm:text-base font-bold mt-1 truncate ${highlight ? 'text-primary' : 'text-foreground'}`}>
       {value}
     </p>
   </div>
@@ -120,23 +120,23 @@ export const CleanEvolutionChart: React.FC<CleanEvolutionChartProps> = memo(({
       className="rounded-xl sm:rounded-2xl bg-card border border-border/50 overflow-hidden"
     >
       {/* Header */}
-      <div className="px-3 sm:px-4 pt-3 sm:pt-4 pb-2 flex items-center justify-between">
+      <div className="px-4 sm:px-5 pt-4 sm:pt-5 pb-2 sm:pb-3 flex items-center justify-between">
         <div className="min-w-0">
-          <h3 className="text-xs sm:text-sm font-medium text-foreground truncate">Evolução</h3>
-          <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 truncate">
+          <h3 className="text-sm sm:text-base font-semibold text-foreground truncate">Evolução</h3>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 truncate">
             Últimos {chartData.length} registros
           </p>
         </div>
         <div className={`text-right flex-shrink-0 ${change <= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
-          <span className="text-base sm:text-lg font-semibold">
+          <span className="text-lg sm:text-xl font-bold">
             {change > 0 ? '+' : ''}{change.toFixed(1)}
           </span>
-          <span className="text-[10px] sm:text-xs ml-0.5">kg</span>
+          <span className="text-xs sm:text-sm ml-0.5">kg</span>
         </div>
       </div>
 
       {/* Chart - altura responsiva */}
-      <div className="h-28 sm:h-36 px-1 sm:px-2">
+      <div className="h-36 sm:h-44 px-2 sm:px-3">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={chartData} margin={{ top: 5, right: 5, left: -30, bottom: 0 }}>
             <defs>
