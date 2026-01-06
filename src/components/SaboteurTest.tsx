@@ -667,7 +667,7 @@ const SaboteurTest: React.FC = () => {
                   body: { userId: user.id },
                 });
 
-                if (error || !data?.html) {
+                if (error || !data?.reportData) {
                   console.error("Erro ao gerar relatório:", error);
                   toast({
                     title: "Erro ao gerar relatório",
@@ -678,60 +678,9 @@ const SaboteurTest: React.FC = () => {
                   return;
                 }
 
-                // Criar container temporário para renderizar o HTML
-                const container = document.createElement('div');
-                container.innerHTML = data.html;
-                container.style.position = 'absolute';
-                container.style.left = '-9999px';
-                container.style.width = '800px';
-                container.style.padding = '20px';
-                container.style.backgroundColor = '#ffffff';
-                document.body.appendChild(container);
-
-                // Importar e usar html2canvas + jsPDF
-                const html2canvas = (await import('html2canvas')).default;
-                const jsPDF = (await import('jspdf')).default;
-                
-                const canvas = await html2canvas(container, {
-                  scale: 2,
-                  backgroundColor: '#ffffff',
-                  useCORS: true,
-                });
-                
-                document.body.removeChild(container);
-
-                const imgData = canvas.toDataURL('image/jpeg', 0.95);
-                const pdf = new jsPDF('p', 'mm', 'a4');
-                const pageWidth = pdf.internal.pageSize.getWidth();
-                const pageHeight = pdf.internal.pageSize.getHeight();
-                const imgWidth = pageWidth - 20;
-                const imgHeight = (canvas.height * imgWidth) / canvas.width;
-                
-                // Handle multiple pages
-                if (imgHeight <= pageHeight - 20) {
-                  pdf.addImage(imgData, 'JPEG', 10, 10, imgWidth, imgHeight);
-                } else {
-                  let position = 0;
-                  const pageImgHeight = pageHeight - 20;
-                  const pageCanvasHeight = (canvas.width * pageImgHeight) / imgWidth;
-                  
-                  while (position < canvas.height) {
-                    const pageCanvas = document.createElement('canvas');
-                    const pageCtx = pageCanvas.getContext('2d');
-                    pageCanvas.width = canvas.width;
-                    pageCanvas.height = Math.min(pageCanvasHeight, canvas.height - position);
-                    
-                    if (pageCtx) {
-                      pageCtx.drawImage(canvas, 0, position, canvas.width, pageCanvas.height, 0, 0, canvas.width, pageCanvas.height);
-                      const pageImgData = pageCanvas.toDataURL('image/jpeg', 0.95);
-                      
-                      if (position > 0) pdf.addPage();
-                      pdf.addImage(pageImgData, 'JPEG', 10, 10, imgWidth, (pageCanvas.height * imgWidth) / canvas.width);
-                    }
-                    position += pageCanvasHeight;
-                  }
-                }
-                
+                // Importar e usar o gerador de PDF nativo
+                const { generateSaboteurPDF } = await import('@/lib/generateSaboteurPDF');
+                const pdf = generateSaboteurPDF(data.reportData);
                 pdf.save(`relatorio-sabotadores-${Date.now()}.pdf`);
 
                 toast({

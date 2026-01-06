@@ -9,6 +9,20 @@ const corsHeaders = {
   "Access-Control-Max-Age": "86400",
 };
 
+// Saboteur descriptions for context
+const saboteurInfo: Record<string, { name: string; defaultDesc: string }> = {
+  critico: { name: "Crítico", defaultDesc: "Tendência a julgar a si mesmo e aos outros de forma severa." },
+  insistente: { name: "Insistente", defaultDesc: "Necessidade de perfeição e controle excessivo." },
+  prestativo: { name: "Prestativo", defaultDesc: "Foco excessivo em agradar os outros, negligenciando suas próprias necessidades." },
+  hiperrealizador: { name: "Hiper-realizador", defaultDesc: "Busca constante por conquistas para validação pessoal." },
+  vitima: { name: "Vítima", defaultDesc: "Tendência a se sentir injustiçado ou a buscar atenção através do sofrimento." },
+  hiperracional: { name: "Hiper-racional", defaultDesc: "Foco excessivo em análise lógica, negligenciando emoções." },
+  hipervigilante: { name: "Hipervigilante", defaultDesc: "Ansiedade constante sobre possíveis perigos e problemas." },
+  inquieto: { name: "Inquieto", defaultDesc: "Busca constante por novidades, dificuldade em se satisfazer com o presente." },
+  controlador: { name: "Controlador", defaultDesc: "Necessidade de estar no comando e dificuldade em delegar." },
+  esquivo: { name: "Esquivo", defaultDesc: "Tendência a evitar conflitos e situações desconfortáveis." },
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -37,7 +51,7 @@ serve(async (req) => {
 
     const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
 
-    // Buscar último resultado consolidado do teste de sabotadores
+    // Fetch saboteur test results
     const { data: sabotadorResult } = await supabase
       .from("daily_responses")
       .select("answer, created_at")
@@ -57,7 +71,7 @@ serve(async (req) => {
       }
     }
 
-    // Missão do dia / hábitos recentes
+    // Fetch mission data
     const { data: missions } = await supabase
       .from("daily_mission_sessions")
       .select("is_completed, total_points, streak_days, date")
@@ -65,7 +79,7 @@ serve(async (req) => {
       .order("date", { ascending: false })
       .limit(7);
 
-    // Dados físicos
+    // Fetch physical data
     const { data: physicalData } = await supabase
       .from("dados_físicos_do_usuário")
       .select("altura_cm, peso_atual_kg, sexo, data_nascimento, created_at")
@@ -74,7 +88,7 @@ serve(async (req) => {
       .limit(1)
       .maybeSingle();
 
-    // Bioimpedância
+    // Fetch bioimpedance
     const { data: bioData } = await supabase
       .from("bioimpedance_analysis")
       .select("analysis_result, health_score, created_at")
@@ -83,7 +97,7 @@ serve(async (req) => {
       .limit(1)
       .maybeSingle();
 
-    // Humor e emoções (chat emocional)
+    // Fetch emotional data
     const { data: emotionalData } = await supabase
       .from("chat_emotional_analysis")
       .select("sentiment_score, stress_level, energy_level, emotions_detected, emotional_topics, week_start")
@@ -92,7 +106,8 @@ serve(async (req) => {
       .limit(1)
       .maybeSingle();
 
-    const resumoMissao = missions && missions.length > 0
+    // Build mission summary
+    const missionSummary = missions && missions.length > 0
       ? {
           dias: missions.length,
           completadas: missions.filter((m) => m.is_completed).length,
@@ -101,25 +116,57 @@ serve(async (req) => {
         }
       : null;
 
-    const hoje = new Date().toISOString().split("T")[0];
+    // Get top 3 saboteurs
+    const topSaboteurs = sabotadorScores
+      ? Object.entries(sabotadorScores)
+          .map(([key, score]) => ({
+            key,
+            name: saboteurInfo[key]?.name || key,
+            score: Number(score),
+            description: "",
+          }))
+          .sort((a, b) => b.score - a.score)
+          .slice(0, 3)
+      : [];
 
-    let htmlBody = `<section>
-  <h1>Relatório Especial dos Seus Sabotadores</h1>
-  <p>Relatório gerado em ${hoje}. Este é um resumo automático do seu teste de sabotadores combinado com dados do seu comportamento recente no app.</p>
-</section>`;
+    const hoje = new Date().toLocaleDateString("pt-BR", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+    });
 
+    // Default report data
+    let reportData = {
+      title: "Relatório de Autoconhecimento",
+      date: hoje,
+      introduction: "Parabéns por dar esse passo importante de autoconhecimento! Este relatório apresenta uma análise personalizada dos seus sabotadores internos e como eles se conectam com seus hábitos e bem-estar.",
+      saboteurs: topSaboteurs.map(s => ({
+        name: s.name,
+        score: s.score,
+        description: saboteurInfo[s.key]?.defaultDesc || "Padrão comportamental identificado no seu teste.",
+      })),
+      missionSummary,
+      missionInsights: "",
+      physicalInsights: "",
+      emotionalInsights: "",
+      actionPlan: [] as string[],
+      conclusion: "Lembre-se: reconhecer seus sabotadores é o primeiro passo para a transformação. Você tem o poder de escolher respostas mais positivas a cada dia.",
+    };
+
+    // Use GPT to enhance the report
     if (OPENAI_API_KEY && sabotadorScores) {
-      const prompt = `Você é uma mentora de desenvolvimento pessoal altamente especializada em sabotadores internos, hábitos e mudança comportamental.
+      const prompt = `Você é uma mentora de desenvolvimento pessoal especializada em sabotadores internos.
 
-Crie um RELATÓRIO EM HTML (apenas o corpo em HTML, sem tag <html> ou <body>) em português do Brasil, acolhedor e motivador, com tom humano e personalizado.
+Analise os dados abaixo e retorne um JSON com os campos especificados:
 
-Use os dados abaixo para criar o conteúdo:
+[TESTE DE SABOTADORES - Scores 0-100]
+${JSON.stringify(sabotadorScores)}
 
-[TESTE DE SABOTADORES]
-Scores por sabotador (0-100): ${JSON.stringify(sabotadorScores)}
+[TOP 3 SABOTADORES]
+${JSON.stringify(topSaboteurs)}
 
-[MISSÃO DO DIA E HÁBITOS RECENTES]
-${JSON.stringify(resumoMissao)}
+[MISSÃO DO DIA - ÚLTIMOS 7 DIAS]
+${JSON.stringify(missionSummary)}
 
 [DADOS FÍSICOS]
 ${JSON.stringify(physicalData)}
@@ -130,86 +177,86 @@ ${JSON.stringify(bioData)}
 [HUMOR E EMOÇÕES]
 ${JSON.stringify(emotionalData)}
 
-INSTRUÇÕES DE ESCRITA:
-- Comece com um título forte e uma breve introdução celebrando o passo de autoconhecimento.
-- Explique de forma simples o que significam, em geral, scores altos e baixos de sabotadores.
-- Destaque de 1 a 3 sabotadores principais, explicando o impacto deles no dia a dia e os padrões mais comuns.
-- Conecte os sabotadores com hábitos e missão do dia (consistência, pontos, streak).
-- Se existirem, conecte com dados físicos/bioimpedância e emoções (ex.: estresse, energia, saúde).
-- Termine com um bloco chamado "Plano de Ação Prático" com 3 a 5 passos concretos para os próximos 7 dias.
-- Use subtítulos (<h2>, <h3>), parágrafos, listas (<ul>, <li>) e destaques em <strong> quando fizer sentido.
-- NÃO peça para a pessoa consultar o app; fale como se o relatório fosse autônomo.
-- NÃO inclua tags <html>, <head> ou <body>, apenas o conteúdo interno em HTML bem estruturado.`;
+RETORNE APENAS um JSON válido com esta estrutura:
+{
+  "introduction": "Texto de 2-3 frases acolhedor celebrando o passo de autoconhecimento",
+  "saboteurDescriptions": {
+    "${topSaboteurs[0]?.key || 'critico'}": "Descrição personalizada de 2-3 frases sobre como este sabotador se manifesta",
+    "${topSaboteurs[1]?.key || 'insistente'}": "Descrição personalizada",
+    "${topSaboteurs[2]?.key || 'prestativo'}": "Descrição personalizada"
+  },
+  "missionInsights": "Texto de 2-3 frases conectando os sabotadores com os hábitos e missões diárias",
+  "physicalInsights": "Texto de 1-2 frases sobre saúde física (ou string vazia se não houver dados)",
+  "emotionalInsights": "Texto de 1-2 frases sobre bem-estar emocional (ou string vazia se não houver dados)",
+  "actionPlan": ["Ação 1 concreta", "Ação 2 concreta", "Ação 3 concreta", "Ação 4 concreta", "Ação 5 concreta"],
+  "conclusion": "Frase motivacional de encerramento"
+}
 
-      const response = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${OPENAI_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "gpt-4o",
-          messages: [
-            {
-              role: "system",
-              content:
-                "Você é uma mentora de desenvolvimento pessoal que escreve relatórios em HTML bonitos, acolhedores e práticos.",
-            },
-            { role: "user", content: prompt },
-          ],
-          temperature: 0.7,
-          max_tokens: 1400,
-        }),
-      });
+IMPORTANTE: Retorne APENAS o JSON, sem markdown ou explicações.`;
 
-      const data = await response.json();
-      const content = data?.choices?.[0]?.message?.content as string | undefined;
+      try {
+        const response = await fetch("https://api.openai.com/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${OPENAI_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model: "gpt-4o-mini",
+            messages: [
+              {
+                role: "system",
+                content: "Você retorna apenas JSON válido, sem markdown ou explicações adicionais.",
+              },
+              { role: "user", content: prompt },
+            ],
+            temperature: 0.7,
+            max_tokens: 1200,
+          }),
+        });
 
-      if (content) {
-        htmlBody = content;
+        const data = await response.json();
+        const content = data?.choices?.[0]?.message?.content as string | undefined;
+
+        if (content) {
+          // Clean potential markdown
+          const cleanJson = content.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+          const gptData = JSON.parse(cleanJson);
+
+          // Merge GPT data with report
+          if (gptData.introduction) reportData.introduction = gptData.introduction;
+          if (gptData.missionInsights) reportData.missionInsights = gptData.missionInsights;
+          if (gptData.physicalInsights) reportData.physicalInsights = gptData.physicalInsights;
+          if (gptData.emotionalInsights) reportData.emotionalInsights = gptData.emotionalInsights;
+          if (gptData.actionPlan && Array.isArray(gptData.actionPlan)) {
+            reportData.actionPlan = gptData.actionPlan;
+          }
+          if (gptData.conclusion) reportData.conclusion = gptData.conclusion;
+
+          // Update saboteur descriptions
+          if (gptData.saboteurDescriptions) {
+            reportData.saboteurs = reportData.saboteurs.map(sab => {
+              const key = topSaboteurs.find(t => t.name === sab.name)?.key || "";
+              return {
+                ...sab,
+                description: gptData.saboteurDescriptions[key] || sab.description,
+              };
+            });
+          }
+        }
+      } catch (gptError) {
+        console.error("Erro ao processar resposta do GPT:", gptError);
+        // Continue with default data
       }
     }
 
-    const fullHtml = `<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Relatório de Sabotadores</title>
-  <style>
-    body { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; margin: 0; padding: 24px; background: #0f172a; color: #e5e7eb; }
-    main { max-width: 800px; margin: 0 auto; background: rgba(15,23,42,0.9); border-radius: 16px; padding: 32px; box-shadow: 0 25px 50px rgba(15,23,42,0.7); border: 1px solid rgba(148,163,184,0.3); }
-    h1, h2, h3 { color: #e0f2fe; }
-    h1 { font-size: 2rem; margin-bottom: 0.75rem; }
-    h2 { font-size: 1.4rem; margin-top: 1.5rem; margin-bottom: 0.5rem; }
-    h3 { font-size: 1.1rem; margin-top: 1rem; margin-bottom: 0.4rem; }
-    p { line-height: 1.6; margin-bottom: 0.9rem; color: #cbd5f5; }
-    ul { padding-left: 1.2rem; margin-bottom: 1rem; }
-    li { margin-bottom: 0.4rem; }
-    strong { color: #facc15; }
-    .tagline { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.08em; color: #a5b4fc; margin-bottom: 1rem; }
-    .badge { display: inline-block; padding: 0.25rem 0.6rem; border-radius: 999px; font-size: 0.75rem; background: rgba(59,130,246,0.15); color: #bfdbfe; margin-bottom: 1rem; }
-    footer { margin-top: 1.5rem; font-size: 0.8rem; color: #94a3b8; text-align: center; }
-  </style>
-</head>
-<body>
-  <main>
-    <div class="tagline">Relatório Personalizado de Autoconhecimento</div>
-    <div class="badge">Sabotadores • Hábitos • Emoções</div>
-    ${htmlBody}
-    <footer>
-      <p>Este relatório foi gerado automaticamente a partir das suas interações no aplicativo.</p>
-    </footer>
-  </main>
-</body>
-</html>`;
-
-    return new Response(JSON.stringify({ html: fullHtml }), {
+    // Return structured data for PDF generation
+    return new Response(JSON.stringify({ reportData }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error("Erro ao gerar relatório de sabotadores em HTML:", error);
+    console.error("Erro ao gerar relatório de sabotadores:", error);
     return new Response(JSON.stringify({ error: "Erro interno ao gerar relatório" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
