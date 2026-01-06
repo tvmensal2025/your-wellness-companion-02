@@ -433,12 +433,7 @@ O que você gostaria de conversar hoje? Pode me enviar uma foto da sua refeiçã
     }
   };
 
-  const menuItems = [
-    { id: 'goals', label: 'Metas', icon: Target, color: 'text-yellow-500' },
-    { id: 'achievements', label: 'Conquistas', icon: TrophyIcon, color: 'text-amber-500' },
-    { id: 'challenges', label: 'Desafios', icon: Flame, color: 'text-orange-500' },
-    { id: 'profile', label: 'Perfil', icon: UserIcon, color: 'text-cyan-500' },
-  ];
+  const menuItems: { id: string; label: string; icon: React.ElementType; color: string }[] = [];
 
   const handleDashboardClick = () => {
     navigate('/dashboard');
