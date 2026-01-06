@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { invalidateUserDataCache } from '@/hooks/useUserDataCache';
 
 interface ProfileData {
   fullName: string;
@@ -180,6 +181,9 @@ export const useUserProfile = (user: User | null) => {
 
       await supabase.auth.updateUser({ data: authData });
       await supabase.auth.refreshSession();
+
+      // Invalidar cache global para atualizar header imediatamente
+      invalidateUserDataCache();
 
       return { success: true };
     } catch (error) {

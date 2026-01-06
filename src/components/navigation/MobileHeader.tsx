@@ -46,11 +46,13 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
           {/* Avatar */}
           <button
             onClick={onAvatarClick}
-            className="h-7 w-7 rounded-full overflow-hidden ring-2 ring-primary/20 hover:ring-primary/40 transition-all touch-manipulation active:scale-95"
+            className="h-7 w-7 rounded-full overflow-hidden transition-all touch-manipulation active:scale-95"
             aria-label="Abrir perfil"
           >
             <Avatar className="h-7 w-7">
-              <AvatarImage src={avatarUrl} alt={userName} />
+              {avatarUrl && avatarUrl.trim() ? (
+                <AvatarImage src={avatarUrl} alt={userName} className="object-cover" />
+              ) : null}
               <AvatarFallback className="bg-primary/10 text-primary text-[10px] font-semibold">
                 {getInitials(userName)}
               </AvatarFallback>

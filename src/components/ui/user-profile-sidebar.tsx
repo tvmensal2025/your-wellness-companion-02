@@ -137,11 +137,11 @@ export function UserProfileSidebar({ user, onUpdateProfile }: UserProfileSidebar
           <Dialog open={isAvatarDialogOpen} onOpenChange={setIsAvatarDialogOpen}>
             <DialogTrigger asChild>
               <div className="cursor-pointer">
-                <Avatar className="h-20 w-20 border-4 border-primary/20 hover:border-primary/40 transition-colors">
+                <Avatar className="h-20 w-20 hover:scale-105 transition-transform">
                   {avatarData.type === 'photo' || avatarData.type === 'generated' ? (
-                    <AvatarImage src={avatarData.value} alt={userName} />
+                    <AvatarImage src={avatarData.value} alt={userName} className="object-cover" />
                   ) : null}
-                  <AvatarFallback className="bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 text-white text-2xl font-bold">
+                  <AvatarFallback className="bg-primary/10 text-primary text-2xl font-bold">
                     {avatarData.type === 'emoji' ? avatarData.value : userName.charAt(0).toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
@@ -155,9 +155,9 @@ export function UserProfileSidebar({ user, onUpdateProfile }: UserProfileSidebar
                 <div className="text-center">
                   <Avatar className="h-24 w-24 mx-auto">
                     {avatarData.type === 'photo' || avatarData.type === 'generated' ? (
-                      <AvatarImage src={avatarData.value} alt={userName} />
+                      <AvatarImage src={avatarData.value} alt={userName} className="object-cover" />
                     ) : null}
-                    <AvatarFallback className="bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 text-white text-3xl font-bold">
+                    <AvatarFallback className="bg-primary/10 text-primary text-3xl font-bold">
                       {avatarData.type === 'emoji' ? avatarData.value : userName.charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
@@ -181,11 +181,6 @@ export function UserProfileSidebar({ user, onUpdateProfile }: UserProfileSidebar
               </div>
             </DialogContent>
           </Dialog>
-          <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-3 border-background flex items-center justify-center">
-            <div className="w-2 h-2 bg-white rounded-full"></div>
-          </div>
-          {/* Indicador de Anamnese Pendente */}
-          
         </div>
         
         <div className="space-y-2">
