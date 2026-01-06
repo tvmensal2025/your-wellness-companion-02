@@ -311,17 +311,38 @@ O que você gostaria de conversar hoje? Pode me enviar uma foto da sua refeiçã
         data = analysisResult.data;
         error = analysisResult.error;
 
-        if (analysisResult.data?.success && Array.isArray(analysisResult.data.detectedFoods) && analysisResult.data.detectedFoods.length > 0) {
-          setPendingAnalysis({
-            analysisId: analysisResult.data.analysisId,
-            detectedFoods: analysisResult.data.detectedFoods,
-            userName: user.user_metadata?.full_name || user.email?.split('@')[0] || 'usuário'
-          });
-          setShowConfirmationModal(true);
-          toast({
-            title: "📸 Análise concluída!",
-            description: "Confirme os alimentos no modal.",
-          });
+        // Fluxo: quando a função pede confirmação de porções, abrir o modal
+        if (data?.success && data?.requires_confirmation) {
+          const foodsForModal = (data.food_detection?.foods_detected && data.food_detection.foods_detected.length > 0)
+            ? data.food_detection.foods_detected
+            : (data.sofia_analysis?.foods_detected && data.sofia_analysis.foods_detected.length > 0)
+              ? data.sofia_analysis.foods_detected
+              : (data.alimentos_identificados || []);
+
+          if (Array.isArray(foodsForModal) && foodsForModal.length > 0) {
+            setPendingAnalysis({
+              analysisId: String(data.analysis_id || data.analysisId || ''),
+              detectedFoods: foodsForModal,
+              userName: user.user_metadata?.full_name || user.email?.split('@')[0] || 'usuário'
+            });
+            setShowConfirmationModal(true);
+            toast({
+              title: "📸 Análise concluída!",
+              description: "Confirme as gramas no modal para calcular os nutrientes.",
+            });
+            setIsLoading(false);
+            return;
+          }
+          // Se não vier lista detectável, pelo menos mostrar a mensagem da Sofia
+          if (data?.sofia_analysis?.analysis) {
+            const sofiaResponse: Message = {
+              id: (Date.now() + 1).toString(),
+              type: 'sofia',
+              content: data.sofia_analysis.analysis,
+              timestamp: new Date()
+            };
+            setMessages(prev => [...prev, sofiaResponse]);
+          }
           setIsLoading(false);
           return;
         }
