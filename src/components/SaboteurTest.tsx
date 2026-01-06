@@ -705,23 +705,25 @@ const SaboteurTest: React.FC = () => {
           </Button>
         </div>
 
-        {/* Hidden component for screenshot */}
-        <div 
-          style={{ 
-            position: 'absolute', 
-            left: '-9999px', 
-            top: 0,
-            pointerEvents: 'none',
-          }}
-        >
-          <div ref={reportRef}>
-            <SaboteurReportImage 
-              scores={scores}
-              totalAnswered={totalAnswered}
-              date={new Date().toLocaleDateString('pt-BR')}
-            />
+        {/* Hidden component for screenshot - only render when scores exist */}
+        {Object.keys(scores).length > 0 && (
+          <div 
+            style={{ 
+              position: 'absolute', 
+              left: '-9999px', 
+              top: 0,
+              pointerEvents: 'none',
+            }}
+          >
+            <div ref={reportRef}>
+              <SaboteurReportImage 
+                scores={scores}
+                totalAnswered={totalAnswered}
+                date={new Date().toLocaleDateString('pt-BR')}
+              />
+            </div>
           </div>
-        </div>
+        )}
       </div>;
   }
   const currentQ = saboteurQuestions[currentQuestion];
