@@ -107,14 +107,14 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
 
       const avatarUrl = data.publicUrl;
 
-      // Atualizar perfil do usuário
+      // Atualizar perfil do usuário (upsert para criar se não existir)
       const { error: updateError } = await supabase
         .from('profiles')
-        .update({
+        .upsert({
+          user_id: user.id,
           avatar_url: avatarUrl,
           updated_at: new Date().toISOString()
-        })
-        .eq('user_id', user.id);
+        }, { onConflict: 'user_id' });
 
       if (updateError) throw updateError;
 
