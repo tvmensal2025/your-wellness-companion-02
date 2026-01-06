@@ -36,7 +36,7 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
       className="fixed bottom-0 left-0 right-0 z-50 lg:hidden bg-card/95 backdrop-blur-lg border-t border-border/50"
       style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
     >
-      <div className="flex items-center justify-around h-16 px-2">
+      <div className="flex items-center justify-around h-14 px-2">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeSection === item.id;
@@ -47,7 +47,7 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
               key={item.id}
               onClick={() => handleItemClick(item.id)}
               className={cn(
-                'flex flex-col items-center justify-center gap-1 flex-1 h-full min-w-0 transition-all duration-200 rounded-xl mx-0.5',
+                'flex flex-col items-center justify-center gap-0.5 flex-1 h-full min-w-0 transition-all duration-200 rounded-lg mx-0.5',
                 'active:scale-95 touch-manipulation',
                 isActive && !isMore
                   ? 'text-primary' 
@@ -58,32 +58,31 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
             >
               <div 
                 className={cn(
-                  'flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-300',
+                  'relative flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-300',
                   isActive && !isMore
-                    ? 'bg-primary/15 scale-110' 
+                    ? 'bg-primary/15 scale-105' 
                     : 'bg-transparent'
                 )}
               >
                 <Icon 
                   className={cn(
-                    'w-5 h-5 transition-all duration-300',
+                    'w-4 h-4 transition-all duration-300',
                     isActive && !isMore && 'text-primary'
                   )} 
                 />
+                {/* Active Indicator */}
+                {isActive && !isMore && (
+                  <div className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary" />
+                )}
               </div>
               <span 
                 className={cn(
-                  'text-[10px] font-medium truncate max-w-full transition-all duration-200',
+                  'text-[9px] font-medium truncate max-w-full transition-all duration-200',
                   isActive && !isMore ? 'opacity-100' : 'opacity-70'
                 )}
               >
                 {item.label}
               </span>
-              
-              {/* Indicador ativo */}
-              {isActive && !isMore && (
-                <div className="absolute bottom-1 w-1 h-1 rounded-full bg-primary animate-pulse" />
-              )}
             </button>
           );
         })}
