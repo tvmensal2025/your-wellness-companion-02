@@ -9,14 +9,11 @@ import {
   CreditCard,
   Dumbbell,
   LogOut,
-  Moon,
-  Sun,
   ChevronRight
 } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { useTheme } from 'next-themes';
 import { cn } from '@/lib/utils';
 
 export type MenuSection = 
@@ -74,8 +71,6 @@ export const MoreMenuSheet: React.FC<MoreMenuSheetProps> = ({
   onLogout,
   userProfile
 }) => {
-  const { theme, setTheme } = useTheme();
-
   const handleItemClick = (id: MenuSection) => {
     onNavigate(id);
     onOpenChange(false);
@@ -135,23 +130,6 @@ export const MoreMenuSheet: React.FC<MoreMenuSheetProps> = ({
             </p>
             <div className="space-y-0.5">
               {systemItems.map(renderMenuItem)}
-              
-              {/* Theme Toggle */}
-              <button
-                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                className="w-full flex items-center gap-2 p-2.5 rounded-lg hover:bg-muted/50 active:scale-[0.98] transition-all touch-manipulation group"
-              >
-                <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-muted/50 group-hover:bg-muted transition-colors">
-                  {theme === 'dark' ? (
-                    <Sun className="w-4 h-4 text-yellow-500" />
-                  ) : (
-                    <Moon className="w-4 h-4 text-indigo-500" />
-                  )}
-                </div>
-                <span className="text-sm font-medium text-foreground">
-                  {theme === 'dark' ? 'Modo Claro' : 'Modo Escuro'}
-                </span>
-              </button>
             </div>
           </div>
 

@@ -27,14 +27,14 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
       className="lg:hidden sticky top-0 z-40 bg-card/95 backdrop-blur-lg border-b border-border/50"
       style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
     >
-      <div className="flex items-center h-12 px-3">
+      <div className="flex items-center justify-between h-12 px-3 relative">
         {/* Offline Indicator */}
         <div className="shrink-0">
           <OfflineIndicatorCompact />
         </div>
         
-        {/* Title - Centered */}
-        <div className="flex-1 flex items-center justify-center min-w-0 px-1 max-w-[55%]">
+        {/* Title - Centered with absolute positioning */}
+        <div className="absolute left-1/2 -translate-x-1/2 max-w-[50%]">
           <h1 className="text-xs font-medium text-foreground/80 text-center leading-tight truncate">
             {title}
           </h1>
