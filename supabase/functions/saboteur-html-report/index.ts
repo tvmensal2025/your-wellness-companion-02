@@ -1,13 +1,54 @@
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { createClient } from "jsr:@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-requested-with, Authorization, X-Client-Info, Content-Type",
-  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-  "Access-Control-Max-Age": "86400",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+// Lovable AI endpoint - FREE (no cost per request)
+const LOVABLE_AI_URL = "https://ai.lovable.dev/api/chat";
+
+async function callLovableAI(prompt: string): Promise<string> {
+  const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
+  
+  if (!lovableApiKey) {
+    console.error("LOVABLE_API_KEY not configured");
+    throw new Error("LOVABLE_API_KEY not configured");
+  }
+
+  console.log("Calling Lovable AI (FREE) with Gemini 2.5 Flash...");
+
+  const response = await fetch(LOVABLE_AI_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${lovableApiKey}`,
+    },
+    body: JSON.stringify({
+      model: "google/gemini-2.5-flash",
+      messages: [
+        { 
+          role: "system", 
+          content: "Você é uma mentora de desenvolvimento pessoal. Retorne apenas JSON válido, sem markdown ou explicações." 
+        },
+        { role: "user", content: prompt }
+      ],
+      temperature: 0.7,
+      max_tokens: 2000,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error("Lovable AI error:", response.status, errorText);
+    throw new Error(`Lovable AI error: ${response.status}`);
+  }
+
+  const data = await response.json();
+  console.log("Lovable AI response received successfully");
+  return data.choices?.[0]?.message?.content || "";
+}
 
 // Saboteur descriptions for context
 const saboteurInfo: Record<string, { name: string; defaultDesc: string }> = {
@@ -23,7 +64,7 @@ const saboteurInfo: Record<string, { name: string; defaultDesc: string }> = {
   esquivo: { name: "Esquivo", defaultDesc: "Tendência a evitar conflitos e situações desconfortáveis." },
 };
 
-serve(async (req) => {
+Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -49,7 +90,7 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 
     // Fetch saboteur test results
     const { data: sabotadorResult } = await supabase
@@ -153,8 +194,8 @@ serve(async (req) => {
       conclusion: "Lembre-se: reconhecer seus sabotadores é o primeiro passo para a transformação. Você tem o poder de escolher respostas mais positivas a cada dia.",
     };
 
-    // Use GPT to enhance the report
-    if (OPENAI_API_KEY && sabotadorScores) {
+    // Use Lovable AI (FREE) to enhance the report
+    if (LOVABLE_API_KEY && sabotadorScores) {
       const prompt = `Você é uma mentora de desenvolvimento pessoal especializada em sabotadores internos.
 
 Analise os dados abaixo e retorne um JSON com os campos especificados:
@@ -204,61 +245,39 @@ IMPORTANTE:
 - Se physicalData ou emotionalData estiverem vazios/null, retorne string vazia para physicalInsights/emotionalInsights.`;
 
       try {
-        const response = await fetch("https://api.openai.com/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${OPENAI_API_KEY}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            model: "gpt-4o-mini",
-            messages: [
-              {
-                role: "system",
-                content: "Você retorna apenas JSON válido, sem markdown ou explicações adicionais.",
-              },
-              { role: "user", content: prompt },
-            ],
-            temperature: 0.7,
-            max_tokens: 1200,
-          }),
-        });
-
-        const data = await response.json();
-        const content = data?.choices?.[0]?.message?.content as string | undefined;
+        const content = await callLovableAI(prompt);
 
         if (content) {
           // Clean potential markdown
           const cleanJson = content.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
-          const gptData = JSON.parse(cleanJson);
+          const aiData = JSON.parse(cleanJson);
 
-          // Merge GPT data with report
-          if (gptData.introduction) reportData.introduction = gptData.introduction;
-          if (gptData.missionInsights) reportData.missionInsights = gptData.missionInsights;
-          if (gptData.physicalInsights) reportData.physicalInsights = gptData.physicalInsights;
-          if (gptData.emotionalInsights) reportData.emotionalInsights = gptData.emotionalInsights;
-          if (gptData.actionPlan && Array.isArray(gptData.actionPlan)) {
-            reportData.actionPlan = gptData.actionPlan;
+          // Merge AI data with report
+          if (aiData.introduction) reportData.introduction = aiData.introduction;
+          if (aiData.missionInsights) reportData.missionInsights = aiData.missionInsights;
+          if (aiData.physicalInsights) reportData.physicalInsights = aiData.physicalInsights;
+          if (aiData.emotionalInsights) reportData.emotionalInsights = aiData.emotionalInsights;
+          if (aiData.actionPlan && Array.isArray(aiData.actionPlan)) {
+            reportData.actionPlan = aiData.actionPlan;
           }
-          if (gptData.conclusion) reportData.conclusion = gptData.conclusion;
+          if (aiData.conclusion) reportData.conclusion = aiData.conclusion;
 
           // Update saboteur descriptions
-          if (gptData.saboteurDescriptions) {
+          if (aiData.saboteurDescriptions) {
             reportData.saboteurs = reportData.saboteurs.map(sab => {
               const key = topSaboteurs.find(t => t.name === sab.name)?.key || "";
               return {
                 ...sab,
-                description: gptData.saboteurDescriptions[key] || sab.description,
+                description: aiData.saboteurDescriptions[key] || sab.description,
               };
             });
           }
         }
-      } catch (gptError) {
-        console.error("Erro ao processar resposta do GPT:", gptError);
+      } catch (aiError) {
+        console.error("Erro ao processar resposta do Lovable AI:", aiError);
         // Continue with default data
       }
     }
-
     // Return structured data for PDF generation
     return new Response(JSON.stringify({ reportData }), {
       status: 200,
