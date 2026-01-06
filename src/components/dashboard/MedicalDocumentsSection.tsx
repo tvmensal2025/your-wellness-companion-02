@@ -771,62 +771,62 @@ const MedicalDocumentsSection: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 overflow-x-hidden">
       {/* Cards de Estatísticas */}
       {stats && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
           <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center space-x-2">
-                <FileText className="w-4 h-4" />
-                <span>Total de Documentos</span>
+            <CardHeader className="pb-1 sm:pb-2 px-3 pt-3 sm:px-4 sm:pt-4">
+              <CardTitle className="text-xs sm:text-sm flex items-center gap-1.5">
+                <FileText className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+                <span className="truncate">Total Docs</span>
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.totalDocuments}</div>
-              <p className="text-xs opacity-90">Documentos armazenados</p>
+            <CardContent className="px-3 pb-3 sm:px-4 sm:pb-4">
+              <div className="text-lg sm:text-2xl font-bold">{stats.totalDocuments}</div>
+              <p className="text-[10px] sm:text-xs opacity-90">Armazenados</p>
             </CardContent>
           </Card>
 
           <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center space-x-2">
-                <TrendingUp className="w-4 h-4" />
-                <span>Score de Saúde</span>
+            <CardHeader className="pb-1 sm:pb-2 px-3 pt-3 sm:px-4 sm:pt-4">
+              <CardTitle className="text-xs sm:text-sm flex items-center gap-1.5">
+                <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+                <span className="truncate">Score Saúde</span>
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.healthScore}/100</div>
-              <p className="text-xs opacity-90">
+            <CardContent className="px-3 pb-3 sm:px-4 sm:pb-4">
+              <div className="text-lg sm:text-2xl font-bold">{stats.healthScore}/100</div>
+              <p className="text-[10px] sm:text-xs opacity-90">
                 {stats.healthScore >= 80 ? 'Excelente!' : 
-                 stats.healthScore >= 60 ? 'Bom' : 'Precisa melhorar'}
+                 stats.healthScore >= 60 ? 'Bom' : 'Melhorar'}
               </p>
             </CardContent>
           </Card>
 
           <Card className="bg-gradient-to-r from-orange-500 to-orange-600 text-white">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center space-x-2">
-                <AlertTriangle className="w-4 h-4" />
-                <span>Alertas Críticos</span>
+            <CardHeader className="pb-1 sm:pb-2 px-3 pt-3 sm:px-4 sm:pt-4">
+              <CardTitle className="text-xs sm:text-sm flex items-center gap-1.5">
+                <AlertTriangle className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+                <span className="truncate">Alertas</span>
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.criticalAlerts}</div>
-              <p className="text-xs opacity-90">Documentos críticos</p>
+            <CardContent className="px-3 pb-3 sm:px-4 sm:pb-4">
+              <div className="text-lg sm:text-2xl font-bold">{stats.criticalAlerts}</div>
+              <p className="text-[10px] sm:text-xs opacity-90">Críticos</p>
             </CardContent>
           </Card>
 
           <Card className="bg-gradient-to-r from-purple-500 to-purple-600 text-white">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center space-x-2">
-                <Clock className="w-4 h-4" />
-                <span>Próximos Exames</span>
+            <CardHeader className="pb-1 sm:pb-2 px-3 pt-3 sm:px-4 sm:pt-4">
+              <CardTitle className="text-xs sm:text-sm flex items-center gap-1.5">
+                <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+                <span className="truncate">Próximos</span>
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.upcomingExams}</div>
-              <p className="text-xs opacity-90">Agendados</p>
+            <CardContent className="px-3 pb-3 sm:px-4 sm:pb-4">
+              <div className="text-lg sm:text-2xl font-bold">{stats.upcomingExams}</div>
+              <p className="text-[10px] sm:text-xs opacity-90">Agendados</p>
             </CardContent>
           </Card>
         </div>
@@ -834,41 +834,43 @@ const MedicalDocumentsSection: React.FC = () => {
 
       {/* Seção Principal */}
       <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center space-x-2">
-                <Stethoscope className="w-5 h-5" />
-                <span>Documentos Médicos</span>
+        <CardHeader className="px-3 sm:px-6 py-3 sm:py-4">
+          <div className="flex flex-col gap-3">
+            <div className="min-w-0">
+              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                <Stethoscope className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                <span className="truncate">Documentos Médicos</span>
               </CardTitle>
-              <CardDescription>
-                Gerencie seus exames, relatórios e documentos médicos
+              <CardDescription className="text-xs sm:text-sm mt-1">
+                Gerencie seus exames e relatórios
               </CardDescription>
             </div>
-            <div className="flex items-center space-x-2">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
               {accessLoading ? (
-                <Button disabled className="flex items-center space-x-2">
-                  <Clock className="w-4 h-4 animate-spin" />
+                <Button disabled size="sm" className="flex items-center gap-1.5 h-8 text-xs">
+                  <Clock className="w-3.5 h-3.5 animate-spin" />
                   <span>Verificando...</span>
                 </Button>
               ) : canAccess ? (
                 <Button
                   onClick={() => setShowUploadModal(true)}
-                  className="flex items-center space-x-2 bg-red-600 hover:bg-red-700"
+                  size="sm"
+                  className="flex items-center gap-1.5 bg-red-600 hover:bg-red-700 h-8 text-xs sm:text-sm"
                 >
-                  <Plus className="w-4 h-4" />
+                  <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   <span>Adicionar Documento</span>
                 </Button>
               ) : (
-                <div className="flex flex-col items-end space-y-1">
+                <div className="flex flex-col gap-1">
                   <Button
                     disabled
-                    className="flex items-center space-x-2 opacity-60"
+                    size="sm"
+                    className="flex items-center gap-1.5 opacity-60 h-8 text-xs"
                   >
-                    <Clock className="w-4 h-4" />
+                    <Clock className="w-3.5 h-3.5" />
                     <span>Limite Mensal Atingido</span>
                   </Button>
-                  <Badge variant="secondary" className="text-xs">
+                  <Badge variant="secondary" className="text-[10px] sm:text-xs w-fit">
                     Próximo acesso em {daysUntilNextAccess} dias
                   </Badge>
                 </div>
@@ -876,17 +878,16 @@ const MedicalDocumentsSection: React.FC = () => {
             </div>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
           {/* Informação sobre limite mensal */}
           {!accessLoading && !canAccess && (
-            <div className="mb-4 p-4 bg-orange-50 border border-orange-200 rounded-lg">
-              <div className="flex items-center space-x-2">
-                <AlertTriangle className="w-5 h-5 text-orange-600" />
-                <div>
-                  <h4 className="font-medium text-orange-800">Limite Mensal Atingido</h4>
-                  <p className="text-sm text-orange-700">
-                    Você já utilizou seu acesso aos exames este mês. 
-                    Próximo acesso disponível em {daysUntilNextAccess} dias.
+            <div className="mb-3 sm:mb-4 p-3 sm:p-4 bg-orange-50 border border-orange-200 rounded-lg">
+              <div className="flex items-start gap-2">
+                <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600 flex-shrink-0 mt-0.5" />
+                <div className="min-w-0">
+                  <h4 className="font-medium text-orange-800 text-sm">Limite Mensal Atingido</h4>
+                  <p className="text-xs sm:text-sm text-orange-700 mt-0.5">
+                    Você já utilizou seu acesso este mês. Próximo acesso em {daysUntilNextAccess} dias.
                   </p>
                 </div>
               </div>
@@ -894,36 +895,31 @@ const MedicalDocumentsSection: React.FC = () => {
           )}
 
           {/* Filtros e Busca */}
-          <div className="flex flex-col md:flex-row gap-4 mb-6">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                <Input
-                  placeholder="Buscar documentos..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
+          <div className="flex flex-col gap-3 mb-4 sm:mb-6">
+            <div className="relative">
+              <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Input
+                placeholder="Buscar documentos..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-9 h-9 text-sm"
+              />
             </div>
-            <div className="flex items-center space-x-2">
-              <Filter className="w-4 h-4 text-gray-400" />
+            <div className="flex items-center gap-2">
+              <Filter className="w-4 h-4 text-gray-400 flex-shrink-0" />
               <select
                 value={filterType}
                 onChange={(e) => setFilterType(e.target.value)}
-                className="border rounded-md px-3 py-2 text-sm"
+                className="flex-1 h-9 rounded-md border border-input bg-background px-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               >
                 <option value="all">Todos os tipos</option>
                 <option value="exame_laboratorial">Exames Laboratoriais</option>
                 <option value="exame_imagem">Exames de Imagem</option>
-                <option value="relatorio_medico">Relatórios Médicos</option>
+                <option value="relatorio_medico">Relatórios</option>
                 <option value="prescricao">Prescrições</option>
-                <option value="historico_clinico">Histórico Clínico</option>
-                <option value="certificado_medico">Certificados</option>
               </select>
             </div>
           </div>
-
           {/* Lista de Documentos */}
           <div className="space-y-4">
             {filteredDocuments.length > 0 ? (
