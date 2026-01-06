@@ -656,7 +656,7 @@ const SaboteurTest: React.FC = () => {
                 if (!user) {
                   toast({
                     title: "Faça login para gerar o relatório",
-                    description: "Você precisa estar autenticado para salvar o relatório em HTML.",
+                    description: "Você precisa estar autenticado para salvar o relatório em PDF.",
                     variant: "destructive",
                   });
                   setIsGeneratingHtml(false);
@@ -668,7 +668,7 @@ const SaboteurTest: React.FC = () => {
                 });
 
                 if (error || !data?.html) {
-                  console.error("Erro ao gerar HTML:", error);
+                  console.error("Erro ao gerar relatório:", error);
                   toast({
                     title: "Erro ao gerar relatório",
                     description: "Tente novamente em alguns instantes.",
@@ -678,19 +678,65 @@ const SaboteurTest: React.FC = () => {
                   return;
                 }
 
-                const blob = new Blob([data.html], { type: "text/html;charset=utf-8" });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement("a");
-                a.href = url;
-                a.download = `relatorio-sabotadores-${Date.now()}.html`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
+                // Criar container temporário para renderizar o HTML
+                const container = document.createElement('div');
+                container.innerHTML = data.html;
+                container.style.position = 'absolute';
+                container.style.left = '-9999px';
+                container.style.width = '800px';
+                container.style.padding = '20px';
+                container.style.backgroundColor = '#ffffff';
+                document.body.appendChild(container);
+
+                // Importar e usar html2canvas + jsPDF
+                const html2canvas = (await import('html2canvas')).default;
+                const jsPDF = (await import('jspdf')).default;
+                
+                const canvas = await html2canvas(container, {
+                  scale: 2,
+                  backgroundColor: '#ffffff',
+                  useCORS: true,
+                });
+                
+                document.body.removeChild(container);
+
+                const imgData = canvas.toDataURL('image/jpeg', 0.95);
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const pageWidth = pdf.internal.pageSize.getWidth();
+                const pageHeight = pdf.internal.pageSize.getHeight();
+                const imgWidth = pageWidth - 20;
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                
+                // Handle multiple pages
+                if (imgHeight <= pageHeight - 20) {
+                  pdf.addImage(imgData, 'JPEG', 10, 10, imgWidth, imgHeight);
+                } else {
+                  let position = 0;
+                  const pageImgHeight = pageHeight - 20;
+                  const pageCanvasHeight = (canvas.width * pageImgHeight) / imgWidth;
+                  
+                  while (position < canvas.height) {
+                    const pageCanvas = document.createElement('canvas');
+                    const pageCtx = pageCanvas.getContext('2d');
+                    pageCanvas.width = canvas.width;
+                    pageCanvas.height = Math.min(pageCanvasHeight, canvas.height - position);
+                    
+                    if (pageCtx) {
+                      pageCtx.drawImage(canvas, 0, position, canvas.width, pageCanvas.height, 0, 0, canvas.width, pageCanvas.height);
+                      const pageImgData = pageCanvas.toDataURL('image/jpeg', 0.95);
+                      
+                      if (position > 0) pdf.addPage();
+                      pdf.addImage(pageImgData, 'JPEG', 10, 10, imgWidth, (pageCanvas.height * imgWidth) / canvas.width);
+                    }
+                    position += pageCanvasHeight;
+                  }
+                }
+                
+                pdf.save(`relatorio-sabotadores-${Date.now()}.pdf`);
 
                 toast({
                   title: "Relatório gerado com sucesso!",
-                  description: "O arquivo HTML foi baixado para o seu dispositivo.",
+                  description: "O arquivo PDF foi baixado para o seu dispositivo.",
                 });
               } catch (err) {
                 console.error("Erro inesperado:", err);
@@ -704,7 +750,7 @@ const SaboteurTest: React.FC = () => {
               }
             }}
           >
-            {isGeneratingHtml ? "Gerando..." : "Baixar Relatório em HTML"}
+            {isGeneratingHtml ? "Gerando PDF..." : "Baixar Relatório em PDF"}
           </Button>
         </div>
       </div>;
