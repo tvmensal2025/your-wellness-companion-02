@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -24,13 +24,13 @@ import {
   Star,
   Trophy,
   Timer,
-  Users,
   AlertTriangle
 } from 'lucide-react';
 import { useExerciseProgram } from '@/hooks/useExerciseProgram';
 import { User } from '@supabase/supabase-js';
 import { parseWeekPlan } from '@/utils/workoutParser';
 import { generateRecommendation, UserAnswers } from '@/hooks/useExerciseRecommendation';
+import { useExerciseProfileData } from '@/hooks/useExerciseProfileData';
 
 interface ExerciseOnboardingModalProps {
   isOpen: boolean;
@@ -38,7 +38,8 @@ interface ExerciseOnboardingModalProps {
   user?: User | null;
 }
 
-type Step = 'welcome' | 'question1' | 'question2' | 'question3' | 'question4' | 'question5' | 'question6' | 'question7' | 'question8' | 'question9' | 'question10' | 'question11' | 'result';
+// Removido: question8 (gênero) e question10 (idade) - buscamos do perfil do usuário
+type Step = 'welcome' | 'question1' | 'question2' | 'question3' | 'question4' | 'question5' | 'question6' | 'question7' | 'question8' | 'question9' | 'result';
 
 interface Answers {
   level: string;
@@ -48,10 +49,8 @@ interface Answers {
   location: string;
   goal: string;
   limitation: string;
-  // Novas perguntas
-  gender: string;
+  // Novas perguntas (gênero e idade vêm do perfil)
   bodyFocus: string;
-  ageGroup: string;
   specialCondition: string;
 }
 
@@ -69,15 +68,17 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
     location: '',
     goal: '',
     limitation: '',
-    gender: '',
     bodyFocus: '',
-    ageGroup: '',
     specialCondition: '',
   });
   const [saving, setSaving] = useState(false);
   const { saveProgram } = useExerciseProgram(user?.id);
+  
+  // Buscar gênero e idade do perfil do usuário
+  const { profileData, isLoading: profileLoading } = useExerciseProfileData(user?.id);
 
-  const totalSteps = 11;
+  // 9 perguntas agora (removemos gênero e idade)
+  const totalSteps = 9;
   const currentStep = step === 'welcome' ? 0 : 
                      step === 'question1' ? 1 :
                      step === 'question2' ? 2 :
@@ -87,9 +88,7 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
                      step === 'question6' ? 6 :
                      step === 'question7' ? 7 :
                      step === 'question8' ? 8 :
-                     step === 'question9' ? 9 :
-                     step === 'question10' ? 10 :
-                     step === 'question11' ? 11 : 12;
+                     step === 'question9' ? 9 : 10;
 
   const progress = (currentStep / (totalSteps + 1)) * 100;
 
@@ -145,7 +144,7 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
               3 minutos
             </Badge>
             <Badge variant="secondary" className="bg-red-100 text-red-800 text-[11px] md:text-xs px-2 py-1">
-              <Users className="w-3 h-3 md:w-4 md:h-4 mr-1" />
+              <Star className="w-3 h-3 md:w-4 md:h-4 mr-1" />
               Personalizado
             </Badge>
           </div>
@@ -509,57 +508,8 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
     </div>
   );
 
-  // NOVA PERGUNTA 8: Gênero
+  // PERGUNTA 8: Foco Corporal (era pergunta 9)
   const renderQuestion8 = () => (
-    <div className="space-y-6 py-4">
-      <div className="text-center space-y-3">
-        <div className="flex justify-center mb-4">
-          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center shadow-lg">
-            <Users className="w-8 h-8 text-white" />
-          </div>
-        </div>
-        <h3 className="text-2xl font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
-          Qual é o seu gênero?
-        </h3>
-        <p className="text-muted-foreground">Isso nos ajuda a personalizar os exercícios para você</p>
-      </div>
-
-      <div className="grid gap-3">
-        {[
-          { value: 'feminino', emoji: '👩', title: 'Feminino', desc: 'Treino com ênfase em glúteos e pernas', color: 'from-pink-500 to-rose-500' },
-          { value: 'masculino', emoji: '👨', title: 'Masculino', desc: 'Treino com ênfase em peito, costas e braços', color: 'from-blue-500 to-indigo-500' },
-          { value: 'nao_informar', emoji: '🌟', title: 'Prefiro não informar', desc: 'Treino equilibrado para todo o corpo', color: 'from-purple-500 to-violet-500' },
-        ].map(option => (
-          <Card 
-            key={option.value}
-            className={`cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-[1.02] ${
-              answers.gender === option.value 
-                ? `bg-gradient-to-r ${option.color} text-white shadow-2xl` 
-                : 'hover:bg-muted/50'
-            }`}
-            onClick={() => {
-              handleAnswer('gender', option.value);
-              setTimeout(() => setStep('question9'), 300);
-            }}
-          >
-            <CardContent className="p-4">
-              <div className="flex items-center gap-4">
-                <span className="text-2xl">{option.emoji}</span>
-                <div className="flex-1">
-                  <h4 className="font-bold">{option.title}</h4>
-                  <p className="text-sm opacity-80">{option.desc}</p>
-                </div>
-                {answers.gender === option.value && <CheckCircle2 className="w-5 h-5" />}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    </div>
-  );
-
-  // NOVA PERGUNTA 9: Foco Corporal
-  const renderQuestion9 = () => (
     <div className="space-y-6 py-4">
       <div className="text-center space-y-3">
         <div className="flex justify-center mb-4">
@@ -591,7 +541,7 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
             }`}
             onClick={() => {
               handleAnswer('bodyFocus', option.value);
-              setTimeout(() => setStep('question10'), 300);
+              setTimeout(() => setStep('question9'), 300);
             }}
           >
             <CardContent className="p-4">
@@ -610,58 +560,8 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
     </div>
   );
 
-  // NOVA PERGUNTA 10: Faixa Etária
-  const renderQuestion10 = () => (
-    <div className="space-y-6 py-4">
-      <div className="text-center space-y-3">
-        <div className="flex justify-center mb-4">
-          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center shadow-lg">
-            <Calendar className="w-8 h-8 text-white" />
-          </div>
-        </div>
-        <h3 className="text-2xl font-bold bg-gradient-to-r from-teal-600 to-cyan-600 bg-clip-text text-transparent">
-          Qual é sua faixa etária?
-        </h3>
-        <p className="text-muted-foreground">Adaptaremos a intensidade para você</p>
-      </div>
-
-      <div className="grid gap-3">
-        {[
-          { value: 'jovem', emoji: '🌱', title: '18-30 anos', desc: 'Alta recuperação, pode treinar intenso', color: 'from-green-500 to-emerald-500' },
-          { value: 'adulto', emoji: '🌿', title: '31-50 anos', desc: 'Equilibrio entre intensidade e recuperação', color: 'from-blue-500 to-indigo-500' },
-          { value: 'meia_idade', emoji: '🌳', title: '51-65 anos', desc: 'Foco em saúde e qualidade de vida', color: 'from-amber-500 to-orange-500' },
-          { value: 'senior', emoji: '🌲', title: '66+ anos', desc: 'Exercícios suaves e seguros', color: 'from-purple-500 to-violet-500' },
-        ].map(option => (
-          <Card 
-            key={option.value}
-            className={`cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-[1.02] ${
-              answers.ageGroup === option.value 
-                ? `bg-gradient-to-r ${option.color} text-white shadow-2xl` 
-                : 'hover:bg-muted/50'
-            }`}
-            onClick={() => {
-              handleAnswer('ageGroup', option.value);
-              setTimeout(() => setStep('question11'), 300);
-            }}
-          >
-            <CardContent className="p-4">
-              <div className="flex items-center gap-4">
-                <span className="text-2xl">{option.emoji}</span>
-                <div className="flex-1">
-                  <h4 className="font-bold">{option.title}</h4>
-                  <p className="text-sm opacity-80">{option.desc}</p>
-                </div>
-                {answers.ageGroup === option.value && <CheckCircle2 className="w-5 h-5" />}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    </div>
-  );
-
-  // NOVA PERGUNTA 11: Condição Especial
-  const renderQuestion11 = () => (
+  // PERGUNTA 9: Condição Especial (era pergunta 11)
+  const renderQuestion9 = () => (
     <div className="space-y-6 py-4">
       <div className="text-center space-y-3">
         <div className="flex justify-center mb-4">
@@ -712,8 +612,13 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
   );
 
   const renderResult = () => {
-    // Usar a função importada do hook com as respostas atuais
-    const recommendation = generateRecommendation(answers as UserAnswers);
+    // Combinar respostas do onboarding com dados do perfil (gênero e idade)
+    const fullAnswers: UserAnswers = {
+      ...answers,
+      gender: profileData.gender,
+      ageGroup: profileData.ageGroup
+    };
+    const recommendation = generateRecommendation(fullAnswers);
     return (
       <div className="space-y-6 py-4">
         <div className="text-center space-y-4">
@@ -909,8 +814,7 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
           {step === 'question7' && renderQuestion7()}
           {step === 'question8' && renderQuestion8()}
           {step === 'question9' && renderQuestion9()}
-          {step === 'question10' && renderQuestion10()}
-          {step === 'question11' && renderQuestion11()}
+          {step === 'result' && renderResult()}
           {step === 'result' && renderResult()}
         </div>
       </DialogContent>

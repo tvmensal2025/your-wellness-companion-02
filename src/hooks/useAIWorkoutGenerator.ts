@@ -11,10 +11,12 @@ interface UserAnswers {
   location: string;
   goal: string;
   limitation: string;
-  gender: string;
+  // Dados do onboarding
   bodyFocus: string;
-  ageGroup: string;
   specialCondition: string;
+  // Dados do perfil (buscados automaticamente)
+  gender: string;
+  ageGroup: string;
 }
 
 interface WeekPlanItem {

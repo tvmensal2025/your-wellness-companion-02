@@ -14,11 +14,12 @@ export interface UserAnswers {
   location: string;
   goal: string;
   limitation: string;
-  // Novas perguntas
-  gender?: string;
+  // Novas perguntas do onboarding
   bodyFocus?: string;
-  ageGroup?: string;
   specialCondition?: string;
+  // Dados do perfil (buscados automaticamente)
+  gender?: string;
+  ageGroup?: string;
 }
 
 export interface WeekPlanItem {
