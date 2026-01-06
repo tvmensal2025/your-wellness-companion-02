@@ -1,6 +1,7 @@
 import React from 'react';
 import { NotificationBell } from '@/components/NotificationBell';
 import { OfflineIndicatorCompact } from '@/components/OfflineIndicator';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface MobileHeaderProps {
@@ -40,16 +41,17 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
         </div>
         
         {/* Actions */}
-        <div className="flex items-center gap-3 shrink-0 justify-end">
+        <div className="flex items-center gap-2 shrink-0 justify-end">
+          <ThemeToggle variant="icon" className="h-8 w-8" />
           <NotificationBell />
           
           {/* Avatar */}
           <button
             onClick={onAvatarClick}
-            className="h-9 w-9 rounded-full transition-all touch-manipulation active:scale-95"
+            className="h-10 w-10 rounded-full transition-all touch-manipulation active:scale-95"
             aria-label="Abrir perfil"
           >
-            <Avatar className="h-9 w-9 bg-muted">
+            <Avatar className="h-10 w-10 bg-muted ring-2 ring-primary/20">
               {avatarUrl && avatarUrl.trim() ? (
                 <AvatarImage src={avatarUrl} alt={userName} className="object-cover" />
               ) : null}
