@@ -17,7 +17,8 @@ import {
   Volume2,
   VolumeX,
   FileText,
-  ArrowRight
+  ArrowRight,
+  EyeOff
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
@@ -42,9 +43,10 @@ interface Message {
 
 interface HealthChatBotProps {
   user?: any;
+  onHide?: () => void;
 }
 
-const HealthChatBot: React.FC<HealthChatBotProps> = ({ user: propUser }) => {
+const HealthChatBot: React.FC<HealthChatBotProps> = ({ user: propUser, onHide }) => {
   const { user } = useAuth();
   const currentUser = propUser || user;
   const navigate = useNavigate();
@@ -520,9 +522,9 @@ Clique no botão abaixo para começar! ⬇️`,
     return (
       <Button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-4 right-4 z-50 h-14 w-14 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 shadow-lg"
+        className="fixed bottom-3 right-3 z-50 h-10 w-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 shadow-md hover:shadow-lg opacity-70 hover:opacity-100 transition-all duration-200"
       >
-        <MessageCircle className="w-6 h-6" />
+        <MessageCircle className="w-5 h-5" />
       </Button>
     );
   }
@@ -584,6 +586,20 @@ Clique no botão abaixo para começar! ⬇️`,
               >
                 {isMinimized ? <Maximize2 className="w-3 h-3" /> : <Minimize2 className="w-3 h-3" />}
               </Button>
+              {onHide && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 w-6 p-0 text-white hover:bg-white/20"
+                  onClick={() => {
+                    setIsOpen(false);
+                    onHide();
+                  }}
+                  title="Esconder Sofia (Ctrl+Shift+S)"
+                >
+                  <EyeOff className="w-3 h-3" />
+                </Button>
+              )}
               <Button
                 variant="ghost"
                 size="sm"
