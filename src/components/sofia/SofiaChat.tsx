@@ -185,7 +185,12 @@ O que você gostaria de conversar hoje? Pode me enviar uma foto da sua refeiçã
         return null;
       }
 
-      const fileName = `${user.id}/${Date.now()}_${file.name}`;
+      const safeOriginalName = (file.name || 'imagem')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-zA-Z0-9._-]/g, '-');
+
+      const fileName = `${user.id}/${Date.now()}_${safeOriginalName}`;
       const { data, error } = await supabase.storage
         .from('chat-images')
         .upload(fileName, file);
