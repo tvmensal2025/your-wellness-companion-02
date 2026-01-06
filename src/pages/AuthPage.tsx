@@ -631,7 +631,7 @@ const AuthPage = () => {
     }
   };
   return (
-    <div className="min-h-screen relative overflow-hidden">
+    <div className="min-h-[100svh] relative overflow-x-hidden flex flex-col">
       {/* Animated Background */}
       <div className="fixed inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
         {/* Animated gradient orbs */}
@@ -640,10 +640,14 @@ const AuthPage = () => {
         <div className="absolute bottom-0 left-1/3 w-72 h-72 bg-teal-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
         
         {/* Grid pattern overlay */}
-        <div className="absolute inset-0 opacity-[0.02]" style={{
-          backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)',
-          backgroundSize: '60px 60px'
-        }} />
+        <div
+          className="absolute inset-0 opacity-[0.02]"
+          style={{
+            backgroundImage:
+              'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)',
+            backgroundSize: '60px 60px',
+          }}
+        />
       </div>
 
       {/* Header */}
@@ -668,9 +672,9 @@ const AuthPage = () => {
       </header>
 
       {/* Main Content */}
-      <div className="relative z-10 min-h-[calc(100vh-72px)] flex items-center justify-center px-4 py-6 sm:py-10">
+      <div className="relative z-10 flex-1 flex items-center justify-center px-4 py-6 sm:py-10">
         <div className="w-full max-w-lg space-y-6">
-          
+
           {/* Main Auth Card */}
           <div className="relative">
             {/* Glow effect behind card */}
