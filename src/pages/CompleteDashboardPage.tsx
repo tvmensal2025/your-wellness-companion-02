@@ -18,6 +18,7 @@ import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { BottomNavigation, BottomNavSection } from '@/components/navigation/BottomNavigation';
 import { MobileHeader } from '@/components/navigation/MobileHeader';
+import { MoreMenuSheet, MenuSection } from '@/components/navigation/MoreMenuSheet';
 
 // Lazy load heavy components for better performance
 const DashboardOverview = lazy(() => import('@/components/dashboard/DashboardOverview'));
@@ -60,6 +61,7 @@ const CompleteDashboardPage = () => {
   const [activeSection, setActiveSection] = useState<DashboardSection>('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
+  const [moreMenuOpen, setMoreMenuOpen] = useState(false);
   const [exerciseModalOpen, setExerciseModalOpen] = useState(false);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [layoutPrefsModalOpen, setLayoutPrefsModalOpen] = useState(false);
@@ -456,9 +458,15 @@ const CompleteDashboardPage = () => {
   }
   // Handler para navegação inferior
   const handleBottomNavChange = (section: BottomNavSection) => {
-    setActiveSection(section);
+    if (section !== 'more') {
+      setActiveSection(section);
+    }
   };
 
+  // Handler para menu "Mais"
+  const handleMoreMenuNavigate = (section: MenuSection) => {
+    setActiveSection(section);
+  };
   return <div className="min-h-screen bg-background">
       <div className="flex h-screen">
         {/* Desktop Sidebar */}
@@ -475,11 +483,12 @@ const CompleteDashboardPage = () => {
 
         {/* Main Content */}
         <div className="flex-1 flex flex-col min-w-0 bg-gradient-to-b from-background via-background to-muted/40 overflow-hidden">
-          {/* Mobile Header - Usando novo componente */}
+          {/* Mobile Header - Simplificado */}
           <MobileHeader 
             title={menuItems.find(item => item.id === activeSection)?.label || 'Dashboard'}
-            onMenuClick={() => setSidebarOpen(true)}
-            onSettingsClick={() => setProfileModalOpen(true)}
+            onAvatarClick={() => setProfileModalOpen(true)}
+            avatarUrl={profileData?.avatarUrl}
+            userName={profileData?.fullName}
           />
 
           {/* Content - Otimizado para mobile com overflow controlado */}
@@ -495,6 +504,20 @@ const CompleteDashboardPage = () => {
       <BottomNavigation 
         activeSection={activeSection}
         onSectionChange={handleBottomNavChange}
+        onMoreClick={() => setMoreMenuOpen(true)}
+      />
+
+      {/* More Menu Sheet - Mobile Only */}
+      <MoreMenuSheet
+        open={moreMenuOpen}
+        onOpenChange={setMoreMenuOpen}
+        onNavigate={handleMoreMenuNavigate}
+        onLogout={handleLogout}
+        userProfile={{
+          fullName: profileData?.fullName,
+          email: user?.email,
+          avatarUrl: profileData?.avatarUrl,
+        }}
       />
 
       {/* Modal de Exercícios */}

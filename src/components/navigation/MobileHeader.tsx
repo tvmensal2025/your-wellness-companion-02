@@ -1,37 +1,24 @@
 import React from 'react';
-import { Menu, MoreVertical, LogOut } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { NotificationBell } from '@/components/NotificationBell';
-import { ThemeToggle } from '@/components/ThemeToggle';
 import { OfflineIndicatorCompact } from '@/components/OfflineIndicator';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { supabase } from '@/integrations/supabase/client';
-import { useNavigate } from 'react-router-dom';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface MobileHeaderProps {
   title: string;
-  onMenuClick: () => void;
-  onSettingsClick?: () => void;
-  showMoreMenu?: boolean;
+  onAvatarClick?: () => void;
+  avatarUrl?: string;
+  userName?: string;
 }
 
 export const MobileHeader: React.FC<MobileHeaderProps> = ({
   title,
-  onMenuClick,
-  onSettingsClick,
-  showMoreMenu = true,
+  onAvatarClick,
+  avatarUrl,
+  userName,
 }) => {
-  const navigate = useNavigate();
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate('/auth');
+  const getInitials = (name?: string) => {
+    if (!name) return '?';
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
 
   return (
@@ -39,63 +26,36 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
       className="lg:hidden sticky top-0 z-40 bg-card/95 backdrop-blur-lg border-b border-border/50"
       style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
     >
-      <div className="flex items-center h-14 px-3">
-        {/* Menu Button */}
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          onClick={onMenuClick} 
-          className="h-11 w-11 min-h-[44px] min-w-[44px] rounded-xl hover:bg-primary/10 transition-colors shrink-0 touch-target"
-          aria-label="Abrir menu"
-        >
-          <Menu className="w-5 h-5" />
-        </Button>
+      <div className="flex items-center h-12 px-3">
+        {/* Offline Indicator */}
+        <div className="shrink-0">
+          <OfflineIndicatorCompact />
+        </div>
         
-        {/* Title */}
+        {/* Title - Centered */}
         <div className="flex-1 flex items-center justify-center min-w-0 px-2">
-          <h1 className="text-base font-semibold text-foreground text-center leading-tight truncate">
+          <h1 className="text-sm font-semibold text-foreground text-center leading-tight truncate">
             {title}
           </h1>
         </div>
         
         {/* Actions */}
         <div className="flex items-center gap-1 shrink-0">
-          {/* Offline Indicator */}
-          <OfflineIndicatorCompact />
-          
-          {/* Theme Toggle */}
-          <ThemeToggle variant="icon" />
-          
           <NotificationBell />
           
-          {showMoreMenu && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="h-11 w-11 min-h-[44px] min-w-[44px] rounded-xl hover:bg-primary/10 touch-target"
-                  aria-label="Mais opções"
-                >
-                  <MoreVertical className="w-5 h-5" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                {onSettingsClick && (
-                  <>
-                    <DropdownMenuItem onClick={onSettingsClick}>
-                      Configurações
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                  </>
-                )}
-                <DropdownMenuItem onClick={handleLogout} className="text-destructive">
-                  <LogOut className="w-4 h-4 mr-2" />
-                  Sair
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
+          {/* Avatar */}
+          <button
+            onClick={onAvatarClick}
+            className="h-8 w-8 rounded-full overflow-hidden ring-2 ring-primary/20 hover:ring-primary/40 transition-all touch-manipulation active:scale-95"
+            aria-label="Abrir perfil"
+          >
+            <Avatar className="h-8 w-8">
+              <AvatarImage src={avatarUrl} alt={userName} />
+              <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
+                {getInitials(userName)}
+              </AvatarFallback>
+            </Avatar>
+          </button>
         </div>
       </div>
     </header>
