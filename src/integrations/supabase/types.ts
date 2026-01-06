@@ -3119,10 +3119,12 @@ export type Database = {
       }
       exercises_library: {
         Row: {
+          age_appropriate: string[] | null
           created_at: string | null
           description: string | null
           difficulty: string | null
           equipment_needed: string[] | null
+          gender_focus: string | null
           id: string
           image_url: string | null
           instructions: string[] | null
@@ -3134,15 +3136,21 @@ export type Database = {
           reps: string | null
           rest_time: string | null
           sets: string | null
+          special_condition: string | null
+          tags: string[] | null
           tips: string | null
           updated_at: string | null
+          youtube_channel: string | null
+          youtube_quality: string | null
           youtube_url: string | null
         }
         Insert: {
+          age_appropriate?: string[] | null
           created_at?: string | null
           description?: string | null
           difficulty?: string | null
           equipment_needed?: string[] | null
+          gender_focus?: string | null
           id?: string
           image_url?: string | null
           instructions?: string[] | null
@@ -3154,15 +3162,21 @@ export type Database = {
           reps?: string | null
           rest_time?: string | null
           sets?: string | null
+          special_condition?: string | null
+          tags?: string[] | null
           tips?: string | null
           updated_at?: string | null
+          youtube_channel?: string | null
+          youtube_quality?: string | null
           youtube_url?: string | null
         }
         Update: {
+          age_appropriate?: string[] | null
           created_at?: string | null
           description?: string | null
           difficulty?: string | null
           equipment_needed?: string[] | null
+          gender_focus?: string | null
           id?: string
           image_url?: string | null
           instructions?: string[] | null
@@ -3174,8 +3188,12 @@ export type Database = {
           reps?: string | null
           rest_time?: string | null
           sets?: string | null
+          special_condition?: string | null
+          tags?: string[] | null
           tips?: string | null
           updated_at?: string | null
+          youtube_channel?: string | null
+          youtube_quality?: string | null
           youtube_url?: string | null
         }
         Relationships: []
