@@ -26,7 +26,7 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
       className="lg:hidden sticky top-0 z-40 bg-card/95 backdrop-blur-lg border-b border-border/50"
       style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
     >
-      <div className="flex items-center h-12 px-3">
+      <div className="flex items-center h-10 px-3">
         {/* Offline Indicator */}
         <div className="shrink-0">
           <OfflineIndicatorCompact />
@@ -34,7 +34,7 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
         
         {/* Title - Centered */}
         <div className="flex-1 flex items-center justify-center min-w-0 px-2">
-          <h1 className="text-sm font-semibold text-foreground text-center leading-tight truncate">
+          <h1 className="text-xs font-medium text-foreground/80 text-center leading-tight truncate">
             {title}
           </h1>
         </div>
@@ -46,12 +46,12 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
           {/* Avatar */}
           <button
             onClick={onAvatarClick}
-            className="h-8 w-8 rounded-full overflow-hidden ring-2 ring-primary/20 hover:ring-primary/40 transition-all touch-manipulation active:scale-95"
+            className="h-7 w-7 rounded-full overflow-hidden ring-2 ring-primary/20 hover:ring-primary/40 transition-all touch-manipulation active:scale-95"
             aria-label="Abrir perfil"
           >
-            <Avatar className="h-8 w-8">
+            <Avatar className="h-7 w-7">
               <AvatarImage src={avatarUrl} alt={userName} />
-              <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
+              <AvatarFallback className="bg-primary/10 text-primary text-[10px] font-semibold">
                 {getInitials(userName)}
               </AvatarFallback>
             </Avatar>

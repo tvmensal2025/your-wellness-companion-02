@@ -85,21 +85,16 @@ export const MoreMenuSheet: React.FC<MoreMenuSheetProps> = ({
     <button
       key={item.id}
       onClick={() => handleItemClick(item.id)}
-      className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-muted/80 active:scale-[0.98] transition-all touch-manipulation"
+      className="w-full flex items-center gap-2 p-2.5 rounded-lg hover:bg-muted/50 active:scale-[0.98] transition-all touch-manipulation group"
     >
       <div className={cn(
-        "flex items-center justify-center w-10 h-10 rounded-xl bg-muted/50",
+        "flex items-center justify-center w-8 h-8 rounded-lg bg-muted/50 group-hover:bg-muted transition-colors",
         item.color
       )}>
-        <item.icon className="w-5 h-5" />
+        <item.icon className="w-4 h-4" />
       </div>
-      <div className="flex-1 text-left">
-        <p className="text-sm font-medium text-foreground">{item.label}</p>
-        {item.description && (
-          <p className="text-xs text-muted-foreground">{item.description}</p>
-        )}
-      </div>
-      <ChevronRight className="w-4 h-4 text-muted-foreground" />
+      <span className="text-sm font-medium text-foreground">{item.label}</span>
+      <ChevronRight className="w-4 h-4 text-muted-foreground opacity-50 group-hover:opacity-100 transition-opacity ml-auto" />
     </button>
   );
 
@@ -112,23 +107,21 @@ export const MoreMenuSheet: React.FC<MoreMenuSheetProps> = ({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent 
         side="bottom" 
-        className="h-[85vh] rounded-t-3xl px-4 pb-8"
-        style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 2rem)' }}
+        className="h-[70vh] rounded-t-3xl px-4 pb-6"
+        style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 1.5rem)' }}
       >
         <SheetHeader className="pb-2">
-          <div className="w-12 h-1 bg-muted-foreground/30 rounded-full mx-auto mb-2" />
-          <SheetTitle className="text-left">Menu</SheetTitle>
+          <div className="w-10 h-1 bg-muted-foreground/30 rounded-full mx-auto mb-2" />
+          <SheetTitle className="text-left text-base">Menu</SheetTitle>
         </SheetHeader>
 
-        <div className="overflow-y-auto h-full pb-16 space-y-4">
-          {/* Features Section */}
-
+        <div className="overflow-y-auto h-full pb-12 space-y-3">
           {/* Features Section */}
           <div>
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider px-1 mb-2">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider px-1 mb-1.5">
               Funcionalidades
             </p>
-            <div className="space-y-1">
+            <div className="space-y-0.5">
               {featureItems.map(renderMenuItem)}
             </div>
           </div>
@@ -137,30 +130,27 @@ export const MoreMenuSheet: React.FC<MoreMenuSheetProps> = ({
 
           {/* System Section */}
           <div>
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider px-1 mb-2">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider px-1 mb-1.5">
               Sistema
             </p>
-            <div className="space-y-1">
+            <div className="space-y-0.5">
               {systemItems.map(renderMenuItem)}
               
               {/* Theme Toggle */}
               <button
                 onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-muted/80 active:scale-[0.98] transition-all touch-manipulation"
+                className="w-full flex items-center gap-2 p-2.5 rounded-lg hover:bg-muted/50 active:scale-[0.98] transition-all touch-manipulation group"
               >
-                <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-muted/50">
+                <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-muted/50 group-hover:bg-muted transition-colors">
                   {theme === 'dark' ? (
-                    <Sun className="w-5 h-5 text-yellow-500" />
+                    <Sun className="w-4 h-4 text-yellow-500" />
                   ) : (
-                    <Moon className="w-5 h-5 text-indigo-500" />
+                    <Moon className="w-4 h-4 text-indigo-500" />
                   )}
                 </div>
-                <div className="flex-1 text-left">
-                  <p className="text-sm font-medium text-foreground">
-                    {theme === 'dark' ? 'Modo Claro' : 'Modo Escuro'}
-                  </p>
-                  <p className="text-xs text-muted-foreground">Alterar tema do app</p>
-                </div>
+                <span className="text-sm font-medium text-foreground">
+                  {theme === 'dark' ? 'Modo Claro' : 'Modo Escuro'}
+                </span>
               </button>
             </div>
           </div>
@@ -174,12 +164,12 @@ export const MoreMenuSheet: React.FC<MoreMenuSheetProps> = ({
               onLogout();
               onOpenChange(false);
             }}
-            className="w-full justify-start gap-3 h-14 text-destructive hover:text-destructive hover:bg-destructive/10"
+            className="w-full justify-start gap-2 h-11 text-destructive hover:text-destructive hover:bg-destructive/10"
           >
-            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-destructive/10">
-              <LogOut className="w-5 h-5" />
+            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-destructive/10">
+              <LogOut className="w-4 h-4" />
             </div>
-            <span className="font-medium">Sair da conta</span>
+            <span className="text-sm font-medium">Sair da conta</span>
           </Button>
         </div>
       </SheetContent>
