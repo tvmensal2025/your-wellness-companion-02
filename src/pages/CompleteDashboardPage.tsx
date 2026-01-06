@@ -287,7 +287,7 @@ const CompleteDashboardPage = () => {
       case 'dr-vital':
         return <Suspense fallback={<SectionLoader />}><UserDrVitalPage key="dr-vital" /></Suspense>;
       case 'exercicios':
-        return <Suspense fallback={<SectionLoader />}><div key="exercicios" className="p-4 space-y-4">
+        return <Suspense fallback={<SectionLoader />}><div key="exercicios" className="px-1 sm:px-2 py-2 space-y-2">
             <div className="flex justify-end">
               <Button size="sm" variant="outline" onClick={() => setExerciseModalOpen(true)}>
                 Criar outro treino

@@ -191,7 +191,7 @@ const DashboardOverview: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
-      <div className="mx-auto max-w-2xl space-y-2 sm:space-y-3 px-2 sm:px-4 pb-20 sm:pb-28 pt-3 sm:pt-4">
+      <div className="mx-auto max-w-3xl space-y-1.5 sm:space-y-2 px-1 sm:px-2 pb-20 sm:pb-28 pt-2 sm:pt-3">
         {/* 1. Apple Health Style Hero Card */}
         <AppleHealthHeroCard
           currentWeight={typeof currentWeight === 'number' ? currentWeight : parseFloat(String(currentWeight)) || 0}
