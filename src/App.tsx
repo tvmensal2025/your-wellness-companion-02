@@ -79,7 +79,6 @@ const App: React.FC = () => {
               <Route path="/dr-vital-enhanced" element={<Suspense fallback={<PageLoader />}><DrVitalEnhancedPage /></Suspense>} />
               <Route path="/sofia-nutricional" element={<Suspense fallback={<PageLoader />}><SofiaNutricionalPage /></Suspense>} />
               <Route path="/professional-evaluation" element={<Suspense fallback={<PageLoader />}><ProfessionalEvaluationPage /></Suspense>} />
-              <Route path="*" element={<NotFound />} />
             </Routes>
             <SofiaFloatingButton />
           </Suspense>
