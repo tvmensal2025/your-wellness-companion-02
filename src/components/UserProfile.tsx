@@ -335,22 +335,22 @@ const UserProfile = ({ onOpenLayoutPrefs }: UserProfileProps = {}) => {
   };
 
   return (
-    <div className="w-full sm:max-w-6xl mx-auto px-3 sm:px-4 py-2 sm:py-8 overflow-x-hidden">
+    <div className="w-full mx-auto px-4 py-4 sm:px-6 sm:py-8 overflow-x-hidden">
       {/* Header Section */}
-      <div className="mb-3 sm:mb-8">
+      <div className="mb-4 sm:mb-8">
         <Card className="border-0 shadow-lg bg-gradient-to-r from-primary/5 to-secondary/5">
-          <CardContent className="p-3 sm:p-6">
-            <div className="flex flex-col gap-3 sm:gap-6">
+          <CardContent className="p-4 sm:p-6">
+            <div className="flex flex-col gap-4 sm:gap-6">
               {/* Avatar e Info - Layout mobile first */}
-              <div className="flex flex-col items-center gap-2.5 sm:flex-row sm:items-start sm:gap-6">
+              <div className="flex items-center gap-4 sm:gap-6">
                 <div className="relative group shrink-0">
-                  <Avatar className="h-14 w-14 sm:h-24 sm:w-24 border-3 sm:border-4 border-background shadow-lg">
+                  <Avatar className="h-16 w-16 sm:h-24 sm:w-24 border-2 sm:border-4 border-background shadow-lg">
                     <AvatarImage src={profile.avatar_url} className="object-cover" />
-                    <AvatarFallback className="text-sm sm:text-xl bg-primary text-primary-foreground">
+                    <AvatarFallback className="text-lg sm:text-xl bg-primary text-primary-foreground">
                       {profile.full_name ? getInitials(profile.full_name) : 'U'}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 sm:w-6 sm:h-6 bg-green-500 rounded-full border-2 border-background"></div>
+                  <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 sm:w-6 sm:h-6 bg-green-500 rounded-full border-2 border-background"></div>
                   
                   {/* Botão de upload de foto */}
                   <label className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full opacity-0 group-hover:opacity-100 active:opacity-100 transition-opacity cursor-pointer">
@@ -362,39 +362,33 @@ const UserProfile = ({ onOpenLayoutPrefs }: UserProfileProps = {}) => {
                       disabled={uploadingPhoto}
                     />
                     {uploadingPhoto ? (
-                      <Loader2 className="h-4 w-4 sm:h-8 sm:w-8 text-white animate-spin" />
+                      <Loader2 className="h-5 w-5 sm:h-8 sm:w-8 text-white animate-spin" />
                     ) : (
-                      <Camera className="h-4 w-4 sm:h-8 sm:w-8 text-white" />
+                      <Camera className="h-5 w-5 sm:h-8 sm:w-8 text-white" />
                     )}
                   </label>
                 </div>
                 
-                <div className="flex-1 text-center sm:text-left w-full max-w-full overflow-hidden">
-                  <h1 className="text-sm sm:text-3xl font-bold text-foreground mb-0.5 sm:mb-1 leading-tight text-center sm:text-left px-1">
+                <div className="flex-1 min-w-0">
+                  <h1 className="text-base sm:text-2xl font-bold text-foreground leading-tight truncate">
                     {profile.full_name || 'Usuário'}
                   </h1>
-                  <p className="text-[11px] sm:text-base text-muted-foreground mb-1.5 sm:mb-2">
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
                     Membro desde {profile.created_at ? new Date(profile.created_at).toLocaleDateString('pt-BR') : 'hoje'}
                   </p>
                   
-                  {/* Info do usuário - stack vertical em mobile */}
-                  <div className="flex flex-col items-center gap-1 sm:flex-row sm:gap-4 text-xs sm:text-sm text-muted-foreground">
+                  {/* Info do usuário */}
+                  <div className="flex flex-wrap gap-2 mt-2 text-xs text-muted-foreground">
                     {profile.email && (
-                      <div className="flex items-center gap-1 max-w-full px-2 sm:px-0">
-                        <Mail className="h-3 w-3 sm:h-4 sm:w-4 shrink-0" />
-                        <span className="truncate text-[10px] sm:text-sm">{profile.email}</span>
+                      <div className="flex items-center gap-1 min-w-0">
+                        <Mail className="h-3 w-3 shrink-0" />
+                        <span className="truncate max-w-[140px] sm:max-w-none">{profile.email}</span>
                       </div>
                     )}
                     {profile.phone && (
                       <div className="flex items-center gap-1">
-                        <Phone className="h-3 w-3 sm:h-4 sm:w-4 shrink-0" />
-                        <span className="text-[10px] sm:text-sm">{profile.phone}</span>
-                      </div>
-                    )}
-                    {(profile.city || profile.state) && (
-                      <div className="flex items-center gap-1">
-                        <MapPin className="h-3 w-3 sm:h-4 sm:w-4 shrink-0" />
-                        <span className="text-[10px] sm:text-sm">{[profile.city, profile.state].filter(Boolean).join(', ')}</span>
+                        <Phone className="h-3 w-3 shrink-0" />
+                        <span>{profile.phone}</span>
                       </div>
                     )}
                   </div>
@@ -406,10 +400,10 @@ const UserProfile = ({ onOpenLayoutPrefs }: UserProfileProps = {}) => {
                 size="sm"
                 variant={editing ? "outline" : "default"}
                 onClick={() => setEditing(!editing)}
-                className="w-full sm:w-auto sm:self-end h-9 sm:h-10"
+                className="w-full sm:w-auto sm:self-end h-10"
               >
-                <Edit2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
-                {editing ? 'Cancelar' : 'Editar'}
+                <Edit2 className="h-4 w-4 mr-2" />
+                {editing ? 'Cancelar' : 'Editar Perfil'}
               </Button>
             </div>
           </CardContent>
