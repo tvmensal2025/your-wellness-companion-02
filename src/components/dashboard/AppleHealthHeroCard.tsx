@@ -66,7 +66,7 @@ export const AppleHealthHeroCard: React.FC<AppleHealthHeroCardProps> = ({
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-      className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-3 sm:p-5 shadow-2xl"
+      className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-4 sm:p-6 md:p-8 shadow-2xl"
     >
       {/* Subtle gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 via-transparent to-violet-500/5" />
@@ -74,15 +74,15 @@ export const AppleHealthHeroCard: React.FC<AppleHealthHeroCardProps> = ({
       {/* Content */}
       <div className="relative">
         {/* Elegant Greeting */}
-        <div className="mb-3 sm:mb-4">
-          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-            <span className="text-slate-400 text-xs sm:text-sm font-light tracking-wide">{getGreeting()},</span>
+        <div className="mb-4 sm:mb-5">
+          <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">
+            <span className="text-slate-400 text-sm sm:text-base font-light tracking-wide">{getGreeting()},</span>
             <motion.div
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2 }}
             >
-              <span className="text-base sm:text-lg font-medium bg-gradient-to-r from-white via-slate-100 to-slate-300 bg-clip-text text-transparent truncate max-w-[120px] sm:max-w-none">
+              <span className="text-lg sm:text-xl font-medium bg-gradient-to-r from-white via-slate-100 to-slate-300 bg-clip-text text-transparent truncate max-w-[140px] sm:max-w-none">
                 {userName.split(' ')[0]}
               </span>
             </motion.div>
@@ -90,11 +90,11 @@ export const AppleHealthHeroCard: React.FC<AppleHealthHeroCardProps> = ({
         </div>
 
         {/* Main content grid - Score and Weight side by side */}
-        <div className="flex items-stretch gap-2 sm:gap-4">
+        <div className="flex items-stretch gap-3 sm:gap-5">
           
           {/* Apple Health Ring - Responsive sizing */}
           <div className="relative flex-shrink-0 flex items-center justify-center">
-            <svg className="w-20 h-20 sm:w-28 md:w-32 sm:h-28 md:h-32 -rotate-90" viewBox="0 0 100 100">
+            <svg className="w-24 h-24 sm:w-32 md:w-36 sm:h-32 md:h-36 -rotate-90" viewBox="0 0 100 100">
               {/* Background ring */}
               <circle
                 cx="50"
@@ -133,29 +133,29 @@ export const AppleHealthHeroCard: React.FC<AppleHealthHeroCardProps> = ({
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ delay: 0.3, duration: 0.5 }}
-                className="text-2xl sm:text-3xl md:text-4xl font-bold text-white"
+                className="text-3xl sm:text-4xl md:text-5xl font-bold text-white"
               >
                 {healthScore}
               </motion.span>
-              <span className="text-[9px] sm:text-[11px] text-slate-400 uppercase tracking-widest font-medium">Score</span>
+              <span className="text-[10px] sm:text-xs text-slate-400 uppercase tracking-widest font-medium">Score</span>
             </div>
           </div>
 
           {/* Weight info - Responsive typography */}
-          <div className="flex-1 flex flex-col justify-center space-y-1.5 sm:space-y-2 min-w-0">
+          <div className="flex-1 flex flex-col justify-center space-y-2 sm:space-y-3 min-w-0">
             {/* Current weight */}
             <div>
-              <p className="text-[10px] sm:text-xs text-slate-400 mb-0.5 sm:mb-1 tracking-wide">Peso atual</p>
-              <div className="flex items-baseline gap-1">
+              <p className="text-xs sm:text-sm text-slate-400 mb-1 sm:mb-1.5 tracking-wide">Peso atual</p>
+              <div className="flex items-baseline gap-1.5">
                 <motion.span 
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.4 }}
-                  className="text-3xl sm:text-4xl md:text-5xl font-light text-white tracking-tight"
+                  className="text-4xl sm:text-5xl md:text-6xl font-light text-white tracking-tight"
                 >
                   {currentWeight.toFixed(1)}
                 </motion.span>
-                <span className="text-sm sm:text-lg text-slate-400 font-light">kg</span>
+                <span className="text-base sm:text-xl text-slate-400 font-light">kg</span>
               </div>
             </div>
 
@@ -164,18 +164,18 @@ export const AppleHealthHeroCard: React.FC<AppleHealthHeroCardProps> = ({
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.5 }}
-              className={`inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full w-fit ${trend.bg}`}
+              className={`inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full w-fit ${trend.bg}`}
             >
-              <TrendIcon className={`h-3 w-3 sm:h-4 sm:w-4 ${trend.color}`} />
-              <span className={`text-xs sm:text-sm font-medium ${trend.color}`}>
+              <TrendIcon className={`h-4 w-4 sm:h-5 sm:w-5 ${trend.color}`} />
+              <span className={`text-sm sm:text-base font-medium ${trend.color}`}>
                 {weightChange !== 0 && (weightChange > 0 ? '+' : '')}{weightChange.toFixed(1)}kg
               </span>
             </motion.div>
 
             {/* Goal info */}
             {targetWeight && (
-              <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs text-slate-400 mt-0.5 sm:mt-1 flex-wrap">
-                <Target className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-slate-500 flex-shrink-0" />
+              <div className="flex items-center gap-2 sm:gap-2.5 text-xs sm:text-sm text-slate-400 mt-1 sm:mt-1.5 flex-wrap">
+                <Target className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-slate-500 flex-shrink-0" />
                 <span className="truncate">Meta: <span className="text-white font-medium">{targetWeight}kg</span></span>
                 <span className="text-slate-600 hidden xs:inline">•</span>
                 <span className="truncate hidden xs:inline">Faltam <span className="text-emerald-400 font-medium">{weightToGo}kg</span></span>
@@ -185,7 +185,7 @@ export const AppleHealthHeroCard: React.FC<AppleHealthHeroCardProps> = ({
         </div>
 
         {/* Bottom stats row - Responsive */}
-        <div className="grid grid-cols-3 gap-2 sm:gap-3 mt-3 sm:mt-5 pt-3 sm:pt-5 border-t border-white/10">
+        <div className="grid grid-cols-3 gap-3 sm:gap-4 mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-white/10">
           <StatItem 
             icon={Flame}
             label="Sequência"
@@ -220,15 +220,15 @@ const StatItem: React.FC<{
   suffix: string;
   color: string;
 }> = ({ icon: Icon, label, value, suffix, color }) => (
-  <div className="text-center py-1 sm:py-2">
-    <div className={`flex items-center justify-center gap-1 sm:gap-1.5 mb-1 sm:mb-2 ${color}`}>
-      <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
+  <div className="text-center py-2 sm:py-3">
+    <div className={`flex items-center justify-center gap-1.5 sm:gap-2 mb-2 sm:mb-2.5 ${color}`}>
+      <Icon className="h-5 w-5 sm:h-6 sm:w-6" />
     </div>
-    <div className="flex items-baseline justify-center gap-0.5 sm:gap-1.5">
-      <span className="text-xl sm:text-2xl md:text-3xl font-bold text-white">{value}</span>
-      <span className="text-[10px] sm:text-sm text-slate-300 font-medium">{suffix}</span>
+    <div className="flex items-baseline justify-center gap-1 sm:gap-2">
+      <span className="text-2xl sm:text-3xl md:text-4xl font-bold text-white">{value}</span>
+      <span className="text-xs sm:text-base text-slate-300 font-medium">{suffix}</span>
     </div>
-    <p className="text-[10px] sm:text-sm text-slate-400 mt-0.5 sm:mt-1.5 font-medium truncate">{label}</p>
+    <p className="text-xs sm:text-base text-slate-400 mt-1 sm:mt-2 font-medium truncate">{label}</p>
   </div>
 );
 
