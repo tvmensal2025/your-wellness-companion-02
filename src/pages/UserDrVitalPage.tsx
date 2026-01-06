@@ -315,7 +315,7 @@ const UserDrVitalPage: React.FC = () => {
 
           {/* Aba: Upload e Gestão de Exames */}
           <TabsContent value="exams" className="space-y-6">
-            <MedicalDocumentsSection />
+            <MedicalDocumentsSection hideStatsCards />
           </TabsContent>
 
           {/* Aba: Histórico Médico */}
