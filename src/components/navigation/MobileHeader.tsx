@@ -40,7 +40,7 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
         </div>
         
         {/* Actions */}
-        <div className="flex items-center gap-1 shrink-0">
+        <div className="flex items-center gap-2 shrink-0">
           <NotificationBell />
           
           {/* Avatar */}
