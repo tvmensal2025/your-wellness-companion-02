@@ -16,16 +16,35 @@ import {
   TrendingUp,
   Target,
   Flame,
-  Gift
+  Gift,
+  Apple,
+  Brain,
+  Dumbbell,
+  Salad,
+  Scale,
+  Activity,
+  MessageCircle,
+  Video,
+  BookOpen,
+  Award,
+  Phone,
+  Mail,
+  MapPin,
+  ChevronDown,
+  Play,
+  Calendar,
+  Headphones,
+  FileText
 } from 'lucide-react';
 
 const HomePage = () => {
   const navigate = useNavigate();
   const [timeLeft, setTimeLeft] = useState({
-    hours: 2,
-    minutes: 47,
-    seconds: 33
+    hours: 23,
+    minutes: 59,
+    seconds: 59
   });
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -43,38 +62,66 @@ const HomePage = () => {
     return () => clearInterval(timer);
   }, []);
 
-  const features = [
-    { icon: Sparkles, title: 'IA Sofia 24h', desc: 'Sua coach pessoal sempre disponível', color: 'from-pink-500 to-rose-500' },
-    { icon: Target, title: 'Plano Personalizado', desc: 'Cardápios feitos para você', color: 'from-violet-500 to-purple-500' },
-    { icon: Trophy, title: 'Gamificação', desc: 'Ganhe pontos e conquistas', color: 'from-amber-500 to-orange-500' },
-    { icon: Heart, title: 'Suporte Humano', desc: 'Nutricionistas reais te apoiando', color: 'from-emerald-500 to-teal-500' },
+  const mainFeatures = [
+    { icon: Brain, title: 'IA Sofia 24h', desc: 'Inteligência artificial que te conhece e orienta a qualquer momento', color: 'bg-sky-500' },
+    { icon: Salad, title: 'Cardápios Personalizados', desc: 'Refeições deliciosas adaptadas ao seu paladar e objetivos', color: 'bg-emerald-500' },
+    { icon: Trophy, title: 'Gamificação Completa', desc: 'Ganhe pontos, medalhas e suba no ranking da comunidade', color: 'bg-amber-500' },
+    { icon: MessageCircle, title: 'Suporte Humanizado', desc: 'Nutricionistas reais disponíveis para tirar suas dúvidas', color: 'bg-rose-500' },
+    { icon: Activity, title: 'Monitoramento Diário', desc: 'Acompanhe peso, medidas, humor e evolução completa', color: 'bg-violet-500' },
+    { icon: Users, title: 'Comunidade Exclusiva', desc: 'Conecte-se com milhares de pessoas na mesma jornada', color: 'bg-cyan-500' },
+  ];
+
+  const howItWorks = [
+    { step: '01', title: 'Cadastre-se', desc: 'Crie sua conta gratuita em menos de 2 minutos', icon: FileText },
+    { step: '02', title: 'Responda a Anamnese', desc: 'Nossa IA conhece seu perfil, rotina e preferências', icon: Brain },
+    { step: '03', title: 'Receba seu Plano', desc: 'Cardápio personalizado gerado instantaneamente', icon: Salad },
+    { step: '04', title: 'Evolua Diariamente', desc: 'Registre progresso e receba orientações em tempo real', icon: TrendingUp },
   ];
 
   const testimonials = [
-    { name: 'Ana Paula', result: '-12kg em 8 semanas', avatar: '👩‍🦰' },
-    { name: 'Carlos Eduardo', result: '-18kg em 3 meses', avatar: '👨' },
-    { name: 'Juliana Santos', result: '-8kg em 6 semanas', avatar: '👩' },
+    { name: 'Ana Paula M.', result: '-12kg em 8 semanas', text: 'A Sofia é incrível! Parece que ela realmente me conhece. Os cardápios são deliciosos!', avatar: '👩‍🦰', location: 'São Paulo, SP' },
+    { name: 'Carlos Eduardo', result: '-18kg em 3 meses', text: 'Finalmente um programa que entende minha rotina corrida. Perdi peso sem sofrer!', avatar: '👨', location: 'Rio de Janeiro, RJ' },
+    { name: 'Juliana Santos', result: '-8kg em 6 semanas', text: 'Os desafios e a gamificação me mantêm motivada todos os dias. Amo!', avatar: '👩', location: 'Belo Horizonte, MG' },
+    { name: 'Roberto Lima', result: '-15kg em 10 semanas', text: 'O suporte da equipe é excepcional. Sempre respondem rápido e com carinho.', avatar: '👨‍🦱', location: 'Curitiba, PR' },
+  ];
+
+  const bonuses = [
+    { title: 'E-book: 100 Receitas Fit', value: 'R$ 97', desc: 'Receitas práticas e deliciosas para o dia a dia' },
+    { title: 'Grupo VIP no Telegram', value: 'R$ 47', desc: 'Comunidade exclusiva com dicas diárias' },
+    { title: 'Planilha de Metas', value: 'R$ 27', desc: 'Organize seus objetivos de forma visual' },
+    { title: 'Aulas de Mindfulness', value: 'R$ 67', desc: '10 aulas para controlar ansiedade e compulsão' },
+    { title: 'Guia de Supermercado', value: 'R$ 37', desc: 'Lista inteligente para compras saudáveis' },
+    { title: 'Workshop de Meal Prep', value: 'R$ 57', desc: 'Aprenda a preparar suas refeições da semana' },
+  ];
+
+  const faqs = [
+    { q: 'O programa funciona para qualquer pessoa?', a: 'Sim! Nossa IA Sofia cria planos 100% personalizados para seu perfil, seja você iniciante ou avançado, com qualquer tipo de restrição alimentar.' },
+    { q: 'Preciso fazer exercícios físicos?', a: 'Não é obrigatório! Nosso foco é na reeducação alimentar. Porém, temos módulos opcionais de exercícios para quem desejar potencializar os resultados.' },
+    { q: 'E se eu não gostar de algum alimento do cardápio?', a: 'A Sofia aprende suas preferências! Você pode indicar alimentos que não gosta e ela automaticamente substituirá por opções equivalentes.' },
+    { q: 'Como funciona a garantia?', a: 'Oferecemos 7 dias de garantia incondicional. Se por qualquer motivo não ficar satisfeito, devolvemos 100% do valor.' },
+    { q: 'Posso cancelar a qualquer momento?', a: 'Sim! Não há fidelidade. Você pode cancelar quando quiser diretamente pelo app ou entrando em contato conosco.' },
+    { q: 'O programa é aprovado por nutricionistas?', a: 'Sim! Todo nosso conteúdo é desenvolvido e supervisionado por uma equipe de nutricionistas registrados no CRN.' },
+  ];
+
+  const stats = [
+    { value: '15.847', label: 'Vidas Transformadas' },
+    { value: '97%', label: 'Satisfação' },
+    { value: '4.9', label: 'Avaliação' },
+    { value: '50.000+', label: 'Kg Eliminados' },
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 overflow-hidden">
-      {/* Animated Background Elements */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-pink-500/20 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute top-40 right-20 w-96 h-96 bg-violet-500/20 rounded-full blur-3xl animate-pulse delay-1000" />
-        <div className="absolute bottom-40 left-1/3 w-80 h-80 bg-cyan-500/20 rounded-full blur-3xl animate-pulse delay-500" />
-      </div>
-
+    <div className="min-h-screen bg-gradient-to-b from-sky-50 via-white to-emerald-50 overflow-hidden">
       {/* Urgency Banner */}
       <motion.div 
         initial={{ y: -100 }}
         animate={{ y: 0 }}
-        className="relative z-10 bg-gradient-to-r from-pink-600 via-purple-600 to-violet-600 py-3"
+        className="relative z-50 bg-gradient-to-r from-sky-500 via-cyan-500 to-emerald-500 py-3"
       >
         <div className="container mx-auto px-4 flex items-center justify-center gap-4 flex-wrap">
           <Flame className="w-5 h-5 text-yellow-300 animate-bounce" />
           <span className="text-white font-bold text-sm md:text-base">
-            🔥 MEGA PROMOÇÃO: 85% OFF apenas hoje!
+            🎉 OFERTA ESPECIAL: 85% OFF - Vagas Limitadas!
           </span>
           <div className="flex items-center gap-2 bg-white/20 backdrop-blur px-3 py-1 rounded-full">
             <Clock className="w-4 h-4 text-white" />
@@ -86,98 +133,288 @@ const HomePage = () => {
       </motion.div>
 
       {/* Header */}
-      <header className="relative z-10 container mx-auto px-4 py-6">
-        <nav className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-10 h-10 bg-gradient-to-br from-pink-500 to-violet-600 rounded-xl flex items-center justify-center">
-              <Sparkles className="w-6 h-6 text-white" />
+      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-lg border-b border-sky-100">
+        <div className="container mx-auto px-4 py-4">
+          <nav className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-sky-400 to-emerald-500 rounded-2xl flex items-center justify-center shadow-lg shadow-sky-200">
+                <Sparkles className="w-7 h-7 text-white" />
+              </div>
+              <div>
+                <span className="text-xl font-bold bg-gradient-to-r from-sky-600 to-emerald-600 bg-clip-text text-transparent">
+                  Instituto dos Sonhos
+                </span>
+                <p className="text-xs text-slate-500">Transformação com ciência</p>
+              </div>
             </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-pink-400 to-violet-400 bg-clip-text text-transparent">
-              Instituto dos Sonhos
-            </span>
-          </div>
-          <Button 
-            onClick={() => navigate('/auth')}
-            className="bg-gradient-to-r from-pink-500 to-violet-600 hover:from-pink-600 hover:to-violet-700 text-white border-0 shadow-lg shadow-pink-500/25"
-          >
-            Entrar
-          </Button>
-        </nav>
+            <div className="flex items-center gap-3">
+              <Button 
+                variant="ghost"
+                onClick={() => navigate('/auth')}
+                className="hidden md:flex text-slate-600 hover:text-sky-600"
+              >
+                Entrar
+              </Button>
+              <Button 
+                onClick={() => navigate('/auth')}
+                className="bg-gradient-to-r from-sky-500 to-emerald-500 hover:from-sky-600 hover:to-emerald-600 text-white shadow-lg shadow-sky-200"
+              >
+                Começar Agora
+              </Button>
+            </div>
+          </nav>
+        </div>
       </header>
 
       {/* Hero Section */}
-      <section className="relative z-10 container mx-auto px-4 py-12 md:py-20">
-        <div className="max-w-5xl mx-auto text-center">
-          {/* Badge */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2 }}
-            className="inline-flex items-center gap-2 bg-gradient-to-r from-pink-500/20 to-violet-500/20 border border-pink-500/30 rounded-full px-4 py-2 mb-8"
-          >
-            <Star className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-            <span className="text-pink-300 text-sm font-medium">+15.000 vidas transformadas</span>
-          </motion.div>
+      <section className="relative py-16 md:py-24 overflow-hidden">
+        {/* Background decorations */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-20 -left-32 w-96 h-96 bg-sky-200/50 rounded-full blur-3xl" />
+          <div className="absolute top-40 -right-32 w-96 h-96 bg-emerald-200/50 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 left-1/2 w-[800px] h-[400px] bg-gradient-to-t from-cyan-100/30 to-transparent rounded-full blur-3xl -translate-x-1/2" />
+        </div>
 
-          {/* Main Headline */}
-          <motion.h1
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="text-4xl md:text-6xl lg:text-7xl font-black mb-6 leading-tight"
-          >
-            <span className="text-white">Transforme seu corpo</span>
-            <br />
-            <span className="bg-gradient-to-r from-pink-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent">
-              em 30 dias
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="max-w-5xl mx-auto text-center">
+            {/* Badge */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-sky-100 to-emerald-100 border border-sky-200 rounded-full px-5 py-2.5 mb-8"
+            >
+              <div className="flex -space-x-2">
+                {['👩‍🦰', '👨', '👩', '👨‍🦱'].map((emoji, i) => (
+                  <span key={i} className="text-lg">{emoji}</span>
+                ))}
+              </div>
+              <span className="text-sky-700 text-sm font-semibold">+15.000 pessoas já transformaram suas vidas</span>
+            </motion.div>
+
+            {/* Main Headline */}
+            <motion.h1
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="text-4xl md:text-6xl lg:text-7xl font-black mb-6 leading-tight"
+            >
+              <span className="text-slate-800">Emagreça de forma</span>
+              <br />
+              <span className="bg-gradient-to-r from-sky-500 via-cyan-500 to-emerald-500 bg-clip-text text-transparent">
+                saudável e definitiva
+              </span>
+            </motion.h1>
+
+            {/* Subheadline */}
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="text-lg md:text-xl text-slate-600 mb-10 max-w-3xl mx-auto leading-relaxed"
+            >
+              Com a <span className="text-sky-600 font-semibold">IA Sofia</span>, você recebe um plano alimentar 
+              100% personalizado, acompanhamento diário e uma comunidade que te apoia em cada passo da sua jornada.
+            </motion.p>
+
+            {/* Stats Row */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4 }}
+              className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto mb-12"
+            >
+              {stats.map((stat, i) => (
+                <div key={i} className="bg-white/80 backdrop-blur rounded-2xl p-4 border border-sky-100 shadow-sm">
+                  <p className="text-2xl md:text-3xl font-black bg-gradient-to-r from-sky-600 to-emerald-600 bg-clip-text text-transparent">
+                    {stat.value}
+                  </p>
+                  <p className="text-slate-500 text-sm">{stat.label}</p>
+                </div>
+              ))}
+            </motion.div>
+
+            {/* CTA Buttons */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="flex flex-col sm:flex-row items-center justify-center gap-4"
+            >
+              <Button 
+                onClick={() => navigate('/auth')}
+                size="lg"
+                className="w-full sm:w-auto bg-gradient-to-r from-sky-500 to-emerald-500 hover:from-sky-600 hover:to-emerald-600 text-white text-lg font-bold px-10 py-7 rounded-2xl shadow-xl shadow-sky-300/50 group"
+              >
+                <span>COMEÇAR MINHA TRANSFORMAÇÃO</span>
+                <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+              </Button>
+              <Button 
+                variant="outline"
+                size="lg"
+                className="w-full sm:w-auto border-2 border-sky-200 text-sky-700 hover:bg-sky-50 px-8 py-7 rounded-2xl"
+              >
+                <Play className="w-5 h-5 mr-2" />
+                Ver como funciona
+              </Button>
+            </motion.div>
+
+            {/* Trust Elements */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6 }}
+              className="flex flex-wrap items-center justify-center gap-6 mt-8 text-slate-500"
+            >
+              <div className="flex items-center gap-2">
+                <Shield className="w-5 h-5 text-emerald-500" />
+                <span className="text-sm">7 dias de garantia</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Zap className="w-5 h-5 text-amber-500" />
+                <span className="text-sm">Acesso imediato</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Award className="w-5 h-5 text-sky-500" />
+                <span className="text-sm">Aprovado por nutricionistas</span>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="py-20 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <span className="inline-block bg-sky-100 text-sky-700 text-sm font-semibold px-4 py-2 rounded-full mb-4">
+              TUDO QUE VOCÊ PRECISA
             </span>
-          </motion.h1>
+            <h2 className="text-3xl md:text-5xl font-bold text-slate-800 mb-4">
+              Um programa completo para sua <span className="text-emerald-500">transformação</span>
+            </h2>
+            <p className="text-slate-600 max-w-2xl mx-auto">
+              Desenvolvemos uma metodologia única que combina tecnologia, ciência nutricional e acompanhamento humano.
+            </p>
+          </div>
 
-          {/* Subheadline */}
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="text-lg md:text-xl text-slate-300 mb-10 max-w-2xl mx-auto"
-          >
-            Com nossa <span className="text-pink-400 font-semibold">IA Sofia</span> você recebe um plano 100% personalizado, 
-            acompanhamento diário e motivação constante para alcançar seus objetivos.
-          </motion.p>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+            {mainFeatures.map((feature, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                viewport={{ once: true }}
+                className="group bg-gradient-to-br from-slate-50 to-white rounded-3xl p-8 border border-slate-100 hover:border-sky-200 hover:shadow-xl hover:shadow-sky-100/50 transition-all duration-300"
+              >
+                <div className={`w-14 h-14 ${feature.color} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-lg`}>
+                  <feature.icon className="w-7 h-7 text-white" />
+                </div>
+                <h3 className="text-xl font-bold text-slate-800 mb-3">{feature.title}</h3>
+                <p className="text-slate-600 leading-relaxed">{feature.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
 
-          {/* Price Card */}
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-            className="relative max-w-lg mx-auto"
-          >
-            <div className="absolute inset-0 bg-gradient-to-r from-pink-500 to-violet-600 rounded-3xl blur-xl opacity-50" />
-            <div className="relative bg-slate-900/90 backdrop-blur-xl border border-white/10 rounded-3xl p-8">
+      {/* How It Works */}
+      <section className="py-20 bg-gradient-to-b from-sky-50 to-white">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <span className="inline-block bg-emerald-100 text-emerald-700 text-sm font-semibold px-4 py-2 rounded-full mb-4">
+              SIMPLES E EFICIENTE
+            </span>
+            <h2 className="text-3xl md:text-5xl font-bold text-slate-800 mb-4">
+              Como funciona?
+            </h2>
+            <p className="text-slate-600 max-w-2xl mx-auto">
+              Em apenas 4 passos simples você começa sua transformação
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-4 gap-8 max-w-5xl mx-auto">
+            {howItWorks.map((item, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.15 }}
+                viewport={{ once: true }}
+                className="relative text-center"
+              >
+                {index < howItWorks.length - 1 && (
+                  <div className="hidden md:block absolute top-12 left-[60%] w-[80%] h-0.5 bg-gradient-to-r from-sky-300 to-emerald-300" />
+                )}
+                <div className="relative z-10 w-24 h-24 mx-auto bg-gradient-to-br from-sky-400 to-emerald-500 rounded-3xl flex items-center justify-center mb-6 shadow-xl shadow-sky-200/50">
+                  <item.icon className="w-10 h-10 text-white" />
+                </div>
+                <span className="inline-block bg-sky-100 text-sky-700 text-xs font-bold px-3 py-1 rounded-full mb-3">
+                  PASSO {item.step}
+                </span>
+                <h3 className="text-lg font-bold text-slate-800 mb-2">{item.title}</h3>
+                <p className="text-slate-600 text-sm">{item.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing Section */}
+      <section className="py-20 bg-gradient-to-br from-sky-600 via-cyan-600 to-emerald-600 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMiIvPjwvZz48L2c+PC9zdmc+')] opacity-50" />
+        
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="text-center mb-12">
+            <span className="inline-block bg-white/20 backdrop-blur text-white text-sm font-semibold px-4 py-2 rounded-full mb-4">
+              OFERTA POR TEMPO LIMITADO
+            </span>
+            <h2 className="text-3xl md:text-5xl font-bold text-white mb-4">
+              Invista em você por menos de R$1 por dia
+            </h2>
+          </div>
+
+          <div className="max-w-lg mx-auto">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              className="bg-white rounded-3xl p-8 shadow-2xl relative"
+            >
               {/* Discount Badge */}
               <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                <span className="bg-gradient-to-r from-pink-500 to-violet-600 text-white text-sm font-bold px-6 py-2 rounded-full shadow-lg">
-                  ECONOMIZE R$ 168
+                <span className="bg-gradient-to-r from-amber-400 to-orange-500 text-white text-sm font-bold px-6 py-2 rounded-full shadow-lg">
+                  🔥 ECONOMIZE R$ 168
                 </span>
               </div>
 
-              <div className="flex items-center justify-center gap-4 mb-6 mt-2">
-                <span className="text-slate-500 line-through text-xl">R$ 197/mês</span>
-                <div className="text-center">
-                  <span className="text-5xl font-black bg-gradient-to-r from-pink-400 to-violet-400 bg-clip-text text-transparent">
-                    R$ 29
-                  </span>
-                  <span className="text-slate-400">/mês</span>
+              <div className="text-center mb-8 mt-4">
+                <p className="text-slate-500 line-through text-xl mb-2">De R$ 197/mês</p>
+                <div className="flex items-baseline justify-center gap-1">
+                  <span className="text-2xl text-slate-600">R$</span>
+                  <span className="text-7xl font-black bg-gradient-to-r from-sky-600 to-emerald-600 bg-clip-text text-transparent">29</span>
+                  <span className="text-slate-500">/mês</span>
                 </div>
+                <p className="text-emerald-600 font-semibold mt-2">ou R$ 290/ano (economize 2 meses!)</p>
               </div>
 
-              {/* Benefits */}
-              <div className="grid grid-cols-2 gap-3 mb-6">
-                {['IA Sofia 24h', 'Cardápios ilimitados', 'Gamificação', 'Suporte humano', 'App exclusivo', 'Comunidade VIP'].map((benefit, i) => (
-                  <div key={i} className="flex items-center gap-2">
-                    <div className="w-5 h-5 rounded-full bg-gradient-to-br from-pink-500 to-violet-600 flex items-center justify-center flex-shrink-0">
-                      <Check className="w-3 h-3 text-white" />
+              {/* Benefits List */}
+              <div className="space-y-3 mb-8">
+                {[
+                  'Acesso ilimitado à IA Sofia 24h',
+                  'Cardápios personalizados diários',
+                  'Sistema de gamificação completo',
+                  'Suporte com nutricionistas reais',
+                  'Comunidade VIP exclusiva',
+                  'Rastreamento de progresso',
+                  'Desafios semanais com prêmios',
+                  'App mobile exclusivo',
+                ].map((benefit, i) => (
+                  <div key={i} className="flex items-center gap-3">
+                    <div className="w-6 h-6 rounded-full bg-gradient-to-br from-sky-400 to-emerald-500 flex items-center justify-center flex-shrink-0">
+                      <Check className="w-4 h-4 text-white" />
                     </div>
-                    <span className="text-slate-300 text-sm">{benefit}</span>
+                    <span className="text-slate-700">{benefit}</span>
                   </div>
                 ))}
               </div>
@@ -186,167 +423,231 @@ const HomePage = () => {
               <Button 
                 onClick={() => navigate('/auth')}
                 size="lg"
-                className="w-full bg-gradient-to-r from-pink-500 via-purple-500 to-violet-600 hover:from-pink-600 hover:via-purple-600 hover:to-violet-700 text-white text-lg font-bold py-6 rounded-2xl shadow-xl shadow-pink-500/30 group transition-all"
+                className="w-full bg-gradient-to-r from-sky-500 to-emerald-500 hover:from-sky-600 hover:to-emerald-600 text-white text-lg font-bold py-7 rounded-2xl shadow-xl shadow-sky-300/50 group"
               >
                 <span>QUERO COMEÇAR AGORA</span>
                 <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
               </Button>
 
               {/* Trust badges */}
-              <div className="flex items-center justify-center gap-4 mt-4 text-sm text-slate-400">
+              <div className="flex items-center justify-center gap-4 mt-6 text-sm text-slate-500">
                 <div className="flex items-center gap-1">
-                  <Shield className="w-4 h-4 text-emerald-400" />
+                  <Shield className="w-4 h-4 text-emerald-500" />
                   <span>7 dias de garantia</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <Zap className="w-4 h-4 text-yellow-400" />
+                  <Zap className="w-4 h-4 text-amber-500" />
                   <span>Acesso imediato</span>
                 </div>
               </div>
-            </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Bonuses Section */}
+      <section className="py-20 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <span className="inline-block bg-amber-100 text-amber-700 text-sm font-semibold px-4 py-2 rounded-full mb-4">
+              BÔNUS EXCLUSIVOS
+            </span>
+            <h2 className="text-3xl md:text-5xl font-bold text-slate-800 mb-4">
+              Você ainda leva <span className="text-amber-500">+R$ 332</span> em bônus
+            </h2>
+            <p className="text-slate-600 max-w-2xl mx-auto">
+              Materiais extras para potencializar ainda mais seus resultados
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            {bonuses.map((bonus, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.1 }}
+                viewport={{ once: true }}
+                className="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-6 hover:shadow-lg transition-all"
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <Gift className="w-8 h-8 text-amber-500" />
+                  <span className="text-amber-600 font-bold text-lg">{bonus.value}</span>
+                </div>
+                <h3 className="text-lg font-bold text-slate-800 mb-2">{bonus.title}</h3>
+                <p className="text-slate-600 text-sm">{bonus.desc}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section className="py-20 bg-gradient-to-b from-slate-50 to-white">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <span className="inline-block bg-sky-100 text-sky-700 text-sm font-semibold px-4 py-2 rounded-full mb-4">
+              RESULTADOS REAIS
+            </span>
+            <h2 className="text-3xl md:text-5xl font-bold text-slate-800 mb-4">
+              Veja quem já transformou sua vida
+            </h2>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+            {testimonials.map((t, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, scale: 0.95 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                transition={{ delay: i * 0.1 }}
+                viewport={{ once: true }}
+                className="bg-white rounded-3xl p-6 border border-slate-100 shadow-lg hover:shadow-xl transition-all"
+              >
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="text-4xl">{t.avatar}</div>
+                  <div>
+                    <h4 className="font-bold text-slate-800">{t.name}</h4>
+                    <p className="text-xs text-slate-500">{t.location}</p>
+                  </div>
+                </div>
+                <p className="text-emerald-600 font-bold text-lg mb-3">{t.result}</p>
+                <p className="text-slate-600 text-sm italic">"{t.text}"</p>
+                <div className="flex gap-1 mt-4">
+                  {[...Array(5)].map((_, j) => (
+                    <Star key={j} className="w-4 h-4 text-amber-400 fill-amber-400" />
+                  ))}
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="py-20 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <span className="inline-block bg-emerald-100 text-emerald-700 text-sm font-semibold px-4 py-2 rounded-full mb-4">
+              TIRE SUAS DÚVIDAS
+            </span>
+            <h2 className="text-3xl md:text-5xl font-bold text-slate-800 mb-4">
+              Perguntas Frequentes
+            </h2>
+          </div>
+
+          <div className="max-w-3xl mx-auto space-y-4">
+            {faqs.map((faq, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.05 }}
+                viewport={{ once: true }}
+                className="border border-slate-200 rounded-2xl overflow-hidden"
+              >
+                <button
+                  onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                  className="w-full flex items-center justify-between p-6 text-left bg-white hover:bg-slate-50 transition-colors"
+                >
+                  <span className="font-semibold text-slate-800 pr-4">{faq.q}</span>
+                  <ChevronDown className={`w-5 h-5 text-slate-500 transition-transform ${openFaq === i ? 'rotate-180' : ''}`} />
+                </button>
+                {openFaq === i && (
+                  <div className="px-6 pb-6 text-slate-600">
+                    {faq.a}
+                  </div>
+                )}
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Final CTA */}
+      <section className="py-20 bg-gradient-to-br from-sky-600 via-cyan-600 to-emerald-600 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMiIvPjwvZz48L2c+PC9zdmc+')] opacity-50" />
+        
+        <div className="container mx-auto px-4 relative z-10 text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">
+              Pronto para transformar sua vida?
+            </h2>
+            <p className="text-white/80 mb-8 max-w-2xl mx-auto text-lg">
+              Junte-se a mais de 15.000 pessoas que já alcançaram seus objetivos com nosso método comprovado.
+            </p>
+            <Button 
+              onClick={() => navigate('/auth')}
+              size="lg"
+              className="bg-white text-sky-600 hover:bg-sky-50 text-xl font-bold px-12 py-7 rounded-2xl shadow-2xl group"
+            >
+              <span>COMEÇAR AGORA COM 85% OFF</span>
+              <Zap className="w-6 h-6 ml-2 text-amber-500 group-hover:animate-pulse" />
+            </Button>
+            <p className="text-white/60 mt-6 text-sm">
+              Garantia de 7 dias • Cancele quando quiser • Acesso imediato
+            </p>
           </motion.div>
         </div>
       </section>
 
-      {/* Features Section */}
-      <section className="relative z-10 container mx-auto px-4 py-16">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {features.map((feature, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              viewport={{ once: true }}
-              className="group"
-            >
-              <div className="relative p-6 rounded-2xl bg-slate-900/50 backdrop-blur border border-white/10 hover:border-white/20 transition-all hover:-translate-y-1">
-                <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${feature.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
-                  <feature.icon className="w-6 h-6 text-white" />
-                </div>
-                <h3 className="text-white font-bold mb-1">{feature.title}</h3>
-                <p className="text-slate-400 text-sm">{feature.desc}</p>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </section>
-
-      {/* Social Proof */}
-      <section className="relative z-10 container mx-auto px-4 py-16">
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          className="text-center mb-12"
-        >
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            Resultados <span className="bg-gradient-to-r from-pink-400 to-violet-400 bg-clip-text text-transparent">reais</span>
-          </h2>
-          <p className="text-slate-400">Veja o que nossos membros conquistaram</p>
-        </motion.div>
-
-        <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-          {testimonials.map((t, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              transition={{ delay: i * 0.15 }}
-              viewport={{ once: true }}
-              className="bg-gradient-to-br from-slate-900 to-slate-900/50 backdrop-blur border border-white/10 rounded-2xl p-6 text-center hover:border-pink-500/30 transition-all"
-            >
-              <div className="text-5xl mb-3">{t.avatar}</div>
-              <h4 className="text-white font-semibold mb-1">{t.name}</h4>
-              <p className="text-transparent bg-gradient-to-r from-pink-400 to-violet-400 bg-clip-text font-bold text-lg">
-                {t.result}
-              </p>
-              <div className="flex justify-center gap-1 mt-3">
-                {[...Array(5)].map((_, j) => (
-                  <Star key={j} className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                ))}
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </section>
-
-      {/* Bonus Section */}
-      <section className="relative z-10 container mx-auto px-4 py-16">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="relative max-w-3xl mx-auto"
-        >
-          <div className="absolute inset-0 bg-gradient-to-r from-amber-500/20 to-orange-500/20 rounded-3xl blur-xl" />
-          <div className="relative bg-slate-900/80 backdrop-blur border border-amber-500/30 rounded-3xl p-8">
-            <div className="flex items-center justify-center gap-2 mb-6">
-              <Gift className="w-8 h-8 text-amber-400" />
-              <h3 className="text-2xl font-bold text-white">BÔNUS EXCLUSIVOS</h3>
-            </div>
-            <div className="grid md:grid-cols-2 gap-4">
-              {[
-                { title: 'E-book: 100 Receitas Fit', value: 'R$ 97' },
-                { title: 'Grupo VIP no Telegram', value: 'R$ 47' },
-                { title: 'Planilha de Metas', value: 'R$ 27' },
-                { title: 'Aulas de Mindfulness', value: 'R$ 67' },
-              ].map((bonus, i) => (
-                <div key={i} className="flex items-center justify-between bg-slate-800/50 rounded-xl p-4">
-                  <div className="flex items-center gap-3">
-                    <Check className="w-5 h-5 text-emerald-400" />
-                    <span className="text-white">{bonus.title}</span>
-                  </div>
-                  <span className="text-amber-400 font-bold">{bonus.value}</span>
-                </div>
-              ))}
-            </div>
-            <p className="text-center text-amber-300 font-semibold mt-6">
-              Todos os bônus inclusos no plano! 🎁
-            </p>
-          </div>
-        </motion.div>
-      </section>
-
-      {/* Final CTA */}
-      <section className="relative z-10 container mx-auto px-4 py-20">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true }}
-          className="text-center"
-        >
-          <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">
-            Pronto para transformar sua vida?
-          </h2>
-          <p className="text-slate-400 mb-8 max-w-xl mx-auto">
-            Junte-se a milhares de pessoas que já conquistaram seus objetivos com nosso método.
-          </p>
-          <Button 
-            onClick={() => navigate('/auth')}
-            size="lg"
-            className="bg-gradient-to-r from-pink-500 via-purple-500 to-violet-600 hover:from-pink-600 hover:via-purple-600 hover:to-violet-700 text-white text-xl font-bold px-12 py-7 rounded-2xl shadow-2xl shadow-pink-500/30 group"
-          >
-            <span>COMEÇAR AGORA COM 85% OFF</span>
-            <Zap className="w-6 h-6 ml-2 group-hover:animate-pulse" />
-          </Button>
-          <div className="flex items-center justify-center gap-6 mt-6 text-slate-400">
-            <div className="flex items-center gap-2">
-              <Users className="w-5 h-5" />
-              <span>+15.000 membros</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <TrendingUp className="w-5 h-5" />
-              <span>97% de aprovação</span>
-            </div>
-          </div>
-        </motion.div>
-      </section>
-
       {/* Footer */}
-      <footer className="relative z-10 border-t border-white/10 py-8">
-        <div className="container mx-auto px-4 text-center text-slate-500 text-sm">
-          <p>© 2026 Instituto dos Sonhos. Todos os direitos reservados.</p>
+      <footer className="bg-slate-900 text-white py-16">
+        <div className="container mx-auto px-4">
+          <div className="grid md:grid-cols-4 gap-12 mb-12">
+            <div>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 bg-gradient-to-br from-sky-400 to-emerald-500 rounded-xl flex items-center justify-center">
+                  <Sparkles className="w-6 h-6 text-white" />
+                </div>
+                <span className="text-lg font-bold">Instituto dos Sonhos</span>
+              </div>
+              <p className="text-slate-400 text-sm">
+                Transformando vidas através da tecnologia e ciência nutricional desde 2020.
+              </p>
+            </div>
+            <div>
+              <h4 className="font-bold mb-4">Links Rápidos</h4>
+              <ul className="space-y-2 text-slate-400 text-sm">
+                <li><a href="#" className="hover:text-white transition-colors">Como Funciona</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Depoimentos</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Preços</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Blog</a></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-bold mb-4">Suporte</h4>
+              <ul className="space-y-2 text-slate-400 text-sm">
+                <li><a href="#" className="hover:text-white transition-colors">Central de Ajuda</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Política de Privacidade</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Termos de Uso</a></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-bold mb-4">Contato</h4>
+              <ul className="space-y-3 text-slate-400 text-sm">
+                <li className="flex items-center gap-2">
+                  <Mail className="w-4 h-4" />
+                  <span>contato@institutodossonhos.com</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Phone className="w-4 h-4" />
+                  <span>(11) 99999-9999</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Headphones className="w-4 h-4" />
+                  <span>Seg-Sex: 8h às 18h</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div className="border-t border-slate-800 pt-8 text-center text-slate-500 text-sm">
+            <p>© 2026 Instituto dos Sonhos. Todos os direitos reservados. CNPJ: 00.000.000/0001-00</p>
+          </div>
         </div>
       </footer>
     </div>
