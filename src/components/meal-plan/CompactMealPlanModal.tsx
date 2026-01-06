@@ -472,14 +472,14 @@ export const CompactMealPlanModal: React.FC<CompactMealPlanModalProps> = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
               <DialogContent className="max-w-4xl w-[95vw] max-h-[95vh] overflow-y-auto">
         <DialogHeader>
-          <div className="flex items-center justify-between">
-            <DialogTitle className="text-xl font-bold text-primary flex items-center justify-center gap-2">
-              <Target className="w-5 h-5" />
-              {dayTitle}
+          <div className="flex items-center justify-between gap-2">
+            <DialogTitle className="text-base sm:text-xl font-bold text-primary flex items-center gap-2 min-w-0">
+              <Target className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+              <span className="truncate">{dayTitle}</span>
             </DialogTitle>
-            <Button onClick={handlePrint} variant="outline" size="sm" className="print:hidden">
-              <Printer className="w-4 h-4 mr-2" />
-              Imprimir
+            <Button onClick={handlePrint} variant="outline" size="sm" className="print:hidden flex-shrink-0">
+              <Printer className="w-4 h-4 sm:mr-2" />
+              <span className="hidden sm:inline">Imprimir</span>
             </Button>
           </div>
           
@@ -549,26 +549,26 @@ export const CompactMealPlanModal: React.FC<CompactMealPlanModalProps> = ({
 
                   <CardContent className="p-4 sm:p-6">
                     {/* Macros e Tempo */}
-                    <div className="grid grid-cols-5 gap-2 mb-4">
-                      <div className="text-center p-2 bg-blue-50 rounded-lg">
-                        <div className="text-sm font-bold text-blue-600 truncate">{meal?.macros.protein}g</div>
-                        <div className="text-[10px] text-blue-500 truncate">PROTE</div>
+                    <div className="grid grid-cols-5 gap-1 sm:gap-2 mb-4">
+                      <div className="text-center p-1.5 sm:p-2 bg-blue-50 rounded-lg">
+                        <div className="text-xs sm:text-sm font-bold text-blue-600">{meal?.macros.protein}g</div>
+                        <div className="text-[8px] sm:text-[10px] text-blue-500">PROT</div>
                       </div>
-                      <div className="text-center p-2 bg-green-50 rounded-lg">
-                        <div className="text-sm font-bold text-green-600 truncate">{meal?.macros.carbs}g</div>
-                        <div className="text-[10px] text-green-500 truncate">CARBO</div>
+                      <div className="text-center p-1.5 sm:p-2 bg-green-50 rounded-lg">
+                        <div className="text-xs sm:text-sm font-bold text-green-600">{meal?.macros.carbs}g</div>
+                        <div className="text-[8px] sm:text-[10px] text-green-500">CARB</div>
                       </div>
-                      <div className="text-center p-2 bg-orange-50 rounded-lg">
-                        <div className="text-sm font-bold text-orange-600 truncate">{meal?.macros.fat}g</div>
-                        <div className="text-[10px] text-orange-500 truncate">GORD</div>
+                      <div className="text-center p-1.5 sm:p-2 bg-orange-50 rounded-lg">
+                        <div className="text-xs sm:text-sm font-bold text-orange-600">{meal?.macros.fat}g</div>
+                        <div className="text-[8px] sm:text-[10px] text-orange-500">GORD</div>
                       </div>
-                      <div className="text-center p-2 bg-purple-50 rounded-lg">
-                        <div className="text-sm font-bold text-purple-600 truncate">{meal?.macros.fiber || 0}g</div>
-                        <div className="text-[10px] text-purple-500 truncate">FIBRAS</div>
+                      <div className="text-center p-1.5 sm:p-2 bg-purple-50 rounded-lg">
+                        <div className="text-xs sm:text-sm font-bold text-purple-600">{meal?.macros.fiber || 0}g</div>
+                        <div className="text-[8px] sm:text-[10px] text-purple-500">FIBR</div>
                       </div>
-                      <div className="text-center p-2 bg-gray-50 rounded-lg">
-                        <div className="text-sm font-bold text-gray-600 truncate">15min</div>
-                        <div className="text-[10px] text-gray-500 truncate">TEMPO</div>
+                      <div className="text-center p-1.5 sm:p-2 bg-gray-50 rounded-lg">
+                        <div className="text-xs sm:text-sm font-bold text-gray-600">15m</div>
+                        <div className="text-[8px] sm:text-[10px] text-gray-500">TEMP</div>
                       </div>
                     </div>
 
