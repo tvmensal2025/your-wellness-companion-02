@@ -349,9 +349,9 @@ const UserProfile = ({ onOpenLayoutPrefs }: UserProfileProps = {}) => {
               {/* Avatar e Info - Layout mobile first */}
               <div className="flex items-center gap-4 sm:gap-6">
                 <div className="relative group shrink-0">
-                  <Avatar className="h-16 w-16 sm:h-24 sm:w-24">
+                  <Avatar className="h-16 w-16 sm:h-24 sm:w-24 bg-muted">
                     {profile.avatar_url && profile.avatar_url.trim() ? (
-                      <AvatarImage src={profile.avatar_url} className="object-cover" />
+                      <AvatarImage src={profile.avatar_url} className="object-contain" />
                     ) : null}
                     <AvatarFallback className="text-lg sm:text-xl bg-primary/10 text-primary">
                       {profile.full_name ? getInitials(profile.full_name) : 'U'}
