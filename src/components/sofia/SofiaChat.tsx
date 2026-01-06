@@ -338,8 +338,13 @@ O que você gostaria de conversar hoje? Pode me enviar uma foto da sua refeiçã
             title: "✅ Análise da Sofia concluída!",
             description: "Sua refeição foi analisada com sucesso",
           });
+          setIsLoading(false);
+          return;
+        } else if (analysisResult.error) {
+          throw new Error(analysisResult.error.message || 'Erro na análise da imagem');
         } else {
-          error = analysisResult.error;
+          setIsLoading(false);
+          return;
         }
       } else {
         const chatResult = await supabase.functions.invoke('sofia-enhanced-memory', {
