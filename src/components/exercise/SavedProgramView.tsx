@@ -431,11 +431,11 @@ const WorkoutDayCard: React.FC<{
   const exerciseCount = exercises.length || day.activities.length;
 
   return (
-    <div className="space-y-4 sm:space-y-5">
+    <div className="space-y-3 sm:space-y-4 overflow-hidden">
       {/* Header do Treino */}
       <Card className="border-0 bg-gradient-to-br from-orange-500 via-red-500 to-pink-600 text-white overflow-hidden relative">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMiIvPjwvZz48L2c+PC9zdmc+')] opacity-50" />
-        <CardContent className="p-3 sm:p-4 md:p-6 relative">
+        <CardContent className="p-2.5 sm:p-3 md:p-4 relative">
           <div className="flex items-start justify-between gap-4">
             <div className="space-y-2 sm:space-y-3 min-w-0 flex-1">
               <Badge className="bg-white/20 border-0 text-white text-xs sm:text-sm px-3 py-1">
@@ -463,11 +463,10 @@ const WorkoutDayCard: React.FC<{
           </div>
 
           <Button
-            size="lg"
             onClick={() => onStartWorkout(weekNumber, day.activities, exercises)}
-            className="w-full mt-4 sm:mt-5 bg-white text-orange-600 hover:bg-white/90 font-bold h-10 sm:h-12 text-sm sm:text-base shadow-lg"
+            className="w-full mt-3 sm:mt-4 bg-white text-orange-600 hover:bg-white/90 font-semibold h-9 sm:h-10 text-sm shadow-md"
           >
-            <Play className="w-5 h-5 sm:w-6 sm:h-6 mr-2" fill="currentColor" />
+            <Play className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5" fill="currentColor" />
             Começar Treino
           </Button>
         </CardContent>
@@ -502,20 +501,20 @@ const WorkoutDayCard: React.FC<{
                 transition={{ delay: index * 0.05 }}
               >
               <Card
-                  className="group cursor-pointer border hover:border-orange-300 hover:shadow-lg transition-all duration-300"
+                  className="group cursor-pointer border hover:border-orange-300 hover:shadow-md transition-all duration-200"
                   onClick={() => onExerciseClick?.(exercise)}
                 >
-                  <CardContent className="p-3 sm:p-4 flex items-center gap-2.5 sm:gap-3">
-                    <div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center text-white font-bold text-xs sm:text-sm shadow-md">
+                  <CardContent className="p-2.5 sm:p-3 flex items-center gap-2 sm:gap-2.5">
+                    <div className="flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center text-white font-bold text-[11px] sm:text-xs shadow-sm">
                       {index + 1}
                     </div>
 
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-semibold text-base sm:text-lg text-foreground group-hover:text-orange-600 transition-colors truncate">
+                    <div className="flex-1 min-w-0 overflow-hidden">
+                      <h4 className="font-medium text-sm sm:text-base text-foreground group-hover:text-orange-600 transition-colors truncate">
                         {exercise.name}
                       </h4>
-                      <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm text-muted-foreground mt-1 flex-wrap">
-                        <span className="capitalize truncate max-w-[100px] sm:max-w-none">{exercise.muscle_group}</span>
+                      <div className="flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs text-muted-foreground mt-0.5">
+                        <span className="capitalize truncate max-w-[80px] sm:max-w-[120px]">{exercise.muscle_group}</span>
                         <span>•</span>
                         <span className="font-medium">{exercise.sets || '3'}x{exercise.reps || '12'}</span>
                       </div>
@@ -524,7 +523,7 @@ const WorkoutDayCard: React.FC<{
                     <Badge
                       variant="outline"
                       className={cn(
-                        "text-[10px] sm:text-xs capitalize flex-shrink-0 px-2 sm:px-3 py-0.5",
+                        "text-[9px] sm:text-[10px] capitalize flex-shrink-0 px-1.5 sm:px-2 py-0.5",
                         diff.tone === 'easy' && "border-green-300 text-green-600 bg-green-50 dark:bg-green-950/30",
                         diff.tone === 'medium' && "border-yellow-300 text-yellow-600 bg-yellow-50 dark:bg-yellow-950/30",
                         diff.tone === 'hard' && "border-red-300 text-red-600 bg-red-50 dark:bg-red-950/30"
@@ -533,7 +532,7 @@ const WorkoutDayCard: React.FC<{
                       {diff.label || exercise.difficulty}
                     </Badge>
 
-                    <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 text-muted-foreground group-hover:text-orange-500 transition-colors flex-shrink-0" />
+                    <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground group-hover:text-orange-500 transition-colors flex-shrink-0" />
                   </CardContent>
                 </Card>
               </motion.div>
