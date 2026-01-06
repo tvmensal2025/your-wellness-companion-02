@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -7,8 +7,11 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Brain, Target, AlertTriangle, CheckCircle, Clock, TrendingUp, BarChart3, Lightbulb, Heart, Zap, Shield, Eye, ArrowRight, ArrowLeft, Star, Award, BookOpen, Users, MessageSquare, UserCheck, Settings } from 'lucide-react';
+import { Brain, Target, AlertTriangle, CheckCircle, Clock, TrendingUp, BarChart3, Lightbulb, Heart, Zap, Shield, Eye, ArrowRight, ArrowLeft, Star, Award, BookOpen, Users, MessageSquare, UserCheck, Settings, Download, Image } from 'lucide-react';
 import { saboteurQuestions, Question } from '@/data/saboteurQuestions';
+import html2canvas from 'html2canvas';
+import SaboteurReportImage from './SaboteurReportImage';
+
 interface SaboteurType {
   name: string;
   description: string;
@@ -109,7 +112,8 @@ const SaboteurTest: React.FC = () => {
   const [showResults, setShowResults] = useState(false);
   const [scores, setScores] = useState<Record<string, number>>({});
   const [isLoading, setIsLoading] = useState(false);
-  const [isGeneratingHtml, setIsGeneratingHtml] = useState(false);
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+  const reportRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const handleAnswer = async (value: number) => {
     const questionId = saboteurQuestions[currentQuestion].id;
@@ -645,62 +649,78 @@ const SaboteurTest: React.FC = () => {
           <Button
             variant="default"
             size="lg"
-            disabled={isGeneratingHtml}
+            disabled={isGeneratingImage}
             className="w-full sm:w-auto"
             onClick={async () => {
+              if (!reportRef.current) {
+                toast({
+                  title: "Erro",
+                  description: "Componente de relatório não encontrado.",
+                  variant: "destructive",
+                });
+                return;
+              }
+
               try {
-                setIsGeneratingHtml(true);
-                const { data: userData } = await supabase.auth.getUser();
-                const user = userData?.user;
-
-                if (!user) {
-                  toast({
-                    title: "Faça login para gerar o relatório",
-                    description: "Você precisa estar autenticado para salvar o relatório em PDF.",
-                    variant: "destructive",
-                  });
-                  setIsGeneratingHtml(false);
-                  return;
-                }
-
-                const { data, error } = await supabase.functions.invoke("saboteur-html-report", {
-                  body: { userId: user.id },
+                setIsGeneratingImage(true);
+                
+                toast({
+                  title: "Gerando imagem...",
+                  description: "Aguarde um momento.",
                 });
 
-                if (error || !data?.reportData) {
-                  console.error("Erro ao gerar relatório:", error);
-                  toast({
-                    title: "Erro ao gerar relatório",
-                    description: "Tente novamente em alguns instantes.",
-                    variant: "destructive",
-                  });
-                  setIsGeneratingHtml(false);
-                  return;
-                }
+                const canvas = await html2canvas(reportRef.current, {
+                  scale: 2,
+                  backgroundColor: '#ffffff',
+                  useCORS: true,
+                  logging: false,
+                });
 
-                // Importar e usar o gerador de PDF nativo
-                const { generateSaboteurPDF } = await import('@/lib/generateSaboteurPDF');
-                const pdf = generateSaboteurPDF(data.reportData);
-                pdf.save(`relatorio-sabotadores-${Date.now()}.pdf`);
+                const dataUrl = canvas.toDataURL('image/png');
+                
+                // Trigger download
+                const link = document.createElement('a');
+                link.download = `relatorio-sabotadores-${Date.now()}.png`;
+                link.href = dataUrl;
+                link.click();
 
                 toast({
-                  title: "Relatório gerado com sucesso!",
-                  description: "O arquivo PDF foi baixado para o seu dispositivo.",
+                  title: "Imagem gerada com sucesso! 🎉",
+                  description: "O arquivo PNG foi baixado.",
                 });
               } catch (err) {
-                console.error("Erro inesperado:", err);
+                console.error("Erro ao gerar imagem:", err);
                 toast({
-                  title: "Erro inesperado",
-                  description: "Não foi possível gerar o relatório agora.",
+                  title: "Erro ao gerar imagem",
+                  description: "Tente novamente.",
                   variant: "destructive",
                 });
               } finally {
-                setIsGeneratingHtml(false);
+                setIsGeneratingImage(false);
               }
             }}
           >
-            {isGeneratingHtml ? "Gerando PDF..." : "Baixar Relatório em PDF"}
+            <Image className="h-4 w-4 mr-2" />
+            {isGeneratingImage ? "Gerando..." : "Baixar Relatório (PNG)"}
           </Button>
+        </div>
+
+        {/* Hidden component for screenshot */}
+        <div 
+          style={{ 
+            position: 'absolute', 
+            left: '-9999px', 
+            top: 0,
+            pointerEvents: 'none',
+          }}
+        >
+          <div ref={reportRef}>
+            <SaboteurReportImage 
+              scores={scores}
+              totalAnswered={totalAnswered}
+              date={new Date().toLocaleDateString('pt-BR')}
+            />
+          </div>
         </div>
       </div>;
   }
