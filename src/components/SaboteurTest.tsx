@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -113,8 +113,27 @@ const SaboteurTest: React.FC = () => {
   const [scores, setScores] = useState<Record<string, number>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+  const [userName, setUserName] = useState<string>('');
   const reportRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+
+  // Buscar nome do usuário ao carregar
+  useEffect(() => {
+    const fetchUserName = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('full_name')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        if (profile?.full_name) {
+          setUserName(profile.full_name);
+        }
+      }
+    };
+    fetchUserName();
+  }, []);
   const handleAnswer = async (value: number) => {
     const questionId = saboteurQuestions[currentQuestion].id;
 
@@ -720,6 +739,7 @@ const SaboteurTest: React.FC = () => {
                 scores={scores}
                 totalAnswered={totalAnswered}
                 date={new Date().toLocaleDateString('pt-BR')}
+                userName={userName}
               />
             </div>
           </div>

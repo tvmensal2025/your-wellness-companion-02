@@ -74,13 +74,72 @@ const saboteurTypesData: Record<string, SaboteurType> = {
   }
 };
 
+// Estratégias por sabotador
+const saboteurStrategies: Record<string, string[]> = {
+  perfeccionismo: [
+    "Estabeleça padrões realistas e flexíveis",
+    "Celebre progresso, não apenas perfeição",
+    "Pratique o conceito de 'bom o suficiente'",
+    "Defina prazos para finalizar projetos"
+  ],
+  procrastinacao: [
+    "Quebre tarefas grandes em partes menores",
+    "Use a técnica Pomodoro (25min focados)",
+    "Elimine distrações durante períodos de foco",
+    "Crie rotinas consistentes"
+  ],
+  comparacao: [
+    "Foque no seu próprio progresso",
+    "Celebre conquistas pessoais",
+    "Use comparação como inspiração",
+    "Pratique gratidão pelo que você tem"
+  ],
+  autocritica: [
+    "Pratique autocompaixão diariamente",
+    "Reconheça e celebre pequenas conquistas",
+    "Trate-se como trataria um amigo",
+    "Foque nos seus pontos fortes"
+  ],
+  medo_falha: [
+    "Reenquadre falhas como aprendizado",
+    "Comece com desafios pequenos",
+    "Pratique aceitação da imperfeição",
+    "Desenvolva resiliência emocional"
+  ],
+  pensamento_binario: [
+    "Pratique ver nuances nas situações",
+    "Aceite que a vida tem tons de cinza",
+    "Desenvolva flexibilidade de pensamento",
+    "Foque em progresso gradual"
+  ],
+  vitima: [
+    "Assuma responsabilidade pelas suas escolhas",
+    "Foque no que você pode controlar",
+    "Desenvolva mentalidade de crescimento",
+    "Aceite que você tem poder de mudança"
+  ],
+  controle: [
+    "Pratique aceitação do que não pode controlar",
+    "Aprenda a delegar e confiar",
+    "Desenvolva flexibilidade",
+    "Pratique mindfulness e presença"
+  ],
+  aprovacao: [
+    "Desenvolva autoconfiança",
+    "Pratique tomar decisões independentes",
+    "Aceite que não pode agradar todos",
+    "Foque em seus próprios valores"
+  ]
+};
+
 interface SaboteurReportImageProps {
   scores: Record<string, number>;
   totalAnswered: number;
   date: string;
+  userName?: string;
 }
 
-const SaboteurReportImage: React.FC<SaboteurReportImageProps> = ({ scores, totalAnswered, date }) => {
+const SaboteurReportImage: React.FC<SaboteurReportImageProps> = ({ scores, totalAnswered, date, userName }) => {
   const getTopSaboteurs = () => {
     return Object.entries(scores).sort(([, a], [, b]) => b - a).slice(0, 3);
   };
@@ -105,6 +164,8 @@ const SaboteurReportImage: React.FC<SaboteurReportImageProps> = ({ scores, total
   const overallScore = getOverallScore();
   const overallLevel = getScoreLevel(overallScore);
   const areasFortes = Object.values(scores).filter(s => s < 30).length;
+  const topSaboteurKey = topSaboteurs[0]?.[0] || 'perfeccionismo';
+  const topSaboteurStrategies = saboteurStrategies[topSaboteurKey] || saboteurStrategies.perfeccionismo;
 
   const medals = ['🥇', '🥈', '🥉'];
 
@@ -135,6 +196,11 @@ const SaboteurReportImage: React.FC<SaboteurReportImageProps> = ({ scores, total
         <h1 style={{ fontSize: '42px', fontWeight: 'bold', margin: '0 0 8px 0' }}>
           RELATÓRIO DE AUTOCONHECIMENTO
         </h1>
+        {userName && (
+          <p style={{ fontSize: '28px', fontWeight: 600, margin: '12px 0', opacity: 0.95 }}>
+            ★ {userName} ★
+          </p>
+        )}
         <p style={{ fontSize: '20px', opacity: 0.9, margin: 0 }}>
           Avaliação de Sabotadores Mentais
         </p>
@@ -343,6 +409,40 @@ const SaboteurReportImage: React.FC<SaboteurReportImageProps> = ({ scores, total
           <div style={{ fontSize: '40px', marginBottom: '8px' }}>📈</div>
           <div style={{ fontSize: '36px', fontWeight: 'bold', color: '#f59e0b' }}>{areasFortes}</div>
           <div style={{ fontSize: '14px', color: '#6b7280' }}>Áreas de Força</div>
+        </div>
+      </div>
+
+      {/* Seção: Como Combater o Sabotador #1 */}
+      <div
+        style={{
+          background: 'white',
+          borderRadius: '20px',
+          padding: '32px',
+          marginBottom: '32px',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+          border: `2px solid ${saboteurTypesData[topSaboteurKey]?.color || '#10b981'}30`,
+        }}
+      >
+        <h2 style={{ fontSize: '24px', color: '#374151', margin: '0 0 24px 0', fontWeight: 600, textAlign: 'center' }}>
+          🎯 COMO COMBATER O {saboteurTypesData[topSaboteurKey]?.name?.toUpperCase() || 'SABOTADOR'}
+        </h2>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          {topSaboteurStrategies.map((strategy, idx) => (
+            <div
+              key={idx}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                padding: '16px',
+                backgroundColor: saboteurTypesData[topSaboteurKey]?.bgColor || '#f0fdf4',
+                borderRadius: '12px',
+              }}
+            >
+              <span style={{ fontSize: '24px' }}>✓</span>
+              <span style={{ fontSize: '16px', color: '#1f2937', fontWeight: 500 }}>{strategy}</span>
+            </div>
+          ))}
         </div>
       </div>
 
