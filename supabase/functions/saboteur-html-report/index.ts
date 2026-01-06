@@ -181,18 +181,27 @@ RETORNE APENAS um JSON válido com esta estrutura:
 {
   "introduction": "Texto de 2-3 frases acolhedor celebrando o passo de autoconhecimento",
   "saboteurDescriptions": {
-    "${topSaboteurs[0]?.key || 'critico'}": "Descrição personalizada de 2-3 frases sobre como este sabotador se manifesta",
-    "${topSaboteurs[1]?.key || 'insistente'}": "Descrição personalizada",
-    "${topSaboteurs[2]?.key || 'prestativo'}": "Descrição personalizada"
+    "${topSaboteurs[0]?.key || 'critico'}": "Descrição detalhada de 3-4 frases sobre como este sabotador se manifesta na vida da pessoa, com exemplos práticos",
+    "${topSaboteurs[1]?.key || 'insistente'}": "Descrição detalhada de 3-4 frases",
+    "${topSaboteurs[2]?.key || 'prestativo'}": "Descrição detalhada de 3-4 frases"
   },
-  "missionInsights": "Texto de 2-3 frases conectando os sabotadores com os hábitos e missões diárias",
-  "physicalInsights": "Texto de 1-2 frases sobre saúde física (ou string vazia se não houver dados)",
-  "emotionalInsights": "Texto de 1-2 frases sobre bem-estar emocional (ou string vazia se não houver dados)",
-  "actionPlan": ["Ação 1 concreta", "Ação 2 concreta", "Ação 3 concreta", "Ação 4 concreta", "Ação 5 concreta"],
-  "conclusion": "Frase motivacional de encerramento"
+  "missionInsights": "Texto de 3-4 frases conectando os sabotadores identificados com os hábitos e missões diárias do usuário, explicando como um afeta o outro",
+  "physicalInsights": "Texto de 2-3 frases analisando os dados físicos disponíveis (IMC, peso, altura, bioimpedância) e conectando com os sabotadores. Se não houver dados, retorne string vazia",
+  "emotionalInsights": "Texto de 2-3 frases analisando o estado emocional (sentimentos detectados, nível de estresse, energia) e conectando com os sabotadores. Se não houver dados, retorne string vazia",
+  "actionPlan": [
+    "Ação 1 específica e concreta para combater o sabotador principal",
+    "Ação 2 específica e concreta",
+    "Ação 3 específica e concreta",
+    "Ação 4 específica e concreta",
+    "Ação 5 específica e concreta"
+  ],
+  "conclusion": "Frase motivacional de 2-3 sentenças de encerramento, encorajando a pessoa a continuar sua jornada"
 }
 
-IMPORTANTE: Retorne APENAS o JSON, sem markdown ou explicações.`;
+IMPORTANTE: 
+- Retorne APENAS o JSON, sem markdown ou explicações.
+- Seja específico e personalizado com base nos dados fornecidos.
+- Se physicalData ou emotionalData estiverem vazios/null, retorne string vazia para physicalInsights/emotionalInsights.`;
 
       try {
         const response = await fetch("https://api.openai.com/v1/chat/completions", {

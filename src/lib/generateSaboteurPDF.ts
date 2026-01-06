@@ -227,40 +227,38 @@ export function generateSaboteurPDF(data: ReportData): jsPDF {
 
   // ========== ACTION PLAN ==========
   if (data.actionPlan && data.actionPlan.length > 0) {
-    addSectionTitle('Plano de Ação - Próximos 7 Dias');
+    // Dynamic title based on top saboteur
+    const topSaboteur = data.saboteurs && data.saboteurs.length > 0 ? data.saboteurs[0].name : '';
+    const actionTitle = topSaboteur 
+      ? `5 Dicas para Superar ${topSaboteur}`
+      : 'Plano de Ação - Próximos 7 Dias';
     
-    checkPageBreak(15);
-    pdf.setFillColor(254, 252, 232); // Yellow-50
-    pdf.setDrawColor(250, 204, 21); // Yellow-400
-    pdf.setLineWidth(0.3);
+    addSectionTitle(actionTitle);
     
-    // Calculate height needed
-    let planHeight = 10;
-    for (const action of data.actionPlan) {
-      const lines = pdf.splitTextToSize(action, contentWidth - 15);
-      planHeight += lines.length * 5 + 3;
-    }
-    
-    checkPageBreak(planHeight + 5);
-    pdf.roundedRect(margin, y, contentWidth, planHeight, 3, 3, 'FD');
-    y += 6;
-    
+    // Render each action as a numbered item without box
     data.actionPlan.forEach((action, index) => {
+      checkPageBreak(15);
+      
+      // Number circle
+      pdf.setFillColor(16, 185, 129);
+      pdf.circle(margin + 4, y - 1, 3, 'F');
+      
+      pdf.setFontSize(9);
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text(String(index + 1), margin + 2.5, y);
+      
+      // Action text
       pdf.setFontSize(10);
       pdf.setTextColor(31, 41, 55);
-      pdf.setFont('helvetica', 'bold');
-      
-      const numberText = `${index + 1}.`;
-      pdf.text(numberText, margin + 4, y);
-      
       pdf.setFont('helvetica', 'normal');
-      const lines = pdf.splitTextToSize(action, contentWidth - 18);
+      const lines = pdf.splitTextToSize(action, contentWidth - 15);
       for (let i = 0; i < lines.length; i++) {
         if (i > 0) checkPageBreak(5);
         pdf.text(lines[i], margin + 12, y);
         y += 5;
       }
-      y += 2;
+      y += 4;
     });
     
     y += 5;
