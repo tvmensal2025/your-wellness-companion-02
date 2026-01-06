@@ -646,22 +646,6 @@ O que você gostaria de conversar hoje? Pode me enviar uma foto da sua refeiçã
               </div>
             </div>
 
-            {/* Input de arquivos ocultos */}
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleImageSelect}
-              className="hidden"
-            />
-            <input
-              ref={cameraInputRef}
-              type="file"
-              accept="image/*"
-              capture="environment"
-              onChange={handleImageSelect}
-              className="hidden"
-            />
           </div>
         );
       
