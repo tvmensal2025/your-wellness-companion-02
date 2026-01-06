@@ -705,6 +705,12 @@ const SaboteurTest: React.FC = () => {
       </div>;
   }
   const currentQ = saboteurQuestions[currentQuestion];
+  
+  // Guard against undefined question (safety check)
+  if (!currentQ) {
+    return null;
+  }
+  
   return <div className="mobile-padding space-y-4">
       {/* Header ultra compacto: só progresso da pergunta */}
       <div className="flex items-center justify-end mobile-text-sm text-muted-foreground">
