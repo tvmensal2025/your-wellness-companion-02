@@ -451,14 +451,14 @@ O que você gostaria de conversar hoje? Pode me enviar uma foto da sua refeiçã
           <div className="flex-1 flex flex-col h-full bg-gradient-to-b from-[#0a0f14] to-[#0d1318] min-h-0">
             {/* Header estilo WhatsApp moderno */}
             <div className="flex items-center gap-4 px-4 py-3 sm:px-6 sm:py-4 bg-gradient-to-r from-[#075E54] to-[#128C7E] shadow-lg z-10 flex-shrink-0">
-              {/* Botão Menu Mobile */}
+              {/* Botão Home para Dashboard */}
               <Button
                 variant="ghost"
                 size="icon"
-                className="lg:hidden text-white hover:bg-white/10 h-10 w-10 flex-shrink-0"
-                onClick={() => setIsMobileSidebarOpen(true)}
+                className="text-white hover:bg-white/10 h-10 w-10 flex-shrink-0"
+                onClick={handleDashboardClick}
               >
-                <Menu className="w-5 h-5" />
+                <Home className="w-5 h-5" />
               </Button>
               
               {/* Avatar com status online */}
@@ -980,125 +980,7 @@ O que você gostaria de conversar hoje? Pode me enviar uma foto da sua refeiçã
 
   return (
     <div className="flex h-screen bg-[#0D1117] min-h-0 overflow-hidden">
-      {/* Sidebar Desktop */}
-      <div className="hidden lg:flex w-64 bg-[#161B22] border-r border-[#30363D] flex-col flex-shrink-0">
-        {/* Header da Sidebar */}
-        <div className="p-4 border-b border-[#30363D]">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center text-white">
-              <Bot className="w-5 h-5" />
-            </div>
-            <div>
-              <h2 className="font-semibold text-white text-base">Sofia</h2>
-              <p className="text-xs text-gray-400">Assistente de Saúde</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Navegação da Sidebar */}
-        <nav className="flex-1 p-4 space-y-2">
-          {/* Botão Dashboard */}
-          <Button
-            variant="ghost"
-            className="w-full justify-start gap-3 hover:bg-[#21262D] text-gray-300 hover:text-white h-12 text-base"
-            onClick={handleDashboardClick}
-          >
-            <Home className="w-5 h-5 text-blue-500" />
-            Dashboard
-          </Button>
-          
-          {menuItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = currentSection === item.id;
-            return (
-              <Button
-                key={item.id}
-                variant={isActive ? "secondary" : "ghost"}
-                className={`w-full justify-start gap-3 h-12 text-base ${
-                  isActive 
-                    ? 'bg-[#21262D] text-white border border-[#30363D]' 
-                    : 'hover:bg-[#21262D] text-gray-300 hover:text-white'
-                }`}
-                onClick={() => handleSectionChange(item.id as typeof currentSection)}
-              >
-                <Icon className={`w-5 h-5 ${item.color}`} />
-                {item.label}
-              </Button>
-            );
-          })}
-        </nav>
-      </div>
-
-      {/* Sidebar Mobile Overlay */}
-      {isMobileSidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-black/50 z-50 lg:hidden"
-          onClick={() => setIsMobileSidebarOpen(false)}
-        />
-      )}
-
-      {/* Sidebar Mobile */}
-      <div className={`fixed top-0 left-0 h-full w-72 xs:w-80 bg-[#161B22] border-r border-[#30363D] z-50 transform transition-transform duration-300 ease-in-out lg:hidden ${
-        isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-      }`}>
-        {/* Header da Sidebar Mobile */}
-        <div className="p-3 xs:p-4 border-b border-[#30363D] flex items-center justify-between">
-          <div className="flex items-center gap-2 xs:gap-3">
-            <div className="w-8 h-8 xs:w-10 xs:h-10 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center text-white">
-              <Bot className="w-4 h-4 xs:w-5 xs:h-5" />
-            </div>
-            <div>
-              <h2 className="font-semibold text-white text-sm xs:text-base">Sofia</h2>
-              <p className="text-xs text-gray-400">Assistente de Saúde</p>
-            </div>
-          </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-gray-400 hover:text-white hover:bg-[#21262D] h-8 w-8 xs:h-10 xs:w-10"
-            onClick={() => setIsMobileSidebarOpen(false)}
-          >
-            <X className="w-4 h-4 xs:w-5 xs:h-5" />
-          </Button>
-        </div>
-
-        {/* Navegação da Sidebar Mobile */}
-        <ScrollArea className="flex-1 p-3 xs:p-4">
-          <nav className="space-y-2">
-            {/* Botão Dashboard */}
-            <Button
-              variant="ghost"
-              className="w-full justify-start gap-2 xs:gap-3 hover:bg-[#21262D] text-gray-300 hover:text-white h-10 xs:h-12 text-sm xs:text-base"
-              onClick={handleDashboardClick}
-            >
-              <Home className="w-4 h-4 xs:w-5 xs:h-5 text-blue-500" />
-              Dashboard
-            </Button>
-            
-            {menuItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = currentSection === item.id;
-              return (
-                <Button
-                  key={item.id}
-                  variant={isActive ? "secondary" : "ghost"}
-                  className={`w-full justify-start gap-2 xs:gap-3 h-10 xs:h-12 text-sm xs:text-base ${
-                    isActive 
-                      ? 'bg-[#21262D] text-white border border-[#30363D]' 
-                      : 'hover:bg-[#21262D] text-gray-300 hover:text-white'
-                  }`}
-                  onClick={() => handleSectionChange(item.id as typeof currentSection)}
-                >
-                  <Icon className={`w-4 h-4 xs:w-5 xs:h-5 ${item.color}`} />
-                  {item.label}
-                </Button>
-              );
-            })}
-          </nav>
-        </ScrollArea>
-      </div>
-
-      {/* Conteúdo Principal */}
+      {/* Conteúdo Principal - Tela Cheia */}
       <div className="flex-1 flex flex-col bg-[#0D1117] min-w-0 min-h-0">
         {renderContent()}
       </div>
