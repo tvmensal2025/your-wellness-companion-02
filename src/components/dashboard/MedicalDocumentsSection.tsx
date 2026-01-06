@@ -79,7 +79,11 @@ interface DocumentStats {
   documentTypes: Record<string, number>;
 }
 
-const MedicalDocumentsSection: React.FC = () => {
+interface MedicalDocumentsSectionProps {
+  hideStatsCards?: boolean;
+}
+
+const MedicalDocumentsSection: React.FC<MedicalDocumentsSectionProps> = ({ hideStatsCards = false }) => {
   const [documents, setDocuments] = useState<MedicalDocument[]>([]);
   const [stats, setStats] = useState<DocumentStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -773,7 +777,7 @@ const MedicalDocumentsSection: React.FC = () => {
   return (
     <div className="space-y-4 sm:space-y-6 overflow-x-hidden">
       {/* Cards de Estatísticas */}
-      {stats && (
+      {stats && !hideStatsCards && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
           <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
             <CardHeader className="pb-1 sm:pb-2 px-3 pt-3 sm:px-4 sm:pt-4">
