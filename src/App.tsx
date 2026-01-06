@@ -44,7 +44,14 @@ const PageLoader = () => (
 
 const queryClient = new QueryClient({
   defaultOptions: {
-    queries: { retry: 1, refetchOnWindowFocus: false, staleTime: 5 * 60 * 1000 },
+    queries: { 
+      retry: 1, 
+      refetchOnWindowFocus: false, 
+      staleTime: 10 * 60 * 1000, // 10 minutos
+      gcTime: 30 * 60 * 1000, // 30 minutos (antigo cacheTime)
+      refetchOnMount: false,
+      refetchOnReconnect: false,
+    },
     mutations: { retry: 1 },
   },
 });

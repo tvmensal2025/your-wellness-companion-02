@@ -27,10 +27,13 @@ export default defineConfig(({ mode }) => ({
         manualChunks: {
           'vendor-react': ['react', 'react-dom', 'react-router-dom'],
           'vendor-supabase': ['@supabase/supabase-js'],
-          'vendor-ui': ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-tabs', '@radix-ui/react-tooltip'],
+          'vendor-ui': ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-tabs', '@radix-ui/react-tooltip', '@radix-ui/react-popover'],
           'vendor-query': ['@tanstack/react-query'],
           'vendor-motion': ['framer-motion'],
-          'vendor-charts': ['recharts', 'chart.js', 'react-chartjs-2'],
+          'vendor-charts': ['recharts'],
+          'vendor-apex': ['apexcharts', 'react-apexcharts'],
+          'vendor-forms': ['react-hook-form', '@hookform/resolvers', 'zod'],
+          'vendor-date': ['date-fns', 'react-day-picker'],
         },
         compact: true
       }
