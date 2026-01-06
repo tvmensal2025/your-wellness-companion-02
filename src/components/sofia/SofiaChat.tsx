@@ -453,135 +453,220 @@ O que você gostaria de conversar hoje? Pode me enviar uma foto da sua refeiçã
     switch (currentSection) {
       case 'chat':
         return (
-          <div className="flex-1 flex flex-col h-full bg-[#0D1117] min-h-0">
-            {/* Header tipo WhatsApp - fixo no topo */}
-            <div className="flex items-center gap-3 p-3 sm:p-4 md:p-6 bg-[#2D333B] border-b border-[#373E47] z-10 flex-shrink-0">
+          <div className="flex-1 flex flex-col h-full bg-gradient-to-b from-[#0a0f14] to-[#0d1318] min-h-0">
+            {/* Header estilo WhatsApp moderno */}
+            <div className="flex items-center gap-4 px-4 py-3 sm:px-6 sm:py-4 bg-gradient-to-r from-[#075E54] to-[#128C7E] shadow-lg z-10 flex-shrink-0">
               {/* Botão Menu Mobile */}
               <Button
                 variant="ghost"
                 size="icon"
-                className="lg:hidden text-white hover:bg-white/10 h-10 w-10 sm:h-12 sm:w-12 flex-shrink-0"
+                className="lg:hidden text-white hover:bg-white/10 h-10 w-10 flex-shrink-0"
                 onClick={() => setIsMobileSidebarOpen(true)}
               >
-                <Menu className="w-5 h-5 sm:w-6 sm:h-6" />
+                <Menu className="w-5 h-5" />
               </Button>
               
-              <img 
-                src={sofiaAvatar} 
-                alt="Sofia"
-                className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full object-cover border-2 border-white/20 flex-shrink-0"
-              />
-              <div className="leading-tight flex-1 min-w-0">
-                <div className="font-medium text-white text-lg sm:text-xl md:text-2xl truncate">Sofia</div>
-                <div className="text-sm sm:text-base text-emerald-400 truncate">• online</div>
+              {/* Avatar com status online */}
+              <div className="relative flex-shrink-0">
+                <img 
+                  src={sofiaAvatar} 
+                  alt="Sofia"
+                  className="w-11 h-11 sm:w-12 sm:h-12 rounded-full object-cover border-2 border-white/30 shadow-md"
+                />
+                <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-[#25D366] rounded-full border-2 border-[#075E54]" />
+              </div>
+              
+              {/* Info do contato */}
+              <div className="flex-1 min-w-0">
+                <h1 className="font-semibold text-white text-lg sm:text-xl truncate">Sofia</h1>
+                <p className="text-sm text-[#a8d8d5] truncate">online</p>
               </div>
             </div>
 
-            {/* Mensagens com wallpaper - área expansível */}
-            <div className="flex-1 relative bg-[#0D1117] overflow-hidden min-h-0">
-              <div className="absolute inset-0 opacity-30 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMSIgZmlsbD0iIzMzMzMzMyIgZmlsbC1vcGFjaXR5PSIwLjMiLz4KPC9zdmc+')] [background-size:20px_20px]" />
+            {/* Área de mensagens com wallpaper */}
+            <div className="flex-1 relative overflow-hidden min-h-0" style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23128C7E' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+              backgroundColor: '#0a100e'
+            }}>
               <ScrollArea className="h-full w-full" ref={scrollAreaRef}>
-                <div className="p-4 sm:p-5 md:p-6 space-y-4 sm:space-y-5 md:space-y-6 relative z-10">
+                <div className="p-4 sm:p-5 space-y-3 sm:space-y-4 relative z-10 pb-4">
                   {messages.map(message => {
                     const time = message.timestamp.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
                     const isUser = message.type === 'user';
                     return (
-                      <div key={message.id} className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`max-w-[85%] sm:max-w-[80%] md:max-w-[75%] lg:max-w-[70%] rounded-2xl ${
+                      <motion.div 
+                        key={message.id} 
+                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        transition={{ duration: 0.2 }}
+                        className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}
+                      >
+                        <div className={`relative max-w-[85%] sm:max-w-[75%] ${
                           isUser 
-                            ? 'bg-emerald-600 text-white rounded-br-md shadow-lg' 
-                            : 'bg-[#21262D] border border-[#373E47] text-white rounded-bl-md shadow-md'
-                        } px-4 sm:px-5 md:px-6 py-3 sm:py-4`}>
+                            ? 'bg-[#005C4B] rounded-2xl rounded-tr-md' 
+                            : 'bg-[#1F2C33] rounded-2xl rounded-tl-md'
+                        } px-4 py-2.5 sm:px-4 sm:py-3 shadow-lg`}>
+                          {/* Seta do balão */}
+                          <div className={`absolute top-0 ${
+                            isUser 
+                              ? 'right-0 -mr-2 border-l-[8px] border-l-[#005C4B] border-t-[8px] border-t-transparent border-b-[8px] border-b-transparent' 
+                              : 'left-0 -ml-2 border-r-[8px] border-r-[#1F2C33] border-t-[8px] border-t-transparent border-b-[8px] border-b-transparent'
+                          }`} style={{ width: 0, height: 0 }} />
+                          
                           {message.imageUrl && (
-                            <img src={message.imageUrl} alt="Imagem enviada" className="max-w-[200px] sm:max-w-[240px] md:max-w-[280px] h-auto rounded-xl mb-3 border border-gray-600 object-cover" />
+                            <img 
+                              src={message.imageUrl} 
+                              alt="Imagem enviada" 
+                              className="max-w-[240px] sm:max-w-[280px] h-auto rounded-lg mb-2 object-cover" 
+                            />
                           )}
-                          <div className="whitespace-pre-wrap text-base sm:text-lg md:text-xl leading-relaxed break-words">{message.content}</div>
-                          <div className={`mt-2 text-sm sm:text-base text-right ${isUser ? 'text-emerald-100' : 'text-gray-300'}`}>
-                            {time}
+                          <p className="whitespace-pre-wrap text-[15px] sm:text-base leading-relaxed break-words text-white/95">{message.content}</p>
+                          <div className="flex items-center justify-end gap-1 mt-1">
+                            <span className="text-[11px] sm:text-xs text-white/50">{time}</span>
+                            {isUser && <CheckCheck className="w-4 h-4 text-[#53BDEB]" />}
                           </div>
                         </div>
-                      </div>
+                      </motion.div>
                     );
                   })}
                   {isLoading && (
-                    <div className="flex justify-start">
-                      <div className="bg-[#21262D] border border-[#373E47] rounded-2xl rounded-bl-md px-4 sm:px-5 md:px-6 py-3 sm:py-4 shadow-md text-base sm:text-lg md:text-xl flex items-center gap-3 text-white">
-                        <Loader2 className="w-5 h-5 sm:w-6 sm:h-6 animate-spin text-emerald-400 flex-shrink-0" />
-                        <span className="truncate">Sofia está digitando...</span>
+                    <motion.div 
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="flex justify-start"
+                    >
+                      <div className="bg-[#1F2C33] rounded-2xl rounded-tl-md px-4 py-3 shadow-lg">
+                        <div className="flex items-center gap-2">
+                          <div className="flex gap-1">
+                            <span className="w-2 h-2 bg-[#25D366] rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                            <span className="w-2 h-2 bg-[#25D366] rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                            <span className="w-2 h-2 bg-[#25D366] rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                          </div>
+                        </div>
                       </div>
-                    </div>
+                    </motion.div>
                   )}
                 </div>
               </ScrollArea>
             </div>
 
-            {/* Barra de entrada - estilo WhatsApp */}
-            <Card className="border border-border/20 rounded-xl flex-shrink-0">
-              <CardContent className="p-3 sm:p-4 md:p-6">
-                <div className="flex items-center gap-2 sm:gap-3">
-                  {/* Botão de Voz */}
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    className={`h-12 w-12 sm:h-14 sm:w-14 rounded-full flex-shrink-0 ${
-                      voiceEnabled 
-                        ? 'bg-green-500/20 text-green-600 hover:bg-green-500/30' 
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                    } transition-all duration-200`}
-                    onClick={toggleVoice}
-                    title={voiceEnabled ? "Desativar voz" : "Ativar voz"}
-                  >
-                    {voiceEnabled ? <Volume2 className="h-6 w-6 sm:h-7 sm:w-7" /> : <VolumeX className="h-6 w-6 sm:h-7 sm:w-7" />}
-                  </Button>
-
-                  <div className="relative flex-1 min-w-0">
-                    <Input
-                      placeholder={voiceEnabled ? "Digite ou use o microfone..." : "Digite sua mensagem..."}
-                      value={inputMessage}
-                      onChange={(e) => setInputMessage(e.target.value)}
-                      onKeyPress={handleKeyPress}
-                      disabled={isLoading}
-                      className="pr-24 sm:pr-28 md:pr-32 rounded-full text-base sm:text-lg md:text-xl h-12 sm:h-14"
-                    />
-                    <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-2">
-                      <Button type="button" variant="ghost" size="icon" className="h-10 w-10 sm:h-12 sm:w-12 flex-shrink-0" onClick={handleCameraClick} disabled={isLoading} title="Câmera">
-                        <Camera className="h-5 w-5 sm:h-6 sm:w-6" />
-                      </Button>
-                      <Button type="button" variant="ghost" size="icon" className="h-10 w-10 sm:h-12 sm:w-12 flex-shrink-0" onClick={handleGalleryClick} disabled={isLoading} title="Galeria">
-                        <Image className="h-5 w-5 sm:h-6 sm:w-6" />
-                      </Button>
-                    </div>
+            {/* Preview de imagem */}
+            <AnimatePresence>
+              {imagePreview && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 20 }}
+                  className="px-4 py-2 bg-[#1F2C33] border-t border-[#2a3942]"
+                >
+                  <div className="relative inline-block">
+                    <img src={imagePreview} alt="Preview" className="h-20 w-auto rounded-lg object-cover" />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="absolute -top-2 -right-2 h-6 w-6 bg-red-500 hover:bg-red-600 rounded-full text-white"
+                      onClick={() => { setSelectedImage(null); setImagePreview(null); }}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
                   </div>
-                  <Button
-                    onClick={inputMessage.trim() || selectedImage ? handleSendMessage : handleMicClick}
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Barra de entrada estilo WhatsApp */}
+            <div className="px-3 py-2 sm:px-4 sm:py-3 bg-[#1F2C33] border-t border-[#2a3942] flex-shrink-0">
+              <div className="flex items-center gap-2 sm:gap-3">
+                {/* Botão de Voz Toggle */}
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className={`h-10 w-10 sm:h-11 sm:w-11 rounded-full flex-shrink-0 transition-all ${
+                    voiceEnabled 
+                      ? 'bg-[#25D366]/20 text-[#25D366] hover:bg-[#25D366]/30' 
+                      : 'text-[#8696A0] hover:bg-white/5'
+                  }`}
+                  onClick={toggleVoice}
+                  title={voiceEnabled ? "Desativar voz" : "Ativar voz"}
+                >
+                  {voiceEnabled ? <Volume2 className="h-5 w-5 sm:h-6 sm:w-6" /> : <VolumeX className="h-5 w-5 sm:h-6 sm:w-6" />}
+                </Button>
+
+                {/* Campo de texto */}
+                <div className="flex-1 min-w-0 relative">
+                  <Input
+                    placeholder="Digite sua mensagem..."
+                    value={inputMessage}
+                    onChange={(e) => setInputMessage(e.target.value)}
+                    onKeyPress={handleKeyPress}
                     disabled={isLoading}
-                    size="icon"
-                    className={`rounded-full h-12 w-12 sm:h-14 sm:w-14 flex-shrink-0 ${
-                      isListening ? 'bg-red-500 text-white animate-pulse' : 
-                      voiceEnabled ? 'bg-green-500 text-white' : 'bg-primary text-white'
-                    }`}
-                    title={
-                      isLoading ? 'Processando...' :
-                      inputMessage.trim() || selectedImage ? 'Enviar' : 
-                      voiceEnabled ? 'Gravar áudio' : 'Ativar voz primeiro'
-                    }
-                  >
-                    {isLoading ? (
-                      <Loader2 className="h-6 w-6 sm:h-7 sm:w-7 animate-spin" />
-                    ) : inputMessage.trim() || selectedImage ? (
-                      <Send className="h-6 w-6 sm:h-7 sm:w-7" />
-                    ) : isListening ? (
-                      <Mic className="h-6 w-6 sm:h-7 sm:w-7" />
-                    ) : voiceEnabled ? (
-                      <Mic className="h-6 w-6 sm:h-7 sm:w-7" />
-                    ) : (
-                      <Mic className="h-6 w-6 sm:h-7 sm:w-7" />
-                    )}
-                  </Button>
+                    className="bg-[#2A3942] border-none rounded-full text-white placeholder:text-[#8696A0] text-[15px] sm:text-base h-11 sm:h-12 pl-4 pr-24 focus-visible:ring-1 focus-visible:ring-[#25D366]"
+                  />
+                  <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                    <Button 
+                      type="button" 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-9 w-9 text-[#8696A0] hover:bg-white/5 hover:text-white rounded-full" 
+                      onClick={handleCameraClick} 
+                      disabled={isLoading} 
+                      title="Câmera"
+                    >
+                      <Camera className="h-5 w-5" />
+                    </Button>
+                    <Button 
+                      type="button" 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-9 w-9 text-[#8696A0] hover:bg-white/5 hover:text-white rounded-full" 
+                      onClick={handleGalleryClick} 
+                      disabled={isLoading} 
+                      title="Galeria"
+                    >
+                      <Image className="h-5 w-5" />
+                    </Button>
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
+
+                {/* Botão enviar/microfone */}
+                <Button
+                  onClick={inputMessage.trim() || selectedImage ? handleSendMessage : handleMicClick}
+                  disabled={isLoading}
+                  size="icon"
+                  className={`rounded-full h-11 w-11 sm:h-12 sm:w-12 flex-shrink-0 shadow-lg transition-all ${
+                    isListening 
+                      ? 'bg-red-500 text-white animate-pulse hover:bg-red-600' 
+                      : 'bg-[#00A884] text-white hover:bg-[#00A884]/90'
+                  }`}
+                >
+                  {isLoading ? (
+                    <Loader2 className="h-5 w-5 sm:h-6 sm:w-6 animate-spin" />
+                  ) : inputMessage.trim() || selectedImage ? (
+                    <Send className="h-5 w-5 sm:h-6 sm:w-6" />
+                  ) : (
+                    <Mic className="h-5 w-5 sm:h-6 sm:w-6" />
+                  )}
+                </Button>
+              </div>
+            </div>
+
+            {/* Input de arquivos ocultos */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleImageSelect}
+              className="hidden"
+            />
+            <input
+              ref={cameraInputRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              onChange={handleImageSelect}
+              className="hidden"
+            />
           </div>
         );
       
