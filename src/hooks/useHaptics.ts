@@ -11,6 +11,7 @@ interface HapticsAPI {
   lightImpact: () => Promise<void>;
   mediumImpact: () => Promise<void>;
   heavyImpact: () => Promise<void>;
+  triggerHaptic: (style: HapticStyle) => Promise<void>;
   isSupported: boolean;
 }
 
@@ -145,6 +146,17 @@ export const useHaptics = (): HapticsAPI => {
     }
   }, [isCapacitorAvailable, isVibrationSupported, haptics, isSupported]);
 
+  // Universal trigger method
+  const triggerHaptic = useCallback(async (style: HapticStyle) => {
+    if (style === 'success' || style === 'warning' || style === 'error') {
+      await notification(style);
+    } else if (style === 'selection') {
+      await selection();
+    } else {
+      await impact(style);
+    }
+  }, [impact, notification, selection]);
+
   return {
     impact,
     notification,
@@ -153,6 +165,7 @@ export const useHaptics = (): HapticsAPI => {
     lightImpact,
     mediumImpact,
     heavyImpact,
+    triggerHaptic,
     isSupported,
   };
 };
