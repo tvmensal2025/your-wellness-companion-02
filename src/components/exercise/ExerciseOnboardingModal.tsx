@@ -38,7 +38,7 @@ interface ExerciseOnboardingModalProps {
   user?: User | null;
 }
 
-type Step = 'welcome' | 'question1' | 'question2' | 'question3' | 'question4' | 'question5' | 'question6' | 'question7' | 'result';
+type Step = 'welcome' | 'question1' | 'question2' | 'question3' | 'question4' | 'question5' | 'question6' | 'question7' | 'question8' | 'question9' | 'question10' | 'question11' | 'result';
 
 interface Answers {
   level: string;
@@ -48,6 +48,11 @@ interface Answers {
   location: string;
   goal: string;
   limitation: string;
+  // Novas perguntas
+  gender: string;
+  bodyFocus: string;
+  ageGroup: string;
+  specialCondition: string;
 }
 
 export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = ({
@@ -64,11 +69,15 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
     location: '',
     goal: '',
     limitation: '',
+    gender: '',
+    bodyFocus: '',
+    ageGroup: '',
+    specialCondition: '',
   });
   const [saving, setSaving] = useState(false);
   const { saveProgram } = useExerciseProgram(user?.id);
 
-  const totalSteps = 7;
+  const totalSteps = 11;
   const currentStep = step === 'welcome' ? 0 : 
                      step === 'question1' ? 1 :
                      step === 'question2' ? 2 :
@@ -76,7 +85,11 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
                      step === 'question4' ? 4 :
                      step === 'question5' ? 5 :
                      step === 'question6' ? 6 :
-                     step === 'question7' ? 7 : 8;
+                     step === 'question7' ? 7 :
+                     step === 'question8' ? 8 :
+                     step === 'question9' ? 9 :
+                     step === 'question10' ? 10 :
+                     step === 'question11' ? 11 : 12;
 
   const progress = (currentStep / (totalSteps + 1)) * 100;
 
@@ -123,7 +136,7 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
             Vamos descobrir o melhor programa para você!
           </p>
           <p className="text-xs md:text-sm text-muted-foreground text-center">
-            Responda 7 perguntas rápidas e criaremos um plano personalizado para o seu nível
+            Responda algumas perguntas rápidas e criaremos um plano 100% personalizado
           </p>
           
           <div className="flex justify-center gap-3 md:gap-4 pt-1 md:pt-2">
@@ -477,7 +490,7 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
             }`}
             onClick={() => {
               handleAnswer('limitation', option.value);
-              setTimeout(() => setStep('result'), 300);
+              setTimeout(() => setStep('question8'), 300);
             }}
           >
             <CardContent className="p-4">
@@ -488,6 +501,208 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
                   <p className="text-sm opacity-80">{option.desc}</p>
                 </div>
                 {answers.limitation === option.value && <CheckCircle2 className="w-5 h-5" />}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+
+  // NOVA PERGUNTA 8: Gênero
+  const renderQuestion8 = () => (
+    <div className="space-y-6 py-4">
+      <div className="text-center space-y-3">
+        <div className="flex justify-center mb-4">
+          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center shadow-lg">
+            <Users className="w-8 h-8 text-white" />
+          </div>
+        </div>
+        <h3 className="text-2xl font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
+          Qual é o seu gênero?
+        </h3>
+        <p className="text-muted-foreground">Isso nos ajuda a personalizar os exercícios para você</p>
+      </div>
+
+      <div className="grid gap-3">
+        {[
+          { value: 'feminino', emoji: '👩', title: 'Feminino', desc: 'Treino com ênfase em glúteos e pernas', color: 'from-pink-500 to-rose-500' },
+          { value: 'masculino', emoji: '👨', title: 'Masculino', desc: 'Treino com ênfase em peito, costas e braços', color: 'from-blue-500 to-indigo-500' },
+          { value: 'nao_informar', emoji: '🌟', title: 'Prefiro não informar', desc: 'Treino equilibrado para todo o corpo', color: 'from-purple-500 to-violet-500' },
+        ].map(option => (
+          <Card 
+            key={option.value}
+            className={`cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-[1.02] ${
+              answers.gender === option.value 
+                ? `bg-gradient-to-r ${option.color} text-white shadow-2xl` 
+                : 'hover:bg-muted/50'
+            }`}
+            onClick={() => {
+              handleAnswer('gender', option.value);
+              setTimeout(() => setStep('question9'), 300);
+            }}
+          >
+            <CardContent className="p-4">
+              <div className="flex items-center gap-4">
+                <span className="text-2xl">{option.emoji}</span>
+                <div className="flex-1">
+                  <h4 className="font-bold">{option.title}</h4>
+                  <p className="text-sm opacity-80">{option.desc}</p>
+                </div>
+                {answers.gender === option.value && <CheckCircle2 className="w-5 h-5" />}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+
+  // NOVA PERGUNTA 9: Foco Corporal
+  const renderQuestion9 = () => (
+    <div className="space-y-6 py-4">
+      <div className="text-center space-y-3">
+        <div className="flex justify-center mb-4">
+          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center shadow-lg">
+            <Target className="w-8 h-8 text-white" />
+          </div>
+        </div>
+        <h3 className="text-2xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
+          Qual parte do corpo quer dar mais atenção?
+        </h3>
+        <p className="text-muted-foreground">Vamos priorizar essa área no seu treino</p>
+      </div>
+
+      <div className="grid gap-3">
+        {[
+          { value: 'gluteos_pernas', emoji: '🍑', title: 'Glúteos e Pernas', desc: 'Fortalecer e definir membros inferiores', color: 'from-pink-500 to-rose-500' },
+          { value: 'abdomen_core', emoji: '🎯', title: 'Abdômen e Core', desc: 'Barriga chapada e core forte', color: 'from-orange-500 to-amber-500' },
+          { value: 'bracos_ombros', emoji: '💪', title: 'Braços e Ombros', desc: 'Braços definidos e ombros largos', color: 'from-blue-500 to-cyan-500' },
+          { value: 'costas_postura', emoji: '🔙', title: 'Costas e Postura', desc: 'Melhorar postura e costas definidas', color: 'from-green-500 to-emerald-500' },
+          { value: 'peito', emoji: '🦾', title: 'Peito', desc: 'Peitoral desenvolvido e forte', color: 'from-indigo-500 to-purple-500' },
+          { value: 'corpo_equilibrado', emoji: '⚖️', title: 'Corpo Todo Equilibrado', desc: 'Desenvolvimento harmonioso', color: 'from-purple-500 to-pink-500' },
+        ].map(option => (
+          <Card 
+            key={option.value}
+            className={`cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-[1.02] ${
+              answers.bodyFocus === option.value 
+                ? `bg-gradient-to-r ${option.color} text-white shadow-2xl` 
+                : 'hover:bg-muted/50'
+            }`}
+            onClick={() => {
+              handleAnswer('bodyFocus', option.value);
+              setTimeout(() => setStep('question10'), 300);
+            }}
+          >
+            <CardContent className="p-4">
+              <div className="flex items-center gap-4">
+                <span className="text-2xl">{option.emoji}</span>
+                <div className="flex-1">
+                  <h4 className="font-bold">{option.title}</h4>
+                  <p className="text-sm opacity-80">{option.desc}</p>
+                </div>
+                {answers.bodyFocus === option.value && <CheckCircle2 className="w-5 h-5" />}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+
+  // NOVA PERGUNTA 10: Faixa Etária
+  const renderQuestion10 = () => (
+    <div className="space-y-6 py-4">
+      <div className="text-center space-y-3">
+        <div className="flex justify-center mb-4">
+          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center shadow-lg">
+            <Calendar className="w-8 h-8 text-white" />
+          </div>
+        </div>
+        <h3 className="text-2xl font-bold bg-gradient-to-r from-teal-600 to-cyan-600 bg-clip-text text-transparent">
+          Qual é sua faixa etária?
+        </h3>
+        <p className="text-muted-foreground">Adaptaremos a intensidade para você</p>
+      </div>
+
+      <div className="grid gap-3">
+        {[
+          { value: 'jovem', emoji: '🌱', title: '18-30 anos', desc: 'Alta recuperação, pode treinar intenso', color: 'from-green-500 to-emerald-500' },
+          { value: 'adulto', emoji: '🌿', title: '31-50 anos', desc: 'Equilibrio entre intensidade e recuperação', color: 'from-blue-500 to-indigo-500' },
+          { value: 'meia_idade', emoji: '🌳', title: '51-65 anos', desc: 'Foco em saúde e qualidade de vida', color: 'from-amber-500 to-orange-500' },
+          { value: 'senior', emoji: '🌲', title: '66+ anos', desc: 'Exercícios suaves e seguros', color: 'from-purple-500 to-violet-500' },
+        ].map(option => (
+          <Card 
+            key={option.value}
+            className={`cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-[1.02] ${
+              answers.ageGroup === option.value 
+                ? `bg-gradient-to-r ${option.color} text-white shadow-2xl` 
+                : 'hover:bg-muted/50'
+            }`}
+            onClick={() => {
+              handleAnswer('ageGroup', option.value);
+              setTimeout(() => setStep('question11'), 300);
+            }}
+          >
+            <CardContent className="p-4">
+              <div className="flex items-center gap-4">
+                <span className="text-2xl">{option.emoji}</span>
+                <div className="flex-1">
+                  <h4 className="font-bold">{option.title}</h4>
+                  <p className="text-sm opacity-80">{option.desc}</p>
+                </div>
+                {answers.ageGroup === option.value && <CheckCircle2 className="w-5 h-5" />}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+
+  // NOVA PERGUNTA 11: Condição Especial
+  const renderQuestion11 = () => (
+    <div className="space-y-6 py-4">
+      <div className="text-center space-y-3">
+        <div className="flex justify-center mb-4">
+          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center shadow-lg">
+            <Heart className="w-8 h-8 text-white" />
+          </div>
+        </div>
+        <h3 className="text-2xl font-bold bg-gradient-to-r from-rose-600 to-pink-600 bg-clip-text text-transparent">
+          Você está em alguma condição especial?
+        </h3>
+        <p className="text-muted-foreground">Vamos adaptar tudo para sua segurança</p>
+      </div>
+
+      <div className="grid gap-3">
+        {[
+          { value: 'nenhuma', emoji: '✅', title: 'Nenhuma', desc: 'Estou pronto(a) para começar!', color: 'from-green-500 to-emerald-500' },
+          { value: 'gestante', emoji: '🤰', title: 'Gestante', desc: 'Exercícios seguros para gravidez', color: 'from-pink-500 to-rose-500' },
+          { value: 'pos_parto', emoji: '👶', title: 'Pós-parto', desc: 'Recuperação gradual e segura', color: 'from-purple-500 to-violet-500' },
+          { value: 'obesidade', emoji: '🏋️', title: 'Obesidade (IMC 30+)', desc: 'Exercícios de baixo impacto', color: 'from-blue-500 to-indigo-500' },
+          { value: 'recuperacao_lesao', emoji: '🩹', title: 'Recuperação de lesão', desc: 'Movimentos controlados e suaves', color: 'from-amber-500 to-orange-500' },
+        ].map(option => (
+          <Card 
+            key={option.value}
+            className={`cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-[1.02] ${
+              answers.specialCondition === option.value 
+                ? `bg-gradient-to-r ${option.color} text-white shadow-2xl` 
+                : 'hover:bg-muted/50'
+            }`}
+            onClick={() => {
+              handleAnswer('specialCondition', option.value);
+              setTimeout(() => setStep('result'), 300);
+            }}
+          >
+            <CardContent className="p-4">
+              <div className="flex items-center gap-4">
+                <span className="text-2xl">{option.emoji}</span>
+                <div className="flex-1">
+                  <h4 className="font-bold">{option.title}</h4>
+                  <p className="text-sm opacity-80">{option.desc}</p>
+                </div>
+                {answers.specialCondition === option.value && <CheckCircle2 className="w-5 h-5" />}
               </div>
             </CardContent>
           </Card>
@@ -692,6 +907,10 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
           {step === 'question5' && renderQuestion5()}
           {step === 'question6' && renderQuestion6()}
           {step === 'question7' && renderQuestion7()}
+          {step === 'question8' && renderQuestion8()}
+          {step === 'question9' && renderQuestion9()}
+          {step === 'question10' && renderQuestion10()}
+          {step === 'question11' && renderQuestion11()}
           {step === 'result' && renderResult()}
         </div>
       </DialogContent>
