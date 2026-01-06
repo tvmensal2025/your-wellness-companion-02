@@ -17,13 +17,15 @@ import {
   Target,
   CheckCircle,
   AlertCircle,
-  Settings
+  Settings,
+  Loader2
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import SessionTemplates from './SessionTemplates';
 import { NewSessionForm } from './NewSessionForm';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface User {
   id: string;
@@ -41,36 +43,15 @@ interface Session {
   tools_data: any;
   is_active: boolean;
   created_at: string;
-  assigned_users: number;
+  assigned_users?: number;
 }
 
 const SessionManagement: React.FC = () => {
-  const [sessions, setSessions] = useState<Session[]>([
-    {
-      id: '1',
-      title: 'Avaliação das 12 Áreas da Vida',
-      description: 'Avaliação completa do equilíbrio de vida através de 12 áreas fundamentais',
-      content: 'Interface interativa com seleção por emojis e análise visual em roda',
-      estimated_time: 15,
-      target_saboteurs: ['Perfeccionismo', 'Autocobrança'],
-      tools_data: { type: 'wheel', areas: 12 },
-      is_active: true,
-      created_at: '2024-01-15',
-      assigned_users: 25
-    },
-    {
-      id: '2',
-      title: 'Mapeamento de Sintomas - 147 Perguntas',
-      description: 'Análise detalhada de sintomas em 12 sistemas corporais',
-      content: 'Sistema adaptativo com avaliação de frequência e intensidade',
-      estimated_time: 20,
-      target_saboteurs: ['Negação', 'Minimização'],
-      tools_data: { type: 'symptoms', questions: 147 },
-      is_active: true,
-      created_at: '2024-01-10',
-      assigned_users: 18
-    }
-  ]);
+  const { toast } = useToast();
+  const [sessions, setSessions] = useState<Session[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [sending, setSending] = useState<string | null>(null);
+  const [sendingAll, setSendingAll] = useState(false);
 
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
   const [newSession, setNewSession] = useState({
@@ -82,14 +63,53 @@ const SessionManagement: React.FC = () => {
   });
 
   const [users, setUsers] = useState<User[]>([]);
+
+  // Buscar sessões reais do Supabase
+  useEffect(() => {
+    const fetchSessions = async () => {
+      try {
+        setLoading(true);
+        const { data, error } = await supabase
+          .from('sessions')
+          .select('*')
+          .order('created_at', { ascending: false });
+        
+        if (error) throw error;
+        
+        setSessions(data?.map(session => ({
+          id: session.id,
+          title: session.title || '',
+          description: session.description || '',
+          content: typeof session.content === 'string' ? session.content : '',
+          estimated_time: session.estimated_time || 15,
+          target_saboteurs: session.target_saboteurs || [],
+          tools_data: null,
+          is_active: session.is_active ?? true,
+          created_at: session.created_at || '',
+          assigned_users: 0
+        })) || []);
+      } catch (error) {
+        console.error('Erro ao buscar sessões:', error);
+        toast({
+          title: "Erro",
+          description: "Não foi possível carregar as sessões",
+          variant: "destructive"
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchSessions();
+  }, [toast]);
+
   // Buscar usuários reais do Supabase
   useEffect(() => {
     const fetchUsers = async () => {
       try {
         const { data, error } = await supabase
           .from('profiles')
-          .select('user_id, full_name, email')
-          .limit(10);
+          .select('user_id, full_name, email');
         
         if (error) throw error;
         setUsers(data?.map(profile => ({
@@ -108,12 +128,64 @@ const SessionManagement: React.FC = () => {
 
   const handleAssignToUsers = (sessionId: string, userIds: string[]) => {
     console.log('Atribuindo sessão', sessionId, 'aos usuários:', userIds);
-    // Implementar lógica de atribuição
   };
 
-  const handleAssignToAll = (sessionId: string) => {
-    console.log('Atribuindo sessão', sessionId, 'a todos os usuários');
-    // Implementar lógica de atribuição em massa
+  const handleAssignToAll = async (sessionId: string) => {
+    try {
+      setSending(sessionId);
+      
+      const { error } = await supabase.rpc('assign_session_to_all_users', {
+        session_id_param: sessionId
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "✅ Sucesso!",
+        description: "Sessão enviada para todos os usuários"
+      });
+    } catch (error: any) {
+      console.error('Erro ao enviar sessão:', error);
+      toast({
+        title: "❌ Erro",
+        description: error.message || "Não foi possível enviar a sessão",
+        variant: "destructive"
+      });
+    } finally {
+      setSending(null);
+    }
+  };
+
+  const handleAssignAllSessionsToAllUsers = async () => {
+    try {
+      setSendingAll(true);
+      
+      const activeSessions = sessions.filter(s => s.is_active);
+      
+      for (const session of activeSessions) {
+        const { error } = await supabase.rpc('assign_session_to_all_users', {
+          session_id_param: session.id
+        });
+        
+        if (error) {
+          console.error(`Erro ao enviar sessão ${session.title}:`, error);
+        }
+      }
+      
+      toast({
+        title: "✅ Sucesso!",
+        description: `${activeSessions.length} sessões enviadas para todos os usuários`
+      });
+    } catch (error: any) {
+      console.error('Erro ao enviar sessões:', error);
+      toast({
+        title: "❌ Erro",
+        description: error.message || "Não foi possível enviar as sessões",
+        variant: "destructive"
+      });
+    } finally {
+      setSendingAll(false);
+    }
   };
 
   return (
@@ -205,9 +277,14 @@ const SessionManagement: React.FC = () => {
                           onClick={() => handleAssignToAll(session.id)}
                           className="bg-primary hover:bg-primary/90 text-primary-foreground"
                           size="sm"
+                          disabled={sending === session.id}
                         >
-                          <Send className="w-4 h-4 mr-2" />
-                          Enviar p/ Todos
+                          {sending === session.id ? (
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          ) : (
+                            <Send className="w-4 h-4 mr-2" />
+                          )}
+                          {sending === session.id ? 'Enviando...' : 'Enviar p/ Todos'}
                         </Button>
                       </div>
                     </div>
@@ -292,9 +369,15 @@ const SessionManagement: React.FC = () => {
                 <Button 
                   size="lg"
                   className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg px-8 py-4 text-lg"
+                  onClick={handleAssignAllSessionsToAllUsers}
+                  disabled={sendingAll || sessions.length === 0}
                 >
-                  <Send className="w-6 h-6 mr-3" />
-                  Atribuir Todas as Sessões a Todos os Usuários
+                  {sendingAll ? (
+                    <Loader2 className="w-6 h-6 mr-3 animate-spin" />
+                  ) : (
+                    <Send className="w-6 h-6 mr-3" />
+                  )}
+                  {sendingAll ? 'Enviando...' : 'Atribuir Todas as Sessões a Todos os Usuários'}
                 </Button>
               </div>
               
