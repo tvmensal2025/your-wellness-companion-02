@@ -272,48 +272,51 @@ export const UnifiedAnalysisHistory: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5" />
+        <CardHeader className="pb-3 px-3 pt-3 sm:px-4 sm:pt-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
+              <Calendar className="h-4 w-4 sm:h-5 sm:w-5" />
               Histórico de Análises
             </CardTitle>
             <Button
               variant="outline"
               size="sm"
               onClick={loadAllAnalyses}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 text-xs h-8 w-full sm:w-auto"
             >
-              <RefreshCw className="h-4 w-4" />
-              Recarregar
+              <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="sm:inline">Recarregar</span>
             </Button>
           </div>
-          <p className="text-sm text-muted-foreground">
-            Todas as suas análises de saúde e nutrição em um só lugar
+          <p className="text-xs text-muted-foreground mt-1">
+            Todas as suas análises em um só lugar
           </p>
         </CardHeader>
       </Card>
 
+      {/* Tabs com scroll horizontal no mobile */}
       <Tabs value={selectedType} onValueChange={setSelectedType}>
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="all">Todas ({analyses.length})</TabsTrigger>
-          <TabsTrigger value="nutrition">
-            Nutricional ({analyses.filter(a => a.type === 'nutrition').length})
+        <TabsList className="w-full overflow-x-auto flex justify-start gap-1 bg-muted/50 p-1 rounded-lg scrollbar-hide h-auto flex-wrap sm:flex-nowrap">
+          <TabsTrigger value="all" className="flex-none text-xs px-2 py-1.5 h-auto">
+            Todas ({analyses.length})
           </TabsTrigger>
-          <TabsTrigger value="preventive">
-            Preventiva ({analyses.filter(a => a.type === 'preventive').length})
+          <TabsTrigger value="nutrition" className="flex-none text-xs px-2 py-1.5 h-auto">
+            Nutri ({analyses.filter(a => a.type === 'nutrition').length})
           </TabsTrigger>
-          <TabsTrigger value="sofia">
-            Sofia IA ({analyses.filter(a => a.type === 'sofia').length})
+          <TabsTrigger value="preventive" className="flex-none text-xs px-2 py-1.5 h-auto">
+            Prev ({analyses.filter(a => a.type === 'preventive').length})
           </TabsTrigger>
-          <TabsTrigger value="medical">
+          <TabsTrigger value="sofia" className="flex-none text-xs px-2 py-1.5 h-auto">
+            Sofia ({analyses.filter(a => a.type === 'sofia').length})
+          </TabsTrigger>
+          <TabsTrigger value="medical" className="flex-none text-xs px-2 py-1.5 h-auto">
             Médica ({analyses.filter(a => a.type === 'medical').length})
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value={selectedType} className="space-y-4">
+        <TabsContent value={selectedType} className="space-y-3 mt-3">
           {filteredAnalyses.length === 0 ? (
             <Card>
               <CardContent className="text-center py-12">
@@ -333,95 +336,102 @@ export const UnifiedAnalysisHistory: React.FC = () => {
               </CardContent>
             </Card>
           ) : (
-            <ScrollArea className="h-[600px]">
-              <div className="space-y-4">
+            <div className="space-y-3">
+              <div className="space-y-3">
                 {filteredAnalyses.map((analysis) => (
                   <Card key={`${analysis.type}-${analysis.id}`} className="hover:shadow-md transition-shadow">
-                    <CardContent className="p-4">
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-start gap-3 flex-1">
-                          <div className="flex items-center justify-center w-10 h-10 rounded-full bg-muted">
-                            {getTypeIcon(analysis.type)}
+                    <CardContent className="p-3 sm:p-4">
+                      <div className="flex items-start gap-2 sm:gap-3">
+                        {/* Ícone - menor no mobile */}
+                        <div className="flex-none flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-muted">
+                          {getTypeIcon(analysis.type)}
+                        </div>
+                        
+                        {/* Conteúdo principal */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-1.5 flex-wrap mb-1">
+                                <h3 className="font-semibold text-xs sm:text-sm truncate max-w-[150px] sm:max-w-none">
+                                  {analysis.title}
+                                </h3>
+                                <Badge variant={getTypeBadge(analysis.type) as any} className="text-[10px] px-1.5 py-0">
+                                  {getTypeLabel(analysis.type)}
+                                </Badge>
+                              </div>
+                              
+                              <p className="text-xs text-muted-foreground mb-1 line-clamp-2">
+                                {analysis.description}
+                              </p>
+                              
+                              <div className="flex items-center gap-1.5 text-[10px] sm:text-xs text-muted-foreground">
+                                <Clock className="h-3 w-3" />
+                                {formatDate(analysis.created_at)}
+                              </div>
+                            </div>
+                            
+                            {/* Botões de ação - compactos */}
+                            <div className="flex-none flex items-center gap-1">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 w-7 p-0"
+                                onClick={() => {
+                                  toast({
+                                    title: "Em breve",
+                                    description: "Visualização detalhada será implementada"
+                                  });
+                                }}
+                              >
+                                <Eye className="h-3.5 w-3.5" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 w-7 p-0 text-destructive hover:text-destructive"
+                                onClick={() => deleteAnalysis(analysis)}
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
                           </div>
-                          
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
-                              <h3 className="font-semibold truncate">{analysis.title}</h3>
-                              <Badge variant={getTypeBadge(analysis.type) as any}>
-                                {getTypeLabel(analysis.type)}
-                              </Badge>
-                            </div>
-                            
-                            <p className="text-sm text-muted-foreground mb-2">
-                              {analysis.description}
-                            </p>
-                            
-                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                              <Clock className="h-3 w-3" />
-                              {formatDate(analysis.created_at)}
-                            </div>
 
-                            {/* Conteúdo específico por tipo */}
-                            {analysis.type === 'nutrition' && (() => {
-                              const foodItems = Array.isArray(analysis.data.food_items) ? analysis.data.food_items : [];
-                              return foodItems.length > 0 ? (
-                                <div className="mt-3 pt-3 border-t">
-                                  <div className="flex flex-wrap gap-1">
-                                    {foodItems.slice(0, 3).map((food: any, idx: number) => (
-                                      <Badge key={idx} variant="outline" className="text-xs">
-                                        {typeof food === 'string' ? food : food.name || 'Alimento'}
-                                      </Badge>
-                                    ))}
-                                    {foodItems.length > 3 && (
-                                      <Badge variant="outline" className="text-xs">
-                                        +{foodItems.length - 3} mais
-                                      </Badge>
-                                    )}
-                                  </div>
-                                </div>
-                              ) : null;
-                            })()}
-
-                            {analysis.type === 'preventive' && (
-                              <div className="mt-3 pt-3 border-t">
-                                <div className="flex items-center gap-2">
-                                  <TrendingUp className="h-4 w-4 text-blue-500" />
-                                  <span className="text-sm">Score de Saúde: {analysis.data.risk_score}/100</span>
+                          {/* Conteúdo extra - apenas desktop */}
+                          {analysis.type === 'nutrition' && (() => {
+                            const foodItems = Array.isArray(analysis.data.food_items) ? analysis.data.food_items : [];
+                            return foodItems.length > 0 ? (
+                              <div className="mt-2 pt-2 border-t hidden sm:block">
+                                <div className="flex flex-wrap gap-1">
+                                  {foodItems.slice(0, 3).map((food: any, idx: number) => (
+                                    <Badge key={idx} variant="outline" className="text-[10px]">
+                                      {typeof food === 'string' ? food : food.name || 'Alimento'}
+                                    </Badge>
+                                  ))}
+                                  {foodItems.length > 3 && (
+                                    <Badge variant="outline" className="text-[10px]">
+                                      +{foodItems.length - 3}
+                                    </Badge>
+                                  )}
                                 </div>
                               </div>
-                            )}
-                          </div>
-                        </div>
+                            ) : null;
+                          })()}
 
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => {
-                              // TODO: Implementar visualização detalhada
-                              toast({
-                                title: "Em breve",
-                                description: "Visualização detalhada será implementada"
-                              });
-                            }}
-                          >
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => deleteAnalysis(analysis)}
-                            className="text-destructive hover:text-destructive"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                          {analysis.type === 'preventive' && (
+                            <div className="mt-2 pt-2 border-t hidden sm:block">
+                              <div className="flex items-center gap-1.5">
+                                <TrendingUp className="h-3.5 w-3.5 text-blue-500" />
+                                <span className="text-xs">Score: {analysis.data.risk_score}/100</span>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </CardContent>
                   </Card>
                 ))}
               </div>
-            </ScrollArea>
+            </div>
           )}
         </TabsContent>
       </Tabs>
