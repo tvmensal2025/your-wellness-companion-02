@@ -455,15 +455,15 @@ const CompleteDashboardPage = () => {
           <SidebarContent />
         </div>
 
-        {/* Mobile Sidebar */}
+        {/* Mobile Sidebar - Otimizado para telas pequenas */}
         <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
-          <SheetContent side="left" className="w-72 p-0 max-w-[85vw]">
+          <SheetContent side="left" className="w-[280px] max-w-[85vw] p-0">
             <SidebarContent isMobile />
           </SheetContent>
         </Sheet>
 
         {/* Main Content */}
-        <div className="flex-1 flex flex-col min-w-0 bg-gradient-to-b from-background via-background to-muted/40 overflow-x-hidden">
+        <div className="flex-1 flex flex-col min-w-0 bg-gradient-to-b from-background via-background to-muted/40 overflow-hidden">
           {/* Mobile Header Premium - Compacto e elegante */}
           <header className="lg:hidden premium-header safe-area-top">
             <div className="flex items-center h-14 px-4">
@@ -488,9 +488,9 @@ const CompleteDashboardPage = () => {
             </div>
           </header>
 
-          {/* Content - Otimizado para mobile com espaçamento refinado */}
+          {/* Content - Otimizado para mobile com overflow controlado */}
           <div className="flex-1 overflow-y-auto overflow-x-hidden safe-area-bottom">
-            <main className="w-full max-w-6xl mx-auto px-3 sm:px-4 pt-3 pb-6 lg:px-6 lg:pt-6 space-y-3 sm:space-y-4 animate-fade-in">
+            <main className="w-full max-w-6xl mx-auto px-2 sm:px-4 pt-2 pb-4 lg:px-6 lg:pt-6 space-y-2 sm:space-y-4 animate-fade-in">
               {renderContent()}
             </main>
           </div>
