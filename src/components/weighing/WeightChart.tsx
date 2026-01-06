@@ -11,6 +11,21 @@ interface WeightChartProps {
 }
 
 export const WeightChart: React.FC<WeightChartProps> = ({ data }) => {
+  // Se não houver dados, mostrar mensagem amigável
+  if (!data || data.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full text-center p-6">
+        <div className="text-4xl mb-3">📊</div>
+        <p className="text-muted-foreground text-sm font-medium">
+          Registre seu peso para ver sua evolução
+        </p>
+        <p className="text-muted-foreground/60 text-xs mt-1">
+          Acompanhe seu progresso ao longo do tempo
+        </p>
+      </div>
+    );
+  }
+
   const formatData = data.map(item => ({
     ...item,
     date: new Date(item.measurement_date).toLocaleDateString('pt-BR'),
