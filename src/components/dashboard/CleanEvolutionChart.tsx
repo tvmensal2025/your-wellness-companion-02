@@ -19,9 +19,9 @@ interface CleanEvolutionChartProps {
 
 // Memoized mini stat component
 const MiniStat = memo(({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) => (
-  <div className="py-3 text-center">
-    <p className="text-[10px] text-muted-foreground uppercase tracking-wide">{label}</p>
-    <p className={`text-sm font-semibold mt-0.5 ${highlight ? 'text-primary' : 'text-foreground'}`}>
+  <div className="py-2 sm:py-3 text-center">
+    <p className="text-[9px] sm:text-[10px] text-muted-foreground uppercase tracking-wide truncate">{label}</p>
+    <p className={`text-xs sm:text-sm font-semibold mt-0.5 truncate ${highlight ? 'text-primary' : 'text-foreground'}`}>
       {value}
     </p>
   </div>
@@ -117,28 +117,28 @@ export const CleanEvolutionChart: React.FC<CleanEvolutionChartProps> = memo(({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.1 }}
-      className="rounded-2xl bg-card border border-border/50 overflow-hidden"
+      className="rounded-xl sm:rounded-2xl bg-card border border-border/50 overflow-hidden"
     >
       {/* Header */}
-      <div className="px-4 pt-4 pb-2 flex items-center justify-between">
-        <div>
-          <h3 className="text-sm font-medium text-foreground">Evolução</h3>
-          <p className="text-xs text-muted-foreground mt-0.5">
+      <div className="px-3 sm:px-4 pt-3 sm:pt-4 pb-2 flex items-center justify-between">
+        <div className="min-w-0">
+          <h3 className="text-xs sm:text-sm font-medium text-foreground truncate">Evolução</h3>
+          <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 truncate">
             Últimos {chartData.length} registros
           </p>
         </div>
-        <div className={`text-right ${change <= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
-          <span className="text-lg font-semibold">
+        <div className={`text-right flex-shrink-0 ${change <= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+          <span className="text-base sm:text-lg font-semibold">
             {change > 0 ? '+' : ''}{change.toFixed(1)}
           </span>
-          <span className="text-xs ml-0.5">kg</span>
+          <span className="text-[10px] sm:text-xs ml-0.5">kg</span>
         </div>
       </div>
 
-      {/* Chart */}
-      <div className="h-36 px-2">
+      {/* Chart - altura responsiva */}
+      <div className="h-28 sm:h-36 px-1 sm:px-2">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
+          <AreaChart data={chartData} margin={{ top: 5, right: 5, left: -30, bottom: 0 }}>
             <defs>
               <linearGradient id="cleanGradient" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
@@ -149,15 +149,16 @@ export const CleanEvolutionChart: React.FC<CleanEvolutionChartProps> = memo(({
               dataKey="date" 
               axisLine={false}
               tickLine={false}
-              tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
+              tick={{ fontSize: 9, fill: 'hsl(var(--muted-foreground))' }}
               dy={5}
+              interval="preserveStartEnd"
             />
             <YAxis 
               domain={[minWeight - 0.5, maxWeight + 0.5]}
               axisLine={false}
               tickLine={false}
-              tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
-              width={35}
+              tick={{ fontSize: 9, fill: 'hsl(var(--muted-foreground))' }}
+              width={30}
             />
             <Tooltip content={<CustomTooltip />} />
             <Area
@@ -168,7 +169,7 @@ export const CleanEvolutionChart: React.FC<CleanEvolutionChartProps> = memo(({
               fill="url(#cleanGradient)"
               dot={false}
               activeDot={{
-                r: 4,
+                r: 3,
                 stroke: 'hsl(var(--primary))',
                 strokeWidth: 2,
                 fill: 'hsl(var(--background))'
@@ -179,7 +180,7 @@ export const CleanEvolutionChart: React.FC<CleanEvolutionChartProps> = memo(({
         </ResponsiveContainer>
       </div>
 
-      {/* Footer stats */}
+      {/* Footer stats - mais compacto */}
       <div className="grid grid-cols-3 divide-x divide-border/50 border-t border-border/50">
         <MiniStat label="Mínimo" value={`${minWeight.toFixed(1)}kg`} />
         <MiniStat label="Atual" value={`${lastWeight.toFixed(1)}kg`} highlight />

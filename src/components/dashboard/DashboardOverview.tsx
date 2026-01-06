@@ -190,8 +190,8 @@ const DashboardOverview: React.FC = () => {
   const currentWeight = stats?.currentWeight || (measurements?.[0]?.peso_kg ? Number(measurements[0].peso_kg) : 0);
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="mx-auto max-w-lg space-y-4 px-4 pb-28 pt-4">
+    <div className="min-h-screen bg-background overflow-x-hidden">
+      <div className="mx-auto max-w-lg space-y-3 sm:space-y-4 px-2 sm:px-4 pb-20 sm:pb-28 pt-2 sm:pt-4">
         {/* 1. Apple Health Style Hero Card */}
         <AppleHealthHeroCard
           currentWeight={typeof currentWeight === 'number' ? currentWeight : parseFloat(String(currentWeight)) || 0}

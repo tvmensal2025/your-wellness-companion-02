@@ -231,17 +231,17 @@ export const SofiaTipsCard: React.FC = () => {
         currentTip.priority === 'alert' 
           ? 'border-orange-300 dark:border-orange-700 bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30' 
           : 'border-purple-200 dark:border-purple-800 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30'
-      }`}>
+      } rounded-xl sm:rounded-2xl`}>
         {/* Header */}
-        <div className="p-4 pb-2">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <div className={`p-2 rounded-xl bg-gradient-to-br ${gradientColor}`}>
-                <Lightbulb className="w-4 h-4 text-white" />
+        <div className="p-3 sm:p-4 pb-2">
+          <div className="flex items-center justify-between mb-2 sm:mb-3">
+            <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+              <div className={`p-1.5 sm:p-2 rounded-lg sm:rounded-xl bg-gradient-to-br ${gradientColor} flex-shrink-0`}>
+                <Lightbulb className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
               </div>
-              <div>
-                <h3 className="font-semibold text-sm text-foreground">Dr. Vital</h3>
-                <p className="text-xs text-muted-foreground">
+              <div className="min-w-0">
+                <h3 className="font-semibold text-xs sm:text-sm text-foreground truncate">Dr. Vital</h3>
+                <p className="text-[10px] sm:text-xs text-muted-foreground truncate">
                   {isOverweight ? 'Dicas personalizadas para você' : 'Nutrição e bem-estar'}
                 </p>
               </div>
@@ -250,17 +250,17 @@ export const SofiaTipsCard: React.FC = () => {
               variant="ghost"
               size="sm"
               onClick={refreshTips}
-              className="h-8 w-8 p-0 rounded-full hover:bg-purple-100 dark:hover:bg-purple-900"
+              className="h-7 w-7 sm:h-8 sm:w-8 p-0 rounded-full hover:bg-purple-100 dark:hover:bg-purple-900 flex-shrink-0"
             >
-              <RefreshCw className="w-4 h-4 text-muted-foreground" />
+              <RefreshCw className="w-3 h-3 sm:w-4 sm:h-4 text-muted-foreground" />
             </Button>
           </div>
 
           {/* Alert Badge */}
           {isOverweight && currentTip.priority === 'alert' && (
-            <div className="flex items-center gap-1.5 mb-2 px-2 py-1 bg-orange-100 dark:bg-orange-900/50 rounded-lg w-fit">
-              <AlertTriangle className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400" />
-              <span className="text-xs font-medium text-orange-700 dark:text-orange-300">
+            <div className="flex items-center gap-1 sm:gap-1.5 mb-2 px-1.5 sm:px-2 py-0.5 sm:py-1 bg-orange-100 dark:bg-orange-900/50 rounded-lg w-fit">
+              <AlertTriangle className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-orange-600 dark:text-orange-400" />
+              <span className="text-[10px] sm:text-xs font-medium text-orange-700 dark:text-orange-300">
                 Alerta de Saúde
               </span>
             </div>
@@ -275,21 +275,21 @@ export const SofiaTipsCard: React.FC = () => {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
             transition={{ duration: 0.3 }}
-            className="px-4 pb-4"
+            className="px-3 sm:px-4 pb-3 sm:pb-4"
           >
-            <div className="flex gap-3">
-              <div className={`flex-shrink-0 p-2.5 rounded-xl bg-gradient-to-br ${gradientColor} shadow-sm`}>
-                <IconComponent className="w-5 h-5 text-white" />
+            <div className="flex gap-2 sm:gap-3">
+              <div className={`flex-shrink-0 p-2 sm:p-2.5 rounded-lg sm:rounded-xl bg-gradient-to-br ${gradientColor} shadow-sm`}>
+                <IconComponent className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
               </div>
               <div className="flex-1 min-w-0">
-                <h4 className="font-semibold text-sm text-foreground mb-1 leading-tight">
+                <h4 className="font-semibold text-xs sm:text-sm text-foreground mb-0.5 sm:mb-1 leading-tight">
                   {currentTip.title}
                 </h4>
-                <p className="text-xs text-muted-foreground leading-relaxed mb-2">
+                <p className="text-[10px] sm:text-xs text-muted-foreground leading-relaxed mb-1 sm:mb-2 line-clamp-3">
                   {currentTip.content}
                 </p>
                 {currentTip.source && (
-                  <p className="text-[10px] text-muted-foreground/70 italic">
+                  <p className="text-[9px] sm:text-[10px] text-muted-foreground/70 italic truncate">
                     📚 {currentTip.source}
                   </p>
                 )}
@@ -299,21 +299,21 @@ export const SofiaTipsCard: React.FC = () => {
         </AnimatePresence>
 
         {/* Navigation */}
-        <div className="px-4 pb-4 flex items-center justify-between">
+        <div className="px-3 sm:px-4 pb-3 sm:pb-4 flex items-center justify-between">
           <div className="flex gap-1">
             {tips.slice(0, Math.min(5, tips.length)).map((_, idx) => (
               <button
                 key={idx}
                 onClick={() => setCurrentTipIndex(idx)}
-                className={`w-2 h-2 rounded-full transition-all ${
+                className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full transition-all ${
                   idx === currentTipIndex 
-                    ? currentTip.priority === 'alert' ? 'bg-orange-500 w-4' : 'bg-purple-500 w-4'
+                    ? currentTip.priority === 'alert' ? 'bg-orange-500 w-3 sm:w-4' : 'bg-purple-500 w-3 sm:w-4'
                     : 'bg-gray-300 dark:bg-gray-600'
                 }`}
               />
             ))}
             {tips.length > 5 && (
-              <span className="text-[10px] text-muted-foreground ml-1">
+              <span className="text-[9px] sm:text-[10px] text-muted-foreground ml-1">
                 +{tips.length - 5}
               </span>
             )}
@@ -323,10 +323,10 @@ export const SofiaTipsCard: React.FC = () => {
             variant="ghost"
             size="sm"
             onClick={nextTip}
-            className="h-8 px-3 text-xs font-medium hover:bg-purple-100 dark:hover:bg-purple-900"
+            className="h-7 sm:h-8 px-2 sm:px-3 text-[10px] sm:text-xs font-medium hover:bg-purple-100 dark:hover:bg-purple-900"
           >
             Próxima dica
-            <ChevronRight className="w-4 h-4 ml-1" />
+            <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 ml-0.5 sm:ml-1" />
           </Button>
         </div>
 
