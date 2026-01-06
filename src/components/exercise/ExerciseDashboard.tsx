@@ -19,7 +19,7 @@ import { useExerciseProgram } from "@/hooks/useExerciseProgram";
 import { useExercisesLibrary, Exercise, WeeklyPlan } from "@/hooks/useExercisesLibrary";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { normalizeKey, parseActivityTitle } from "@/lib/exercise-format";
+import { matchExercisesFromActivities } from "@/lib/exercise-matching";
 
 interface ExerciseDashboardProps {
   user: User | null;
@@ -115,10 +115,7 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
   };
 
   const resolveExercisesFromActivities = useCallback(async (activities: string[]) => {
-    const names = activities.map(parseActivityTitle).filter(Boolean);
-
-    // Busca em TODA a biblioteca, não apenas na localização atual
-    // para garantir que encontramos os exercícios do plano salvo
+    // Busca TODA a biblioteca para garantir que encontramos os exercícios
     const { data, error } = await supabase
       .from("exercises_library")
       .select("*")
@@ -128,114 +125,14 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
 
     const library = (data || []) as Exercise[];
 
-    // Índices de busca (nome e grupo muscular)
-    const keyed = library.map((ex) => {
-      const nameKey = normalizeKey(ex.name);
-      const groupKey = normalizeKey(ex.muscle_group || "");
-      return {
-        ex,
-        nameKey,
-        nameWords: nameKey.split(" "),
-        groupKey,
-        groupWords: groupKey.split(" "),
-      };
-    });
+    // Usar o novo sistema de matching melhorado
+    const { exercises } = matchExercisesFromActivities(
+      activities,
+      library,
+      { maxPerActivity: 3, preferWithVideo: true }
+    );
 
-    const result: Exercise[] = [];
-    const usedIds = new Set<string>();
-
-    const addIfNotUsed = (ex: Exercise) => {
-      if (usedIds.has(ex.id)) return false;
-      usedIds.add(ex.id);
-      result.push(ex);
-      return true;
-    };
-
-    // Quando a atividade não é um nome exato de exercício (ex: "Ombros", "Mobilidade"),
-    // traz 2-3 exercícios do mesmo grupo muscular.
-    const pickByMuscleGroup = (key: string, limit = 3) => {
-      let added = 0;
-
-      const directMatches = keyed
-        .filter((k) => k.groupKey && !usedIds.has(k.ex.id))
-        .filter((k) => k.groupKey === key || k.groupKey.includes(key) || key.includes(k.groupKey))
-        .map((k) => k.ex);
-
-      for (const ex of directMatches) {
-        if (added >= limit) break;
-        if (addIfNotUsed(ex)) added++;
-      }
-
-      if (added > 0) return;
-
-      const words = key.split(" ").filter((w) => w.length > 2);
-      const importantWords = words.filter(
-        (w) => !["com", "de", "do", "da", "na", "no", "em", "para"].includes(w)
-      );
-
-      if (!importantWords.length) return;
-
-      const fuzzyMatches = keyed
-        .filter((k) => k.groupKey && !usedIds.has(k.ex.id))
-        .filter((k) => importantWords.some((w) => k.groupKey.includes(w)))
-        .map((k) => k.ex);
-
-      for (const ex of fuzzyMatches) {
-        if (added >= limit) break;
-        if (addIfNotUsed(ex)) added++;
-      }
-    };
-
-    for (const name of names) {
-      const key = normalizeKey(name);
-      if (!key) continue;
-
-      const words = key.split(" ").filter((w) => w.length > 2);
-
-      // 1. Busca exata por nome
-      let match = keyed.find((k) => k.nameKey === key && !usedIds.has(k.ex.id))?.ex;
-
-      // 2. Busca parcial - nome contém ou está contido
-      if (!match) {
-        match = keyed.find(
-          (k) =>
-            !usedIds.has(k.ex.id) &&
-            (k.nameKey.includes(key) || key.includes(k.nameKey))
-        )?.ex;
-      }
-
-      // 3. Busca por palavras-chave (pelo menos 2 palavras coincidentes)
-      if (!match && words.length >= 1) {
-        match = keyed.find((k) => {
-          if (usedIds.has(k.ex.id)) return false;
-          const matchingWords = words.filter((w) => k.nameWords.includes(w) || k.nameKey.includes(w));
-          return matchingWords.length >= Math.min(2, words.length);
-        })?.ex;
-      }
-
-      // 4. Busca flexível - qualquer palavra importante coincide
-      if (!match && words.length >= 1) {
-        const importantWords = words.filter(
-          (w) => !["com", "de", "do", "da", "na", "no", "em", "para", "perna", "braco"].includes(w)
-        );
-        if (importantWords.length > 0) {
-          match = keyed.find((k) => {
-            if (usedIds.has(k.ex.id)) return false;
-            return importantWords.some((w) => k.nameKey.includes(w));
-          })?.ex;
-        }
-      }
-
-      if (match) {
-        addIfNotUsed(match);
-        continue;
-      }
-
-      // Fallback: tratar "activity" como grupo muscular e puxar múltiplos exercícios
-      pickByMuscleGroup(key, 3);
-    }
-
-    return result;
+    return exercises;
   }, []);
 
   const handleStartSavedWorkout = async (weekNumber: number, activities: string[], resolvedExercises?: Exercise[]) => {
@@ -332,76 +229,83 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
   };
 
   return (
-    <div className="p-4 md:p-6 space-y-6">
+    <div className="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6">
       {/* Header com informações do treino */}
       <motion.section
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-orange-500 via-red-500 to-pink-600 px-5 py-8 md:px-8 md:py-10"
+        className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-orange-500 via-red-500 to-pink-600 px-4 py-5 sm:px-5 sm:py-8 md:px-8 md:py-10"
       >
-        <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-        <div className="absolute bottom-0 left-0 w-48 h-48 bg-black/10 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2" />
+        <div className="absolute top-0 right-0 w-40 sm:w-64 h-40 sm:h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+        <div className="absolute bottom-0 left-0 w-32 sm:w-48 h-32 sm:h-48 bg-black/10 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2" />
         
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center gap-5">
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-            className="flex h-16 w-16 md:h-20 md:w-20 items-center justify-center rounded-2xl bg-white/20 backdrop-blur-sm text-white shadow-xl"
-          >
-            <Flame className="w-8 h-8 md:w-10 md:h-10" />
-          </motion.div>
+        <div className="relative z-10 flex flex-col gap-4 sm:gap-5">
+          {/* Top row: icon + badges */}
+          <div className="flex items-start gap-3 sm:gap-5">
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+              className="flex h-12 w-12 sm:h-16 sm:w-16 md:h-20 md:w-20 items-center justify-center rounded-xl sm:rounded-2xl bg-white/20 backdrop-blur-sm text-white shadow-xl flex-shrink-0"
+            >
+              <Flame className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10" />
+            </motion.div>
 
-          <div className="space-y-2 md:space-y-3 flex-1">
-            <div className="flex items-center gap-2 flex-wrap">
-              <Badge className="bg-white/20 text-white border-0 backdrop-blur-sm text-[10px] md:text-xs font-semibold tracking-wide">
-                <Zap className="w-3 h-3 mr-1" />
-                {hasSavedWeekPlan ? "MEU PROGRAMA" : "TREINO DO DIA"}
-              </Badge>
-              {activeProgram && (
-                <Badge className="bg-white/10 text-white/80 border-0 text-[10px]">
-                  <Calendar className="w-3 h-3 mr-1" />
-                  Semana {activeProgram.current_week}/{activeProgram.duration_weeks}
+            <div className="flex-1 min-w-0 space-y-1 sm:space-y-2">
+              <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                <Badge className="bg-white/20 text-white border-0 backdrop-blur-sm text-[9px] sm:text-[10px] md:text-xs font-semibold tracking-wide px-2 py-0.5">
+                  <Zap className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-1" />
+                  {hasSavedWeekPlan ? "MEU PROGRAMA" : "TREINO DO DIA"}
                 </Badge>
-              )}
+                {activeProgram && (
+                  <Badge className="bg-white/10 text-white/80 border-0 text-[9px] sm:text-[10px] px-2 py-0.5">
+                    <Calendar className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-1" />
+                    Sem {activeProgram.current_week}/{activeProgram.duration_weeks}
+                  </Badge>
+                )}
+              </div>
+              <h2 className="text-base sm:text-xl md:text-3xl font-bold text-white leading-tight line-clamp-2">
+                {activeProgram 
+                  ? (activeProgram as any).plan_name || (activeProgram as any).name || "Meu Programa"
+                  : "Sua melhor versão começa agora! 💪"}
+              </h2>
             </div>
-            <h2 className="text-xl md:text-3xl font-bold text-white leading-tight">
-              {activeProgram 
-                ? (activeProgram as any).plan_name || (activeProgram as any).name || "Meu Programa"
-                : "Sua melhor versão começa agora! 💪"}
-            </h2>
-            <p className="text-sm md:text-base text-white/80 max-w-lg">
+          </div>
+
+          {/* Description + stats */}
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 sm:gap-5">
+            <p className="text-xs sm:text-sm md:text-base text-white/80 max-w-lg leading-relaxed">
               {hasSavedWeekPlan 
                 ? "Siga seu programa personalizado. Cada treino foi pensado para suas necessidades."
                 : "Cada treino é uma conquista. Foco no movimento, não na perfeição."}
             </p>
-          </div>
 
-          {activeProgram && (
-            <div className="flex gap-3 md:flex-col">
-              <div className="flex items-center gap-2 bg-white/15 backdrop-blur-sm rounded-xl px-3 py-2 md:px-4 md:py-3">
-                <Target className="w-4 h-4 text-white" />
-                <div>
-                  <p className="text-[10px] text-white/70 uppercase tracking-wide">
-                    Progresso
-                  </p>
-                  <p className="text-lg font-bold text-white">
-                    {activeProgram.completed_workouts}/{activeProgram.total_workouts}
-                  </p>
+            {activeProgram && (
+              <div className="flex gap-2 sm:gap-3">
+                <div className="flex items-center gap-1.5 sm:gap-2 bg-white/15 backdrop-blur-sm rounded-lg sm:rounded-xl px-2.5 py-1.5 sm:px-3 sm:py-2 md:px-4 md:py-3">
+                  <Target className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
+                  <div>
+                    <p className="text-[8px] sm:text-[10px] text-white/70 uppercase tracking-wide">
+                      Progresso
+                    </p>
+                    <p className="text-sm sm:text-lg font-bold text-white">
+                      {activeProgram.completed_workouts}/{activeProgram.total_workouts}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1.5 sm:gap-2 bg-white/15 backdrop-blur-sm rounded-lg sm:rounded-xl px-2.5 py-1.5 sm:px-3 sm:py-2 md:px-4 md:py-3">
+                  <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
+                  <div>
+                    <p className="text-[8px] sm:text-[10px] text-white/70 uppercase tracking-wide">
+                      Treinos/Sem
+                    </p>
+                    <p className="text-sm sm:text-lg font-bold text-white">{activeProgram.workouts_per_week}x</p>
+                  </div>
                 </div>
               </div>
-              <div className="flex items-center gap-2 bg-white/15 backdrop-blur-sm rounded-xl px-3 py-2 md:px-4 md:py-3">
-                <Clock className="w-4 h-4 text-white" />
-                <div>
-                  <p className="text-[10px] text-white/70 uppercase tracking-wide">
-                    Treinos/Sem
-                  </p>
-                  <p className="text-lg font-bold text-white">{activeProgram.workouts_per_week}x</p>
-                </div>
-              </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </motion.section>
 
@@ -410,26 +314,26 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.3 }}
-        className="flex items-center justify-between gap-2 flex-wrap"
+        className="flex items-center justify-between gap-2"
       >
         {/* Badges de contexto - mais compactos */}
-        <div className="flex items-center gap-1.5 flex-wrap">
-          <Badge className="bg-gradient-to-r from-orange-100 to-red-100 dark:from-orange-950/50 dark:to-red-950/50 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-800 h-7 px-2.5 text-xs font-medium">
-            {location === "casa" ? "🏠 Casa" : "🏋️ Academia"}
+        <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap">
+          <Badge className="bg-gradient-to-r from-orange-100 to-red-100 dark:from-orange-950/50 dark:to-red-950/50 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-800 h-6 sm:h-7 px-2 sm:px-2.5 text-[10px] sm:text-xs font-medium">
+            {location === "casa" ? "🏠 Casa" : "🏋️ Acad"}
           </Badge>
-          <Badge variant="outline" className="h-7 px-2 text-xs capitalize">
+          <Badge variant="outline" className="h-6 sm:h-7 px-1.5 sm:px-2 text-[10px] sm:text-xs capitalize">
             {goalLabels[goal] || `🎯 ${goal}`}
           </Badge>
         </div>
         
         {/* Ações compactas no topo */}
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1 sm:gap-1.5">
           {/* Botão Histórico */}
           <Popover>
             <PopoverTrigger asChild>
               <WorkoutHistory logs={workoutLogs as any} />
             </PopoverTrigger>
-            <PopoverContent className="w-80 p-0" align="end">
+            <PopoverContent className="w-72 sm:w-80 p-0" align="end">
               <div className="p-3 border-b border-border/50">
                 <h4 className="font-semibold text-sm">Histórico de Treinos</h4>
               </div>
@@ -443,10 +347,10 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
               variant="ghost"
               size="sm"
               onClick={() => setShowLibraryPlan(!showLibraryPlan)}
-              className="h-8 px-3 gap-1.5 text-xs font-medium bg-muted/50 hover:bg-muted border border-border/40 rounded-lg"
+              className="h-7 sm:h-8 px-2 sm:px-3 gap-1 sm:gap-1.5 text-[10px] sm:text-xs font-medium bg-muted/50 hover:bg-muted border border-border/40 rounded-lg"
             >
-              <Library className="w-3.5 h-3.5 text-primary" />
-              <span className="hidden xs:inline">{showLibraryPlan ? "Programa" : "Biblioteca"}</span>
+              <Library className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-primary" />
+              <span className="hidden sm:inline">{showLibraryPlan ? "Programa" : "Biblioteca"}</span>
             </Button>
           )}
           
@@ -456,9 +360,9 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
             size="icon"
             onClick={refreshPlan}
             disabled={loading}
-            className="h-8 w-8 rounded-lg bg-muted/50 hover:bg-muted border border-border/40"
+            className="h-7 w-7 sm:h-8 sm:w-8 rounded-lg bg-muted/50 hover:bg-muted border border-border/40"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
+            <RefreshCw className={`w-3 h-3 sm:w-3.5 sm:h-3.5 ${loading ? "animate-spin" : ""}`} />
           </Button>
         </div>
       </motion.section>

@@ -12,17 +12,13 @@ import {
   Zap,
   Moon,
   AlertTriangle,
-  Info,
-  CheckCircle2,
-  Timer,
-  Target,
-  Repeat,
   ChevronRight
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import type { Exercise } from '@/hooks/useExercisesLibrary';
-import { formatDifficulty, normalizeKey, parseActivityTitle } from '@/lib/exercise-format';
+import { formatDifficulty } from '@/lib/exercise-format';
+import { matchExercisesFromActivities } from '@/lib/exercise-matching';
 
 interface WeekActivity {
   week: number;
@@ -267,28 +263,16 @@ export const SavedProgramView: React.FC<SavedProgramProps> = ({
   }, [location]);
 
   const dayExercises = useMemo(() => {
-    if (!selectedDay || selectedDay.isRestDay) return [] as Exercise[];
-
-    // Cada atividade é um grupo muscular (ex: "Ombros", "Funcional", "Mobilidade")
-    // Buscar exercícios pelo muscle_group ao invés do nome do exercício
-    const exercises: Exercise[] = [];
-
-    for (const activity of selectedDay.activities) {
-      const name = parseActivityTitle(activity);
-      const key = normalizeKey(name);
-      
-      // Encontrar exercícios que tenham este muscle_group
-      const matchingExercises = libraryExercises.filter((ex) => {
-        const muscleGroupKey = normalizeKey(ex.muscle_group || '');
-        return muscleGroupKey === key || 
-               muscleGroupKey.includes(key) || 
-               key.includes(muscleGroupKey);
-      });
-
-      // Pegar apenas 2-3 exercícios por grupo muscular para não sobrecarregar
-      const selectedExercises = matchingExercises.slice(0, 3);
-      exercises.push(...selectedExercises);
+    if (!selectedDay || selectedDay.isRestDay || libraryExercises.length === 0) {
+      return [] as Exercise[];
     }
+
+    // Usar o novo sistema de matching melhorado
+    const { exercises } = matchExercisesFromActivities(
+      selectedDay.activities,
+      libraryExercises,
+      { maxPerActivity: 3, preferWithVideo: true }
+    );
 
     return exercises;
   }, [selectedDay, libraryExercises]);
@@ -308,20 +292,19 @@ export const SavedProgramView: React.FC<SavedProgramProps> = ({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Aviso de Limitação */}
       {limitation && limitation !== 'nenhuma' && (
         <Card className="bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800">
-          <CardContent className="p-4">
-            <div className="flex items-start gap-3">
-              <AlertTriangle className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex items-start gap-2 sm:gap-3">
+              <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600 mt-0.5 flex-shrink-0" />
               <div>
-                <p className="font-semibold text-amber-800 dark:text-amber-200">
+                <p className="font-semibold text-sm sm:text-base text-amber-800 dark:text-amber-200">
                   Exercícios Adaptados
                 </p>
-                <p className="text-sm text-amber-700 dark:text-amber-300">
+                <p className="text-xs sm:text-sm text-amber-700 dark:text-amber-300">
                   Seu programa foi ajustado para proteger: {limitationLabels[limitation] || limitation}. 
-                  Exercícios de impacto ou risco foram substituídos.
                 </p>
               </div>
             </div>
@@ -329,9 +312,9 @@ export const SavedProgramView: React.FC<SavedProgramProps> = ({
         </Card>
       )}
       
-      {/* Seletor de Dias da Semana */}
-      <ScrollArea className="w-full">
-        <div className="flex gap-2 pb-2">
+      {/* Seletor de Dias da Semana - Mobile optimized */}
+      <ScrollArea className="w-full -mx-1 px-1">
+        <div className="flex gap-1.5 sm:gap-2 pb-2">
           {weekDays.map((day) => (
             <motion.button
               key={day.dayNumber}
@@ -339,8 +322,8 @@ export const SavedProgramView: React.FC<SavedProgramProps> = ({
               whileTap={{ scale: 0.98 }}
               onClick={() => setSelectedDay(day)}
               className={cn(
-                "flex-shrink-0 px-4 py-3 rounded-xl border-2 transition-all duration-300 min-w-[80px]",
-                day.isToday && "ring-2 ring-orange-500 ring-offset-2",
+                "flex-shrink-0 px-2.5 sm:px-4 py-2 sm:py-3 rounded-lg sm:rounded-xl border-2 transition-all duration-300 min-w-[52px] sm:min-w-[80px]",
+                day.isToday && "ring-2 ring-orange-500 ring-offset-1 sm:ring-offset-2",
                 selectedDay?.dayNumber === day.dayNumber
                   ? "bg-gradient-to-br from-orange-500 to-red-600 border-transparent text-white shadow-lg"
                   : day.isRestDay
@@ -350,22 +333,22 @@ export const SavedProgramView: React.FC<SavedProgramProps> = ({
             >
               <div className="text-center">
                 <p className={cn(
-                  "text-xs font-medium uppercase tracking-wide",
+                  "text-[10px] sm:text-xs font-medium uppercase tracking-wide",
                   selectedDay?.dayNumber === day.dayNumber ? "text-white/80" : "text-muted-foreground"
                 )}>
                   {day.shortName}
                 </p>
-                <div className="flex items-center justify-center mt-1">
+                <div className="flex items-center justify-center mt-0.5 sm:mt-1">
                   {day.isRestDay ? (
-                    <Moon className="w-4 h-4" />
+                    <Moon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   ) : day.isToday ? (
-                    <Flame className="w-4 h-4 text-orange-300" />
+                    <Flame className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-orange-300" />
                   ) : (
-                    <Dumbbell className="w-4 h-4" />
+                    <Dumbbell className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   )}
                 </div>
                 {day.isToday && (
-                  <Badge className="mt-1 text-[8px] px-1.5 py-0 bg-white/20 text-white border-0">
+                  <Badge className="mt-0.5 sm:mt-1 text-[7px] sm:text-[8px] px-1 sm:px-1.5 py-0 bg-white/20 text-white border-0">
                     HOJE
                   </Badge>
                 )}
@@ -409,25 +392,25 @@ export const SavedProgramView: React.FC<SavedProgramProps> = ({
 // Card para dia de descanso
 const RestDayCard: React.FC<{ day: DayPlan }> = ({ day }) => (
   <Card className="border-0 bg-gradient-to-br from-indigo-500/10 via-purple-500/10 to-pink-500/10">
-    <CardContent className="p-8 text-center">
+    <CardContent className="p-5 sm:p-8 text-center">
       <motion.div
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
         transition={{ type: "spring", stiffness: 200, delay: 0.1 }}
-        className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center"
+        className="w-14 h-14 sm:w-20 sm:h-20 mx-auto mb-3 sm:mb-4 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center"
       >
-        <Moon className="w-10 h-10 text-white" />
+        <Moon className="w-7 h-7 sm:w-10 sm:h-10 text-white" />
       </motion.div>
-      <h3 className="text-2xl font-bold mb-2">{day.title}</h3>
-      <p className="text-muted-foreground max-w-md mx-auto">
+      <h3 className="text-lg sm:text-2xl font-bold mb-1.5 sm:mb-2">{day.title}</h3>
+      <p className="text-xs sm:text-base text-muted-foreground max-w-md mx-auto">
         Seu corpo precisa de descanso para se recuperar e ficar mais forte. 
         Aproveite para alongar, hidratar e dormir bem! 💤
       </p>
-      <div className="flex justify-center gap-3 mt-6 flex-wrap">
-        <Badge variant="secondary" className="text-sm px-4 py-2">
-          🧘 Alongamentos leves
+      <div className="flex justify-center gap-2 sm:gap-3 mt-4 sm:mt-6 flex-wrap">
+        <Badge variant="secondary" className="text-xs sm:text-sm px-2.5 sm:px-4 py-1 sm:py-2">
+          🧘 Alongamentos
         </Badge>
-        <Badge variant="secondary" className="text-sm px-4 py-2">
+        <Badge variant="secondary" className="text-xs sm:text-sm px-2.5 sm:px-4 py-1 sm:py-2">
           💧 Hidratação
         </Badge>
       </div>
@@ -448,43 +431,43 @@ const WorkoutDayCard: React.FC<{
   const exerciseCount = exercises.length || day.activities.length;
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 sm:space-y-4">
       {/* Header do Treino */}
       <Card className="border-0 bg-gradient-to-br from-orange-500 via-red-500 to-pink-600 text-white overflow-hidden relative">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMiIvPjwvZz48L2c+PC9zdmc+')] opacity-50" />
-        <CardContent className="p-6 relative">
-          <div className="flex items-start justify-between">
-            <div className="space-y-2">
-              <Badge className="bg-white/20 border-0 text-white text-xs">
+        <CardContent className="p-4 sm:p-6 relative">
+          <div className="flex items-start justify-between gap-3">
+            <div className="space-y-1.5 sm:space-y-2 min-w-0 flex-1">
+              <Badge className="bg-white/20 border-0 text-white text-[10px] sm:text-xs">
                 {day.dayName}
               </Badge>
-              <h2 className="text-xl md:text-2xl font-bold">{day.title}</h2>
-              <div className="flex flex-wrap gap-2">
+              <h2 className="text-lg sm:text-xl md:text-2xl font-bold truncate">{day.title}</h2>
+              <div className="flex flex-wrap gap-1 sm:gap-2">
                 {day.muscleGroups.slice(0, 3).map((group) => (
-                  <Badge key={group} variant="outline" className="bg-white/10 border-white/30 text-white text-xs capitalize">
+                  <Badge key={group} variant="outline" className="bg-white/10 border-white/30 text-white text-[9px] sm:text-xs capitalize px-1.5 sm:px-2 py-0">
                     {group}
                   </Badge>
                 ))}
               </div>
             </div>
-            <div className="text-right space-y-1">
-              <div className="flex items-center gap-1.5 text-white/80 text-sm">
-                <Dumbbell className="w-4 h-4" />
-                <span>{exerciseCount} exercícios</span>
+            <div className="text-right space-y-0.5 sm:space-y-1 flex-shrink-0">
+              <div className="flex items-center gap-1 sm:gap-1.5 text-white/80 text-xs sm:text-sm">
+                <Dumbbell className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span>{exerciseCount} ex</span>
               </div>
-              <div className="flex items-center gap-1.5 text-white/80 text-sm">
-                <Clock className="w-4 h-4" />
-                <span>~{exerciseCount * 4} min</span>
+              <div className="flex items-center gap-1 sm:gap-1.5 text-white/80 text-xs sm:text-sm">
+                <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span>~{exerciseCount * 4}m</span>
               </div>
             </div>
           </div>
 
           <Button
-            size="lg"
+            size="default"
             onClick={() => onStartWorkout(weekNumber, day.activities, exercises)}
-            className="w-full mt-4 bg-white text-orange-600 hover:bg-white/90 font-bold"
+            className="w-full mt-3 sm:mt-4 bg-white text-orange-600 hover:bg-white/90 font-bold h-10 sm:h-11 text-sm sm:text-base"
           >
-            <Play className="w-5 h-5 mr-2" fill="currentColor" />
+            <Play className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2" fill="currentColor" />
             Começar Treino
           </Button>
         </CardContent>
@@ -522,32 +505,26 @@ const WorkoutDayCard: React.FC<{
                   className="group cursor-pointer border hover:border-orange-300 hover:shadow-md transition-all duration-300"
                   onClick={() => onExerciseClick?.(exercise)}
                 >
-                  <CardContent className="p-4 flex items-center gap-4">
-                    <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center text-white font-bold text-sm shadow">
+                  <CardContent className="p-3 sm:p-4 flex items-center gap-2.5 sm:gap-4">
+                    <div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center text-white font-bold text-xs sm:text-sm shadow">
                       {index + 1}
                     </div>
 
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-semibold text-foreground group-hover:text-orange-600 transition-colors truncate">
+                      <h4 className="font-semibold text-sm sm:text-base text-foreground group-hover:text-orange-600 transition-colors truncate">
                         {exercise.name}
                       </h4>
-                      <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
-                        <span className="capitalize">{exercise.muscle_group}</span>
-                        <span>•</span>
+                      <div className="flex items-center gap-1.5 sm:gap-3 text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1 flex-wrap">
+                        <span className="capitalize truncate max-w-[80px] sm:max-w-none">{exercise.muscle_group}</span>
+                        <span className="hidden sm:inline">•</span>
                         <span>{exercise.sets || '3'}x{exercise.reps || '12'}</span>
-                        {exercise.rest_time && (
-                          <>
-                            <span>•</span>
-                            <span>{exercise.rest_time} desc.</span>
-                          </>
-                        )}
                       </div>
                     </div>
 
                     <Badge
                       variant="outline"
                       className={cn(
-                        "text-[10px] capitalize flex-shrink-0",
+                        "text-[8px] sm:text-[10px] capitalize flex-shrink-0 px-1.5 sm:px-2 py-0",
                         diff.tone === 'easy' && "border-green-300 text-green-600 bg-green-50 dark:bg-green-950/30",
                         diff.tone === 'medium' && "border-yellow-300 text-yellow-600 bg-yellow-50 dark:bg-yellow-950/30",
                         diff.tone === 'hard' && "border-red-300 text-red-600 bg-red-50 dark:bg-red-950/30"
@@ -556,7 +533,7 @@ const WorkoutDayCard: React.FC<{
                       {diff.label || exercise.difficulty}
                     </Badge>
 
-                    <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-orange-500 transition-colors flex-shrink-0" />
+                    <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground group-hover:text-orange-500 transition-colors flex-shrink-0" />
                   </CardContent>
                 </Card>
               </motion.div>
