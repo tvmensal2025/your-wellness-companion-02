@@ -41,8 +41,6 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
         
         {/* Actions */}
         <div className="flex items-center gap-2 shrink-0">
-          <NotificationBell />
-          
           {/* Avatar */}
           <button
             onClick={onAvatarClick}
@@ -58,6 +56,8 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
               </AvatarFallback>
             </Avatar>
           </button>
+          
+          <NotificationBell />
         </div>
       </div>
     </header>
