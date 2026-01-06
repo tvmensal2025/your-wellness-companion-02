@@ -65,7 +65,7 @@ const SofiaFloatingButton: React.FC = () => {
                 setIsHidden(false);
                 localStorage.setItem(STORAGE_KEY, 'false');
               }}
-              className="fixed bottom-2 right-2 z-50 h-6 w-6 rounded-full bg-purple-400/60 hover:bg-purple-500 shadow-sm opacity-50 hover:opacity-100 transition-all duration-200"
+              className="fixed bottom-20 right-2 z-50 h-6 w-6 rounded-full bg-purple-400/60 hover:bg-purple-500 shadow-sm opacity-50 hover:opacity-100 transition-all duration-200 lg:bottom-2"
               size="sm"
             >
               <MessageCircle className="w-3 h-3" />
