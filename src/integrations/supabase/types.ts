@@ -4367,6 +4367,71 @@ export type Database = {
           },
         ]
       }
+      health_feed_stories: {
+        Row: {
+          background_color: string | null
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          media_type: string | null
+          media_url: string
+          text_content: string | null
+          user_id: string
+          views_count: number | null
+        }
+        Insert: {
+          background_color?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          media_type?: string | null
+          media_url: string
+          text_content?: string | null
+          user_id: string
+          views_count?: number | null
+        }
+        Update: {
+          background_color?: string | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          media_type?: string | null
+          media_url?: string
+          text_content?: string | null
+          user_id?: string
+          views_count?: number | null
+        }
+        Relationships: []
+      }
+      health_feed_story_views: {
+        Row: {
+          id: string
+          story_id: string
+          viewed_at: string | null
+          viewer_id: string
+        }
+        Insert: {
+          id?: string
+          story_id: string
+          viewed_at?: string | null
+          viewer_id: string
+        }
+        Update: {
+          id?: string
+          story_id?: string
+          viewed_at?: string | null
+          viewer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "health_feed_story_views_story_id_fkey"
+            columns: ["story_id"]
+            isOneToOne: false
+            referencedRelation: "health_feed_stories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       health_integrations: {
         Row: {
           access_token: string | null

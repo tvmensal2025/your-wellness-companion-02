@@ -13,42 +13,32 @@ import {
   Bell,
   Settings,
   Filter,
+  Loader2,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useRanking } from '@/hooks/useRanking';
+import { useFeedPosts } from '@/hooks/useFeedPosts';
 import { StoriesSection } from '@/components/community/StoriesSection';
 import { CreatePostCard } from '@/components/community/CreatePostCard';
 import { FeedPostCard } from '@/components/community/FeedPostCard';
 import { RightSidebar } from '@/components/community/RightSidebar';
-
-// Removidos dados fictícios - apenas dados reais serão exibidos
-type Post = {
-  id: string;
-  userName: string;
-  userAvatar: string;
-  userLevel: string;
-  content: string;
-  location?: string;
-  tags: string[];
-  likes: number;
-  comments: number;
-  shares: number;
-  isLiked: boolean;
-  isSaved: boolean;
-  createdAt: string;
-  achievementData?: { title: string; value: number; unit: string };
-  progressData?: { type: string; duration: string; calories: number };
-  commentsList: { id: string; userName: string; userAvatar?: string; content: string; createdAt: string }[];
-};
+import { useAuth } from '@/hooks/useAuth';
 
 export default function HealthFeedPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('feed');
   const [sortMode, setSortMode] = useState<'position' | 'points' | 'missions' | 'streak'>('position');
-  const [posts, setPosts] = useState<Post[]>([]);
 
-  const { ranking, loading } = useRanking();
+  const { user } = useAuth();
+  const { ranking, loading: rankingLoading } = useRanking();
+  const { 
+    posts, 
+    loading: postsLoading, 
+    createPost, 
+    toggleLike, 
+    addComment 
+  } = useFeedPosts();
 
   const sortedRanking = useMemo(() => {
     const base = [...ranking];
@@ -72,48 +62,44 @@ export default function HealthFeedPage() {
   const totalMissions = ranking.reduce((sum, user) => sum + user.missions_completed, 0);
   const totalPoints = ranking.reduce((sum, user) => sum + user.total_points, 0);
 
-  const handleCreatePost = (content: string, tags: string[]) => {
-    const newPost: Post = {
-      id: Date.now().toString(),
-      userName: 'Você',
-      userAvatar: '',
-      userLevel: 'Iniciante',
-      content,
-      location: undefined,
-      tags,
-      likes: 0,
-      comments: 0,
-      shares: 0,
-      isLiked: false,
-      isSaved: false,
-      createdAt: new Date().toISOString(),
-      achievementData: undefined,
-      progressData: undefined,
-      commentsList: []
-    };
-    setPosts([newPost, ...posts]);
+  const handleCreatePost = async (content: string, tags: string[]) => {
+    await createPost(content, tags);
   };
 
   const handleLike = (postId: string) => {
-    setPosts(prev => prev.map(p => 
-      p.id === postId ? { ...p, isLiked: !p.isLiked, likes: p.isLiked ? p.likes - 1 : p.likes + 1 } : p
-    ));
+    toggleLike(postId);
   };
 
   const handleComment = (postId: string, comment: string) => {
-    setPosts(prev => prev.map(p => 
-      p.id === postId ? { 
-        ...p, 
-        comments: p.comments + 1,
-        commentsList: [...(p.commentsList || []), {
-          id: Date.now().toString(),
-          userName: 'Você',
-          content: comment,
-          createdAt: new Date().toISOString()
-        }]
-      } : p
-    ));
+    addComment(postId, comment);
   };
+
+  // Map FeedPost to the format expected by FeedPostCard
+  const mappedPosts = posts.map(post => ({
+    id: post.id,
+    userName: post.user_name || 'Usuário',
+    userAvatar: post.user_avatar || '',
+    userLevel: post.user_level || 'Membro',
+    content: post.content,
+    imageUrl: post.media_urls?.[0] || undefined,
+    location: undefined,
+    tags: post.tags || [],
+    likes: post.likes_count,
+    comments: post.comments_count,
+    shares: post.shares_count,
+    isLiked: post.is_liked || false,
+    isSaved: post.is_saved || false,
+    createdAt: post.created_at,
+    achievementData: undefined,
+    progressData: undefined,
+    commentsList: (post.comments || []).map(c => ({
+      id: c.id,
+      userName: c.user_name || 'Usuário',
+      userAvatar: c.user_avatar,
+      content: c.content,
+      createdAt: c.created_at
+    }))
+  }));
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50/50 via-background to-blue-50/30 dark:from-blue-950/20 dark:via-background dark:to-blue-950/10">
@@ -146,18 +132,23 @@ export default function HealthFeedPage() {
               <div className="flex-1 lg:max-w-2xl">
                 {/* Create Post */}
                 <CreatePostCard
-                  userName="Você"
+                  userName={user?.email?.split('@')[0] || 'Você'}
                   onCreatePost={handleCreatePost}
                 />
 
                 {/* Feed Posts */}
                 <div className="space-y-3 sm:space-y-4">
-                  {posts.length === 0 ? (
+                  {postsLoading ? (
+                    <Card className="p-8 text-center">
+                      <Loader2 className="w-6 h-6 animate-spin mx-auto text-blue-600" />
+                      <p className="text-muted-foreground mt-2">Carregando publicações...</p>
+                    </Card>
+                  ) : mappedPosts.length === 0 ? (
                     <Card className="p-8 text-center">
                       <p className="text-muted-foreground">Nenhuma publicação ainda. Seja o primeiro a compartilhar!</p>
                     </Card>
                   ) : (
-                    posts.map((post) => (
+                    mappedPosts.map((post) => (
                       <FeedPostCard
                         key={post.id}
                         post={post}
@@ -210,7 +201,7 @@ export default function HealthFeedPage() {
                 </Tabs>
 
                 {/* Top User Card */}
-                {!loading && topUser && (
+                {!rankingLoading && topUser && (
                   <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 rounded-2xl bg-gradient-to-r from-blue-50 to-blue-100/50 dark:from-blue-950/30 dark:to-blue-900/20 border border-blue-200/50 dark:border-blue-800/50 shadow-sm px-3 sm:px-4 py-3 sm:py-4">
                     <div className="flex items-center gap-3 w-full sm:w-auto">
                       <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg flex-shrink-0">
@@ -244,7 +235,7 @@ export default function HealthFeedPage() {
                 )}
 
                 {/* Empty State */}
-                {!loading && filteredRanking.length === 0 && (
+                {!rankingLoading && filteredRanking.length === 0 && (
                   <div className="p-8 text-center">
                     <p className="text-muted-foreground">Nenhum membro no ranking ainda.</p>
                   </div>
