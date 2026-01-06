@@ -1,6 +1,10 @@
 // Hook para gerar recomendações de treino baseadas nas respostas do usuário
-// Prioridade: 1) Limitações físicas 2) Local 3) Objetivo 4) Nível
-// TAMBÉM considera histórico de treinos para personalização
+// Prioridade: 1) Condição especial 2) Idade 3) Gênero + Foco Corporal 4) Limitações 5) Local 6) Objetivo 7) Nível
+// Baseado em metodologias dos canais:
+// - Leandro Twin, Renato Cariani (masculino, hipertrofia)
+// - Tay Training, Carol Borba (feminino, glúteos)
+// - Sérgio Bertoluci (funcional casa)
+// - Dra Lili Aranda (iniciantes, idosos)
 
 export interface UserAnswers {
   level: string;
@@ -10,6 +14,11 @@ export interface UserAnswers {
   location: string;
   goal: string;
   limitation: string;
+  // Novas perguntas
+  gender?: string;
+  bodyFocus?: string;
+  ageGroup?: string;
+  specialCondition?: string;
 }
 
 export interface WeekPlanItem {
@@ -631,6 +640,173 @@ const generateDefaultProgram = (answers: UserAnswers): ProgramRecommendation => 
 };
 
 // ============================================
+// PROGRAMAS ESPECÍFICOS POR GÊNERO E FOCO
+// ============================================
+
+const generateFemininoGluteosProgram = (answers: UserAnswers): ProgramRecommendation => {
+  const weekPlan: WeekPlanItem[] = [
+    {
+      week: 1,
+      activities: [
+        '🍑 SEG - GLÚTEOS ATIVAÇÃO: Ponte glútea 3x15 | Agachamento sumô 3x12 | Elevação lateral deitada 3x12 cada | Kickback 3x12 cada',
+        '🦵 QUA - PERNAS COMPLETO: Agachamento livre 3x15 | Afundo alternado 3x10 cada | Ponte unilateral 3x10 cada | Panturrilha 3x20',
+        '🔥 SEX - GLÚTEOS INTENSO: Ponte com pausa 3x12 | Agachamento sumô pulso 3x15 | Fire hydrant 3x15 cada | Prancha 3x30seg'
+      ],
+      days: 'Seg, Qua, Sex'
+    },
+    {
+      week: 2,
+      activities: [
+        '🍑 SEG - GLÚTEOS VOLUME: Ponte glútea 4x15 | Agachamento sumô 4x15 | Clamshell 3x15 cada | Kickback pulsando 3x12 cada',
+        '🦵 QUA - LOWER BODY: Agachamento profundo 4x12 | Afundo reverso 3x12 cada | Elevação pélvica unilateral 3x12 cada | Step up 3x10 cada',
+        '🔥 SEX - HIIT GLÚTEOS: Agachamento jump leve 3x10 | Ponte explosiva 3x15 | Afundo pulsando 3x10 cada | Mountain climber 3x20'
+      ],
+      days: 'Seg, Qua, Sex'
+    },
+    {
+      week: 3,
+      activities: [
+        '🍑 SEG - GLÚTEOS AVANÇADO: Ponte glútea 4x20 | Agachamento búlgaro 3x10 cada | Abdução de quadril 4x15 cada | Kickback lento 4x12',
+        '🦵 QUA - PERNAS FORÇA: Agachamento isométrico 3x30seg | Afundo caminhando 3x15 cada | Panturrilha unilateral 3x15 cada | Wall sit 3x45seg',
+        '🔥 SEX - CIRCUITO QUEIMA: 4 rounds: Agachamento 15x + Ponte 15x + Afundo 10x cada + Prancha 30seg'
+      ],
+      days: 'Seg, Qua, Sex'
+    },
+    {
+      week: 4,
+      activities: [
+        '🍑 SEG - GLÚTEOS PUMP: Ponte glútea 5x15 drop set | Agachamento sumô amplo 4x15 | Hip thrust no sofá 4x12 | Abdução com elástico imaginário 4x15',
+        '🦵 QUA - LEG DAY INTENSO: Agachamento pistol assistido 3x6 cada | Afundo búlgaro 4x10 cada | Step up alto 3x12 cada | Panturrilha 5x25',
+        '🔥 SEX - DESAFIO FINAL: 100 agachamentos + 50 pontes + 50 afundos (total) no menor tempo'
+      ],
+      days: 'Seg, Qua, Sex'
+    }
+  ];
+
+  return {
+    title: '🍑 Glúteos Perfeitos',
+    subtitle: 'Programa Feminino - Foco Bumbum',
+    duration: '4 semanas',
+    frequency: answers.frequency === '2-3x' ? '3x por semana' : '4x por semana',
+    time: answers.time === '10-15' ? '20-30 minutos' : '35-45 minutos',
+    description: 'Programa focado em glúteos e pernas para resultados visíveis! Baseado em metodologias de Tay Training e Carol Borba.',
+    weekPlan: weekPlan.map(week => ({
+      ...week,
+      activities: adaptExercisesForLimitation(week.activities, answers.limitation)
+    }))
+  };
+};
+
+const generateMasculinoHipertrofiaProgram = (answers: UserAnswers): ProgramRecommendation => {
+  const weekPlan: WeekPlanItem[] = [
+    {
+      week: 1,
+      activities: [
+        '💪 SEG - PEITO/TRÍCEPS: Flexão 4x12 | Flexão diamante 3x10 | Mergulho na cadeira 3x12 | Tríceps francês 3x12',
+        '🔙 TER - COSTAS/BÍCEPS: Remada na mesa 4x12 | Superman 3x15 | Barra australiana 3x10 | Rosca isométrica 3x20seg',
+        '🦵 QUI - PERNAS: Agachamento 4x15 | Afundo 3x12 cada | Stiff unilateral 3x12 | Panturrilha 4x20',
+        '🎯 SEX - OMBRO/CORE: Flexão pike 3x10 | Elevação Y parede 3x15 | Prancha 4x45seg | Russian twist 3x30'
+      ],
+      days: 'Seg, Ter, Qui, Sex'
+    },
+    {
+      week: 2,
+      activities: [
+        '💪 SEG - PEITO INTENSO: Flexão declinada 4x12 | Flexão archer 3x8 cada | Mergulho profundo 4x12 | Tríceps banco 4x12',
+        '🔙 TER - COSTAS VOLUME: Remada unilateral 4x10 cada | Pull parede 4x12 | Superman com pausa 3x15 | Rosca concentrada parede 3x15',
+        '🦵 QUI - LEGS POWER: Agachamento jump 4x12 | Bulgarian split 3x12 cada | Hip thrust no sofá 4x15 | Panturrilha unilateral 4x15',
+        '🎯 SEX - OMBRO BOULDER: Pike push up 4x10 | Elevação lateral imaginária 4x15 | Face pull toalha 3x15 | Prancha comando 3x10'
+      ],
+      days: 'Seg, Ter, Qui, Sex'
+    },
+    {
+      week: 3,
+      activities: [
+        '💪 SEG - PUSH AVANÇADO: Flexão explosiva 4x8 | Flexão pseudo planche 3x8 | Dips profundo 4x15 | Tríceps kick 4x12',
+        '🔙 TER - PULL FORÇA: Remada australiana 5x10 | Pullover toalha 4x12 | Shrug parede 4x15 | Rosca 21s modificado',
+        '🦵 QUI - LEGS RESISTÊNCIA: Agachamento 5x15 | Afundo caminhando 3x20 cada | Stiff 4x12 | Panturrilha 5x25',
+        '🎯 SEX - METABÓLICO: Circuito 4x: Flexão 15x + Agachamento 20x + Remada 15x + Prancha 45seg'
+      ],
+      days: 'Seg, Ter, Qui, Sex'
+    },
+    {
+      week: 4,
+      activities: [
+        '💪 SEG - CHEST CHALLENGE: 100 flexões (menor tempo) dividido em sets',
+        '🔙 TER - BACK CHALLENGE: 100 remadas + 50 superman (menor tempo)',
+        '🦵 QUI - LEG CHALLENGE: 150 agachamentos + 50 afundos cada perna',
+        '🎯 SEX - FULL BODY TEST: 50 flexões + 50 agachamentos + 50 remadas + 2min prancha'
+      ],
+      days: 'Seg, Ter, Qui, Sex'
+    }
+  ];
+
+  return {
+    title: '💪 Hipertrofia em Casa',
+    subtitle: 'Programa Masculino - Ganho de Massa',
+    duration: '4 semanas',
+    frequency: answers.frequency === '2-3x' ? '3x por semana' : '4x por semana',
+    time: answers.time === '10-15' ? '30 minutos' : '45-60 minutos',
+    description: 'Programa focado em hipertrofia usando peso corporal. Baseado em Leandro Twin e Laércio Refundini.',
+    weekPlan: weekPlan.map(week => ({
+      ...week,
+      activities: adaptExercisesForLimitation(week.activities, answers.limitation)
+    }))
+  };
+};
+
+const generateSeniorProgram = (answers: UserAnswers): ProgramRecommendation => {
+  const weekPlan: WeekPlanItem[] = [
+    {
+      week: 1,
+      activities: [
+        '🌟 SEG - MOBILIDADE: Marcha no lugar 2min | Rotação ombros 10x cada | Inclinação lateral 8x cada | Elevação joelho apoiado 10x cada',
+        '💪 QUA - FORÇA LEVE: Sentar/levantar cadeira 2x10 | Flexão parede 2x10 | Elevação lateral 2x10 | Ponte glútea 2x10',
+        '🧘 SEX - EQUILÍBRIO: Ficar um pé (apoio) 2x15seg cada | Alongamento panturrilha 30seg cada | Respiração profunda 10x'
+      ],
+      days: 'Seg, Qua, Sex'
+    },
+    {
+      week: 2,
+      activities: [
+        '🌟 SEG - MOBILIDADE+: Marcha 3min | Círculos braço 15x cada | Rotação tronco 10x cada | Step lateral 10x cada',
+        '💪 QUA - FORTALECIMENTO: Agachamento cadeira 2x12 | Flexão inclinada 2x12 | Remada toalha 2x12 | Ponte 3x10',
+        '🧘 SEX - FLEXIBILIDADE: Alongamento completo 15min | Equilíbrio um pé 2x20seg | Respiração 5min'
+      ],
+      days: 'Seg, Qua, Sex'
+    },
+    {
+      week: 3,
+      activities: [
+        '🌟 SEG - CARDIO LEVE: Caminhada no lugar 5min | Elevação joelhos 2x15 | Step touch 2min',
+        '💪 QUA - CIRCUITO SUAVE: 2x: Agachamento 10x + Flexão parede 10x + Marcha 1min + Ponte 10x',
+        '🧘 SEX - RELAXAMENTO: Alongamento 10min | Equilíbrio 3x20seg | Meditação guiada 5min'
+      ],
+      days: 'Seg, Qua, Sex'
+    },
+    {
+      week: 4,
+      activities: [
+        '🌟 SEG - RESISTÊNCIA: Caminhada variada 8min | Exercícios braços 10min',
+        '💪 QUA - FORÇA FUNCIONAL: Sentar/levantar 3x12 | Subir degrau 2x10 cada | Ponte unilateral 2x8 cada',
+        '🧘 SEX - BEM-ESTAR: Alongamento 12min | Exercícios respiratórios 5min | Relaxamento 5min'
+      ],
+      days: 'Seg, Qua, Sex'
+    }
+  ];
+
+  return {
+    title: '🌟 Saúde Ativa 60+',
+    subtitle: 'Programa Suave e Seguro',
+    duration: '4 semanas',
+    frequency: '3x por semana',
+    time: '15-25 minutos',
+    description: 'Programa focado em mobilidade, equilíbrio e qualidade de vida. Baseado em Dra Lili Aranda. Sempre tenha apoio por perto!',
+    weekPlan
+  };
+};
+
+// ============================================
 // FUNÇÃO PRINCIPAL DE RECOMENDAÇÃO
 // ============================================
 export const generateRecommendation = (answers: UserAnswers): ProgramRecommendation => {
@@ -639,29 +815,58 @@ export const generateRecommendation = (answers: UserAnswers): ProgramRecommendat
     goal: answers.goal,
     location: answers.location,
     limitation: answers.limitation,
-    frequency: answers.frequency
+    frequency: answers.frequency,
+    gender: answers.gender,
+    bodyFocus: answers.bodyFocus,
+    ageGroup: answers.ageGroup,
+    specialCondition: answers.specialCondition
   });
 
-  // PRIORIDADE 1: Sedentário sempre recebe programa especial de início
+  // PRIORIDADE 1: Senior sempre recebe programa especial
+  if (answers.ageGroup === 'senior') {
+    console.log('📋 Programa: Senior (Dra Lili)');
+    return generateSeniorProgram(answers);
+  }
+
+  // PRIORIDADE 2: Condições especiais
+  if (answers.specialCondition && answers.specialCondition !== 'nenhuma') {
+    console.log('📋 Programa: Condição Especial - Adaptado');
+    // Para gestantes, pós-parto, obesidade - usar programa suave
+    if (['gestante', 'pos_parto', 'obesidade', 'recuperacao_lesao'].includes(answers.specialCondition)) {
+      return generateSedentarioProgram(answers);
+    }
+  }
+
+  // PRIORIDADE 3: Sedentário sempre recebe programa especial de início
   if (answers.level === 'sedentario') {
     console.log('📋 Programa: Sedentário');
     return generateSedentarioProgram(answers);
   }
 
-  // PRIORIDADE 2: Verificar LOCAL
+  // PRIORIDADE 4: Gênero + Foco Corporal (casa sem equipamentos)
+  if (answers.location === 'casa_sem' || answers.location === 'outdoor') {
+    if (answers.gender === 'feminino' || answers.bodyFocus === 'gluteos_pernas') {
+      console.log('📋 Programa: Feminino Glúteos (Tay Training)');
+      return generateFemininoGluteosProgram(answers);
+    }
+    if (answers.gender === 'masculino' || answers.bodyFocus === 'peito' || answers.bodyFocus === 'bracos_ombros') {
+      console.log('📋 Programa: Masculino Hipertrofia Casa');
+      return generateMasculinoHipertrofiaProgram(answers);
+    }
+    console.log('📋 Programa: Casa sem Equipamentos');
+    return generateCasaSemEquipamentosProgram(answers);
+  }
+
+  // PRIORIDADE 5: LOCAL - Academia
   if (answers.location === 'academia') {
     console.log('📋 Programa: Academia');
     return generateAcademiaProgram(answers);
   }
 
+  // PRIORIDADE 6: Casa com equipamentos
   if (answers.location === 'casa_com') {
     console.log('📋 Programa: Casa com Equipamentos');
     return generateCasaComEquipamentosProgram(answers);
-  }
-
-  if (answers.location === 'casa_sem' || answers.location === 'outdoor') {
-    console.log('📋 Programa: Casa sem Equipamentos / Outdoor');
-    return generateCasaSemEquipamentosProgram(answers);
   }
 
   // FALLBACK

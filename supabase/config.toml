@@ -51,3 +51,6 @@ verify_jwt = false
 [functions.sofia-deterministic]
 verify_jwt = false
 
+[functions.generate-ai-workout]
+verify_jwt = false
+
