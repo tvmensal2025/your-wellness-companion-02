@@ -1,13 +1,14 @@
-import { useState, useEffect, lazy, Suspense } from "react";
+import { lazy, Suspense } from "react";
 import './App.css';
-import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { User } from "@supabase/supabase-js";
-import { supabase } from "@/integrations/supabase/client";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { OfflineIndicator } from "@/components/OfflineIndicator";
 import SofiaFloatingButton from "@/components/SofiaFloatingButton";
+import { createQueryClient } from "@/lib/queryConfig";
 
 // Core pages
 import AuthPage from "./pages/AuthPage";
@@ -42,29 +43,20 @@ const PageLoader = () => (
   </div>
 );
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: { 
-      retry: 1, 
-      refetchOnWindowFocus: false, 
-      staleTime: 10 * 60 * 1000, // 10 minutos
-      gcTime: 30 * 60 * 1000, // 30 minutos (antigo cacheTime)
-      refetchOnMount: false,
-      refetchOnReconnect: false,
-    },
-    mutations: { retry: 1 },
-  },
-});
+// Optimized query client for mobile performance
+const queryClient = createQueryClient();
 
 const App: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Suspense fallback={<PageLoader />}>
-            <Routes>
+      <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <OfflineIndicator />
+          <BrowserRouter>
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
               <Route path="/" element={<HomePage />} />
               <Route path="/auth" element={<AuthPage />} />
               <Route path="/terms" element={<TermsPage />} />
@@ -86,11 +78,12 @@ const App: React.FC = () => {
               <Route path="/dr-vital-enhanced" element={<Suspense fallback={<PageLoader />}><DrVitalEnhancedPage /></Suspense>} />
               <Route path="/sofia-nutricional" element={<Suspense fallback={<PageLoader />}><SofiaNutricionalPage /></Suspense>} />
               <Route path="/professional-evaluation" element={<Suspense fallback={<PageLoader />}><ProfessionalEvaluationPage /></Suspense>} />
-            </Routes>
-            <SofiaFloatingButton />
-          </Suspense>
-        </BrowserRouter>
-      </TooltipProvider>
+              </Routes>
+              <SofiaFloatingButton />
+            </Suspense>
+          </BrowserRouter>
+        </TooltipProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 };
