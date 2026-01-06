@@ -7,8 +7,13 @@ const SofiaFloatingButton: React.FC = () => {
   const { user } = useAuth();
   const location = useLocation();
 
-  // Não exibir Sofia flutuante na própria página da Sofia
-  if (location.pathname === '/sofia' || location.pathname === '/sofia-voice' || location.pathname === '/sofia-nutricional') {
+  // Não exibir Sofia flutuante em telas onde ela pode atrapalhar o layout (ex.: autenticação)
+  if (
+    location.pathname === '/sofia' ||
+    location.pathname === '/sofia-voice' ||
+    location.pathname === '/sofia-nutricional' ||
+    location.pathname === '/auth'
+  ) {
     return null;
   }
 
