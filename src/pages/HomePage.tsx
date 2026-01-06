@@ -34,8 +34,10 @@ import {
   Play,
   Calendar,
   Headphones,
-  FileText
+  FileText,
+  Stethoscope
 } from 'lucide-react';
+import { CharacterImage } from '@/components/shared/CharacterImage';
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -104,10 +106,10 @@ const HomePage = () => {
   ];
 
   const stats = [
-    { value: '15.847', label: 'Vidas Transformadas' },
-    { value: '97%', label: 'Satisfação' },
-    { value: '4.9', label: 'Avaliação' },
-    { value: '50.000+', label: 'Kg Eliminados' },
+    { value: '24h', label: 'Suporte IA' },
+    { value: '100%', label: 'Personalizado' },
+    { value: '7 dias', label: 'Garantia' },
+    { value: 'Ilimitado', label: 'Acompanhamento' },
   ];
 
   return (
@@ -183,12 +185,8 @@ const HomePage = () => {
               animate={{ opacity: 1, scale: 1 }}
               className="inline-flex items-center gap-2 bg-gradient-to-r from-sky-100 to-emerald-100 border border-sky-200 rounded-full px-5 py-2.5 mb-8"
             >
-              <div className="flex -space-x-2">
-                {['👩‍🦰', '👨', '👩', '👨‍🦱'].map((emoji, i) => (
-                  <span key={i} className="text-lg">{emoji}</span>
-                ))}
-              </div>
-              <span className="text-sky-700 text-sm font-semibold">+15.000 pessoas já transformaram suas vidas</span>
+              <Stethoscope className="w-5 h-5 text-sky-600" />
+              <span className="text-sky-700 text-sm font-semibold">Acompanhamento médico com IA avançada</span>
             </motion.div>
 
             {/* Main Headline */}
@@ -314,6 +312,97 @@ const HomePage = () => {
                 <p className="text-slate-600 leading-relaxed">{feature.desc}</p>
               </motion.div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Dr. Vital Section */}
+      <section className="py-20 bg-gradient-to-br from-slate-900 via-sky-900 to-slate-900 relative overflow-hidden">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-sky-500/20 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-emerald-500/20 rounded-full blur-3xl" />
+        </div>
+        
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="max-w-6xl mx-auto">
+            <div className="grid lg:grid-cols-2 gap-12 items-center">
+              {/* Image Side */}
+              <motion.div
+                initial={{ opacity: 0, x: -50 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                className="flex justify-center"
+              >
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gradient-to-br from-sky-500 to-emerald-500 rounded-full blur-3xl opacity-30 scale-110" />
+                  <div className="relative bg-gradient-to-br from-sky-500/20 to-emerald-500/20 backdrop-blur-sm rounded-3xl p-8 border border-white/10">
+                    <CharacterImage 
+                      characterType="dr-vital" 
+                      size="xl" 
+                      className="w-48 h-48 md:w-64 md:h-64 mx-auto"
+                    />
+                    <div className="mt-6 text-center">
+                      <h3 className="text-2xl font-bold text-white">Dr. Vital</h3>
+                      <p className="text-sky-300">Seu Médico Pessoal de IA</p>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+
+              {/* Content Side */}
+              <motion.div
+                initial={{ opacity: 0, x: 50 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                className="text-center lg:text-left"
+              >
+                <span className="inline-block bg-sky-500/20 text-sky-300 text-sm font-semibold px-4 py-2 rounded-full mb-6">
+                  <Stethoscope className="w-4 h-4 inline mr-2" />
+                  TECNOLOGIA EXCLUSIVA
+                </span>
+                
+                <h2 className="text-3xl md:text-5xl font-bold text-white mb-6 leading-tight">
+                  Conheça o <span className="bg-gradient-to-r from-sky-400 to-emerald-400 bg-clip-text text-transparent">Dr. Vital</span>
+                </h2>
+                
+                <p className="text-slate-300 text-lg mb-8 leading-relaxed">
+                  Sua inteligência artificial médica pessoal. O Dr. Vital analisa seus dados de saúde, 
+                  acompanha sua evolução e oferece orientações médicas personalizadas 24 horas por dia.
+                </p>
+
+                <div className="space-y-4 mb-8">
+                  {[
+                    { icon: Brain, text: 'Análise inteligente do seu perfil de saúde' },
+                    { icon: Activity, text: 'Monitoramento contínuo dos seus indicadores' },
+                    { icon: MessageCircle, text: 'Respostas instantâneas sobre saúde e nutrição' },
+                    { icon: Shield, text: 'Alertas personalizados para seu bem-estar' },
+                  ].map((item, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, x: 20 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.1 }}
+                      viewport={{ once: true }}
+                      className="flex items-center gap-4"
+                    >
+                      <div className="w-10 h-10 bg-gradient-to-br from-sky-500 to-emerald-500 rounded-xl flex items-center justify-center flex-shrink-0">
+                        <item.icon className="w-5 h-5 text-white" />
+                      </div>
+                      <span className="text-white font-medium">{item.text}</span>
+                    </motion.div>
+                  ))}
+                </div>
+
+                <Button 
+                  onClick={() => navigate('/auth')}
+                  size="lg"
+                  className="bg-gradient-to-r from-sky-500 to-emerald-500 hover:from-sky-600 hover:to-emerald-600 text-white font-bold px-8 py-6 rounded-2xl shadow-xl shadow-sky-500/30 group"
+                >
+                  <span>QUERO MEU MÉDICO IA</span>
+                  <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </motion.div>
+            </div>
           </div>
         </div>
       </section>
@@ -578,7 +667,7 @@ const HomePage = () => {
               Pronto para transformar sua vida?
             </h2>
             <p className="text-white/80 mb-8 max-w-2xl mx-auto text-lg">
-              Junte-se a mais de 15.000 pessoas que já alcançaram seus objetivos com nosso método comprovado.
+              Comece sua jornada de transformação com acompanhamento personalizado do Dr. Vital e da Sofia.
             </p>
             <Button 
               onClick={() => navigate('/auth')}
