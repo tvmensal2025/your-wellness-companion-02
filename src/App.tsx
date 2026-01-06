@@ -36,6 +36,7 @@ const GoogleFitPremiumDashboard = lazy(() => import("./pages/GoogleFitPremiumDas
 const DrVitalEnhancedPage = lazy(() => import("./pages/DrVitalEnhancedPage"));
 const SofiaNutricionalPage = lazy(() => import("./pages/SofiaNutricionalPage").then(module => ({ default: module.SofiaNutricionalPage })));
 const ProfessionalEvaluationPage = lazy(() => import("./pages/ProfessionalEvaluationPage"));
+const AutoLoginPage = lazy(() => import("./pages/AutoLoginPage"));
 
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-screen bg-background">
@@ -86,6 +87,7 @@ const App: React.FC = () => {
               <Route path="/dr-vital-enhanced" element={<Suspense fallback={<PageLoader />}><DrVitalEnhancedPage /></Suspense>} />
               <Route path="/sofia-nutricional" element={<Suspense fallback={<PageLoader />}><SofiaNutricionalPage /></Suspense>} />
               <Route path="/professional-evaluation" element={<Suspense fallback={<PageLoader />}><ProfessionalEvaluationPage /></Suspense>} />
+              <Route path="/auto-login" element={<Suspense fallback={<PageLoader />}><AutoLoginPage /></Suspense>} />
               <Route path="*" element={<NotFound />} />
               </Routes>
               <SofiaFloatingButton />
