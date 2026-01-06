@@ -164,65 +164,63 @@ const UserDrVitalPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50">
-      <div className="container mx-auto px-4 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-background to-cyan-50 overflow-x-hidden">
+      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-full">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center space-x-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleBackToDashboard}
-              className="flex items-center space-x-2"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span>Voltar ao Dashboard</span>
-            </Button>
-          </div>
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-4 sm:mb-8">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleBackToDashboard}
+            className="flex items-center gap-1.5 px-2 sm:px-3"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span className="text-sm">Voltar ao Dashboard</span>
+          </Button>
           
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center gap-1.5 sm:gap-2">
             <Button
               variant="outline"
               size="sm"
               onClick={handleExportData}
-              className="flex items-center space-x-2"
+              className="flex items-center gap-1.5 h-8 px-2.5 sm:px-3"
             >
               <Download className="w-4 h-4" />
-              <span>Exportar</span>
+              <span className="hidden sm:inline">Exportar</span>
             </Button>
             
             <Button
               variant="outline"
               size="sm"
               onClick={handleShareReport}
-              className="flex items-center space-x-2"
+              className="flex items-center gap-1.5 h-8 px-2.5 sm:px-3"
             >
               <Share2 className="w-4 h-4" />
-              <span>Compartilhar</span>
+              <span className="hidden sm:inline">Compartilhar</span>
             </Button>
           </div>
         </div>
 
         {/* Informações do Usuário */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">
-                Olá, {user.user_metadata?.full_name || user.email?.split('@')[0] || 'Usuário'}!
+        <div className="mb-4 sm:mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div className="min-w-0">
+              <h1 className="text-xl sm:text-3xl font-bold text-foreground leading-tight">
+                Olá, <span className="break-words">{user.user_metadata?.full_name || user.email?.split('@')[0] || 'Usuário'}!</span>
               </h1>
-              <p className="text-muted-foreground mt-2">
+              <p className="text-sm sm:text-base text-muted-foreground mt-1 sm:mt-2">
                 Bem-vindo ao seu consultório virtual do Dr. Vital
               </p>
             </div>
             
-            <div className="flex items-center space-x-4">
-              <Badge variant="outline" className="flex items-center space-x-1">
-                <Calendar className="w-4 h-4" />
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <Badge variant="outline" className="flex items-center gap-1 text-xs px-2 py-1">
+                <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
                 <span>{new Date().toLocaleDateString('pt-BR')}</span>
               </Badge>
               
-              <Badge variant="outline" className="flex items-center space-x-1">
-                <Clock className="w-4 h-4" />
+              <Badge variant="outline" className="flex items-center gap-1 text-xs px-2 py-1">
+                <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
                 <span>{new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
               </Badge>
             </div>
@@ -230,82 +228,78 @@ const UserDrVitalPage: React.FC = () => {
         </div>
 
         {/* Cards de Resumo Rápido */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 mb-4 sm:mb-8">
           <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center space-x-2">
-                <Stethoscope className="w-4 h-4" />
-                <span>Análise Preventiva</span>
+            <CardHeader className="pb-1 sm:pb-2 px-3 pt-3 sm:px-4 sm:pt-4">
+              <CardTitle className="text-xs sm:text-sm flex items-center gap-1.5">
+                <Stethoscope className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+                <span className="truncate">Análise Preventiva</span>
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">Ativa</div>
-              <p className="text-xs opacity-90">Dr. Vital disponível</p>
+            <CardContent className="px-3 pb-3 sm:px-4 sm:pb-4">
+              <div className="text-lg sm:text-2xl font-bold">Ativa</div>
+              <p className="text-[10px] sm:text-xs opacity-90">Dr. Vital disponível</p>
             </CardContent>
           </Card>
 
           <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center space-x-2">
-                <Heart className="w-4 h-4" />
-                <span>Score de Saúde</span>
+            <CardHeader className="pb-1 sm:pb-2 px-3 pt-3 sm:px-4 sm:pt-4">
+              <CardTitle className="text-xs sm:text-sm flex items-center gap-1.5">
+                <Heart className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+                <span className="truncate">Score de Saúde</span>
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">85/100</div>
-              <p className="text-xs opacity-90">Excelente!</p>
+            <CardContent className="px-3 pb-3 sm:px-4 sm:pb-4">
+              <div className="text-lg sm:text-2xl font-bold">85/100</div>
+              <p className="text-[10px] sm:text-xs opacity-90">Excelente!</p>
             </CardContent>
           </Card>
 
           <Card className="bg-gradient-to-r from-purple-500 to-purple-600 text-white">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center space-x-2">
-                <Brain className="w-4 h-4" />
-                <span>Conversas Sofia & Dr. Vital</span>
+            <CardHeader className="pb-1 sm:pb-2 px-3 pt-3 sm:px-4 sm:pt-4">
+              <CardTitle className="text-xs sm:text-sm flex items-center gap-1.5">
+                <Brain className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+                <span className="truncate">Conversas IA</span>
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">47</div>
-              <p className="text-xs opacity-90">Este mês</p>
+            <CardContent className="px-3 pb-3 sm:px-4 sm:pb-4">
+              <div className="text-lg sm:text-2xl font-bold">47</div>
+              <p className="text-[10px] sm:text-xs opacity-90">Este mês</p>
             </CardContent>
           </Card>
 
           <Card className="bg-gradient-to-r from-orange-500 to-orange-600 text-white">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center space-x-2">
-                <MessageCircle className="w-4 h-4" />
-                <span>Última Análise</span>
+            <CardHeader className="pb-1 sm:pb-2 px-3 pt-3 sm:px-4 sm:pt-4">
+              <CardTitle className="text-xs sm:text-sm flex items-center gap-1.5">
+                <MessageCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+                <span className="truncate">Última Análise</span>
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">2 dias</div>
-              <p className="text-xs opacity-90">Atrás</p>
+            <CardContent className="px-3 pb-3 sm:px-4 sm:pb-4">
+              <div className="text-lg sm:text-2xl font-bold">2 dias</div>
+              <p className="text-[10px] sm:text-xs opacity-90">Atrás</p>
             </CardContent>
           </Card>
         </div>
 
         {/* Tabs do Consultório Virtual */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 xs:space-y-5 sm:space-y-6">
-          <TabsList className="grid w-full grid-cols-4 h-12 xs:h-10 bg-muted p-1">
-            <TabsTrigger value="analytics" className="flex items-center justify-center gap-2 text-sm font-medium px-3 py-2 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm">
-              <Activity className="h-4 w-4" />
-              <span className="hidden xs:inline">Análises</span>
-              <span className="xs:hidden">Anál</span>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-3 sm:space-y-6">
+          <TabsList className="grid w-full grid-cols-4 h-10 sm:h-12 bg-muted p-0.5 sm:p-1">
+            <TabsTrigger value="analytics" className="flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-sm font-medium px-1.5 sm:px-3 py-1.5 sm:py-2">
+              <Activity className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Análises</span>
             </TabsTrigger>
-            <TabsTrigger value="chat" className="flex items-center justify-center gap-2 text-sm font-medium px-3 py-2 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm">
-              <MessageCircle className="h-4 w-4" />
-              <span className="hidden xs:inline">Dr. Vital</span>
-              <span className="xs:hidden">Dr</span>
+            <TabsTrigger value="chat" className="flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-sm font-medium px-1.5 sm:px-3 py-1.5 sm:py-2">
+              <MessageCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Dr. Vital</span>
             </TabsTrigger>
-            <TabsTrigger value="exams" className="flex items-center justify-center gap-2 text-sm font-medium px-3 py-2 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm">
-              <Upload className="h-4 w-4" />
-              <span className="hidden xs:inline">Exames</span>
-              <span className="xs:hidden">Ex</span>
+            <TabsTrigger value="exams" className="flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-sm font-medium px-1.5 sm:px-3 py-1.5 sm:py-2">
+              <Upload className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Exames</span>
             </TabsTrigger>
-            <TabsTrigger value="history" className="flex items-center justify-center gap-2 text-sm font-medium px-3 py-2 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm">
-              <History className="h-4 w-4" />
-              <span className="hidden xs:inline">Histórico</span>
-              <span className="xs:hidden">Hist</span>
+            <TabsTrigger value="history" className="flex items-center justify-center gap-1 sm:gap-2 text-xs sm:text-sm font-medium px-1.5 sm:px-3 py-1.5 sm:py-2">
+              <History className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Histórico</span>
             </TabsTrigger>
           </TabsList>
 
