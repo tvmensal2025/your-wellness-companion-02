@@ -1,35 +1,47 @@
 /// <reference types="vite-plugin-pwa/client" />
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { RefreshCw, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useHaptics } from '@/hooks/useHaptics';
-import { useRegisterSW } from 'virtual:pwa-register/react';
 
 export function UpdatePrompt() {
-  const haptics = useHaptics();
-  
-  const {
-    needRefresh: [needRefresh, setNeedRefresh],
-    updateServiceWorker
-  } = useRegisterSW({
-    onRegistered(registration) {
-      console.log('SW Registered:', registration);
-    },
-    onRegisterError(error) {
-      console.error('SW registration error:', error);
+  const [needRefresh, setNeedRefresh] = useState(false);
+  const [updateSW, setUpdateSW] = useState<(() => Promise<void>) | null>(null);
+
+  useEffect(() => {
+    // Dynamically import to avoid hook ordering issues
+    const registerSW = async () => {
+      try {
+        const { registerSW } = await import('virtual:pwa-register');
+        const updateFunction = registerSW({
+          onNeedRefresh() {
+            setNeedRefresh(true);
+          },
+          onRegistered(registration) {
+            console.log('SW Registered:', registration);
+          },
+          onRegisterError(error) {
+            console.error('SW registration error:', error);
+          }
+        });
+        setUpdateSW(() => updateFunction);
+      } catch (error) {
+        console.debug('PWA registration not available:', error);
+      }
+    };
+    
+    registerSW();
+  }, []);
+
+  const handleUpdate = useCallback(async () => {
+    if (updateSW) {
+      await updateSW();
     }
-  });
+  }, [updateSW]);
 
-  const handleUpdate = async () => {
-    haptics.impact('medium');
-    await updateServiceWorker(true);
-  };
-
-  const handleDismiss = () => {
-    haptics.impact('light');
+  const handleDismiss = useCallback(() => {
     setNeedRefresh(false);
-  };
+  }, []);
 
   return (
     <AnimatePresence>
