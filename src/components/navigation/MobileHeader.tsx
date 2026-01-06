@@ -49,9 +49,9 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
             className="h-7 w-7 rounded-full overflow-hidden transition-all touch-manipulation active:scale-95"
             aria-label="Abrir perfil"
           >
-            <Avatar className="h-7 w-7">
+            <Avatar className="h-7 w-7 bg-muted">
               {avatarUrl && avatarUrl.trim() ? (
-                <AvatarImage src={avatarUrl} alt={userName} className="object-cover" />
+                <AvatarImage src={avatarUrl} alt={userName} className="object-contain" />
               ) : null}
               <AvatarFallback className="bg-primary/10 text-primary text-[10px] font-semibold">
                 {getInitials(userName)}

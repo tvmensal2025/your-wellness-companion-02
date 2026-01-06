@@ -137,9 +137,9 @@ export function UserProfileSidebar({ user, onUpdateProfile }: UserProfileSidebar
           <Dialog open={isAvatarDialogOpen} onOpenChange={setIsAvatarDialogOpen}>
             <DialogTrigger asChild>
               <div className="cursor-pointer">
-                <Avatar className="h-20 w-20 hover:scale-105 transition-transform">
+                <Avatar className="h-20 w-20 bg-muted hover:scale-105 transition-transform">
                   {avatarData.type === 'photo' || avatarData.type === 'generated' ? (
-                    <AvatarImage src={avatarData.value} alt={userName} className="object-cover" />
+                    <AvatarImage src={avatarData.value} alt={userName} className="object-contain" />
                   ) : null}
                   <AvatarFallback className="bg-primary/10 text-primary text-2xl font-bold">
                     {avatarData.type === 'emoji' ? avatarData.value : userName.charAt(0).toUpperCase()}
@@ -153,14 +153,14 @@ export function UserProfileSidebar({ user, onUpdateProfile }: UserProfileSidebar
               </DialogHeader>
               <div className="space-y-4">
                 <div className="text-center">
-                  <Avatar className="h-24 w-24 mx-auto">
-                    {avatarData.type === 'photo' || avatarData.type === 'generated' ? (
-                      <AvatarImage src={avatarData.value} alt={userName} className="object-cover" />
-                    ) : null}
-                    <AvatarFallback className="bg-primary/10 text-primary text-3xl font-bold">
-                      {avatarData.type === 'emoji' ? avatarData.value : userName.charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
+                    <Avatar className="h-24 w-24 mx-auto bg-muted">
+                      {avatarData.type === 'photo' || avatarData.type === 'generated' ? (
+                        <AvatarImage src={avatarData.value} alt={userName} className="object-contain" />
+                      ) : null}
+                      <AvatarFallback className="bg-primary/10 text-primary text-3xl font-bold">
+                        {avatarData.type === 'emoji' ? avatarData.value : userName.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
                 </div>
                 <div>
                   <Label htmlFor="avatar-upload">Escolher nova foto</Label>

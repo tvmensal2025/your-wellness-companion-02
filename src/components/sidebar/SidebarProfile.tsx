@@ -64,11 +64,11 @@ export const SidebarProfile: React.FC<SidebarProfileProps> = ({
     <div className="flex flex-col items-center pt-8 pb-4 px-4 gap-3">
       <div className="relative group">
         <Avatar 
-          className="h-16 w-16 cursor-pointer hover:scale-105 transition-transform duration-200"
+          className="h-16 w-16 cursor-pointer bg-muted hover:scale-105 transition-transform duration-200"
           onClick={onProfileClick}
         >
           {avatarUrl && avatarUrl.trim() ? (
-            <AvatarImage src={avatarUrl} alt={fullName} className="object-cover" />
+            <AvatarImage src={avatarUrl} alt={fullName} className="object-contain" />
           ) : null}
           <AvatarFallback className="bg-primary/10 text-primary font-bold text-lg">
             {fullName ? getInitials(fullName) : <User className="w-7 h-7" />}
