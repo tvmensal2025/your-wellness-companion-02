@@ -144,10 +144,11 @@ export const useUserProfile = (user: User | null) => {
         avatar_is_data_uri: hasDataUriAvatar,
       });
 
-      // Atualizar na tabela profiles
+      // Atualizar na tabela profiles (upsert para criar se não existir)
       const { error } = await supabase
         .from('profiles')
-        .update({
+        .upsert({
+          user_id: user.id,
           full_name: updatedData.fullName,
           phone: updatedData.phone,
           birth_date: updatedData.birthDate,
@@ -155,8 +156,7 @@ export const useUserProfile = (user: User | null) => {
           state: updatedData.state,
           avatar_url: avatarUrlToSave,
           updated_at: new Date().toISOString(),
-        })
-        .eq('user_id', user.id);
+        }, { onConflict: 'user_id' });
 
       if (error) {
         console.error('❌ Erro ao salvar perfil:', error);

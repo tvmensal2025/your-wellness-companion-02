@@ -274,7 +274,7 @@ const OnboardingFlow: React.FC<{ onComplete: () => void }> = ({ onComplete }) =>
             user_id: user.id,
             onboarding_completed: true,
             onboarding_completed_at: new Date().toISOString()
-          });
+          }, { onConflict: 'user_id' });
       }
       
       toast({

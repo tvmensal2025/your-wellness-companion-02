@@ -243,7 +243,7 @@ const UserProfile = ({ onOpenLayoutPrefs }: UserProfileProps = {}) => {
 
       const { error } = await supabase
         .from('profiles')
-        .upsert(profileData);
+        .upsert(profileData, { onConflict: 'user_id' });
 
       if (error) throw error;
 
@@ -318,7 +318,7 @@ const UserProfile = ({ onOpenLayoutPrefs }: UserProfileProps = {}) => {
           user_id: user.id, 
           avatar_url: publicUrl,
           updated_at: new Date().toISOString()
-        });
+        }, { onConflict: 'user_id' });
 
       if (updateError) throw updateError;
 
