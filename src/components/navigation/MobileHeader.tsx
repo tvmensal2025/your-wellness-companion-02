@@ -29,19 +29,19 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
     >
       <div className="flex items-center justify-between h-12 px-3 relative">
         {/* Offline Indicator */}
-        <div className="shrink-0">
+        <div className="shrink-0 z-10">
           <OfflineIndicatorCompact />
         </div>
         
         {/* Title - Centered with absolute positioning */}
-        <div className="absolute left-1/2 -translate-x-1/2 max-w-[50%]">
+        <div className="absolute left-1/2 -translate-x-1/2 max-w-[50%] z-0">
           <h1 className="text-xs font-medium text-foreground/80 text-center leading-tight truncate">
             {title}
           </h1>
         </div>
         
         {/* Actions */}
-        <div className="flex items-center gap-2 shrink-0 justify-end">
+        <div className="flex items-center gap-2 shrink-0 justify-end z-10">
           <ThemeToggle variant="icon" className="h-8 w-8" />
           <NotificationBell />
           
