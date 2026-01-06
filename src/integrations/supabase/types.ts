@@ -3138,6 +3138,7 @@ export type Database = {
           sets: string | null
           special_condition: string | null
           tags: string[] | null
+          target_audience: string[] | null
           tips: string | null
           updated_at: string | null
           youtube_channel: string | null
@@ -3164,6 +3165,7 @@ export type Database = {
           sets?: string | null
           special_condition?: string | null
           tags?: string[] | null
+          target_audience?: string[] | null
           tips?: string | null
           updated_at?: string | null
           youtube_channel?: string | null
@@ -3190,6 +3192,7 @@ export type Database = {
           sets?: string | null
           special_condition?: string | null
           tags?: string[] | null
+          target_audience?: string[] | null
           tips?: string | null
           updated_at?: string | null
           youtube_channel?: string | null
