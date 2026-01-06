@@ -1,0 +1,83 @@
+import React from 'react';
+import { Menu, MoreVertical } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { NotificationBell } from '@/components/NotificationBell';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+
+interface MobileHeaderProps {
+  title: string;
+  onMenuClick: () => void;
+  onSettingsClick?: () => void;
+  showMoreMenu?: boolean;
+}
+
+export const MobileHeader: React.FC<MobileHeaderProps> = ({
+  title,
+  onMenuClick,
+  onSettingsClick,
+  showMoreMenu = true,
+}) => {
+  return (
+    <header 
+      className="lg:hidden sticky top-0 z-40 bg-card/95 backdrop-blur-lg border-b border-border/50"
+      style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
+    >
+      <div className="flex items-center h-14 px-3">
+        {/* Menu Button */}
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          onClick={onMenuClick} 
+          className="h-10 w-10 rounded-xl hover:bg-primary/10 transition-colors shrink-0"
+          aria-label="Abrir menu"
+        >
+          <Menu className="w-5 h-5" />
+        </Button>
+        
+        {/* Title */}
+        <div className="flex-1 flex items-center justify-center min-w-0 px-3">
+          <h1 className="text-base font-semibold text-foreground text-center leading-tight truncate">
+            {title}
+          </h1>
+        </div>
+        
+        {/* Actions */}
+        <div className="flex items-center gap-1 shrink-0">
+          <NotificationBell />
+          
+          {showMoreMenu && onSettingsClick && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-10 w-10 rounded-xl hover:bg-primary/10"
+                  aria-label="Mais opções"
+                >
+                  <MoreVertical className="w-5 h-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem onClick={onSettingsClick}>
+                  Configurações
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="text-destructive">
+                  Sair
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+        </div>
+      </div>
+    </header>
+  );
+};
+
+export default MobileHeader;

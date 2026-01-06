@@ -16,6 +16,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
+import { BottomNavigation, BottomNavSection } from '@/components/navigation/BottomNavigation';
+import { MobileHeader } from '@/components/navigation/MobileHeader';
 
 // Lazy load heavy components for better performance
 const DashboardOverview = lazy(() => import('@/components/dashboard/DashboardOverview'));
@@ -452,6 +454,11 @@ const CompleteDashboardPage = () => {
   if (!user) {
     return null;
   }
+  // Handler para navegação inferior
+  const handleBottomNavChange = (section: BottomNavSection) => {
+    setActiveSection(section);
+  };
+
   return <div className="min-h-screen bg-background">
       <div className="flex h-screen">
         {/* Desktop Sidebar */}
@@ -468,32 +475,15 @@ const CompleteDashboardPage = () => {
 
         {/* Main Content */}
         <div className="flex-1 flex flex-col min-w-0 bg-gradient-to-b from-background via-background to-muted/40 overflow-hidden">
-          {/* Mobile Header Premium - Compacto e elegante */}
-          <header className="lg:hidden premium-header safe-area-top">
-            <div className="flex items-center h-14 px-4">
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={() => setSidebarOpen(true)} 
-                className="h-10 w-10 rounded-xl hover:bg-primary/10 transition-colors shrink-0"
-              >
-                <Menu className="w-5 h-5" />
-              </Button>
-              
-              <div className="flex-1 flex items-center justify-center min-w-0 px-3">
-                <h1 className="text-base font-semibold text-foreground text-center leading-tight">
-                  {menuItems.find(item => item.id === activeSection)?.label || 'Dashboard'}
-                </h1>
-              </div>
-              
-              <div className="shrink-0">
-                <NotificationBell />
-              </div>
-            </div>
-          </header>
+          {/* Mobile Header - Usando novo componente */}
+          <MobileHeader 
+            title={menuItems.find(item => item.id === activeSection)?.label || 'Dashboard'}
+            onMenuClick={() => setSidebarOpen(true)}
+            onSettingsClick={() => setProfileModalOpen(true)}
+          />
 
           {/* Content - Otimizado para mobile com overflow controlado */}
-          <div className="flex-1 overflow-y-auto overflow-x-hidden safe-area-bottom">
+          <div className="flex-1 overflow-y-auto overflow-x-hidden pb-20 lg:pb-0">
             <main className="w-full max-w-6xl mx-auto px-2 sm:px-4 pt-2 pb-4 lg:px-6 lg:pt-6 space-y-2 sm:space-y-4 animate-fade-in">
               {renderContent()}
             </main>
@@ -501,7 +491,11 @@ const CompleteDashboardPage = () => {
         </div>
       </div>
 
-      {/* Mobile bottom navigation removida conforme pedido do usuário */}
+      {/* Bottom Navigation - Mobile Only */}
+      <BottomNavigation 
+        activeSection={activeSection}
+        onSectionChange={handleBottomNavChange}
+      />
 
       {/* Modal de Exercícios */}
       <Suspense fallback={null}>
