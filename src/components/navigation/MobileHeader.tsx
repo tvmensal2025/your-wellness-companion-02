@@ -3,6 +3,7 @@ import { Menu, MoreVertical, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { NotificationBell } from '@/components/NotificationBell';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { OfflineIndicatorCompact } from '@/components/OfflineIndicator';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -59,6 +60,9 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
         
         {/* Actions */}
         <div className="flex items-center gap-1 shrink-0">
+          {/* Offline Indicator */}
+          <OfflineIndicatorCompact />
+          
           {/* Theme Toggle */}
           <ThemeToggle variant="icon" />
           
