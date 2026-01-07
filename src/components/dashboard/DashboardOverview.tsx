@@ -15,6 +15,7 @@ import { CleanEvolutionChart } from './CleanEvolutionChart';
 import { QuickActionsGrid } from './QuickActionsGrid';
 import { MotivationalMascot } from './MotivationalMascot';
 import { SofiaTipsCard } from './SofiaTipsCard';
+import { MetabolismCard } from './MetabolismCard';
 
 const DashboardOverview: React.FC = () => {
   const { measurements, stats, loading, fetchMeasurements } = useWeightMeasurement();
@@ -35,7 +36,21 @@ const DashboardOverview: React.FC = () => {
   const heightCm = userData.physicalData?.altura_cm || 170;
   const currentStreak = userData.points?.currentStreak || 0;
   const user = userData.user;
-  const gender = userData.profile?.gender;
+  const gender = userData.profile?.gender || userData.physicalData?.sexo || 'F';
+  const birthDate = userData.profile?.birthDate;
+
+  // Calcular idade baseado na data de nascimento
+  const age = React.useMemo(() => {
+    if (!birthDate) return 30; // fallback
+    const today = new Date();
+    const birth = new Date(birthDate);
+    let calculatedAge = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+      calculatedAge--;
+    }
+    return calculatedAge > 0 ? calculatedAge : 30;
+  }, [birthDate]);
 
   // Buscar dados adicionais apenas uma vez (waist, targetWeight)
   useEffect(() => {
@@ -202,6 +217,15 @@ const DashboardOverview: React.FC = () => {
           userName={userName || 'Usuário'}
         />
 
+        {/* 2. Metabolism Card */}
+        <MetabolismCard
+          weight={currentWeight}
+          height={heightCm}
+          age={age}
+          gender={gender || 'F'}
+          waistCircumference={waistCircumference || undefined}
+          activityLevel="light"
+        />
 
         {/* 3. Clean Evolution Chart */}
         <CleanEvolutionChart
