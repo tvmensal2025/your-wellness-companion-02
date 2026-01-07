@@ -9,7 +9,7 @@ import { QuestionCard } from './QuestionCard';
 import { getSectionTitle, getSectionDescription } from '@/data/daily-questions';
 
 interface SectionCardProps {
-  section: 'morning' | 'habits' | 'mindset';
+  section: 'morning' | 'habits' | 'mindset' | 'evening';
   questions: DailyQuestion[];
   answers: Record<string, string | number>;
   textResponses: Record<string, string>;
@@ -50,6 +50,8 @@ export const SectionCard: React.FC<SectionCardProps> = ({
         return '💪';
       case 'mindset':
         return '🧠';
+      case 'evening':
+        return '🌙';
       default:
         return '📝';
     }
@@ -63,6 +65,8 @@ export const SectionCard: React.FC<SectionCardProps> = ({
         return 'bg-blue-50 border-blue-200';
       case 'mindset':
         return 'bg-purple-50 border-purple-200';
+      case 'evening':
+        return 'bg-indigo-50 border-indigo-200';
       default:
         return 'bg-gray-50 border-gray-200';
     }

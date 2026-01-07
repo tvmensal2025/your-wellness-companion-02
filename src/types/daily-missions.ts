@@ -1,6 +1,6 @@
 export type QuestionType = 'multiple_choice' | 'scale' | 'text' | 'yes_no' | 'emoji_scale' | 'star_scale';
 
-export type SectionType = 'morning' | 'habits' | 'mindset';
+export type SectionType = 'morning' | 'habits' | 'mindset' | 'evening';
 
 export interface ScaleConfig {
   min: number;

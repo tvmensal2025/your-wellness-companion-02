@@ -181,20 +181,116 @@ export const dailyQuestionsFinal: DailyQuestion[] = [
     required: true,
     order: 12,
     tracking: 'day_rating'
+  },
+
+  // SEÇÃO 4: REFLEXÃO DA NOITE (Final do Dia)
+  {
+    id: 'evening_meals',
+    section: 'evening',
+    question: 'Como foram suas refeições hoje?',
+    type: 'scale',
+    scale: {
+      min: 1,
+      max: 5,
+      labels: ['Péssimas', 'Ruins', 'Regulares', 'Boas', 'Excelentes'],
+      emojis: ['😔', '😕', '😐', '😊', '🤩']
+    },
+    points: 15,
+    required: true,
+    order: 13,
+    tracking: 'evening_meals'
+  },
+  {
+    id: 'evening_goals_achieved',
+    section: 'evening',
+    question: 'Conseguiu cumprir suas metas de hoje?',
+    type: 'multiple_choice',
+    options: [
+      'Sim, todas',
+      'A maioria',
+      'Algumas',
+      'Poucas',
+      'Nenhuma'
+    ],
+    points: 20,
+    required: true,
+    order: 14,
+    tracking: 'goals_achieved'
+  },
+  {
+    id: 'evening_energy_end',
+    section: 'evening',
+    question: 'Como está sua energia agora no fim do dia?',
+    type: 'scale',
+    scale: {
+      min: 1,
+      max: 5,
+      labels: ['Esgotado', 'Cansado', 'Normal', 'Bem', 'Energizado'],
+      emojis: ['😩', '😓', '😐', '😌', '✨']
+    },
+    points: 15,
+    required: true,
+    order: 15,
+    tracking: 'evening_energy'
+  },
+  {
+    id: 'evening_learned',
+    section: 'evening',
+    question: 'O que você aprendeu hoje?',
+    type: 'text',
+    placeholder: 'Compartilhe algo que aprendeu ou descobriu...',
+    points: 20,
+    required: true,
+    order: 16,
+    tracking: 'evening_learned'
+  },
+  {
+    id: 'evening_tomorrow_focus',
+    section: 'evening',
+    question: 'Qual será seu foco principal amanhã?',
+    type: 'multiple_choice',
+    options: [
+      'Alimentação saudável',
+      'Exercício físico',
+      'Descanso e recuperação',
+      'Produtividade',
+      'Autocuidado'
+    ],
+    points: 15,
+    required: true,
+    order: 17,
+    tracking: 'tomorrow_focus'
+  },
+  {
+    id: 'evening_mood',
+    section: 'evening',
+    question: 'Como você está se sentindo agora?',
+    type: 'scale',
+    scale: {
+      min: 1,
+      max: 5,
+      labels: ['Muito mal', 'Mal', 'Neutro', 'Bem', 'Muito bem'],
+      emojis: ['😢', '😕', '😐', '🙂', '😄']
+    },
+    points: 15,
+    required: true,
+    order: 18,
+    tracking: 'evening_mood'
   }
 ];
 
-export const getQuestionsBySectionFinal = (section: 'morning' | 'habits' | 'mindset') => {
+export const getQuestionsBySectionFinal = (section: 'morning' | 'habits' | 'mindset' | 'evening') => {
   return dailyQuestionsFinal
     .filter(q => q.section === section)
     .sort((a, b) => a.order - b.order);
 };
 
-export const getSectionTitleFinal = (section: 'morning' | 'habits' | 'mindset') => {
+export const getSectionTitleFinal = (section: 'morning' | 'habits' | 'mindset' | 'evening') => {
   switch (section) {
     case 'morning': return '🌅 RITUAL DA MANHÃ';
     case 'habits': return '💪 HÁBITOS DO DIA';
     case 'mindset': return '🧠 MENTE & EMOÇÕES';
+    case 'evening': return '🌙 REFLEXÃO DA NOITE';
     default: return '';
   }
 };
@@ -219,4 +315,4 @@ export const calculateSleepHours = (answer: string): number => {
     case '9h+': return 9;
     default: return 0;
   }
-}; 
+};
