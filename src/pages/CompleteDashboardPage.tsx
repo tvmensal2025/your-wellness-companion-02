@@ -40,6 +40,7 @@ const UserProfile = lazy(() => import('@/components/UserProfile'));
 const MyProgress = lazy(() => import('@/components/MyProgress'));
 const SaboteurTest = lazy(() => import('@/components/SaboteurTest'));
 const LayoutPreferencesModal = lazy(() => import('@/components/settings/LayoutPreferencesModal').then(m => ({ default: m.LayoutPreferencesModal })));
+const WhatsAppSettingsModal = lazy(() => import('@/components/settings/WhatsAppSettingsModal').then(m => ({ default: m.WhatsAppSettingsModal })));
 
 // Sidebar components
 import { SidebarProfile } from '@/components/sidebar/SidebarProfile';
@@ -541,11 +542,13 @@ const CompleteDashboardPage = () => {
     }
   };
 
+  // Estado para modal de WhatsApp
+  const [whatsappSettingsOpen, setWhatsappSettingsOpen] = useState(false);
+
   // Handler para menu "Mais"
   const handleMoreMenuNavigate = (section: MenuSection) => {
     if (section === 'whatsapp-settings') {
-      // Abre o perfil na aba de configurações
-      setProfileModalOpen(true);
+      setWhatsappSettingsOpen(true);
       return;
     }
     setActiveSection(section as DashboardSection);
@@ -650,6 +653,14 @@ const CompleteDashboardPage = () => {
               return false;
             }
           }}
+        />
+      </Suspense>
+
+      {/* Modal de Configurações do WhatsApp */}
+      <Suspense fallback={null}>
+        <WhatsAppSettingsModal 
+          open={whatsappSettingsOpen} 
+          onOpenChange={setWhatsappSettingsOpen}
         />
       </Suspense>
     </div>;
