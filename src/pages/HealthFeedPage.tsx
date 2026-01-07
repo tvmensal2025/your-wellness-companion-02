@@ -409,9 +409,9 @@ export default function HealthFeedPage() {
                 />
               )}
 
-              {/* Search & Filters */}
+              {/* Search */}
               <Card className="border-primary/20">
-                <CardContent className="pt-4 space-y-4">
+                <CardContent className="pt-4">
                   <div className="flex items-center gap-2">
                     <div className="relative flex-1">
                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -422,27 +422,7 @@ export default function HealthFeedPage() {
                         className="pl-9 border-primary/20"
                       />
                     </div>
-                    <Button variant="outline" size="icon" className="border-primary/20">
-                      <Filter className="w-4 h-4" />
-                    </Button>
                   </div>
-
-                  <Tabs value={sortMode} onValueChange={(v) => setSortMode(v as typeof sortMode)}>
-                    <TabsList className="w-full justify-start bg-transparent p-0 gap-1 sm:gap-2 flex-wrap">
-                      <TabsTrigger value="position" className="flex-1 min-w-[70px] text-xs sm:text-sm rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                        🏅 Posição
-                      </TabsTrigger>
-                      <TabsTrigger value="points" className="flex-1 min-w-[70px] text-xs sm:text-sm rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                        ⭐ Pontos
-                      </TabsTrigger>
-                      <TabsTrigger value="missions" className="flex-1 min-w-[70px] text-xs sm:text-sm rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                        🎯 Missões
-                      </TabsTrigger>
-                      <TabsTrigger value="streak" className="flex-1 min-w-[70px] text-xs sm:text-sm rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                        🔥 Streak
-                      </TabsTrigger>
-                    </TabsList>
-                  </Tabs>
                 </CardContent>
               </Card>
 
