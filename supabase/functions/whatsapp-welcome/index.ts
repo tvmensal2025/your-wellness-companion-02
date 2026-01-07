@@ -7,7 +7,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const GOOGLE_AI_API_KEY = Deno.env.get('GOOGLE_AI_API_KEY');
 const EVOLUTION_API_URL = Deno.env.get('EVOLUTION_API_URL');
 const EVOLUTION_API_KEY = Deno.env.get('EVOLUTION_API_KEY');
 const EVOLUTION_INSTANCE = Deno.env.get('EVOLUTION_INSTANCE');
@@ -26,8 +25,14 @@ serve(async (req) => {
 
     console.log(`📱 Enviando boas-vindas para ${name} (${phone})`);
 
-    // Gerar mensagem humanizada com Gemini
-    const welcomeMessage = await generateWelcomeMessage(name);
+    // Criar cliente Supabase
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    );
+
+    // Buscar template do banco de dados
+    const welcomeMessage = await getWelcomeTemplate(supabase, name);
 
     // Formatar telefone
     const formattedPhone = formatPhoneNumber(phone);
@@ -36,11 +41,6 @@ serve(async (req) => {
     await sendWhatsAppMessage(formattedPhone, welcomeMessage);
 
     // Salvar log
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    );
-
     await supabase.from('whatsapp_message_logs').insert({
       user_id: userId,
       message_type: 'welcome',
@@ -66,51 +66,35 @@ serve(async (req) => {
   }
 });
 
-async function generateWelcomeMessage(name: string): Promise<string> {
-  const systemPrompt = `Você é Sofia, a assistente virtual carinhosa do Instituto dos Sonhos.
-Sua missão é dar boas-vindas aos novos membros de forma acolhedora e motivadora.
+async function getWelcomeTemplate(supabase: any, name: string): Promise<string> {
+  // Buscar template welcome_premium do banco de dados
+  const { data: template, error } = await supabase
+    .from('whatsapp_message_templates')
+    .select('content')
+    .eq('template_key', 'welcome_premium')
+    .eq('is_active', true)
+    .single();
 
-PERSONALIDADE:
-- Acolhedora e empática como uma amiga próxima
-- Entusiasmada mas genuína (não exagerada)
-- Usa linguagem natural e acessível
-- Transmite confiança e apoio
+  if (error || !template) {
+    console.log('⚠️ Template não encontrado, usando fallback');
+    // Fallback caso template não exista
+    return `✨ *Olá, ${name}!* ✨
 
-REGRAS OBRIGATÓRIAS:
-1. Comece SEMPRE com *{{nome}}* (com asteriscos para negrito)
-2. Use no máximo 3 emojis distribuídos naturalmente
-3. Mantenha a mensagem curta (máximo 4 parágrafos curtos)
-4. Termine com sua assinatura: "Com carinho, Sofia 💚"
-5. Mencione brevemente o que o membro pode esperar (missões diárias, acompanhamento)
-6. Seja genuína, evite frases clichês de marketing`;
+Seja muito bem-vinda ao *Instituto dos Sonhos*! 💚
 
-  const userPrompt = `Crie uma mensagem de boas-vindas personalizada para um novo membro chamado ${name}.
-O membro acabou de se cadastrar no Instituto dos Sonhos.
-Seja acolhedora, apresente-se brevemente e diga que estará ao lado dele(a) nessa jornada.`;
+Sou a *Sofia*, sua nutricionista virtual. Juntas, vamos construir uma *nova relação* com seu corpo e sua alimentação.
 
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GOOGLE_AI_API_KEY}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [
-          { role: 'user', parts: [{ text: systemPrompt + '\n\n' + userPrompt }] }
-        ],
-        generationConfig: {
-          temperature: 0.9,
-          maxOutputTokens: 500
-        }
-      })
-    }
-  );
+💚 Estou muito feliz por você estar aqui!
 
-  const data = await response.json();
-  let message = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+Com carinho, *Sofia* 💚
+_Instituto dos Sonhos_`;
+  }
 
-  // Substituir placeholder do nome
+  // Substituir placeholders
+  let message = template.content;
   message = message.replace(/\{\{nome\}\}/gi, name);
-
+  
+  console.log('📄 Template welcome_premium carregado do banco');
   return message;
 }
 
