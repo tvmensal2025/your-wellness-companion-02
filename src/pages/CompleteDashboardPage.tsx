@@ -8,6 +8,7 @@ import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useUserDataCache, invalidateUserDataCache } from '@/hooks/useUserDataCache';
+import { useActiveSection } from '@/contexts/ActiveSectionContext';
 import { Home, Activity, GraduationCap, FileText, Users, Target, Award, Settings, TrendingUp, Stethoscope, CreditCard, Utensils, Menu, LogOut, ChevronLeft, ChevronRight, User as UserIcon, Scale, MessageCircle, Lock, Play, Dumbbell, SlidersHorizontal } from 'lucide-react';
 import { NotificationBell } from '@/components/NotificationBell';
 import { Button } from '@/components/ui/button';
@@ -58,7 +59,8 @@ const CompleteDashboardPage = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeSection, setActiveSection] = useState<DashboardSection>('dashboard');
+  const [activeSectionState, setActiveSectionState] = useState<DashboardSection>('dashboard');
+  const { setActiveSection: setActiveSectionContext } = useActiveSection();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
@@ -67,6 +69,13 @@ const CompleteDashboardPage = () => {
   const [layoutPrefsModalOpen, setLayoutPrefsModalOpen] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Sincroniza estado local com contexto global para ocultar Sofia na comunidade
+  const activeSection = activeSectionState;
+  const setActiveSection = (section: DashboardSection) => {
+    setActiveSectionState(section);
+    setActiveSectionContext(section);
+  };
 
   const menuItems = [
     {

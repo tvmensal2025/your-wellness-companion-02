@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { MessageCircle } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useActiveSection } from '@/contexts/ActiveSectionContext';
 
 const HIDDEN_ROUTES = [
   '/sofia',
@@ -17,11 +18,15 @@ const HIDDEN_ROUTES = [
   '/professional-evaluation'
 ];
 
+// Seções do dashboard onde a Sofia não deve aparecer
+const HIDDEN_SECTIONS = ['comunidade'];
+
 const STORAGE_KEY = 'sofia-hidden';
 
 const SofiaFloatingButton: React.FC = () => {
   const { user } = useAuth();
   const location = useLocation();
+  const { activeSection } = useActiveSection();
   const [isHidden, setIsHidden] = useState(() => {
     return localStorage.getItem(STORAGE_KEY) === 'true';
   });
@@ -45,6 +50,11 @@ const SofiaFloatingButton: React.FC = () => {
 
   // Não exibir Sofia flutuante em páginas específicas
   if (HIDDEN_ROUTES.some(route => location.pathname.startsWith(route))) {
+    return null;
+  }
+
+  // Não exibir Sofia em seções específicas do dashboard (ex: comunidade)
+  if (HIDDEN_SECTIONS.includes(activeSection || '')) {
     return null;
   }
 
