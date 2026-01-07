@@ -223,10 +223,10 @@ export const FollowingList: React.FC<FollowingListProps> = ({ onProfileClick, on
   };
 
   const getUserLevel = (points: number) => {
-    if (points >= 1000) return { level: 'Diamante', color: 'from-cyan-400 to-blue-500', emoji: '💎' };
-    if (points >= 500) return { level: 'Ouro', color: 'from-yellow-400 to-amber-500', emoji: '🥇' };
-    if (points >= 200) return { level: 'Prata', color: 'from-gray-300 to-gray-400', emoji: '🥈' };
-    return { level: 'Bronze', color: 'from-amber-600 to-orange-700', emoji: '🥉' };
+    if (points >= 1000) return { level: 'Diamante', color: 'from-primary to-primary/70', emoji: '💎' };
+    if (points >= 500) return { level: 'Ouro', color: 'from-primary/90 to-primary/60', emoji: '🥇' };
+    if (points >= 200) return { level: 'Prata', color: 'from-muted-foreground to-muted-foreground/70', emoji: '🥈' };
+    return { level: 'Bronze', color: 'from-secondary to-secondary/70', emoji: '🥉' };
   };
 
   if (loading) {
@@ -348,7 +348,8 @@ export const FollowingList: React.FC<FollowingListProps> = ({ onProfileClick, on
                           className="relative overflow-hidden"
                         >
                           <Badge 
-                            className="text-xs bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20 text-primary border-primary/30 font-semibold px-3 py-1 shadow-sm"
+                            variant="secondary"
+                            className="text-xs bg-primary/15 text-primary border border-primary/20 font-semibold px-3 py-1"
                           >
                             <Sparkles className="w-3 h-3 mr-1" />
                             {followedUser.total_points} pts
@@ -361,11 +362,11 @@ export const FollowingList: React.FC<FollowingListProps> = ({ onProfileClick, on
                           followedUser.weight_change !== undefined ? (
                             <Badge 
                               variant="outline" 
-                              className={`text-xs flex items-center gap-1.5 font-semibold px-3 py-1 shadow-sm ${
+                              className={`text-xs flex items-center gap-1.5 font-semibold px-3 py-1 ${
                                 followedUser.weight_change < 0 
-                                  ? 'bg-gradient-to-r from-green-500/15 to-emerald-500/15 text-green-600 border-green-500/40 dark:text-green-400' 
+                                  ? 'bg-green-500/10 text-green-700 border-green-500/30 dark:text-green-400 dark:bg-green-500/20' 
                                   : followedUser.weight_change > 0
-                                    ? 'bg-gradient-to-r from-orange-500/15 to-amber-500/15 text-orange-600 border-orange-500/40 dark:text-orange-400'
+                                    ? 'bg-orange-500/10 text-orange-700 border-orange-500/30 dark:text-orange-400 dark:bg-orange-500/20'
                                     : 'bg-muted/50 text-muted-foreground border-muted'
                               }`}
                             >
