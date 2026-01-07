@@ -1,7 +1,6 @@
-
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { defaultRankingUsers } from '@/data/health-feed-data';
+import { useQuery } from '@tanstack/react-query';
 
 interface RankingUser {
   user_id: string;
@@ -10,140 +9,70 @@ interface RankingUser {
   total_points: number;
   streak_days: number;
   missions_completed: number;
+  completed_challenges: number;
+  level: number;
   last_activity: string | null;
   position: number;
 }
 
+const fetchRankingData = async (): Promise<RankingUser[]> => {
+  // Buscar dados unificados de user_points com profiles
+  const { data, error } = await supabase
+    .from('user_points')
+    .select(`
+      user_id,
+      total_points,
+      current_streak,
+      best_streak,
+      missions_completed,
+      completed_challenges,
+      level,
+      last_activity_date,
+      profiles!inner(full_name, avatar_url)
+    `)
+    .order('total_points', { ascending: false })
+    .limit(100);
+
+  if (error) {
+    console.error('Erro ao buscar ranking:', error);
+    throw error;
+  }
+
+  if (!data || data.length === 0) {
+    return [];
+  }
+
+  // Mapear para formato do ranking
+  const rankingUsers: RankingUser[] = data
+    .filter((item: any) => item.profiles?.full_name)
+    .map((item: any, index: number) => ({
+      user_id: item.user_id,
+      user_name: item.profiles?.full_name || 'Usuário',
+      avatar_url: item.profiles?.avatar_url,
+      total_points: item.total_points || 0,
+      streak_days: item.current_streak || 0,
+      missions_completed: item.missions_completed || 0,
+      completed_challenges: item.completed_challenges || 0,
+      level: item.level || 1,
+      last_activity: item.last_activity_date,
+      position: index + 1
+    }));
+
+  return rankingUsers;
+};
+
 export const useRanking = () => {
-  const [ranking, setRanking] = useState<RankingUser[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchRanking = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      // Buscar dados das missões diárias para calcular estatísticas
-      const { data: missionsData, error: missionsError } = await supabase
-        .from('daily_mission_sessions')
-        .select('user_id, total_points, streak_days, date')
-        .order('date', { ascending: false });
-
-      if (missionsError) {
-        console.warn('Erro ao buscar missões:', missionsError);
-      }
-
-      // Buscar perfis de usuários
-      const { data: profilesData, error: profilesError } = await supabase
-        .from('profiles')
-        .select('user_id, full_name, avatar_url')
-        .order('full_name');
-
-      if (profilesError) {
-        console.error('Erro ao buscar profiles:', profilesError);
-        // Usar dados default em caso de erro
-        setRanking(defaultRankingUsers);
-        setLoading(false);
-        return;
-      }
-
-      // Processar dados para criar o ranking
-      const userStats = new Map();
-
-      // Processar dados das missões se existirem
-      if (missionsData && missionsData.length > 0) {
-        missionsData.forEach((session) => {
-          const userId = session.user_id;
-          if (!userStats.has(userId)) {
-            userStats.set(userId, {
-              user_id: userId,
-              total_points: 0,
-              missions_completed: 0,
-              streak_days: 0,
-              last_activity: null
-            });
-          }
-
-          const stats = userStats.get(userId);
-          stats.total_points += session.total_points || 0;
-          stats.missions_completed += 1;
-          stats.streak_days = Math.max(stats.streak_days, session.streak_days || 0);
-          
-          // Atualizar última atividade
-          if (!stats.last_activity || session.date > stats.last_activity) {
-            stats.last_activity = session.date;
-          }
-        });
-      }
-
-      // Combinar com dados dos perfis
-      const rankingUsers: RankingUser[] = [];
-      
-      profilesData?.forEach((profile, index) => {
-        const userStat = userStats.get(profile.user_id);
-        
-        // Skip if no full_name (incomplete profile)
-        if (!profile.full_name) return;
-        
-        // Create ranking with real user data - sem valores aleatórios
-        rankingUsers.push({
-          user_id: profile.user_id,
-          user_name: profile.full_name,
-          avatar_url: profile.avatar_url,
-          total_points: userStat?.total_points || 0,
-          streak_days: userStat?.streak_days || 0,
-          missions_completed: userStat?.missions_completed || 0,
-          last_activity: userStat?.last_activity,
-          position: 0 // Será definido após ordenação
-        });
-      });
-
-      // Ordenar por pontos e definir posições
-      rankingUsers.sort((a, b) => {
-        if (b.total_points !== a.total_points) {
-          return b.total_points - a.total_points;
-        }
-        // Em caso de empate, usar missões completadas
-        if (b.missions_completed !== a.missions_completed) {
-          return b.missions_completed - a.missions_completed;
-        }
-        // Por último, usar streak
-        return b.streak_days - a.streak_days;
-      });
-
-      // Definir posições
-      rankingUsers.forEach((user, index) => {
-        user.position = index + 1;
-      });
-
-      // Se não houver dados reais, usar dados de demonstração
-      if (rankingUsers.length === 0) {
-        setRanking(defaultRankingUsers);
-      } else {
-        setRanking(rankingUsers);
-      }
-      setError(null);
-    } catch (err) {
-      console.error('Erro ao buscar ranking:', err);
-      setError(err instanceof Error ? err.message : 'Erro ao carregar ranking');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const refetch = () => {
-    fetchRanking();
-  };
-
-  useEffect(() => {
-    fetchRanking();
-  }, []);
+  const { data: ranking = [], isLoading: loading, error, refetch } = useQuery({
+    queryKey: ['ranking'],
+    queryFn: fetchRankingData,
+    staleTime: 30000, // 30 segundos
+    refetchInterval: 60000, // Atualiza a cada minuto
+  });
 
   return {
     ranking,
     loading,
-    error,
+    error: error?.message || null,
     refetch
   };
 };

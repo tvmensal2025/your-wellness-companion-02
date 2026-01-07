@@ -10140,6 +10140,7 @@ export type Database = {
           id: string
           last_activity_date: string | null
           level: number | null
+          missions_completed: number | null
           monthly_points: number | null
           total_points: number | null
           updated_at: string | null
@@ -10155,6 +10156,7 @@ export type Database = {
           id?: string
           last_activity_date?: string | null
           level?: number | null
+          missions_completed?: number | null
           monthly_points?: number | null
           total_points?: number | null
           updated_at?: string | null
@@ -10170,6 +10172,7 @@ export type Database = {
           id?: string
           last_activity_date?: string | null
           level?: number | null
+          missions_completed?: number | null
           monthly_points?: number | null
           total_points?: number | null
           updated_at?: string | null
@@ -11278,6 +11281,7 @@ export type Database = {
         Args: { session_id_param: string; user_ids_param: string[] }
         Returns: boolean
       }
+      calculate_level: { Args: { xp: number }; Returns: number }
       has_role: { Args: { _role: string; _user_id: string }; Returns: boolean }
       has_role_text: {
         Args: { _role: string; _user_id: string }
