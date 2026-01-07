@@ -9720,6 +9720,12 @@ export type Database = {
           sms_notifications: boolean | null
           updated_at: string | null
           user_id: string
+          whatsapp_daily_motivation: boolean | null
+          whatsapp_daily_time: string | null
+          whatsapp_enabled: boolean | null
+          whatsapp_reminders: boolean | null
+          whatsapp_weekly_day: number | null
+          whatsapp_weekly_report: boolean | null
         }
         Insert: {
           created_at?: string | null
@@ -9733,6 +9739,12 @@ export type Database = {
           sms_notifications?: boolean | null
           updated_at?: string | null
           user_id: string
+          whatsapp_daily_motivation?: boolean | null
+          whatsapp_daily_time?: string | null
+          whatsapp_enabled?: boolean | null
+          whatsapp_reminders?: boolean | null
+          whatsapp_weekly_day?: number | null
+          whatsapp_weekly_report?: boolean | null
         }
         Update: {
           created_at?: string | null
@@ -9746,6 +9758,12 @@ export type Database = {
           sms_notifications?: boolean | null
           updated_at?: string | null
           user_id?: string
+          whatsapp_daily_motivation?: boolean | null
+          whatsapp_daily_time?: string | null
+          whatsapp_enabled?: boolean | null
+          whatsapp_reminders?: boolean | null
+          whatsapp_weekly_day?: number | null
+          whatsapp_weekly_report?: boolean | null
         }
         Relationships: []
       }
@@ -10685,6 +10703,130 @@ export type Database = {
           weight_kg?: number | null
         }
         Relationships: []
+      }
+      whatsapp_evolution_logs: {
+        Row: {
+          created_at: string | null
+          delivered_at: string | null
+          error_message: string | null
+          evolution_response: Json | null
+          id: string
+          media_type: string | null
+          media_url: string | null
+          message_content: string | null
+          message_type: string
+          phone: string
+          read_at: string | null
+          sent_at: string | null
+          status: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          delivered_at?: string | null
+          error_message?: string | null
+          evolution_response?: Json | null
+          id?: string
+          media_type?: string | null
+          media_url?: string | null
+          message_content?: string | null
+          message_type: string
+          phone: string
+          read_at?: string | null
+          sent_at?: string | null
+          status?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          delivered_at?: string | null
+          error_message?: string | null
+          evolution_response?: Json | null
+          id?: string
+          media_type?: string | null
+          media_url?: string | null
+          message_content?: string | null
+          message_type?: string
+          phone?: string
+          read_at?: string | null
+          sent_at?: string | null
+          status?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_evolution_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      whatsapp_message_templates: {
+        Row: {
+          ai_prompt: string | null
+          category: string
+          content: string
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          media_url: string | null
+          name: string
+          schedule_days: number[] | null
+          schedule_time: string | null
+          template_key: string
+          updated_at: string | null
+          use_ai_enhancement: boolean | null
+          variables: Json | null
+        }
+        Insert: {
+          ai_prompt?: string | null
+          category: string
+          content: string
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          media_url?: string | null
+          name: string
+          schedule_days?: number[] | null
+          schedule_time?: string | null
+          template_key: string
+          updated_at?: string | null
+          use_ai_enhancement?: boolean | null
+          variables?: Json | null
+        }
+        Update: {
+          ai_prompt?: string | null
+          category?: string
+          content?: string
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          media_url?: string | null
+          name?: string
+          schedule_days?: number[] | null
+          schedule_time?: string | null
+          template_key?: string
+          updated_at?: string | null
+          use_ai_enhancement?: boolean | null
+          variables?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_message_templates_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
       }
       wheel_of_life: {
         Row: {
