@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Star, CheckCircle } from 'lucide-react';
+import { Star, CheckCircle, Trophy, Sparkles, Heart, Flame } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface MissionCompletePageProps {
   answers: Record<string, string | number>;
@@ -18,90 +18,196 @@ export const MissionCompletePage: React.FC<MissionCompletePageProps> = ({
   answers,
   totalPoints,
   questions,
-  onContinue,
 }) => {
+  const [showConfetti, setShowConfetti] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setShowConfetti(false), 3000);
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
-    <div className="min-h-screen bg-muted flex items-start justify-center px-3 py-4">
-      <main className="w-full max-w-md space-y-3 animate-fade-in">
-        {/* Cartão principal "Missão do Dia" */}
-        <section aria-label="Missão do Dia" className="space-y-2">
-          <div className="relative rounded-2xl px-4 py-4 text-white bg-gradient-mission shadow-hero overflow-hidden">
-            {/* brilho suave */}
-            <div className="pointer-events-none absolute inset-0 opacity-40 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.7),_transparent_60%),radial-gradient(circle_at_bottom,_rgba(255,255,255,0.35),_transparent_55%)]" />
+    <div className="min-h-screen bg-gradient-to-b from-primary/10 via-background to-muted flex items-start justify-center px-3 py-6 relative overflow-hidden">
+      {/* Partículas de celebração */}
+      {showConfetti && (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          {[...Array(20)].map((_, i) => (
+            <motion.div
+              key={i}
+              className="absolute w-3 h-3 rounded-full"
+              style={{
+                background: ['#FFD700', '#FF6B6B', '#4ECDC4', '#A855F7', '#F472B6'][i % 5],
+                left: `${Math.random() * 100}%`,
+                top: -20,
+              }}
+              animate={{
+                y: ['0vh', '100vh'],
+                rotate: [0, 360],
+                opacity: [1, 0],
+              }}
+              transition={{
+                duration: 2 + Math.random() * 2,
+                delay: Math.random() * 0.5,
+                ease: 'easeOut',
+              }}
+            />
+          ))}
+        </div>
+      )}
 
-            <div className="relative z-10 space-y-2">
-              <header className="space-y-0.5">
-                <h1 className="text-lg font-bold tracking-tight">Missão do Dia</h1>
-                <p className="text-xs font-medium text-white/90 leading-snug">
-                  🎉 Parabéns! Você completou todas as reflexões de hoje!
+      <main className="w-full max-w-md space-y-4 relative z-10">
+        {/* Header celebratório */}
+        <motion.section 
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5 }}
+          aria-label="Missão Concluída" 
+          className="space-y-3"
+        >
+          {/* Troféu animado */}
+          <motion.div 
+            className="flex justify-center"
+            animate={{ y: [0, -8, 0] }}
+            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+          >
+            <div className="relative">
+              <div className="absolute inset-0 bg-yellow-400/30 rounded-full blur-xl animate-pulse" />
+              <div className="relative bg-gradient-to-br from-yellow-400 via-amber-500 to-orange-500 p-5 rounded-full shadow-2xl">
+                <Trophy className="h-12 w-12 text-white drop-shadow-lg" />
+              </div>
+              <Sparkles className="absolute -top-2 -right-2 h-6 w-6 text-yellow-400 animate-pulse" />
+              <Sparkles className="absolute -bottom-1 -left-2 h-5 w-5 text-amber-400 animate-pulse delay-150" />
+            </div>
+          </motion.div>
+
+          {/* Cartão principal */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="relative rounded-3xl px-5 py-5 text-white bg-gradient-mission shadow-2xl overflow-hidden"
+          >
+            {/* Efeito de brilho */}
+            <div className="pointer-events-none absolute inset-0 opacity-50 bg-[radial-gradient(circle_at_top,_rgba(255,255,255,0.8),_transparent_50%)]" />
+            <motion.div 
+              className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+              animate={{ x: ['-100%', '100%'] }}
+              transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+            />
+
+            <div className="relative z-10 space-y-3 text-center">
+              <div className="space-y-1">
+                <h1 className="text-2xl font-extrabold tracking-tight">
+                  🎉 Parabéns!
+                </h1>
+                <p className="text-sm font-medium text-white/90 leading-relaxed">
+                  Você completou todas as reflexões de hoje!
                 </p>
-              </header>
+              </div>
 
-              {/* Subcartão de pontos */}
-              <div className="rounded-xl bg-background/15 border border-white/40 px-3 py-2 flex items-center justify-between gap-2 backdrop-blur-sm">
-                <div className="flex items-center gap-1.5">
-                  <Star className="h-4 w-4 text-yellow-300 fill-yellow-300" />
-                  <span className="text-[10px] font-semibold uppercase tracking-wide text-white/90">
-                    Pontos ganhos
+              {/* Card de pontos */}
+              <motion.div 
+                initial={{ scale: 0.8 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.4, type: 'spring', stiffness: 200 }}
+                className="rounded-2xl bg-white/20 border border-white/30 px-4 py-3 backdrop-blur-sm"
+              >
+                <div className="flex items-center justify-center gap-2 mb-1">
+                  <Star className="h-5 w-5 text-yellow-300 fill-yellow-300" />
+                  <span className="text-xs font-bold uppercase tracking-wider text-white/90">
+                    Pontos conquistados
                   </span>
+                  <Star className="h-5 w-5 text-yellow-300 fill-yellow-300" />
                 </div>
-                <span className="text-2xl font-extrabold leading-none">{totalPoints}</span>
+                <motion.span 
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ delay: 0.6, type: 'spring', stiffness: 300 }}
+                  className="text-4xl font-black leading-none block"
+                >
+                  +{totalPoints}
+                </motion.span>
+              </motion.div>
+
+              {/* Métricas rápidas */}
+              <div className="flex justify-center gap-4 pt-2">
+                <div className="flex items-center gap-1.5 text-white/90">
+                  <Flame className="h-4 w-4 text-orange-300" />
+                  <span className="text-xs font-semibold">{questions.length} respostas</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-white/90">
+                  <Heart className="h-4 w-4 text-pink-300" />
+                  <span className="text-xs font-semibold">100% completo</span>
+                </div>
               </div>
             </div>
-          </div>
-
-          {/* Barra gradiente decorativa abaixo do header */}
-          <div className="h-2 rounded-full bg-gradient-mission opacity-70 shadow-card" aria-hidden="true" />
-        </section>
+          </motion.div>
+        </motion.section>
 
         {/* Resumo das respostas */}
-        <section aria-label="Resumo das suas respostas" className="space-y-2">
-          <Card className="bg-card rounded-2xl shadow-card border-none">
-            <CardContent className="p-3 space-y-2">
-              <h2 className="text-center text-sm font-semibold text-foreground">
-                📋 Resumo das suas Respostas
+        <motion.section 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          aria-label="Resumo das suas respostas" 
+          className="space-y-3"
+        >
+          <Card className="bg-card rounded-3xl shadow-xl border-none overflow-hidden">
+            <CardContent className="p-4 space-y-3">
+              <h2 className="text-center text-base font-bold text-foreground flex items-center justify-center gap-2">
+                <span className="text-lg">📋</span>
+                Suas Respostas de Hoje
               </h2>
 
-              <div className="space-y-2">
+              <div className="space-y-2 max-h-[280px] overflow-y-auto pr-1">
                 {questions.map((question, index) => (
-                  <article
+                  <motion.article
                     key={question.id}
-                    className="flex items-start gap-2 rounded-2xl bg-muted px-3 py-2.5"
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.5 + index * 0.05 }}
+                    className="flex items-start gap-3 rounded-2xl bg-muted/70 px-3 py-3 hover:bg-muted transition-colors"
                   >
-                    <div className="mt-0.5 flex h-6 w-6 items-center justify-center rounded-full bg-gradient-mission text-[10px] font-bold text-primary-foreground shrink-0">
+                    <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-mission text-xs font-bold text-primary-foreground shrink-0 shadow-md">
                       {index + 1}
                     </div>
 
-                    <div className="flex-1 space-y-1 min-w-0">
+                    <div className="flex-1 space-y-1.5 min-w-0">
                       <h3 className="text-xs font-semibold leading-snug text-foreground">
                         {question.question}
                       </h3>
-                      <Badge className="inline-flex max-w-full items-center justify-center rounded-full bg-secondary/80 text-secondary-foreground text-[10px] px-2 py-0.5 border border-border/40">
+                      <Badge className="inline-flex max-w-full items-center justify-center rounded-full bg-primary/10 text-primary text-[11px] px-3 py-1 font-medium border-0">
+                        <CheckCircle className="h-3 w-3 mr-1.5 shrink-0" />
                         <span className="truncate">
                           {answers[question.id] || 'Não respondido'}
                         </span>
                       </Badge>
                     </div>
-                  </article>
+                  </motion.article>
                 ))}
               </div>
 
-              <div className="rounded-xl bg-secondary px-3 py-2 text-center space-y-0.5">
-                <p className="text-xs font-semibold text-secondary-foreground">
-                  ✨ Você está no caminho certo!
+              {/* Mensagem motivacional final */}
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.8 }}
+                className="rounded-2xl bg-gradient-to-r from-primary/10 via-primary/5 to-accent/10 px-4 py-4 text-center space-y-2 border border-primary/20"
+              >
+                <div className="flex items-center justify-center gap-2">
+                  <Sparkles className="h-5 w-5 text-primary" />
+                  <p className="text-sm font-bold text-foreground">
+                    Missão Concluída!
+                  </p>
+                  <Sparkles className="h-5 w-5 text-primary" />
+                </div>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Você está construindo hábitos incríveis. Continue assim e volte amanhã para mais uma jornada de autoconhecimento! 💪
                 </p>
-                <p className="text-[10px] text-muted-foreground">
-                  Continue registrando sua jornada todos os dias.
-                </p>
-              </div>
-
-              <div className="flex items-center justify-center gap-2 py-2 text-primary">
-                <CheckCircle className="h-5 w-5" />
-                <span className="text-sm font-bold">🎉 Parabéns! Missão Concluída!</span>
-              </div>
+              </motion.div>
             </CardContent>
           </Card>
-        </section>
+        </motion.section>
       </main>
     </div>
   );
