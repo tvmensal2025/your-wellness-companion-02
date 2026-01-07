@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,10 +13,12 @@ import { HealthWheelSession } from '@/components/admin/HealthWheelSession';
 import { ToolSelectionModal } from '@/components/session-tools/ToolSelectionModal';
 import { SessionToolsIntegration } from '@/components/session-tools/SessionToolsIntegration';
 import { SessionTool, ToolResponse } from '@/types/session-tools';
+import { DrVitalCardFactory, getSessionTypeFromTitle } from '@/components/daily-missions/DrVitalCardFactory';
+import html2canvas from 'html2canvas';
 import {
   Clock, CheckCircle, PlayCircle, BookOpen, 
   Target, Calendar, FileText, AlertCircle,
-  Lock, Unlock, Timer, Eye, Send, Wrench, Download
+  Lock, Unlock, Timer, Eye, Send, Wrench, Download, Loader2, Stethoscope
 } from 'lucide-react';
 
 interface Session {
@@ -70,6 +72,19 @@ export default function UserSessions({ user }: UserSessionsProps) {
   const [showToolsModal, setShowToolsModal] = useState(false);
   const [selectedSessionForTools, setSelectedSessionForTools] = useState<UserSession | null>(null);
   const [activeToolSession, setActiveToolSession] = useState<{ session: UserSession; tool: SessionTool } | null>(null);
+  
+  // Estados para Dr. Vital
+  const [sendingDrVital, setSendingDrVital] = useState<string | null>(null);
+  const [drVitalData, setDrVitalData] = useState<{
+    userName: string;
+    analysis: string;
+    recommendation: string;
+    sessionTitle: string;
+    sessionType: string;
+    totalPoints: number;
+    streakDays: number;
+  } | null>(null);
+  const drVitalCardRef = useRef<HTMLDivElement>(null);
   
   const [stats, setStats] = useState({
     pending: 0,
@@ -468,6 +483,143 @@ export default function UserSessions({ user }: UserSessionsProps) {
     return Object.keys(userSession.tools_data || {});
   };
 
+  // Função para enviar análise do Dr. Vital via WhatsApp
+  const sendDrVitalAnalysis = async (userSession: UserSession) => {
+    if (!user) return;
+    
+    setSendingDrVital(userSession.id);
+    
+    try {
+      // 1. Buscar respostas da sessão via daily_responses
+      const { data: responses, error: responsesError } = await supabase
+        .from('daily_responses')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('section', 'sessions')
+        .ilike('question_id', `%${userSession.session_id}%`)
+        .order('created_at', { ascending: false })
+        .limit(50);
+      
+      if (responsesError) {
+        console.warn('Erro ao buscar respostas:', responsesError);
+      }
+      
+      // 2. Formatar dados
+      const questions = userSession.sessions.content?.questions || [];
+      const answers: Record<string, string> = {};
+      responses?.forEach((r: any) => {
+        answers[r.question_id] = r.response_value || r.response_text || 'Respondido';
+      });
+      
+      // Determinar tipo da sessão
+      const sessionType = getSessionTypeFromTitle(
+        userSession.sessions.title, 
+        userSession.sessions.type
+      );
+      
+      const formattedQuestions = questions.map((q: any) => ({
+        id: q.id,
+        question: q.text || q.title || q.question || 'Pergunta'
+      }));
+      
+      toast({
+        title: "🤖 Gerando análise...",
+        description: "Dr. Vital está analisando suas respostas"
+      });
+      
+      // 3. Chamar edge function para gerar análise
+      const { data: analysisResult, error: analysisError } = await supabase.functions.invoke(
+        'whatsapp-habits-analysis',
+        {
+          body: {
+            userId: user.id,
+            answers,
+            questions: formattedQuestions,
+            totalPoints: userSession.progress || 100,
+            streakDays: 1,
+            sessionType,
+            sessionTitle: userSession.sessions.title,
+            action: 'generate-analysis'
+          }
+        }
+      );
+      
+      if (analysisError || !analysisResult?.success) {
+        throw new Error(analysisResult?.error || 'Erro ao gerar análise');
+      }
+      
+      // 4. Renderizar card
+      setDrVitalData({
+        userName: analysisResult.userName,
+        analysis: analysisResult.analysis,
+        recommendation: analysisResult.recommendation,
+        sessionTitle: userSession.sessions.title,
+        sessionType,
+        totalPoints: userSession.progress || 100,
+        streakDays: 1
+      });
+      
+      toast({
+        title: "📸 Capturando imagem...",
+        description: "Preparando card para envio"
+      });
+      
+      // 5. Aguardar render e capturar
+      await new Promise(r => setTimeout(r, 1000));
+      
+      if (!drVitalCardRef.current) {
+        throw new Error('Card não renderizado');
+      }
+      
+      const canvas = await html2canvas(drVitalCardRef.current, {
+        backgroundColor: null,
+        scale: 2,
+        useCORS: true,
+        logging: false
+      });
+      
+      const imageBase64 = canvas.toDataURL('image/png').split(',')[1];
+      
+      toast({
+        title: "📤 Enviando via WhatsApp...",
+        description: "Quase lá!"
+      });
+      
+      // 6. Enviar via WhatsApp
+      const { data: sendResult, error: sendError } = await supabase.functions.invoke(
+        'whatsapp-habits-analysis',
+        {
+          body: {
+            userId: user.id,
+            imageBase64,
+            totalPoints: userSession.progress || 100,
+            streakDays: 1
+          }
+        }
+      );
+      
+      if (sendError || !sendResult?.success) {
+        throw new Error(sendResult?.error || 'Erro ao enviar WhatsApp');
+      }
+      
+      toast({
+        title: "✅ Enviado com sucesso!",
+        description: "Análise do Dr. Vital enviada via WhatsApp"
+      });
+      
+    } catch (error: any) {
+      console.error('Erro Dr. Vital:', error);
+      toast({
+        title: "Erro",
+        description: error.message || "Não foi possível enviar a análise",
+        variant: "destructive"
+      });
+    } finally {
+      setSendingDrVital(null);
+      setDrVitalData(null);
+    }
+  };
+
   const getStatusBadge = (userSession: UserSession) => {
     if (userSession.is_locked) {
       return <Badge variant="secondary" className="bg-gray-50 text-gray-700">
@@ -842,6 +994,28 @@ export default function UserSessions({ user }: UserSessionsProps) {
                   {/* Sessão Completa - Modo Revisão */}
                   {userSession.status === 'completed' && (
                     <div className="space-y-2">
+                      {/* BOTÃO DR. VITAL - DESTAQUE */}
+                      <Button 
+                        onClick={() => sendDrVitalAnalysis(userSession)}
+                        disabled={sendingDrVital === userSession.id}
+                        size="sm"
+                        className="w-full rounded-full bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 
+                                 hover:from-emerald-600 hover:via-teal-600 hover:to-cyan-600 text-white font-semibold
+                                 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                      >
+                        {sendingDrVital === userSession.id ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Gerando Análise...
+                          </>
+                        ) : (
+                          <>
+                            <Stethoscope className="w-4 h-4 mr-2" />
+                            🩺 Dr. Vital no WhatsApp
+                          </>
+                        )}
+                      </Button>
+                      
                       <Button 
                         onClick={() => openReviewMode(userSession)}
                         variant="outline" 
@@ -1075,6 +1249,23 @@ export default function UserSessions({ user }: UserSessionsProps) {
           onComplete={handleToolComplete}
           onClose={() => setActiveToolSession(null)}
         />
+      )}
+
+      {/* Card Dr. Vital oculto para captura */}
+      {drVitalData && (
+        <div className="fixed -left-[9999px] top-0 z-[-1]">
+          <div ref={drVitalCardRef}>
+            <DrVitalCardFactory
+              userName={drVitalData.userName}
+              analysis={drVitalData.analysis}
+              recommendation={drVitalData.recommendation}
+              totalPoints={drVitalData.totalPoints}
+              streakDays={drVitalData.streakDays}
+              sessionTitle={drVitalData.sessionTitle}
+              sessionType={drVitalData.sessionType}
+            />
+          </div>
+        </div>
       )}
     </div>
   );
