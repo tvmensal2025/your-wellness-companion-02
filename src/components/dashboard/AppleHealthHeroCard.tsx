@@ -103,7 +103,7 @@ export const AppleHealthHeroCard: React.FC<AppleHealthHeroCardProps> = ({
         </div>
 
         {/* Main content grid - Score and Weight side by side */}
-        <div className="flex items-stretch gap-3 sm:gap-5">
+        <div className="flex items-stretch gap-4 sm:gap-6 md:gap-8">
           
           {/* Apple Health Ring - Responsive sizing */}
           <div className="relative flex-shrink-0 flex items-center justify-center">
