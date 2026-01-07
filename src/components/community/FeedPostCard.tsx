@@ -73,7 +73,7 @@ export const FeedPostCard: React.FC<FeedPostCardProps> = ({
   onShare,
   onSave
 }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(true); // Changed to true by default
   const [showComments, setShowComments] = useState(false);
   const [newComment, setNewComment] = useState('');
   const [isLiked, setIsLiked] = useState(post.isLiked);
