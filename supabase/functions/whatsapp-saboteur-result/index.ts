@@ -81,30 +81,46 @@ PERSONA:
 - Tom: Profissional, acolhedor, mas objetivo
 - Usa linguagem clara e empática
 - Oferece insights médicos/comportamentais sobre os sabotadores
-- Máximo 2 emojis por mensagem
+- Máximo 3 emojis na mensagem toda
 - Sempre positivo, focando em oportunidades de crescimento
 - Conecta os sabotadores mentais com impactos na saúde física
 
-FORMATO OBRIGATÓRIO:
-- Inicie com *{{nome}}* (nome em negrito)
-- Use _itálico_ para termos técnicos
-- Use *negrito* para destaques importantes
-- Máximo 180 palavras
-- NÃO inclua assinatura (será adicionada automaticamente)`;
+FORMATO OBRIGATÓRIO PARA WHATSAPP:
+- Inicie SEMPRE com: *${firstName}*, (nome em negrito com asteriscos)
+- Use *texto* para negrito (WhatsApp)
+- Use _texto_ para itálico (WhatsApp)
+- Separe parágrafos com linha em branco
+- Máximo 150 palavras
+- NÃO inclua assinatura (será adicionada automaticamente)
+- NÃO use markdown com ## ou outros formatos que não sejam do WhatsApp
 
-    const userPrompt = `Crie uma mensagem para ${firstName} que acabou de completar o Teste de Sabotadores Mentais.
+EXEMPLO DE ESTRUTURA:
+*${firstName}*, parabéns pela coragem! 👏
+
+Seu sabotador *Controlador* (70%) revela uma forte necessidade de gerenciar tudo. Do ponto de vista _comportamental_, isso pode gerar microgerenciamento e dificuldade em delegar.
+
+Fisicamente, essa tensão constante pode se manifestar como dores de cabeça ou problemas digestivos.
+
+Minha recomendação: pratique a _entrega consciente_ de pequenas tarefas a outros, confiando no processo.
+
+Lembre-se: identificar é o começo da transformação! ✨`;
+
+    const userPrompt = `Crie uma mensagem WhatsApp para ${firstName} que completou o Teste de Sabotadores Mentais.
 
 RESULTADOS:
 - Score Geral: ${overallScore.toFixed(0)}% (Nível: ${overallLevel})
 - Top 3 Sabotadores:
 ${saboteursList}
 
-A mensagem deve:
-1. Parabenizar pela coragem de fazer o teste
-2. Dar um insight médico/comportamental sobre o sabotador #1
-3. Explicar brevemente como esse sabotador pode impactar a saúde física
-4. Oferecer UMA recomendação prática
-5. Encorajar o progresso`;
+IMPORTANTE:
+- Use *asteriscos* para negrito
+- Use _underlines_ para itálico
+- Separe parágrafos com linha em branco
+- Comece com *${firstName}*, (nome em negrito)
+- Máximo 3 emojis
+- Foque no sabotador #1 com insight médico/comportamental
+- Dê UMA recomendação prática
+- Termine com encorajamento`;
 
     const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -158,6 +174,12 @@ A mensagem deve:
     if (imageBase64) {
       console.log("📸 Enviando imagem do relatório...");
       
+      // Remover prefixo data:image/png;base64, se existir
+      let cleanBase64 = imageBase64;
+      if (cleanBase64.includes(',')) {
+        cleanBase64 = cleanBase64.split(',')[1];
+      }
+      
       const imageResponse = await fetch(`${EVOLUTION_API_URL}/message/sendMedia/${EVOLUTION_INSTANCE}`, {
         method: "POST",
         headers: {
@@ -167,15 +189,15 @@ A mensagem deve:
         body: JSON.stringify({
           number: phone,
           mediatype: "image",
-          media: imageBase64,
+          media: cleanBase64,
           fileName: `relatorio-sabotadores-${Date.now()}.png`,
-          caption: "📊 Seu Relatório de Sabotadores Mentais",
+          caption: "📊 Seu Relatório Completo de Sabotadores Mentais - Dr. Vital",
           delay: 2000,
         }),
       });
 
       imageData = await imageResponse.json();
-      console.log("📸 Imagem enviada:", imageResponse.ok);
+      console.log("📸 Imagem enviada:", imageResponse.ok, JSON.stringify(imageData));
     }
 
     // Log no banco
