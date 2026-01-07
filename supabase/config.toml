@@ -65,3 +65,15 @@ verify_jwt = false
 
 [functions.evolution-send-message]
 verify_jwt = false
+
+[functions.whatsapp-daily-motivation]
+verify_jwt = false
+
+[functions.whatsapp-weekly-report]
+verify_jwt = false
+
+[functions.whatsapp-smart-reminders]
+verify_jwt = false
+
+[functions.whatsapp-celebration]
+verify_jwt = false
