@@ -1,29 +1,32 @@
 import React from 'react';
-import { Home, Activity, MessageCircle, TrendingUp, MoreHorizontal } from 'lucide-react';
+import { MoreHorizontal } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-export type BottomNavSection = 'dashboard' | 'missions' | 'sofia-nutricional' | 'progress' | 'more';
+export type BottomNavSection = string;
+
+export interface BottomNavItem {
+  id: string;
+  icon: React.ElementType;
+  label: string;
+}
 
 interface BottomNavigationProps {
   activeSection: string;
-  onSectionChange: (section: BottomNavSection) => void;
+  onSectionChange: (section: string) => void;
   onMoreClick?: () => void;
+  visibleItems?: BottomNavItem[];
 }
-
-const navItems: { id: BottomNavSection; icon: React.ElementType; label: string }[] = [
-  { id: 'dashboard', icon: Home, label: 'Home' },
-  { id: 'missions', icon: Activity, label: 'Missões' },
-  { id: 'sofia-nutricional', icon: MessageCircle, label: 'Sofia' },
-  { id: 'progress', icon: TrendingUp, label: 'Progresso' },
-  { id: 'more', icon: MoreHorizontal, label: 'Mais' },
-];
 
 export const BottomNavigation: React.FC<BottomNavigationProps> = ({
   activeSection,
   onSectionChange,
   onMoreClick,
+  visibleItems = [],
 }) => {
-  const handleItemClick = (id: BottomNavSection) => {
+  // Pegar os primeiros 4 itens visíveis + "Mais"
+  const displayItems = visibleItems.slice(0, 4);
+
+  const handleItemClick = (id: string) => {
     if (id === 'more' && onMoreClick) {
       onMoreClick();
     } else {
@@ -37,10 +40,9 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
       style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
     >
       <div className="flex items-center justify-around h-14 px-2">
-        {navItems.map((item) => {
+        {displayItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeSection === item.id;
-          const isMore = item.id === 'more';
           
           return (
             <button
@@ -49,17 +51,17 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
               className={cn(
                 'flex flex-col items-center justify-center gap-0.5 flex-1 h-full min-w-0 transition-all duration-200 rounded-lg mx-0.5',
                 'active:scale-95 touch-manipulation',
-                isActive && !isMore
+                isActive
                   ? 'text-primary' 
                   : 'text-muted-foreground hover:text-foreground'
               )}
               aria-label={item.label}
-              aria-current={isActive && !isMore ? 'page' : undefined}
+              aria-current={isActive ? 'page' : undefined}
             >
               <div 
                 className={cn(
                   'relative flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-300',
-                  isActive && !isMore
+                  isActive
                     ? 'bg-primary/15 scale-105' 
                     : 'bg-transparent'
                 )}
@@ -67,18 +69,17 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
                 <Icon 
                   className={cn(
                     'w-4 h-4 transition-all duration-300',
-                    isActive && !isMore && 'text-primary'
+                    isActive && 'text-primary'
                   )} 
                 />
-                {/* Active Indicator */}
-                {isActive && !isMore && (
+                {isActive && (
                   <div className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-primary" />
                 )}
               </div>
               <span 
                 className={cn(
                   'text-[9px] font-medium truncate max-w-full transition-all duration-200',
-                  isActive && !isMore ? 'opacity-100' : 'opacity-70'
+                  isActive ? 'opacity-100' : 'opacity-70'
                 )}
               >
                 {item.label}
@@ -86,6 +87,24 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
             </button>
           );
         })}
+        
+        {/* Botão "Mais" sempre fixo no final */}
+        <button
+          onClick={() => onMoreClick?.()}
+          className={cn(
+            'flex flex-col items-center justify-center gap-0.5 flex-1 h-full min-w-0 transition-all duration-200 rounded-lg mx-0.5',
+            'active:scale-95 touch-manipulation',
+            'text-muted-foreground hover:text-foreground'
+          )}
+          aria-label="Mais"
+        >
+          <div className="relative flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-300 bg-transparent">
+            <MoreHorizontal className="w-4 h-4 transition-all duration-300" />
+          </div>
+          <span className="text-[9px] font-medium truncate max-w-full transition-all duration-200 opacity-70">
+            Mais
+          </span>
+        </button>
       </div>
     </nav>
   );

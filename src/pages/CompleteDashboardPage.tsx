@@ -16,7 +16,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
-import { BottomNavigation, BottomNavSection } from '@/components/navigation/BottomNavigation';
+import { BottomNavigation, BottomNavItem } from '@/components/navigation/BottomNavigation';
 import { MobileHeader } from '@/components/navigation/MobileHeader';
 import { MoreMenuSheet, MenuSection } from '@/components/navigation/MoreMenuSheet';
 
@@ -477,15 +477,49 @@ const CompleteDashboardPage = () => {
     return null;
   }
   // Handler para navegação inferior
-  const handleBottomNavChange = (section: BottomNavSection) => {
+  const handleBottomNavChange = (section: string) => {
     if (section !== 'more') {
-      setActiveSection(section);
+      setActiveSection(section as DashboardSection);
     }
   };
+  
+  // Calcular itens visíveis para bottom navigation baseado nas preferências
+  const bottomNavItems: BottomNavItem[] = useMemo(() => {
+    const visibleIds = preferences.sidebarOrder.filter(
+      id => !preferences.hiddenSidebarItems.includes(id)
+    );
+    
+    // Se não há preferências, usar ordem padrão dos primeiros 4 itens
+    if (visibleIds.length === 0) {
+      return menuItems.slice(0, 4).map(item => ({
+        id: item.id,
+        icon: item.icon,
+        label: item.label,
+      }));
+    }
+    
+    // Pegar os primeiros 4 itens visíveis na ordem das preferências
+    const items: BottomNavItem[] = [];
+    for (const id of preferences.sidebarOrder) {
+      if (visibleIds.includes(id)) {
+        const menuItem = menuItems.find(m => m.id === id);
+        if (menuItem) {
+          items.push({
+            id: menuItem.id,
+            icon: menuItem.icon,
+            label: menuItem.label,
+          });
+        }
+      }
+      if (items.length >= 4) break;
+    }
+    
+    return items;
+  }, [preferences.sidebarOrder, preferences.hiddenSidebarItems, menuItems]);
 
   // Handler para menu "Mais"
   const handleMoreMenuNavigate = (section: MenuSection) => {
-    setActiveSection(section);
+    setActiveSection(section as DashboardSection);
   };
   return <div className="min-h-screen bg-background">
       <div className="flex h-screen">
@@ -525,6 +559,7 @@ const CompleteDashboardPage = () => {
         activeSection={activeSection}
         onSectionChange={handleBottomNavChange}
         onMoreClick={() => setMoreMenuOpen(true)}
+        visibleItems={bottomNavItems}
       />
 
       {/* More Menu Sheet - Mobile Only */}
