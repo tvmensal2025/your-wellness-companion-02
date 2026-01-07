@@ -84,6 +84,8 @@ export function useStories() {
       // Map stories with user info
       const enrichedStories: Story[] = storiesData.map(story => {
         const profile = profilesMap.get(story.user_id);
+        // Fallback hierárquico para nome - nunca usar "Usuário" genérico se tiver dados
+        const userName = profile?.full_name || 'Membro';
         return {
           id: story.id,
           user_id: story.user_id,
@@ -94,7 +96,7 @@ export function useStories() {
           created_at: story.created_at,
           expires_at: story.expires_at,
           views_count: story.views_count || 0,
-          user_name: profile?.full_name || 'Usuário',
+          user_name: userName,
           user_avatar: profile?.avatar_url || undefined,
           is_viewed: viewedStoryIds.has(story.id),
           is_own: story.user_id === user?.id

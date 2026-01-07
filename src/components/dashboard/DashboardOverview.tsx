@@ -30,8 +30,11 @@ const DashboardOverview: React.FC = () => {
   const [lastMeasurementDays, setLastMeasurementDays] = useState<number>(0);
   const initialFetchDoneRef = useRef(false);
 
-  // Dados do cache centralizado - fallback para user_metadata se profile não estiver carregado
-  const userName = userData.profile?.fullName || userData.user?.user_metadata?.full_name || '';
+  // Dados do cache centralizado - fallback hierárquico para sempre ter um nome real
+  const userName = userData.profile?.fullName 
+    || userData.user?.user_metadata?.full_name 
+    || userData.user?.email?.split('@')[0] 
+    || 'Usuário';
   const heightCm = userData.physicalData?.altura_cm || 170;
   const currentStreak = userData.points?.currentStreak || 0;
   const user = userData.user;
@@ -213,7 +216,7 @@ const DashboardOverview: React.FC = () => {
           weightChange={weightChange()}
           healthScore={healthScore}
           currentStreak={currentStreak}
-          userName={userName || 'Usuário'}
+          userName={userName}
           height={heightCm}
           age={age}
           gender={gender || 'F'}
