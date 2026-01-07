@@ -699,7 +699,7 @@ const UserProfile = ({ onOpenLayoutPrefs }: UserProfileProps = {}) => {
                         Receber {pref.type === 'email' ? 'emails' : pref.type === 'push' ? 'notificações push' : 'lembretes'}
                       </p>
                     </div>
-                    <Switch checked={pref.enabled} onCheckedChange={() => toggleNotification(pref.id)} />
+                    <Switch checked={pref.enabled} onCheckedChange={() => toggleNotification(pref.id)} className="h-5 w-9 data-[state=checked]:bg-primary [&>span]:h-4 [&>span]:w-4 [&>span]:data-[state=checked]:translate-x-4" />
                   </div>
                 ))}
               </CardContent>
