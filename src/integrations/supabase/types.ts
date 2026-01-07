@@ -6317,6 +6317,51 @@ export type Database = {
         }
         Relationships: []
       }
+      points_configuration: {
+        Row: {
+          action_name: string
+          action_type: string
+          category: string | null
+          created_at: string | null
+          description: string | null
+          icon: string | null
+          id: string
+          is_active: boolean | null
+          max_daily: number | null
+          multiplier: number | null
+          points: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          action_name: string
+          action_type: string
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_daily?: number | null
+          multiplier?: number | null
+          points?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          action_name?: string
+          action_type?: string
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          max_daily?: number | null
+          multiplier?: number | null
+          points?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       pontos_do_usuário: {
         Row: {
           created_at: string | null

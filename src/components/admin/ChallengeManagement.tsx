@@ -14,10 +14,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { GoalManagement } from './GoalManagement';
 import { CreateGoalModal } from './CreateGoalModal';
+import { PointsConfiguration } from './PointsConfiguration';
 import {
   Plus, Edit, Trash2, Trophy, Users, Calendar, 
   Target, CheckCircle, AlertCircle, Search, 
-  Filter, BarChart3, Activity, Settings, Bell
+  Filter, BarChart3, Activity, Settings, Bell, Coins
 } from 'lucide-react';
 
 interface Challenge {
@@ -632,7 +633,7 @@ export default function ChallengeManagement({ user }: ChallengeManagementProps) 
       </div>
 
       <Tabs defaultValue="challenges" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="challenges" className="flex items-center gap-2">
             <Trophy className="h-4 w-4" />
             Desafios
@@ -645,6 +646,10 @@ export default function ChallengeManagement({ user }: ChallengeManagementProps) 
                 {pendingGoals}
               </span>
             )}
+          </TabsTrigger>
+          <TabsTrigger value="points" className="flex items-center gap-2">
+            <Coins className="h-4 w-4" />
+            Pontuação
           </TabsTrigger>
           <TabsTrigger value="participations">Participações</TabsTrigger>
         </TabsList>
@@ -769,6 +774,10 @@ export default function ChallengeManagement({ user }: ChallengeManagementProps) 
 
         <TabsContent value="goals" className="space-y-4">
           <GoalManagement />
+        </TabsContent>
+
+        <TabsContent value="points" className="space-y-4">
+          <PointsConfiguration />
         </TabsContent>
 
         <TabsContent value="participations" className="space-y-4">
