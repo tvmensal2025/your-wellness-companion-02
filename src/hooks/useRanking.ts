@@ -37,7 +37,7 @@ export const useRanking = () => {
       // Buscar perfis de usuários
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
-        .select('id, full_name, avatar_url')
+        .select('user_id, full_name, avatar_url')
         .order('full_name');
 
       if (profilesError) throw profilesError;
@@ -75,12 +75,15 @@ export const useRanking = () => {
       const rankingUsers: RankingUser[] = [];
       
       profilesData?.forEach((profile, index) => {
-        const userStat = userStats.get(profile.id);
+        const userStat = userStats.get(profile.user_id);
         
-        // Create simulated ranking with fake points for demo
+        // Skip if no full_name (incomplete profile)
+        if (!profile.full_name) return;
+        
+        // Create ranking with real user data
         rankingUsers.push({
-          user_id: profile.id,
-          user_name: profile.full_name || 'Usuário',
+          user_id: profile.user_id,
+          user_name: profile.full_name,
           avatar_url: profile.avatar_url,
           total_points: userStat?.total_points || Math.floor(Math.random() * 1000),
           streak_days: userStat?.streak_days || Math.floor(Math.random() * 30),

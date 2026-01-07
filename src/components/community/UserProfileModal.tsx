@@ -194,6 +194,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-lg max-h-[90vh] p-0 overflow-hidden border-0 bg-transparent shadow-none">
+          <ScrollArea className="max-h-[90vh]">
           <AnimatePresence mode="wait">
             {loading ? (
               <motion.div
@@ -472,6 +473,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
               </div>
             )}
           </AnimatePresence>
+          </ScrollArea>
         </DialogContent>
       </Dialog>
 
