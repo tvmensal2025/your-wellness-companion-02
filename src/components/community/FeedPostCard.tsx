@@ -14,6 +14,7 @@ import {
   Send,
   Bookmark,
   ChevronDown,
+  ChevronUp,
   Pin,
   UserPlus,
   UserMinus,
@@ -345,15 +346,7 @@ export const FeedPostCard: React.FC<FeedPostCardProps> = ({
               </div>
             </div>
             
-            <div className="flex items-center gap-1">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="h-7 text-xs text-primary hover:bg-primary/10"
-                onClick={(e) => { e.stopPropagation(); setIsExpanded(false); }}
-              >
-                Recolher
-              </Button>
+            <div className="flex items-center">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon" className="h-7 w-7 sm:h-8 sm:w-8 text-primary hover:bg-primary/10">
@@ -361,6 +354,10 @@ export const FeedPostCard: React.FC<FeedPostCardProps> = ({
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setIsExpanded(false); }}>
+                    <ChevronUp className="w-4 h-4 mr-2" />
+                    Recolher
+                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={handleSave}>
                     <Bookmark className="w-4 h-4 mr-2" />
                     {isSaved ? 'Remover dos salvos' : 'Salvar post'}
