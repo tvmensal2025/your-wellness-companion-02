@@ -1,8 +1,11 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Plus, Flame } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { GroupedStories, Story } from '@/hooks/useStories';
+import { StoryCategoryFilter, StoryCategory } from './StoryCategoryFilter';
+import { FeaturedStoriesSection } from './FeaturedStoriesSection';
+import { StoryCategoryBadge } from './StoryTimeIndicator';
 
 interface StoriesSectionProps {
   groupedStories: GroupedStories[];
@@ -11,6 +14,8 @@ interface StoriesSectionProps {
   hasOwnStory: boolean;
   onStoryClick: (groupIndex: number) => void;
   onCreateStory: () => void;
+  showFeatured?: boolean;
+  showCategoryFilter?: boolean;
 }
 
 const getStoryTypeIcon = (hasUnviewed: boolean) => {
@@ -67,12 +72,33 @@ export const StoriesSection: React.FC<StoriesSectionProps> = ({
   currentUserAvatar,
   hasOwnStory,
   onStoryClick,
-  onCreateStory
+  onCreateStory,
+  showFeatured = true,
+  showCategoryFilter = true,
 }) => {
+  const [selectedCategory, setSelectedCategory] = useState<StoryCategory>('all');
+
+  // Filter stories by category
+  const filteredGroupedStories = useMemo(() => {
+    if (selectedCategory === 'all') {
+      return groupedStories;
+    }
+
+    return groupedStories
+      .map(group => ({
+        ...group,
+        stories: group.stories.filter(story => 
+          (story as any).category === selectedCategory || 
+          ((story as any).category === undefined && selectedCategory === 'geral')
+        )
+      }))
+      .filter(group => group.stories.length > 0);
+  }, [groupedStories, selectedCategory]);
+
   // Find the index of own story group to open viewer
-  const ownGroupIndex = groupedStories.findIndex(g => g.is_own);
+  const ownGroupIndex = filteredGroupedStories.findIndex(g => g.is_own);
   const hasOwn = ownGroupIndex >= 0;
-  const ownGroup = hasOwn ? groupedStories[ownGroupIndex] : null;
+  const ownGroup = hasOwn ? filteredGroupedStories[ownGroupIndex] : null;
   const ownLatestStory = ownGroup?.stories[0];
 
   const handleOwnStoryClick = () => {
@@ -91,8 +117,27 @@ export const StoriesSection: React.FC<StoriesSectionProps> = ({
   };
 
   return (
-    <div className="bg-gradient-to-r from-primary/5 via-background to-accent/5 dark:from-primary/10 dark:via-background dark:to-accent/10 rounded-2xl border border-primary/20 shadow-sm p-3 sm:p-4 mb-4">
-      <div className="flex gap-3 sm:gap-4 overflow-x-auto pb-2 scrollbar-hide">
+    <div className="space-y-4 mb-4">
+      {/* Featured Stories Section */}
+      {showFeatured && (
+        <FeaturedStoriesSection
+          groupedStories={groupedStories}
+          onStoryClick={onStoryClick}
+          minViews={2}
+        />
+      )}
+
+      {/* Category Filter */}
+      {showCategoryFilter && (
+        <StoryCategoryFilter
+          selectedCategory={selectedCategory}
+          onCategoryChange={setSelectedCategory}
+        />
+      )}
+
+      {/* Stories List */}
+      <div className="bg-gradient-to-r from-primary/5 via-background to-accent/5 dark:from-primary/10 dark:via-background dark:to-accent/10 rounded-2xl border border-primary/20 shadow-sm p-3 sm:p-4">
+        <div className="flex gap-3 sm:gap-4 overflow-x-auto pb-2 scrollbar-hide">
         {/* Own Story / Add Story Button */}
         <motion.div
           whileHover={{ scale: 1.05, y: -2 }}
@@ -127,7 +172,7 @@ export const StoriesSection: React.FC<StoriesSectionProps> = ({
         </motion.div>
 
         {/* Stories */}
-        {groupedStories.filter(g => !g.is_own).map((group, index) => {
+        {filteredGroupedStories.filter(g => !g.is_own).map((group, index) => {
           const latestStory = group.stories[0];
           return (
             <motion.div
@@ -173,6 +218,7 @@ export const StoriesSection: React.FC<StoriesSectionProps> = ({
             </motion.div>
           );
         })}
+        </div>
       </div>
     </div>
   );

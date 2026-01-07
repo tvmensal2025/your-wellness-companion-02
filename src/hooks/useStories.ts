@@ -10,6 +10,7 @@ export interface Story {
   media_type: string;
   text_content?: string | null;
   background_color?: string | null;
+  category?: string | null;
   created_at: string;
   expires_at: string;
   views_count: number;
@@ -93,6 +94,7 @@ export function useStories() {
           media_type: story.media_type || 'image',
           text_content: story.text_content,
           background_color: story.background_color,
+          category: story.category || 'geral',
           created_at: story.created_at,
           expires_at: story.expires_at,
           views_count: story.views_count || 0,
