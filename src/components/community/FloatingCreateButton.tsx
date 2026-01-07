@@ -50,11 +50,11 @@ export const FloatingCreateButton: React.FC<FloatingCreateButtonProps> = ({
 
   return (
     <>
-      {/* Floating Button - z-40 para ficar abaixo de modais/sheets */}
+      {/* Floating Button - posicionado à esquerda da Sofia */}
       <motion.div
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
-        className="fixed bottom-24 right-4 sm:bottom-8 sm:right-8 z-40"
+        className="fixed bottom-[140px] right-4 sm:bottom-8 sm:right-8 z-[45]"
       >
         <motion.div
           whileHover={{ scale: 1.1 }}

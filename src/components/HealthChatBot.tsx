@@ -522,7 +522,7 @@ Clique no botão abaixo para começar! ⬇️`,
     return (
       <Button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-20 right-3 z-50 h-10 w-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 shadow-md hover:shadow-lg opacity-70 hover:opacity-100 transition-all duration-200 lg:bottom-3"
+        className="fixed bottom-24 right-3 z-40 h-10 w-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 shadow-md hover:shadow-lg opacity-70 hover:opacity-100 transition-all duration-200 lg:bottom-3"
       >
         <MessageCircle className="w-5 h-5" />
       </Button>
