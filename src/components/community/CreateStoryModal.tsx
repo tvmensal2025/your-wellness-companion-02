@@ -109,7 +109,7 @@ export const CreateStoryModal: React.FC<CreateStoryModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={resetAndClose}>
-      <DialogContent className="max-w-md p-0 overflow-hidden">
+      <DialogContent className="max-w-md p-0">
         {mode === 'select' && (
           <div className="p-6">
             <DialogHeader className="mb-6">
@@ -150,7 +150,7 @@ export const CreateStoryModal: React.FC<CreateStoryModalProps> = ({
         )}
 
         {mode === 'text' && (
-          <div className="flex flex-col h-[500px]">
+          <div className="flex flex-col h-[min(520px,80vh)]">
             {/* Preview */}
             <div 
               className="flex-1 flex items-center justify-center p-8"
@@ -197,7 +197,7 @@ export const CreateStoryModal: React.FC<CreateStoryModalProps> = ({
         )}
 
         {mode === 'image' && imagePreview && (
-          <div className="flex flex-col h-[500px]">
+          <div className="flex flex-col h-[min(520px,80vh)]">
             {/* Preview */}
             <div className="flex-1 relative bg-black">
               <Button
