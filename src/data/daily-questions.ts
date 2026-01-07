@@ -172,13 +172,13 @@ export const dailyQuestions: DailyQuestion[] = [
   }
 ];
 
-export const getQuestionsBySection = (section: 'morning' | 'habits' | 'mindset') => {
+export const getQuestionsBySection = (section: 'morning' | 'habits' | 'mindset' | 'evening') => {
   return dailyQuestions
     .filter(q => q.section === section)
     .sort((a, b) => a.order - b.order);
 };
 
-export const getSectionTitle = (section: 'morning' | 'habits' | 'mindset') => {
+export const getSectionTitle = (section: 'morning' | 'habits' | 'mindset' | 'evening') => {
   switch (section) {
     case 'morning':
       return '🌅 RITUAL DA MANHÃ';
@@ -186,12 +186,14 @@ export const getSectionTitle = (section: 'morning' | 'habits' | 'mindset') => {
       return '💪 HÁBITOS DO DIA';
     case 'mindset':
       return '🧠 MENTE & EMOÇÕES';
+    case 'evening':
+      return '🌙 REFLEXÃO DA NOITE';
     default:
       return '';
   }
 };
 
-export const getSectionDescription = (section: 'morning' | 'habits' | 'mindset') => {
+export const getSectionDescription = (section: 'morning' | 'habits' | 'mindset' | 'evening') => {
   switch (section) {
     case 'morning':
       return 'Como você iniciou o seu dia hoje?';
@@ -199,7 +201,9 @@ export const getSectionDescription = (section: 'morning' | 'habits' | 'mindset')
       return 'Agora me conte como foi seu autocuidado ao longo do dia.';
     case 'mindset':
       return 'Agora vamos cuidar da sua mente e das suas emoções.';
+    case 'evening':
+      return 'Reflexão sobre como foi o seu dia.';
     default:
       return '';
   }
-}; 
+};
