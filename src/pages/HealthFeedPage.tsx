@@ -47,7 +47,7 @@ export default function HealthFeedPage() {
   const [createStoryOpen, setCreateStoryOpen] = useState(false);
   const [dmModalOpen, setDmModalOpen] = useState(false);
   const [shareModalOpen, setShareModalOpen] = useState(false);
-  const [sharePostData, setSharePostData] = useState<{ id: string; content: string } | null>(null);
+  const [sharePostData, setSharePostData] = useState<any>(null);
 
   const { user } = useAuth();
   const { ranking, loading: rankingLoading } = useRanking();
@@ -145,7 +145,7 @@ export default function HealthFeedPage() {
     const post = posts.find(p => p.id === postId);
     if (post) {
       trackInteraction(post, 'share');
-      setSharePostData({ id: postId, content: post.content });
+      setSharePostData(post);
       setShareModalOpen(true);
     }
   };
@@ -494,7 +494,8 @@ export default function HealthFeedPage() {
         {/* Story Viewer */}
         {storyViewerOpen && groupedStories.length > 0 && (
           <StoryViewer
-            stories={groupedStories}
+            isOpen={storyViewerOpen}
+            groupedStories={groupedStories}
             initialGroupIndex={storyViewerIndex}
             onClose={() => setStoryViewerOpen(false)}
             onViewStory={viewStory}
@@ -504,8 +505,8 @@ export default function HealthFeedPage() {
 
         {/* Create Story Modal */}
         <CreateStoryModal
-          open={createStoryOpen}
-          onOpenChange={setCreateStoryOpen}
+          isOpen={createStoryOpen}
+          onClose={() => setCreateStoryOpen(false)}
           onCreateStory={createStory}
         />
 
@@ -520,8 +521,7 @@ export default function HealthFeedPage() {
           <SharePostModal
             open={shareModalOpen}
             onOpenChange={setShareModalOpen}
-            postId={sharePostData.id}
-            postContent={sharePostData.content}
+            post={sharePostData}
           />
         )}
       </div>

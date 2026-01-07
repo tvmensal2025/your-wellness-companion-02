@@ -214,7 +214,7 @@ export const FeedPostCard: React.FC<FeedPostCardProps> = ({
                 <p className="text-xs text-muted-foreground line-clamp-1">{displayContent}</p>
               </div>
               <div className="flex items-center gap-3 flex-shrink-0">
-                <ReactionDisplay reactions={reactions} totalCount={totalReactions} />
+                <ReactionDisplay reactionsCount={reactions} />
                 <div className="flex items-center gap-1 text-xs text-muted-foreground">
                   <MessageCircle className="w-3.5 h-3.5" />
                   <span>{post.comments}</span>
@@ -401,8 +401,7 @@ export const FeedPostCard: React.FC<FeedPostCardProps> = ({
           {/* Stats with Reactions */}
           <div className="flex items-center justify-between text-xs sm:text-sm text-muted-foreground pt-1 sm:pt-2">
             <ReactionDisplay 
-              reactions={reactions} 
-              totalCount={totalReactions}
+              reactionsCount={reactions}
               onClick={() => {}}
             />
             <div className="flex gap-3 sm:gap-4">
@@ -423,9 +422,9 @@ export const FeedPostCard: React.FC<FeedPostCardProps> = ({
           {/* Actions with ReactionPicker */}
           <div className="flex items-center justify-between border-t border-b border-border py-1">
             <ReactionPicker
-              postId={post.id}
-              currentReaction={isLiked ? 'like' : null}
+              currentReaction={isLiked ? 'like' : undefined}
               onReact={handleReaction}
+              reactionsCount={reactions}
             />
             <Button
               variant="ghost"
