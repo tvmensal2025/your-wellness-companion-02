@@ -18,6 +18,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Conversation } from '@/hooks/useDirectMessages';
+import { getUserAvatar } from '@/lib/avatar-utils';
 
 // Função para normalizar URLs de avatar
 const normalizeAvatarUrl = (url: string | null | undefined): string | null => {
@@ -124,12 +125,25 @@ export const DirectMessagesInbox: React.FC<DirectMessagesInboxProps> = ({
                   onClick={() => onSelectConversation(conv.participant_id)}
                 >
                   <div className="relative">
-                    <Avatar className="w-12 h-12">
-                      <AvatarImage src={normalizeAvatarUrl(conv.participant_avatar) || ''} />
-                      <AvatarFallback className="bg-primary/10 text-primary">
-                        {conv.participant_name.charAt(0)}
-                      </AvatarFallback>
-                    </Avatar>
+                    {(() => {
+                      const avatar = getUserAvatar(normalizeAvatarUrl(conv.participant_avatar), conv.participant_name);
+                      return (
+                        <Avatar className="w-12 h-12">
+                          {avatar.type === 'emoji' ? (
+                            <AvatarFallback className="text-2xl bg-gradient-to-br from-primary to-primary/70">
+                              {avatar.value}
+                            </AvatarFallback>
+                          ) : (
+                            <>
+                              <AvatarImage src={avatar.value} />
+                              <AvatarFallback className="bg-primary/10 text-primary">
+                                {conv.participant_name.charAt(0)}
+                              </AvatarFallback>
+                            </>
+                          )}
+                        </Avatar>
+                      );
+                    })()}
                     {conv.is_online && (
                       <Circle className="absolute bottom-0 right-0 w-3.5 h-3.5 fill-emerald-500 text-emerald-500 border-2 border-background rounded-full" />
                     )}

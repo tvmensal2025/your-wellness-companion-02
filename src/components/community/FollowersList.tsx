@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useFollow } from '@/hooks/useFollow';
 import { toast } from 'sonner';
+import { getUserAvatar } from '@/lib/avatar-utils';
 import { motion } from 'framer-motion';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { formatDistanceToNow } from 'date-fns';
@@ -325,19 +326,30 @@ export const FollowersList: React.FC<FollowersListProps> = ({ onProfileClick, on
                       <div className="flex items-start gap-3">
                         {/* Avatar */}
                         <div className="relative flex-shrink-0">
-                          <Avatar className="w-12 h-12 ring-2 ring-primary/20 shadow-md">
-                            {normalizeAvatarUrl(follower.avatar_url) ? (
-                              <AvatarImage 
-                                src={normalizeAvatarUrl(follower.avatar_url) || ''} 
-                                alt={follower.full_name || ''}
-                                className="object-cover"
-                                loading="lazy"
-                              />
-                            ) : null}
-                            <AvatarFallback className={`bg-gradient-to-br ${userLevel.color} text-white font-bold`}>
-                              {getInitials(follower.full_name)}
-                            </AvatarFallback>
-                          </Avatar>
+                          {(() => {
+                            const avatar = getUserAvatar(normalizeAvatarUrl(follower.avatar_url), follower.full_name || 'Usuário');
+                            return (
+                              <Avatar className="w-12 h-12 ring-2 ring-primary/20 shadow-md">
+                                {avatar.type === 'emoji' ? (
+                                  <AvatarFallback className={`text-2xl bg-gradient-to-br ${userLevel.color}`}>
+                                    {avatar.value}
+                                  </AvatarFallback>
+                                ) : (
+                                  <>
+                                    <AvatarImage 
+                                      src={avatar.value} 
+                                      alt={follower.full_name || ''}
+                                      className="object-cover"
+                                      loading="lazy"
+                                    />
+                                    <AvatarFallback className={`bg-gradient-to-br ${userLevel.color} text-white font-bold`}>
+                                      {getInitials(follower.full_name)}
+                                    </AvatarFallback>
+                                  </>
+                                )}
+                              </Avatar>
+                            );
+                          })()}
                           
                           <div className="absolute -bottom-1 -right-1 z-20">
                             <div className={`w-5 h-5 rounded-full bg-gradient-to-br ${userLevel.color} flex items-center justify-center shadow-lg border-2 border-background text-xs`}>
