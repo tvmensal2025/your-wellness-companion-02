@@ -3,10 +3,12 @@ import { supabase } from '@/integrations/supabase/client';
 
 export interface UserProgressStats {
   // Weight
+  initialWeight: number | null;
   currentWeight: number | null;
   targetWeight: number | null;
-  weightLoss: number | null;
+  weightChange: number | null;
   weightProgress: number;
+  showWeightResults: boolean;
   
   // Challenges
   challengesCompleted: number;
@@ -38,11 +40,29 @@ export function useUserProgressStats(userId: string | null) {
     const fetchStats = async () => {
       setLoading(true);
       try {
-        // Fetch profile data
+        // Fetch profile data including privacy setting
         const { data: profile } = await supabase
           .from('profiles')
-          .select('current_weight, target_weight')
+          .select('current_weight, target_weight, show_weight_results')
           .eq('user_id', userId)
+          .maybeSingle();
+
+        // Fetch initial weight (first measurement)
+        const { data: initialWeightData } = await supabase
+          .from('weight_measurements')
+          .select('peso_kg')
+          .eq('user_id', userId)
+          .order('measurement_date', { ascending: true })
+          .limit(1)
+          .maybeSingle();
+
+        // Fetch current weight (latest measurement)
+        const { data: currentWeightData } = await supabase
+          .from('weight_measurements')
+          .select('peso_kg')
+          .eq('user_id', userId)
+          .order('measurement_date', { ascending: false })
+          .limit(1)
           .maybeSingle();
 
         // Fetch user points
@@ -78,31 +98,32 @@ export function useUserProgressStats(userId: string | null) {
           .eq('user_id', userId)
           .eq('is_completed', true);
 
-        // Calculate weight progress
-        const currentWeight = profile?.current_weight || null;
+        // Calculate weights - prefer measurements, fallback to profile
+        const initialWeight = initialWeightData?.peso_kg || null;
+        const currentWeight = currentWeightData?.peso_kg || profile?.current_weight || null;
         const targetWeight = profile?.target_weight || null;
         
-        // Assume initial weight is 10% more than current as estimate if not available
-        const estimatedInitialWeight = currentWeight ? currentWeight * 1.1 : null;
-        
-        let weightLoss: number | null = null;
+        // Calculate weight change (negative = lost weight)
+        let weightChange: number | null = null;
         let weightProgress = 0;
         
-        if (estimatedInitialWeight && currentWeight) {
-          weightLoss = estimatedInitialWeight - currentWeight;
+        if (initialWeight && currentWeight) {
+          weightChange = currentWeight - initialWeight;
         }
         
-        if (estimatedInitialWeight && targetWeight && currentWeight) {
-          const totalToLose = estimatedInitialWeight - targetWeight;
-          const lost = estimatedInitialWeight - currentWeight;
+        if (initialWeight && targetWeight && currentWeight) {
+          const totalToLose = initialWeight - targetWeight;
+          const lost = initialWeight - currentWeight;
           weightProgress = totalToLose > 0 ? Math.min(100, Math.round((lost / totalToLose) * 100)) : 0;
         }
 
         setStats({
+          initialWeight,
           currentWeight,
           targetWeight,
-          weightLoss,
+          weightChange,
           weightProgress,
+          showWeightResults: profile?.show_weight_results ?? true,
           challengesCompleted: userPoints?.completed_challenges || completedChallengesCount || 0,
           activeChallenges: activeChallenges || 0,
           currentStreak: userPoints?.current_streak || 0,
