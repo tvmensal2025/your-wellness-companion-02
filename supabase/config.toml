@@ -77,3 +77,6 @@ verify_jwt = false
 
 [functions.whatsapp-celebration]
 verify_jwt = false
+
+[functions.whatsapp-generate-template]
+verify_jwt = false

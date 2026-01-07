@@ -59,6 +59,7 @@ import PlatformAudit from "@/components/admin/PlatformAudit";
 import MedicalDocumentsSection from "@/components/dashboard/MedicalDocumentsSection";
 import { TutorialDeviceConfig } from "@/components/admin/TutorialDeviceConfig";
 import SofiaDataTestPanel from "@/components/admin/SofiaDataTestPanel";
+import WhatsAppManagement from "@/components/admin/WhatsAppManagement";
 
 import { repairAuthSessionIfTooLarge } from "@/lib/auth-token-repair";
 
@@ -286,6 +287,8 @@ const AdminPage = () => {
         return <ChallengeManagement user={user} />;
       case 'company-config':
         return <CompanyConfiguration />;
+      case 'whatsapp':
+        return <WhatsAppManagement />;
       case 'ai-control':
         return (
           <div className="space-y-6">
