@@ -3,10 +3,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
-import { Target, TrendingUp, ChefHat, Zap, Clock, Utensils, Lightbulb, History } from 'lucide-react';
+import { Target, TrendingUp, ChefHat, Zap, Clock, Utensils, History } from 'lucide-react';
 import { MealPlanGeneratorModalV2 } from '@/components/nutrition-tracking/MealPlanGeneratorModalV2';
 import { useNutritionTracking } from '@/hooks/useNutritionTracking';
-import { SofiaNutritionInsights } from '@/components/sofia/SofiaNutritionInsights';
+
 import { MealPlanHistoryModal } from '@/components/meal-plan/MealPlanHistoryModal';
 import { MealPlanSuccessEffect } from '@/components/meal-plan/MealPlanSuccessEffect';
 import { UnifiedAnalysisHistory } from '@/components/analysis/UnifiedAnalysisHistory';
@@ -118,13 +118,6 @@ export const SofiaNutricionalSection: React.FC<SofiaNutricionalSectionProps> = (
           >
             <ChefHat className="w-4 h-4 sm:mr-1.5" />
             <span className="hidden sm:inline">Cardápios</span>
-          </TabsTrigger>
-          <TabsTrigger 
-            value="insights" 
-            className="flex-none text-xs sm:text-sm px-3 py-2 data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-emerald-600"
-          >
-            <Lightbulb className="w-4 h-4 sm:mr-1.5" />
-            <span className="hidden sm:inline">Percepções</span>
           </TabsTrigger>
           <TabsTrigger 
             value="history" 
@@ -273,10 +266,6 @@ export const SofiaNutricionalSection: React.FC<SofiaNutricionalSectionProps> = (
           </Card>
         </TabsContent>
 
-        {/* Tab Percepções */}
-        <TabsContent value="insights" className="mt-4">
-          <SofiaNutritionInsights />
-        </TabsContent>
 
         {/* Tab Histórico */}
         <TabsContent value="history" className="mt-4">
