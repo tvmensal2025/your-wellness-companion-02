@@ -1,3 +1,4 @@
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -17,6 +18,7 @@ serve(async (req) => {
     const EVOLUTION_API_URL = Deno.env.get("EVOLUTION_API_URL");
     const EVOLUTION_API_KEY = Deno.env.get("EVOLUTION_API_KEY");
     const EVOLUTION_INSTANCE = Deno.env.get("EVOLUTION_INSTANCE");
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 
     if (!EVOLUTION_API_URL || !EVOLUTION_API_KEY || !EVOLUTION_INSTANCE) {
       throw new Error("Evolution API não configurada");
@@ -24,12 +26,19 @@ serve(async (req) => {
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
     
-    let targetUserId: string | null = null;
+    let body: any = {};
     try {
-      const body = await req.json();
-      targetUserId = body?.userId || null;
+      body = await req.json();
     } catch {
       // Sem body = execução via cron
+    }
+
+    const targetUserId = body?.userId || null;
+    const action = body?.action || 'send-weekly-report';
+    
+    // Se for apenas gerar dados para cards (sem enviar)
+    if (action === 'generate-card-data') {
+      return await generateCardData(supabase, body.userId, LOVABLE_API_KEY);
     }
 
     console.log("📊 Dr. Vital & Sofia: Iniciando envio de relatórios semanais...");
@@ -92,7 +101,7 @@ serve(async (req) => {
       try {
         console.log(`\n👤 Processando relatório: ${user.full_name}`);
 
-        // Gerar relatório via edge function
+        // Gerar relatório do Dr. Vital
         const { data: reportData, error: reportError } = await supabase.functions.invoke(
           "dr-vital-weekly-report",
           {
@@ -112,11 +121,22 @@ serve(async (req) => {
           throw new Error("Relatório não gerado");
         }
 
+        // Gerar análise da Sofia (nutrição)
+        const sofiaAnalysis = await generateSofiaAnalysis(
+          supabase, 
+          user.user_id, 
+          user.full_name, 
+          weekStartStr, 
+          weekEndStr,
+          LOVABLE_API_KEY
+        );
+
         // Formatar mensagem com DUPLA VOZ: Dr. Vital + Sofia
-        const reportMessage = formatReportMessage(user.full_name, report, weekStartStr, weekEndStr);
+        const reportMessage = formatReportMessage(user.full_name, report, sofiaAnalysis, weekStartStr, weekEndStr);
 
         const phone = formatPhone(user.phone);
         
+        // Enviar mensagem principal
         const evolutionResponse = await fetch(`${EVOLUTION_API_URL}/message/sendText/${EVOLUTION_INSTANCE}`, {
           method: "POST",
           headers: {
@@ -147,9 +167,10 @@ serve(async (req) => {
           name: user.full_name,
           success: evolutionResponse.ok,
           healthScore: report.healthScore,
+          nutritionScore: sofiaAnalysis.nutritionScore,
         });
 
-        console.log(`✅ Relatório enviado: ${user.full_name} (Score: ${report.healthScore})`);
+        console.log(`✅ Relatório enviado: ${user.full_name} (Health: ${report.healthScore}, Nutrição: ${sofiaAnalysis.nutritionScore})`);
         await new Promise(resolve => setTimeout(resolve, 3000));
 
       } catch (userError) {
@@ -185,6 +206,237 @@ serve(async (req) => {
   }
 });
 
+// Gerar dados para cards (chamado pelo frontend para gerar PNGs)
+async function generateCardData(supabase: any, userId: string, lovableApiKey: string | undefined) {
+  const today = new Date();
+  const weekStart = new Date(today);
+  weekStart.setDate(today.getDate() - 7);
+  const weekStartStr = weekStart.toISOString().split("T")[0];
+  const weekEndStr = today.toISOString().split("T")[0];
+
+  // Buscar perfil
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("full_name")
+    .eq("user_id", userId)
+    .single();
+
+  // Gerar relatório Dr. Vital
+  const { data: reportData } = await supabase.functions.invoke("dr-vital-weekly-report", {
+    body: { userId, weekStartDate: weekStartStr }
+  });
+
+  const report = reportData?.report;
+
+  // Gerar análise Sofia
+  const sofiaAnalysis = await generateSofiaAnalysis(
+    supabase, 
+    userId, 
+    profile?.full_name || 'Usuário',
+    weekStartStr, 
+    weekEndStr,
+    lovableApiKey
+  );
+
+  return new Response(JSON.stringify({
+    success: true,
+    drVital: {
+      userName: profile?.full_name || 'Usuário',
+      weekStart: weekStartStr,
+      weekEnd: weekEndStr,
+      healthScore: report?.healthScore || 0,
+      analysis: report?.analysis || '',
+      recommendations: report?.recommendations || [],
+      data: report?.data || {}
+    },
+    sofia: {
+      userName: profile?.full_name || 'Usuário',
+      weekStart: weekStartStr,
+      weekEnd: weekEndStr,
+      nutritionScore: sofiaAnalysis.nutritionScore,
+      analysis: sofiaAnalysis.analysis,
+      recommendations: sofiaAnalysis.recommendations,
+      data: sofiaAnalysis.data
+    }
+  }), {
+    headers: { ...corsHeaders, "Content-Type": "application/json" }
+  });
+}
+
+// Gerar análise nutricional da Sofia
+async function generateSofiaAnalysis(
+  supabase: any, 
+  userId: string, 
+  userName: string,
+  weekStart: string, 
+  weekEnd: string,
+  lovableApiKey: string | undefined
+) {
+  console.log("🥗 Sofia: Gerando análise nutricional...");
+  
+  let nutritionData = {
+    mealsCount: 0,
+    avgCalories: 0,
+    avgProtein: 0,
+    avgCarbs: 0,
+    avgFats: 0,
+    waterAverage: 0,
+    topFoods: [] as string[]
+  };
+
+  try {
+    // Buscar dados de nutrição
+    const { data: nutritionSummary } = await supabase
+      .from("daily_nutrition_summary")
+      .select("*")
+      .eq("user_id", userId)
+      .gte("date", weekStart)
+      .lte("date", weekEnd);
+
+    if (nutritionSummary && nutritionSummary.length > 0) {
+      nutritionData.mealsCount = nutritionSummary.reduce((sum: number, d: any) => sum + (d.meals_count || 0), 0);
+      nutritionData.avgCalories = Math.round(
+        nutritionSummary.reduce((sum: number, d: any) => sum + (d.total_calories || 0), 0) / nutritionSummary.length
+      );
+      nutritionData.avgProtein = Math.round(
+        nutritionSummary.reduce((sum: number, d: any) => sum + (d.total_proteins || 0), 0) / nutritionSummary.length
+      );
+      nutritionData.avgCarbs = Math.round(
+        nutritionSummary.reduce((sum: number, d: any) => sum + (d.total_carbs || 0), 0) / nutritionSummary.length
+      );
+      nutritionData.avgFats = Math.round(
+        nutritionSummary.reduce((sum: number, d: any) => sum + (d.total_fats || 0), 0) / nutritionSummary.length
+      );
+    }
+
+    // Buscar dados de água
+    const { data: waterData } = await supabase
+      .from("water_tracking")
+      .select("amount_ml, date")
+      .eq("user_id", userId)
+      .gte("date", weekStart)
+      .lte("date", weekEnd);
+
+    if (waterData && waterData.length > 0) {
+      const dailyTotals: Record<string, number> = {};
+      waterData.forEach((entry: any) => {
+        if (!dailyTotals[entry.date]) dailyTotals[entry.date] = 0;
+        dailyTotals[entry.date] += entry.amount_ml;
+      });
+      const dailyValues = Object.values(dailyTotals);
+      nutritionData.waterAverage = Math.round(
+        dailyValues.reduce((sum, val) => sum + val, 0) / dailyValues.length
+      );
+    }
+
+  } catch (error) {
+    console.log("⚠️ Erro ao buscar dados de nutrição:", error);
+  }
+
+  // Calcular score nutricional
+  let nutritionScore = 50;
+  if (nutritionData.avgCalories >= 1500 && nutritionData.avgCalories <= 2500) nutritionScore += 15;
+  if (nutritionData.avgProtein >= 50) nutritionScore += 10;
+  if (nutritionData.waterAverage >= 2000) nutritionScore += 15;
+  if (nutritionData.mealsCount >= 14) nutritionScore += 10;
+  nutritionScore = Math.min(100, nutritionScore);
+
+  // Gerar análise com IA
+  let analysis = '';
+  let recommendations: string[] = [];
+
+  const sofiaPrompt = `
+Você é a Sofia, nutricionista pessoal que acompanha ${userName} há meses. Você conhece as preferências alimentares e o histórico nutricional do paciente.
+
+DADOS NUTRICIONAIS DA SEMANA (${weekStart} a ${weekEnd}):
+- Refeições registradas: ${nutritionData.mealsCount}
+- Calorias médias: ${nutritionData.avgCalories} kcal/dia
+- Proteínas: ${nutritionData.avgProtein}g/dia
+- Carboidratos: ${nutritionData.avgCarbs}g/dia
+- Gorduras: ${nutritionData.avgFats}g/dia
+- Hidratação média: ${(nutritionData.waterAverage / 1000).toFixed(1)}L/dia
+- Score Nutricional: ${nutritionScore}/100
+
+INSTRUÇÕES:
+1. Fale como nutricionista pessoal que conhece o paciente há tempo
+2. Seja carinhosa, acolhedora e motivadora
+3. Analise os padrões alimentares baseado nos dados
+4. Elogie os pontos positivos PRIMEIRO
+5. Sugira melhorias de forma gentil e prática
+6. Dê 3 dicas específicas para próxima semana
+7. Seja breve - máximo 200 palavras
+8. NÃO use formato de lista na análise principal, apenas nas dicas
+
+Formato:
+ANÁLISE: [2-3 frases sobre a semana nutricional]
+DICAS:
+1. [dica prática]
+2. [dica prática]
+3. [dica prática]`;
+
+  if (lovableApiKey) {
+    try {
+      const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${lovableApiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash",
+          messages: [
+            { role: "system", content: "Você é a Sofia, uma nutricionista carinhosa e motivadora." },
+            { role: "user", content: sofiaPrompt }
+          ],
+          max_tokens: 500,
+          temperature: 0.7
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const content = data.choices[0].message.content;
+        
+        // Parse response
+        const analysisMatch = content.match(/ANÁLISE:\s*([\s\S]*?)(?=DICAS:|$)/i);
+        if (analysisMatch) {
+          analysis = analysisMatch[1].trim();
+        }
+        
+        const tipsMatch = content.match(/DICAS:\s*([\s\S]*)/i);
+        if (tipsMatch) {
+          recommendations = tipsMatch[1]
+            .split(/\d+\./)
+            .filter((t: string) => t.trim())
+            .map((t: string) => t.trim())
+            .slice(0, 3);
+        }
+        
+        console.log("✅ Análise da Sofia gerada com sucesso");
+      }
+    } catch (error) {
+      console.log("⚠️ Erro na análise Sofia:", error);
+    }
+  }
+
+  // Fallback
+  if (!analysis) {
+    analysis = `${userName.split(' ')[0]}, analisando sua semana nutricional, vi que você registrou ${nutritionData.mealsCount} refeições. Sua hidratação média foi de ${(nutritionData.waterAverage / 1000).toFixed(1)}L por dia. Continue focando em uma alimentação equilibrada e consciente!`;
+    recommendations = [
+      "Mantenha hidratação de pelo menos 2L de água por dia",
+      "Inclua mais proteínas em cada refeição principal",
+      "Registre todas as suas refeições para um acompanhamento melhor"
+    ];
+  }
+
+  return {
+    nutritionScore,
+    analysis,
+    recommendations,
+    data: nutritionData
+  };
+}
+
 function formatPhone(phone: string): string {
   let cleaned = phone.replace(/\D/g, "");
   if (cleaned.startsWith("0")) cleaned = cleaned.substring(1);
@@ -192,13 +444,23 @@ function formatPhone(phone: string): string {
   return cleaned;
 }
 
-function formatReportMessage(userName: string, report: any, weekStart: string, weekEnd: string): string {
+function formatReportMessage(
+  userName: string, 
+  report: any, 
+  sofiaAnalysis: { nutritionScore: number; analysis: string; recommendations: string[] },
+  weekStart: string, 
+  weekEnd: string
+): string {
   const firstName = userName?.split(" ")[0] || "você";
   const data = report.data || {};
   
   // Health Score
   const healthScore = report.healthScore || 0;
   const scoreEmoji = healthScore >= 80 ? "🌟" : healthScore >= 60 ? "✨" : healthScore >= 40 ? "💪" : "🎯";
+  
+  // Nutrition Score
+  const nutritionScore = sofiaAnalysis.nutritionScore || 0;
+  const nutriEmoji = nutritionScore >= 80 ? "🌟" : nutritionScore >= 60 ? "💚" : nutritionScore >= 40 ? "🌱" : "🍀";
   
   // Dados formatados
   const weightChange = data.weight?.change 
@@ -231,69 +493,76 @@ function formatReportMessage(userName: string, report: any, weekStart: string, w
     return `${day}/${month}`;
   };
 
-  // Mensagem com DUPLA VOZ
-  let message = `*${firstName}*, aqui está seu resumo semanal! 📊
+  // Mensagem PREMIUM com DUPLA VOZ
+  let message = `🏆 *RELATÓRIO SEMANAL PREMIUM*
+━━━━━━━━━━━━━━━━━━━━
+
+Olá, *${firstName}*! 👋
 
 📅 _${formatDate(weekStart)} a ${formatDate(weekEnd)}_
 
-━━━━━━━━━━━━━━━━
+━━━━━━━━━━━━━━━━━━━━
 
-🩺 *Dr. Vital analisa:*
+🩺 *DR. VITAL ANALISA:*
 
 ${scoreEmoji} *Health Score: ${healthScore}/100*
 
+📊 *Seus números da semana:*
 ⚖️ Peso: ${weightEmoji} ${weightChange}
 ${waterEmoji} Hidratação: ${waterAvg}
 ${sleepEmoji} Sono: ${sleepAvg}
-😊 Humor médio: ${moodAvg}
+😊 Humor: ${moodAvg}
 🏃 Exercícios: ${exerciseDays} dias (${exerciseMinutes}min)
 🎯 Missões: ${missionsCompleted}/7`;
 
   if (streak > 0) {
-    message += `\n🔥 Streak: ${streak} dias!`;
+    message += `\n🔥 Streak: ${streak} dias consecutivos!`;
   }
 
-  message += `\n\n━━━━━━━━━━━━━━━━`;
-
-  // Análise resumida do Dr. Vital
+  // Análise do Dr. Vital
   if (report.analysis) {
     let analysisShort = report.analysis;
-    if (analysisShort.length > 300) {
-      analysisShort = analysisShort.substring(0, 297) + "...";
+    if (analysisShort.length > 350) {
+      analysisShort = analysisShort.substring(0, 347) + "...";
     }
-    message += `\n\n📋 *Análise:*\n${analysisShort}`;
+    message += `\n\n📋 *Análise Médica:*\n${analysisShort}`;
   }
 
-  // Mensagem da Sofia (motivacional)
-  message += `\n\n━━━━━━━━━━━━━━━━
+  message += `\n\n━━━━━━━━━━━━━━━━━━━━
 
-💚 *Sofia diz:*
-`;
+🥗 *SOFIA - SUA NUTRICIONISTA:*
 
-  if (healthScore >= 80) {
-    message += `Você está arrasando! Seu compromisso com a saúde está dando resultados incríveis. Continue assim! ✨`;
-  } else if (healthScore >= 60) {
-    message += `Você está no caminho certo! Cada dia é uma oportunidade de cuidar ainda mais de você. Orgulho! 💪`;
-  } else if (healthScore >= 40) {
-    message += `Sei que nem sempre é fácil, mas você está tentando e isso é o que importa. Semana que vem será ainda melhor! 🌟`;
-  } else {
-    message += `Estou aqui com você, tá? Uma semana de cada vez. Pequenos passos fazem grandes jornadas. Vamos juntos! 🤝`;
+${nutriEmoji} *Score Nutricional: ${nutritionScore}/100*`;
+
+  // Análise da Sofia
+  if (sofiaAnalysis.analysis) {
+    message += `\n\n${sofiaAnalysis.analysis}`;
   }
 
-  // Recomendações (máx 2)
+  // Dicas da Sofia
+  if (sofiaAnalysis.recommendations && sofiaAnalysis.recommendations.length > 0) {
+    message += `\n\n🌱 *Dicas para esta semana:*`;
+    sofiaAnalysis.recommendations.slice(0, 3).forEach((rec, i) => {
+      const shortRec = rec.length > 80 ? rec.substring(0, 77) + "..." : rec;
+      message += `\n${i + 1}. ${shortRec}`;
+    });
+  }
+
+  // Recomendações do Dr. Vital (máx 2)
   if (report.recommendations && report.recommendations.length > 0) {
-    message += `\n\n💡 *Foco da semana:*`;
+    message += `\n\n💡 *Foco da semana (Dr. Vital):*`;
     report.recommendations.slice(0, 2).forEach((rec: string, i: number) => {
       const shortRec = rec.length > 80 ? rec.substring(0, 77) + "..." : rec;
       message += `\n${i + 1}. ${shortRec}`;
     });
   }
 
-  message += `\n\n━━━━━━━━━━━━━━━━
+  message += `\n\n━━━━━━━━━━━━━━━━━━━━
 
-_Acesse o app para ver o relatório completo!_
+✨ _Você está evoluindo!_
+_Acesse o app para ver o relatório completo._
 
-Dr. Vital 🩺 & Sofia 💚
+🩺 *Dr. Vital* & 💚 *Sofia*
 _Instituto dos Sonhos_`;
 
   return message;
