@@ -3680,6 +3680,59 @@ export type Database = {
         }
         Relationships: []
       }
+      goal_reminders: {
+        Row: {
+          created_at: string | null
+          goal_id: string
+          id: string
+          last_sent_at: string | null
+          reminder_day: number | null
+          reminder_enabled: boolean | null
+          reminder_frequency: string | null
+          reminder_time: string | null
+          send_push: boolean | null
+          send_whatsapp: boolean | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          goal_id: string
+          id?: string
+          last_sent_at?: string | null
+          reminder_day?: number | null
+          reminder_enabled?: boolean | null
+          reminder_frequency?: string | null
+          reminder_time?: string | null
+          send_push?: boolean | null
+          send_whatsapp?: boolean | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          goal_id?: string
+          id?: string
+          last_sent_at?: string | null
+          reminder_day?: number | null
+          reminder_enabled?: boolean | null
+          reminder_frequency?: string | null
+          reminder_time?: string | null
+          send_push?: boolean | null
+          send_whatsapp?: boolean | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "goal_reminders_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "user_goals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       goal_updates: {
         Row: {
           created_at: string | null

@@ -40,7 +40,7 @@ serve(async (req) => {
     console.log(`💚 Sofia: Enviando lembretes carinhosos (${reminderType})`);
 
     const today = new Date().toISOString().split("T")[0];
-    const twoDaysAgo = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
 
     // Buscar usuários com lembretes habilitados
     const { data: settingsRows, error: settingsError } = await supabase
@@ -88,18 +88,21 @@ serve(async (req) => {
               .from("weight_measurements")
               .select("id")
               .eq("user_id", user.user_id)
-              .gte("measurement_date", twoDaysAgo)
+              .gte("measurement_date", sevenDaysAgo)
               .limit(1);
 
             if (!weights || weights.length === 0) {
               shouldSend = true;
-              reminderMessage = `*${firstName}*, só passando para um carinho! ⚖️
+              reminderMessage = `*${firstName}*, é dia de pesagem! ⚖️
 
-Notei que você não registrou seu peso nos últimos dias. Sem cobrança, tá? 💚
+Sua pesagem semanal está esperando por você! 💚
 
-Pesar-se regularmente ajuda você a acompanhar sua evolução e celebrar suas vitórias! 📊
+Pesar-se uma vez por semana ajuda você a:
+📊 Acompanhar sua evolução real
+🎯 Manter o foco nos seus objetivos
+✨ Celebrar cada conquista
 
-_Que tal registrar agora? Eu vou adorar ver seu progresso!_ ✨
+_Que tal registrar agora? Eu vou adorar ver seu progresso!_ 💪
 
 ${SOFIA_ASSINATURA}`;
             }
