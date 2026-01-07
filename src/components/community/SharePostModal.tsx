@@ -118,7 +118,7 @@ export const SharePostModal: React.FC<SharePostModalProps> = ({
 
   const copyLink = () => {
     if (!post) return;
-    const link = `${window.location.origin}/community/post/${post.id}`;
+    const link = `https://institutodossonhos.com.br/community/post/${post.id}`;
     navigator.clipboard.writeText(link);
     toast.success('Link copiado!');
   };

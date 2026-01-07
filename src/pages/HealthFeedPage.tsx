@@ -156,8 +156,7 @@ export default function HealthFeedPage() {
 
   const handleFollowUser = async (userId: string) => {
     await toggleFollow(userId);
-    // Create notification
-    createNotification(userId, 'follow', 'Começou a seguir você');
+    // Notification is already created in useFollow hook
   };
 
   const handleStoryClick = (groupIndex: number) => {
