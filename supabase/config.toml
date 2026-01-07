@@ -80,3 +80,12 @@ verify_jwt = false
 
 [functions.whatsapp-generate-template]
 verify_jwt = false
+
+[functions.generate-human-message]
+verify_jwt = false
+
+[functions.whatsapp-welcome]
+verify_jwt = false
+
+[functions.whatsapp-mission-complete]
+verify_jwt = false

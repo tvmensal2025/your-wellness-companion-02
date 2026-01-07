@@ -10828,6 +10828,36 @@ export type Database = {
           },
         ]
       }
+      whatsapp_scheduled_messages: {
+        Row: {
+          created_at: string | null
+          id: string
+          message_type: string
+          scheduled_date: string
+          sent_at: string | null
+          status: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          message_type: string
+          scheduled_date: string
+          sent_at?: string | null
+          status?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          message_type?: string
+          scheduled_date?: string
+          sent_at?: string | null
+          status?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       wheel_of_life: {
         Row: {
           assessment_date: string | null
