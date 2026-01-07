@@ -12,6 +12,7 @@ interface LevelSystemProps {
   totalXP: number;
   achievements?: number;
   rank?: string;
+  rankingPosition?: number;
   animated?: boolean;
 }
 
@@ -37,6 +38,7 @@ export const LevelSystem: React.FC<LevelSystemProps> = ({
   totalXP,
   achievements = 0,
   rank = 'Bronze',
+  rankingPosition,
   animated = true
 }) => {
   const progressPercentage = ((currentXP) / (currentXP + xpToNextLevel)) * 100;
@@ -161,7 +163,7 @@ export const LevelSystem: React.FC<LevelSystemProps> = ({
               }}
               className="text-xl font-bold text-white"
             >
-              #{Math.floor(Math.random() * 100) + 1}
+              #{rankingPosition || '-'}
             </motion.div>
             <div className="text-xs text-white/70">Ranking</div>
           </div>

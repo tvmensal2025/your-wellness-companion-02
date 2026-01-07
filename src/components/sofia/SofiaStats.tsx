@@ -37,18 +37,8 @@ const SofiaStats: React.FC = () => {
     { day: 'Dom', messages: 3, nutrition: 78 }
   ]);
 
-  useEffect(() => {
-    // Simular atualização dos dados
-    const interval = setInterval(() => {
-      setStats(prev => ({
-        ...prev,
-        totalMessages: prev.totalMessages + Math.floor(Math.random() * 2),
-        weeklyProgress: Math.min(100, prev.weeklyProgress + Math.floor(Math.random() * 2))
-      }));
-    }, 30000); // Atualizar a cada 30 segundos
-
-    return () => clearInterval(interval);
-  }, []);
+  // Dados estáticos - sem atualizações aleatórias
+  // TODO: Buscar dados reais do banco de dados
 
   const getScoreColor = (score: number) => {
     if (score >= 90) return 'text-green-600';

@@ -94,7 +94,7 @@ export default function RankingCommunity({ user }: RankingCommunityProps) {
         <div className="text-center space-y-4">
           <Trophy className="w-16 h-16 mx-auto text-muted-foreground" />
           <p className="text-muted-foreground">{error}</p>
-          <Button onClick={refetch} variant="outline">Tentar novamente</Button>
+          <Button onClick={() => refetch()} variant="outline">Tentar novamente</Button>
         </div>
       </div>
     );
