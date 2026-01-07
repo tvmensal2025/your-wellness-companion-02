@@ -34,19 +34,38 @@ export const StoriesSection: React.FC<StoriesSectionProps> = ({
   onStoryClick,
   onCreateStory
 }) => {
+  // Find the index of own story group to open viewer
+  const ownGroupIndex = groupedStories.findIndex(g => g.is_own);
+  const hasOwn = ownGroupIndex >= 0;
+
+  const handleOwnStoryClick = () => {
+    if (hasOwn) {
+      // Open story viewer for own stories
+      onStoryClick(ownGroupIndex);
+    } else {
+      // No stories yet, open create modal
+      onCreateStory();
+    }
+  };
+
+  const handleAddStoryClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent triggering the parent onClick
+    onCreateStory();
+  };
+
   return (
     <div className="bg-gradient-to-r from-primary/5 via-background to-accent/5 dark:from-primary/10 dark:via-background dark:to-accent/10 rounded-2xl border border-primary/20 shadow-sm p-3 sm:p-4 mb-4">
       <div className="flex gap-3 sm:gap-4 overflow-x-auto pb-2 scrollbar-hide">
-        {/* Add Story Button */}
+        {/* Own Story / Add Story Button */}
         <motion.div
           whileHover={{ scale: 1.05, y: -2 }}
           whileTap={{ scale: 0.95 }}
-          onClick={onCreateStory}
+          onClick={handleOwnStoryClick}
           className="flex flex-col items-center gap-1.5 cursor-pointer min-w-[64px] sm:min-w-[76px]"
         >
           <div className="relative">
-            <div className={`p-[2px] rounded-full ${hasOwnStory ? 'bg-gradient-to-br from-primary via-primary/80 to-accent' : 'bg-gradient-to-br from-primary/30 to-primary/10'}`}>
-              <Avatar className="w-14 h-14 sm:w-16 sm:h-16 border-2 border-dashed border-primary/50">
+            <div className={`p-[2px] rounded-full ${hasOwn ? 'bg-gradient-to-br from-primary via-primary/80 to-accent' : 'bg-gradient-to-br from-primary/30 to-primary/10'}`}>
+              <Avatar className={`w-14 h-14 sm:w-16 sm:h-16 ${hasOwn ? 'border-[3px] border-background' : 'border-2 border-dashed border-primary/50'}`}>
                 <AvatarImage src={currentUserAvatar} />
                 <AvatarFallback className="bg-primary/10 text-primary font-semibold">
                   {currentUserName?.charAt(0)?.toUpperCase() || 'U'}
@@ -55,12 +74,13 @@ export const StoriesSection: React.FC<StoriesSectionProps> = ({
             </div>
             <motion.div 
               whileHover={{ scale: 1.2 }}
-              className="absolute -bottom-1 -right-1 w-6 h-6 bg-primary rounded-full flex items-center justify-center shadow-lg ring-2 ring-background"
+              onClick={handleAddStoryClick}
+              className="absolute -bottom-1 -right-1 w-6 h-6 bg-primary rounded-full flex items-center justify-center shadow-lg ring-2 ring-background cursor-pointer"
             >
               <Plus className="w-4 h-4 text-primary-foreground" />
             </motion.div>
           </div>
-          <span className="text-[10px] sm:text-xs text-primary font-medium">Seu story</span>
+          <span className="text-[10px] sm:text-xs text-primary font-medium">{hasOwn ? 'Seu story' : 'Criar story'}</span>
         </motion.div>
 
         {/* Stories */}
