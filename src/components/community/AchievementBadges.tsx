@@ -23,41 +23,37 @@ const getRarityConfig = (rarity?: string) => {
   switch (rarity) {
     case 'legendary':
       return {
-        bgGradient: 'from-yellow-400 via-amber-500 to-orange-500',
-        borderColor: 'border-yellow-400/60',
-        textColor: 'text-yellow-100',
-        shadowColor: 'shadow-yellow-500/30',
-        glowColor: 'yellow',
+        bgGradient: 'from-primary via-primary/80 to-primary/60',
+        borderColor: 'border-primary/50',
+        textColor: 'text-primary-foreground',
+        shadowColor: 'shadow-primary/20',
         icon: Crown,
         label: 'Lendário'
       };
     case 'epic':
       return {
-        bgGradient: 'from-purple-500 via-violet-500 to-fuchsia-500',
-        borderColor: 'border-purple-400/60',
-        textColor: 'text-purple-100',
-        shadowColor: 'shadow-purple-500/30',
-        glowColor: 'purple',
+        bgGradient: 'from-secondary via-secondary/80 to-secondary/60',
+        borderColor: 'border-secondary/50',
+        textColor: 'text-secondary-foreground',
+        shadowColor: 'shadow-secondary/20',
         icon: Trophy,
         label: 'Épico'
       };
     case 'rare':
       return {
-        bgGradient: 'from-blue-400 via-cyan-500 to-teal-500',
-        borderColor: 'border-blue-400/60',
-        textColor: 'text-blue-100',
-        shadowColor: 'shadow-blue-500/30',
-        glowColor: 'blue',
+        bgGradient: 'from-primary/80 via-primary/60 to-primary/40',
+        borderColor: 'border-primary/40',
+        textColor: 'text-primary-foreground',
+        shadowColor: 'shadow-primary/15',
         icon: Award,
         label: 'Raro'
       };
     default: // common
       return {
-        bgGradient: 'from-gray-400 via-gray-500 to-slate-500',
-        borderColor: 'border-gray-400/40',
-        textColor: 'text-gray-100',
-        shadowColor: 'shadow-gray-500/20',
-        glowColor: 'gray',
+        bgGradient: 'from-muted-foreground/80 via-muted-foreground/60 to-muted-foreground/40',
+        borderColor: 'border-muted/50',
+        textColor: 'text-background',
+        shadowColor: 'shadow-muted/10',
         icon: Star,
         label: 'Comum'
       };
@@ -111,7 +107,7 @@ export const AchievementBadges: React.FC<AchievementBadgesProps> = ({
                   `}
                 >
                   {/* Glow effect */}
-                  <div className={`absolute inset-0 rounded-full bg-gradient-to-br ${config.bgGradient} opacity-0 group-hover/badge:opacity-50 blur-md transition-opacity duration-300`} />
+                  <div className={`absolute inset-0 rounded-full bg-gradient-to-br ${config.bgGradient} opacity-0 group-hover/badge:opacity-40 blur-md transition-opacity duration-300`} />
                   
                   {/* Sparkle effect on legendary */}
                   {achievement.rarity === 'legendary' && (
@@ -120,7 +116,7 @@ export const AchievementBadges: React.FC<AchievementBadgesProps> = ({
                       transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
                       className="absolute inset-0 flex items-center justify-center"
                     >
-                      <Sparkles className="w-3 h-3 absolute -top-0.5 -right-0.5 text-yellow-300" />
+                      <Sparkles className="w-3 h-3 absolute -top-0.5 -right-0.5 text-primary" />
                     </motion.div>
                   )}
                   
