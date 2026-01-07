@@ -40,37 +40,52 @@ serve(async (req) => {
 
     console.log("🌅 Iniciando envio de mensagens motivacionais...");
 
-    // Buscar usuários elegíveis
-    let query = supabase
+    // Buscar usuários elegíveis (sem depender de relacionamento FK no PostgREST)
+    let settingsQuery = supabase
+      .from("user_notification_settings")
+      .select("user_id, whatsapp_enabled, whatsapp_daily_motivation")
+      .eq("whatsapp_enabled", true)
+      .eq("whatsapp_daily_motivation", true);
+
+    if (targetUserId) {
+      settingsQuery = settingsQuery.eq("user_id", targetUserId);
+    }
+
+    const { data: settingsRows, error: settingsError } = await settingsQuery;
+
+    if (settingsError) {
+      console.error("Erro ao buscar configurações de notificação:", settingsError);
+      throw new Error(settingsError.message);
+    }
+
+    const eligibleUserIds = (settingsRows || []).map((s: any) => s.user_id).filter(Boolean);
+
+    if (eligibleUserIds.length === 0) {
+      console.log("📱 0 usuários elegíveis para mensagem motivacional");
+      return new Response(
+        JSON.stringify({ success: true, processed: 0, sent: 0, results: [] }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    let profilesQuery = supabase
       .from("profiles")
-      .select(`
-        user_id,
-        full_name,
-        phone,
-        user_notification_settings!inner(
-          whatsapp_enabled,
-          whatsapp_daily_motivation
-        )
-      `)
+      .select("user_id, full_name, phone")
+      .in("user_id", eligibleUserIds)
       .not("phone", "is", null);
 
     if (targetUserId) {
-      query = query.eq("user_id", targetUserId);
+      profilesQuery = profilesQuery.eq("user_id", targetUserId);
     }
 
-    const { data: users, error: usersError } = await query;
+    const { data: users, error: usersError } = await profilesQuery;
 
     if (usersError) {
       console.error("Erro ao buscar usuários:", usersError);
-      throw usersError;
+      throw new Error(usersError.message);
     }
 
-    const eligibleUsers = users?.filter((u: any) => {
-      const settings = Array.isArray(u.user_notification_settings) 
-        ? u.user_notification_settings[0] 
-        : u.user_notification_settings;
-      return settings?.whatsapp_enabled && settings?.whatsapp_daily_motivation;
-    }) || [];
+    const eligibleUsers = users || [];
 
     console.log(`📱 ${eligibleUsers.length} usuários elegíveis para mensagem motivacional`);
 

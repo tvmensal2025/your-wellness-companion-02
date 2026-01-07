@@ -40,28 +40,37 @@ serve(async (req) => {
     const today = new Date().toISOString().split("T")[0];
     const twoDaysAgo = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
 
-    // Buscar usuários com lembretes habilitados
+    // Buscar usuários com lembretes habilitados (sem depender de relacionamento FK no PostgREST)
+    const { data: settingsRows, error: settingsError } = await supabase
+      .from("user_notification_settings")
+      .select("user_id, whatsapp_enabled, whatsapp_reminders")
+      .eq("whatsapp_enabled", true)
+      .eq("whatsapp_reminders", true);
+
+    if (settingsError) {
+      console.error("Erro ao buscar configurações de notificação:", settingsError);
+      throw new Error(settingsError.message);
+    }
+
+    const eligibleUserIds = (settingsRows || []).map((s: any) => s.user_id).filter(Boolean);
+
+    if (eligibleUserIds.length === 0) {
+      console.log("📱 0 usuários com lembretes habilitados");
+      return new Response(
+        JSON.stringify({ success: true, type: reminderType, sent: 0, results: [] }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const { data: users, error: usersError } = await supabase
       .from("profiles")
-      .select(`
-        user_id,
-        full_name,
-        phone,
-        user_notification_settings!inner(
-          whatsapp_enabled,
-          whatsapp_reminders
-        )
-      `)
+      .select("user_id, full_name, phone")
+      .in("user_id", eligibleUserIds)
       .not("phone", "is", null);
 
-    if (usersError) throw usersError;
+    if (usersError) throw new Error(usersError.message);
 
-    const eligibleUsers = users?.filter((u: any) => {
-      const settings = Array.isArray(u.user_notification_settings) 
-        ? u.user_notification_settings[0] 
-        : u.user_notification_settings;
-      return settings?.whatsapp_enabled && settings?.whatsapp_reminders;
-    }) || [];
+    const eligibleUsers = users || [];
 
     console.log(`📱 ${eligibleUsers.length} usuários com lembretes habilitados`);
 
