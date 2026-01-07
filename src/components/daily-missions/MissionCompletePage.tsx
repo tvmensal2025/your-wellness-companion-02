@@ -7,7 +7,7 @@ import { motion } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import html2canvas from 'html2canvas';
-import { DrVitalAnalysisCard } from './DrVitalAnalysisCard';
+import { DailyResponsesCard } from './DailyResponsesCard';
 
 interface MissionCompletePageProps {
   answers: Record<string, string | number>;
@@ -30,15 +30,10 @@ export const MissionCompletePage: React.FC<MissionCompletePageProps> = ({
 }) => {
   const [showConfetti, setShowConfetti] = useState(true);
   const [isSendingWhatsApp, setIsSendingWhatsApp] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [analysisData, setAnalysisData] = useState<{
-    userName: string;
-    analysis: string;
-    recommendation: string;
-  } | null>(null);
+  const [userName, setUserName] = useState<string>('');
   const { toast } = useToast();
   const captureRef = useRef<HTMLDivElement>(null);
-  const analysisCardRef = useRef<HTMLDivElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
 
   const handleSendToWhatsApp = async () => {
     if (!userId) {
@@ -51,55 +46,32 @@ export const MissionCompletePage: React.FC<MissionCompletePageProps> = ({
     }
 
     setIsSendingWhatsApp(true);
-    setIsGenerating(true);
 
     try {
-      toast({
-        title: "🤖 Gerando análise...",
-        description: "Dr. Vital está analisando suas respostas...",
-      });
-
-      // Passo 1: Gerar análise com IA
-      const { data: analysisResult, error: analysisError } = await supabase.functions.invoke('whatsapp-habits-analysis', {
-        body: {
-          userId,
-          answers,
-          questions,
-          totalPoints,
-          streakDays,
-          action: 'generate-analysis'
-        }
-      });
-
-      if (analysisError) throw analysisError;
-
-      if (!analysisResult?.success) {
-        throw new Error(analysisResult?.error || 'Erro ao gerar análise');
-      }
-
-      // Salvar dados da análise para renderizar o card
-      setAnalysisData({
-        userName: analysisResult.userName,
-        analysis: analysisResult.analysis,
-        recommendation: analysisResult.recommendation
-      });
+      // 1. Buscar nome do usuário
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('full_name')
+        .eq('user_id', userId)
+        .single();
       
-      setIsGenerating(false);
+      const name = profile?.full_name || 'Amigo(a)';
+      setUserName(name);
 
       toast({
-        title: "📸 Capturando...",
-        description: "Preparando seu card personalizado...",
+        title: "📸 Preparando...",
+        description: "Gerando seu card personalizado...",
       });
 
-      // Aguardar renderização do card
-      await new Promise(resolve => setTimeout(resolve, 800));
+      // 2. Aguardar renderização do card
+      await new Promise(resolve => setTimeout(resolve, 600));
 
-      if (!analysisCardRef.current) {
+      if (!cardRef.current) {
         throw new Error("Não foi possível renderizar o card");
       }
 
-      // Passo 2: Capturar o card como imagem
-      const canvas = await html2canvas(analysisCardRef.current, {
+      // 3. Capturar PNG simples (sem IA)
+      const canvas = await html2canvas(cardRef.current, {
         backgroundColor: null,
         scale: 2,
         useCORS: true,
@@ -110,10 +82,10 @@ export const MissionCompletePage: React.FC<MissionCompletePageProps> = ({
 
       toast({
         title: "📤 Enviando...",
-        description: "Mandando sua análise via WhatsApp...",
+        description: "Mandando seu resumo via WhatsApp...",
       });
 
-      // Passo 3: Enviar imagem via WhatsApp
+      // 4. Enviar imagem via WhatsApp (sem chamar IA)
       const { data: sendResult, error: sendError } = await supabase.functions.invoke('whatsapp-habits-analysis', {
         body: {
           userId,
@@ -128,7 +100,7 @@ export const MissionCompletePage: React.FC<MissionCompletePageProps> = ({
       if (sendResult?.success) {
         toast({
           title: "✅ Enviado!",
-          description: "Sua análise do Dr. Vital foi enviada via WhatsApp!",
+          description: "Seu resumo diário foi enviado via WhatsApp!",
         });
       } else {
         throw new Error(sendResult?.error || 'Erro ao enviar');
@@ -142,7 +114,6 @@ export const MissionCompletePage: React.FC<MissionCompletePageProps> = ({
       });
     } finally {
       setIsSendingWhatsApp(false);
-      setIsGenerating(false);
     }
   };
 
@@ -153,21 +124,18 @@ export const MissionCompletePage: React.FC<MissionCompletePageProps> = ({
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-primary/10 via-background to-muted flex items-start justify-center px-3 py-6 relative overflow-hidden">
-      {/* Hidden card for capture */}
-      {analysisData && (
-        <div className="absolute -left-[9999px] top-0">
-          <div ref={analysisCardRef}>
-            <DrVitalAnalysisCard
-              userName={analysisData.userName}
-              analysis={analysisData.analysis}
-              recommendation={analysisData.recommendation}
-              totalPoints={totalPoints}
-              streakDays={streakDays}
-              answers={answers as Record<string, string>}
-            />
-          </div>
+      {/* Hidden card for capture - Simple PNG without AI */}
+      <div className="absolute -left-[9999px] top-0">
+        <div ref={cardRef}>
+          <DailyResponsesCard
+            userName={userName || 'Amigo(a)'}
+            answers={answers as Record<string, string>}
+            questions={questions}
+            totalPoints={totalPoints}
+            streakDays={streakDays}
+          />
         </div>
-      )}
+      </div>
 
       {/* Visible content for page */}
       <div ref={captureRef} className="w-full max-w-md">
@@ -364,12 +332,12 @@ export const MissionCompletePage: React.FC<MissionCompletePageProps> = ({
                       {isSendingWhatsApp ? (
                         <>
                           <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          {isGenerating ? 'Dr. Vital analisando...' : 'Enviando...'}
+                          Enviando...
                         </>
                       ) : (
                         <>
                           <Send className="h-4 w-4 mr-2" />
-                          🩺 Receber Análise do Dr. Vital
+                          📤 Enviar Resumo via WhatsApp
                         </>
                       )}
                     </Button>
