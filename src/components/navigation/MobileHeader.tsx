@@ -42,7 +42,7 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
         </div>
         
         {/* Right side - Notifications + Avatar */}
-        <div className="flex items-center gap-2 shrink-0 justify-end z-10">
+        <div className="flex items-center gap-2 shrink-0 justify-end z-10 overflow-visible">
           <NotificationBell />
           
           {/* Avatar */}

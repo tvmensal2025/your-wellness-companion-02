@@ -9,45 +9,80 @@ import {
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { getNotificationIcon, getNotificationColor } from '@/lib/notifications';
 
 interface Notification {
   id: string;
   title: string;
   message: string;
+  type: string;
   created_at: string;
-  is_read?: boolean;
+  is_read: boolean;
+  action_url?: string;
 }
-
-// Sofia tips to show as notifications
-const sofiaTips = [
-  { id: '1', title: 'Dica da Sofia', message: 'Beba água antes das refeições para aumentar a saciedade' },
-  { id: '2', title: 'Dica da Sofia', message: 'Mantenha a consistência! Resultados vêm com o tempo' },
-  { id: '3', title: 'Dica da Sofia', message: 'Registre seu peso no mesmo horário para maior precisão' },
-  { id: '4', title: 'Dica da Sofia', message: 'Pequenos progressos diários geram grandes transformações' },
-  { id: '5', title: 'Dica da Sofia', message: 'O sono é fundamental para o controle do peso' },
-  { id: '6', title: 'Lembrete', message: 'Não esqueça de registrar sua refeição hoje!' },
-  { id: '7', title: 'Motivação', message: 'Cada passo conta na sua jornada de saúde!' },
-];
 
 export const NotificationBell: React.FC = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
-  const { toast } = useToast();
+  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    // Load a random Sofia tip as notification
-    const randomTip = sofiaTips[Math.floor(Math.random() * sofiaTips.length)];
-    const notification: Notification = {
-      ...randomTip,
-      created_at: new Date().toISOString(),
-      is_read: false,
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setUserId(user.id);
+      }
     };
-    setNotifications([notification]);
-    setUnreadCount(1);
+    getUser();
   }, []);
 
-  const markAsRead = (notificationId: string) => {
+  useEffect(() => {
+    if (!userId) return;
+
+    const fetchNotifications = async () => {
+      const { data, error } = await supabase
+        .from('notifications')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (!error && data) {
+        setNotifications(data as Notification[]);
+        setUnreadCount(data.filter((n: any) => !n.is_read).length);
+      }
+    };
+
+    fetchNotifications();
+
+    // Subscribe to realtime updates
+    const channel = supabase
+      .channel('notifications-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${userId}`,
+        },
+        () => {
+          fetchNotifications();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [userId]);
+
+  const markAsRead = async (notificationId: string) => {
+    await supabase
+      .from('notifications')
+      .update({ is_read: true })
+      .eq('id', notificationId);
+
     setNotifications(prev => 
       prev.map(notif => 
         notif.id === notificationId 
@@ -58,30 +93,49 @@ export const NotificationBell: React.FC = () => {
     setUnreadCount(prev => Math.max(0, prev - 1));
   };
 
+  const markAllAsRead = async () => {
+    if (!userId) return;
+    
+    await supabase
+      .from('notifications')
+      .update({ is_read: true })
+      .eq('user_id', userId)
+      .eq('is_read', false);
+
+    setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+    setUnreadCount(0);
+  };
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
-    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
+    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
     
-    if (diffInHours < 1) return 'Agora há pouco';
-    if (diffInHours < 24) return `${diffInHours}h atrás`;
+    if (diffInMinutes < 1) return 'Agora';
+    if (diffInMinutes < 60) return `${diffInMinutes}min`;
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if (diffInHours < 24) return `${diffInHours}h`;
     return date.toLocaleDateString('pt-BR');
   };
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative h-8 w-8 hover:bg-primary/10 transition-colors">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="relative h-8 w-8 overflow-visible hover:bg-primary/10 transition-colors"
+        >
           <Bell className={`h-5 w-5 transition-all duration-300 ${unreadCount > 0 ? 'animate-[bell-ring_1s_ease-in-out_infinite] text-primary' : 'text-muted-foreground'}`} />
           {unreadCount > 0 && (
             <>
               <Badge 
                 variant="destructive" 
-                className="absolute -top-0.5 -right-0.5 h-4 w-4 p-0 flex items-center justify-center text-[10px] font-bold animate-pulse shadow-lg"
+                className="absolute -top-1 -right-1 h-4 w-4 p-0 flex items-center justify-center text-[10px] font-bold animate-pulse shadow-lg"
               >
                 {unreadCount > 9 ? '9+' : unreadCount}
               </Badge>
-              <span className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full bg-destructive animate-ping opacity-50" />
+              <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-destructive animate-ping opacity-50" />
             </>
           )}
         </Button>
@@ -111,7 +165,7 @@ export const NotificationBell: React.FC = () => {
           </div>
         ) : (
           <div className="max-h-80 overflow-y-auto">
-            {notifications.map((notification, index) => (
+            {notifications.map((notification) => (
               <DropdownMenuItem
                 key={notification.id}
                 className={`p-4 cursor-pointer border-b border-border/30 last:border-0 focus:bg-primary/5 transition-colors ${
@@ -120,16 +174,8 @@ export const NotificationBell: React.FC = () => {
                 onClick={() => markAsRead(notification.id)}
               >
                 <div className="flex gap-3 w-full">
-                  <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
-                    notification.title.includes('Sofia') 
-                      ? 'bg-gradient-to-br from-primary/20 to-primary/5' 
-                      : notification.title.includes('Lembrete')
-                        ? 'bg-gradient-to-br from-amber-500/20 to-amber-500/5'
-                        : 'bg-gradient-to-br from-green-500/20 to-green-500/5'
-                  }`}>
-                    <span className="text-lg">
-                      {notification.title.includes('Sofia') ? '💡' : notification.title.includes('Lembrete') ? '⏰' : '🎯'}
-                    </span>
+                  <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center bg-gradient-to-br ${getNotificationColor(notification.type)}`}>
+                    <span className="text-lg">{getNotificationIcon(notification.type)}</span>
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
@@ -159,10 +205,7 @@ export const NotificationBell: React.FC = () => {
               variant="ghost" 
               size="sm" 
               className="w-full text-primary hover:text-primary hover:bg-primary/10 font-medium"
-              onClick={() => {
-                setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
-                setUnreadCount(0);
-              }}
+              onClick={markAllAsRead}
             >
               ✓ Marcar todas como lidas
             </Button>
