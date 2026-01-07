@@ -451,14 +451,10 @@ const UserProfile = ({ onOpenLayoutPrefs }: UserProfileProps = {}) => {
       {/* Main Content Tabs - Scrollable em mobile */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <div className="overflow-x-auto pb-1">
-          <TabsList className="inline-flex w-max sm:w-full min-w-full sm:grid sm:grid-cols-5 mb-3 sm:mb-6 h-9 sm:h-10 p-1 gap-0.5 sm:gap-1">
+        <TabsList className="inline-flex w-max sm:w-full min-w-full sm:grid sm:grid-cols-4 mb-3 sm:mb-6 h-9 sm:h-10 p-1 gap-0.5 sm:gap-1">
             <TabsTrigger value="overview" className="flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-sm whitespace-nowrap">
               <User className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               <span>Geral</span>
-            </TabsTrigger>
-            <TabsTrigger value="medical" className="flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-sm whitespace-nowrap">
-              <FileText className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              <span>Exames</span>
             </TabsTrigger>
             <TabsTrigger value="achievements" className="flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 text-[11px] sm:text-sm whitespace-nowrap">
               <Award className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
@@ -635,73 +631,6 @@ const UserProfile = ({ onOpenLayoutPrefs }: UserProfileProps = {}) => {
               </CardContent>
             </Card>
           </div>
-        </TabsContent>
-
-        {/* Medical Documents Tab */}
-        <TabsContent value="medical" className="space-y-6">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle>Meus Exames</CardTitle>
-                <CardDescription>Histórico dos seus exames médicos analisados</CardDescription>
-              </div>
-              <Button variant="outline" size="sm">
-                <Plus className="h-4 w-4 mr-2" />
-                Novo Exame
-              </Button>
-            </CardHeader>
-            <CardContent>
-              {medicalDocuments.length === 0 ? (
-                <div className="text-center py-12">
-                  <FileText className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-foreground mb-2">Nenhum exame encontrado</h3>
-                  <p className="text-muted-foreground mb-4">
-                    Faça upload dos seus exames para receber análises detalhadas
-                  </p>
-                  <Button>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Enviar Primeiro Exame
-                  </Button>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {medicalDocuments.map((doc) => (
-                    <div
-                      key={doc.id}
-                      className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 border rounded-lg hover:bg-muted/50 transition-colors"
-                    >
-                      <div className="flex items-start gap-3 sm:items-center sm:gap-4 min-w-0">
-                        <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center shrink-0">
-                          <FileText className="h-5 w-5 text-primary" />
-                        </div>
-                        <div className="min-w-0">
-                          <p className="font-medium truncate">{doc.file_name}</p>
-                          <p className="text-sm text-muted-foreground truncate">
-                            {doc.document_type} • {new Date(doc.upload_date).toLocaleDateString('pt-BR')}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex w-full items-center justify-between gap-2 sm:w-auto sm:justify-start">
-                        <Badge variant={doc.analysis_status === 'completed' ? 'default' : 'secondary'}>
-                          {doc.analysis_status === 'completed' ? 'Analisado' : 'Processando'}
-                        </Badge>
-
-                        <div className="flex items-center gap-1.5 sm:gap-2">
-                          <Button variant="ghost" size="sm">
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="sm">
-                            <Download className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
         </TabsContent>
 
         {/* Achievements Tab */}
