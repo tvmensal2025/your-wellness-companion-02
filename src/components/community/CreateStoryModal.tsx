@@ -71,11 +71,13 @@ export const CreateStoryModal: React.FC<CreateStoryModalProps> = ({
 
     setUploading(true);
     try {
-      // For text stories, we use the text as the content and color as background
-      await onCreateStory('', 'text', textContent, selectedColor);
+      // For text stories, pass 'text-story' as mediaUrl since database column is NOT NULL
+      await onCreateStory('text-story', 'text', textContent, selectedColor);
       resetAndClose();
+      toast.success('Story criado com sucesso!');
     } catch (err) {
       console.error('Error creating text story:', err);
+      toast.error('Erro ao criar story');
     } finally {
       setUploading(false);
     }
