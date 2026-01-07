@@ -47,6 +47,18 @@ export function useFollow() {
       return false;
     }
 
+    // Verificar se o usuário alvo existe no profiles antes de seguir
+    const { data: targetProfile, error: profileError } = await supabase
+      .from('profiles')
+      .select('user_id')
+      .eq('user_id', userId)
+      .single();
+
+    if (profileError || !targetProfile) {
+      toast.error('Usuário não encontrado');
+      return false;
+    }
+
     // Optimistic update
     setFollowing(prev => new Set([...prev, userId]));
 
