@@ -95,13 +95,10 @@ export const MissionCompletePage: React.FC<MissionCompletePageProps> = ({
                 </p>
               </div>
 
-              <Button
-                onClick={onContinue}
-                className="w-full h-10 rounded-xl bg-gradient-mission text-primary-foreground text-xs font-semibold shadow-hero hover:opacity-95 transition-opacity flex items-center justify-center"
-              >
-                <CheckCircle className="mr-1.5 h-3.5 w-3.5" />
-                🎉 Parabéns! Ir para o dashboard
-              </Button>
+              <div className="flex items-center justify-center gap-2 py-2 text-primary">
+                <CheckCircle className="h-5 w-5" />
+                <span className="text-sm font-bold">🎉 Parabéns! Missão Concluída!</span>
+              </div>
             </CardContent>
           </Card>
         </section>
