@@ -11,10 +11,10 @@ serve(async (req) => {
   }
 
   try {
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    const GOOGLE_AI_API_KEY = Deno.env.get("GOOGLE_AI_API_KEY");
     
-    if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY não configurada");
+    if (!GOOGLE_AI_API_KEY) {
+      throw new Error("GOOGLE_AI_API_KEY não configurada");
     }
 
     const { action, category, name, description, content, existingPrompt } = await req.json();
@@ -81,34 +81,40 @@ Responda APENAS com a mensagem melhorada, sem explicações.`;
       throw new Error(`Ação inválida: ${action}`);
     }
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          { 
-            role: "system", 
-            content: "Você é um especialista em copywriting para mensagens de WhatsApp na área de saúde e bem-estar." 
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${GOOGLE_AI_API_KEY}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          contents: [
+            {
+              role: "user",
+              parts: [{ text: `Você é um especialista em copywriting para mensagens de WhatsApp na área de saúde e bem-estar.\n\n${prompt}` }]
+            }
+          ],
+          generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: 1000,
           },
-          { role: "user", content: prompt }
-        ],
-        temperature: 0.7,
-        max_tokens: 1000
-      }),
-    });
+        }),
+      }
+    );
 
     if (!response.ok) {
       const errorData = await response.text();
       console.error("Erro na API:", errorData);
-      throw new Error(`Erro na API de IA: ${response.status}`);
+      throw new Error(`Erro na API do Google Gemini: ${response.status}`);
     }
 
     const data = await response.json();
-    const generatedContent = data.choices[0].message.content.trim();
+    const generatedContent = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "";
+    
+    if (!generatedContent) {
+      throw new Error("Resposta vazia do Gemini");
+    }
 
     console.log("✅ Template gerado com sucesso");
 

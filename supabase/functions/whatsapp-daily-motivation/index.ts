@@ -14,13 +14,17 @@ serve(async (req) => {
   try {
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    const GOOGLE_AI_API_KEY = Deno.env.get("GOOGLE_AI_API_KEY");
     const EVOLUTION_API_URL = Deno.env.get("EVOLUTION_API_URL");
     const EVOLUTION_API_KEY = Deno.env.get("EVOLUTION_API_KEY");
     const EVOLUTION_INSTANCE = Deno.env.get("EVOLUTION_INSTANCE");
 
     if (!EVOLUTION_API_URL || !EVOLUTION_API_KEY || !EVOLUTION_INSTANCE) {
       throw new Error("Evolution API não configurada");
+    }
+
+    if (!GOOGLE_AI_API_KEY) {
+      throw new Error("GOOGLE_AI_API_KEY não configurada");
     }
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
@@ -126,11 +130,10 @@ serve(async (req) => {
           ? (moodData.reduce((sum: number, m: any) => sum + m.day_rating, 0) / moodData.length).toFixed(1)
           : null;
 
-        // Gerar mensagem personalizada com IA
+        // Gerar mensagem personalizada com Google Gemini
         let motivationalMessage = "";
 
-        if (LOVABLE_API_KEY) {
-          const prompt = `Você é o Dr. Vital, assistente de saúde carinhoso e motivacional.
+        const prompt = `Você é o Dr. Vital, assistente de saúde carinhoso e motivacional.
 
 DADOS DO USUÁRIO ${user.full_name}:
 - Streak atual: ${streak} dias consecutivos
@@ -150,31 +153,38 @@ INSTRUÇÕES:
 
 Responda APENAS com a mensagem, sem introduções.`;
 
-          try {
-            const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        try {
+          const aiResponse = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${GOOGLE_AI_API_KEY}`,
+            {
               method: "POST",
               headers: {
-                "Authorization": `Bearer ${LOVABLE_API_KEY}`,
                 "Content-Type": "application/json",
               },
               body: JSON.stringify({
-                model: "google/gemini-2.5-flash",
-                messages: [
-                  { role: "system", content: "Você é o Dr. Vital, assistente de saúde motivacional." },
-                  { role: "user", content: prompt }
+                contents: [
+                  {
+                    role: "user",
+                    parts: [{ text: `Você é o Dr. Vital, assistente de saúde motivacional.\n\n${prompt}` }]
+                  }
                 ],
-                temperature: 0.8,
-                max_tokens: 200
+                generationConfig: {
+                  temperature: 0.8,
+                  maxOutputTokens: 200,
+                },
               }),
-            });
-
-            if (aiResponse.ok) {
-              const aiData = await aiResponse.json();
-              motivationalMessage = aiData.choices[0].message.content.trim();
             }
-          } catch (aiError) {
-            console.error("Erro na IA:", aiError);
+          );
+
+          if (aiResponse.ok) {
+            const aiData = await aiResponse.json();
+            motivationalMessage = aiData.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "";
+            console.log("✅ Mensagem gerada pelo Gemini Pro");
+          } else {
+            console.error("Erro Gemini:", await aiResponse.text());
           }
+        } catch (aiError) {
+          console.error("Erro na IA:", aiError);
         }
 
         // Fallback se IA falhar
