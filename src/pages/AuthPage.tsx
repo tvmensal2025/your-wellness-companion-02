@@ -514,6 +514,27 @@ const AuthPage = () => {
             id: data.user.id,
             name: profile?.full_name || data.user.email?.split('@')[0] || 'Usuário'
           });
+          
+          // Enviar mensagem de boas-vindas via WhatsApp (em background)
+          try {
+            console.log('📱 Enviando mensagem de boas-vindas...');
+            supabase.functions.invoke('whatsapp-welcome', {
+              body: {
+                userId: data.user.id,
+                phone: signupData.phone,
+                name: signupData.fullName.split(' ')[0]
+              }
+            }).then(result => {
+              if (result.error) {
+                console.error('❌ Erro ao enviar boas-vindas:', result.error);
+              } else {
+                console.log('✅ Boas-vindas enviada com sucesso');
+              }
+            });
+          } catch (welcomeError) {
+            console.error('❌ Erro ao disparar boas-vindas:', welcomeError);
+          }
+          
           toast({
             title: "Conta criada com sucesso!",
             description: "Bem-vindo ao Instituto dos Sonhos. Seus dados foram salvos."

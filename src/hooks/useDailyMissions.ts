@@ -270,6 +270,27 @@ export const useDailyMissions = ({ user }: UseDailyMissionsProps) => {
         description: `Parabéns! Você ganhou ${totalPoints} pontos hoje!`,
       });
 
+      // Enviar celebração via WhatsApp com PNG do resumo (em background)
+      try {
+        console.log('🎉 Enviando celebração de missão completa...');
+        supabase.functions.invoke('whatsapp-mission-complete', {
+          body: {
+            userId: user.id,
+            totalPoints,
+            streakDays: session.streak_days || 1,
+            answers: { ...answers, ...textResponses }
+          }
+        }).then(result => {
+          if (result.error) {
+            console.error('❌ Erro ao enviar celebração:', result.error);
+          } else {
+            console.log('✅ Celebração enviada com sucesso');
+          }
+        });
+      } catch (celebrationError) {
+        console.error('❌ Erro ao disparar celebração:', celebrationError);
+      }
+
       // UI otimista de gamificação removida: evitar erro 400 por challenge_id mock
       console.debug('[DailyMissions] Missão completa - gamificação adiada (sem challenge_id válido)');
 
