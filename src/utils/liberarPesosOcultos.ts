@@ -17,7 +17,7 @@ export async function liberarTodosPesosOcultos(): Promise<number> {
       .from('profiles')
       .update({ show_weight_results: true })
       .or('show_weight_results.is.null,show_weight_results.eq.false')
-      .select('id', { count: 'exact' });
+      .select('id');
 
     if (error) {
       console.error('Erro ao liberar pesos ocultos:', error);
