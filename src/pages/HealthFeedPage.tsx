@@ -520,7 +520,7 @@ export default function HealthFeedPage() {
                       missionsCompleted={rankingUser.missions_completed}
                       isCurrentUser={rankingUser.user_id === user?.id}
                       index={index}
-                      challengesCompleted={Math.floor(Math.random() * 15)}
+                      challengesCompleted={0}
                       onProfileClick={(userId) => {
                         setSelectedProfileId(userId);
                         setProfileModalOpen(true);
