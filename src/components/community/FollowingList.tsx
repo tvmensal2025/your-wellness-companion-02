@@ -160,33 +160,7 @@ export const FollowingList: React.FC<FollowingListProps> = ({ onProfileClick, on
           });
         }
 
-        // Tentar buscar de sport_achievements também
-        const { data: sportAchievements } = await supabase
-          .from('sport_achievements')
-          .select('id, user_id, achievement_name, badge_icon, badge_color, rarity, achievement_description, earned_at')
-          .in('user_id', followingIds)
-          .order('earned_at', { ascending: false })
-          .limit(50);
-
-        if (sportAchievements) {
-          sportAchievements.forEach((ach) => {
-            if (!achievementsByUser[ach.user_id]) {
-              achievementsByUser[ach.user_id] = [];
-            }
-            // Adicionar apenas se ainda não tiver 3 conquistas
-            if (achievementsByUser[ach.user_id].length < 3) {
-              achievementsByUser[ach.user_id].push({
-                id: ach.id,
-                name: ach.achievement_name,
-                icon: ach.badge_icon,
-                color: ach.badge_color,
-                rarity: (ach.rarity as 'common' | 'rare' | 'epic' | 'legendary') || 'common',
-                description: ach.achievement_description || undefined,
-                earned_at: ach.earned_at || undefined
-              });
-            }
-          });
-        }
+        // sport_achievements table não existe no schema atual - removida a busca
       } catch (error) {
         console.warn('Erro ao buscar conquistas:', error);
         // Não bloquear o carregamento se houver erro nas conquistas
