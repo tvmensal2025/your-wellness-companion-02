@@ -38,11 +38,14 @@ const WhatsAppConfig = () => {
 
   const handleCheckConnection = async () => {
     setIsChecking(true);
-    await checkConnection();
+    const result = await checkConnection();
     setIsChecking(false);
+
+    const connected = !!result.data?.connected;
+
     toast({
-      title: connectionStatus?.connected ? "Conexão OK!" : "Falha na conexão",
-      variant: connectionStatus?.connected ? "default" : "destructive"
+      title: connected ? "Conexão OK!" : "Falha na conexão",
+      variant: connected ? "default" : "destructive",
     });
   };
 
