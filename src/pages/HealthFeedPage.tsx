@@ -51,6 +51,7 @@ export default function HealthFeedPage() {
   const [sharePostData, setSharePostData] = useState<any>(null);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [selectedProfileId, setSelectedProfileId] = useState<string | null>(null);
+  const [initialDmUser, setInitialDmUser] = useState<string | null>(null);
 
   const { user } = useAuth();
   const { ranking, loading: rankingLoading } = useRanking();
@@ -523,7 +524,11 @@ export default function HealthFeedPage() {
         {/* Direct Messages Modal */}
         <DirectMessagesModal
           open={dmModalOpen}
-          onOpenChange={setDmModalOpen}
+          onOpenChange={(open) => {
+            setDmModalOpen(open);
+            if (!open) setInitialDmUser(null);
+          }}
+          initialConversation={initialDmUser}
         />
 
         {/* Share Post Modal */}
@@ -545,8 +550,11 @@ export default function HealthFeedPage() {
             if (selectedProfileId) handleFollowUser(selectedProfileId);
           }}
           onMessage={() => {
-            setProfileModalOpen(false);
-            setDmModalOpen(true);
+            if (selectedProfileId) {
+              setInitialDmUser(selectedProfileId);
+              setProfileModalOpen(false);
+              setDmModalOpen(true);
+            }
           }}
           isOwnProfile={selectedProfileId === user?.id}
         />
