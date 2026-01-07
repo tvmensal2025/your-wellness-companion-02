@@ -18,8 +18,10 @@ import {
   FileText, Activity, Settings, Bell, Crown,
   TrendingUp, Eye, Download, Share, Edit2,
   Shield, CreditCard, Clock, Target, Zap,
-  BarChart3, Plus, ExternalLink, SlidersHorizontal, Camera, Loader2
+  BarChart3, Plus, ExternalLink, SlidersHorizontal, Camera, Loader2,
+  MessageCircle
 } from 'lucide-react';
+import { WhatsAppNotificationSettings } from '@/components/settings/WhatsAppNotificationSettings';
 
 interface UserProfileData {
   id: string;
@@ -674,8 +676,10 @@ const UserProfile = ({ onOpenLayoutPrefs }: UserProfileProps = {}) => {
           </Card>
         </TabsContent>
 
-        {/* Settings Tab */}
         <TabsContent value="settings" className="space-y-6">
+          {/* WhatsApp Notifications Card */}
+          <WhatsAppNotificationSettings />
+
           <div className="grid lg:grid-cols-2 gap-6">
             <Card>
               <CardHeader>

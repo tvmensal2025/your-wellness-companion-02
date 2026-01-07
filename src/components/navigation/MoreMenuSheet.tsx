@@ -10,7 +10,8 @@ import {
   Dumbbell,
   LogOut,
   ChevronRight,
-  SlidersHorizontal
+  SlidersHorizontal,
+  MessageCircle
 } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
@@ -27,7 +28,8 @@ export type MenuSection =
   | 'saboteur-test'
   | 'dr-vital'
   | 'exercicios'
-  | 'subscriptions';
+  | 'subscriptions'
+  | 'whatsapp-settings';
 
 interface MoreMenuSheetProps {
   open: boolean;
@@ -48,7 +50,7 @@ interface MenuItem {
   label: string;
   description?: string;
   color?: string;
-  action?: 'customize-menu';
+  action?: 'customize-menu' | 'whatsapp-settings';
 }
 
 // Account items removed - profile accessed via header avatar
@@ -64,6 +66,7 @@ const featureItems: MenuItem[] = [
 ];
 
 const systemItems: MenuItem[] = [
+  { id: 'whatsapp-settings', icon: MessageCircle, label: 'Notificações WhatsApp', description: 'Configurar mensagens', color: 'text-green-500' },
   { id: 'subscriptions', icon: CreditCard, label: 'Assinaturas', description: 'Planos e pagamentos', color: 'text-purple-600' },
   { id: 'customize-menu' as any, icon: SlidersHorizontal, label: 'Personalizar Menu', description: 'Reordenar e ocultar itens', color: 'text-gray-500', action: 'customize-menu' },
 ];
