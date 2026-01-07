@@ -32,7 +32,8 @@ import {
   Utensils,
   Play,
   Dumbbell,
-  Plus
+  Plus,
+  MessageSquare
 } from "lucide-react";
 import { AdminDashboard } from "@/components/admin/AdminDashboard";
 import UserManagement from "@/components/admin/UserManagement";
@@ -221,6 +222,7 @@ const AdminPage = () => {
     { id: 'ai-control', icon: Brain, label: '🧠 Controle Unificado de IA', color: 'text-purple-500', description: 'Configuração Avançada - DrVital/Sofia - MÁXIMO/MEIO/MÍNIMO' },
     { id: 'mealie', icon: Utensils, label: 'Mealie (Cardápio)', color: 'text-emerald-600', description: 'Curadoria de receitas e token' },
     { id: 'sessions', icon: FileText, label: 'Gestão de Sessões', color: 'text-cyan-500', description: 'Criar e enviar sessões personalizadas' },
+    { id: 'whatsapp', icon: MessageSquare, label: 'WhatsApp Evolution', color: 'text-green-500', description: 'Mensagens, templates e automações' },
     { id: 'n8n', icon: Activity, label: 'Automação n8n', color: 'text-violet-500', description: 'Webhooks para WhatsApp e automações' },
     { id: 'devices', icon: Monitor, label: 'Gestão de Dispositivos', color: 'text-indigo-500', description: 'Dispositivos conectados' },
     { id: 'documents', icon: FileText, label: 'Documentos Médicos', color: 'text-rose-500', description: 'Examinar, subir e analisar exames' },
