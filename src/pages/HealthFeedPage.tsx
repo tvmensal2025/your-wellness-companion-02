@@ -409,6 +409,10 @@ export default function HealthFeedPage() {
                 <RankingPodium 
                   topThree={filteredRanking.slice(0, 3)} 
                   currentUserId={user?.id}
+                  onUserClick={(userId) => {
+                    setSelectedProfileId(userId);
+                    setProfileModalOpen(true);
+                  }}
                 />
               )}
 

@@ -13,9 +13,10 @@ interface PodiumUser {
 interface RankingPodiumProps {
   topThree: PodiumUser[];
   currentUserId?: string;
+  onUserClick?: (userId: string) => void;
 }
 
-export function RankingPodium({ topThree, currentUserId }: RankingPodiumProps) {
+export function RankingPodium({ topThree, currentUserId, onUserClick }: RankingPodiumProps) {
   if (topThree.length < 3) return null;
 
   const first = topThree.find(u => u.position === 1);
@@ -75,7 +76,8 @@ export function RankingPodium({ topThree, currentUserId }: RankingPodiumProps) {
           type: 'spring',
           bounce: 0.4,
         }}
-        className={`flex flex-col items-center ${isFirst ? 'order-2' : isSecond ? 'order-1' : 'order-3'}`}
+        onClick={() => onUserClick?.(user.user_id)}
+        className={`flex flex-col items-center cursor-pointer hover:scale-105 transition-transform ${isFirst ? 'order-2' : isSecond ? 'order-1' : 'order-3'}`}
       >
         {/* Avatar Section */}
         <div className="relative mb-2">
