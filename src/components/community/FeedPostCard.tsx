@@ -303,9 +303,11 @@ export const FeedPostCard: React.FC<FeedPostCardProps> = ({
                   >
                     {post.userName}
                   </span>
-                  <Badge variant="secondary" className="text-[10px] sm:text-xs bg-primary/10 text-primary">
-                    {post.userLevel}
-                  </Badge>
+                  {post.userLevel && post.userLevel !== 'Membro' && (
+                    <Badge variant="secondary" className="text-[10px] sm:text-xs bg-primary/10 text-primary">
+                      {post.userLevel}
+                    </Badge>
+                  )}
                   {/* Follow Button */}
                   {!isOwnPost && post.visibleUserId && onFollowUser && (
                     <Button
