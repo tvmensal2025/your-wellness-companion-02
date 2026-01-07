@@ -11,6 +11,18 @@ const EVOLUTION_API_KEY = Deno.env.get("EVOLUTION_API_KEY");
 const EVOLUTION_INSTANCE = Deno.env.get("EVOLUTION_INSTANCE");
 const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 
+function normalizeWhatsAppNumber(input: string) {
+  // Keep only digits
+  let phone = (input || "").replace(/\D/g, "").replace(/^0+/, "");
+
+  // Default to Brazil DDI when user stored only DDD+number (10/11 digits)
+  if (phone.length === 10 || phone.length === 11) {
+    phone = `55${phone}`;
+  }
+
+  return phone;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -47,7 +59,7 @@ serve(async (req) => {
     }
 
     const firstName = profile.full_name?.split(' ')[0] || "Amigo(a)";
-    const phone = profile.phone.replace(/\D/g, "");
+    const phone = normalizeWhatsAppNumber(profile.phone);
 
     console.log(`👤 Usuário: ${firstName}, Telefone: ${phone}`);
 
@@ -213,32 +225,53 @@ DESIGN:
       }),
     });
 
-    const textData = await textResponse.json();
+    let textData: any = null;
+    try {
+      textData = await textResponse.json();
+    } catch {
+      textData = await textResponse.text();
+    }
+
     console.log("📤 Resposta texto:", textResponse.ok, JSON.stringify(textData));
 
-    // Enviar imagem se gerada
-    let imageData = null;
+    // Se o provider indicar que o número não existe no WhatsApp, falhar com mensagem clara
+    const exists = textData?.response?.message?.[0]?.exists;
+    if (!textResponse.ok || exists === false) {
+      const ddiHint = "Use o formato com DDI, ex: 5511999999999";
+      throw new Error(
+        exists === false
+          ? `Seu número não foi encontrado no WhatsApp. Verifique o DDI e o número (${ddiHint}).`
+          : "Falha ao enviar mensagem no WhatsApp. Tente novamente."
+      );
+    }
+
+    // Enviar imagem se gerada (não falha o envio caso a imagem dê erro)
+    let imageData: any = null;
     if (imageBase64) {
       console.log("📸 Enviando imagem...");
 
-      const imgResponse = await fetch(`${EVOLUTION_API_URL}/message/sendMedia/${EVOLUTION_INSTANCE}`, {
-        method: "POST",
-        headers: {
-          apikey: EVOLUTION_API_KEY!,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          number: phone,
-          mediatype: "image",
-          media: imageBase64,
-          fileName: `reflexoes-${Date.now()}.png`,
-          caption: "📊 Suas Reflexões do Dia - Dr. Vital",
-          delay: 2000,
-        }),
-      });
+      try {
+        const imgResponse = await fetch(`${EVOLUTION_API_URL}/message/sendMedia/${EVOLUTION_INSTANCE}`, {
+          method: "POST",
+          headers: {
+            apikey: EVOLUTION_API_KEY!,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            number: phone,
+            mediatype: "image",
+            media: imageBase64,
+            fileName: `reflexoes-${Date.now()}.png`,
+            caption: "📊 Suas Reflexões do Dia - Dr. Vital",
+            delay: 2000,
+          }),
+        });
 
-      imageData = await imgResponse.json();
-      console.log("📸 Imagem enviada:", imgResponse.ok);
+        imageData = await imgResponse.json();
+        console.log("📸 Imagem enviada:", imgResponse.ok);
+      } catch (imgSendError) {
+        console.error("⚠️ Erro ao enviar imagem (continuando):", imgSendError);
+      }
     }
 
     // Log no banco
@@ -258,8 +291,8 @@ DESIGN:
     return new Response(
       JSON.stringify({
         success: true,
-        message: "Análise enviada com sucesso!",
-        textSent: textResponse.ok,
+        message: "Enviado via WhatsApp!",
+        textSent: true,
         imageSent: !!imageBase64,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }

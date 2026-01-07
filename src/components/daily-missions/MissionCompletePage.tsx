@@ -73,14 +73,14 @@ export const MissionCompletePage: React.FC<MissionCompletePageProps> = ({
 
       if (error) throw error;
 
-      if (data?.success) {
-        toast({
-          title: "Análise enviada! 📱",
-          description: "Dr. Vital enviou a análise dos seus hábitos para seu WhatsApp.",
-        });
-      } else {
-        throw new Error(data?.error || "Erro ao enviar análise");
-      }
+       if (data?.success && data?.textSent) {
+         toast({
+           title: "Enviado no WhatsApp!",
+           description: "Sua mensagem foi enviada para o seu número cadastrado.",
+         });
+       } else {
+         throw new Error(data?.error || "Não foi possível enviar para o WhatsApp. Verifique seu número (com DDI) e tente novamente.");
+       }
     } catch (error) {
       console.error("Erro ao enviar para WhatsApp:", error);
       toast({
