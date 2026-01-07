@@ -4166,6 +4166,7 @@ export type Database = {
           created_at: string | null
           id: string
           likes_count: number | null
+          mentions: string[] | null
           parent_comment_id: string | null
           post_id: string | null
           user_id: string | null
@@ -4175,6 +4176,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           likes_count?: number | null
+          mentions?: string[] | null
           parent_comment_id?: string | null
           post_id?: string | null
           user_id?: string | null
@@ -4184,6 +4186,7 @@ export type Database = {
           created_at?: string | null
           id?: string
           likes_count?: number | null
+          mentions?: string[] | null
           parent_comment_id?: string | null
           post_id?: string | null
           user_id?: string | null
@@ -4197,6 +4200,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      health_feed_direct_messages: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          is_read: boolean | null
+          receiver_id: string
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          receiver_id: string
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          receiver_id?: string
+          sender_id?: string
+        }
+        Relationships: []
       }
       health_feed_follows: {
         Row: {
@@ -4281,6 +4311,73 @@ export type Database = {
         }
         Relationships: []
       }
+      health_feed_poll_votes: {
+        Row: {
+          created_at: string | null
+          id: string
+          option_index: number
+          poll_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          option_index: number
+          poll_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          option_index?: number
+          poll_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "health_feed_poll_votes_poll_id_fkey"
+            columns: ["poll_id"]
+            isOneToOne: false
+            referencedRelation: "health_feed_polls"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      health_feed_polls: {
+        Row: {
+          created_at: string | null
+          ends_at: string | null
+          id: string
+          options: Json
+          post_id: string | null
+          question: string
+        }
+        Insert: {
+          created_at?: string | null
+          ends_at?: string | null
+          id?: string
+          options?: Json
+          post_id?: string | null
+          question: string
+        }
+        Update: {
+          created_at?: string | null
+          ends_at?: string | null
+          id?: string
+          options?: Json
+          post_id?: string | null
+          question?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "health_feed_polls_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "health_feed_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       health_feed_posts: {
         Row: {
           comments_count: number | null
@@ -4290,6 +4387,7 @@ export type Database = {
           is_pinned: boolean | null
           likes_count: number | null
           media_urls: string[] | null
+          mentions: string[] | null
           metadata: Json | null
           post_type: string | null
           shares_count: number | null
@@ -4307,6 +4405,7 @@ export type Database = {
           is_pinned?: boolean | null
           likes_count?: number | null
           media_urls?: string[] | null
+          mentions?: string[] | null
           metadata?: Json | null
           post_type?: string | null
           shares_count?: number | null
@@ -4324,6 +4423,7 @@ export type Database = {
           is_pinned?: boolean | null
           likes_count?: number | null
           media_urls?: string[] | null
+          mentions?: string[] | null
           metadata?: Json | null
           post_type?: string | null
           shares_count?: number | null
@@ -4332,6 +4432,27 @@ export type Database = {
           updated_at?: string | null
           user_id?: string | null
           visibility?: string | null
+        }
+        Relationships: []
+      }
+      health_feed_profile_views: {
+        Row: {
+          id: string
+          profile_user_id: string
+          viewed_at: string | null
+          viewer_user_id: string
+        }
+        Insert: {
+          id?: string
+          profile_user_id: string
+          viewed_at?: string | null
+          viewer_user_id: string
+        }
+        Update: {
+          id?: string
+          profile_user_id?: string
+          viewed_at?: string | null
+          viewer_user_id?: string
         }
         Relationships: []
       }
@@ -4370,6 +4491,7 @@ export type Database = {
       health_feed_stories: {
         Row: {
           background_color: string | null
+          category: string | null
           created_at: string | null
           expires_at: string | null
           id: string
@@ -4381,6 +4503,7 @@ export type Database = {
         }
         Insert: {
           background_color?: string | null
+          category?: string | null
           created_at?: string | null
           expires_at?: string | null
           id?: string
@@ -4392,6 +4515,7 @@ export type Database = {
         }
         Update: {
           background_color?: string | null
+          category?: string | null
           created_at?: string | null
           expires_at?: string | null
           id?: string
