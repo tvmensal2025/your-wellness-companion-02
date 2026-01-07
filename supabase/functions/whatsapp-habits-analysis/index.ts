@@ -9,17 +9,12 @@ const corsHeaders = {
 const EVOLUTION_API_URL = Deno.env.get("EVOLUTION_API_URL");
 const EVOLUTION_API_KEY = Deno.env.get("EVOLUTION_API_KEY");
 const EVOLUTION_INSTANCE = Deno.env.get("EVOLUTION_INSTANCE");
-const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 
 function normalizeWhatsAppNumber(input: string) {
-  // Keep only digits
   let phone = (input || "").replace(/\D/g, "").replace(/^0+/, "");
-
-  // Default to Brazil DDI when user stored only DDD+number (10/11 digits)
   if (phone.length === 10 || phone.length === 11) {
     phone = `55${phone}`;
   }
-
   return phone;
 }
 
@@ -29,12 +24,16 @@ serve(async (req) => {
   }
 
   try {
-    const { userId, answers, totalPoints, streakDays, questions } = await req.json();
+    const { userId, imageBase64, totalPoints, streakDays } = await req.json();
 
-    console.log("📊 Recebido pedido de análise de hábitos:", { userId, totalPoints, streakDays });
+    console.log("📸 Recebido pedido para enviar print:", { userId, totalPoints, streakDays });
 
     if (!userId) {
       throw new Error("userId é obrigatório");
+    }
+
+    if (!imageBase64) {
+      throw new Error("imageBase64 é obrigatório");
     }
 
     // Criar cliente Supabase
@@ -63,156 +62,13 @@ serve(async (req) => {
 
     console.log(`👤 Usuário: ${firstName}, Telefone: ${phone}`);
 
-    // Formatar respostas para o prompt
-    const answersFormatted = questions
-      ? questions.map((q: { id: string; question: string }) => {
-          const answer = answers[q.id];
-          return `- ${q.question}: ${answer || 'Não respondido'}`;
-        }).join('\n')
-      : Object.entries(answers || {})
-          .map(([key, value]) => `- ${key}: ${value}`)
-          .join('\n');
+    // Montar legenda simples
+    const caption = `📊 *Reflexões do Dia*\n\n✨ +${totalPoints} pontos\n🔥 ${streakDays || 1} dias de sequência\n\n_${firstName}, continue assim!_\n\n— *Dr. Vital* 🩺\n_Instituto dos Sonhos_`;
 
-    // Gerar análise com Gemini via Lovable AI
-    const systemPrompt = `Você é o Dr. Vital, médico especialista em saúde integrativa e medicina preventiva do Instituto dos Sonhos.
+    // Enviar imagem via Evolution API
+    console.log("📤 Enviando imagem via Evolution API...");
 
-PERSONA:
-- Tom: Profissional, acolhedor, objetivo
-- Usa linguagem clara e empática
-- Oferece insights médicos sobre hábitos diários
-- Máximo 3 emojis na mensagem toda
-- Sempre positivo, focando em melhorias práticas
-- Conecta hábitos com impactos na saúde física
-
-ANÁLISE DAS MISSÕES DIÁRIAS:
-- Identifique 1-2 pontos de ATENÇÃO nos hábitos reportados
-- Dê UMA recomendação prática de saúde
-- Relacione os hábitos com bem-estar físico
-
-FORMATO OBRIGATÓRIO PARA WHATSAPP:
-- Inicie SEMPRE com: *${firstName}*, vi suas reflexões de hoje! 👨‍⚕️
-- Use *texto* para negrito (WhatsApp)
-- Use _texto_ para itálico (WhatsApp)
-- Separe parágrafos com linha em branco
-- Máximo 150 palavras
-- NÃO inclua assinatura (será adicionada automaticamente)
-- NÃO use markdown com ## ou outros formatos
-
-EXEMPLO DE ESTRUTURA:
-*${firstName}*, vi suas reflexões de hoje! 👨‍⚕️
-
-Notei que você dormiu menos de 6 horas e relatou cansaço. Do ponto de vista _fisiológico_, isso afeta a produção de hormônios como leptina e cortisol.
-
-*Ponto de atenção:* O sono insuficiente pode aumentar a fome e dificultar o controle de peso.
-
-Minha recomendação: tente estabelecer um horário fixo para dormir, mesmo aos finais de semana.
-
-Continue registrando seus hábitos - a consistência transforma! ✨`;
-
-    const userPrompt = `Crie uma mensagem WhatsApp para ${firstName} baseada nas reflexões diárias.
-
-RESPOSTAS DO DIA:
-${answersFormatted}
-
-ESTATÍSTICAS:
-- Pontos ganhos hoje: ${totalPoints}
-- Dias de sequência (streak): ${streakDays || 1}
-
-IMPORTANTE:
-- Use *asteriscos* para negrito
-- Use _underlines_ para itálico
-- Separe parágrafos com linha em branco
-- Comece com *${firstName}*, vi suas reflexões de hoje! 👨‍⚕️
-- Máximo 3 emojis
-- Foque em 1-2 pontos de atenção dos hábitos
-- Dê UMA recomendação prática
-- Termine com encorajamento`;
-
-    console.log("🤖 Gerando análise com Gemini...");
-
-    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt },
-        ],
-        max_tokens: 500,
-        temperature: 0.7,
-      }),
-    });
-
-    if (!aiResponse.ok) {
-      const errorText = await aiResponse.text();
-      console.error("❌ Erro Gemini:", errorText);
-      throw new Error("Erro ao gerar análise");
-    }
-
-    const aiData = await aiResponse.json();
-    let analysisMessage = aiData.choices?.[0]?.message?.content || "";
-
-    console.log("📝 Análise gerada:", analysisMessage.substring(0, 100) + "...");
-
-    // Adicionar assinatura
-    analysisMessage += `\n\nCom dedicação à sua saúde,\n*Dr. Vital* 🩺\n_Instituto dos Sonhos_`;
-
-    // Gerar imagem PNG do resumo
-    console.log("🖼️ Gerando imagem do resumo...");
-
-    const imagePrompt = `Gere uma imagem de resumo de hábitos diários com:
-
-DADOS:
-- Nome: ${firstName}
-- Pontos do dia: +${totalPoints}
-- Streak: ${streakDays || 1} dias
-- Missões: ${questions?.length || Object.keys(answers).length} completadas
-
-DESIGN:
-- Estilo moderno e clean
-- Cores: gradiente de azul escuro para roxo
-- Ícone de médico ou estetoscópio sutil
-- Título: "Reflexões do Dia"
-- Subtítulo: "Análise Dr. Vital"
-- Mostrar pontos e streak em destaque
-- Formato vertical para WhatsApp
-- Logo Instituto dos Sonhos no rodapé`;
-
-    let imageBase64 = null;
-    try {
-      const imageResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${LOVABLE_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "google/gemini-2.5-flash-image-preview",
-          messages: [{ role: "user", content: imagePrompt }],
-          modalities: ["image", "text"],
-        }),
-      });
-
-      if (imageResponse.ok) {
-        const imageData = await imageResponse.json();
-        const imageUrl = imageData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
-        if (imageUrl && imageUrl.includes("base64")) {
-          imageBase64 = imageUrl.split(",")[1];
-          console.log("✅ Imagem gerada com sucesso");
-        }
-      }
-    } catch (imgError) {
-      console.error("⚠️ Erro ao gerar imagem (continuando sem imagem):", imgError);
-    }
-
-    // Enviar mensagem de texto via Evolution API
-    console.log("📤 Enviando mensagem via Evolution API...");
-
-    const textResponse = await fetch(`${EVOLUTION_API_URL}/message/sendText/${EVOLUTION_INSTANCE}`, {
+    const imgResponse = await fetch(`${EVOLUTION_API_URL}/message/sendMedia/${EVOLUTION_INSTANCE}`, {
       method: "POST",
       headers: {
         apikey: EVOLUTION_API_KEY!,
@@ -220,80 +76,50 @@ DESIGN:
       },
       body: JSON.stringify({
         number: phone,
-        text: analysisMessage,
+        mediatype: "image",
+        media: imageBase64,
+        fileName: `reflexoes-${Date.now()}.png`,
+        caption: caption,
         delay: 1000,
       }),
     });
 
-    let textData: any = null;
+    let responseData: any = null;
     try {
-      textData = await textResponse.json();
+      responseData = await imgResponse.json();
     } catch {
-      textData = await textResponse.text();
+      responseData = await imgResponse.text();
     }
 
-    console.log("📤 Resposta texto:", textResponse.ok, JSON.stringify(textData));
+    console.log("📤 Resposta Evolution:", imgResponse.ok, JSON.stringify(responseData));
 
-    // Se o provider indicar que o número não existe no WhatsApp, falhar com mensagem clara
-    const exists = textData?.response?.message?.[0]?.exists;
-    if (!textResponse.ok || exists === false) {
-      const ddiHint = "Use o formato com DDI, ex: 5511999999999";
+    // Verificar se o número existe no WhatsApp
+    const exists = responseData?.response?.message?.[0]?.exists;
+    if (!imgResponse.ok || exists === false) {
       throw new Error(
         exists === false
-          ? `Seu número não foi encontrado no WhatsApp. Verifique o DDI e o número (${ddiHint}).`
-          : "Falha ao enviar mensagem no WhatsApp. Tente novamente."
+          ? "Seu número não foi encontrado no WhatsApp. Verifique o DDI (ex: 5511999999999)."
+          : "Falha ao enviar para o WhatsApp. Tente novamente."
       );
-    }
-
-    // Enviar imagem se gerada (não falha o envio caso a imagem dê erro)
-    let imageData: any = null;
-    if (imageBase64) {
-      console.log("📸 Enviando imagem...");
-
-      try {
-        const imgResponse = await fetch(`${EVOLUTION_API_URL}/message/sendMedia/${EVOLUTION_INSTANCE}`, {
-          method: "POST",
-          headers: {
-            apikey: EVOLUTION_API_KEY!,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            number: phone,
-            mediatype: "image",
-            media: imageBase64,
-            fileName: `reflexoes-${Date.now()}.png`,
-            caption: "📊 Suas Reflexões do Dia - Dr. Vital",
-            delay: 2000,
-          }),
-        });
-
-        imageData = await imgResponse.json();
-        console.log("📸 Imagem enviada:", imgResponse.ok);
-      } catch (imgSendError) {
-        console.error("⚠️ Erro ao enviar imagem (continuando):", imgSendError);
-      }
     }
 
     // Log no banco
     await supabase.from("ai_system_logs").insert({
       user_id: userId,
-      operation: "whatsapp_habits_analysis",
+      operation: "whatsapp_habits_screenshot",
       service_name: "evolution_api",
       status: "success",
       details: {
         totalPoints,
         streakDays,
-        answersCount: Object.keys(answers || {}).length,
-        imageGenerated: !!imageBase64,
+        imageSize: imageBase64.length,
       },
     });
 
     return new Response(
       JSON.stringify({
         success: true,
-        message: "Enviado via WhatsApp!",
-        textSent: true,
-        imageSent: !!imageBase64,
+        message: "Print enviado via WhatsApp!",
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

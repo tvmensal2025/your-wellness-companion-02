@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -6,6 +6,7 @@ import { Star, CheckCircle, Trophy, Sparkles, Heart, Flame, Send, Loader2 } from
 import { motion } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import html2canvas from 'html2canvas';
 
 interface MissionCompletePageProps {
   answers: Record<string, string | number>;
@@ -29,12 +30,22 @@ export const MissionCompletePage: React.FC<MissionCompletePageProps> = ({
   const [showConfetti, setShowConfetti] = useState(true);
   const [isSendingWhatsApp, setIsSendingWhatsApp] = useState(false);
   const { toast } = useToast();
+  const captureRef = useRef<HTMLDivElement>(null);
 
   const handleSendToWhatsApp = async () => {
     if (!userId) {
       toast({
         title: "Erro",
         description: "Usuário não identificado. Faça login novamente.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!captureRef.current) {
+      toast({
+        title: "Erro",
+        description: "Não foi possível capturar a tela.",
         variant: "destructive",
       });
       return;
@@ -53,34 +64,43 @@ export const MissionCompletePage: React.FC<MissionCompletePageProps> = ({
       if (profileError || !profile?.phone) {
         toast({
           title: "Telefone não cadastrado",
-          description: "Para receber a análise via WhatsApp, cadastre seu número em Configurações > Perfil.",
+          description: "Para receber via WhatsApp, cadastre seu número em Configurações > Perfil.",
           variant: "destructive",
         });
         setIsSendingWhatsApp(false);
         return;
       }
 
-      // Chamar edge function
+      // Capturar screenshot da tela
+      const canvas = await html2canvas(captureRef.current, {
+        backgroundColor: '#1a1a2e',
+        scale: 2,
+        useCORS: true,
+        logging: false,
+      });
+
+      const imageBase64 = canvas.toDataURL('image/png').split(',')[1];
+
+      // Chamar edge function com a imagem
       const { data, error } = await supabase.functions.invoke("whatsapp-habits-analysis", {
         body: {
           userId,
-          answers,
+          imageBase64,
           totalPoints,
           streakDays,
-          questions,
         },
       });
 
       if (error) throw error;
 
-       if (data?.success && data?.textSent) {
-         toast({
-           title: "Enviado no WhatsApp!",
-           description: "Sua mensagem foi enviada para o seu número cadastrado.",
-         });
-       } else {
-         throw new Error(data?.error || "Não foi possível enviar para o WhatsApp. Verifique seu número (com DDI) e tente novamente.");
-       }
+      if (data?.success) {
+        toast({
+          title: "Enviado no WhatsApp! 📱",
+          description: "O print das suas reflexões foi enviado.",
+        });
+      } else {
+        throw new Error(data?.error || "Não foi possível enviar. Verifique seu número.");
+      }
     } catch (error) {
       console.error("Erro ao enviar para WhatsApp:", error);
       toast({
@@ -99,7 +119,7 @@ export const MissionCompletePage: React.FC<MissionCompletePageProps> = ({
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-primary/10 via-background to-muted flex items-start justify-center px-3 py-6 relative overflow-hidden">
+    <div ref={captureRef} className="min-h-screen bg-gradient-to-b from-primary/10 via-background to-muted flex items-start justify-center px-3 py-6 relative overflow-hidden">
       {/* Partículas de celebração */}
       {showConfetti && (
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
