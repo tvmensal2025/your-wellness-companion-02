@@ -197,7 +197,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-lg max-h-[90vh] p-0 overflow-hidden border-0 bg-transparent shadow-none">
+        <DialogContent className="w-[95vw] max-w-md max-h-[90vh] p-0 overflow-hidden border-0 bg-transparent shadow-none">
           <ScrollArea className="max-h-[90vh]">
           <AnimatePresence mode="wait">
             {loading ? (
@@ -235,7 +235,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                   <Sparkles className="absolute top-4 right-4 w-5 h-5 text-white/40" />
                 </div>
 
-                <DialogHeader className="px-6 pt-0 pb-4">
+                <DialogHeader className="px-4 pt-0 pb-4">
                   {/* Avatar - positioned to overlap banner */}
                   <div className="relative -mt-14 mb-3 flex justify-center">
                     <motion.button
@@ -333,8 +333,8 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 </DialogHeader>
 
                 {/* Stats Cards */}
-                <div className="px-6 pb-4">
-                  <div className="grid grid-cols-4 gap-2">
+                <div className="px-4 pb-4">
+                  <div className="grid grid-cols-4 gap-1.5 min-w-0">
                     <motion.div 
                       whileHover={{ scale: 1.05 }}
                       className="text-center p-3 rounded-xl bg-primary/5 border border-primary/10"
@@ -380,22 +380,22 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
 
                 {/* Action Buttons */}
                 {!isOwnProfile && (
-                  <div className="space-y-2 px-6 pb-4">
-                    <div className="flex gap-2">
+                  <div className="space-y-2 px-4 pb-4">
+                    <div className="grid grid-cols-2 gap-2">
                       <Button
                         variant={isFollowing ? 'outline' : 'default'}
                         size="sm"
-                        className="flex-1 rounded-xl"
+                        className="rounded-xl text-xs"
                         onClick={onFollow}
                       >
                         {isFollowing ? (
                           <>
-                            <UserMinus className="w-4 h-4 mr-2" />
+                            <UserMinus className="w-3.5 h-3.5 mr-1.5" />
                             Seguindo
                           </>
                         ) : (
                           <>
-                            <UserPlus className="w-4 h-4 mr-2" />
+                            <UserPlus className="w-3.5 h-3.5 mr-1.5" />
                             Seguir
                           </>
                         )}
@@ -403,40 +403,40 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                       <Button
                         variant="secondary"
                         size="sm"
-                        className="flex-1 rounded-xl"
+                        className="rounded-xl text-xs"
                         onClick={onMessage}
                       >
-                        <MessageCircle className="w-4 h-4 mr-2" />
+                        <MessageCircle className="w-3.5 h-3.5 mr-1.5" />
                         Mensagem
                       </Button>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="grid grid-cols-2 gap-2">
                       <Button
                         variant="outline"
                         size="sm"
-                        className="flex-1 rounded-xl border-primary/30 text-primary hover:bg-primary/10"
+                        className="rounded-xl text-xs border-primary/30 text-primary hover:bg-primary/10"
                         onClick={() => setInviteModalOpen(true)}
                       >
-                        <Target className="w-4 h-4 mr-2" />
-                        Convidar para Desafio
+                        <Target className="w-3.5 h-3.5 mr-1.5" />
+                        Desafio
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
-                        className={`rounded-xl ${isBlocked ? 'border-green-500/30 text-green-600 hover:bg-green-500/10' : 'border-red-500/30 text-red-600 hover:bg-red-500/10'}`}
+                        className={`rounded-xl text-xs ${isBlocked ? 'border-green-500/30 text-green-600 hover:bg-green-500/10' : 'border-red-500/30 text-red-600 hover:bg-red-500/10'}`}
                         onClick={toggleBlock}
                         disabled={blockLoading}
                       >
                         {blockLoading ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
                         ) : isBlocked ? (
                           <>
-                            <ShieldOff className="w-4 h-4 mr-1" />
+                            <ShieldOff className="w-3.5 h-3.5 mr-1" />
                             Desbloquear
                           </>
                         ) : (
                           <>
-                            <Ban className="w-4 h-4 mr-1" />
+                            <Ban className="w-3.5 h-3.5 mr-1" />
                             Bloquear
                           </>
                         )}
@@ -447,7 +447,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
 
                 {/* Weight Result Card - with privacy control */}
                 {progressStats && (progressStats.showWeightResults || isOwnProfile) && (
-                  <div className="px-6">
+                  <div className="px-4">
                     <WeightResultCard
                       initialWeight={progressStats.initialWeight}
                       currentWeight={progressStats.currentWeight}
@@ -460,7 +460,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
 
                 {/* Progress Stats Cards */}
                 {progressStats && (
-                  <div className="px-6 space-y-3">
+                  <div className="px-4 space-y-3">
                     <ChallengesCompletedCard
                       challengesCompleted={progressStats.challengesCompleted}
                       activeChallenges={progressStats.activeChallenges}
@@ -473,7 +473,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 )}
 
                 {/* Divider */}
-                <div className="px-6">
+                <div className="px-4">
                   <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
                 </div>
 
