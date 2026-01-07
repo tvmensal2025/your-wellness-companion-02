@@ -236,7 +236,7 @@ export const useDailyMissionsFinal = ({ user }: UseDailyMissionsFinalProps) => {
         const { data, error: sessionError } = await supabase
           .from('daily_mission_sessions')
           .update({
-            completed_sections: ['morning', 'habits', 'mindset', 'evening'],
+            completed_sections: ['evening', 'habits', 'mindset'],
             total_points: totalPoints,
             is_completed: true
           })
@@ -256,7 +256,7 @@ export const useDailyMissionsFinal = ({ user }: UseDailyMissionsFinalProps) => {
           .insert({
             user_id: user.id,
             date: today,
-            completed_sections: ['morning', 'habits', 'mindset', 'evening'],
+            completed_sections: ['evening', 'habits', 'mindset'],
             total_points: totalPoints,
             is_completed: true
           })
