@@ -27,7 +27,8 @@ import { StoryViewer } from '@/components/community/StoryViewer';
 import { CreateStoryModal } from '@/components/community/CreateStoryModal';
 import { FeedPostCard } from '@/components/community/FeedPostCard';
 import { RightSidebar } from '@/components/community/RightSidebar';
-import { CommunityHeroHeader } from '@/components/community/CommunityHeroHeader';
+import { CompactUserHeader } from '@/components/community/CompactUserHeader';
+import { CreatePostCard } from '@/components/community/CreatePostCard';
 import { SmartFeedButtons } from '@/components/community/SmartFeedToggle';
 import { FloatingCreateButton } from '@/components/community/FloatingCreateButton';
 import { MessageButton } from '@/components/community/MessageButton';
@@ -277,15 +278,17 @@ export default function HealthFeedPage() {
             <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
               {/* Main Feed */}
               <div className="flex-1 lg:max-w-2xl">
-                {/* Hero Header */}
-                <CommunityHeroHeader
+                {/* Compact Header + Create Post Card */}
+                <CompactUserHeader
                   userName={userName}
                   userPosition={currentUserStats.position}
                   totalPoints={currentUserStats.points}
                   streakDays={currentUserStats.streak}
-                  missionsCompleted={currentUserStats.missions}
-                  profileViews={Math.floor(Math.random() * 100) + 10}
-                  unreadMessages={totalUnread}
+                />
+                
+                <CreatePostCard
+                  userName={userName}
+                  onCreatePost={handleCreatePost}
                 />
 
                 {/* Stories Section */}
