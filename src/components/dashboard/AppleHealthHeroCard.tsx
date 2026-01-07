@@ -135,9 +135,11 @@ export const AppleHealthHeroCard: React.FC<AppleHealthHeroCardProps> = ({
                 transition={{ delay: 0.3, duration: 0.5 }}
                 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white"
               >
-                {healthScore}
+                {currentWeight === 0 ? '?' : healthScore}
               </motion.span>
-              <span className="text-[10px] sm:text-xs text-slate-400 uppercase tracking-widest font-medium">Score</span>
+              <span className="text-[10px] sm:text-xs text-slate-400 uppercase tracking-widest font-medium">
+                {currentWeight === 0 ? 'START' : 'Score'}
+              </span>
             </div>
           </div>
 
@@ -145,7 +147,9 @@ export const AppleHealthHeroCard: React.FC<AppleHealthHeroCardProps> = ({
           <div className="flex-1 flex flex-col justify-center space-y-2 sm:space-y-3 min-w-0">
             {/* Current weight */}
             <div>
-              <p className="text-xs sm:text-sm text-slate-400 mb-1 sm:mb-1.5 tracking-wide">Peso atual</p>
+              <p className="text-xs sm:text-sm text-slate-400 mb-1 sm:mb-1.5 tracking-wide">
+                {currentWeight === 0 ? 'Comece agora' : 'Peso atual'}
+              </p>
               <div className="flex items-baseline gap-1.5">
                 <motion.span 
                   initial={{ opacity: 0, y: 10 }}
@@ -153,7 +157,7 @@ export const AppleHealthHeroCard: React.FC<AppleHealthHeroCardProps> = ({
                   transition={{ delay: 0.4 }}
                   className="text-4xl sm:text-5xl md:text-6xl font-light text-white tracking-tight"
                 >
-                  {currentWeight.toFixed(1)}
+                  {currentWeight === 0 ? '--.-' : currentWeight.toFixed(1)}
                 </motion.span>
                 <span className="text-base sm:text-xl text-slate-400 font-light">kg</span>
               </div>
@@ -164,12 +168,20 @@ export const AppleHealthHeroCard: React.FC<AppleHealthHeroCardProps> = ({
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.5 }}
-              className={`inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full w-fit ${trend.bg}`}
+              className={`inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full w-fit ${currentWeight === 0 ? 'bg-primary/10' : trend.bg}`}
             >
-              <TrendIcon className={`h-4 w-4 sm:h-5 sm:w-5 ${trend.color}`} />
-              <span className={`text-sm sm:text-base font-medium ${trend.color}`}>
-                {weightChange !== 0 && (weightChange > 0 ? '+' : '')}{weightChange.toFixed(1)}kg
-              </span>
+              {currentWeight === 0 ? (
+                <span className="text-sm sm:text-base font-medium text-primary">
+                  🎯 Registre seu peso para começar
+                </span>
+              ) : (
+                <>
+                  <TrendIcon className={`h-4 w-4 sm:h-5 sm:w-5 ${trend.color}`} />
+                  <span className={`text-sm sm:text-base font-medium ${trend.color}`}>
+                    {weightChange !== 0 && (weightChange > 0 ? '+' : '')}{weightChange.toFixed(1)}kg
+                  </span>
+                </>
+              )}
             </motion.div>
 
             {/* Goal info */}

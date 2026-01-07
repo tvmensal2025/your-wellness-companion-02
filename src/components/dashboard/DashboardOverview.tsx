@@ -207,6 +207,7 @@ const DashboardOverview: React.FC = () => {
         <CleanEvolutionChart
           measurements={measurements || []}
           loading={loading}
+          onRegisterClick={() => setIsWeightModalOpen(true)}
         />
 
         {/* Quick Actions */}
