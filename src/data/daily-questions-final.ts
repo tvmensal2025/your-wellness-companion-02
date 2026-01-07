@@ -35,20 +35,70 @@ export const dailyQuestionsFinal: DailyQuestion[] = [
     tracking: 'evening_energy'
   },
   {
-    id: 'evening_mood',
+    id: 'body_feeling',
     section: 'evening',
-    question: 'Como você está se sentindo agora?',
+    question: 'Como seu corpo está se sentindo?',
     type: 'scale',
     scale: {
       min: 1,
       max: 5,
-      labels: ['Muito mal', 'Mal', 'Neutro', 'Bem', 'Muito bem'],
-      emojis: ['😢', '😕', '😐', '🙂', '😄']
+      labels: ['Pesado', 'Tenso', 'Normal', 'Leve', 'Ótimo'],
+      emojis: ['😫', '😣', '😐', '😊', '💪']
     },
     points: 15,
     required: true,
     order: 3,
-    tracking: 'evening_mood'
+    tracking: 'body_feeling'
+  },
+  {
+    id: 'day_highlight',
+    section: 'evening',
+    question: 'Qual foi o destaque do seu dia?',
+    type: 'multiple_choice',
+    options: [
+      'Momento com família/amigos',
+      'Conquista no trabalho',
+      'Cuidei da minha saúde',
+      'Tive tempo para mim',
+      'Aprendi algo novo',
+      'Nada especial hoje'
+    ],
+    points: 15,
+    required: true,
+    order: 4,
+    tracking: 'day_highlight'
+  },
+  {
+    id: 'peace_moments',
+    section: 'evening',
+    question: 'Você teve momentos de paz hoje?',
+    type: 'scale',
+    scale: {
+      min: 1,
+      max: 5,
+      labels: ['Nenhum', 'Poucos', 'Alguns', 'Vários', 'Muitos'],
+      emojis: ['😔', '😕', '😐', '🧘', '✨']
+    },
+    points: 15,
+    required: true,
+    order: 5,
+    tracking: 'peace_moments'
+  },
+  {
+    id: 'tomorrow_motivation',
+    section: 'evening',
+    question: 'Quão motivado você está para amanhã?',
+    type: 'scale',
+    scale: {
+      min: 1,
+      max: 5,
+      labels: ['Zero', 'Pouco', 'Médio', 'Bastante', 'Total'],
+      emojis: ['😴', '😕', '😐', '😃', '🔥']
+    },
+    points: 15,
+    required: true,
+    order: 6,
+    tracking: 'tomorrow_motivation'
   },
 
   // SEÇÃO 2: HÁBITOS DO DIA
@@ -66,7 +116,7 @@ export const dailyQuestionsFinal: DailyQuestion[] = [
     ],
     points: 20,
     required: true,
-    order: 4,
+    order: 7,
     tracking: 'sleep_hours'
   },
   {
@@ -82,7 +132,7 @@ export const dailyQuestionsFinal: DailyQuestion[] = [
     ],
     points: 15,
     required: true,
-    order: 5,
+    order: 8,
     tracking: 'water_intake'
   },
   {
@@ -92,8 +142,24 @@ export const dailyQuestionsFinal: DailyQuestion[] = [
     type: 'yes_no',
     points: 15,
     required: true,
-    order: 6,
+    order: 9,
     tracking: 'physical_activity'
+  },
+  {
+    id: 'food_plan',
+    section: 'habits',
+    question: 'Seguiu seu plano alimentar hoje?',
+    type: 'scale',
+    scale: {
+      min: 1,
+      max: 5,
+      labels: ['Não segui', 'Pouco', 'Mais ou menos', 'Quase tudo', 'Segui 100%'],
+      emojis: ['😔', '😕', '😐', '😊', '🎯']
+    },
+    points: 20,
+    required: true,
+    order: 10,
+    tracking: 'food_plan'
   },
   {
     id: 'evening_meals',
@@ -108,8 +174,24 @@ export const dailyQuestionsFinal: DailyQuestion[] = [
     },
     points: 15,
     required: true,
-    order: 7,
+    order: 11,
     tracking: 'evening_meals'
+  },
+  {
+    id: 'rest_enough',
+    section: 'habits',
+    question: 'Você descansou o suficiente hoje?',
+    type: 'scale',
+    scale: {
+      min: 1,
+      max: 5,
+      labels: ['Nada', 'Pouco', 'Razoável', 'Bem', 'Muito bem'],
+      emojis: ['😩', '😓', '😐', '😌', '😴']
+    },
+    points: 15,
+    required: true,
+    order: 12,
+    tracking: 'rest_enough'
   },
   {
     id: 'stress_level',
@@ -124,7 +206,7 @@ export const dailyQuestionsFinal: DailyQuestion[] = [
     },
     points: 15,
     required: true,
-    order: 8,
+    order: 13,
     tracking: 'stress_level'
   },
 
@@ -144,7 +226,7 @@ export const dailyQuestionsFinal: DailyQuestion[] = [
     ],
     points: 15,
     required: true,
-    order: 9,
+    order: 14,
     tracking: 'gratitude'
   },
   {
@@ -162,7 +244,7 @@ export const dailyQuestionsFinal: DailyQuestion[] = [
     ],
     points: 20,
     required: true,
-    order: 10,
+    order: 15,
     tracking: 'small_victory'
   },
   {
@@ -179,7 +261,7 @@ export const dailyQuestionsFinal: DailyQuestion[] = [
     ],
     points: 20,
     required: true,
-    order: 11,
+    order: 16,
     tracking: 'goals_achieved'
   },
   {
@@ -196,7 +278,7 @@ export const dailyQuestionsFinal: DailyQuestion[] = [
     ],
     points: 15,
     required: true,
-    order: 12,
+    order: 17,
     tracking: 'tomorrow_intention'
   }
 ];
