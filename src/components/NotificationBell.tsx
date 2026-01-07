@@ -140,16 +140,16 @@ export const NotificationBell: React.FC = () => {
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-80 p-0 overflow-hidden rounded-xl shadow-xl border-border/50">
-        {/* Header com gradiente */}
-        <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-4 border-b border-border/50">
+      <DropdownMenuContent align="end" className="w-72 sm:w-80 p-0 overflow-hidden rounded-xl shadow-xl border-border/50">
+        {/* Header compacto */}
+        <div className="bg-gradient-to-r from-primary/10 via-primary/5 to-transparent p-3 border-b border-border/50">
           <div className="flex items-center gap-2">
-            <div className="p-2 bg-primary/10 rounded-full">
-              <Bell className="h-4 w-4 text-primary" />
+            <div className="p-1.5 bg-primary/10 rounded-full">
+              <Bell className="h-3.5 w-3.5 text-primary" />
             </div>
             <div>
-              <h3 className="font-semibold text-foreground">Notificações</h3>
-              <p className="text-xs text-muted-foreground">
+              <h3 className="font-semibold text-sm text-foreground">Notificações</h3>
+              <p className="text-[10px] text-muted-foreground">
                 {unreadCount > 0 ? `${unreadCount} nova${unreadCount > 1 ? 's' : ''}` : 'Tudo em dia!'}
               </p>
             </div>
@@ -157,39 +157,39 @@ export const NotificationBell: React.FC = () => {
         </div>
         
         {notifications.length === 0 ? (
-          <div className="p-6 text-center">
-            <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-muted/50 flex items-center justify-center">
-              <Bell className="h-6 w-6 text-muted-foreground/50" />
+          <div className="p-4 text-center">
+            <div className="w-10 h-10 mx-auto mb-2 rounded-full bg-muted/50 flex items-center justify-center">
+              <Bell className="h-5 w-5 text-muted-foreground/50" />
             </div>
-            <p className="text-muted-foreground text-sm">Nenhuma notificação</p>
+            <p className="text-muted-foreground text-xs">Nenhuma notificação</p>
           </div>
         ) : (
-          <div className="max-h-80 overflow-y-auto">
+          <div className="max-h-64 overflow-y-auto">
             {notifications.map((notification) => (
               <DropdownMenuItem
                 key={notification.id}
-                className={`p-4 cursor-pointer border-b border-border/30 last:border-0 focus:bg-primary/5 transition-colors ${
+                className={`p-3 cursor-pointer border-b border-border/30 last:border-0 focus:bg-primary/5 transition-colors ${
                   !notification.is_read ? 'bg-primary/5' : ''
                 }`}
                 onClick={() => markAsRead(notification.id)}
               >
-                <div className="flex gap-3 w-full">
-                  <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center bg-gradient-to-br ${getNotificationColor(notification.type)}`}>
-                    <span className="text-lg">{getNotificationIcon(notification.type)}</span>
+                <div className="flex gap-2.5 w-full">
+                  <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-gradient-to-br ${getNotificationColor(notification.type)}`}>
+                    <span className="text-sm">{getNotificationIcon(notification.type)}</span>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <h4 className="font-medium text-sm text-foreground">
+                    <div className="flex items-center gap-1.5">
+                      <h4 className="font-medium text-xs text-foreground line-clamp-1">
                         {notification.title}
                       </h4>
                       {!notification.is_read && (
-                        <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+                        <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse flex-shrink-0" />
                       )}
                     </div>
-                    <p className="text-sm text-muted-foreground line-clamp-2 mt-0.5">
+                    <p className="text-[11px] text-muted-foreground line-clamp-2 mt-0.5">
                       {notification.message}
                     </p>
-                    <p className="text-xs text-muted-foreground/70 mt-1.5">
+                    <p className="text-[10px] text-muted-foreground/70 mt-1">
                       {formatDate(notification.created_at)}
                     </p>
                   </div>
@@ -200,11 +200,11 @@ export const NotificationBell: React.FC = () => {
         )}
         
         {notifications.length > 0 && (
-          <div className="p-3 border-t border-border/50 bg-muted/30">
+          <div className="p-2 border-t border-border/50 bg-muted/30">
             <Button 
               variant="ghost" 
               size="sm" 
-              className="w-full text-primary hover:text-primary hover:bg-primary/10 font-medium"
+              className="w-full text-xs text-primary hover:text-primary hover:bg-primary/10 font-medium h-8"
               onClick={markAllAsRead}
             >
               ✓ Marcar todas como lidas
