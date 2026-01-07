@@ -208,6 +208,20 @@ export function useDirectMessages() {
 
       setMessages(prev => [...prev, newMessage]);
 
+      // Create notification for the receiver
+      await supabase
+        .from('health_feed_notifications')
+        .insert({
+          user_id: receiverId,
+          type: 'message',
+          title: 'Nova Mensagem 💬',
+          message: `${profile?.full_name || 'Alguém'}: ${content.substring(0, 50)}${content.length > 50 ? '...' : ''}`,
+          actor_id: user.id,
+          entity_type: 'message',
+          entity_id: data.id,
+          is_read: false,
+        });
+
       // Update conversation list
       fetchConversations();
 

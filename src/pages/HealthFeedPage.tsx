@@ -289,13 +289,14 @@ export default function HealthFeedPage() {
                 />
 
                 {/* Stories Section */}
-                <StoriesSection
-                  groupedStories={groupedStories}
-                  currentUserName={userName}
-                  hasOwnStory={hasOwnStory}
-                  onStoryClick={handleStoryClick}
-                  onCreateStory={() => setCreateStoryOpen(true)}
-                />
+        <StoriesSection
+          groupedStories={groupedStories}
+          currentUserName={userName}
+          hasOwnStory={hasOwnStory}
+          onStoryClick={handleStoryClick}
+          onCreateStory={() => setCreateStoryOpen(true)}
+          showCategoryFilter={false}
+        />
 
                 {/* Smart Feed Toggle - removido para simplificar */}
 
