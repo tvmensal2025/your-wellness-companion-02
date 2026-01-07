@@ -116,12 +116,62 @@ const EmptyState = memo(({ onRegisterClick }: { onRegisterClick?: () => void }) 
 
 EmptyState.displayName = 'EmptyState';
 
-// Loading skeleton - super lightweight
+// Loading skeleton - elegant animated state
 const LoadingSkeleton = memo(() => (
-  <div className="rounded-2xl bg-card p-4 animate-pulse">
-    <div className="h-4 bg-muted rounded w-1/4 mb-4" />
-    <div className="h-36 bg-muted/50 rounded-xl" />
-  </div>
+  <motion.div
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    className="rounded-2xl bg-card border border-border/50 p-5"
+  >
+    <h3 className="text-sm font-medium text-foreground mb-4">Evolução</h3>
+    
+    <div className="flex flex-col items-center justify-center h-32 gap-3">
+      {/* Animated chart line */}
+      <svg className="w-28 h-16" viewBox="0 0 100 50">
+        <motion.path
+          d="M 5 40 Q 25 25, 50 32 T 95 15"
+          stroke="hsl(var(--primary))"
+          strokeWidth="2.5"
+          fill="none"
+          strokeLinecap="round"
+          initial={{ pathLength: 0, opacity: 0.3 }}
+          animate={{ 
+            pathLength: [0, 1, 0],
+            opacity: [0.3, 0.7, 0.3]
+          }}
+          transition={{ 
+            duration: 2,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        />
+        {/* Animated dots */}
+        <motion.circle 
+          cx="50" cy="32" r="3" 
+          fill="hsl(var(--primary))"
+          animate={{ opacity: [0.3, 0.7, 0.3] }}
+          transition={{ duration: 1.5, repeat: Infinity }}
+        />
+        <motion.circle 
+          cx="95" cy="15" r="3" 
+          fill="hsl(var(--primary))"
+          animate={{ opacity: [0.4, 0.8, 0.4] }}
+          transition={{ duration: 1.5, repeat: Infinity, delay: 0.3 }}
+        />
+      </svg>
+      
+      <p className="text-sm text-muted-foreground">
+        Carregando seus dados...
+      </p>
+    </div>
+    
+    {/* Footer skeleton */}
+    <div className="grid grid-cols-3 gap-3 mt-4 pt-4 border-t border-border/30">
+      {[1, 2, 3].map(i => (
+        <div key={i} className="h-10 bg-muted/20 rounded-lg animate-pulse" />
+      ))}
+    </div>
+  </motion.div>
 ));
 
 LoadingSkeleton.displayName = 'LoadingSkeleton';
