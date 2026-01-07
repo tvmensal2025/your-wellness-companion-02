@@ -109,14 +109,14 @@ export const AchievementBadges: React.FC<AchievementBadgesProps> = ({
                   {/* Glow effect */}
                   <div className={`absolute inset-0 rounded-full bg-gradient-to-br ${config.bgGradient} opacity-0 group-hover/badge:opacity-40 blur-md transition-opacity duration-300`} />
                   
-                  {/* Sparkle effect on legendary */}
+                  {/* Sparkle effect on legendary - subtle pulse instead of rotation */}
                   {achievement.rarity === 'legendary' && (
                     <motion.div
-                      animate={{ rotate: 360 }}
-                      transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-                      className="absolute inset-0 flex items-center justify-center"
+                      animate={{ opacity: [0.6, 1, 0.6] }}
+                      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                      className="absolute -top-0.5 -right-0.5"
                     >
-                      <Sparkles className="w-3 h-3 absolute -top-0.5 -right-0.5 text-primary" />
+                      <Sparkles className="w-3 h-3 text-primary" />
                     </motion.div>
                   )}
                   
