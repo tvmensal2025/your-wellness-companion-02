@@ -150,9 +150,16 @@ export const dailyQuestionsFinal: DailyQuestion[] = [
   {
     id: 'small_victory',
     section: 'mindset',
-    question: 'Qual foi sua pequena vitória hoje?',
-    type: 'text',
-    placeholder: 'Conte sobre sua conquista do dia...',
+    question: 'Qual foi sua conquista hoje?',
+    type: 'multiple_choice',
+    options: [
+      'Mantive minha rotina',
+      'Treinei/me exercitei',
+      'Comi de forma saudável',
+      'Fui produtivo no trabalho',
+      'Descansei bem',
+      'Cuidei da minha mente'
+    ],
     points: 20,
     required: true,
     order: 10,
