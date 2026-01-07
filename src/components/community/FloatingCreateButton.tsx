@@ -50,11 +50,11 @@ export const FloatingCreateButton: React.FC<FloatingCreateButtonProps> = ({
 
   return (
     <>
-      {/* Floating Button */}
+      {/* Floating Button - z-40 para ficar abaixo de modais/sheets */}
       <motion.div
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
-        className="fixed bottom-20 right-4 sm:bottom-8 sm:right-8 z-50"
+        className="fixed bottom-24 right-4 sm:bottom-8 sm:right-8 z-40"
       >
         <motion.div
           whileHover={{ scale: 1.1 }}
@@ -63,9 +63,9 @@ export const FloatingCreateButton: React.FC<FloatingCreateButtonProps> = ({
           <Button
             onClick={() => setIsOpen(true)}
             size="lg"
-            className="rounded-full w-14 h-14 shadow-xl bg-primary hover:bg-primary/90 text-primary-foreground"
+            className="rounded-full w-12 h-12 shadow-xl bg-primary hover:bg-primary/90 text-primary-foreground"
           >
-            <Plus className="w-6 h-6" />
+            <Plus className="w-5 h-5" />
           </Button>
         </motion.div>
       </motion.div>
