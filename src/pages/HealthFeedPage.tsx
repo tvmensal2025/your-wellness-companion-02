@@ -35,6 +35,8 @@ import { DirectMessagesModal } from '@/components/community/DirectMessagesModal'
 import { NotificationBell } from '@/components/community/NotificationBell';
 import { SharePostModal } from '@/components/community/SharePostModal';
 import { UserProfileModal } from '@/components/community/UserProfileModal';
+import { FollowingList } from '@/components/community/FollowingList';
+import { CommunityHealthSummary } from '@/components/community/CommunityHealthSummary';
 import { RankingPodium } from '@/components/ranking/RankingPodium';
 import { CurrentUserRankCard } from '@/components/ranking/CurrentUserRankCard';
 import { RankingUserCard } from '@/components/ranking/RankingUserCard';
@@ -263,6 +265,9 @@ export default function HealthFeedPage() {
               <TabsTrigger value="feed" className="flex-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                 Feed
               </TabsTrigger>
+              <TabsTrigger value="following" className="flex-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                Seguindo
+              </TabsTrigger>
               <TabsTrigger value="ranking" className="flex-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                 Ranking
               </TabsTrigger>
@@ -367,6 +372,22 @@ export default function HealthFeedPage() {
               onCreatePost={handleCreatePost}
               onOpenStoryModal={() => setCreateStoryOpen(true)}
             />
+          </TabsContent>
+
+          {/* Following Tab */}
+          <TabsContent value="following" className="mt-4">
+            <div className="max-w-2xl mx-auto space-y-6">
+              {/* Community Health Summary */}
+              <CommunityHealthSummary />
+
+              {/* Following List */}
+              <FollowingList 
+                onProfileClick={(userId) => {
+                  setSelectedProfileId(userId);
+                  setProfileModalOpen(true);
+                }}
+              />
+            </div>
           </TabsContent>
 
           {/* Ranking Tab */}
