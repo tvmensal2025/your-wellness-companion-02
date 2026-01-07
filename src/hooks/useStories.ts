@@ -169,8 +169,8 @@ export function useStories() {
 
       if (error) throw error;
 
-      toast.success('Story criado com sucesso!');
       await fetchStories();
+      toast.success('Story criado com sucesso!');
       return data;
     } catch (err: any) {
       console.error('Error creating story:', err);
