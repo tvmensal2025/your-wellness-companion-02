@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Star, CheckCircle, Trophy, Sparkles, Heart, Flame } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Star, CheckCircle, Trophy, Sparkles, Heart, Flame, Send, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface MissionCompletePageProps {
   answers: Record<string, string | number>;
@@ -12,14 +15,83 @@ interface MissionCompletePageProps {
     question: string;
   }>;
   onContinue?: () => void;
+  userId?: string;
+  streakDays?: number;
 }
 
 export const MissionCompletePage: React.FC<MissionCompletePageProps> = ({
   answers,
   totalPoints,
   questions,
+  userId,
+  streakDays = 1,
 }) => {
   const [showConfetti, setShowConfetti] = useState(true);
+  const [isSendingWhatsApp, setIsSendingWhatsApp] = useState(false);
+  const { toast } = useToast();
+
+  const handleSendToWhatsApp = async () => {
+    if (!userId) {
+      toast({
+        title: "Erro",
+        description: "Usuário não identificado. Faça login novamente.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSendingWhatsApp(true);
+
+    try {
+      // Verificar se usuário tem telefone cadastrado
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("phone, full_name")
+        .eq("user_id", userId)
+        .single();
+
+      if (profileError || !profile?.phone) {
+        toast({
+          title: "Telefone não cadastrado",
+          description: "Para receber a análise via WhatsApp, cadastre seu número em Configurações > Perfil.",
+          variant: "destructive",
+        });
+        setIsSendingWhatsApp(false);
+        return;
+      }
+
+      // Chamar edge function
+      const { data, error } = await supabase.functions.invoke("whatsapp-habits-analysis", {
+        body: {
+          userId,
+          answers,
+          totalPoints,
+          streakDays,
+          questions,
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.success) {
+        toast({
+          title: "Análise enviada! 📱",
+          description: "Dr. Vital enviou a análise dos seus hábitos para seu WhatsApp.",
+        });
+      } else {
+        throw new Error(data?.error || "Erro ao enviar análise");
+      }
+    } catch (error) {
+      console.error("Erro ao enviar para WhatsApp:", error);
+      toast({
+        title: "Erro ao enviar",
+        description: error instanceof Error ? error.message : "Tente novamente em alguns instantes.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSendingWhatsApp(false);
+    }
+  };
 
   useEffect(() => {
     const timer = setTimeout(() => setShowConfetti(false), 3000);
@@ -205,6 +277,33 @@ export const MissionCompletePage: React.FC<MissionCompletePageProps> = ({
                   Você está construindo hábitos incríveis. Continue assim e volte amanhã para mais uma jornada de autoconhecimento! 💪
                 </p>
               </motion.div>
+
+              {/* Botão WhatsApp Dr. Vital */}
+              {userId && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 1 }}
+                >
+                  <Button
+                    onClick={handleSendToWhatsApp}
+                    disabled={isSendingWhatsApp}
+                    className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-xl shadow-lg"
+                  >
+                    {isSendingWhatsApp ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Enviando...
+                      </>
+                    ) : (
+                      <>
+                        <Send className="h-4 w-4 mr-2" />
+                        📱 Receber Análise do Dr. Vital
+                      </>
+                    )}
+                  </Button>
+                </motion.div>
+              )}
             </CardContent>
           </Card>
         </motion.section>

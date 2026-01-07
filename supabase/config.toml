@@ -92,3 +92,6 @@ verify_jwt = false
 
 [functions.whatsapp-saboteur-result]
 verify_jwt = false
+
+[functions.whatsapp-habits-analysis]
+verify_jwt = false

@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { MissionCompletePage } from '@/components/daily-missions/MissionCompletePage';
+import { supabase } from '@/integrations/supabase/client';
 
 // Dados de exemplo para demonstração
 const mockAnswers = {
@@ -23,6 +24,32 @@ const mockQuestions = [
 const mockTotalPoints = 120;
 
 export const MissionCompletePageRoute: React.FC = () => {
+  const [userId, setUserId] = useState<string | undefined>();
+  const [streakDays, setStreakDays] = useState(1);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setUserId(user.id);
+        
+        // Buscar streak atual
+        const { data: session } = await supabase
+          .from('daily_mission_sessions')
+          .select('streak_days')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single();
+        
+        if (session?.streak_days) {
+          setStreakDays(session.streak_days);
+        }
+      }
+    };
+    fetchUserData();
+  }, []);
+
   const handleContinue = () => {
     // Redirecionar para a página principal ou dashboard
     window.location.href = '/dashboard';
@@ -34,6 +61,8 @@ export const MissionCompletePageRoute: React.FC = () => {
       totalPoints={mockTotalPoints}
       questions={mockQuestions}
       onContinue={handleContinue}
+      userId={userId}
+      streakDays={streakDays}
     />
   );
 };
