@@ -95,3 +95,6 @@ verify_jwt = false
 
 [functions.whatsapp-habits-analysis]
 verify_jwt = false
+
+[functions.whatsapp-goal-reminders]
+verify_jwt = false
