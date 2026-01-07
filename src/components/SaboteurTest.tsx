@@ -7,7 +7,8 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Brain, Target, AlertTriangle, CheckCircle, Clock, TrendingUp, BarChart3, Lightbulb, Heart, Zap, Shield, Eye, ArrowRight, ArrowLeft, Star, Award, BookOpen, Users, MessageSquare, UserCheck, Settings, Download, Image } from 'lucide-react';
+import { Brain, Target, AlertTriangle, CheckCircle, Clock, TrendingUp, BarChart3, Lightbulb, Heart, Zap, Shield, Eye, ArrowRight, ArrowLeft, Star, Award, BookOpen, Users, MessageSquare, UserCheck, Settings, Download, Image, FileText, Send, Loader2 } from 'lucide-react';
+import jsPDF from 'jspdf';
 import { saboteurQuestions, Question } from '@/data/saboteurQuestions';
 import html2canvas from 'html2canvas';
 import SaboteurReportImage from './SaboteurReportImage';
@@ -113,6 +114,8 @@ const SaboteurTest: React.FC = () => {
   const [scores, setScores] = useState<Record<string, number>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const [isSendingWhatsApp, setIsSendingWhatsApp] = useState(false);
   const [userName, setUserName] = useState<string>('');
   const reportRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
@@ -299,6 +302,178 @@ const SaboteurTest: React.FC = () => {
       color: "text-red-600",
       bgColor: "bg-red-100"
     };
+  };
+
+  // Gerar PDF do relatório
+  const handleGeneratePDF = async () => {
+    if (!reportRef.current) {
+      toast({
+        title: "Erro",
+        description: "Componente de relatório não encontrado.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setIsGeneratingPDF(true);
+      toast({
+        title: "Gerando PDF...",
+        description: "Aguarde um momento.",
+      });
+
+      const canvas = await html2canvas(reportRef.current, {
+        scale: 3,
+        backgroundColor: '#ffffff',
+        useCORS: true,
+        logging: false,
+      });
+
+      const imgData = canvas.toDataURL('image/jpeg', 0.95);
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = pageWidth;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      if (imgHeight <= pageHeight) {
+        pdf.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
+      } else {
+        let position = 0;
+        const pageImgHeight = pageHeight;
+        const pageCanvasHeight = (canvas.width * pageImgHeight) / imgWidth;
+        
+        while (position < canvas.height) {
+          const pageCanvas = document.createElement('canvas');
+          const pageCtx = pageCanvas.getContext('2d');
+          pageCanvas.width = canvas.width;
+          pageCanvas.height = Math.min(pageCanvasHeight, canvas.height - position);
+          
+          if (pageCtx) {
+            pageCtx.drawImage(canvas, 0, position, canvas.width, pageCanvas.height, 0, 0, canvas.width, pageCanvas.height);
+            const pageImgData = pageCanvas.toDataURL('image/jpeg', 0.95);
+            
+            if (position > 0) {
+              pdf.addPage();
+            }
+            pdf.addImage(pageImgData, 'JPEG', 0, 0, imgWidth, pageImgHeight);
+          }
+          
+          position += pageCanvasHeight;
+        }
+      }
+
+      pdf.save(`relatorio-sabotadores-${Date.now()}.pdf`);
+
+      toast({
+        title: "PDF gerado com sucesso! 📄",
+        description: "O arquivo foi baixado.",
+      });
+    } catch (err) {
+      console.error("Erro ao gerar PDF:", err);
+      toast({
+        title: "Erro ao gerar PDF",
+        description: "Tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingPDF(false);
+    }
+  };
+
+  // Enviar resultado via WhatsApp com mensagem do Dr. Vital
+  const handleSendWhatsApp = async () => {
+    if (!reportRef.current) {
+      toast({
+        title: "Erro",
+        description: "Componente de relatório não encontrado.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setIsSendingWhatsApp(true);
+      toast({
+        title: "Preparando envio...",
+        description: "Dr. Vital está analisando seus resultados.",
+      });
+
+      // Gerar imagem
+      const canvas = await html2canvas(reportRef.current, {
+        scale: 2,
+        backgroundColor: '#ffffff',
+        useCORS: true,
+        logging: false,
+      });
+      const imageBase64 = canvas.toDataURL('image/png');
+
+      // Obter usuário
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "Erro",
+          description: "Usuário não encontrado.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Preparar dados dos top sabotadores
+      const topSaboteursData = getTopSaboteurs().map(([category, score]) => ({
+        name: saboteurTypes[category]?.name || category,
+        score,
+        emoji: getEmojiForCategory(category),
+      }));
+
+      const overallScore = getOverallScore();
+      const overallLevel = getScoreLevel(overallScore);
+
+      // Chamar edge function
+      const { data, error } = await supabase.functions.invoke('whatsapp-saboteur-result', {
+        body: {
+          userId: user.id,
+          scores,
+          topSaboteurs: topSaboteursData,
+          overallScore,
+          overallLevel: overallLevel.level,
+          imageBase64,
+        },
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      toast({
+        title: "Enviado com sucesso! 📱",
+        description: "Dr. Vital enviou sua análise via WhatsApp.",
+      });
+    } catch (err) {
+      console.error("Erro ao enviar WhatsApp:", err);
+      toast({
+        title: "Erro ao enviar",
+        description: err instanceof Error ? err.message : "Tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSendingWhatsApp(false);
+    }
+  };
+
+  const getEmojiForCategory = (category: string): string => {
+    const emojiMap: Record<string, string> = {
+      perfeccionismo: "⭐",
+      procrastinacao: "⏰",
+      comparacao: "👥",
+      autocritica: "❤️",
+      medo_falha: "🛡️",
+      pensamento_binario: "👁️",
+      vitima: "😢",
+      controle: "⚙️",
+      aprovacao: "💬",
+    };
+    return emojiMap[category] || "🧠";
   };
   const progress = (currentQuestion + 1) / saboteurQuestions.length * 100;
   if (showResults) {
@@ -646,82 +821,140 @@ const SaboteurTest: React.FC = () => {
         </Card>
 
         {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-          <Button onClick={handleRestart} variant="outline" size="lg" className="w-full sm:w-auto">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Refazer Teste
-          </Button>
-          <Button
-            className="btn-gradient w-full sm:w-auto"
-            size="lg"
-            onClick={() => {
-              toast({
-                title: "Em breve! 📚",
-                description: "Estamos preparando conteúdos exclusivos para você!",
-                duration: 3000,
-              });
-            }}
-          >
-            <BookOpen className="h-4 w-4 mr-2" />
-            Explorar Estratégias
-          </Button>
-          <Button
-            variant="default"
-            size="lg"
-            disabled={isGeneratingImage}
-            className="w-full sm:w-auto"
-            onClick={async () => {
-              if (!reportRef.current) {
-                toast({
-                  title: "Erro",
-                  description: "Componente de relatório não encontrado.",
-                  variant: "destructive",
-                });
-                return;
-              }
+        <div className="space-y-4">
+          {/* Botões principais de exportação */}
+          <Card className="health-card bg-gradient-to-r from-blue-50 to-green-50 dark:from-blue-950/20 dark:to-green-950/20 border-2 border-primary/20">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Send className="h-5 w-5 text-primary" />
+                Salve e Compartilhe seus Resultados
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {/* Botão PDF */}
+                <Button
+                  variant="outline"
+                  size="lg"
+                  disabled={isGeneratingPDF}
+                  className="w-full bg-white dark:bg-background hover:bg-red-50 dark:hover:bg-red-950/20 border-red-200 dark:border-red-800"
+                  onClick={handleGeneratePDF}
+                >
+                  {isGeneratingPDF ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <FileText className="h-4 w-4 mr-2 text-red-600" />
+                  )}
+                  {isGeneratingPDF ? "Gerando..." : "Baixar PDF"}
+                </Button>
 
-              try {
-                setIsGeneratingImage(true);
-                
-                toast({
-                  title: "Gerando imagem...",
-                  description: "Aguarde um momento.",
-                });
+                {/* Botão PNG */}
+                <Button
+                  variant="outline"
+                  size="lg"
+                  disabled={isGeneratingImage}
+                  className="w-full bg-white dark:bg-background hover:bg-purple-50 dark:hover:bg-purple-950/20 border-purple-200 dark:border-purple-800"
+                  onClick={async () => {
+                    if (!reportRef.current) {
+                      toast({
+                        title: "Erro",
+                        description: "Componente de relatório não encontrado.",
+                        variant: "destructive",
+                      });
+                      return;
+                    }
 
-                const canvas = await html2canvas(reportRef.current, {
-                  scale: 2,
-                  backgroundColor: '#ffffff',
-                  useCORS: true,
-                  logging: false,
-                });
+                    try {
+                      setIsGeneratingImage(true);
+                      
+                      toast({
+                        title: "Gerando imagem...",
+                        description: "Aguarde um momento.",
+                      });
 
-                const dataUrl = canvas.toDataURL('image/png');
-                
-                // Trigger download
-                const link = document.createElement('a');
-                link.download = `relatorio-sabotadores-${Date.now()}.png`;
-                link.href = dataUrl;
-                link.click();
+                      const canvas = await html2canvas(reportRef.current, {
+                        scale: 2,
+                        backgroundColor: '#ffffff',
+                        useCORS: true,
+                        logging: false,
+                      });
 
+                      const dataUrl = canvas.toDataURL('image/png');
+                      
+                      const link = document.createElement('a');
+                      link.download = `relatorio-sabotadores-${Date.now()}.png`;
+                      link.href = dataUrl;
+                      link.click();
+
+                      toast({
+                        title: "Imagem gerada com sucesso! 🎉",
+                        description: "O arquivo PNG foi baixado.",
+                      });
+                    } catch (err) {
+                      console.error("Erro ao gerar imagem:", err);
+                      toast({
+                        title: "Erro ao gerar imagem",
+                        description: "Tente novamente.",
+                        variant: "destructive",
+                      });
+                    } finally {
+                      setIsGeneratingImage(false);
+                    }
+                  }}
+                >
+                  {isGeneratingImage ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Image className="h-4 w-4 mr-2 text-purple-600" />
+                  )}
+                  {isGeneratingImage ? "Gerando..." : "Baixar PNG"}
+                </Button>
+              </div>
+
+              {/* Botão WhatsApp com Dr. Vital */}
+              <Button
+                size="lg"
+                disabled={isSendingWhatsApp}
+                className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-lg"
+                onClick={handleSendWhatsApp}
+              >
+                {isSendingWhatsApp ? (
+                  <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                ) : (
+                  <MessageSquare className="h-5 w-5 mr-2" />
+                )}
+                {isSendingWhatsApp 
+                  ? "Dr. Vital está analisando..." 
+                  : "📲 Receber Análise do Dr. Vital via WhatsApp"
+                }
+              </Button>
+              <p className="text-xs text-muted-foreground text-center">
+                🩺 O Dr. Vital irá enviar uma análise personalizada dos seus sabotadores + imagem do relatório
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Botões secundários */}
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Button onClick={handleRestart} variant="outline" size="lg" className="w-full sm:w-auto">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Refazer Teste
+            </Button>
+            <Button
+              className="btn-gradient w-full sm:w-auto"
+              size="lg"
+              onClick={() => {
                 toast({
-                  title: "Imagem gerada com sucesso! 🎉",
-                  description: "O arquivo PNG foi baixado.",
+                  title: "Em breve! 📚",
+                  description: "Estamos preparando conteúdos exclusivos para você!",
+                  duration: 3000,
                 });
-              } catch (err) {
-                console.error("Erro ao gerar imagem:", err);
-                toast({
-                  title: "Erro ao gerar imagem",
-                  description: "Tente novamente.",
-                  variant: "destructive",
-                });
-              } finally {
-                setIsGeneratingImage(false);
-              }
-            }}
-          >
-            <Image className="h-4 w-4 mr-2" />
-            {isGeneratingImage ? "Gerando..." : "Baixar Relatório (PNG)"}
-          </Button>
+              }}
+            >
+              <BookOpen className="h-4 w-4 mr-2" />
+              Explorar Estratégias
+            </Button>
+          </div>
         </div>
 
         {/* Hidden component for screenshot - only render when scores exist */}
