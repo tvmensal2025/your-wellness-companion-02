@@ -7,6 +7,9 @@ export interface CommunityProfileData {
   avatar?: string;
   level: string;
   bio?: string;
+  website_url?: string;
+  instagram_handle?: string;
+  interests?: string[];
   joinedAt: string;
   postsCount: number;
   followersCount: number;
@@ -86,7 +89,10 @@ export function useCommunityProfile() {
         name: displayName,
         avatar: profileData?.avatar_url,
         level,
-        bio: undefined,
+        bio: profileData?.bio || undefined,
+        website_url: profileData?.website_url || undefined,
+        instagram_handle: profileData?.instagram_handle || undefined,
+        interests: profileData?.interests || undefined,
         joinedAt: profileData?.created_at || new Date().toISOString(),
         postsCount: postsCount || 0,
         followersCount: followersCount || 0,

@@ -26,11 +26,29 @@ import {
   Star,
   Gem,
   Sprout,
+  Target,
+  Globe,
+  Instagram,
+  Dumbbell,
+  Apple,
+  Moon,
+  Brain,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCommunityProfile, CommunityUserPost } from '@/hooks/useCommunityProfile';
+import { InviteToChallengeModal } from './InviteToChallengeModal';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+
+// Interest configuration
+const interestConfig: Record<string, { label: string; icon: React.ReactNode; color: string }> = {
+  'treino': { label: 'Treino', icon: <Dumbbell className="w-3 h-3" />, color: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
+  'nutricao': { label: 'Nutrição', icon: <Apple className="w-3 h-3" />, color: 'bg-green-500/20 text-green-400 border-green-500/30' },
+  'sono': { label: 'Sono', icon: <Moon className="w-3 h-3" />, color: 'bg-purple-500/20 text-purple-400 border-purple-500/30' },
+  'mental': { label: 'Saúde Mental', icon: <Brain className="w-3 h-3" />, color: 'bg-pink-500/20 text-pink-400 border-pink-500/30' },
+  'peso': { label: 'Perda de Peso', icon: <Flame className="w-3 h-3" />, color: 'bg-orange-500/20 text-orange-400 border-orange-500/30' },
+  'metas': { label: 'Metas', icon: <Target className="w-3 h-3" />, color: 'bg-cyan-500/20 text-cyan-400 border-cyan-500/30' },
+};
 
 interface UserProfileModalProps {
   open: boolean;
@@ -133,6 +151,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
 }) => {
   const { loading, profile, userPosts, fetchProfile, clearProfile } = useCommunityProfile();
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [inviteModalOpen, setInviteModalOpen] = useState(false);
 
   useEffect(() => {
     if (open && userId) {
@@ -140,6 +159,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
     } else {
       clearProfile();
       setLightboxOpen(false);
+      setInviteModalOpen(false);
     }
   }, [open, userId, fetchProfile, clearProfile]);
 
@@ -244,10 +264,62 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                         <span className="ml-1">{profile.level}</span>
                       </Badge>
                     </div>
-                    <p className="text-xs text-muted-foreground mt-2 flex items-center justify-center gap-1">
-                      <Calendar className="w-3 h-3" />
-                      Membro desde {formatJoinDate(profile.joinedAt)}
-                    </p>
+                    
+                    {/* Bio */}
+                    {profile.bio && (
+                      <p className="text-sm text-muted-foreground mt-3 px-4 italic">
+                        "{profile.bio}"
+                      </p>
+                    )}
+                    
+                    {/* Links */}
+                    <div className="flex items-center justify-center gap-3 mt-2 text-xs">
+                      <span className="text-muted-foreground flex items-center gap-1">
+                        <Calendar className="w-3 h-3" />
+                        Membro desde {formatJoinDate(profile.joinedAt)}
+                      </span>
+                      {profile.website_url && (
+                        <a 
+                          href={profile.website_url.startsWith('http') ? profile.website_url : `https://${profile.website_url}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary hover:underline flex items-center gap-1"
+                        >
+                          <Globe className="w-3 h-3" />
+                          Website
+                        </a>
+                      )}
+                      {profile.instagram_handle && (
+                        <a 
+                          href={`https://instagram.com/${profile.instagram_handle}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-pink-500 hover:underline flex items-center gap-1"
+                        >
+                          <Instagram className="w-3 h-3" />
+                          @{profile.instagram_handle}
+                        </a>
+                      )}
+                    </div>
+                    
+                    {/* Interests */}
+                    {profile.interests && profile.interests.length > 0 && (
+                      <div className="flex flex-wrap justify-center gap-1.5 mt-3 px-4">
+                        {profile.interests.map((interest) => {
+                          const config = interestConfig[interest];
+                          if (!config) return null;
+                          return (
+                            <span 
+                              key={interest}
+                              className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs border ${config.color}`}
+                            >
+                              {config.icon}
+                              {config.label}
+                            </span>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                 </DialogHeader>
 
@@ -299,33 +371,44 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
 
                 {/* Action Buttons */}
                 {!isOwnProfile && (
-                  <div className="flex gap-2 px-6 pb-4">
+                  <div className="space-y-2 px-6 pb-4">
+                    <div className="flex gap-2">
+                      <Button
+                        variant={isFollowing ? 'outline' : 'default'}
+                        size="sm"
+                        className="flex-1 rounded-xl"
+                        onClick={onFollow}
+                      >
+                        {isFollowing ? (
+                          <>
+                            <UserMinus className="w-4 h-4 mr-2" />
+                            Seguindo
+                          </>
+                        ) : (
+                          <>
+                            <UserPlus className="w-4 h-4 mr-2" />
+                            Seguir
+                          </>
+                        )}
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        className="flex-1 rounded-xl"
+                        onClick={onMessage}
+                      >
+                        <MessageCircle className="w-4 h-4 mr-2" />
+                        Mensagem
+                      </Button>
+                    </div>
                     <Button
-                      variant={isFollowing ? 'outline' : 'default'}
+                      variant="outline"
                       size="sm"
-                      className="flex-1 rounded-xl"
-                      onClick={onFollow}
+                      className="w-full rounded-xl border-primary/30 text-primary hover:bg-primary/10"
+                      onClick={() => setInviteModalOpen(true)}
                     >
-                      {isFollowing ? (
-                        <>
-                          <UserMinus className="w-4 h-4 mr-2" />
-                          Seguindo
-                        </>
-                      ) : (
-                        <>
-                          <UserPlus className="w-4 h-4 mr-2" />
-                          Seguir
-                        </>
-                      )}
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      className="flex-1 rounded-xl"
-                      onClick={onMessage}
-                    >
-                      <MessageCircle className="w-4 h-4 mr-2" />
-                      Mensagem
+                      <Target className="w-4 h-4 mr-2" />
+                      Convidar para Desafio
                     </Button>
                   </div>
                 )}
@@ -374,6 +457,16 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
         imageUrl={profile?.avatar}
         fallback={profile?.name?.charAt(0).toUpperCase() || 'U'}
       />
+
+      {/* Invite to Challenge Modal */}
+      {userId && profile && (
+        <InviteToChallengeModal
+          open={inviteModalOpen}
+          onOpenChange={setInviteModalOpen}
+          inviteeId={userId}
+          inviteeName={profile.name}
+        />
+      )}
     </>
   );
 };
