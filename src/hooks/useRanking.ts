@@ -40,7 +40,13 @@ export const useRanking = () => {
         .select('user_id, full_name, avatar_url')
         .order('full_name');
 
-      if (profilesError) throw profilesError;
+      if (profilesError) {
+        console.error('Erro ao buscar profiles:', profilesError);
+        // Usar dados default em caso de erro
+        setRanking(defaultRankingUsers);
+        setLoading(false);
+        return;
+      }
 
       // Processar dados para criar o ranking
       const userStats = new Map();
