@@ -89,3 +89,6 @@ verify_jwt = false
 
 [functions.whatsapp-mission-complete]
 verify_jwt = false
+
+[functions.whatsapp-saboteur-result]
+verify_jwt = false
