@@ -38,6 +38,7 @@ import { SharePostModal } from '@/components/community/SharePostModal';
 import { UserProfileModal } from '@/components/community/UserProfileModal';
 import { FollowingList } from '@/components/community/FollowingList';
 import { FollowersList } from '@/components/community/FollowersList';
+import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { CommunityHealthSummary } from '@/components/community/CommunityHealthSummary';
 import { RankingPodium } from '@/components/ranking/RankingPodium';
 import { CurrentUserRankCard } from '@/components/ranking/CurrentUserRankCard';
@@ -414,20 +415,28 @@ export default function HealthFeedPage() {
           {/* Ranking Tab */}
           <TabsContent value="ranking" className="mt-4">
             <div className="max-w-2xl mx-auto space-y-6">
-              {/* Followers List (shown when clicked from header) */}
-              {showFollowersList && (
-                <FollowersList
-                  onProfileClick={(userId) => {
-                    setSelectedProfileId(userId);
-                    setProfileModalOpen(true);
-                  }}
-                  onMessageClick={(userId) => {
-                    setInitialDmUser(userId);
-                    setDmModalOpen(true);
-                  }}
-                  onClose={() => setShowFollowersList(false)}
-                />
-              )}
+              {/* Followers Modal */}
+              <Dialog open={showFollowersList} onOpenChange={setShowFollowersList}>
+                <DialogContent 
+                  className="max-w-md p-0 bg-transparent border-none shadow-none" 
+                  hideTitle 
+                  accessibleTitle="Lista de Seguidores"
+                >
+                  <FollowersList
+                    onProfileClick={(userId) => {
+                      setSelectedProfileId(userId);
+                      setProfileModalOpen(true);
+                      setShowFollowersList(false);
+                    }}
+                    onMessageClick={(userId) => {
+                      setInitialDmUser(userId);
+                      setDmModalOpen(true);
+                      setShowFollowersList(false);
+                    }}
+                    onClose={() => setShowFollowersList(false)}
+                  />
+                </DialogContent>
+              </Dialog>
 
               {/* Social Header with Followers/Following */}
               <RankingSocialHeader
