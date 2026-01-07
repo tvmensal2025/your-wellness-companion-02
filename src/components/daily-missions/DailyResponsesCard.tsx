@@ -51,9 +51,9 @@ export const DailyResponsesCard: React.FC<DailyResponsesCardProps> = ({
           </p>
         </div>
 
-        {/* Responses List */}
-        <div className="space-y-2 max-h-[280px] overflow-hidden">
-          {questions.slice(0, 6).map((question, index) => (
+        {/* Responses List - TODAS as respostas */}
+        <div className="space-y-2">
+          {questions.map((question, index) => (
             <div
               key={question.id}
               className="flex items-start gap-3 bg-slate-700/50 rounded-xl px-3 py-2.5"
