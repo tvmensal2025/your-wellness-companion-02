@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
-import { createNotification } from '@/lib/notifications';
 
 export function useFollow() {
   const { user } = useAuth();
@@ -68,13 +67,17 @@ export function useFollow() {
       }
 
       // Create notification for the user being followed
-      await createNotification(
-        userId,
-        'Novo Seguidor! 👋',
-        'Alguém começou a te seguir na comunidade',
-        'system',
-        '/community'
-      );
+      await supabase
+        .from('health_feed_notifications')
+        .insert({
+          user_id: userId,
+          type: 'follow',
+          title: 'Novo Seguidor! 👋',
+          message: 'Alguém começou a te seguir na comunidade',
+          actor_id: user.id,
+          entity_type: 'follow',
+          is_read: false,
+        });
 
       toast.success('Seguindo!');
       return true;
