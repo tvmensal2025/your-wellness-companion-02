@@ -298,7 +298,7 @@ export const MissionCompletePage: React.FC<MissionCompletePageProps> = ({
                     ) : (
                       <>
                         <Send className="h-4 w-4 mr-2" />
-                        📱 Receber Análise do Dr. Vital
+                        📱 Receber via WhatsApp
                       </>
                     )}
                   </Button>

@@ -33,8 +33,8 @@ serve(async (req) => {
     // Buscar dados do usuário
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
-      .select("first_name, phone, whatsapp_enabled")
-      .eq("id", userId)
+      .select("full_name, phone, whatsapp_enabled")
+      .eq("user_id", userId)
       .single();
 
     if (profileError || !profile) {
@@ -46,7 +46,7 @@ serve(async (req) => {
       throw new Error("Usuário sem telefone cadastrado");
     }
 
-    const firstName = profile.first_name || "Amigo(a)";
+    const firstName = profile.full_name?.split(' ')[0] || "Amigo(a)";
     const phone = profile.phone.replace(/\D/g, "");
 
     console.log(`👤 Usuário: ${firstName}, Telefone: ${phone}`);
