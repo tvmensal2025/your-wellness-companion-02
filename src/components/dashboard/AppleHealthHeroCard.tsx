@@ -86,7 +86,7 @@ export const AppleHealthHeroCard: React.FC<AppleHealthHeroCardProps> = ({
         {/* Elegant Greeting */}
         <div className="mb-4 sm:mb-5">
           <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">
-            <span className="text-slate-400 text-sm sm:text-base font-light tracking-wide">{getGreeting()},</span>
+            <span className="text-slate-400 sm:text-base font-light tracking-wide text-2xl">{getGreeting()},</span>
             <motion.div initial={{
             opacity: 0,
             x: -10
@@ -96,7 +96,7 @@ export const AppleHealthHeroCard: React.FC<AppleHealthHeroCardProps> = ({
           }} transition={{
             delay: 0.2
           }}>
-              <span className="text-lg sm:text-xl font-medium bg-gradient-to-r from-white via-slate-100 to-slate-300 bg-clip-text text-transparent truncate max-w-[140px] sm:max-w-none">
+              <span className="sm:text-xl bg-gradient-to-r from-white via-slate-100 to-slate-300 bg-clip-text text-transparent truncate max-w-[140px] sm:max-w-none font-bold font-serif text-center text-3xl">
                 {userName.split(' ')[0]}
               </span>
             </motion.div>
