@@ -149,7 +149,7 @@ const UserProfile = ({ onOpenLayoutPrefs }: UserProfileProps = {}) => {
         .from('user_achievements')
         .select('*')
         .eq('user_id', user.id)
-        .order('unlocked_at', { ascending: false });
+        .order('earned_at', { ascending: false });
 
       if (achievementsError) throw achievementsError;
       setAchievements(achievementsData as any[] || []);
