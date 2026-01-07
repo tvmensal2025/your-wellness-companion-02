@@ -30,6 +30,7 @@ export const DailyMissionsFinal: React.FC<DailyMissionsFinalProps> = ({ user }) 
     handleYesNo,
     handleTextInput,
     handleStarRating,
+    goToPreviousQuestion,
     allQuestions
   } = useDailyMissionsFinal({ user });
 
@@ -288,7 +289,7 @@ export const DailyMissionsFinal: React.FC<DailyMissionsFinalProps> = ({ user }) 
         <div className="flex justify-between items-center bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-2xl p-2 shadow-lg">
           <Button
             variant="outline"
-            onClick={() => window.history.back()}
+            onClick={goToPreviousQuestion}
             disabled={currentQuestionIndex === 0}
             className="h-10 px-4 font-semibold border-2 hover:scale-105 transition-all duration-200 text-sm"
           >
