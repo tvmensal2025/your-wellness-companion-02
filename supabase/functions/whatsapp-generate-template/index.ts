@@ -5,6 +5,31 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Vozes do Instituto dos Sonhos (inline para evitar problemas de import)
+const SOFIA = {
+  nome: "Sofia",
+  emoji: "💚",
+  especialidade: "Nutrição e Emagrecimento Consciente",
+  assinatura: "Com carinho,\nSofia 💚\n_Instituto dos Sonhos_",
+};
+
+const DR_VITAL = {
+  nome: "Dr. Vital",
+  emoji: "🩺",
+  especialidade: "Saúde, Prevenção e Consciência Corporal",
+  assinatura: "Dr. Vital 🩺\n_Instituto dos Sonhos_",
+};
+
+function detectVoice(category: string) {
+  const drVitalCategories = ["saude", "health", "medico", "medical", "prevencao", "prevention", "relatorio", "report", "analise", "analysis"];
+  const categoryLower = category?.toLowerCase() || "";
+  
+  if (drVitalCategories.some(cat => categoryLower.includes(cat))) {
+    return DR_VITAL;
+  }
+  return SOFIA;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -17,66 +42,112 @@ serve(async (req) => {
       throw new Error("GOOGLE_AI_API_KEY não configurada");
     }
 
-    const { action, category, name, description, content, existingPrompt } = await req.json();
+    const { action, category, name, description, content, existingPrompt, voice: voiceOverride } = await req.json();
 
     console.log(`🤖 Gerando template: action=${action}, category=${category}`);
+
+    // Detectar voz baseado na categoria ou usar override
+    const voice = voiceOverride === "dr_vital" ? DR_VITAL : 
+                  voiceOverride === "sofia" ? SOFIA : 
+                  detectVoice(category || "");
+
+    console.log(`🎭 Voz selecionada: ${voice.nome}`);
 
     let prompt = "";
 
     if (action === "generate") {
-      prompt = `Você é um especialista em mensagens de WhatsApp para saúde e bem-estar.
+      const voicePrompt = voice.nome === "Sofia" 
+        ? `Você é a SOFIA, nutricionista virtual do Instituto dos Sonhos.
 
-CONTEXTO:
-- Aplicativo: Dr. Vita (plataforma de saúde)
-- Categoria do template: ${category}
+PERSONALIDADE:
+- Amiga próxima e acolhedora
+- Motivacional sem ser forçada
+- Empática e compreensiva
+- Celebra cada pequena vitória
+
+TOM DE VOZ:
+- Linguagem simples e direta
+- Como uma amiga conversando
+- Positivo e encorajador
+- NUNCA usa culpa, medo ou cobrança
+
+EMOJIS: Use livremente (💚 🌟 ✨ 🎉 💪 😊)
+
+ASSINATURA: Sempre terminar com:
+"Com carinho,
+Sofia 💚
+_Instituto dos Sonhos_"`
+        : `Você é o DR. VITAL, médico virtual do Instituto dos Sonhos.
+
+PERSONALIDADE:
+- Autoridade tranquila
+- Profissional mas acessível
+- Focado em prevenção e bem-estar
+- Reforça hábitos saudáveis
+
+TOM DE VOZ:
+- Claro e direto
+- Firme mas gentil
+- Baseado em dados quando disponíveis
+- Reforça constância e responsabilidade
+
+EMOJIS: Use discretamente (🩺 ⚕️ 📊)
+
+ASSINATURA: Sempre terminar com:
+"Dr. Vital 🩺
+_Instituto dos Sonhos_"`;
+
+      prompt = `${voicePrompt}
+
+CONTEXTO DO TEMPLATE:
+- Categoria: ${category || "geral"}
 - Nome: ${name || "Mensagem"}
 - Descrição: ${description || "Mensagem padrão"}
 ${existingPrompt ? `- Instruções adicionais: ${existingPrompt}` : ""}
 
-REGRAS IMPORTANTES:
-1. Use formatação de WhatsApp: *negrito*, _itálico_
-2. Use emojis de forma moderada e relevante
-3. Inclua variáveis entre {{ }} quando apropriado: {{nome}}, {{streak}}, {{progresso}}, etc.
-4. Máximo 500 caracteres para mensagens curtas, 1000 para relatórios
-5. Tom: amigável, motivacional, profissional
-6. Foque em saúde, bem-estar e hábitos saudáveis
-7. Sempre termine com uma chamada para ação ou incentivo
+REGRAS OBRIGATÓRIAS:
+1. ⚠️ SEMPRE iniciar com o nome do cliente em negrito: *{{nome}}*
+2. Use formatação de WhatsApp: *negrito*, _itálico_
+3. Use emojis de forma adequada à voz
+4. Máximo 400 caracteres para mensagens curtas, 800 para relatórios
+5. NUNCA use culpa, ameaça ou medo
+6. SEMPRE reforce constância, progresso e autocuidado
+7. SEMPRE termine com a assinatura correta
 
 VARIÁVEIS DISPONÍVEIS:
-- {{nome}} - Nome do usuário
+- {{nome}} - Nome do usuário (OBRIGATÓRIO no início)
 - {{streak}} - Dias consecutivos
 - {{pontos}} - Total de pontos
 - {{peso}} - Peso atual
 - {{progresso}} - Percentual de progresso
-- {{missoes}} - Lista de missões
 - {{conquista}} - Nome da conquista
 - {{meta}} - Nome da meta
 
-CATEGORIAS:
-- onboarding: Boas-vindas, primeiros passos
-- engagement: Motivação, celebrações, incentivos
-- report: Relatórios, análises, resumos
-- reminder: Lembretes, alertas, notificações
-
-Gere uma mensagem ${category === "report" ? "completa e informativa" : "curta e impactante"} para a categoria "${category}".
-
+Gere uma mensagem ${category === "report" ? "informativa" : "motivacional"} seguindo TODAS as regras acima.
 Responda APENAS com o conteúdo da mensagem, sem explicações.`;
+
     } else if (action === "improve") {
-      prompt = `Você é um especialista em copywriting para WhatsApp.
+      prompt = `Você é especialista em copywriting para WhatsApp do Instituto dos Sonhos.
 
 MENSAGEM ORIGINAL:
 ${content}
 
+VOZ A USAR: ${voice.nome} (${voice.especialidade})
+
 INSTRUÇÕES:
-1. Melhore esta mensagem mantendo o mesmo significado
-2. Torne mais engajadora e motivacional
-3. Use formatação de WhatsApp: *negrito*, _itálico_
-4. Adicione ou ajuste emojis se necessário
-5. Mantenha as variáveis {{ }} intactas
-6. Mantenha um tom amigável e profissional
-7. Não ultrapasse o tamanho original em mais de 20%
+1. ⚠️ A mensagem DEVE iniciar com *{{nome}}* (nome em negrito)
+2. Melhore a mensagem mantendo o mesmo significado
+3. Torne mais engajadora e ${voice.nome === "Sofia" ? "acolhedora" : "profissional"}
+4. Use formatação de WhatsApp: *negrito*, _itálico_
+5. Adicione ou ajuste emojis conforme a voz
+6. Mantenha as variáveis {{ }} intactas
+7. Mantenha tom positivo e motivacional
+8. NUNCA use culpa, ameaça ou medo
+9. Termine com a assinatura correta:
+${voice.assinatura}
 
 Responda APENAS com a mensagem melhorada, sem explicações.`;
+
     } else {
       throw new Error(`Ação inválida: ${action}`);
     }
@@ -92,12 +163,12 @@ Responda APENAS com a mensagem melhorada, sem explicações.`;
           contents: [
             {
               role: "user",
-              parts: [{ text: `Você é um especialista em copywriting para mensagens de WhatsApp na área de saúde e bem-estar.\n\n${prompt}` }]
+              parts: [{ text: prompt }]
             }
           ],
           generationConfig: {
             temperature: 0.7,
-            maxOutputTokens: 1000,
+            maxOutputTokens: 800,
           },
         }),
       }
@@ -110,18 +181,30 @@ Responda APENAS com a mensagem melhorada, sem explicações.`;
     }
 
     const data = await response.json();
-    const generatedContent = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "";
+    let generatedContent = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "";
     
     if (!generatedContent) {
       throw new Error("Resposta vazia do Gemini");
     }
 
-    console.log("✅ Template gerado com sucesso");
+    // Garantir que começa com *{{nome}}*
+    if (!generatedContent.startsWith("*{{nome}}*") && !generatedContent.startsWith("*{nome}*")) {
+      // Verificar se tem alguma variação e corrigir
+      generatedContent = generatedContent.replace(/^\*?(\{\{?nome\}?\}?)\*?,?\s*/i, "*{{nome}}*, ");
+      
+      // Se ainda não começa corretamente, adicionar
+      if (!generatedContent.startsWith("*{{nome}}*")) {
+        generatedContent = `*{{nome}}*, ${generatedContent}`;
+      }
+    }
+
+    console.log(`✅ Template gerado com sucesso (Voz: ${voice.nome})`);
 
     return new Response(
       JSON.stringify({ 
         success: true, 
-        content: generatedContent 
+        content: generatedContent,
+        voice: voice.nome,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
