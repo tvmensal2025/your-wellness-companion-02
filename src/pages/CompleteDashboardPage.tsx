@@ -68,6 +68,7 @@ const CompleteDashboardPage = () => {
   const [exerciseModalOpen, setExerciseModalOpen] = useState(false);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [layoutPrefsModalOpen, setLayoutPrefsModalOpen] = useState(false);
+  const [whatsappSettingsOpen, setWhatsappSettingsOpen] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -541,9 +542,6 @@ const CompleteDashboardPage = () => {
       setActiveSection(section as DashboardSection);
     }
   };
-
-  // Estado para modal de WhatsApp
-  const [whatsappSettingsOpen, setWhatsappSettingsOpen] = useState(false);
 
   // Handler para menu "Mais"
   const handleMoreMenuNavigate = (section: MenuSection) => {
