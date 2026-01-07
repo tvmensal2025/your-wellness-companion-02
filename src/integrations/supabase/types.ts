@@ -4311,6 +4311,45 @@ export type Database = {
         }
         Relationships: []
       }
+      health_feed_notifications: {
+        Row: {
+          actor_id: string | null
+          created_at: string | null
+          entity_id: string | null
+          entity_type: string | null
+          id: string
+          is_read: boolean | null
+          message: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          actor_id?: string | null
+          created_at?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          is_read?: boolean | null
+          message?: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          actor_id?: string | null
+          created_at?: string | null
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          is_read?: boolean | null
+          message?: string | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       health_feed_poll_votes: {
         Row: {
           created_at: string | null
