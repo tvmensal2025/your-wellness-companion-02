@@ -44,8 +44,10 @@ export function RankingSocialHeader({
   ];
 
   // weightChange is negative when losing weight, positive when gaining
-  const weightChange = stats?.weightChange;
+  const weightChange = stats?.weightChange ?? null;
   const isLosingWeight = weightChange !== null && weightChange < 0;
+  const challengesCompleted = stats?.challengesCompleted ?? 0;
+  const currentStreak = stats?.currentStreak ?? 0;
 
   const progressItems = [
     {
@@ -56,13 +58,13 @@ export function RankingSocialHeader({
     },
     {
       icon: Target,
-      value: stats?.challengesCompleted || 0,
+      value: challengesCompleted,
       label: 'Desafios',
       color: 'text-purple-500',
     },
     {
       icon: Flame,
-      value: stats?.currentStreak || 0,
+      value: currentStreak,
       label: 'Streak',
       color: 'text-orange-500',
     },
