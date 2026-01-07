@@ -151,11 +151,19 @@ export function useStories() {
     }
 
     try {
+      // For text stories, use a placeholder URL since media_url is NOT NULL
+      const finalMediaUrl = mediaType === 'text' ? 'text-story' : mediaUrl;
+      
+      if (!finalMediaUrl) {
+        toast.error('URL da mídia é obrigatória');
+        return null;
+      }
+
       const { data, error } = await supabase
         .from('health_feed_stories')
         .insert({
           user_id: user.id,
-          media_url: mediaUrl,
+          media_url: finalMediaUrl,
           media_type: mediaType,
           text_content: textContent,
           background_color: backgroundColor
@@ -170,7 +178,7 @@ export function useStories() {
       return data;
     } catch (err: any) {
       console.error('Error creating story:', err);
-      toast.error('Erro ao criar story');
+      toast.error('Erro ao criar story: ' + (err.message || 'Erro desconhecido'));
       return null;
     }
   };
