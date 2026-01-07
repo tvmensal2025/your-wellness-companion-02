@@ -25,9 +25,9 @@ serve(async (req) => {
   }
 
   try {
-    const { userId, imageBase64, totalPoints, streakDays, answers, questions, action } = await req.json();
+    const { userId, imageBase64, totalPoints, streakDays, answers, questions, action, sessionType, sessionTitle } = await req.json();
 
-    console.log("📥 Recebido pedido:", { userId, action, totalPoints, streakDays });
+    console.log("📥 Recebido pedido:", { userId, action, sessionType, totalPoints, streakDays });
 
     // Se a ação for gerar análise, usa IA
     if (action === "generate-analysis") {
@@ -35,7 +35,7 @@ serve(async (req) => {
         throw new Error("answers e questions são obrigatórios para gerar análise");
       }
 
-      console.log("🤖 Gerando análise com Lovable AI...");
+      console.log("🤖 Gerando análise com Lovable AI...", { sessionType });
 
       // Criar cliente Supabase para buscar nome do usuário
       const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -56,9 +56,55 @@ serve(async (req) => {
         return `- ${q.question}: ${answer}`;
       }).join('\n');
 
-      const prompt = `Você é Dr. Vital, um médico carinhoso, motivador e especialista em saúde preventiva do Instituto dos Sonhos.
+      // Prompts específicos por tipo de sessão
+      const sessionPrompts: Record<string, string> = {
+        life_wheel: `Você é Dr. Vital, especialista em equilíbrio de vida do Instituto dos Sonhos.
+Analise as respostas da Roda da Vida do paciente ${userName} considerando os 12 pilares:
+1. Identifique áreas fortes (notas altas) e celebre
+2. Identifique áreas de atenção (notas baixas) com empatia
+3. Analise o EQUILÍBRIO geral entre as áreas
+4. Sugira qual pilar deve ser priorizado para maior impacto
 
-O paciente ${userName} completou suas reflexões diárias. Analise as respostas e gere uma análise personalizada.
+Use emojis como 🎯🌟💼❤️🧠🏃‍♂️💰🎨 para cada área.
+Seja motivador e mostre que pequenas mudanças fazem grande diferença.`,
+
+        saboteurs: `Você é Dr. Vital, especialista em inteligência emocional do Instituto dos Sonhos.
+Analise os sabotadores mentais identificados nas respostas de ${userName}:
+1. Identifique os 2-3 sabotadores mais presentes
+2. Explique brevemente como eles afetam a vida do paciente
+3. Mostre gatilhos comuns que ativam esses sabotadores
+4. Dê estratégias práticas de superação
+
+Use emojis como 🧠🎭⚡🛡️💪 para ilustrar.
+Seja acolhedor - sabotadores são parte de ser humano, não defeitos.`,
+
+        health: `Você é Dr. Vital, médico preventivo do Instituto dos Sonhos.
+Analise o histórico de saúde de ${userName} considerando:
+1. Fatores de risco identificados
+2. Hábitos que impactam a saúde (positivos e negativos)
+3. Sintomas ou condições relatadas
+4. Medidas preventivas recomendadas
+
+Use emojis como 💚🩺❤️💪🥗😴 para ilustrar.
+Seja cuidadoso e empático - saúde é assunto sensível.
+NÃO faça diagnósticos, apenas orientações gerais.`,
+
+        daily: `Você é Dr. Vital, um médico carinhoso e motivador do Instituto dos Sonhos.
+Analise as reflexões diárias de ${userName} considerando:
+1. Padrões de sono e descanso
+2. Níveis de energia e hidratação
+3. Estado emocional e mental
+4. Hábitos de autocuidado
+
+Use emojis como 💧😴⚡🏃‍♂️🙏💚 para ilustrar.
+Seja caloroso, use o nome do paciente, e surpreenda com insights úteis!`
+      };
+
+      const basePrompt = sessionPrompts[sessionType || 'daily'] || sessionPrompts.daily;
+      const sessionTitleText = sessionTitle ? `\nSESSÃO: ${sessionTitle}` : '';
+
+      const prompt = `${basePrompt}
+${sessionTitleText}
 
 RESPOSTAS DO PACIENTE:
 ${formattedAnswers}
@@ -67,7 +113,7 @@ PONTUAÇÃO: ${totalPoints} pontos
 SEQUÊNCIA: ${streakDays} dias consecutivos
 
 INSTRUÇÕES:
-1. Gere uma ANÁLISE (máximo 150 palavras) interpretando cada resposta com insights médicos acolhedores. Use emojis relevantes (💧😴⚡🏃‍♂️🙏).
+1. Gere uma ANÁLISE (máximo 150 palavras) interpretando cada resposta com insights médicos acolhedores. Use emojis relevantes.
 2. Gere uma RECOMENDAÇÃO (máximo 50 palavras) com uma dica prática e motivacional para amanhã.
 
 FORMATO DE RESPOSTA (JSON):
