@@ -543,6 +543,11 @@ const CompleteDashboardPage = () => {
 
   // Handler para menu "Mais"
   const handleMoreMenuNavigate = (section: MenuSection) => {
+    if (section === 'whatsapp-settings') {
+      // Abre o perfil na aba de configurações
+      setProfileModalOpen(true);
+      return;
+    }
     setActiveSection(section as DashboardSection);
   };
   return <div className="min-h-screen bg-background">
