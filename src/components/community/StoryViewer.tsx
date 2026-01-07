@@ -50,14 +50,13 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({
   useEffect(() => {
     if (!isOpen || !currentStory) return;
 
-    const duration = 5000; // 5 seconds per story
+    const duration = currentStory.media_type === 'video' ? 15000 : 5000;
     const interval = 50;
     const increment = (interval / duration) * 100;
 
     const timer = setInterval(() => {
       setProgress(prev => {
         if (prev >= 100) {
-          // Move to next story
           handleNext();
           return 0;
         }
@@ -72,27 +71,22 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({
     if (!currentGroup) return;
 
     if (currentStoryIndex < currentGroup.stories.length - 1) {
-      // Next story in same group
       setCurrentStoryIndex(prev => prev + 1);
       setProgress(0);
     } else if (currentGroupIndex < groupedStories.length - 1) {
-      // Next group
       setCurrentGroupIndex(prev => prev + 1);
       setCurrentStoryIndex(0);
       setProgress(0);
     } else {
-      // End of stories
       onClose();
     }
   }, [currentGroup, currentStoryIndex, currentGroupIndex, groupedStories.length, onClose]);
 
   const handlePrevious = useCallback(() => {
     if (currentStoryIndex > 0) {
-      // Previous story in same group
       setCurrentStoryIndex(prev => prev - 1);
       setProgress(0);
     } else if (currentGroupIndex > 0) {
-      // Previous group (last story)
       const prevGroup = groupedStories[currentGroupIndex - 1];
       setCurrentGroupIndex(prev => prev - 1);
       setCurrentStoryIndex(prevGroup.stories.length - 1);
@@ -124,6 +118,63 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({
   };
 
   if (!currentGroup || !currentStory) return null;
+
+  // Determine what to render based on media_type
+  const renderStoryContent = () => {
+    // Text story - show text content with background
+    if (currentStory.media_type === 'text') {
+      return (
+        <div 
+          className="w-full h-full flex items-center justify-center p-8"
+          style={{ backgroundColor: currentStory.background_color || '#6366f1' }}
+        >
+          <p className="text-white text-2xl font-bold text-center">
+            {currentStory.text_content}
+          </p>
+        </div>
+      );
+    }
+
+    // Video story
+    if (currentStory.media_type === 'video' && currentStory.media_url) {
+      return (
+        <video
+          src={currentStory.media_url}
+          className="max-w-full max-h-full object-contain"
+          autoPlay
+          playsInline
+          muted={false}
+        />
+      );
+    }
+
+    // Image story
+    if (currentStory.media_url && currentStory.media_url !== 'text-story') {
+      return (
+        <img
+          src={currentStory.media_url}
+          alt="Story"
+          className="max-w-full max-h-full object-contain"
+        />
+      );
+    }
+
+    // Fallback for text content without proper media_type
+    if (currentStory.text_content) {
+      return (
+        <div 
+          className="w-full h-full flex items-center justify-center p-8"
+          style={{ backgroundColor: currentStory.background_color || '#6366f1' }}
+        >
+          <p className="text-white text-2xl font-bold text-center">
+            {currentStory.text_content}
+          </p>
+        </div>
+      );
+    }
+
+    return null;
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -196,29 +247,8 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 1.05 }}
                 className="w-full h-full flex items-center justify-center"
-                style={{ backgroundColor: currentStory.background_color || '#000' }}
               >
-                {currentStory.media_url ? (
-                  currentStory.media_type === 'video' ? (
-                    <video
-                      src={currentStory.media_url}
-                      className="max-w-full max-h-full object-contain"
-                      autoPlay
-                      muted
-                      playsInline
-                    />
-                  ) : (
-                    <img
-                      src={currentStory.media_url}
-                      alt="Story"
-                      className="max-w-full max-h-full object-contain"
-                    />
-                  )
-                ) : (
-                  <div className="p-8 text-center">
-                    <p className="text-white text-2xl font-bold">{currentStory.text_content}</p>
-                  </div>
-                )}
+                {renderStoryContent()}
               </motion.div>
             </AnimatePresence>
           </div>

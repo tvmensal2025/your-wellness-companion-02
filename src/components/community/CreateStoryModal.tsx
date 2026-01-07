@@ -2,10 +2,11 @@ import React, { useState, useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Camera, Image, Type, X, Loader2 } from 'lucide-react';
+import { Image, Type, X, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useAuth } from '@/hooks/useAuth';
+import { uploadCommunityMedia, isVideoFile, validateMediaFile } from '@/lib/communityMedia';
 
 interface CreateStoryModalProps {
   isOpen: boolean;
@@ -31,36 +32,30 @@ export const CreateStoryModal: React.FC<CreateStoryModalProps> = ({
   onClose,
   onCreateStory
 }) => {
-  const [mode, setMode] = useState<'select' | 'text' | 'image'>('select');
+  const { user } = useAuth();
+  const [mode, setMode] = useState<'select' | 'text' | 'media'>('select');
   const [textContent, setTextContent] = useState('');
   const [selectedColor, setSelectedColor] = useState(backgroundColors[0]);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
-    if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) {
-      toast.error('Por favor, selecione uma imagem ou vídeo');
+    const validation = validateMediaFile(file, 50);
+    if (!validation.valid) {
+      toast.error(validation.error);
       return;
     }
 
-    // Validate file size (10MB max)
-    if (file.size > 10 * 1024 * 1024) {
-      toast.error('Arquivo muito grande. Máximo 10MB');
-      return;
-    }
-
-    // Show preview
-    const reader = new FileReader();
-    reader.onload = () => {
-      setImagePreview(reader.result as string);
-      setMode('image');
-    };
-    reader.readAsDataURL(file);
+    // Create object URL for preview (no base64!)
+    const objectUrl = URL.createObjectURL(file);
+    setSelectedFile(file);
+    setPreviewUrl(objectUrl);
+    setMode('media');
   };
 
   const handleCreateTextStory = async () => {
@@ -71,45 +66,56 @@ export const CreateStoryModal: React.FC<CreateStoryModalProps> = ({
 
     setUploading(true);
     try {
-      // For text stories, pass 'text-story' as mediaUrl since database column is NOT NULL
-      await onCreateStory('text-story', 'text', textContent, selectedColor);
+      await onCreateStory('', 'text', textContent, selectedColor);
       resetAndClose();
-      toast.success('Story criado com sucesso!');
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error creating text story:', err);
-      toast.error('Erro ao criar story');
+      toast.error(err.message || 'Erro ao criar story');
     } finally {
       setUploading(false);
     }
   };
 
-  const handleCreateImageStory = async () => {
-    if (!imagePreview) return;
+  const handleCreateMediaStory = async () => {
+    if (!selectedFile || !user) {
+      toast.error('Selecione um arquivo');
+      return;
+    }
 
     setUploading(true);
     try {
-      // In a real app, you'd upload to storage here
-      // For now, we'll use the data URL (note: this isn't ideal for production)
-      await onCreateStory(imagePreview, 'image');
+      // Upload to storage
+      const result = await uploadCommunityMedia(selectedFile, 'stories', user.id);
+      const mediaType = isVideoFile(selectedFile) ? 'video' : 'image';
+      
+      await onCreateStory(result.publicUrl, mediaType);
       resetAndClose();
-    } catch (err) {
-      console.error('Error creating image story:', err);
+    } catch (err: any) {
+      console.error('Error creating media story:', err);
+      toast.error(err.message || 'Erro ao criar story');
     } finally {
       setUploading(false);
     }
   };
 
   const resetAndClose = () => {
+    // Revoke object URL to prevent memory leaks
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
     setMode('select');
     setTextContent('');
-    setImagePreview(null);
+    setSelectedFile(null);
+    setPreviewUrl(null);
     setSelectedColor(backgroundColors[0]);
     onClose();
   };
 
+  const isVideo = selectedFile && isVideoFile(selectedFile);
+
   return (
     <Dialog open={isOpen} onOpenChange={resetAndClose}>
-      <DialogContent className="max-w-md p-0">
+      <DialogContent className="max-w-md p-0 max-h-[90vh] overflow-y-auto">
         {mode === 'select' && (
           <div className="p-6">
             <DialogHeader className="mb-6">
@@ -150,10 +156,10 @@ export const CreateStoryModal: React.FC<CreateStoryModalProps> = ({
         )}
 
         {mode === 'text' && (
-          <div className="flex flex-col h-[min(520px,80vh)]">
+          <div className="flex flex-col min-h-[400px]">
             {/* Preview */}
             <div 
-              className="flex-1 flex items-center justify-center p-8"
+              className="flex-1 flex items-center justify-center p-8 min-h-[200px]"
               style={{ backgroundColor: selectedColor }}
             >
               <Textarea
@@ -165,9 +171,9 @@ export const CreateStoryModal: React.FC<CreateStoryModalProps> = ({
               />
             </div>
             
-            {/* Color Picker */}
-            <div className="p-4 bg-background border-t">
-              <div className="flex gap-2 justify-center mb-4">
+            {/* Color Picker & Actions */}
+            <div className="p-4 bg-background border-t sticky bottom-0">
+              <div className="flex gap-2 justify-center mb-4 flex-wrap">
                 {backgroundColors.map((color) => (
                   <button
                     key={color}
@@ -196,37 +202,49 @@ export const CreateStoryModal: React.FC<CreateStoryModalProps> = ({
           </div>
         )}
 
-        {mode === 'image' && imagePreview && (
-          <div className="flex flex-col h-[min(520px,80vh)]">
+        {mode === 'media' && previewUrl && (
+          <div className="flex flex-col min-h-[400px]">
             {/* Preview */}
-            <div className="flex-1 relative bg-black">
+            <div className="flex-1 relative bg-black min-h-[300px]">
               <Button
                 variant="ghost"
                 size="icon"
                 className="absolute top-2 right-2 z-10 text-white hover:bg-white/20"
                 onClick={() => {
-                  setImagePreview(null);
+                  if (previewUrl) URL.revokeObjectURL(previewUrl);
+                  setSelectedFile(null);
+                  setPreviewUrl(null);
                   setMode('select');
                 }}
               >
                 <X className="w-5 h-5" />
               </Button>
-              <img
-                src={imagePreview}
-                alt="Preview"
-                className="w-full h-full object-contain"
-              />
+              
+              {isVideo ? (
+                <video
+                  src={previewUrl}
+                  className="w-full h-full object-contain max-h-[400px]"
+                  controls
+                  playsInline
+                />
+              ) : (
+                <img
+                  src={previewUrl}
+                  alt="Preview"
+                  className="w-full h-full object-contain max-h-[400px]"
+                />
+              )}
             </div>
             
             {/* Actions */}
-            <div className="p-4 bg-background border-t">
+            <div className="p-4 bg-background border-t sticky bottom-0">
               <div className="flex gap-2">
                 <Button variant="outline" className="flex-1" onClick={resetAndClose}>
                   Cancelar
                 </Button>
                 <Button 
                   className="flex-1" 
-                  onClick={handleCreateImageStory}
+                  onClick={handleCreateMediaStory}
                   disabled={uploading}
                 >
                   {uploading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}

@@ -276,14 +276,33 @@ export const FeedPostCard: React.FC<FeedPostCardProps> = ({
             </div>
           )}
 
-          {/* Image */}
+          {/* Media (Image or Video) */}
           {post.imageUrl && (
-            <motion.img
-              whileHover={{ scale: 1.02 }}
-              src={post.imageUrl}
-              alt="Post"
-              className="w-full rounded-xl object-cover max-h-[300px] sm:max-h-[400px] cursor-pointer"
-            />
+            (() => {
+              const url = post.imageUrl.toLowerCase();
+              const isVideo = url.includes('.mp4') || url.includes('.mov') || 
+                             url.includes('.webm') || url.includes('.m4v');
+              
+              if (isVideo) {
+                return (
+                  <video
+                    src={post.imageUrl}
+                    className="w-full rounded-xl object-cover max-h-[300px] sm:max-h-[400px]"
+                    controls
+                    playsInline
+                  />
+                );
+              }
+              
+              return (
+                <motion.img
+                  whileHover={{ scale: 1.02 }}
+                  src={post.imageUrl}
+                  alt="Post"
+                  className="w-full rounded-xl object-cover max-h-[300px] sm:max-h-[400px] cursor-pointer"
+                />
+              );
+            })()
           )}
 
           {/* Tags */}
