@@ -10,7 +10,7 @@ import { OfflineIndicator } from "@/components/OfflineIndicator";
 import SofiaFloatingButton from "@/components/SofiaFloatingButton";
 import { createQueryClient } from "@/lib/queryConfig";
 import { InstallPrompt } from "@/components/pwa/InstallPrompt";
-import { UpdatePrompt } from "@/components/pwa/UpdatePrompt";
+
 import { SplashScreen, useSplashScreen } from "@/components/pwa/SplashScreen";
 
 // Core pages
@@ -60,7 +60,7 @@ const App: React.FC = () => {
           <Toaster />
           <Sonner />
           <OfflineIndicator />
-          <UpdatePrompt />
+          
           <InstallPrompt delay={60000} />
           {showSplash && <SplashScreen onComplete={hideSplash} />}
           <BrowserRouter>
