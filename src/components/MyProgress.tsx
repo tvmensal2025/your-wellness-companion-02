@@ -156,69 +156,149 @@ const MyProgress: React.FC = () => {
 
   // Experiência elegante quando não conectado (customizada)
   if (!isConnected) {
-    return <div className="max-w-5xl mx-auto p-6">
-        <Card className="relative overflow-hidden border-0 shadow-xl">
-          {/* background decor */}
-          <div className="pointer-events-none absolute -top-24 -right-24 h-72 w-72 rounded-full bg-gradient-to-br from-violet-400/30 to-fuchsia-400/30 blur-3xl" />
-          <div className="pointer-events-none absolute -bottom-24 -left-24 h-72 w-72 rounded-full bg-gradient-to-br from-indigo-400/30 to-purple-400/30 blur-3xl" />
+    return (
+      <div className="min-h-[80vh] flex items-center justify-center px-4 py-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="w-full max-w-lg"
+        >
+          <Card className="relative overflow-hidden border-0 shadow-2xl bg-gradient-to-br from-primary via-primary/90 to-accent">
+            {/* Efeitos decorativos */}
+            <div className="pointer-events-none absolute -top-20 -right-20 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
+            <div className="pointer-events-none absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-white/10 blur-3xl" />
+            <motion.div 
+              className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"
+              animate={{ x: ['-100%', '100%'] }}
+              transition={{ duration: 3, repeat: Infinity, repeatDelay: 2 }}
+            />
 
-          <div className="grid md:grid-cols-2 text-primary-foreground bg-health-hydration">
-            <div className="p-10 flex flex-col justify-center gap-4 text-primary-foreground">
-              <div className="flex items-center gap-3">
-                <img src="/favicon.png" alt="Instituto dos Sonhos" className="h-8 w-8 rounded" />
-                <span className="text-sm font-semibold tracking-wide text-primary-foreground">Instituto dos Sonhos</span>
-              </div>
-              <h1 className="text-3xl font-extrabold leading-tight">Conecte o Google Fit e acompanhe sua evolução</h1>
-              <p className="text-secondary">Sincronize automaticamente seus <b>passos</b>, <b>calorias ativas</b>, <b>minutos de intensidade</b>, <b>sono</b> e <b>frequência cardíaca</b> para análises inteligentes e relatórios do Dr. Vital.</p>
+            <CardContent className="relative z-10 p-6 sm:p-8 space-y-6 text-white">
+              {/* Logo e marca */}
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.2 }}
+                className="flex items-center justify-center gap-3"
+              >
+                <div className="p-2 bg-white/20 rounded-xl backdrop-blur-sm">
+                  <img src="/favicon.png" alt="Instituto dos Sonhos" className="h-8 w-8 rounded" />
+                </div>
+                <span className="text-sm font-bold tracking-wide">Instituto dos Sonhos</span>
+              </motion.div>
 
-              <div className="grid grid-cols-2 gap-3 mt-2">
-                <div className="flex items-center gap-2 text-sm"><Activity className="w-4 h-4 text-indigo-600" /> Passos e distância</div>
-                <div className="flex items-center gap-2 text-sm"><Zap className="w-4 h-4 text-orange-600" /> Calorias ativas</div>
-                <div className="flex items-center gap-2 text-sm"><Heart className="w-4 h-4 text-rose-600" /> FC min/média/máx</div>
-                <div className="flex items-center gap-2 text-sm"><Clock className="w-4 h-4 text-emerald-600" /> Heart minutes e sono</div>
-              </div>
+              {/* Título principal */}
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="text-center space-y-3"
+              >
+                <h1 className="text-2xl sm:text-3xl font-extrabold leading-tight">
+                  Conecte o Google Fit e acompanhe sua evolução
+                </h1>
+                <p className="text-white/80 text-sm sm:text-base leading-relaxed">
+                  Sincronize automaticamente seus <span className="font-semibold text-white">passos</span>, 
+                  <span className="font-semibold text-white"> calorias ativas</span>, 
+                  <span className="font-semibold text-white"> minutos de intensidade</span>, 
+                  <span className="font-semibold text-white"> sono</span> e 
+                  <span className="font-semibold text-white"> frequência cardíaca</span> para análises inteligentes.
+                </p>
+              </motion.div>
 
-              <div className="flex flex-col sm:flex-row gap-3 mt-4">
-                <Button size="lg" className="w-full sm:w-auto" onClick={() => {
-                window.location.href = '/google-fit-oauth';
-              }}>
+              {/* Grid de funcionalidades */}
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.4 }}
+                className="grid grid-cols-2 gap-3"
+              >
+                {[
+                  { icon: Footprints, label: 'Passos e distância', color: 'bg-emerald-500/20' },
+                  { icon: Flame, label: 'Calorias ativas', color: 'bg-orange-500/20' },
+                  { icon: Heart, label: 'Frequência cardíaca', color: 'bg-rose-500/20' },
+                  { icon: Moon, label: 'Qualidade do sono', color: 'bg-violet-500/20' },
+                ].map((item, i) => (
+                  <motion.div
+                    key={item.label}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.5 + i * 0.1 }}
+                    className={`flex items-center gap-2.5 px-3 py-2.5 rounded-xl ${item.color} backdrop-blur-sm`}
+                  >
+                    <item.icon className="w-4 h-4 shrink-0" />
+                    <span className="text-xs sm:text-sm font-medium">{item.label}</span>
+                  </motion.div>
+                ))}
+              </motion.div>
+
+              {/* Botões de ação */}
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.7 }}
+                className="space-y-3"
+              >
+                <Button 
+                  size="lg" 
+                  className="w-full h-12 bg-white text-primary hover:bg-white/90 font-bold text-base shadow-lg"
+                  onClick={() => { window.location.href = '/google-fit-oauth'; }}
+                >
+                  <Activity className="w-5 h-5 mr-2" />
                   Conectar Google Fit
                 </Button>
-                <Button size="lg" variant="outline" onClick={() => window.location.reload()} className="w-full sm:w-auto text-popover-foreground">
+                <Button 
+                  size="lg" 
+                  variant="ghost" 
+                  className="w-full h-11 bg-white/10 hover:bg-white/20 text-white border border-white/20 font-medium"
+                  onClick={() => window.location.reload()}
+                >
+                  <RefreshCw className="w-4 h-4 mr-2" />
                   Já conectei, atualizar
                 </Button>
-              </div>
-              <p className="text-xs text-primary-foreground">Autorização única. Seus dados permanecem salvos com segurança no Supabase.</p>
-            </div>
+              </motion.div>
 
-            <div className="p-6 md:p-10 bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 flex items-center justify-center">
-              <div className="w-full max-w-sm space-y-4">
-                <div className="rounded-2xl border bg-white/70 dark:bg-zinc-900/50 backdrop-blur p-5 shadow">
-                  <div className="text-sm text-muted-foreground mb-2">Prévia do painel</div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="rounded-lg border p-3">
-                      <div className="text-xs text-muted-foreground">Passos (hoje)</div>
-                      <div className="text-xl font-bold">—</div>
+              {/* Prévia do painel */}
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.8 }}
+                className="rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 p-4"
+              >
+                <div className="text-xs text-white/70 mb-3 font-medium">📊 Prévia do seu painel</div>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { label: 'Passos hoje', value: '—', icon: Footprints },
+                    { label: 'Calorias', value: '—', icon: Flame },
+                    { label: 'Minutos ativos', value: '—', icon: Zap },
+                    { label: 'Sono', value: '—', icon: Moon },
+                  ].map((item) => (
+                    <div key={item.label} className="rounded-xl bg-white/10 p-3 flex items-center gap-2">
+                      <item.icon className="w-4 h-4 text-white/60 shrink-0" />
+                      <div>
+                        <div className="text-[10px] text-white/60">{item.label}</div>
+                        <div className="text-lg font-bold">{item.value}</div>
+                      </div>
                     </div>
-                    <div className="rounded-lg border p-3">
-                      <div className="text-xs text-muted-foreground">Calorias ativas</div>
-                      <div className="text-xl font-bold">—</div>
-                    </div>
-                    <div className="rounded-lg border p-3">
-                      <div className="text-xs text-muted-foreground">Minutos ativos</div>
-                      <div className="text-xl font-bold">—</div>
-                    </div>
-                    <div className="rounded-lg border p-3">
-                      <div className="text-xs text-muted-foreground">Sono</div>
-                      <div className="text-xl font-bold">—</div>
-                    </div>
-                  </div>
+                  ))}
                 </div>
-              </div>
-            </div>
-          </div>
-        </Card>
-      </div>;
+              </motion.div>
+
+              {/* Nota de segurança */}
+              <motion.p 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.9 }}
+                className="text-center text-xs text-white/60"
+              >
+                🔒 Autorização única. Seus dados permanecem protegidos com criptografia.
+              </motion.p>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </div>
+    );
   }
   if (error) {
     return <div className="text-center py-8">
