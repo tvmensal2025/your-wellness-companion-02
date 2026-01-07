@@ -306,34 +306,44 @@ export const FollowingList: React.FC<FollowingListProps> = ({ onProfileClick, on
                     </Badge>
                     
                     {/* Weight change badge - motivational */}
-                    {followedUser.show_weight_results && followedUser.weight_change !== undefined ? (
-                      <Badge 
-                        variant="outline" 
-                        className={`text-xs flex items-center gap-1 font-medium ${
-                          followedUser.weight_change < 0 
-                            ? 'bg-green-500/10 text-green-600 border-green-500/30 dark:text-green-400' 
-                            : followedUser.weight_change > 0
-                              ? 'bg-orange-500/10 text-orange-600 border-orange-500/30 dark:text-orange-400'
-                              : 'bg-muted text-muted-foreground'
-                        }`}
-                      >
-                        {followedUser.weight_change < 0 ? (
-                          <>
-                            <TrendingDown className="w-3 h-3" />
-                            -{Math.abs(followedUser.weight_change).toFixed(1)}kg 🔥
-                          </>
-                        ) : followedUser.weight_change > 0 ? (
-                          <>
-                            <TrendingUp className="w-3 h-3" />
-                            +{followedUser.weight_change.toFixed(1)}kg
-                          </>
-                        ) : (
-                          <>
-                            <Scale className="w-3 h-3" />
-                            Estável
-                          </>
-                        )}
-                      </Badge>
+                    {followedUser.show_weight_results ? (
+                      followedUser.weight_change !== undefined ? (
+                        <Badge 
+                          variant="outline" 
+                          className={`text-xs flex items-center gap-1 font-medium ${
+                            followedUser.weight_change < 0 
+                              ? 'bg-green-500/10 text-green-600 border-green-500/30 dark:text-green-400' 
+                              : followedUser.weight_change > 0
+                                ? 'bg-orange-500/10 text-orange-600 border-orange-500/30 dark:text-orange-400'
+                                : 'bg-muted text-muted-foreground'
+                          }`}
+                        >
+                          {followedUser.weight_change < 0 ? (
+                            <>
+                              <TrendingDown className="w-3 h-3" />
+                              -{Math.abs(followedUser.weight_change).toFixed(1)}kg 🔥
+                            </>
+                          ) : followedUser.weight_change > 0 ? (
+                            <>
+                              <TrendingUp className="w-3 h-3" />
+                              +{followedUser.weight_change.toFixed(1)}kg
+                            </>
+                          ) : (
+                            <>
+                              <Scale className="w-3 h-3" />
+                              Estável
+                            </>
+                          )}
+                        </Badge>
+                      ) : (
+                        <Badge 
+                          variant="outline" 
+                          className="text-xs flex items-center gap-1 bg-primary/10 text-primary border-primary/30"
+                        >
+                          <Scale className="w-3 h-3" />
+                          Sem medições
+                        </Badge>
+                      )
                     ) : (
                       <Badge 
                         variant="outline" 
