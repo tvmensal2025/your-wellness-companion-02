@@ -394,6 +394,35 @@ const SaboteurTest: React.FC = () => {
 
     try {
       setIsSendingWhatsApp(true);
+
+      // Obter usuário e verificar telefone ANTES de gerar imagem
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "Erro",
+          description: "Usuário não encontrado.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Verificar se tem telefone cadastrado
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('phone')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (!profile?.phone) {
+        toast({
+          title: "📱 Telefone não cadastrado",
+          description: "Cadastre seu WhatsApp nas configurações do perfil para receber a análise.",
+          variant: "destructive",
+          duration: 6000,
+        });
+        return;
+      }
+
       toast({
         title: "Preparando envio...",
         description: "Dr. Vital está analisando seus resultados.",
@@ -407,17 +436,6 @@ const SaboteurTest: React.FC = () => {
         logging: false,
       });
       const imageBase64 = canvas.toDataURL('image/png');
-
-      // Obter usuário
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        toast({
-          title: "Erro",
-          description: "Usuário não encontrado.",
-          variant: "destructive",
-        });
-        return;
-      }
 
       // Preparar dados dos top sabotadores
       const topSaboteursData = getTopSaboteurs().map(([category, score]) => ({
