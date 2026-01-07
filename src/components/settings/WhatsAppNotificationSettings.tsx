@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageCircle, Bell, Clock, Calendar, Send, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { MessageCircle, Bell, Clock, Calendar, Send, CheckCircle, AlertCircle, Loader2, Droplets, Target, Trophy, ListChecks, X } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
@@ -17,6 +18,15 @@ interface WhatsAppSettings {
   whatsapp_weekly_report: boolean;
   whatsapp_weekly_day: number;
   whatsapp_reminders: boolean;
+  // Novas configurações
+  whatsapp_water_enabled: boolean;
+  whatsapp_water_times: string[];
+  whatsapp_mission_enabled: boolean;
+  whatsapp_mission_time: string;
+  whatsapp_goals_enabled: boolean;
+  whatsapp_goals_time: string;
+  whatsapp_challenges_enabled: boolean;
+  whatsapp_challenges_time: string;
 }
 
 const defaultSettings: WhatsAppSettings = {
@@ -26,6 +36,15 @@ const defaultSettings: WhatsAppSettings = {
   whatsapp_weekly_report: true,
   whatsapp_weekly_day: 5,
   whatsapp_reminders: true,
+  // Novos defaults
+  whatsapp_water_enabled: true,
+  whatsapp_water_times: ['09:00', '12:00', '15:00', '18:00'],
+  whatsapp_mission_enabled: true,
+  whatsapp_mission_time: '08:00',
+  whatsapp_goals_enabled: true,
+  whatsapp_goals_time: '19:00',
+  whatsapp_challenges_enabled: true,
+  whatsapp_challenges_time: '10:00',
 };
 
 const weekDays = [
@@ -44,10 +63,20 @@ const timeOptions = [
   { value: '08:00', label: '08:00' },
   { value: '09:00', label: '09:00' },
   { value: '10:00', label: '10:00' },
+  { value: '11:00', label: '11:00' },
   { value: '12:00', label: '12:00' },
+  { value: '13:00', label: '13:00' },
+  { value: '14:00', label: '14:00' },
+  { value: '15:00', label: '15:00' },
+  { value: '16:00', label: '16:00' },
+  { value: '17:00', label: '17:00' },
   { value: '18:00', label: '18:00' },
+  { value: '19:00', label: '19:00' },
   { value: '20:00', label: '20:00' },
+  { value: '21:00', label: '21:00' },
 ];
+
+const waterTimeOptions = ['06:00', '07:00', '08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00'];
 
 export const WhatsAppNotificationSettings: React.FC<{ className?: string }> = ({ className }) => {
   const { user } = useAuth();
@@ -76,7 +105,6 @@ export const WhatsAppNotificationSettings: React.FC<{ className?: string }> = ({
 
   const loadSettings = async () => {
     try {
-      // Query without type checking - columns may not exist yet
       const { data, error } = await supabase
         .from('user_notification_settings')
         .select('*')
@@ -94,6 +122,15 @@ export const WhatsAppNotificationSettings: React.FC<{ className?: string }> = ({
           whatsapp_weekly_report: d.whatsapp_weekly_report ?? true,
           whatsapp_weekly_day: d.whatsapp_weekly_day ?? 5,
           whatsapp_reminders: d.whatsapp_reminders ?? true,
+          // Novos campos
+          whatsapp_water_enabled: d.whatsapp_water_enabled ?? true,
+          whatsapp_water_times: d.whatsapp_water_times ?? ['09:00', '12:00', '15:00', '18:00'],
+          whatsapp_mission_enabled: d.whatsapp_mission_enabled ?? true,
+          whatsapp_mission_time: d.whatsapp_mission_time?.substring(0, 5) ?? '08:00',
+          whatsapp_goals_enabled: d.whatsapp_goals_enabled ?? true,
+          whatsapp_goals_time: d.whatsapp_goals_time?.substring(0, 5) ?? '19:00',
+          whatsapp_challenges_enabled: d.whatsapp_challenges_enabled ?? true,
+          whatsapp_challenges_time: d.whatsapp_challenges_time?.substring(0, 5) ?? '10:00',
         });
       }
     } catch (error) {
@@ -128,6 +165,19 @@ export const WhatsAppNotificationSettings: React.FC<{ className?: string }> = ({
     } finally {
       setSaving(false);
     }
+  };
+
+  const toggleWaterTime = (time: string) => {
+    const currentTimes = settings.whatsapp_water_times || [];
+    let newTimes: string[];
+    
+    if (currentTimes.includes(time)) {
+      newTimes = currentTimes.filter(t => t !== time);
+    } else {
+      newTimes = [...currentTimes, time].sort();
+    }
+    
+    saveSettings({ whatsapp_water_times: newTimes });
   };
 
   const testWhatsAppMessage = async () => {
@@ -199,7 +249,7 @@ export const WhatsAppNotificationSettings: React.FC<{ className?: string }> = ({
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
           >
-            <CardContent className="pt-0 space-y-6">
+            <CardContent className="pt-0 space-y-5 max-h-[60vh] overflow-y-auto">
               <div className="h-px bg-border" />
 
               {/* Status do telefone */}
@@ -216,7 +266,7 @@ export const WhatsAppNotificationSettings: React.FC<{ className?: string }> = ({
                 <div className="flex items-center gap-2 p-3 rounded-lg bg-green-500/10 border border-green-500/20">
                   <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
                   <p className="text-sm text-green-700 dark:text-green-400">
-                    Telefone cadastrado: {userPhone}
+                    Telefone: {userPhone}
                   </p>
                 </div>
               )}
@@ -226,11 +276,11 @@ export const WhatsAppNotificationSettings: React.FC<{ className?: string }> = ({
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label className="text-sm font-medium flex items-center gap-2">
-                      <Bell className="w-4 h-4" />
-                      Mensagem Motivacional Diária
+                      <Bell className="w-4 h-4 text-primary" />
+                      Motivação Diária
                     </Label>
                     <p className="text-xs text-muted-foreground">
-                      Receba uma mensagem personalizada do Dr. Vital todas as manhãs
+                      Mensagem personalizada do Dr. Vital
                     </p>
                   </div>
                   <Switch
@@ -248,7 +298,7 @@ export const WhatsAppNotificationSettings: React.FC<{ className?: string }> = ({
                       onValueChange={(value) => saveSettings({ whatsapp_daily_time: value })}
                       disabled={saving}
                     >
-                      <SelectTrigger className="w-32">
+                      <SelectTrigger className="w-24 h-8">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -263,16 +313,197 @@ export const WhatsAppNotificationSettings: React.FC<{ className?: string }> = ({
                 )}
               </div>
 
+              <div className="h-px bg-border/50" />
+
+              {/* Lembretes de Água */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label className="text-sm font-medium flex items-center gap-2">
+                      <Droplets className="w-4 h-4 text-blue-500" />
+                      Lembretes de Água
+                    </Label>
+                    <p className="text-xs text-muted-foreground">
+                      Lembretes para beber água durante o dia
+                    </p>
+                  </div>
+                  <Switch
+                    checked={settings.whatsapp_water_enabled}
+                    onCheckedChange={(checked) => saveSettings({ whatsapp_water_enabled: checked })}
+                    disabled={saving}
+                  />
+                </div>
+
+                {settings.whatsapp_water_enabled && (
+                  <div className="ml-6 space-y-2">
+                    <p className="text-xs text-muted-foreground">Selecione os horários:</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {waterTimeOptions.map((time) => {
+                        const isSelected = settings.whatsapp_water_times?.includes(time);
+                        return (
+                          <Badge
+                            key={time}
+                            variant={isSelected ? 'default' : 'outline'}
+                            className={`cursor-pointer transition-all text-xs px-2 py-0.5 ${
+                              isSelected 
+                                ? 'bg-blue-500 hover:bg-blue-600' 
+                                : 'hover:bg-blue-500/10'
+                            }`}
+                            onClick={() => toggleWaterTime(time)}
+                          >
+                            {time}
+                          </Badge>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="h-px bg-border/50" />
+
+              {/* Missão do Dia */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label className="text-sm font-medium flex items-center gap-2">
+                      <ListChecks className="w-4 h-4 text-orange-500" />
+                      Missão do Dia
+                    </Label>
+                    <p className="text-xs text-muted-foreground">
+                      Lembrete para completar sua missão
+                    </p>
+                  </div>
+                  <Switch
+                    checked={settings.whatsapp_mission_enabled}
+                    onCheckedChange={(checked) => saveSettings({ whatsapp_mission_enabled: checked })}
+                    disabled={saving}
+                  />
+                </div>
+
+                {settings.whatsapp_mission_enabled && (
+                  <div className="ml-6 flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-muted-foreground" />
+                    <Select
+                      value={settings.whatsapp_mission_time}
+                      onValueChange={(value) => saveSettings({ whatsapp_mission_time: value })}
+                      disabled={saving}
+                    >
+                      <SelectTrigger className="w-24 h-8">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {timeOptions.map((time) => (
+                          <SelectItem key={time.value} value={time.value}>
+                            {time.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+              </div>
+
+              <div className="h-px bg-border/50" />
+
+              {/* Metas */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label className="text-sm font-medium flex items-center gap-2">
+                      <Target className="w-4 h-4 text-purple-500" />
+                      Lembretes de Metas
+                    </Label>
+                    <p className="text-xs text-muted-foreground">
+                      Acompanhamento do progresso das metas
+                    </p>
+                  </div>
+                  <Switch
+                    checked={settings.whatsapp_goals_enabled}
+                    onCheckedChange={(checked) => saveSettings({ whatsapp_goals_enabled: checked })}
+                    disabled={saving}
+                  />
+                </div>
+
+                {settings.whatsapp_goals_enabled && (
+                  <div className="ml-6 flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-muted-foreground" />
+                    <Select
+                      value={settings.whatsapp_goals_time}
+                      onValueChange={(value) => saveSettings({ whatsapp_goals_time: value })}
+                      disabled={saving}
+                    >
+                      <SelectTrigger className="w-24 h-8">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {timeOptions.map((time) => (
+                          <SelectItem key={time.value} value={time.value}>
+                            {time.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+              </div>
+
+              <div className="h-px bg-border/50" />
+
+              {/* Desafios */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label className="text-sm font-medium flex items-center gap-2">
+                      <Trophy className="w-4 h-4 text-yellow-500" />
+                      Lembretes de Desafios
+                    </Label>
+                    <p className="text-xs text-muted-foreground">
+                      Atualizações sobre desafios ativos
+                    </p>
+                  </div>
+                  <Switch
+                    checked={settings.whatsapp_challenges_enabled}
+                    onCheckedChange={(checked) => saveSettings({ whatsapp_challenges_enabled: checked })}
+                    disabled={saving}
+                  />
+                </div>
+
+                {settings.whatsapp_challenges_enabled && (
+                  <div className="ml-6 flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-muted-foreground" />
+                    <Select
+                      value={settings.whatsapp_challenges_time}
+                      onValueChange={(value) => saveSettings({ whatsapp_challenges_time: value })}
+                      disabled={saving}
+                    >
+                      <SelectTrigger className="w-24 h-8">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {timeOptions.map((time) => (
+                          <SelectItem key={time.value} value={time.value}>
+                            {time.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+              </div>
+
+              <div className="h-px bg-border/50" />
+
               {/* Relatório Semanal */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label className="text-sm font-medium flex items-center gap-2">
-                      <Calendar className="w-4 h-4" />
+                      <Calendar className="w-4 h-4 text-green-500" />
                       Relatório Semanal
                     </Label>
                     <p className="text-xs text-muted-foreground">
-                      Receba um resumo completo da sua semana com análise do Dr. Vital
+                      Resumo completo da sua semana
                     </p>
                   </div>
                   <Switch
@@ -290,7 +521,7 @@ export const WhatsAppNotificationSettings: React.FC<{ className?: string }> = ({
                       onValueChange={(value) => saveSettings({ whatsapp_weekly_day: parseInt(value) })}
                       disabled={saving}
                     >
-                      <SelectTrigger className="w-40">
+                      <SelectTrigger className="w-36 h-8">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -303,24 +534,6 @@ export const WhatsAppNotificationSettings: React.FC<{ className?: string }> = ({
                     </Select>
                   </div>
                 )}
-              </div>
-
-              {/* Lembretes Inteligentes */}
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label className="text-sm font-medium flex items-center gap-2">
-                    <Bell className="w-4 h-4" />
-                    Lembretes Inteligentes
-                  </Label>
-                  <p className="text-xs text-muted-foreground">
-                    Lembretes sobre água, peso, missões e streak em risco
-                  </p>
-                </div>
-                <Switch
-                  checked={settings.whatsapp_reminders}
-                  onCheckedChange={(checked) => saveSettings({ whatsapp_reminders: checked })}
-                  disabled={saving}
-                />
               </div>
 
               <div className="h-px bg-border" />
