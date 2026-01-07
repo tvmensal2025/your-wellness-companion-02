@@ -22,6 +22,7 @@ import { useFollow } from '@/hooks/useFollow';
 import { useSmartFeed, FeedAlgorithm } from '@/hooks/useSmartFeed';
 import { useDirectMessages } from '@/hooks/useDirectMessages';
 import { useNotifications } from '@/hooks/useNotifications';
+import { useUserProgressStats } from '@/hooks/useUserProgressStats';
 import { StoriesSection } from '@/components/community/StoriesSection';
 import { StoryViewer } from '@/components/community/StoryViewer';
 import { CreateStoryModal } from '@/components/community/CreateStoryModal';
@@ -74,6 +75,7 @@ export default function HealthFeedPage() {
   const { toggleFollow, isFollowing } = useFollow();
   const { totalUnread } = useDirectMessages();
   const { unreadCount: notificationCount, createNotification } = useNotifications();
+  const { stats: userProgressStats } = useUserProgressStats(user?.id || null);
 
   // Smart Feed integration
   const { sortedPosts, trendingTopics, suggestedPosts, trackInteraction } = useSmartFeed(posts, feedAlgorithm);
@@ -111,19 +113,31 @@ export default function HealthFeedPage() {
 
   const topUser = filteredRanking[0];
 
-  // Get current user stats
+  // Get current user stats - usando useMemo para estabilizar valores e evitar recálculos
   const currentUserStats = useMemo(() => {
-    const userEmail = user?.email;
-    if (!userEmail) return { position: 0, points: 0, streak: 0, missions: 0 };
+    if (!user?.id) return { position: 0, points: 0, streak: 0, missions: 0 };
     
-    const userRank = ranking.find(r => r.user_name?.toLowerCase().includes(userEmail.split('@')[0].toLowerCase()));
+    // Buscar pelo user_id ao invés de email para garantir correspondência exata
+    const userRank = ranking.find(r => r.user_id === user.id);
+    
+    // Se não encontrar no ranking, usar dados do userProgressStats como fallback
+    if (!userRank) {
+      return {
+        position: 0,
+        points: userProgressStats?.totalPoints || 0,
+        streak: userProgressStats?.currentStreak || 0,
+        missions: userProgressStats?.challengesCompleted || 0
+      };
+    }
+    
+    // Retornar valores estáveis do ranking
     return {
-      position: userRank?.position || Math.floor(Math.random() * 50) + 1,
-      points: userRank?.total_points || 0,
-      streak: userRank?.streak_days || 0,
-      missions: userRank?.missions_completed || 0
+      position: userRank.position || 0,
+      points: userRank.total_points || 0,
+      streak: userRank.streak_days || 0,
+      missions: userRank.missions_completed || 0
     };
-  }, [ranking, user]);
+  }, [ranking, user?.id, userProgressStats?.totalPoints, userProgressStats?.currentStreak, userProgressStats?.challengesCompleted]);
 
   const handleCreatePost = async (content: string, tags: string[], mediaUrls?: string[]) => {
     await createPost(content, tags, mediaUrls);
@@ -290,11 +304,12 @@ export default function HealthFeedPage() {
                 {/* Hero Header */}
                 <CommunityHeroHeader
                   userName={userName}
+                  userAvatar={userProfile?.avatar_url}
                   userPosition={currentUserStats.position}
                   totalPoints={currentUserStats.points}
                   streakDays={currentUserStats.streak}
                   missionsCompleted={currentUserStats.missions}
-                  profileViews={Math.floor(Math.random() * 100) + 10}
+                  profileViews={userProgressStats?.followersCount || 0}
                   unreadMessages={totalUnread}
                 />
 

@@ -9,6 +9,23 @@ import { useAuth } from '@/hooks/useAuth';
 import { useFollow } from '@/hooks/useFollow';
 import { toast } from 'sonner';
 import { motion } from 'framer-motion';
+import { MiniWeightChart } from './MiniWeightChart';
+import { AchievementBadges } from './AchievementBadges';
+
+interface WeightDataPoint {
+  date: string;
+  peso_kg: number;
+}
+
+interface Achievement {
+  id: string;
+  name: string;
+  icon?: string;
+  color?: string;
+  rarity?: 'common' | 'rare' | 'epic' | 'legendary';
+  description?: string;
+  earned_at?: string;
+}
 
 interface FollowingUser {
   id: string;
@@ -18,6 +35,8 @@ interface FollowingUser {
   total_points: number;
   weight_change?: number;
   show_weight_results?: boolean;
+  weightHistory?: WeightDataPoint[];
+  recentAchievements?: Achievement[];
 }
 
 interface FollowingListProps {
@@ -76,30 +95,101 @@ export const FollowingList: React.FC<FollowingListProps> = ({ onProfileClick, on
       const usersShowingWeight = profiles?.filter(p => p.show_weight_results).map(p => p.user_id) || [];
       
       let weightChanges: Record<string, number> = {};
+      let weightHistories: Record<string, WeightDataPoint[]> = {};
       
       if (usersShowingWeight.length > 0) {
-        const { data: weightData } = await supabase
-          .from('weight_measurements')
-          .select('user_id, peso_kg, measurement_date')
-          .in('user_id', usersShowingWeight)
-          .order('measurement_date', { ascending: true });
+        // Buscar últimas 15 medições para cada usuário
+        const weightPromises = usersShowingWeight.map(async (userId) => {
+          const { data: weightData } = await supabase
+            .from('weight_measurements')
+            .select('user_id, peso_kg, measurement_date')
+            .eq('user_id', userId)
+            .order('measurement_date', { ascending: true })
+            .limit(15);
 
-        if (weightData) {
-          // Calculate weight change for each user
-          const userWeights: Record<string, { first: number; last: number }> = {};
-          
-          weightData.forEach(w => {
-            if (!userWeights[w.user_id]) {
-              userWeights[w.user_id] = { first: w.peso_kg, last: w.peso_kg };
-            } else {
-              userWeights[w.user_id].last = w.peso_kg;
+          return { userId, weightData: weightData || [] };
+        });
+
+        const weightResults = await Promise.all(weightPromises);
+        
+        weightResults.forEach(({ userId, weightData }) => {
+          if (weightData && weightData.length > 0) {
+            // Calcular mudança de peso
+            const first = weightData[0].peso_kg;
+            const last = weightData[weightData.length - 1].peso_kg;
+            weightChanges[userId] = last - first;
+
+            // Preparar histórico para gráfico
+            weightHistories[userId] = weightData.map(w => ({
+              date: new Date(w.measurement_date).toLocaleDateString('pt-BR', { 
+                month: 'short', 
+                day: 'numeric' 
+              }),
+              peso_kg: w.peso_kg
+            }));
+          }
+        });
+      }
+
+      // Buscar conquistas dos usuários
+      let achievementsByUser: Record<string, Achievement[]> = {};
+      
+      try {
+        // Tentar buscar de user_achievements primeiro
+        const { data: userAchievements } = await supabase
+          .from('user_achievements')
+          .select('id, user_id, achievement_name, achievement_type, description, earned_at')
+          .in('user_id', followingIds)
+          .order('earned_at', { ascending: false })
+          .limit(50);
+
+        if (userAchievements) {
+          userAchievements.forEach((ach) => {
+            if (!achievementsByUser[ach.user_id]) {
+              achievementsByUser[ach.user_id] = [];
+            }
+            if (achievementsByUser[ach.user_id].length < 3) {
+              achievementsByUser[ach.user_id].push({
+                id: ach.id,
+                name: ach.achievement_name || ach.achievement_type || 'Conquista',
+                description: ach.description || undefined,
+                earned_at: ach.earned_at || undefined,
+                rarity: 'common' // Default, pode ser atualizado se houver campo
+              });
             }
           });
+        }
 
-          Object.entries(userWeights).forEach(([userId, weights]) => {
-            weightChanges[userId] = weights.last - weights.first;
+        // Tentar buscar de sport_achievements também
+        const { data: sportAchievements } = await supabase
+          .from('sport_achievements')
+          .select('id, user_id, achievement_name, badge_icon, badge_color, rarity, achievement_description, earned_at')
+          .in('user_id', followingIds)
+          .order('earned_at', { ascending: false })
+          .limit(50);
+
+        if (sportAchievements) {
+          sportAchievements.forEach((ach) => {
+            if (!achievementsByUser[ach.user_id]) {
+              achievementsByUser[ach.user_id] = [];
+            }
+            // Adicionar apenas se ainda não tiver 3 conquistas
+            if (achievementsByUser[ach.user_id].length < 3) {
+              achievementsByUser[ach.user_id].push({
+                id: ach.id,
+                name: ach.achievement_name,
+                icon: ach.badge_icon,
+                color: ach.badge_color,
+                rarity: (ach.rarity as 'common' | 'rare' | 'epic' | 'legendary') || 'common',
+                description: ach.achievement_description || undefined,
+                earned_at: ach.earned_at || undefined
+              });
+            }
           });
         }
+      } catch (error) {
+        console.warn('Erro ao buscar conquistas:', error);
+        // Não bloquear o carregamento se houver erro nas conquistas
       }
 
       // Combine data
@@ -110,7 +200,9 @@ export const FollowingList: React.FC<FollowingListProps> = ({ onProfileClick, on
         avatar_url: profile.avatar_url,
         show_weight_results: profile.show_weight_results,
         total_points: pointsData?.find(p => p.user_id === profile.user_id)?.total_points || 0,
-        weight_change: weightChanges[profile.user_id]
+        weight_change: weightChanges[profile.user_id],
+        weightHistory: weightHistories[profile.user_id] || undefined,
+        recentAchievements: achievementsByUser[profile.user_id] || undefined
       }));
 
       setUsers(combinedUsers);
@@ -135,6 +227,31 @@ export const FollowingList: React.FC<FollowingListProps> = ({ onProfileClick, on
   const getInitials = (name?: string | null) => {
     if (!name) return '?';
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  };
+
+  const normalizeAvatarUrl = (url: string | null | undefined): string | null => {
+    if (!url || !url.trim()) return null;
+    
+    // Se já é uma URL completa (http/https), retornar como está
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    }
+    
+    // Se não começa com http, pode ser um caminho do storage
+    // Tentar construir URL completa do Supabase
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://ciszqtlaacrhfwsqnvjr.supabase.co';
+    
+    // Se começa com /storage, adicionar apenas o domínio
+    if (url.startsWith('/storage/')) {
+      return `${supabaseUrl}${url}`;
+    }
+    
+    // Se é apenas um caminho, assumir que é do bucket avatars
+    if (!url.includes('storage')) {
+      return `${supabaseUrl}/storage/v1/object/public/avatars/${url}`;
+    }
+    
+    return url;
   };
 
   if (loading) {
@@ -184,8 +301,13 @@ export const FollowingList: React.FC<FollowingListProps> = ({ onProfileClick, on
                 {/* Avatar with enhanced styling */}
                 <div className="relative">
                   <Avatar className="w-14 h-14 ring-2 ring-primary/30 shadow-md group-hover:ring-primary/50 transition-all">
-                    {followedUser.avatar_url ? (
-                      <AvatarImage src={followedUser.avatar_url} alt={followedUser.full_name || ''} />
+                    {normalizeAvatarUrl(followedUser.avatar_url) ? (
+                      <AvatarImage 
+                        src={normalizeAvatarUrl(followedUser.avatar_url) || ''} 
+                        alt={followedUser.full_name || ''}
+                        className="object-cover"
+                        loading="lazy"
+                      />
                     ) : null}
                     <AvatarFallback className="bg-gradient-to-br from-primary/20 to-accent/30 text-primary font-semibold text-lg">
                       {getInitials(followedUser.full_name)}
@@ -246,6 +368,23 @@ export const FollowingList: React.FC<FollowingListProps> = ({ onProfileClick, on
                         <Lock className="w-3 h-3" />
                         Privado
                       </Badge>
+                    )}
+                  </div>
+
+                  {/* Gráfico mini e conquistas */}
+                  <div className="flex items-center gap-3 mt-2 flex-wrap">
+                    {/* Mini Weight Chart */}
+                    {followedUser.show_weight_results && followedUser.weightHistory && followedUser.weightHistory.length >= 2 && (
+                      <div className="w-32" onClick={(e) => e.stopPropagation()}>
+                        <MiniWeightChart data={followedUser.weightHistory} />
+                      </div>
+                    )}
+                    
+                    {/* Achievement Badges */}
+                    {followedUser.recentAchievements && followedUser.recentAchievements.length > 0 && (
+                      <div onClick={(e) => e.stopPropagation()}>
+                        <AchievementBadges achievements={followedUser.recentAchievements} />
+                      </div>
                     )}
                   </div>
 

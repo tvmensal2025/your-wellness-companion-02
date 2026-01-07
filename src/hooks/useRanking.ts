@@ -86,14 +86,14 @@ export const useRanking = () => {
         // Skip if no full_name (incomplete profile)
         if (!profile.full_name) return;
         
-        // Create ranking with real user data
+        // Create ranking with real user data - sem valores aleatórios
         rankingUsers.push({
           user_id: profile.user_id,
           user_name: profile.full_name,
           avatar_url: profile.avatar_url,
-          total_points: userStat?.total_points || Math.floor(Math.random() * 1000),
-          streak_days: userStat?.streak_days || Math.floor(Math.random() * 30),
-          missions_completed: userStat?.missions_completed || Math.floor(Math.random() * 10),
+          total_points: userStat?.total_points || 0,
+          streak_days: userStat?.streak_days || 0,
+          missions_completed: userStat?.missions_completed || 0,
           last_activity: userStat?.last_activity,
           position: 0 // Será definido após ordenação
         });
