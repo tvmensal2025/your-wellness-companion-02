@@ -19,6 +19,27 @@ import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Conversation } from '@/hooks/useDirectMessages';
 
+// Função para normalizar URLs de avatar
+const normalizeAvatarUrl = (url: string | null | undefined): string | null => {
+  if (!url || !url.trim()) return null;
+  
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url;
+  }
+  
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://ciszqtlaacrhfwsqnvjr.supabase.co';
+  
+  if (url.startsWith('/storage/')) {
+    return `${supabaseUrl}${url}`;
+  }
+  
+  if (!url.includes('storage')) {
+    return `${supabaseUrl}/storage/v1/object/public/avatars/${url}`;
+  }
+  
+  return url;
+};
+
 interface DirectMessagesInboxProps {
   conversations: Conversation[];
   totalUnread: number;
@@ -104,7 +125,7 @@ export const DirectMessagesInbox: React.FC<DirectMessagesInboxProps> = ({
                 >
                   <div className="relative">
                     <Avatar className="w-12 h-12">
-                      <AvatarImage src={conv.participant_avatar} />
+                      <AvatarImage src={normalizeAvatarUrl(conv.participant_avatar) || ''} />
                       <AvatarFallback className="bg-primary/10 text-primary">
                         {conv.participant_name.charAt(0)}
                       </AvatarFallback>
