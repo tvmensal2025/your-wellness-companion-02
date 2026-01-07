@@ -320,6 +320,12 @@ export const useDailyMissionsFinal = ({ user }: UseDailyMissionsFinalProps) => {
     handleAnswer(rating);
   }, [handleAnswer]);
 
+  const goToPreviousQuestion = useCallback(() => {
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex(prev => prev - 1);
+    }
+  }, [currentQuestionIndex]);
+
   return {
     currentQuestion,
     currentQuestionIndex,
@@ -333,6 +339,7 @@ export const useDailyMissionsFinal = ({ user }: UseDailyMissionsFinalProps) => {
     handleYesNo,
     handleTextInput,
     handleStarRating,
+    goToPreviousQuestion,
     allQuestions
   };
 }; 
