@@ -157,7 +157,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
 }) => {
   const { loading, profile, userPosts, fetchProfile, clearProfile } = useCommunityProfile();
   const { stats: progressStats } = useUserProgressStats(userId);
-  const { isBlocked, loading: blockLoading, toggleBlock } = useUserBlock(userId);
+  const { iBlockedThem, theyBlockedMe, loading: blockLoading, toggleBlock } = useUserBlock(userId);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
 
@@ -378,6 +378,15 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                   </div>
                 </div>
 
+                {/* Block Warning */}
+                {theyBlockedMe && !isOwnProfile && (
+                  <div className="mx-4 mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-center">
+                    <p className="text-sm text-red-600 dark:text-red-400 font-medium">
+                      Você não pode interagir com este usuário
+                    </p>
+                  </div>
+                )}
+
                 {/* Action Buttons */}
                 {!isOwnProfile && (
                   <div className="space-y-2 px-4 pb-4">
@@ -387,6 +396,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                         size="sm"
                         className="rounded-xl text-xs"
                         onClick={onFollow}
+                        disabled={theyBlockedMe || iBlockedThem}
                       >
                         {isFollowing ? (
                           <>
@@ -405,6 +415,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                         size="sm"
                         className="rounded-xl text-xs"
                         onClick={onMessage}
+                        disabled={theyBlockedMe || iBlockedThem}
                       >
                         <MessageCircle className="w-3.5 h-3.5 mr-1.5" />
                         Mensagem
@@ -416,31 +427,34 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                         size="sm"
                         className="rounded-xl text-xs border-primary/30 text-primary hover:bg-primary/10"
                         onClick={() => setInviteModalOpen(true)}
+                        disabled={theyBlockedMe || iBlockedThem}
                       >
                         <Target className="w-3.5 h-3.5 mr-1.5" />
                         Desafio
                       </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className={`rounded-xl text-xs ${isBlocked ? 'border-green-500/30 text-green-600 hover:bg-green-500/10' : 'border-red-500/30 text-red-600 hover:bg-red-500/10'}`}
-                        onClick={toggleBlock}
-                        disabled={blockLoading}
-                      >
-                        {blockLoading ? (
-                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                        ) : isBlocked ? (
-                          <>
-                            <ShieldOff className="w-3.5 h-3.5 mr-1" />
-                            Desbloquear
-                          </>
-                        ) : (
-                          <>
-                            <Ban className="w-3.5 h-3.5 mr-1" />
-                            Bloquear
-                          </>
-                        )}
-                      </Button>
+                      {!theyBlockedMe && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className={`rounded-xl text-xs ${iBlockedThem ? 'border-green-500/30 text-green-600 hover:bg-green-500/10' : 'border-red-500/30 text-red-600 hover:bg-red-500/10'}`}
+                          onClick={toggleBlock}
+                          disabled={blockLoading}
+                        >
+                          {blockLoading ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          ) : iBlockedThem ? (
+                            <>
+                              <ShieldOff className="w-3.5 h-3.5 mr-1" />
+                              Desbloquear
+                            </>
+                          ) : (
+                            <>
+                              <Ban className="w-3.5 h-3.5 mr-1" />
+                              Bloquear
+                            </>
+                          )}
+                        </Button>
+                      )}
                     </div>
                   </div>
                 )}
