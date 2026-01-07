@@ -15,6 +15,7 @@ interface WeightRecord {
 interface CleanEvolutionChartProps {
   measurements: WeightRecord[];
   loading?: boolean;
+  onRegisterClick?: () => void;
 }
 
 // Memoized mini stat component
@@ -46,17 +47,69 @@ const CustomTooltip = memo(({ active, payload }: any) => {
 
 CustomTooltip.displayName = 'CustomTooltip';
 
-// Empty state component - lightweight and fast
-const EmptyState = memo(() => (
+// Empty state component - motivational and actionable
+const EmptyState = memo(({ onRegisterClick }: { onRegisterClick?: () => void }) => (
   <motion.div
     initial={{ opacity: 0, y: 10 }}
     animate={{ opacity: 1, y: 0 }}
-    className="rounded-2xl bg-card border border-border/50 p-4"
+    className="rounded-2xl bg-card border border-border/50 p-5 sm:p-6"
   >
-    <h3 className="text-sm font-medium text-foreground mb-3">Evolução</h3>
-    <div className="h-28 flex flex-col items-center justify-center gap-2 text-muted-foreground">
-      <TrendingUp className="h-6 w-6 opacity-50" />
-      <span className="text-sm">Registre seu peso para acompanhar</span>
+    <h3 className="text-sm font-medium text-foreground mb-4">Evolução</h3>
+    <div className="flex flex-col items-center justify-center gap-4 py-4">
+      {/* Ilustração de gráfico vazio */}
+      <svg 
+        className="w-32 h-20 text-muted-foreground/30" 
+        viewBox="0 0 120 60" 
+        fill="none"
+      >
+        {/* Grid lines */}
+        <line x1="10" y1="10" x2="10" y2="50" stroke="currentColor" strokeWidth="1" strokeDasharray="2 2" />
+        <line x1="10" y1="50" x2="110" y2="50" stroke="currentColor" strokeWidth="1" strokeDasharray="2 2" />
+        
+        {/* Dotted line representing potential chart */}
+        <motion.path
+          d="M 15 40 Q 30 35, 45 38 T 75 30 T 105 25"
+          stroke="hsl(var(--primary))"
+          strokeWidth="2"
+          strokeDasharray="4 4"
+          fill="none"
+          initial={{ pathLength: 0, opacity: 0 }}
+          animate={{ pathLength: 1, opacity: 0.5 }}
+          transition={{ duration: 1.5, ease: "easeOut" }}
+        />
+        
+        {/* Dots on the line */}
+        <motion.circle cx="15" cy="40" r="3" fill="hsl(var(--primary))" opacity="0.3" 
+          initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.3 }} />
+        <motion.circle cx="45" cy="38" r="3" fill="hsl(var(--primary))" opacity="0.3"
+          initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.5 }} />
+        <motion.circle cx="75" cy="30" r="3" fill="hsl(var(--primary))" opacity="0.3"
+          initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.7 }} />
+        <motion.circle cx="105" cy="25" r="3" fill="hsl(var(--primary))" opacity="0.5"
+          initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.9 }} />
+      </svg>
+
+      {/* Title */}
+      <div className="text-center space-y-1">
+        <h4 className="text-base font-semibold text-foreground flex items-center justify-center gap-2">
+          <span>📈</span> Sua Evolução Começa Aqui!
+        </h4>
+        <p className="text-sm text-muted-foreground max-w-[250px]">
+          Registre seu primeiro peso para acompanhar seu progresso com gráficos detalhados
+        </p>
+      </div>
+
+      {/* CTA Button */}
+      {onRegisterClick && (
+        <motion.button
+          onClick={onRegisterClick}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          className="mt-2 px-5 py-2.5 bg-primary text-primary-foreground rounded-full font-medium text-sm flex items-center gap-2 shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-shadow"
+        >
+          <span>⚖️</span> Registrar Primeiro Peso
+        </motion.button>
+      )}
     </div>
   </motion.div>
 ));
@@ -75,7 +128,8 @@ LoadingSkeleton.displayName = 'LoadingSkeleton';
 
 export const CleanEvolutionChart: React.FC<CleanEvolutionChartProps> = memo(({
   measurements,
-  loading = false
+  loading = false,
+  onRegisterClick
 }) => {
   // Fast early returns - no computation needed
   if (loading) {
@@ -83,7 +137,7 @@ export const CleanEvolutionChart: React.FC<CleanEvolutionChartProps> = memo(({
   }
 
   if (!measurements || measurements.length === 0) {
-    return <EmptyState />;
+    return <EmptyState onRegisterClick={onRegisterClick} />;
   }
 
   // Memoize all expensive computations
