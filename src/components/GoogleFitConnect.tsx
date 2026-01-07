@@ -109,34 +109,34 @@ export const GoogleFitConnect: React.FC = () => {
 
         {/* Dados que serão sincronizados */}
         <div className="grid grid-cols-1 gap-3 xs:gap-4">
-          <div className="flex items-center gap-3 xs:gap-4 p-3 xs:p-4 bg-blue-50 rounded-lg">
-            <TrendingUp className="h-6 w-6 xs:h-7 xs:w-7 text-blue-600" />
+          <div className="flex items-center gap-3 xs:gap-4 p-3 xs:p-4 bg-blue-50 dark:bg-blue-950 rounded-lg">
+            <TrendingUp className="h-6 w-6 xs:h-7 xs:w-7 text-blue-600 dark:text-blue-400" />
             <div>
-              <p className="font-medium text-base xs:text-lg">Passos e distância</p>
+              <p className="font-medium text-base xs:text-lg text-foreground">Passos e distância</p>
               <p className="text-sm xs:text-base text-muted-foreground">Contagem diária</p>
             </div>
           </div>
           
-          <div className="flex items-center gap-3 xs:gap-4 p-3 xs:p-4 bg-red-50 rounded-lg">
-            <Heart className="h-6 w-6 xs:h-7 xs:w-7 text-red-600" />
+          <div className="flex items-center gap-3 xs:gap-4 p-3 xs:p-4 bg-red-50 dark:bg-red-950 rounded-lg">
+            <Heart className="h-6 w-6 xs:h-7 xs:w-7 text-red-600 dark:text-red-400" />
             <div>
-              <p className="font-medium text-base xs:text-lg">FC min/média/máx</p>
+              <p className="font-medium text-base xs:text-lg text-foreground">FC min/média/máx</p>
               <p className="text-sm xs:text-base text-muted-foreground">Frequência cardíaca</p>
             </div>
           </div>
           
-          <div className="flex items-center gap-3 xs:gap-4 p-3 xs:p-4 bg-yellow-50 rounded-lg">
-            <Zap className="h-6 w-6 xs:h-7 xs:w-7 text-yellow-600" />
+          <div className="flex items-center gap-3 xs:gap-4 p-3 xs:p-4 bg-yellow-50 dark:bg-yellow-950 rounded-lg">
+            <Zap className="h-6 w-6 xs:h-7 xs:w-7 text-yellow-600 dark:text-yellow-400" />
             <div>
-              <p className="font-medium text-base xs:text-lg">Calorias ativas</p>
+              <p className="font-medium text-base xs:text-lg text-foreground">Calorias ativas</p>
               <p className="text-sm xs:text-base text-muted-foreground">Queima calórica</p>
             </div>
           </div>
           
-          <div className="flex items-center gap-3 xs:gap-4 p-3 xs:p-4 bg-green-50 rounded-lg">
-            <Clock className="h-6 w-6 xs:h-7 xs:w-7 text-green-600" />
+          <div className="flex items-center gap-3 xs:gap-4 p-3 xs:p-4 bg-green-50 dark:bg-green-950 rounded-lg">
+            <Clock className="h-6 w-6 xs:h-7 xs:w-7 text-green-600 dark:text-green-400" />
             <div>
-              <p className="font-medium text-base xs:text-lg">Heart minutes e sono</p>
+              <p className="font-medium text-base xs:text-lg text-foreground">Heart minutes e sono</p>
               <p className="text-sm xs:text-base text-muted-foreground">Atividade e descanso</p>
             </div>
           </div>
@@ -200,8 +200,8 @@ export const GoogleFitConnect: React.FC = () => {
 
         {/* Nota de sucesso */}
         {isConnected && (
-          <div className="p-3 xs:p-4 bg-green-50 border border-green-200 rounded-lg">
-            <p className="text-base xs:text-lg text-green-700 text-center">
+          <div className="p-3 xs:p-4 bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-lg">
+            <p className="text-base xs:text-lg text-green-700 dark:text-green-300 text-center">
               🎉 Google Fit conectado com sucesso! Clique em "Sincronizar Dados" para começar a coletar suas informações de saúde e atividade.
             </p>
           </div>

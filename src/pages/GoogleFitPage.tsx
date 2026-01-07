@@ -11,7 +11,7 @@ export const GoogleFitPage: React.FC = () => {
   const { toast } = useToast();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 p-2 xs:p-3 sm:p-4 md:p-6">
+    <div className="min-h-screen bg-background p-2 xs:p-3 sm:p-4 md:p-6">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-4 xs:mb-6 sm:mb-8">
@@ -24,10 +24,10 @@ export const GoogleFitPage: React.FC = () => {
             Voltar
           </Button>
 
-          <h1 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-2 xs:mb-3">
+          <h1 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl font-bold text-foreground mb-2 xs:mb-3">
             Integração Google Fit
           </h1>
-          <p className="text-base xs:text-lg sm:text-xl text-gray-600">
+          <p className="text-base xs:text-lg sm:text-xl text-muted-foreground">
             Conecte sua conta Google Fit para sincronizar dados de saúde automaticamente
           </p>
         </div>
@@ -111,9 +111,9 @@ export const GoogleFitPage: React.FC = () => {
 
         {/* Informações adicionais */}
         <div className="mt-6 xs:mt-8 grid grid-cols-1 gap-4 xs:gap-6">
-          <div className="bg-white p-4 xs:p-6 rounded-lg shadow-sm border">
-            <h3 className="font-semibold text-lg xs:text-xl mb-3 xs:mb-4">📊 Dados Sincronizados</h3>
-            <ul className="space-y-2 xs:space-y-3 text-base xs:text-lg text-gray-600">
+          <div className="bg-card p-4 xs:p-6 rounded-lg shadow-sm border border-border">
+            <h3 className="font-semibold text-lg xs:text-xl mb-3 xs:mb-4 text-foreground">📊 Dados Sincronizados</h3>
+            <ul className="space-y-2 xs:space-y-3 text-base xs:text-lg text-muted-foreground">
               <li>• Passos diários e distância</li>
               <li>• Calorias ativas e totais</li>
               <li>• Minutos de atividade física</li>
@@ -123,9 +123,9 @@ export const GoogleFitPage: React.FC = () => {
             </ul>
           </div>
 
-          <div className="bg-white p-4 xs:p-6 rounded-lg shadow-sm border">
-            <h3 className="font-semibold text-lg xs:text-xl mb-3 xs:mb-4">🔒 Segurança</h3>
-            <ul className="space-y-2 xs:space-y-3 text-base xs:text-lg text-gray-600">
+          <div className="bg-card p-4 xs:p-6 rounded-lg shadow-sm border border-border">
+            <h3 className="font-semibold text-lg xs:text-xl mb-3 xs:mb-4 text-foreground">🔒 Segurança</h3>
+            <ul className="space-y-2 xs:space-y-3 text-base xs:text-lg text-muted-foreground">
               <li>• Autorização única via Google</li>
               <li>• Dados criptografados no Supabase</li>
               <li>• Você pode revogar acesso a qualquer momento</li>
@@ -136,24 +136,24 @@ export const GoogleFitPage: React.FC = () => {
         </div>
 
         {/* Prévia do painel */}
-        <div className="mt-6 xs:mt-8 bg-white p-4 xs:p-6 rounded-lg shadow-sm border">
-          <h3 className="font-semibold text-lg xs:text-xl mb-4 xs:mb-5">📈 Prévia do painel</h3>
+        <div className="mt-6 xs:mt-8 bg-card p-4 xs:p-6 rounded-lg shadow-sm border border-border">
+          <h3 className="font-semibold text-lg xs:text-xl mb-4 xs:mb-5 text-foreground">📈 Prévia do painel</h3>
           <div className="grid grid-cols-2 gap-3 xs:gap-4">
-            <div className="text-center p-3 xs:p-4 bg-blue-50 rounded-lg">
-              <p className="text-base xs:text-lg font-medium text-blue-800">Passos (hoje)</p>
-              <div className="h-8 xs:h-10 bg-blue-200 rounded mt-2 animate-pulse"></div>
+            <div className="text-center p-3 xs:p-4 bg-blue-50 dark:bg-blue-950 rounded-lg">
+              <p className="text-base xs:text-lg font-medium text-blue-800 dark:text-blue-200">Passos (hoje)</p>
+              <div className="h-8 xs:h-10 bg-blue-200 dark:bg-blue-800 rounded mt-2 animate-pulse"></div>
             </div>
-            <div className="text-center p-3 xs:p-4 bg-green-50 rounded-lg">
-              <p className="text-base xs:text-lg font-medium text-green-800">Calorias ativas</p>
-              <div className="h-8 xs:h-10 bg-green-200 rounded mt-2 animate-pulse"></div>
+            <div className="text-center p-3 xs:p-4 bg-green-50 dark:bg-green-950 rounded-lg">
+              <p className="text-base xs:text-lg font-medium text-green-800 dark:text-green-200">Calorias ativas</p>
+              <div className="h-8 xs:h-10 bg-green-200 dark:bg-green-800 rounded mt-2 animate-pulse"></div>
             </div>
-            <div className="text-center p-3 xs:p-4 bg-yellow-50 rounded-lg">
-              <p className="text-base xs:text-lg font-medium text-yellow-800">Minutos ativos</p>
-              <div className="h-8 xs:h-10 bg-yellow-200 rounded mt-2 animate-pulse"></div>
+            <div className="text-center p-3 xs:p-4 bg-yellow-50 dark:bg-yellow-950 rounded-lg">
+              <p className="text-base xs:text-lg font-medium text-yellow-800 dark:text-yellow-200">Minutos ativos</p>
+              <div className="h-8 xs:h-10 bg-yellow-200 dark:bg-yellow-800 rounded mt-2 animate-pulse"></div>
             </div>
-            <div className="text-center p-3 xs:p-4 bg-purple-50 rounded-lg">
-              <p className="text-base xs:text-lg font-medium text-purple-800">Sono</p>
-              <div className="h-8 xs:h-10 bg-purple-200 rounded mt-2 animate-pulse"></div>
+            <div className="text-center p-3 xs:p-4 bg-purple-50 dark:bg-purple-950 rounded-lg">
+              <p className="text-base xs:text-lg font-medium text-purple-800 dark:text-purple-200">Sono</p>
+              <div className="h-8 xs:h-10 bg-purple-200 dark:bg-purple-800 rounded mt-2 animate-pulse"></div>
             </div>
           </div>
         </div>
