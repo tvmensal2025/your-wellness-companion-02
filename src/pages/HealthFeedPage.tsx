@@ -263,9 +263,8 @@ export default function HealthFeedPage() {
               </TabsTrigger>
             </TabsList>
             
-            {/* Header Actions */}
+            {/* Header Actions - only DM button, notification bell is in main navbar */}
             <div className="flex items-center gap-2">
-              <NotificationBell />
               <MessageButton 
                 unreadCount={totalUnread} 
                 onClick={() => setDmModalOpen(true)} 
@@ -298,13 +297,7 @@ export default function HealthFeedPage() {
                   onCreateStory={() => setCreateStoryOpen(true)}
                 />
 
-                {/* Smart Feed Toggle */}
-                <div className="mb-4">
-                  <SmartFeedButtons
-                    algorithm={feedAlgorithm}
-                    onAlgorithmChange={setFeedAlgorithm}
-                  />
-                </div>
+                {/* Smart Feed Toggle - removido para simplificar */}
 
                 {/* Feed Posts */}
                 <div className="space-y-4">

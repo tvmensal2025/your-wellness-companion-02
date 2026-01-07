@@ -1033,6 +1033,47 @@ export type Database = {
         }
         Relationships: []
       }
+      challenge_invites: {
+        Row: {
+          challenge_id: string
+          created_at: string | null
+          id: string
+          invitee_id: string
+          inviter_id: string
+          message: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          challenge_id: string
+          created_at?: string | null
+          id?: string
+          invitee_id: string
+          inviter_id: string
+          message?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          challenge_id?: string
+          created_at?: string | null
+          id?: string
+          invitee_id?: string
+          inviter_id?: string
+          message?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "challenge_invites_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "challenges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       challenge_leaderboard: {
         Row: {
           challenge_id: string | null
@@ -6586,6 +6627,7 @@ export type Database = {
           activity_level: string | null
           age: number | null
           avatar_url: string | null
+          bio: string | null
           birth_date: string | null
           city: string | null
           created_at: string
@@ -6597,19 +6639,25 @@ export type Database = {
           google_fit_enabled: boolean | null
           height: number | null
           id: string
+          instagram_handle: string | null
+          interests: string[] | null
           phone: string | null
           points: number | null
           provider: string | null
           role: string | null
+          show_points: boolean | null
+          show_streak: boolean | null
           state: string | null
           target_weight: number | null
           updated_at: string
           user_id: string
+          website_url: string | null
         }
         Insert: {
           activity_level?: string | null
           age?: number | null
           avatar_url?: string | null
+          bio?: string | null
           birth_date?: string | null
           city?: string | null
           created_at?: string
@@ -6621,19 +6669,25 @@ export type Database = {
           google_fit_enabled?: boolean | null
           height?: number | null
           id?: string
+          instagram_handle?: string | null
+          interests?: string[] | null
           phone?: string | null
           points?: number | null
           provider?: string | null
           role?: string | null
+          show_points?: boolean | null
+          show_streak?: boolean | null
           state?: string | null
           target_weight?: number | null
           updated_at?: string
           user_id: string
+          website_url?: string | null
         }
         Update: {
           activity_level?: string | null
           age?: number | null
           avatar_url?: string | null
+          bio?: string | null
           birth_date?: string | null
           city?: string | null
           created_at?: string
@@ -6645,14 +6699,19 @@ export type Database = {
           google_fit_enabled?: boolean | null
           height?: number | null
           id?: string
+          instagram_handle?: string | null
+          interests?: string[] | null
           phone?: string | null
           points?: number | null
           provider?: string | null
           role?: string | null
+          show_points?: boolean | null
+          show_streak?: boolean | null
           state?: string | null
           target_weight?: number | null
           updated_at?: string
           user_id?: string
+          website_url?: string | null
         }
         Relationships: []
       }
