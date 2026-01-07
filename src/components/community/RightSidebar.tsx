@@ -9,12 +9,16 @@ import {
   TrendingUp, 
   Crown, 
   Flame,
-  Target,
   Star,
   UserPlus,
-  Calendar
+  Calendar,
+  Sparkles
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { TrendingTopics } from './TrendingTopics';
+import { SuggestedPosts } from './SuggestedPosts';
+import { WeeklySummaryCard } from './WeeklySummaryCard';
+import { FeedPost } from '@/hooks/useFeedPosts';
 
 interface RankingUser {
   id: string;
@@ -41,18 +45,41 @@ interface Event {
   participants: number;
 }
 
+interface TrendingTopic {
+  tag: string;
+  count: number;
+  engagement: number;
+  recentPosts: number;
+  trendScore: number;
+}
+
 interface RightSidebarProps {
   topUsers: RankingUser[];
   suggestedUsers: SuggestedUser[];
   upcomingEvents: Event[];
   onFollowUser: (userId: string) => void;
+  // New Phase 4 props
+  trendingTopics?: TrendingTopic[];
+  onTopicClick?: (tag: string) => void;
+  suggestedPosts?: FeedPost[];
+  onPostClick?: (postId: string) => void;
+  allPosts?: FeedPost[];
+  userPosts?: FeedPost[];
+  showWeeklySummary?: boolean;
 }
 
 export const RightSidebar: React.FC<RightSidebarProps> = ({
   topUsers,
   suggestedUsers,
   upcomingEvents,
-  onFollowUser
+  onFollowUser,
+  trendingTopics = [],
+  onTopicClick = () => {},
+  suggestedPosts = [],
+  onPostClick = () => {},
+  allPosts = [],
+  userPosts = [],
+  showWeeklySummary = true,
 }) => {
   const getPositionIcon = (position: number) => {
     if (position === 1) return <Crown className="w-4 h-4 text-yellow-500" />;
@@ -63,6 +90,50 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
 
   return (
     <div className="w-80 space-y-4 sticky top-4">
+      {/* Weekly Summary Card */}
+      {showWeeklySummary && userPosts.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
+          <WeeklySummaryCard 
+            posts={allPosts} 
+            userPosts={userPosts} 
+          />
+        </motion.div>
+      )}
+
+      {/* Trending Topics */}
+      {trendingTopics.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <TrendingTopics 
+            topics={trendingTopics} 
+            onTopicClick={onTopicClick} 
+          />
+        </motion.div>
+      )}
+
+      {/* Suggested Posts */}
+      {suggestedPosts.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+        >
+          <SuggestedPosts 
+            posts={suggestedPosts} 
+            onPostClick={onPostClick}
+            title="Recomendados"
+            reason="Baseado no seu engajamento"
+          />
+        </motion.div>
+      )}
+
       {/* Top 5 Ranking */}
       <Card className="border-blue-200/50 dark:border-blue-800/50 bg-white dark:bg-card">
         <CardHeader className="pb-2">
