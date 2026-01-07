@@ -378,7 +378,7 @@ const UserProfile = ({ onOpenLayoutPrefs }: UserProfileProps = {}) => {
                 <div className="relative group shrink-0">
                   <Avatar className="h-16 w-16 sm:h-24 sm:w-24 bg-muted">
                     {profile.avatar_url && profile.avatar_url.trim() ? (
-                      <AvatarImage src={profile.avatar_url} className="object-contain" />
+                      <AvatarImage src={profile.avatar_url} className="object-cover" />
                     ) : null}
                     <AvatarFallback className="text-lg sm:text-xl bg-primary/10 text-primary">
                       {profile.full_name ? getInitials(profile.full_name) : 'U'}
@@ -410,21 +410,6 @@ const UserProfile = ({ onOpenLayoutPrefs }: UserProfileProps = {}) => {
                     Membro desde {profile.created_at ? new Date(profile.created_at).toLocaleDateString('pt-BR') : 'hoje'}
                   </p>
                   
-                  {/* Info do usuário */}
-                  <div className="flex flex-wrap gap-2 mt-2 text-xs text-muted-foreground">
-                    {profile.email && (
-                      <div className="flex items-center gap-1 min-w-0">
-                        <Mail className="h-3 w-3 shrink-0" />
-                        <span className="truncate max-w-[140px] sm:max-w-none">{profile.email}</span>
-                      </div>
-                    )}
-                    {profile.phone && (
-                      <div className="flex items-center gap-1">
-                        <Phone className="h-3 w-3 shrink-0" />
-                        <span>{profile.phone}</span>
-                      </div>
-                    )}
-                  </div>
                 </div>
               </div>
               
@@ -444,17 +429,17 @@ const UserProfile = ({ onOpenLayoutPrefs }: UserProfileProps = {}) => {
       </div>
 
       {/* Stats Cards - 2x2 grid sempre */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 mb-3 sm:mb-8">
+      <div className="grid grid-cols-2 gap-2 sm:gap-4 mb-3 sm:mb-8">
         {activityStats.map((stat, index) => {
           const IconComponent = stat.icon;
           return (
               <Card key={index} className="hover:shadow-md transition-shadow">
-                <CardContent className="p-3 sm:p-4">
-                  <div className="flex items-center justify-between gap-3">
-                    <IconComponent className={`h-5 w-5 sm:h-8 sm:w-8 shrink-0 ${stat.color}`} />
+                <CardContent className="p-2 sm:p-4">
+                  <div className="flex items-center gap-2">
+                    <IconComponent className={`h-4 w-4 sm:h-8 sm:w-8 shrink-0 ${stat.color}`} />
                     <div className="min-w-0 flex-1">
-                      <p className="text-base sm:text-2xl font-bold text-foreground">{stat.value}</p>
-                      <p className="text-[11px] sm:text-xs text-muted-foreground leading-tight">{stat.label}</p>
+                      <p className="text-sm sm:text-2xl font-bold text-foreground">{stat.value}</p>
+                      <p className="text-[10px] sm:text-xs text-muted-foreground leading-tight truncate">{stat.label}</p>
                     </div>
                   </div>
                 </CardContent>
