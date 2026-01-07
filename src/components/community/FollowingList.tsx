@@ -12,6 +12,7 @@ import { motion } from 'framer-motion';
 import { MiniWeightChart } from './MiniWeightChart';
 import { AchievementBadges } from './AchievementBadges';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { getUserAvatar } from '@/lib/avatar-utils';
 
 interface WeightDataPoint {
   date: string;
@@ -304,19 +305,30 @@ export const FollowingList: React.FC<FollowingListProps> = ({ onProfileClick, on
                       {/* Animated gradient ring */}
                       <div className="absolute -inset-1 bg-gradient-to-r from-primary via-primary/50 to-accent rounded-full opacity-60 group-hover:opacity-100 blur-sm transition-all duration-300 group-hover:animate-pulse" />
                       
-                      <Avatar className="w-16 h-16 ring-2 ring-background shadow-lg relative z-10 group-hover:scale-105 transition-transform duration-300">
-                        {normalizeAvatarUrl(followedUser.avatar_url) ? (
-                          <AvatarImage 
-                            src={normalizeAvatarUrl(followedUser.avatar_url) || ''} 
-                            alt={followedUser.full_name || ''}
-                            className="object-cover"
-                            loading="lazy"
-                          />
-                        ) : null}
-                        <AvatarFallback className={`bg-gradient-to-br ${userLevel.color} text-white font-bold text-lg`}>
-                          {getInitials(followedUser.full_name)}
-                        </AvatarFallback>
-                      </Avatar>
+                      {(() => {
+                        const avatar = getUserAvatar(normalizeAvatarUrl(followedUser.avatar_url), followedUser.full_name || 'Usuário');
+                        return (
+                          <Avatar className="w-16 h-16 ring-2 ring-background shadow-lg relative z-10 group-hover:scale-105 transition-transform duration-300">
+                            {avatar.type === 'emoji' ? (
+                              <AvatarFallback className={`text-2xl bg-gradient-to-br ${userLevel.color}`}>
+                                {avatar.value}
+                              </AvatarFallback>
+                            ) : (
+                              <>
+                                <AvatarImage 
+                                  src={avatar.value} 
+                                  alt={followedUser.full_name || ''}
+                                  className="object-cover"
+                                  loading="lazy"
+                                />
+                                <AvatarFallback className={`bg-gradient-to-br ${userLevel.color} text-white font-bold text-lg`}>
+                                  {getInitials(followedUser.full_name)}
+                                </AvatarFallback>
+                              </>
+                            )}
+                          </Avatar>
+                        );
+                      })()}
                       
                       {/* Level indicator */}
                       <div className="absolute -bottom-1 -right-1 z-20">
