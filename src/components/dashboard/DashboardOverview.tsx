@@ -214,9 +214,6 @@ const DashboardOverview: React.FC = () => {
           healthScore={healthScore}
           currentStreak={currentStreak}
           userName={userName || 'Usuário'}
-          height={heightCm}
-          age={age}
-          gender={gender || 'F'}
         />
 
         {/* 3. Clean Evolution Chart */}
