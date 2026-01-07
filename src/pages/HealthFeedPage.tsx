@@ -386,6 +386,10 @@ export default function HealthFeedPage() {
                   setSelectedProfileId(userId);
                   setProfileModalOpen(true);
                 }}
+                onMessageClick={(userId) => {
+                  setInitialDmUser(userId);
+                  setDmModalOpen(true);
+                }}
               />
             </div>
           </TabsContent>
