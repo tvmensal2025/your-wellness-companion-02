@@ -84,6 +84,8 @@ const UserProfile = ({ onOpenLayoutPrefs }: UserProfileProps = {}) => {
   const [editing, setEditing] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [showWeightResults, setShowWeightResults] = useState(true);
+  const [savingWeightPrivacy, setSavingWeightPrivacy] = useState(false);
 
   useEffect(() => {
     fetchProfile();
@@ -113,6 +115,8 @@ const UserProfile = ({ onOpenLayoutPrefs }: UserProfileProps = {}) => {
           ...data,
           email: user.email || ''
         });
+        // Set weight privacy from profile
+        setShowWeightResults(data.show_weight_results ?? true);
       } else {
         // Create initial profile
         setProfile({
@@ -272,6 +276,29 @@ const UserProfile = ({ onOpenLayoutPrefs }: UserProfileProps = {}) => {
         pref.id === id ? { ...pref, enabled: !pref.enabled } : pref
       )
     );
+  };
+
+  const handleWeightPrivacyToggle = async (value: boolean) => {
+    setSavingWeightPrivacy(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Usuário não autenticado');
+
+      const { error } = await supabase
+        .from('profiles')
+        .update({ show_weight_results: value })
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      setShowWeightResults(value);
+      toast.success(value ? 'Resultados de peso visíveis para todos' : 'Resultados de peso ocultos');
+    } catch (error: any) {
+      console.error('Error updating weight privacy:', error);
+      toast.error('Erro ao atualizar configuração');
+    } finally {
+      setSavingWeightPrivacy(false);
+    }
   };
 
   const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -796,10 +823,30 @@ const UserProfile = ({ onOpenLayoutPrefs }: UserProfileProps = {}) => {
                   <span>Privacidade e Segurança</span>
                 </CardTitle>
                 <CardDescription>
-                  Gerencie suas configurações de segurança
+                  Gerencie suas configurações de segurança e visibilidade
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
+                {/* Weight Privacy Toggle */}
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between p-3 rounded-lg bg-muted/50 border">
+                  <div className="min-w-0">
+                    <p className="font-medium flex items-center gap-2">
+                      <Activity className="h-4 w-4 text-green-500" />
+                      Mostrar resultado de peso
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Permitir que outros vejam seu progresso de peso na comunidade
+                    </p>
+                  </div>
+                  <Switch 
+                    checked={showWeightResults} 
+                    onCheckedChange={handleWeightPrivacyToggle}
+                    disabled={savingWeightPrivacy}
+                  />
+                </div>
+
+                <Separator />
+                
                 <Button variant="outline" className="w-full justify-start">
                   <Shield className="h-4 w-4 mr-2" />
                   Alterar Senha

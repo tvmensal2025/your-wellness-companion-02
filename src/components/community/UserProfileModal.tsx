@@ -39,7 +39,6 @@ import { useCommunityProfile, CommunityUserPost } from '@/hooks/useCommunityProf
 import { useUserProgressStats } from '@/hooks/useUserProgressStats';
 import { InviteToChallengeModal } from './InviteToChallengeModal';
 import { WeightResultCard } from '@/components/profile/WeightResultCard';
-import { WeightPrivacyToggle } from '@/components/settings/WeightPrivacyToggle';
 import { ChallengesCompletedCard } from '@/components/profile/ChallengesCompletedCard';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -416,16 +415,6 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                       <Target className="w-4 h-4 mr-2" />
                       Convidar para Desafio
                     </Button>
-                  </div>
-                )}
-
-                {/* Privacy Toggle for Own Profile */}
-                {isOwnProfile && userId && (
-                  <div className="px-6">
-                    <WeightPrivacyToggle
-                      userId={userId}
-                      initialValue={progressStats?.showWeightResults ?? true}
-                    />
                   </div>
                 )}
 
