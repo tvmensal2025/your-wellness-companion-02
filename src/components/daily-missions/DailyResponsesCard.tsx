@@ -61,13 +61,13 @@ export const DailyResponsesCard: React.FC<DailyResponsesCardProps> = ({
               <div className="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center text-white text-xs font-bold shrink-0">
                 {index + 1}
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-slate-300 text-xs font-medium leading-snug truncate">
+              <div className="flex-1">
+                <p className="text-slate-300 text-xs font-medium leading-relaxed">
                   {question.question}
                 </p>
-                <div className="flex items-center gap-1 mt-1">
-                  <CheckCircle className="w-3 h-3 text-emerald-400" />
-                  <span className="text-emerald-400 text-xs font-semibold truncate">
+                <div className="flex items-center gap-1.5 mt-1">
+                  <CheckCircle className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                  <span className="text-emerald-400 text-xs font-semibold leading-relaxed">
                     {answers[question.id] || 'Respondido'}
                   </span>
                 </div>
