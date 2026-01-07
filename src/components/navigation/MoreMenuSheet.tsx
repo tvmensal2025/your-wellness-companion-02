@@ -9,7 +9,8 @@ import {
   CreditCard,
   Dumbbell,
   LogOut,
-  ChevronRight
+  ChevronRight,
+  SlidersHorizontal
 } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
@@ -33,6 +34,7 @@ interface MoreMenuSheetProps {
   onOpenChange: (open: boolean) => void;
   onNavigate: (section: MenuSection) => void;
   onLogout: () => void;
+  onOpenLayoutPrefs?: () => void;
   userProfile?: {
     fullName?: string;
     email?: string;
@@ -41,11 +43,12 @@ interface MoreMenuSheetProps {
 }
 
 interface MenuItem {
-  id: MenuSection;
+  id: MenuSection | 'customize-menu';
   icon: React.ElementType;
   label: string;
   description?: string;
   color?: string;
+  action?: 'customize-menu';
 }
 
 // Account items removed - profile accessed via header avatar
@@ -62,6 +65,7 @@ const featureItems: MenuItem[] = [
 
 const systemItems: MenuItem[] = [
   { id: 'subscriptions', icon: CreditCard, label: 'Assinaturas', description: 'Planos e pagamentos', color: 'text-purple-600' },
+  { id: 'customize-menu' as any, icon: SlidersHorizontal, label: 'Personalizar Menu', description: 'Reordenar e ocultar itens', color: 'text-gray-500', action: 'customize-menu' },
 ];
 
 export const MoreMenuSheet: React.FC<MoreMenuSheetProps> = ({
@@ -69,17 +73,23 @@ export const MoreMenuSheet: React.FC<MoreMenuSheetProps> = ({
   onOpenChange,
   onNavigate,
   onLogout,
+  onOpenLayoutPrefs,
   userProfile
 }) => {
-  const handleItemClick = (id: MenuSection) => {
-    onNavigate(id);
+  const handleItemClick = (item: MenuItem) => {
+    if (item.action === 'customize-menu') {
+      onOpenLayoutPrefs?.();
+      onOpenChange(false);
+      return;
+    }
+    onNavigate(item.id as MenuSection);
     onOpenChange(false);
   };
 
   const renderMenuItem = (item: MenuItem) => (
     <button
       key={item.id}
-      onClick={() => handleItemClick(item.id)}
+      onClick={() => handleItemClick(item)}
       className="w-full flex items-center gap-2 p-2.5 rounded-lg hover:bg-muted/50 active:scale-[0.98] transition-all touch-manipulation group"
     >
       <div className={cn(
@@ -88,8 +98,13 @@ export const MoreMenuSheet: React.FC<MoreMenuSheetProps> = ({
       )}>
         <item.icon className="w-4 h-4" />
       </div>
-      <span className="text-sm font-medium text-foreground">{item.label}</span>
-      <ChevronRight className="w-4 h-4 text-muted-foreground opacity-50 group-hover:opacity-100 transition-opacity ml-auto" />
+      <div className="flex flex-col flex-1 text-left">
+        <span className="text-sm font-medium text-foreground">{item.label}</span>
+        {item.description && (
+          <span className="text-xs text-muted-foreground">{item.description}</span>
+        )}
+      </div>
+      <ChevronRight className="w-4 h-4 text-muted-foreground opacity-50 group-hover:opacity-100 transition-opacity" />
     </button>
   );
 

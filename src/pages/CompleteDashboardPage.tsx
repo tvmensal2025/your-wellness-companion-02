@@ -427,8 +427,28 @@ const CompleteDashboardPage = () => {
           </div>
         </div>
 
-        {/* Footer com Logout */}
-        <div className="p-3 border-t border-border/50 bg-gradient-to-t from-muted/20 to-transparent">
+        {/* Footer com Personalizar + Logout */}
+        <div className="p-3 border-t border-border/50 bg-gradient-to-t from-muted/20 to-transparent space-y-2">
+          {/* Botão Personalizar Menu */}
+          <button 
+            className={`
+              w-full flex items-center gap-3 h-11 px-3 rounded-xl transition-all duration-200
+              hover:bg-muted/80 text-muted-foreground hover:text-foreground
+              ${!isExpanded ? 'justify-center px-0' : ''}
+            `}
+            onClick={() => {
+              setLayoutPrefsModalOpen(true);
+              if (isMobile) setSidebarOpen(false);
+            }}
+            title="Personalizar Menu"
+          >
+            <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-muted/50">
+              <SlidersHorizontal className="w-4 h-4" />
+            </div>
+            {isExpanded && <span className="text-sm font-medium">Personalizar Menu</span>}
+          </button>
+          
+          {/* Botão Logout */}
           <button 
             className={`
               w-full flex items-center gap-3 h-11 px-3 rounded-xl transition-all duration-200
@@ -513,6 +533,7 @@ const CompleteDashboardPage = () => {
         onOpenChange={setMoreMenuOpen}
         onNavigate={handleMoreMenuNavigate}
         onLogout={handleLogout}
+        onOpenLayoutPrefs={() => setLayoutPrefsModalOpen(true)}
         userProfile={{
           fullName: profileData?.fullName,
           email: user?.email,
