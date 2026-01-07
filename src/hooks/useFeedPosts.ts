@@ -176,6 +176,15 @@ export function useFeedPosts() {
     }
 
     try {
+      // Determine post type based on media
+      let postType = 'text';
+      if (mediaUrls && mediaUrls.length > 0) {
+        const firstUrl = mediaUrls[0].toLowerCase();
+        const isVideo = firstUrl.includes('.mp4') || firstUrl.includes('.mov') || 
+                       firstUrl.includes('.webm') || firstUrl.includes('.m4v');
+        postType = isVideo ? 'video' : 'image';
+      }
+
       const { data, error } = await supabase
         .from('health_feed_posts')
         .insert({
@@ -183,7 +192,7 @@ export function useFeedPosts() {
           content,
           tags,
           media_urls: mediaUrls || [],
-          post_type: 'text',
+          post_type: postType,
           visibility: 'public',
           likes_count: 0,
           comments_count: 0,

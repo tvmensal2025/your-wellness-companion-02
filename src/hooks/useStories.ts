@@ -151,13 +151,9 @@ export function useStories() {
     }
 
     try {
-      // For text stories, use a placeholder URL since media_url is NOT NULL
-      const finalMediaUrl = mediaType === 'text' ? 'text-story' : mediaUrl;
-      
-      if (!finalMediaUrl) {
-        toast.error('URL da mídia é obrigatória');
-        return null;
-      }
+      // For text stories, use empty string for media_url since it's NOT NULL
+      // The StoryViewer will check media_type to decide what to render
+      const finalMediaUrl = mediaType === 'text' ? '' : mediaUrl;
 
       const { data, error } = await supabase
         .from('health_feed_stories')

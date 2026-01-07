@@ -87,8 +87,8 @@ export default function HealthFeedPage() {
     };
   }, [ranking, user]);
 
-  const handleCreatePost = async (content: string, tags: string[]) => {
-    await createPost(content, tags);
+  const handleCreatePost = async (content: string, tags: string[], mediaUrls?: string[]) => {
+    await createPost(content, tags, mediaUrls);
   };
 
   const handleLike = (postId: string) => {
@@ -306,6 +306,7 @@ export default function HealthFeedPage() {
             <FloatingCreateButton
               userName={userName}
               onCreatePost={handleCreatePost}
+              onOpenStoryModal={() => setCreateStoryOpen(true)}
             />
           </TabsContent>
 
