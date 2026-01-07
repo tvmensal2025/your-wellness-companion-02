@@ -13,7 +13,7 @@ interface MiniWeightChartProps {
 }
 
 export const MiniWeightChart: React.FC<MiniWeightChartProps> = ({ data, className = '' }) => {
-  if (!data || data.length < 2) {
+  if (!data || data.length < 1) {
     return null;
   }
 

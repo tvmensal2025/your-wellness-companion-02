@@ -348,7 +348,7 @@ export const FollowingList: React.FC<FollowingListProps> = ({ onProfileClick, on
                   {/* Gráfico mini e conquistas */}
                   <div className="flex items-center gap-3 mt-2 flex-wrap">
                     {/* Mini Weight Chart */}
-                    {followedUser.show_weight_results && followedUser.weightHistory && followedUser.weightHistory.length >= 2 && (
+                    {followedUser.show_weight_results && followedUser.weightHistory && followedUser.weightHistory.length >= 1 && (
                       <div className="w-32" onClick={(e) => e.stopPropagation()}>
                         <MiniWeightChart data={followedUser.weightHistory} />
                       </div>
