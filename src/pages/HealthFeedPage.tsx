@@ -34,6 +34,7 @@ import { MessageButton } from '@/components/community/MessageButton';
 import { DirectMessagesModal } from '@/components/community/DirectMessagesModal';
 import { NotificationBell } from '@/components/community/NotificationBell';
 import { SharePostModal } from '@/components/community/SharePostModal';
+import { UserProfileModal } from '@/components/community/UserProfileModal';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 
@@ -48,6 +49,8 @@ export default function HealthFeedPage() {
   const [dmModalOpen, setDmModalOpen] = useState(false);
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [sharePostData, setSharePostData] = useState<any>(null);
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
+  const [selectedProfileId, setSelectedProfileId] = useState<string | null>(null);
 
   const { user } = useAuth();
   const { ranking, loading: rankingLoading } = useRanking();
@@ -326,6 +329,13 @@ export default function HealthFeedPage() {
                           onComment={handleComment}
                           onShare={handleShare}
                           onSave={() => {}}
+                          onProfileClick={(userId) => {
+                            setSelectedProfileId(userId);
+                            setProfileModalOpen(true);
+                          }}
+                          onFollowUser={handleFollowUser}
+                          isFollowing={isFollowing(post.visibleUserId || '')}
+                          isOwnPost={post.visibleUserId === user?.id}
                         />
                       </div>
                     ))
@@ -524,6 +534,22 @@ export default function HealthFeedPage() {
             post={sharePostData}
           />
         )}
+
+        {/* User Profile Modal */}
+        <UserProfileModal
+          open={profileModalOpen}
+          onOpenChange={setProfileModalOpen}
+          userId={selectedProfileId}
+          isFollowing={selectedProfileId ? isFollowing(selectedProfileId) : false}
+          onFollow={() => {
+            if (selectedProfileId) handleFollowUser(selectedProfileId);
+          }}
+          onMessage={() => {
+            setProfileModalOpen(false);
+            setDmModalOpen(true);
+          }}
+          isOwnProfile={selectedProfileId === user?.id}
+        />
       </div>
     </div>
   );

@@ -14,7 +14,9 @@ import {
   Send,
   Bookmark,
   ChevronDown,
-  Pin
+  Pin,
+  UserPlus,
+  UserMinus,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -37,6 +39,7 @@ interface PollOption {
 
 interface Post {
   id: string;
+  visibleUserId?: string;
   userName: string;
   userAvatar?: string;
   userLevel: string;
@@ -76,6 +79,10 @@ interface FeedPostCardProps {
   onComment: (postId: string, comment: string) => void;
   onShare: (postId: string) => void;
   onSave: (postId: string) => void;
+  onProfileClick?: (userId: string) => void;
+  onFollowUser?: (userId: string) => void;
+  isFollowing?: boolean;
+  isOwnPost?: boolean;
 }
 
 export const FeedPostCard: React.FC<FeedPostCardProps> = ({
@@ -83,7 +90,11 @@ export const FeedPostCard: React.FC<FeedPostCardProps> = ({
   onLike,
   onComment,
   onShare,
-  onSave
+  onSave,
+  onProfileClick,
+  onFollowUser,
+  isFollowing = false,
+  isOwnPost = false,
 }) => {
   const [isExpanded, setIsExpanded] = useState(true);
   const [showComments, setShowComments] = useState(false);
@@ -199,7 +210,15 @@ export const FeedPostCard: React.FC<FeedPostCardProps> = ({
         >
           <CardContent className="p-3">
             <div className="flex items-center gap-3">
-              <Avatar className="w-9 h-9 flex-shrink-0">
+              <Avatar 
+                className="w-9 h-9 flex-shrink-0 cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (post.visibleUserId && onProfileClick) {
+                    onProfileClick(post.visibleUserId);
+                  }
+                }}
+              >
                 <AvatarImage src={post.userAvatar} />
                 <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs">
                   {post.userName?.charAt(0)?.toUpperCase()}
@@ -207,7 +226,17 @@ export const FeedPostCard: React.FC<FeedPostCardProps> = ({
               </Avatar>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-0.5">
-                  <span className="font-semibold text-foreground text-sm">{post.userName}</span>
+                  <span 
+                    className="font-semibold text-foreground text-sm cursor-pointer hover:text-primary transition-colors"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (post.visibleUserId && onProfileClick) {
+                        onProfileClick(post.visibleUserId);
+                      }
+                    }}
+                  >
+                    {post.userName}
+                  </span>
                   {post.isPinned && <Pin className="w-3 h-3 text-primary" />}
                   <span className="text-[10px] text-muted-foreground">{formatTimeAgo(post.createdAt)}</span>
                 </div>
@@ -248,7 +277,14 @@ export const FeedPostCard: React.FC<FeedPostCardProps> = ({
         <CardHeader className="pb-2 px-3 sm:px-6 pt-3 sm:pt-6">
           <div className="flex items-start justify-between">
             <div className="flex gap-2 sm:gap-3">
-              <Avatar className="w-9 h-9 sm:w-10 sm:h-10">
+              <Avatar 
+                className="w-9 h-9 sm:w-10 sm:h-10 cursor-pointer hover:ring-2 hover:ring-primary/50 transition-all"
+                onClick={() => {
+                  if (post.visibleUserId && onProfileClick) {
+                    onProfileClick(post.visibleUserId);
+                  }
+                }}
+              >
                 <AvatarImage src={post.userAvatar} />
                 <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs sm:text-sm">
                   {post.userName?.charAt(0)?.toUpperCase()}
@@ -256,10 +292,43 @@ export const FeedPostCard: React.FC<FeedPostCardProps> = ({
               </Avatar>
               <div>
                 <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
-                  <span className="font-semibold text-foreground text-sm sm:text-base">{post.userName}</span>
+                  <span 
+                    className="font-semibold text-foreground text-sm sm:text-base cursor-pointer hover:text-primary transition-colors"
+                    onClick={() => {
+                      if (post.visibleUserId && onProfileClick) {
+                        onProfileClick(post.visibleUserId);
+                      }
+                    }}
+                  >
+                    {post.userName}
+                  </span>
                   <Badge variant="secondary" className="text-[10px] sm:text-xs bg-primary/10 text-primary">
                     {post.userLevel}
                   </Badge>
+                  {/* Follow Button */}
+                  {!isOwnPost && post.visibleUserId && onFollowUser && (
+                    <Button
+                      variant={isFollowing ? "outline" : "ghost"}
+                      size="sm"
+                      className="h-6 px-2 text-[10px] sm:text-xs gap-1"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onFollowUser(post.visibleUserId!);
+                      }}
+                    >
+                      {isFollowing ? (
+                        <>
+                          <UserMinus className="w-3 h-3" />
+                          <span className="hidden sm:inline">Seguindo</span>
+                        </>
+                      ) : (
+                        <>
+                          <UserPlus className="w-3 h-3" />
+                          <span className="hidden sm:inline">Seguir</span>
+                        </>
+                      )}
+                    </Button>
+                  )}
                 </div>
                 <div className="flex items-center gap-1 sm:gap-2 text-[10px] sm:text-xs text-muted-foreground">
                   <span>{formatTimeAgo(post.createdAt)}</span>
