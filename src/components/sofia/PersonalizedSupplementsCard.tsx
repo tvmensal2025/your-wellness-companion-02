@@ -516,7 +516,7 @@ export const PersonalizedSupplementsCard: React.FC = () => {
                         </span>
                       </div>
                     </div>
-                    <Button className="bg-emerald-600 hover:bg-emerald-700 text-white">
+                    <Button className="bg-gradient-to-r from-emerald-500 via-emerald-600 to-teal-600 hover:from-emerald-600 hover:via-emerald-700 hover:to-teal-700 text-white font-semibold shadow-lg shadow-emerald-500/30 transition-all duration-300 hover:scale-105 hover:shadow-xl px-6">
                       <ShoppingCart className="w-4 h-4 mr-2" />
                       Comprar
                     </Button>
