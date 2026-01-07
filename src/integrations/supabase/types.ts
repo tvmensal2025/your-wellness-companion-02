@@ -10082,10 +10082,18 @@ export type Database = {
           sms_notifications: boolean | null
           updated_at: string | null
           user_id: string
+          whatsapp_challenges_enabled: boolean | null
+          whatsapp_challenges_time: string | null
           whatsapp_daily_motivation: boolean | null
           whatsapp_daily_time: string | null
           whatsapp_enabled: boolean | null
+          whatsapp_goals_enabled: boolean | null
+          whatsapp_goals_time: string | null
+          whatsapp_mission_enabled: boolean | null
+          whatsapp_mission_time: string | null
           whatsapp_reminders: boolean | null
+          whatsapp_water_enabled: boolean | null
+          whatsapp_water_times: string[] | null
           whatsapp_weekly_day: number | null
           whatsapp_weekly_report: boolean | null
         }
@@ -10101,10 +10109,18 @@ export type Database = {
           sms_notifications?: boolean | null
           updated_at?: string | null
           user_id: string
+          whatsapp_challenges_enabled?: boolean | null
+          whatsapp_challenges_time?: string | null
           whatsapp_daily_motivation?: boolean | null
           whatsapp_daily_time?: string | null
           whatsapp_enabled?: boolean | null
+          whatsapp_goals_enabled?: boolean | null
+          whatsapp_goals_time?: string | null
+          whatsapp_mission_enabled?: boolean | null
+          whatsapp_mission_time?: string | null
           whatsapp_reminders?: boolean | null
+          whatsapp_water_enabled?: boolean | null
+          whatsapp_water_times?: string[] | null
           whatsapp_weekly_day?: number | null
           whatsapp_weekly_report?: boolean | null
         }
@@ -10120,10 +10136,18 @@ export type Database = {
           sms_notifications?: boolean | null
           updated_at?: string | null
           user_id?: string
+          whatsapp_challenges_enabled?: boolean | null
+          whatsapp_challenges_time?: string | null
           whatsapp_daily_motivation?: boolean | null
           whatsapp_daily_time?: string | null
           whatsapp_enabled?: boolean | null
+          whatsapp_goals_enabled?: boolean | null
+          whatsapp_goals_time?: string | null
+          whatsapp_mission_enabled?: boolean | null
+          whatsapp_mission_time?: string | null
           whatsapp_reminders?: boolean | null
+          whatsapp_water_enabled?: boolean | null
+          whatsapp_water_times?: string[] | null
           whatsapp_weekly_day?: number | null
           whatsapp_weekly_report?: boolean | null
         }
