@@ -1,44 +1,75 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Scale } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface SimpleWeightFormData {
   weight: number;
-  height: number;
   waist: number;
 }
 
 interface SimpleWeightFormProps {
-  onSubmit?: (data: SimpleWeightFormData) => void;
+  onSubmit?: (data: SimpleWeightFormData & { height: number }) => void;
 }
 
 const SimpleWeightForm: React.FC<SimpleWeightFormProps> = ({ onSubmit }) => {
   const [weight, setWeight] = useState('');
-  const [height, setHeight] = useState('');
   const [waist, setWaist] = useState('');
+  const [userHeight, setUserHeight] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Buscar altura do usuário do sistema
+  useEffect(() => {
+    const fetchUserHeight = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data } = await supabase
+        .from('dados_físicos_do_usuário')
+        .select('altura_cm')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (data?.altura_cm) {
+        setUserHeight(data.altura_cm);
+      } else {
+        // Fallback: buscar do profiles
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('height')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (profile?.height) {
+          setUserHeight(profile.height);
+        }
+      }
+    };
+
+    fetchUserHeight();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const w = parseFloat(weight.replace(',', '.'));
-    const h = parseFloat(height.replace(',', '.'));
     const wc = parseFloat(waist.replace(',', '.'));
 
     if (!w || isNaN(w) || w < 30 || w > 300) return;
-    if (!h || isNaN(h) || h < 100 || h > 250) return;
     if (!wc || isNaN(wc) || wc < 40 || wc > 200) return;
+
+    // Usar altura do sistema ou um valor padrão
+    const height = userHeight || 170;
 
     setIsSubmitting(true);
 
     try {
-      await onSubmit?.({ weight: w, height: h, waist: wc });
+      await onSubmit?.({ weight: w, waist: wc, height });
 
       // Reset form (só após sucesso)
       setWeight('');
-      setHeight('');
       setWaist('');
     } finally {
       setIsSubmitting(false);
@@ -47,7 +78,7 @@ const SimpleWeightForm: React.FC<SimpleWeightFormProps> = ({ onSubmit }) => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <Label htmlFor="weight" className="text-foreground">
             Peso atual (kg)
@@ -61,22 +92,6 @@ const SimpleWeightForm: React.FC<SimpleWeightFormProps> = ({ onSubmit }) => {
             value={weight}
             onChange={(e) => setWeight(e.target.value)}
             placeholder="Ex: 70.5"
-          />
-        </div>
-
-        <div>
-          <Label htmlFor="height" className="text-foreground">
-            Altura (cm)
-          </Label>
-          <Input
-            id="height"
-            type="number"
-            step="0.1"
-            min="100"
-            max="250"
-            value={height}
-            onChange={(e) => setHeight(e.target.value)}
-            placeholder="Ex: 170"
           />
         </div>
 
@@ -96,6 +111,12 @@ const SimpleWeightForm: React.FC<SimpleWeightFormProps> = ({ onSubmit }) => {
           />
         </div>
       </div>
+
+      {userHeight && (
+        <p className="text-xs text-muted-foreground">
+          📏 Altura registrada no sistema: {userHeight} cm
+        </p>
+      )}
 
       <Button
         type="submit"
