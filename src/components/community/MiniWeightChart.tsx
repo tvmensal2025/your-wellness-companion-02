@@ -1,6 +1,6 @@
 import React from 'react';
-import { LineChart, Line, ResponsiveContainer, Tooltip } from 'recharts';
-import { TrendingDown, TrendingUp } from 'lucide-react';
+import { AreaChart, Area, ResponsiveContainer, Tooltip, ReferenceDot } from 'recharts';
+import { TrendingDown, TrendingUp, Minus } from 'lucide-react';
 
 interface WeightDataPoint {
   date: string;
@@ -29,17 +29,24 @@ export const MiniWeightChart: React.FC<MiniWeightChartProps> = ({ data, classNam
   const lastWeight = chartData[chartData.length - 1]?.peso || 0;
   const trend = lastWeight - firstWeight;
   const isPositive = trend < 0; // Perda de peso é positiva (negativa em kg)
+  const isStable = Math.abs(trend) < 0.1;
 
   // Cores baseadas na tendência
-  const lineColor = isPositive ? '#10b981' : '#f97316'; // verde para perda, laranja para ganho
+  const getGradientColors = () => {
+    if (isStable) return { start: '#6b7280', end: '#9ca3af' };
+    if (isPositive) return { start: '#10b981', end: '#34d399' };
+    return { start: '#f97316', end: '#fb923c' };
+  };
+
+  const colors = getGradientColors();
 
   // Formatar tooltip
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-background border border-border rounded-lg p-2 shadow-lg">
-          <p className="text-xs font-semibold">{`${payload[0].value.toFixed(1)} kg`}</p>
-          <p className="text-[10px] text-muted-foreground">
+        <div className="bg-popover/95 backdrop-blur-sm border border-border rounded-lg p-2.5 shadow-xl">
+          <p className="text-sm font-bold text-foreground">{`${payload[0].value.toFixed(1)} kg`}</p>
+          <p className="text-[10px] text-muted-foreground mt-0.5">
             {chartData[payload[0].payload.index]?.date}
           </p>
         </div>
@@ -48,42 +55,102 @@ export const MiniWeightChart: React.FC<MiniWeightChartProps> = ({ data, classNam
     return null;
   };
 
+  const TrendIcon = isStable ? Minus : isPositive ? TrendingDown : TrendingUp;
+
   return (
     <div className={`relative ${className}`}>
-      <div className="flex items-center gap-2 mb-1">
-        <div className="flex items-center gap-1">
-          {isPositive ? (
-            <TrendingDown className="w-3 h-3 text-green-600 dark:text-green-400" />
-          ) : (
-            <TrendingUp className="w-3 h-3 text-orange-600 dark:text-orange-400" />
-          )}
-          <span className={`text-[10px] font-medium ${
-            isPositive 
-              ? 'text-green-600 dark:text-green-400' 
-              : 'text-orange-600 dark:text-orange-400'
+      {/* Header with trend indicator */}
+      <div className="flex items-center justify-between mb-1.5">
+        <div className="flex items-center gap-1.5">
+          <TrendIcon className={`w-3.5 h-3.5 ${
+            isStable 
+              ? 'text-muted-foreground' 
+              : isPositive 
+                ? 'text-green-500 dark:text-green-400' 
+                : 'text-orange-500 dark:text-orange-400'
+          }`} />
+          <span className={`text-[11px] font-semibold ${
+            isStable 
+              ? 'text-muted-foreground' 
+              : isPositive 
+                ? 'text-green-600 dark:text-green-400' 
+                : 'text-orange-600 dark:text-orange-400'
           }`}>
-            {Math.abs(trend).toFixed(1)}kg
+            {isStable ? 'Estável' : `${trend > 0 ? '+' : ''}${trend.toFixed(1)}kg`}
           </span>
         </div>
+        <span className="text-[9px] text-muted-foreground">
+          {chartData.length} med.
+        </span>
       </div>
       
-      <div style={{ width: '100%', height: '60px' }}>
+      {/* Chart container with enhanced styling */}
+      <div className="relative" style={{ width: '100%', height: '55px' }}>
+        {/* Subtle grid background */}
+        <div className="absolute inset-0 opacity-30">
+          <div className="w-full h-full" style={{
+            backgroundImage: 'linear-gradient(to right, hsl(var(--muted)/0.3) 1px, transparent 1px), linear-gradient(to bottom, hsl(var(--muted)/0.3) 1px, transparent 1px)',
+            backgroundSize: '20% 33%'
+          }} />
+        </div>
+        
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={chartData} margin={{ top: 2, right: 2, left: 2, bottom: 2 }}>
+          <AreaChart data={chartData} margin={{ top: 4, right: 4, left: 4, bottom: 4 }}>
+            <defs>
+              <linearGradient id={`colorGradient-${isPositive ? 'pos' : 'neg'}`} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={colors.start} stopOpacity={0.4} />
+                <stop offset="100%" stopColor={colors.end} stopOpacity={0.05} />
+              </linearGradient>
+              <filter id="glow">
+                <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                <feMerge>
+                  <feMergeNode in="coloredBlur"/>
+                  <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+              </filter>
+            </defs>
             <Tooltip content={<CustomTooltip />} />
-            <Line
+            <Area
               type="monotone"
               dataKey="peso"
-              stroke={lineColor}
+              stroke={colors.start}
               strokeWidth={2}
+              fill={`url(#colorGradient-${isPositive ? 'pos' : 'neg'})`}
               dot={false}
-              activeDot={{ r: 3, fill: lineColor }}
-              animationDuration={500}
+              activeDot={{ 
+                r: 4, 
+                fill: colors.start, 
+                stroke: 'white', 
+                strokeWidth: 2,
+                filter: 'url(#glow)'
+              }}
+              animationDuration={800}
+              animationEasing="ease-out"
             />
-          </LineChart>
+            {/* Start and end point indicators */}
+            {chartData.length > 1 && (
+              <>
+                <ReferenceDot 
+                  x={0} 
+                  y={chartData[0]?.peso} 
+                  r={3} 
+                  fill="hsl(var(--muted-foreground))" 
+                  stroke="white" 
+                  strokeWidth={1.5}
+                />
+                <ReferenceDot 
+                  x={chartData.length - 1} 
+                  y={chartData[chartData.length - 1]?.peso} 
+                  r={4} 
+                  fill={colors.start} 
+                  stroke="white" 
+                  strokeWidth={2}
+                />
+              </>
+            )}
+          </AreaChart>
         </ResponsiveContainer>
       </div>
     </div>
   );
 };
-

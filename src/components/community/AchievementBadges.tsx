@@ -1,6 +1,7 @@
 import React from 'react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Trophy, Award, Star, Crown } from 'lucide-react';
+import { Trophy, Award, Star, Crown, Sparkles } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface Achievement {
   id: string;
@@ -22,31 +23,43 @@ const getRarityConfig = (rarity?: string) => {
   switch (rarity) {
     case 'legendary':
       return {
-        bgColor: 'bg-gradient-to-br from-yellow-500/20 to-orange-500/20',
-        borderColor: 'border-yellow-500/50',
-        textColor: 'text-yellow-600 dark:text-yellow-400',
+        bgGradient: 'from-yellow-400 via-amber-500 to-orange-500',
+        borderColor: 'border-yellow-400/60',
+        textColor: 'text-yellow-100',
+        shadowColor: 'shadow-yellow-500/30',
+        glowColor: 'yellow',
         icon: Crown,
+        label: 'Lendário'
       };
     case 'epic':
       return {
-        bgColor: 'bg-gradient-to-br from-purple-500/20 to-pink-500/20',
-        borderColor: 'border-purple-500/50',
-        textColor: 'text-purple-600 dark:text-purple-400',
+        bgGradient: 'from-purple-500 via-violet-500 to-fuchsia-500',
+        borderColor: 'border-purple-400/60',
+        textColor: 'text-purple-100',
+        shadowColor: 'shadow-purple-500/30',
+        glowColor: 'purple',
         icon: Trophy,
+        label: 'Épico'
       };
     case 'rare':
       return {
-        bgColor: 'bg-gradient-to-br from-blue-500/20 to-cyan-500/20',
-        borderColor: 'border-blue-500/50',
-        textColor: 'text-blue-600 dark:text-blue-400',
+        bgGradient: 'from-blue-400 via-cyan-500 to-teal-500',
+        borderColor: 'border-blue-400/60',
+        textColor: 'text-blue-100',
+        shadowColor: 'shadow-blue-500/30',
+        glowColor: 'blue',
         icon: Award,
+        label: 'Raro'
       };
     default: // common
       return {
-        bgColor: 'bg-muted/50',
-        borderColor: 'border-muted',
-        textColor: 'text-muted-foreground',
+        bgGradient: 'from-gray-400 via-gray-500 to-slate-500',
+        borderColor: 'border-gray-400/40',
+        textColor: 'text-gray-100',
+        shadowColor: 'shadow-gray-500/20',
+        glowColor: 'gray',
         icon: Star,
+        label: 'Comum'
       };
   }
 };
@@ -64,57 +77,103 @@ export const AchievementBadges: React.FC<AchievementBadgesProps> = ({
 
   return (
     <TooltipProvider>
-      <div className={`flex items-center gap-1.5 ${className}`}>
-        {displayAchievements.map((achievement) => {
+      <div className={`flex items-center gap-2 ${className}`}>
+        {displayAchievements.map((achievement, index) => {
           const config = getRarityConfig(achievement.rarity);
           const IconComponent = config.icon;
 
           return (
             <Tooltip key={achievement.id}>
               <TooltipTrigger asChild>
-                <div
+                <motion.div
+                  initial={{ scale: 0, rotate: -180 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  transition={{ 
+                    delay: index * 0.1, 
+                    type: "spring", 
+                    stiffness: 200,
+                    damping: 15
+                  }}
+                  whileHover={{ 
+                    scale: 1.2, 
+                    rotate: [0, -10, 10, 0],
+                    transition: { duration: 0.3 }
+                  }}
                   className={`
-                    w-7 h-7 rounded-full 
-                    ${config.bgColor} 
-                    border ${config.borderColor}
+                    relative w-9 h-9 rounded-full 
+                    bg-gradient-to-br ${config.bgGradient}
+                    border-2 ${config.borderColor}
                     flex items-center justify-center
                     cursor-pointer
-                    hover:scale-110 transition-transform
+                    shadow-lg ${config.shadowColor}
                     ${config.textColor}
+                    group/badge
                   `}
                 >
-                  {achievement.icon ? (
-                    <span className="text-xs">{achievement.icon}</span>
-                  ) : (
-                    <IconComponent className="w-3.5 h-3.5" />
+                  {/* Glow effect */}
+                  <div className={`absolute inset-0 rounded-full bg-gradient-to-br ${config.bgGradient} opacity-0 group-hover/badge:opacity-50 blur-md transition-opacity duration-300`} />
+                  
+                  {/* Sparkle effect on legendary */}
+                  {achievement.rarity === 'legendary' && (
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                      className="absolute inset-0 flex items-center justify-center"
+                    >
+                      <Sparkles className="w-3 h-3 absolute -top-0.5 -right-0.5 text-yellow-300" />
+                    </motion.div>
                   )}
-                </div>
+                  
+                  {/* Icon */}
+                  <div className="relative z-10">
+                    {achievement.icon ? (
+                      <span className="text-sm">{achievement.icon}</span>
+                    ) : (
+                      <IconComponent className="w-4 h-4" />
+                    )}
+                  </div>
+                </motion.div>
               </TooltipTrigger>
-              <TooltipContent side="top" className="max-w-[200px]">
-                <p className="font-semibold text-xs">{achievement.name}</p>
-                {achievement.description && (
-                  <p className="text-[10px] text-muted-foreground mt-0.5">
-                    {achievement.description}
-                  </p>
-                )}
-                {achievement.rarity && (
-                  <p className="text-[10px] text-muted-foreground mt-1 capitalize">
-                    {achievement.rarity}
-                  </p>
-                )}
+              <TooltipContent 
+                side="top" 
+                className="max-w-[220px] bg-popover/95 backdrop-blur-sm border border-border shadow-xl"
+              >
+                <div className="flex items-start gap-2">
+                  <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${config.bgGradient} flex items-center justify-center ${config.textColor} shadow-md`}>
+                    <IconComponent className="w-4 h-4" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-bold text-sm text-foreground">{achievement.name}</p>
+                    {achievement.description && (
+                      <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">
+                        {achievement.description}
+                      </p>
+                    )}
+                    <div className={`inline-flex items-center gap-1 mt-1.5 text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-gradient-to-r ${config.bgGradient} ${config.textColor}`}>
+                      <IconComponent className="w-2.5 h-2.5" />
+                      {config.label}
+                    </div>
+                  </div>
+                </div>
               </TooltipContent>
             </Tooltip>
           );
         })}
+        
+        {/* More achievements indicator */}
         {achievements.length > maxDisplay && (
-          <div className="w-7 h-7 rounded-full bg-muted/30 border border-muted flex items-center justify-center">
-            <span className="text-[10px] text-muted-foreground font-medium">
+          <motion.div 
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: maxDisplay * 0.1 }}
+            className="w-9 h-9 rounded-full bg-gradient-to-br from-muted/60 to-muted/30 border-2 border-muted/50 flex items-center justify-center shadow-md backdrop-blur-sm"
+          >
+            <span className="text-xs text-muted-foreground font-bold">
               +{achievements.length - maxDisplay}
             </span>
-          </div>
+          </motion.div>
         )}
       </div>
     </TooltipProvider>
   );
 };
-
