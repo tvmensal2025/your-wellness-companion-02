@@ -1,11 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import {
-  Heart,
   MessageCircle,
   Share2,
   MoreHorizontal,
@@ -14,7 +13,8 @@ import {
   TrendingUp,
   Send,
   Bookmark,
-  ChevronDown
+  ChevronDown,
+  Pin
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -23,6 +23,17 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { ReactionPicker, ReactionDisplay } from './ReactionPicker';
+import { TextWithLinks } from './LinkPreview';
+import { PollComponent, Poll } from './PollComponent';
+import { MentionInput, renderTextWithMentions } from './MentionInput';
+import { supabase } from '@/integrations/supabase/client';
+import type { Json } from '@/integrations/supabase/types';
+
+interface PollOption {
+  text: string;
+  votes: number;
+}
 
 interface Post {
   id: string;
@@ -39,6 +50,7 @@ interface Post {
   isLiked: boolean;
   isSaved: boolean;
   createdAt: string;
+  isPinned?: boolean;
   achievementData?: {
     title: string;
     value: number;
@@ -73,17 +85,65 @@ export const FeedPostCard: React.FC<FeedPostCardProps> = ({
   onShare,
   onSave
 }) => {
-  const [isExpanded, setIsExpanded] = useState(true); // Changed to true by default
+  const [isExpanded, setIsExpanded] = useState(true);
   const [showComments, setShowComments] = useState(false);
   const [newComment, setNewComment] = useState('');
+  const [mentions, setMentions] = useState<string[]>([]);
   const [isLiked, setIsLiked] = useState(post.isLiked);
   const [likesCount, setLikesCount] = useState(post.likes);
   const [isSaved, setIsSaved] = useState(post.isSaved);
+  const [poll, setPoll] = useState<Poll | null>(null);
+  const [reactions, setReactions] = useState<Record<string, number>>({});
 
-  const handleLike = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setIsLiked(!isLiked);
-    setLikesCount(prev => isLiked ? prev - 1 : prev + 1);
+  // Fetch poll if exists
+  useEffect(() => {
+    const fetchPoll = async () => {
+      const { data } = await supabase
+        .from('health_feed_polls')
+        .select('*')
+        .eq('post_id', post.id)
+        .maybeSingle();
+      
+      if (data) {
+        setPoll({
+          id: data.id,
+          post_id: data.post_id,
+          question: data.question,
+          options: data.options as unknown as PollOption[],
+          ends_at: data.ends_at || undefined,
+          created_at: data.created_at
+        });
+      }
+    };
+    fetchPoll();
+  }, [post.id]);
+
+  // Fetch reactions
+  useEffect(() => {
+    const fetchReactions = async () => {
+      const { data } = await supabase
+        .from('health_feed_reactions')
+        .select('reaction_type')
+        .eq('post_id', post.id);
+      
+      if (data) {
+        const counts: Record<string, number> = {};
+        data.forEach(r => {
+          counts[r.reaction_type] = (counts[r.reaction_type] || 0) + 1;
+        });
+        setReactions(counts);
+      }
+    };
+    fetchReactions();
+  }, [post.id]);
+
+  const handleReaction = async (reactionType: string) => {
+    setIsLiked(true);
+    setLikesCount(prev => prev + 1);
+    setReactions(prev => ({
+      ...prev,
+      [reactionType]: (prev[reactionType] || 0) + 1
+    }));
     onLike(post.id);
   };
 
@@ -96,7 +156,13 @@ export const FeedPostCard: React.FC<FeedPostCardProps> = ({
     if (newComment.trim()) {
       onComment(post.id, newComment);
       setNewComment('');
+      setMentions([]);
     }
+  };
+
+  const handleCommentChange = (value: string, newMentions: string[]) => {
+    setNewComment(value);
+    setMentions(newMentions);
   };
 
   const formatTimeAgo = (dateString: string) => {
@@ -117,6 +183,8 @@ export const FeedPostCard: React.FC<FeedPostCardProps> = ({
     ? post.content.slice(0, maxLength) + '...' 
     : post.content;
 
+  const totalReactions = Object.values(reactions).reduce((a, b) => a + b, 0) || likesCount;
+
   // Collapsed View
   if (!isExpanded) {
     return (
@@ -126,32 +194,27 @@ export const FeedPostCard: React.FC<FeedPostCardProps> = ({
         transition={{ duration: 0.2 }}
       >
         <Card 
-          className="mb-2 overflow-hidden hover:shadow-md transition-all border-blue-200/50 dark:border-blue-800/50 bg-white dark:bg-card cursor-pointer hover:bg-blue-50/30 dark:hover:bg-blue-950/20"
+          className="mb-2 overflow-hidden hover:shadow-md transition-all border-primary/20 bg-card cursor-pointer hover:bg-primary/5"
           onClick={() => setIsExpanded(true)}
         >
           <CardContent className="p-3">
             <div className="flex items-center gap-3">
               <Avatar className="w-9 h-9 flex-shrink-0">
                 <AvatarImage src={post.userAvatar} />
-                <AvatarFallback className="bg-blue-100 dark:bg-blue-900/50 text-blue-600 font-semibold text-xs">
+                <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs">
                   {post.userName?.charAt(0)?.toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-0.5">
                   <span className="font-semibold text-foreground text-sm">{post.userName}</span>
+                  {post.isPinned && <Pin className="w-3 h-3 text-primary" />}
                   <span className="text-[10px] text-muted-foreground">{formatTimeAgo(post.createdAt)}</span>
                 </div>
                 <p className="text-xs text-muted-foreground line-clamp-1">{displayContent}</p>
               </div>
               <div className="flex items-center gap-3 flex-shrink-0">
-                <button 
-                  className="flex items-center gap-1 text-xs text-muted-foreground hover:text-blue-600"
-                  onClick={handleLike}
-                >
-                  <Heart className={`w-3.5 h-3.5 ${isLiked ? 'text-blue-600 fill-current' : ''}`} />
-                  <span>{likesCount}</span>
-                </button>
+                <ReactionDisplay reactions={reactions} totalCount={totalReactions} />
                 <div className="flex items-center gap-1 text-xs text-muted-foreground">
                   <MessageCircle className="w-3.5 h-3.5" />
                   <span>{post.comments}</span>
@@ -172,21 +235,29 @@ export const FeedPostCard: React.FC<FeedPostCardProps> = ({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <Card className="mb-3 sm:mb-4 overflow-hidden hover:shadow-md transition-shadow border-blue-200/50 dark:border-blue-800/50 bg-white dark:bg-card">
+      <Card className="mb-3 sm:mb-4 overflow-hidden hover:shadow-md transition-shadow border-primary/20 bg-card">
+        {/* Pinned Badge */}
+        {post.isPinned && (
+          <div className="bg-primary/10 px-4 py-1.5 flex items-center gap-2 text-xs text-primary font-medium">
+            <Pin className="w-3 h-3" />
+            Post Fixado
+          </div>
+        )}
+
         {/* Header */}
         <CardHeader className="pb-2 px-3 sm:px-6 pt-3 sm:pt-6">
           <div className="flex items-start justify-between">
             <div className="flex gap-2 sm:gap-3">
               <Avatar className="w-9 h-9 sm:w-10 sm:h-10">
                 <AvatarImage src={post.userAvatar} />
-                <AvatarFallback className="bg-blue-100 dark:bg-blue-900/50 text-blue-600 font-semibold text-xs sm:text-sm">
+                <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs sm:text-sm">
                   {post.userName?.charAt(0)?.toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               <div>
                 <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
                   <span className="font-semibold text-foreground text-sm sm:text-base">{post.userName}</span>
-                  <Badge variant="secondary" className="text-[10px] sm:text-xs bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300">
+                  <Badge variant="secondary" className="text-[10px] sm:text-xs bg-primary/10 text-primary">
                     {post.userLevel}
                   </Badge>
                 </div>
@@ -209,14 +280,14 @@ export const FeedPostCard: React.FC<FeedPostCardProps> = ({
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="h-7 text-xs text-blue-600 hover:bg-blue-50"
+                className="h-7 text-xs text-primary hover:bg-primary/10"
                 onClick={(e) => { e.stopPropagation(); setIsExpanded(false); }}
               >
                 Recolher
               </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-7 w-7 sm:h-8 sm:w-8 text-blue-600 hover:bg-blue-50">
+                  <Button variant="ghost" size="icon" className="h-7 w-7 sm:h-8 sm:w-8 text-primary hover:bg-primary/10">
                     <MoreHorizontal className="w-4 h-4" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -233,21 +304,23 @@ export const FeedPostCard: React.FC<FeedPostCardProps> = ({
         </CardHeader>
 
         <CardContent className="space-y-2 sm:space-y-3 px-3 sm:px-6 pb-3 sm:pb-6">
-          {/* Content */}
-          <p className="text-foreground leading-relaxed text-sm sm:text-base">{post.content}</p>
+          {/* Content with link previews and mentions */}
+          <div className="text-foreground leading-relaxed text-sm sm:text-base">
+            <TextWithLinks text={post.content} showPreview />
+          </div>
 
           {/* Achievement Card */}
           {post.achievementData && (
             <motion.div
               initial={{ scale: 0.95 }}
               animate={{ scale: 1 }}
-              className="bg-gradient-to-r from-blue-100 to-blue-50 dark:from-blue-950/50 dark:to-blue-900/30 p-3 sm:p-4 rounded-xl border border-blue-200/50 dark:border-blue-800/50"
+              className="bg-gradient-to-r from-primary/10 to-accent/10 p-3 sm:p-4 rounded-xl border border-primary/20"
             >
               <div className="flex items-center gap-2 mb-2">
-                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-blue-500/20 flex items-center justify-center">
-                  <Trophy className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600" />
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                  <Trophy className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
                 </div>
-                <span className="font-semibold text-blue-700 dark:text-blue-400 text-sm sm:text-base">Conquista Desbloqueada!</span>
+                <span className="font-semibold text-primary text-sm sm:text-base">Conquista Desbloqueada!</span>
               </div>
               <p className="text-xl sm:text-2xl font-bold text-foreground">
                 {post.achievementData.value.toLocaleString()} {post.achievementData.unit}
@@ -258,9 +331,9 @@ export const FeedPostCard: React.FC<FeedPostCardProps> = ({
 
           {/* Progress Card */}
           {post.progressData && (
-            <div className="bg-blue-50/50 dark:bg-blue-950/20 p-3 sm:p-4 rounded-xl border border-blue-200/30 dark:border-blue-800/30">
+            <div className="bg-muted/50 p-3 sm:p-4 rounded-xl border border-border">
               <div className="flex items-center gap-2 mb-2 sm:mb-3">
-                <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600" />
+                <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
                 <span className="font-medium text-foreground text-sm">{post.progressData.type}</span>
               </div>
               <div className="grid grid-cols-2 gap-3 sm:gap-4">
@@ -274,6 +347,11 @@ export const FeedPostCard: React.FC<FeedPostCardProps> = ({
                 </div>
               </div>
             </div>
+          )}
+
+          {/* Poll */}
+          {poll && (
+            <PollComponent poll={poll} />
           )}
 
           {/* Media (Image or Video) */}
@@ -312,7 +390,7 @@ export const FeedPostCard: React.FC<FeedPostCardProps> = ({
                 <Badge 
                   key={tag} 
                   variant="outline" 
-                  className="text-[10px] sm:text-xs cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-950 border-blue-300 dark:border-blue-700 text-blue-600 dark:text-blue-400"
+                  className="text-[10px] sm:text-xs cursor-pointer hover:bg-primary/10 border-primary/30 text-primary"
                 >
                   #{tag}
                 </Badge>
@@ -320,20 +398,13 @@ export const FeedPostCard: React.FC<FeedPostCardProps> = ({
             </div>
           )}
 
-          {/* Stats */}
+          {/* Stats with Reactions */}
           <div className="flex items-center justify-between text-xs sm:text-sm text-muted-foreground pt-1 sm:pt-2">
-            <div className="flex items-center gap-1">
-              {likesCount > 0 && (
-                <>
-                  <div className="flex -space-x-1">
-                    <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-blue-500 flex items-center justify-center">
-                      <Heart className="w-2 h-2 sm:w-3 sm:h-3 text-white fill-white" />
-                    </div>
-                  </div>
-                  <span>{likesCount}</span>
-                </>
-              )}
-            </div>
+            <ReactionDisplay 
+              reactions={reactions} 
+              totalCount={totalReactions}
+              onClick={() => {}}
+            />
             <div className="flex gap-3 sm:gap-4">
               {post.comments > 0 && (
                 <button 
@@ -349,26 +420,17 @@ export const FeedPostCard: React.FC<FeedPostCardProps> = ({
             </div>
           </div>
 
-          {/* Actions */}
-          <div className="flex items-center justify-between border-t border-b border-blue-200/50 dark:border-blue-800/50 py-1">
+          {/* Actions with ReactionPicker */}
+          <div className="flex items-center justify-between border-t border-b border-border py-1">
+            <ReactionPicker
+              postId={post.id}
+              currentReaction={isLiked ? 'like' : null}
+              onReact={handleReaction}
+            />
             <Button
               variant="ghost"
               size="sm"
-              className={`flex-1 gap-1 sm:gap-2 h-9 sm:h-10 ${isLiked ? 'text-blue-600' : 'text-muted-foreground hover:text-blue-600 hover:bg-blue-50'}`}
-              onClick={handleLike}
-            >
-              <motion.div
-                whileTap={{ scale: 1.4 }}
-                transition={{ type: 'spring', stiffness: 400 }}
-              >
-                <Heart className={`w-4 h-4 sm:w-5 sm:h-5 ${isLiked ? 'fill-current' : ''}`} />
-              </motion.div>
-              <span className="text-xs sm:text-sm">Curtir</span>
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="flex-1 gap-1 sm:gap-2 h-9 sm:h-10 text-muted-foreground hover:text-blue-600 hover:bg-blue-50"
+              className="flex-1 gap-1 sm:gap-2 h-9 sm:h-10 text-muted-foreground hover:text-primary hover:bg-primary/10"
               onClick={() => setShowComments(!showComments)}
             >
               <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -377,7 +439,7 @@ export const FeedPostCard: React.FC<FeedPostCardProps> = ({
             <Button
               variant="ghost"
               size="sm"
-              className="flex-1 gap-1 sm:gap-2 h-9 sm:h-10 text-muted-foreground hover:text-blue-600 hover:bg-blue-50"
+              className="flex-1 gap-1 sm:gap-2 h-9 sm:h-10 text-muted-foreground hover:text-primary hover:bg-primary/10"
               onClick={() => onShare(post.id)}
             >
               <Share2 className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -394,19 +456,22 @@ export const FeedPostCard: React.FC<FeedPostCardProps> = ({
                 exit={{ opacity: 0, height: 0 }}
                 className="space-y-3"
               >
-                {/* Comment Input */}
+                {/* Comment Input with Mentions */}
                 <div className="flex gap-2">
                   <Avatar className="w-8 h-8">
                     <AvatarFallback className="bg-primary/10 text-primary text-xs">U</AvatarFallback>
                   </Avatar>
                   <div className="flex-1 flex gap-2">
-                    <Input
-                      value={newComment}
-                      onChange={(e) => setNewComment(e.target.value)}
-                      placeholder="Escreva um comentário..."
-                      className="flex-1 rounded-full bg-muted/50"
-                      onKeyDown={(e) => e.key === 'Enter' && handleSubmitComment()}
-                    />
+                    <div className="flex-1">
+                      <MentionInput
+                        value={newComment}
+                        onChange={handleCommentChange}
+                        placeholder="Escreva um comentário... Use @ para mencionar"
+                        rows={1}
+                        className="rounded-full bg-muted/50"
+                        maxLength={500}
+                      />
+                    </div>
                     <Button
                       size="icon"
                       variant="ghost"
@@ -430,7 +495,9 @@ export const FeedPostCard: React.FC<FeedPostCardProps> = ({
                     <div className="flex-1">
                       <div className="bg-muted/50 rounded-2xl px-3 py-2">
                         <span className="font-semibold text-sm">{comment.userName}</span>
-                        <p className="text-sm text-foreground">{comment.content}</p>
+                        <p className="text-sm text-foreground">
+                          {renderTextWithMentions(comment.content)}
+                        </p>
                       </div>
                       <div className="flex gap-4 text-xs text-muted-foreground mt-1 ml-3">
                         <button className="hover:underline">Curtir</button>

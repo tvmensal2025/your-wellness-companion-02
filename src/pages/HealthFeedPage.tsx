@@ -19,25 +19,35 @@ import { useRanking } from '@/hooks/useRanking';
 import { useFeedPosts } from '@/hooks/useFeedPosts';
 import { useStories } from '@/hooks/useStories';
 import { useFollow } from '@/hooks/useFollow';
+import { useSmartFeed, FeedAlgorithm } from '@/hooks/useSmartFeed';
+import { useDirectMessages } from '@/hooks/useDirectMessages';
+import { useNotifications } from '@/hooks/useNotifications';
 import { StoriesSection } from '@/components/community/StoriesSection';
 import { StoryViewer } from '@/components/community/StoryViewer';
 import { CreateStoryModal } from '@/components/community/CreateStoryModal';
 import { FeedPostCard } from '@/components/community/FeedPostCard';
 import { RightSidebar } from '@/components/community/RightSidebar';
 import { CommunityHeroHeader } from '@/components/community/CommunityHeroHeader';
-import { FeedFilters } from '@/components/community/FeedFilters';
+import { SmartFeedButtons } from '@/components/community/SmartFeedToggle';
 import { FloatingCreateButton } from '@/components/community/FloatingCreateButton';
+import { MessageButton } from '@/components/community/MessageButton';
+import { DirectMessagesModal } from '@/components/community/DirectMessagesModal';
+import { NotificationBell } from '@/components/community/NotificationBell';
+import { SharePostModal } from '@/components/community/SharePostModal';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 
 export default function HealthFeedPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('feed');
-  const [feedFilter, setFeedFilter] = useState('trending');
+  const [feedAlgorithm, setFeedAlgorithm] = useState<FeedAlgorithm>('smart');
   const [sortMode, setSortMode] = useState<'position' | 'points' | 'missions' | 'streak'>('position');
   const [storyViewerOpen, setStoryViewerOpen] = useState(false);
   const [storyViewerIndex, setStoryViewerIndex] = useState(0);
   const [createStoryOpen, setCreateStoryOpen] = useState(false);
+  const [dmModalOpen, setDmModalOpen] = useState(false);
+  const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [sharePostData, setSharePostData] = useState<{ id: string; content: string } | null>(null);
 
   const { user } = useAuth();
   const { ranking, loading: rankingLoading } = useRanking();
@@ -50,6 +60,25 @@ export default function HealthFeedPage() {
   } = useFeedPosts();
   const { groupedStories, createStory, viewStory, deleteStory } = useStories();
   const { toggleFollow, isFollowing } = useFollow();
+  const { totalUnread } = useDirectMessages();
+  const { unreadCount: notificationCount, createNotification } = useNotifications();
+
+  // Smart Feed integration
+  const { sortedPosts, trendingTopics, suggestedPosts, trackInteraction } = useSmartFeed(posts, feedAlgorithm);
+
+  // Filter for "following" algorithm
+  const filteredSmartPosts = useMemo(() => {
+    if (feedAlgorithm === 'following') {
+      return sortedPosts.filter(post => isFollowing(post.user_id));
+    }
+    return sortedPosts;
+  }, [sortedPosts, feedAlgorithm, isFollowing]);
+
+  // User's own posts for weekly summary
+  const userPosts = useMemo(() => {
+    if (!user) return [];
+    return posts.filter(p => p.user_id === user.id);
+  }, [posts, user]);
 
   const sortedRanking = useMemo(() => {
     const base = [...ranking];
@@ -69,9 +98,6 @@ export default function HealthFeedPage() {
   }, [sortedRanking, searchTerm]);
 
   const topUser = filteredRanking[0];
-  const totalMembers = ranking.length;
-  const totalMissions = ranking.reduce((sum, user) => sum + user.missions_completed, 0);
-  const totalPoints = ranking.reduce((sum, user) => sum + user.total_points, 0);
 
   // Get current user stats
   const currentUserStats = useMemo(() => {
@@ -92,38 +118,60 @@ export default function HealthFeedPage() {
   };
 
   const handleLike = (postId: string) => {
+    const post = posts.find(p => p.id === postId);
+    if (post) {
+      trackInteraction(post, 'like');
+      // Create notification for post author
+      if (post.user_id !== user?.id) {
+        createNotification(post.user_id, 'like', 'Curtiu seu post', post.content.substring(0, 50), 'post', postId);
+      }
+    }
     toggleLike(postId);
   };
 
   const handleComment = (postId: string, comment: string) => {
+    const post = posts.find(p => p.id === postId);
+    if (post) {
+      trackInteraction(post, 'comment');
+      // Create notification for post author
+      if (post.user_id !== user?.id) {
+        createNotification(post.user_id, 'comment', 'Comentou no seu post', comment.substring(0, 50), 'post', postId);
+      }
+    }
     addComment(postId, comment);
   };
 
   const handleShare = async (postId: string) => {
-    const shareUrl = `${window.location.origin}/post/${postId}`;
-    
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: 'Confira este post!',
-          url: shareUrl
-        });
-      } catch (err) {
-        // User cancelled or error
-      }
-    } else {
-      await navigator.clipboard.writeText(shareUrl);
-      toast.success('Link copiado!');
+    const post = posts.find(p => p.id === postId);
+    if (post) {
+      trackInteraction(post, 'share');
+      setSharePostData({ id: postId, content: post.content });
+      setShareModalOpen(true);
     }
   };
 
   const handleFollowUser = async (userId: string) => {
     await toggleFollow(userId);
+    // Create notification
+    createNotification(userId, 'follow', 'Começou a seguir você');
   };
 
   const handleStoryClick = (groupIndex: number) => {
     setStoryViewerIndex(groupIndex);
     setStoryViewerOpen(true);
+  };
+
+  const handleTopicClick = (tag: string) => {
+    // Could filter feed by tag
+    toast.info(`Buscando posts com #${tag}`);
+  };
+
+  const handlePostClick = (postId: string) => {
+    // Scroll to post or open modal
+    const element = document.getElementById(`post-${postId}`);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
   };
 
   // Check if current user has their own story
@@ -166,30 +214,8 @@ export default function HealthFeedPage() {
     { id: '2', title: 'Corrida Virtual 5K', date: '15 Jan', participants: 89 },
   ];
 
-  // Filter posts based on active filter
-  const filteredPosts = useMemo(() => {
-    let filtered = [...posts];
-    
-    switch (feedFilter) {
-      case 'following':
-        // Filter to only show posts from users we follow
-        filtered = filtered.filter(post => isFollowing(post.user_id));
-        break;
-      case 'achievements':
-        filtered = filtered.filter(post => post.post_type === 'achievement');
-        break;
-      case 'trending':
-      default:
-        // Sort by likes for trending
-        filtered.sort((a, b) => b.likes_count - a.likes_count);
-        break;
-    }
-    
-    return filtered;
-  }, [posts, feedFilter, isFollowing]);
-
   // Map posts to card format
-  const mappedPosts = filteredPosts.map(post => ({
+  const mappedPosts = filteredSmartPosts.map(post => ({
     id: post.id,
     visibleUserId: post.user_id,
     userName: post.user_name || 'Usuário',
@@ -223,14 +249,25 @@ export default function HealthFeedPage() {
       <div className="max-w-7xl mx-auto px-3 sm:px-4 py-4 sm:py-6">
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="w-full max-w-md bg-primary/10 border border-primary/20 mb-4">
-            <TabsTrigger value="feed" className="flex-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              Feed
-            </TabsTrigger>
-            <TabsTrigger value="ranking" className="flex-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-              Ranking
-            </TabsTrigger>
-          </TabsList>
+          <div className="flex items-center justify-between mb-4 gap-2">
+            <TabsList className="w-full max-w-md bg-primary/10 border border-primary/20">
+              <TabsTrigger value="feed" className="flex-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                Feed
+              </TabsTrigger>
+              <TabsTrigger value="ranking" className="flex-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                Ranking
+              </TabsTrigger>
+            </TabsList>
+            
+            {/* Header Actions */}
+            <div className="flex items-center gap-2">
+              <NotificationBell />
+              <MessageButton 
+                unreadCount={totalUnread} 
+                onClick={() => setDmModalOpen(true)} 
+              />
+            </div>
+          </div>
 
           {/* Feed Tab */}
           <TabsContent value="feed" className="mt-0">
@@ -244,6 +281,8 @@ export default function HealthFeedPage() {
                   totalPoints={currentUserStats.points}
                   streakDays={currentUserStats.streak}
                   missionsCompleted={currentUserStats.missions}
+                  profileViews={Math.floor(Math.random() * 100) + 10}
+                  unreadMessages={totalUnread}
                 />
 
                 {/* Stories Section */}
@@ -255,11 +294,13 @@ export default function HealthFeedPage() {
                   onCreateStory={() => setCreateStoryOpen(true)}
                 />
 
-                {/* Feed Filters */}
-                <FeedFilters
-                  activeFilter={feedFilter}
-                  onFilterChange={setFeedFilter}
-                />
+                {/* Smart Feed Toggle */}
+                <div className="mb-4">
+                  <SmartFeedButtons
+                    algorithm={feedAlgorithm}
+                    onAlgorithmChange={setFeedAlgorithm}
+                  />
+                </div>
 
                 {/* Feed Posts */}
                 <div className="space-y-4">
@@ -278,14 +319,15 @@ export default function HealthFeedPage() {
                     </Card>
                   ) : (
                     mappedPosts.map((post) => (
-                      <FeedPostCard
-                        key={post.id}
-                        post={post}
-                        onLike={handleLike}
-                        onComment={handleComment}
-                        onShare={handleShare}
-                        onSave={() => {}}
-                      />
+                      <div key={post.id} id={`post-${post.id}`}>
+                        <FeedPostCard
+                          post={post}
+                          onLike={handleLike}
+                          onComment={handleComment}
+                          onShare={handleShare}
+                          onSave={() => {}}
+                        />
+                      </div>
                     ))
                   )}
                 </div>
@@ -298,6 +340,13 @@ export default function HealthFeedPage() {
                   suggestedUsers={suggestedUsers}
                   upcomingEvents={upcomingEvents}
                   onFollowUser={handleFollowUser}
+                  trendingTopics={trendingTopics}
+                  onTopicClick={handleTopicClick}
+                  suggestedPosts={suggestedPosts}
+                  onPostClick={handlePostClick}
+                  allPosts={posts}
+                  userPosts={userPosts}
+                  showWeeklySummary={userPosts.length > 0}
                 />
               </div>
             </div>
@@ -413,59 +462,68 @@ export default function HealthFeedPage() {
                           {user.user_name?.charAt(0)}
                         </AvatarFallback>
                       </Avatar>
-                      <div className="flex-1 min-w-0 max-w-[80px] sm:max-w-[140px]">
-                        <p className="font-medium truncate text-sm" title={user.user_name}>{user.user_name}</p>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium truncate text-sm">{user.user_name}</p>
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <span className="flex items-center gap-1">
+                            <Star className="w-3 h-3 text-yellow-500" />
+                            {user.total_points}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Flame className="w-3 h-3 text-orange-500" />
+                            {user.streak_days}d
+                          </span>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <Star className="w-3 h-3 text-yellow-500" />
-                          {user.total_points}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Flame className="w-3 h-3 text-orange-500" />
-                          {user.streak_days}d
-                        </span>
-                      </div>
+                      <Button
+                        size="sm"
+                        variant={isFollowing(user.user_id) ? 'outline' : 'default'}
+                        className="h-8 text-xs rounded-full"
+                        onClick={() => handleFollowUser(user.user_id)}
+                      >
+                        {isFollowing(user.user_id) ? 'Seguindo' : 'Seguir'}
+                      </Button>
                     </motion.div>
                   ))}
-                </div>
-
-                {/* Stats */}
-                <div className="grid grid-cols-3 gap-2 sm:gap-3 pt-4">
-                  <div className="rounded-xl bg-primary/10 p-2 sm:p-4 text-center">
-                    <p className="text-lg sm:text-2xl font-bold text-primary">{totalMembers}</p>
-                    <p className="text-[10px] sm:text-xs text-muted-foreground">Membros</p>
-                  </div>
-                  <div className="rounded-xl bg-emerald-500/10 p-2 sm:p-4 text-center">
-                    <p className="text-lg sm:text-2xl font-bold text-emerald-600">{totalMissions}</p>
-                    <p className="text-[10px] sm:text-xs text-muted-foreground">Missões</p>
-                  </div>
-                  <div className="rounded-xl bg-amber-500/10 p-2 sm:p-4 text-center">
-                    <p className="text-lg sm:text-2xl font-bold text-amber-600">{totalPoints.toLocaleString()}</p>
-                    <p className="text-[10px] sm:text-xs text-muted-foreground">Pontos</p>
-                  </div>
                 </div>
               </CardContent>
             </Card>
           </TabsContent>
         </Tabs>
 
-        {/* Story Viewer Modal */}
-        <StoryViewer
-          isOpen={storyViewerOpen}
-          onClose={() => setStoryViewerOpen(false)}
-          groupedStories={groupedStories}
-          initialGroupIndex={storyViewerIndex}
-          onViewStory={viewStory}
-          onDeleteStory={deleteStory}
-        />
+        {/* Story Viewer */}
+        {storyViewerOpen && groupedStories.length > 0 && (
+          <StoryViewer
+            stories={groupedStories}
+            initialGroupIndex={storyViewerIndex}
+            onClose={() => setStoryViewerOpen(false)}
+            onViewStory={viewStory}
+            onDeleteStory={deleteStory}
+          />
+        )}
 
         {/* Create Story Modal */}
         <CreateStoryModal
-          isOpen={createStoryOpen}
-          onClose={() => setCreateStoryOpen(false)}
+          open={createStoryOpen}
+          onOpenChange={setCreateStoryOpen}
           onCreateStory={createStory}
         />
+
+        {/* Direct Messages Modal */}
+        <DirectMessagesModal
+          open={dmModalOpen}
+          onOpenChange={setDmModalOpen}
+        />
+
+        {/* Share Post Modal */}
+        {sharePostData && (
+          <SharePostModal
+            open={shareModalOpen}
+            onOpenChange={setShareModalOpen}
+            postId={sharePostData.id}
+            postContent={sharePostData.content}
+          />
+        )}
       </div>
     </div>
   );
