@@ -33,9 +33,9 @@ serve(async (req) => {
     // Buscar dados do usuário
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
-      .select("full_name, phone, whatsapp_enabled")
+      .select("full_name, phone")
       .eq("user_id", userId)
-      .single();
+      .maybeSingle();
 
     if (profileError || !profile) {
       console.error("❌ Erro ao buscar perfil:", profileError);
