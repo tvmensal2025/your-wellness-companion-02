@@ -2,9 +2,10 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { X, ChevronLeft, ChevronRight, Eye, Trash2 } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Eye, Trash2, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GroupedStories, Story } from '@/hooks/useStories';
+import { StoryCategoryBadge } from './StoryTimeIndicator';
 
 interface StoryViewerProps {
   isOpen: boolean;
@@ -112,6 +113,20 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({
     return `${hours}h`;
   };
 
+  const formatTimeRemaining = (expiresAt: string) => {
+    const now = new Date();
+    const expires = new Date(expiresAt);
+    const diffMs = expires.getTime() - now.getTime();
+    
+    if (diffMs <= 0) return 'Expirado';
+    
+    const hours = Math.floor(diffMs / (1000 * 60 * 60));
+    const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+    
+    if (hours > 0) return `${hours}h restantes`;
+    return `${minutes}min`;
+  };
+
   const formatName = (name: string) => {
     if (!name) return 'Usuário';
     return name.split(' ')[0].charAt(0).toUpperCase() + name.split(' ')[0].slice(1).toLowerCase();
@@ -201,40 +216,55 @@ export const StoryViewer: React.FC<StoryViewerProps> = ({
           </div>
 
           {/* Header */}
-          <div className="absolute top-6 left-0 right-0 z-20 flex items-center justify-between px-4">
-            <div className="flex items-center gap-3">
-              <Avatar className="w-10 h-10 border-2 border-white">
-                <AvatarImage src={currentGroup.user_avatar} />
-                <AvatarFallback className="bg-primary text-primary-foreground font-semibold">
-                  {currentGroup.user_name?.charAt(0)?.toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <p className="text-white font-semibold text-sm">
-                  {formatName(currentGroup.user_name)}
-                </p>
-                <p className="text-white/70 text-xs">{formatTimeAgo(currentStory.created_at)}</p>
+          <div className="absolute top-6 left-0 right-0 z-20 px-4">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-3">
+                <Avatar className="w-10 h-10 border-2 border-white">
+                  <AvatarImage src={currentGroup.user_avatar} />
+                  <AvatarFallback className="bg-primary text-primary-foreground font-semibold">
+                    {currentGroup.user_name?.charAt(0)?.toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className="text-white font-semibold text-sm">
+                    {formatName(currentGroup.user_name)}
+                  </p>
+                  <p className="text-white/70 text-xs">{formatTimeAgo(currentStory.created_at)}</p>
+                </div>
               </div>
-            </div>
-            <div className="flex items-center gap-2">
-              {currentStory.is_own && onDeleteStory && (
+              <div className="flex items-center gap-2">
+                {currentStory.is_own && onDeleteStory && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-white hover:bg-white/20"
+                    onClick={handleDelete}
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </Button>
+                )}
                 <Button
                   variant="ghost"
                   size="icon"
                   className="text-white hover:bg-white/20"
-                  onClick={handleDelete}
+                  onClick={onClose}
                 >
-                  <Trash2 className="w-5 h-5" />
+                  <X className="w-5 h-5" />
                 </Button>
+              </div>
+            </div>
+            
+            {/* Category and time remaining badges */}
+            <div className="flex items-center gap-2">
+              {(currentStory as any).category && (
+                <StoryCategoryBadge category={(currentStory as any).category} />
               )}
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-white hover:bg-white/20"
-                onClick={onClose}
-              >
-                <X className="w-5 h-5" />
-              </Button>
+              {currentStory.expires_at && (
+                <div className="flex items-center gap-1 bg-black/40 backdrop-blur-sm rounded-full px-2 py-1 text-white text-xs">
+                  <Clock className="w-3 h-3" />
+                  <span>{formatTimeRemaining(currentStory.expires_at)}</span>
+                </div>
+              )}
             </div>
           </div>
 

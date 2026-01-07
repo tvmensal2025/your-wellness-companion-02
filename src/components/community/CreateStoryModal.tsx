@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Image, Type, X, Loader2 } from 'lucide-react';
+import { Image, Type, X, Loader2, Dumbbell, Utensils, Trophy, Sparkles, Hash } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
@@ -11,7 +11,7 @@ import { uploadCommunityMedia, isVideoFile, validateMediaFile } from '@/lib/comm
 interface CreateStoryModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreateStory: (mediaUrl: string, mediaType: string, textContent?: string, backgroundColor?: string) => Promise<any>;
+  onCreateStory: (mediaUrl: string, mediaType: string, textContent?: string, backgroundColor?: string, category?: string) => Promise<any>;
 }
 
 const backgroundColors = [
@@ -27,6 +27,14 @@ const backgroundColors = [
   '#1f2937', // Dark
 ];
 
+const storyCategories = [
+  { id: 'geral', label: 'Geral', icon: Hash, color: 'bg-gray-500' },
+  { id: 'treino', label: 'Treino', icon: Dumbbell, color: 'bg-orange-500' },
+  { id: 'alimentacao', label: 'Alimentação', icon: Utensils, color: 'bg-green-500' },
+  { id: 'conquista', label: 'Conquista', icon: Trophy, color: 'bg-yellow-500' },
+  { id: 'motivacao', label: 'Motivação', icon: Sparkles, color: 'bg-purple-500' },
+];
+
 export const CreateStoryModal: React.FC<CreateStoryModalProps> = ({
   isOpen,
   onClose,
@@ -36,6 +44,7 @@ export const CreateStoryModal: React.FC<CreateStoryModalProps> = ({
   const [mode, setMode] = useState<'select' | 'text' | 'media'>('select');
   const [textContent, setTextContent] = useState('');
   const [selectedColor, setSelectedColor] = useState(backgroundColors[0]);
+  const [selectedCategory, setSelectedCategory] = useState('geral');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -66,7 +75,7 @@ export const CreateStoryModal: React.FC<CreateStoryModalProps> = ({
 
     setUploading(true);
     try {
-      await onCreateStory('', 'text', textContent, selectedColor);
+      await onCreateStory('', 'text', textContent, selectedColor, selectedCategory);
       resetAndClose();
     } catch (err: any) {
       console.error('Error creating text story:', err);
@@ -88,7 +97,7 @@ export const CreateStoryModal: React.FC<CreateStoryModalProps> = ({
       const result = await uploadCommunityMedia(selectedFile, 'stories', user.id);
       const mediaType = isVideoFile(selectedFile) ? 'video' : 'image';
       
-      await onCreateStory(result.publicUrl, mediaType);
+      await onCreateStory(result.publicUrl, mediaType, undefined, undefined, selectedCategory);
       resetAndClose();
     } catch (err: any) {
       console.error('Error creating media story:', err);
@@ -108,10 +117,35 @@ export const CreateStoryModal: React.FC<CreateStoryModalProps> = ({
     setSelectedFile(null);
     setPreviewUrl(null);
     setSelectedColor(backgroundColors[0]);
+    setSelectedCategory('geral');
     onClose();
   };
 
   const isVideo = selectedFile && isVideoFile(selectedFile);
+
+  // Category selector component
+  const CategorySelector = () => (
+    <div className="flex gap-2 justify-center flex-wrap">
+      {storyCategories.map((cat) => {
+        const Icon = cat.icon;
+        const isSelected = selectedCategory === cat.id;
+        return (
+          <button
+            key={cat.id}
+            onClick={() => setSelectedCategory(cat.id)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+              isSelected 
+                ? `${cat.color} text-white` 
+                : 'bg-muted text-muted-foreground hover:bg-muted/80'
+            }`}
+          >
+            <Icon className="w-3.5 h-3.5" />
+            {cat.label}
+          </button>
+        );
+      })}
+    </div>
+  );
 
   return (
     <Dialog open={isOpen} onOpenChange={resetAndClose}>
@@ -171,9 +205,9 @@ export const CreateStoryModal: React.FC<CreateStoryModalProps> = ({
               />
             </div>
             
-            {/* Color Picker & Actions */}
-            <div className="p-4 bg-background border-t sticky bottom-0">
-              <div className="flex gap-2 justify-center mb-4 flex-wrap">
+            {/* Color Picker, Category & Actions */}
+            <div className="p-4 bg-background border-t sticky bottom-0 space-y-3">
+              <div className="flex gap-2 justify-center flex-wrap">
                 {backgroundColors.map((color) => (
                   <button
                     key={color}
@@ -185,6 +219,9 @@ export const CreateStoryModal: React.FC<CreateStoryModalProps> = ({
                   />
                 ))}
               </div>
+              
+              <CategorySelector />
+              
               <div className="flex gap-2">
                 <Button variant="outline" className="flex-1" onClick={resetAndClose}>
                   Cancelar
@@ -236,8 +273,10 @@ export const CreateStoryModal: React.FC<CreateStoryModalProps> = ({
               )}
             </div>
             
-            {/* Actions */}
-            <div className="p-4 bg-background border-t sticky bottom-0">
+            {/* Category & Actions */}
+            <div className="p-4 bg-background border-t sticky bottom-0 space-y-3">
+              <CategorySelector />
+              
               <div className="flex gap-2">
                 <Button variant="outline" className="flex-1" onClick={resetAndClose}>
                   Cancelar

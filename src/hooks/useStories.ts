@@ -146,7 +146,7 @@ export function useStories() {
   }, [user]);
 
   // Create a new story
-  const createStory = async (mediaUrl: string, mediaType: string = 'image', textContent?: string, backgroundColor?: string) => {
+  const createStory = async (mediaUrl: string, mediaType: string = 'image', textContent?: string, backgroundColor?: string, category?: string) => {
     if (!user) {
       toast.error('Você precisa estar logado para criar um story');
       return null;
@@ -164,8 +164,9 @@ export function useStories() {
           media_url: finalMediaUrl,
           media_type: mediaType,
           text_content: textContent,
-          background_color: backgroundColor
-        })
+          background_color: backgroundColor,
+          category: category || 'geral'
+        } as any)
         .select()
         .single();
 
