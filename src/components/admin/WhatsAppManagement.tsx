@@ -90,10 +90,11 @@ const WhatsAppManagement = () => {
 
   const handleRefreshConnection = async () => {
     setConnectionStatus("checking");
-    await checkConnection();
+    const result = await checkConnection();
+    const connected = !!result.data?.connected;
     toast({
       title: "Conexão verificada",
-      description: connectionStatus === "connected" ? "Evolution API conectada!" : "Falha na conexão"
+      description: connected ? "Evolution API conectada!" : "Falha na conexão",
     });
   };
 

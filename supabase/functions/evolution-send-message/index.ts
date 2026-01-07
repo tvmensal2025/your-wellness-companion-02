@@ -217,17 +217,47 @@ async function sendMedia(
 async function checkConnection(apiUrl: string, apiKey: string, instance: string) {
   console.log(`[Evolution] Verificando conexão da instância ${instance}`);
 
-  const response = await fetch(`${apiUrl}/instance/connectionState/${instance}`, {
-    method: "GET",
-    headers: {
-      "apikey": apiKey,
-    },
-  });
+  try {
+    const response = await fetch(`${apiUrl}/instance/connectionState/${instance}`, {
+      method: "GET",
+      headers: {
+        "apikey": apiKey,
+      },
+    });
 
-  const data = await response.json();
-  
-  console.log("[Evolution] Estado da conexão:", data);
-  return { success: true, data };
+    const rawText = await response.text();
+    let raw: any = null;
+    try {
+      raw = rawText ? JSON.parse(rawText) : null;
+    } catch {
+      raw = rawText;
+    }
+
+    const stateRaw = raw?.instance?.state ?? raw?.state ?? raw?.connectionState ?? raw?.status ?? "";
+    const state = typeof stateRaw === "string" ? stateRaw.toLowerCase() : "";
+    const connected = response.ok && ["open", "connected", "online"].includes(state);
+
+    console.log("[Evolution] Estado da conexão:", { instance, state, connected, ok: response.ok });
+
+    return {
+      success: response.ok,
+      connected,
+      instance,
+      state: state || null,
+      apiUrl,
+      data: raw,
+    };
+  } catch (error) {
+    console.error("[Evolution] Erro ao verificar conexão:", error);
+    return {
+      success: false,
+      connected: false,
+      instance,
+      state: null,
+      apiUrl,
+      error: error instanceof Error ? error.message : "Erro desconhecido",
+    };
+  }
 }
 
 // Registrar log da mensagem
