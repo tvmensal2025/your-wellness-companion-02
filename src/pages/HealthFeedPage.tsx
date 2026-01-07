@@ -364,8 +364,10 @@ export default function HealthFeedPage() {
                           {topUser.user_name.charAt(0).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
-                      <div className="min-w-0 flex-1">
-                        <p className="font-semibold truncate text-sm sm:text-base">{topUser.user_name}</p>
+                      <div className="min-w-0 flex-1 max-w-[120px] sm:max-w-[180px]">
+                        <p className="font-semibold truncate text-sm sm:text-base" title={topUser.user_name}>
+                          {topUser.user_name}
+                        </p>
                         <p className="text-xs text-muted-foreground">Líder do ranking</p>
                       </div>
                     </div>
@@ -403,16 +405,16 @@ export default function HealthFeedPage() {
                       transition={{ delay: index * 0.05 }}
                       className="flex items-center gap-3 p-3 rounded-xl bg-muted/50 hover:bg-muted transition-colors"
                     >
-                      <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center font-bold text-muted-foreground">
+                      <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center font-bold text-muted-foreground flex-shrink-0">
                         {user.position}
                       </div>
-                      <Avatar className="w-10 h-10">
+                      <Avatar className="w-10 h-10 flex-shrink-0">
                         <AvatarFallback className="bg-primary/10 text-primary">
                           {user.user_name?.charAt(0)}
                         </AvatarFallback>
                       </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium truncate">{user.user_name}</p>
+                      <div className="flex-1 min-w-0 max-w-[80px] sm:max-w-[140px]">
+                        <p className="font-medium truncate text-sm" title={user.user_name}>{user.user_name}</p>
                       </div>
                       <div className="flex items-center gap-3 text-sm text-muted-foreground">
                         <span className="flex items-center gap-1">
