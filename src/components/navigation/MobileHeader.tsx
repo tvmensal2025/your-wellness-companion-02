@@ -3,12 +3,15 @@ import { NotificationBell } from '@/components/NotificationBell';
 import { OfflineIndicatorCompact } from '@/components/OfflineIndicator';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { MessageButton } from '@/components/community/MessageButton';
 
 interface MobileHeaderProps {
   title: string;
   onAvatarClick?: () => void;
   avatarUrl?: string;
   userName?: string;
+  unreadMessages?: number;
+  onMessageClick?: () => void;
 }
 
 export const MobileHeader: React.FC<MobileHeaderProps> = ({
@@ -16,6 +19,8 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
   onAvatarClick,
   avatarUrl,
   userName,
+  unreadMessages = 0,
+  onMessageClick,
 }) => {
   const getInitials = (name?: string) => {
     if (!name) return '?';
@@ -41,8 +46,15 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
           </h1>
         </div>
         
-        {/* Right side - Notifications + Avatar */}
-        <div className="flex items-center gap-2 shrink-0 justify-end z-10 overflow-visible">
+        {/* Right side - Messages + Notifications + Avatar */}
+        <div className="flex items-center gap-1 shrink-0 justify-end z-10 overflow-visible">
+          {onMessageClick && (
+            <MessageButton 
+              unreadCount={unreadMessages} 
+              onClick={onMessageClick}
+              className="h-8 w-8"
+            />
+          )}
           <NotificationBell />
           
           {/* Avatar */}
