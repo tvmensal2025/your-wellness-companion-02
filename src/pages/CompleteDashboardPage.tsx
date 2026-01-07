@@ -67,8 +67,91 @@ const CompleteDashboardPage = () => {
   const [layoutPrefsModalOpen, setLayoutPrefsModalOpen] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
-  
+
+  const menuItems = [
+    {
+      id: 'dashboard',
+      icon: Home,
+      label: 'Dashboard',
+      color: 'text-primary',
+    },
+    {
+      id: 'missions',
+      icon: Activity,
+      label: 'Missão do Dia',
+      color: 'text-secondary',
+    },
+    {
+      id: 'progress',
+      icon: TrendingUp,
+      label: 'Meu Progresso',
+      color: 'text-cyan-500',
+    },
+    {
+      id: 'goals',
+      icon: Target,
+      label: 'Minhas Metas',
+      color: 'text-green-500',
+    },
+    {
+      id: 'courses',
+      icon: GraduationCap,
+      label: 'Plataforma dos Sonhos',
+      color: 'text-accent',
+    },
+    {
+      id: 'sessions',
+      icon: FileText,
+      label: 'Sessões',
+      color: 'text-muted-foreground',
+    },
+    {
+      id: 'comunidade',
+      icon: Users,
+      label: 'Comunidade',
+      color: 'text-blue-500',
+    },
+    {
+      id: 'challenges',
+      icon: Award,
+      label: 'Desafios Individuais',
+      color: 'text-orange-500',
+    },
+    {
+      id: 'saboteur-test',
+      icon: Settings,
+      label: 'Teste de Sabotadores',
+      color: 'text-gray-500',
+    },
+    {
+      id: 'sofia-nutricional',
+      icon: Utensils,
+      label: 'Sofia Nutricional',
+      color: 'text-emerald-600',
+    },
+    {
+      id: 'dr-vital',
+      icon: Stethoscope,
+      label: 'Dr.Vital',
+      color: 'text-blue-600',
+    },
+    {
+      id: 'exercicios',
+      icon: Dumbbell,
+      label: 'Exercícios Recomendados',
+      color: 'text-orange-600',
+    },
+    // NOVO!
+    {
+      id: 'subscriptions',
+      icon: CreditCard,
+      label: 'Assinaturas',
+      color: 'text-purple-600',
+    },
+  ];
+
   // Cache centralizado - única fonte de dados
+
   const { data: userData, loading: userDataLoading, refresh: refreshUserData } = useUserDataCache();
   
   // Dados derivados do cache
@@ -185,74 +268,6 @@ const CompleteDashboardPage = () => {
       });
     }
   };
-  const menuItems = [{
-    id: 'dashboard',
-    icon: Home,
-    label: 'Dashboard',
-    color: 'text-primary'
-  }, {
-    id: 'missions',
-    icon: Activity,
-    label: 'Missão do Dia',
-    color: 'text-secondary'
-  }, {
-    id: 'progress',
-    icon: TrendingUp,
-    label: 'Meu Progresso',
-    color: 'text-cyan-500'
-  }, {
-    id: 'goals',
-    icon: Target,
-    label: 'Minhas Metas',
-    color: 'text-green-500'
-  }, {
-    id: 'courses',
-    icon: GraduationCap,
-    label: 'Plataforma dos Sonhos',
-    color: 'text-accent'
-  }, {
-    id: 'sessions',
-    icon: FileText,
-    label: 'Sessões',
-    color: 'text-muted-foreground'
-  }, {
-    id: 'comunidade',
-    icon: Users,
-    label: 'Comunidade',
-    color: 'text-blue-500'
-  }, {
-    id: 'challenges',
-    icon: Award,
-    label: 'Desafios Individuais',
-    color: 'text-orange-500'
-  }, {
-    id: 'saboteur-test',
-    icon: Settings,
-    label: 'Teste de Sabotadores',
-    color: 'text-gray-500'
-  }, {
-    id: 'sofia-nutricional',
-    icon: Utensils,
-    label: 'Sofia Nutricional',
-    color: 'text-emerald-600'
-  }, {
-    id: 'dr-vital',
-    icon: Stethoscope,
-    label: 'Dr.Vital',
-    color: 'text-blue-600'
-  }, {
-    id: 'exercicios',
-    icon: Dumbbell,
-    label: 'Exercícios Recomendados',
-    color: 'text-orange-600'
-  },
-  // NOVO!
-  {
-    id: 'subscriptions',
-    icon: CreditCard,
-    label: 'Assinaturas',
-    color: 'text-purple-600'
-  }];
   const renderContent = () => {
     // Verificar se a seção é bloqueada
     const lockedSections = []; // ← TODOS OS BLOQUEIOS REMOVIDOS
