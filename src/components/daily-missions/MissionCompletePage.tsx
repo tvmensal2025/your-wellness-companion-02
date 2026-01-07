@@ -100,7 +100,7 @@ export const MissionCompletePage: React.FC<MissionCompletePageProps> = ({
                 className="w-full h-10 rounded-xl bg-gradient-mission text-primary-foreground text-xs font-semibold shadow-hero hover:opacity-95 transition-opacity flex items-center justify-center"
               >
                 <CheckCircle className="mr-1.5 h-3.5 w-3.5" />
-                Continuar para o dashboard
+                🎉 Parabéns! Ir para o dashboard
               </Button>
             </CardContent>
           </Card>
