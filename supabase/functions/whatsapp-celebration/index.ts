@@ -50,14 +50,7 @@ serve(async (req) => {
     // Buscar dados do usuário
     const { data: user, error: userError } = await supabase
       .from("profiles")
-      .select(`
-        user_id,
-        full_name,
-        phone,
-        user_notification_settings!inner(
-          whatsapp_enabled
-        )
-      `)
+      .select("user_id, full_name, phone")
       .eq("user_id", userId)
       .single();
 
@@ -69,16 +62,28 @@ serve(async (req) => {
       throw new Error("Usuário sem telefone cadastrado");
     }
 
-    const settings = Array.isArray(user.user_notification_settings) 
-      ? user.user_notification_settings[0] 
-      : user.user_notification_settings;
+    // Buscar configuração do WhatsApp (sem depender de relacionamento FK no PostgREST)
+    const { data: settings, error: settingsError } = await supabase
+      .from("user_notification_settings")
+      .select("whatsapp_enabled")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (settingsError) {
+      console.error("Erro ao buscar configurações de notificação:", settingsError);
+      throw new Error(settingsError.message);
+    }
+
     if (!settings?.whatsapp_enabled) {
-      return new Response(JSON.stringify({ 
-        success: false, 
-        reason: "WhatsApp desabilitado pelo usuário" 
-      }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({
+          success: false,
+          reason: "WhatsApp desabilitado pelo usuário",
+        }),
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
     }
 
     const firstName = user.full_name?.split(" ")[0] || "Campeão";
