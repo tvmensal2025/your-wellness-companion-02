@@ -15,7 +15,6 @@ import { CleanEvolutionChart } from './CleanEvolutionChart';
 import { QuickActionsGrid } from './QuickActionsGrid';
 import { MotivationalMascot } from './MotivationalMascot';
 import { SofiaTipsCard } from './SofiaTipsCard';
-import { MetabolismCard } from './MetabolismCard';
 
 const DashboardOverview: React.FC = () => {
   const { measurements, stats, loading, fetchMeasurements } = useWeightMeasurement();
@@ -215,16 +214,9 @@ const DashboardOverview: React.FC = () => {
           healthScore={healthScore}
           currentStreak={currentStreak}
           userName={userName || 'Usuário'}
-        />
-
-        {/* 2. Metabolism Card */}
-        <MetabolismCard
-          weight={currentWeight}
           height={heightCm}
           age={age}
           gender={gender || 'F'}
-          waistCircumference={waistCircumference || undefined}
-          activityLevel="light"
         />
 
         {/* 3. Clean Evolution Chart */}
