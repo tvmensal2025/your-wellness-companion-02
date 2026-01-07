@@ -1,0 +1,133 @@
+import { useState, useEffect, useCallback } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
+import { toast } from 'sonner';
+
+export function useFollow() {
+  const { user } = useAuth();
+  const [following, setFollowing] = useState<Set<string>>(new Set());
+  const [loading, setLoading] = useState(false);
+
+  // Fetch who the current user follows
+  const fetchFollowing = useCallback(async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('health_feed_follows')
+        .select('following_id')
+        .eq('follower_id', user.id);
+      
+      if (error) throw error;
+      
+      setFollowing(new Set(data?.map(f => f.following_id) || []));
+    } catch (err) {
+      console.error('Error fetching following:', err);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    fetchFollowing();
+  }, [fetchFollowing]);
+
+  // Check if current user follows a specific user
+  const isFollowing = useCallback((userId: string) => {
+    return following.has(userId);
+  }, [following]);
+
+  // Follow a user
+  const followUser = async (userId: string) => {
+    if (!user) {
+      toast.error('Você precisa estar logado para seguir');
+      return false;
+    }
+
+    if (userId === user.id) {
+      toast.error('Você não pode seguir a si mesmo');
+      return false;
+    }
+
+    // Optimistic update
+    setFollowing(prev => new Set([...prev, userId]));
+
+    try {
+      const { error } = await supabase
+        .from('health_feed_follows')
+        .insert({
+          follower_id: user.id,
+          following_id: userId
+        });
+
+      if (error) {
+        if (error.code === '23505') {
+          // Already following
+          return true;
+        }
+        throw error;
+      }
+
+      toast.success('Seguindo!');
+      return true;
+    } catch (err: any) {
+      console.error('Error following user:', err);
+      // Revert optimistic update
+      setFollowing(prev => {
+        const next = new Set(prev);
+        next.delete(userId);
+        return next;
+      });
+      toast.error('Erro ao seguir usuário');
+      return false;
+    }
+  };
+
+  // Unfollow a user
+  const unfollowUser = async (userId: string) => {
+    if (!user) return false;
+
+    // Optimistic update
+    setFollowing(prev => {
+      const next = new Set(prev);
+      next.delete(userId);
+      return next;
+    });
+
+    try {
+      const { error } = await supabase
+        .from('health_feed_follows')
+        .delete()
+        .eq('follower_id', user.id)
+        .eq('following_id', userId);
+
+      if (error) throw error;
+
+      toast.success('Deixou de seguir');
+      return true;
+    } catch (err: any) {
+      console.error('Error unfollowing user:', err);
+      // Revert optimistic update
+      setFollowing(prev => new Set([...prev, userId]));
+      toast.error('Erro ao deixar de seguir');
+      return false;
+    }
+  };
+
+  // Toggle follow status
+  const toggleFollow = async (userId: string) => {
+    if (isFollowing(userId)) {
+      return unfollowUser(userId);
+    } else {
+      return followUser(userId);
+    }
+  };
+
+  return {
+    following,
+    isFollowing,
+    followUser,
+    unfollowUser,
+    toggleFollow,
+    loading,
+    refetch: fetchFollowing
+  };
+}

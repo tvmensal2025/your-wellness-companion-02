@@ -17,19 +17,27 @@ import { motion } from 'framer-motion';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { useRanking } from '@/hooks/useRanking';
 import { useFeedPosts } from '@/hooks/useFeedPosts';
+import { useStories } from '@/hooks/useStories';
+import { useFollow } from '@/hooks/useFollow';
 import { StoriesSection } from '@/components/community/StoriesSection';
+import { StoryViewer } from '@/components/community/StoryViewer';
+import { CreateStoryModal } from '@/components/community/CreateStoryModal';
 import { FeedPostCard } from '@/components/community/FeedPostCard';
 import { RightSidebar } from '@/components/community/RightSidebar';
 import { CommunityHeroHeader } from '@/components/community/CommunityHeroHeader';
 import { FeedFilters } from '@/components/community/FeedFilters';
 import { FloatingCreateButton } from '@/components/community/FloatingCreateButton';
 import { useAuth } from '@/hooks/useAuth';
+import { toast } from 'sonner';
 
 export default function HealthFeedPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('feed');
   const [feedFilter, setFeedFilter] = useState('trending');
   const [sortMode, setSortMode] = useState<'position' | 'points' | 'missions' | 'streak'>('position');
+  const [storyViewerOpen, setStoryViewerOpen] = useState(false);
+  const [storyViewerIndex, setStoryViewerIndex] = useState(0);
+  const [createStoryOpen, setCreateStoryOpen] = useState(false);
 
   const { user } = useAuth();
   const { ranking, loading: rankingLoading } = useRanking();
@@ -40,6 +48,8 @@ export default function HealthFeedPage() {
     toggleLike, 
     addComment 
   } = useFeedPosts();
+  const { groupedStories, createStory, viewStory, deleteStory } = useStories();
+  const { toggleFollow, isFollowing } = useFollow();
 
   const sortedRanking = useMemo(() => {
     const base = [...ranking];
@@ -89,19 +99,56 @@ export default function HealthFeedPage() {
     addComment(postId, comment);
   };
 
-  // Generate mock stories from ranking
-  const mockStories = useMemo(() => {
-    return ranking.slice(0, 8).map((user, index) => ({
-      id: user.user_id,
-      userName: user.user_name,
-      userAvatar: '',
-      hasNewStory: index < 5,
-      isViewed: index > 2,
-      storyType: (index === 0 ? 'achievement' : index === 1 ? 'streak' : index === 2 ? 'goal' : 'normal') as 'achievement' | 'streak' | 'goal' | 'normal'
-    }));
-  }, [ranking]);
+  const handleShare = async (postId: string) => {
+    const shareUrl = `${window.location.origin}/post/${postId}`;
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Confira este post!',
+          url: shareUrl
+        });
+      } catch (err) {
+        // User cancelled or error
+      }
+    } else {
+      await navigator.clipboard.writeText(shareUrl);
+      toast.success('Link copiado!');
+    }
+  };
 
-  // Mock data for right sidebar
+  const handleFollowUser = async (userId: string) => {
+    await toggleFollow(userId);
+  };
+
+  const handleStoryClick = (groupIndex: number) => {
+    setStoryViewerIndex(groupIndex);
+    setStoryViewerOpen(true);
+  };
+
+  // Check if current user has their own story
+  const hasOwnStory = groupedStories.some(g => g.is_own);
+
+  // Get current user's profile info
+  const userProfile = useMemo(() => {
+    const profile = ranking.find(r => r.user_id === user?.id);
+    return profile;
+  }, [ranking, user?.id]);
+
+  // Suggested users (not following)
+  const suggestedUsers = useMemo(() => {
+    return ranking.slice(0, 10)
+      .filter(r => r.user_id !== user?.id && !isFollowing(r.user_id))
+      .slice(0, 3)
+      .map(user => ({
+        id: user.user_id,
+        name: user.user_name,
+        mutualFriends: Math.floor(Math.random() * 10),
+        level: user.total_points > 500 ? 'Expert' : user.total_points > 200 ? 'Avançado' : 'Intermediário'
+      }));
+  }, [ranking, user?.id, isFollowing]);
+
+  // Top users for sidebar
   const topUsers = useMemo(() => {
     return ranking.slice(0, 5).map(user => ({
       id: user.user_id,
@@ -114,20 +161,37 @@ export default function HealthFeedPage() {
     }));
   }, [ranking]);
 
-  const suggestedUsers = [
-    { id: '1', name: 'Maria Silva', mutualFriends: 5, level: 'Avançado' },
-    { id: '2', name: 'João Pedro', mutualFriends: 3, level: 'Intermediário' },
-    { id: '3', name: 'Ana Costa', mutualFriends: 8, level: 'Expert' },
-  ];
-
   const upcomingEvents = [
     { id: '1', title: 'Desafio 7 Dias de Água', date: 'Começa em 2 dias', participants: 156 },
     { id: '2', title: 'Corrida Virtual 5K', date: '15 Jan', participants: 89 },
   ];
 
-  // Map FeedPost to the format expected by FeedPostCard
-  const mappedPosts = posts.map(post => ({
+  // Filter posts based on active filter
+  const filteredPosts = useMemo(() => {
+    let filtered = [...posts];
+    
+    switch (feedFilter) {
+      case 'following':
+        // Filter to only show posts from users we follow
+        filtered = filtered.filter(post => isFollowing(post.user_id));
+        break;
+      case 'achievements':
+        filtered = filtered.filter(post => post.post_type === 'achievement');
+        break;
+      case 'trending':
+      default:
+        // Sort by likes for trending
+        filtered.sort((a, b) => b.likes_count - a.likes_count);
+        break;
+    }
+    
+    return filtered;
+  }, [posts, feedFilter, isFollowing]);
+
+  // Map posts to card format
+  const mappedPosts = filteredPosts.map(post => ({
     id: post.id,
+    visibleUserId: post.user_id,
     userName: post.user_name || 'Usuário',
     userAvatar: post.user_avatar || '',
     userLevel: post.user_level || 'Membro',
@@ -152,7 +216,7 @@ export default function HealthFeedPage() {
     }))
   }));
 
-  const userName = user?.email?.split('@')[0] || 'Usuário';
+  const userName = userProfile?.user_name || user?.email?.split('@')[0] || 'Usuário';
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-primary/5 via-background to-accent/5 dark:from-primary/10 dark:via-background dark:to-accent/10">
@@ -184,8 +248,11 @@ export default function HealthFeedPage() {
 
                 {/* Stories Section */}
                 <StoriesSection
-                  stories={mockStories}
+                  groupedStories={groupedStories}
                   currentUserName={userName}
+                  hasOwnStory={hasOwnStory}
+                  onStoryClick={handleStoryClick}
+                  onCreateStory={() => setCreateStoryOpen(true)}
                 />
 
                 {/* Feed Filters */}
@@ -216,7 +283,7 @@ export default function HealthFeedPage() {
                         post={post}
                         onLike={handleLike}
                         onComment={handleComment}
-                        onShare={() => {}}
+                        onShare={handleShare}
                         onSave={() => {}}
                       />
                     ))
@@ -230,7 +297,7 @@ export default function HealthFeedPage() {
                   topUsers={topUsers}
                   suggestedUsers={suggestedUsers}
                   upcomingEvents={upcomingEvents}
-                  onFollowUser={() => {}}
+                  onFollowUser={handleFollowUser}
                 />
               </div>
             </div>
@@ -379,6 +446,23 @@ export default function HealthFeedPage() {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Story Viewer Modal */}
+        <StoryViewer
+          isOpen={storyViewerOpen}
+          onClose={() => setStoryViewerOpen(false)}
+          groupedStories={groupedStories}
+          initialGroupIndex={storyViewerIndex}
+          onViewStory={viewStory}
+          onDeleteStory={deleteStory}
+        />
+
+        {/* Create Story Modal */}
+        <CreateStoryModal
+          isOpen={createStoryOpen}
+          onClose={() => setCreateStoryOpen(false)}
+          onCreateStory={createStory}
+        />
       </div>
     </div>
   );
