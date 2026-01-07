@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { TrendingDown, TrendingUp, Minus, Target, Flame, ArrowUpRight } from 'lucide-react';
+import { TrendingDown, TrendingUp, Minus, Target, Flame, Zap } from 'lucide-react';
 
 interface AppleHealthHeroCardProps {
   currentWeight: number;
@@ -9,6 +9,9 @@ interface AppleHealthHeroCardProps {
   healthScore: number;
   currentStreak: number;
   userName?: string;
+  height?: number;
+  age?: number;
+  gender?: string;
 }
 
 export const AppleHealthHeroCard: React.FC<AppleHealthHeroCardProps> = ({
@@ -17,13 +20,23 @@ export const AppleHealthHeroCard: React.FC<AppleHealthHeroCardProps> = ({
   weightChange = 0,
   healthScore,
   currentStreak,
-  userName = 'Usuário'
+  userName = 'Usuário',
+  height = 170,
+  age = 30,
+  gender = 'F'
 }) => {
-  const progressToGoal = targetWeight 
-    ? Math.min(100, Math.max(0, ((currentWeight - targetWeight) / 10) * 100))
-    : 0;
-
   const weightToGo = targetWeight ? Math.abs(currentWeight - targetWeight).toFixed(1) : null;
+
+  // Calcular TMB (Taxa Metabólica Basal) - Mifflin-St Jeor
+  const tmb = React.useMemo(() => {
+    if (!currentWeight || currentWeight === 0) return 0;
+    const isMale = gender?.toLowerCase() === 'm' || gender?.toLowerCase() === 'masculino';
+    if (isMale) {
+      return Math.round(10 * currentWeight + 6.25 * height - 5 * age + 5);
+    } else {
+      return Math.round(10 * currentWeight + 6.25 * height - 5 * age - 161);
+    }
+  }, [currentWeight, height, age, gender]);
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -213,11 +226,11 @@ export const AppleHealthHeroCard: React.FC<AppleHealthHeroCardProps> = ({
             color="text-emerald-400"
           />
           <StatItem 
-            icon={ArrowUpRight}
-            label="Progresso"
-            value={Math.round(100 - progressToGoal)}
-            suffix="%"
-            color="text-cyan-400"
+            icon={Zap}
+            label="Em repouso"
+            value={tmb > 0 ? tmb.toLocaleString('pt-BR') : '--'}
+            suffix="kcal"
+            color="text-amber-400"
           />
         </div>
       </div>
