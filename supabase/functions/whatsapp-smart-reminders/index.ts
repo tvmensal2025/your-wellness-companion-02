@@ -8,6 +8,9 @@ const corsHeaders = {
 
 type ReminderType = "weighing" | "water" | "missions" | "streak_risk";
 
+// SOFIA - Voz para lembretes (carinhosa, sem cobrança)
+const SOFIA_ASSINATURA = "Com carinho,\nSofia 💚\n_Instituto dos Sonhos_";
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -26,7 +29,6 @@ serve(async (req) => {
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
     
-    // Tipo de lembrete a enviar
     let reminderType: ReminderType = "missions";
     try {
       const body = await req.json();
@@ -35,12 +37,12 @@ serve(async (req) => {
       // Default: missions
     }
 
-    console.log(`🔔 Iniciando lembretes inteligentes: ${reminderType}`);
+    console.log(`💚 Sofia: Enviando lembretes carinhosos (${reminderType})`);
 
     const today = new Date().toISOString().split("T")[0];
     const twoDaysAgo = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
 
-    // Buscar usuários com lembretes habilitados (sem depender de relacionamento FK no PostgREST)
+    // Buscar usuários com lembretes habilitados
     const { data: settingsRows, error: settingsError } = await supabase
       .from("user_notification_settings")
       .select("user_id, whatsapp_enabled, whatsapp_reminders")
@@ -48,7 +50,6 @@ serve(async (req) => {
       .eq("whatsapp_reminders", true);
 
     if (settingsError) {
-      console.error("Erro ao buscar configurações de notificação:", settingsError);
       throw new Error(settingsError.message);
     }
 
@@ -71,19 +72,18 @@ serve(async (req) => {
     if (usersError) throw new Error(usersError.message);
 
     const eligibleUsers = users || [];
-
     console.log(`📱 ${eligibleUsers.length} usuários com lembretes habilitados`);
 
     const results: any[] = [];
 
     for (const user of eligibleUsers) {
       try {
+        const firstName = user.full_name?.split(" ")[0] || "você";
         let shouldSend = false;
         let reminderMessage = "";
 
         switch (reminderType) {
           case "weighing": {
-            // Verificar se pesou nos últimos 2 dias
             const { data: weights } = await supabase
               .from("weight_measurements")
               .select("id")
@@ -93,19 +93,20 @@ serve(async (req) => {
 
             if (!weights || weights.length === 0) {
               shouldSend = true;
-              reminderMessage = `⚖️ Olá, ${user.full_name?.split(" ")[0]}!
+              reminderMessage = `*${firstName}*, só passando para um carinho! ⚖️
 
-Notei que você não registrou seu peso nos últimos 2 dias.
+Notei que você não registrou seu peso nos últimos dias. Sem cobrança, tá? 💚
 
-Pesar-se regularmente ajuda a acompanhar sua evolução e manter o foco nos seus objetivos! 📊
+Pesar-se regularmente ajuda você a acompanhar sua evolução e celebrar suas vitórias! 📊
 
-_Que tal pesar agora e registrar no app?_ 💪`;
+_Que tal registrar agora? Eu vou adorar ver seu progresso!_ ✨
+
+${SOFIA_ASSINATURA}`;
             }
             break;
           }
 
           case "water": {
-            // Verificar consumo de água hoje
             const { data: waterData } = await supabase
               .from("water_tracking")
               .select("amount_ml")
@@ -113,27 +114,27 @@ _Que tal pesar agora e registrar no app?_ 💪`;
               .eq("date", today);
 
             const totalWater = waterData?.reduce((sum, w) => sum + (w.amount_ml || 0), 0) || 0;
-
-            // Se bebeu menos de 1L até as 14h, lembrar
             const hour = new Date().getHours();
+
             if (hour >= 12 && totalWater < 1000) {
               shouldSend = true;
-              reminderMessage = `💧 Ei, ${user.full_name?.split(" ")[0]}!
+              reminderMessage = `*${firstName}*, um lembrete com carinho! 💧
 
-Você bebeu apenas ${(totalWater / 1000).toFixed(1)}L de água hoje.
+Você bebeu ${(totalWater / 1000).toFixed(1)}L de água hoje.
 
-Lembre-se: a hidratação é essencial para:
-• Energia e disposição ⚡
-• Pele saudável ✨
-• Metabolismo ativo 🔥
+Hidratação é essencial para:
+⚡ Energia e disposição
+✨ Pele saudável
+🔥 Metabolismo ativo
 
-_Que tal beber um copo agora?_ 🥤`;
+_Que tal beber um copinho agora? Seu corpo agradece!_ 🥤
+
+${SOFIA_ASSINATURA}`;
             }
             break;
           }
 
           case "missions": {
-            // Verificar se completou missões hoje
             const { data: mission } = await supabase
               .from("daily_mission_sessions")
               .select("is_completed, missions_completed")
@@ -144,22 +145,39 @@ _Que tal beber um copo agora?_ 🥤`;
             if (!mission || !mission.is_completed) {
               const completed = mission?.missions_completed || 0;
               shouldSend = true;
-              reminderMessage = `🎯 ${user.full_name?.split(" ")[0]}, suas missões estão esperando!
+              
+              if (completed > 0) {
+                reminderMessage = `*${firstName}*, você está quase lá! 🎯
 
-${completed > 0 ? `Você completou ${completed} missão(ões) hoje. Falta pouco para concluir todas!` : "Você ainda não iniciou suas missões de hoje."}
+Você já completou ${completed} missão(ões) hoje. Falta pouquinho para fechar o dia!
+
+Completar as missões:
+🔥 Mantém seu streak
+🏆 Ganha pontos e conquistas
+📈 Te aproxima dos seus objetivos
+
+_Eu acredito em você! Vamos finalizar juntos?_ 💪
+
+${SOFIA_ASSINATURA}`;
+              } else {
+                reminderMessage = `*${firstName}*, suas missões estão te esperando! 🎯
+
+Sei que nem sempre é fácil, mas cada pequeno passo conta.
 
 Completar as missões diárias:
-• Aumenta seu streak 🔥
-• Ganha pontos e conquistas 🏆
-• Mantém você no caminho certo 📈
+🔥 Constrói hábitos saudáveis
+🏆 Desbloqueia conquistas
+📈 Te mantém no caminho certo
 
-_Acesse o app e complete suas missões!_ 💪`;
+_Sem pressa, no seu ritmo. Estou aqui torcendo por você!_ 💚
+
+${SOFIA_ASSINATURA}`;
+              }
             }
             break;
           }
 
           case "streak_risk": {
-            // Verificar se está em risco de perder streak
             const { data: yesterday } = await supabase
               .from("daily_mission_sessions")
               .select("streak_days")
@@ -179,18 +197,19 @@ _Acesse o app e complete suas missões!_ 💪`;
             const streak = yesterday?.streak_days || 0;
             const hour = new Date().getHours();
 
-            // Se tem streak > 3 e não completou hoje e já são 20h+
             if (streak >= 3 && (!todaySession || !todaySession.is_completed) && hour >= 20) {
               shouldSend = true;
-              reminderMessage = `🔥 ALERTA DE STREAK, ${user.full_name?.split(" ")[0]}!
+              reminderMessage = `*${firstName}*, um carinho especial pra você! 🔥
 
-Você está há ${streak} dias consecutivos cuidando da sua saúde!
+Você está há *${streak} dias consecutivos* cuidando da sua saúde!
 
-⚠️ Suas missões de hoje ainda não foram completadas.
+Isso é INCRÍVEL! Cada dia desses representa sua força e determinação. 💪
 
-Não deixe esse progresso incrível se perder! Cada dia conta para construir hábitos duradouros.
+Suas missões de hoje ainda estão esperando... Seria uma pena perder esse progresso lindo.
 
-_Acesse agora e mantenha sua sequência!_ 🏃‍♂️`;
+_Mas ei, sem pressão! Se hoje não der, amanhã a gente recomeça juntos. Estou aqui!_ 💚
+
+${SOFIA_ASSINATURA}`;
             }
             break;
           }
@@ -231,7 +250,6 @@ _Acesse agora e mantenha sua sequência!_ 🏃‍♂️`;
           });
 
           console.log(`✅ Lembrete enviado: ${user.full_name} (${reminderType})`);
-          
           await new Promise(resolve => setTimeout(resolve, 2000));
         }
 
@@ -246,6 +264,7 @@ _Acesse agora e mantenha sua sequência!_ 🏃‍♂️`;
       success: true, 
       type: reminderType,
       sent: results.length,
+      voice: "Sofia",
       results 
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

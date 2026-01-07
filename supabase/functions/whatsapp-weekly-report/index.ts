@@ -24,7 +24,6 @@ serve(async (req) => {
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
     
-    // Aceitar userId opcional para envio manual
     let targetUserId: string | null = null;
     try {
       const body = await req.json();
@@ -33,16 +32,15 @@ serve(async (req) => {
       // Sem body = execução via cron
     }
 
-    console.log("📊 Iniciando envio de relatórios semanais via WhatsApp...");
+    console.log("📊 Dr. Vital & Sofia: Iniciando envio de relatórios semanais...");
 
-    // Calcular período da semana
     const today = new Date();
     const weekStart = new Date(today);
     weekStart.setDate(today.getDate() - 7);
     const weekStartStr = weekStart.toISOString().split("T")[0];
     const weekEndStr = today.toISOString().split("T")[0];
 
-    // Buscar usuários elegíveis (sem depender de relacionamento FK no PostgREST)
+    // Buscar usuários elegíveis
     let settingsQuery = supabase
       .from("user_notification_settings")
       .select("user_id, whatsapp_enabled, whatsapp_weekly_report")
@@ -56,23 +54,15 @@ serve(async (req) => {
     const { data: settingsRows, error: settingsError } = await settingsQuery;
 
     if (settingsError) {
-      console.error("Erro ao buscar configurações de notificação:", settingsError);
       throw new Error(settingsError.message);
     }
 
     const eligibleUserIds = (settingsRows || []).map((s: any) => s.user_id).filter(Boolean);
 
     if (eligibleUserIds.length === 0) {
-      console.log("📱 0 usuários elegíveis para relatório semanal");
+      console.log("📱 0 usuários elegíveis");
       return new Response(
-        JSON.stringify({
-          success: true,
-          processed: 0,
-          sent: 0,
-          weekStart: weekStartStr,
-          weekEnd: weekEndStr,
-          results: [],
-        }),
+        JSON.stringify({ success: true, processed: 0, sent: 0, weekStart: weekStartStr, weekEnd: weekEndStr, results: [] }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -90,21 +80,19 @@ serve(async (req) => {
     const { data: users, error: usersError } = await profilesQuery;
 
     if (usersError) {
-      console.error("Erro ao buscar usuários:", usersError);
       throw new Error(usersError.message);
     }
 
     const eligibleUsers = users || [];
-
-    console.log(`📱 ${eligibleUsers.length} usuários elegíveis para relatório semanal`);
+    console.log(`📱 ${eligibleUsers.length} usuários elegíveis`);
 
     const results: any[] = [];
 
     for (const user of eligibleUsers) {
       try {
-        console.log(`\n👤 Processando relatório de: ${user.full_name}`);
+        console.log(`\n👤 Processando relatório: ${user.full_name}`);
 
-        // Chamar a edge function dr-vital-weekly-report para gerar análise
+        // Gerar relatório via edge function
         const { data: reportData, error: reportError } = await supabase.functions.invoke(
           "dr-vital-weekly-report",
           {
@@ -124,10 +112,9 @@ serve(async (req) => {
           throw new Error("Relatório não gerado");
         }
 
-        // Formatar mensagem do relatório
+        // Formatar mensagem com DUPLA VOZ: Dr. Vital + Sofia
         const reportMessage = formatReportMessage(user.full_name, report, weekStartStr, weekEndStr);
 
-        // Enviar mensagem via Evolution API
         const phone = formatPhone(user.phone);
         
         const evolutionResponse = await fetch(`${EVOLUTION_API_URL}/message/sendText/${EVOLUTION_INSTANCE}`, {
@@ -145,7 +132,6 @@ serve(async (req) => {
 
         const evolutionData = await evolutionResponse.json();
 
-        // Registrar log
         await supabase.from("whatsapp_evolution_logs").insert({
           user_id: user.user_id,
           phone: phone,
@@ -163,13 +149,11 @@ serve(async (req) => {
           healthScore: report.healthScore,
         });
 
-        console.log(`✅ Relatório enviado para ${user.full_name} (Health Score: ${report.healthScore})`);
-
-        // Delay entre envios
+        console.log(`✅ Relatório enviado: ${user.full_name} (Score: ${report.healthScore})`);
         await new Promise(resolve => setTimeout(resolve, 3000));
 
       } catch (userError) {
-        console.error(`❌ Erro ao processar ${user.full_name}:`, userError);
+        console.error(`❌ Erro: ${user.full_name}:`, userError);
         results.push({
           userId: user.user_id,
           name: user.full_name,
@@ -209,14 +193,14 @@ function formatPhone(phone: string): string {
 }
 
 function formatReportMessage(userName: string, report: any, weekStart: string, weekEnd: string): string {
-  const firstName = userName?.split(" ")[0] || "Paciente";
+  const firstName = userName?.split(" ")[0] || "você";
   const data = report.data || {};
   
-  // Health Score com emoji baseado no valor
+  // Health Score
   const healthScore = report.healthScore || 0;
   const scoreEmoji = healthScore >= 80 ? "🌟" : healthScore >= 60 ? "✨" : healthScore >= 40 ? "💪" : "🎯";
   
-  // Formatação dos dados
+  // Dados formatados
   const weightChange = data.weight?.change 
     ? `${data.weight.change > 0 ? "+" : ""}${data.weight.change.toFixed(1)}kg`
     : "—";
@@ -225,12 +209,12 @@ function formatReportMessage(userName: string, report: any, weekStart: string, w
   const waterAvg = data.water?.average 
     ? `${(data.water.average / 1000).toFixed(1)}L/dia`
     : "—";
-  const waterEmoji = (data.water?.average || 0) >= 2000 ? "✅" : "⚠️";
+  const waterEmoji = (data.water?.average || 0) >= 2000 ? "✅" : "💧";
   
   const sleepAvg = data.sleep?.average 
     ? `${data.sleep.average.toFixed(1)}h/noite`
     : "—";
-  const sleepEmoji = (data.sleep?.average || 0) >= 7 ? "✅" : "⚠️";
+  const sleepEmoji = (data.sleep?.average || 0) >= 7 ? "✅" : "😴";
   
   const moodAvg = data.mood?.average 
     ? `${data.mood.average.toFixed(1)}/10`
@@ -238,61 +222,79 @@ function formatReportMessage(userName: string, report: any, weekStart: string, w
   
   const exerciseDays = data.exercise?.days || 0;
   const exerciseMinutes = data.exercise?.totalMinutes || 0;
-  const exerciseEmoji = exerciseDays >= 3 ? "✅" : "⚠️";
   
   const missionsCompleted = data.missions?.completed || 0;
   const streak = data.missions?.streak || 0;
 
-  // Formatar data em PT-BR
   const formatDate = (dateStr: string) => {
     const [year, month, day] = dateStr.split("-");
     return `${day}/${month}`;
   };
 
-  let message = `📊 *RELATÓRIO SEMANAL*
-📅 ${formatDate(weekStart)} a ${formatDate(weekEnd)}
+  // Mensagem com DUPLA VOZ
+  let message = `*${firstName}*, aqui está seu resumo semanal! 📊
+
+📅 _${formatDate(weekStart)} a ${formatDate(weekEnd)}_
+
+━━━━━━━━━━━━━━━━
+
+🩺 *Dr. Vital analisa:*
 
 ${scoreEmoji} *Health Score: ${healthScore}/100*
 
-━━━━━━━━━━━━━━━━━━
-
-⚖️ *Peso:* ${weightEmoji} ${weightChange}
-💧 *Hidratação:* ${waterEmoji} ${waterAvg}
-😴 *Sono:* ${sleepEmoji} ${sleepAvg}
-😊 *Humor médio:* ${moodAvg}
-🏃 *Exercícios:* ${exerciseEmoji} ${exerciseDays} dias (${exerciseMinutes}min)
-🎯 *Missões:* ${missionsCompleted}/7 completadas`;
+⚖️ Peso: ${weightEmoji} ${weightChange}
+${waterEmoji} Hidratação: ${waterAvg}
+${sleepEmoji} Sono: ${sleepAvg}
+😊 Humor médio: ${moodAvg}
+🏃 Exercícios: ${exerciseDays} dias (${exerciseMinutes}min)
+🎯 Missões: ${missionsCompleted}/7`;
 
   if (streak > 0) {
-    message += `\n🔥 *Streak:* ${streak} dias!`;
+    message += `\n🔥 Streak: ${streak} dias!`;
   }
 
-  message += `\n\n━━━━━━━━━━━━━━━━━━`;
+  message += `\n\n━━━━━━━━━━━━━━━━`;
 
-  // Adicionar análise do Dr. Vital (resumida)
+  // Análise resumida do Dr. Vital
   if (report.analysis) {
-    // Pegar apenas os primeiros 500 caracteres da análise
     let analysisShort = report.analysis;
-    if (analysisShort.length > 500) {
-      analysisShort = analysisShort.substring(0, 497) + "...";
+    if (analysisShort.length > 300) {
+      analysisShort = analysisShort.substring(0, 297) + "...";
     }
-    message += `\n\n🩺 *Dr. Vital:*\n${analysisShort}`;
+    message += `\n\n📋 *Análise:*\n${analysisShort}`;
   }
 
-  // Adicionar recomendações (máx 3)
+  // Mensagem da Sofia (motivacional)
+  message += `\n\n━━━━━━━━━━━━━━━━
+
+💚 *Sofia diz:*
+`;
+
+  if (healthScore >= 80) {
+    message += `Você está arrasando! Seu compromisso com a saúde está dando resultados incríveis. Continue assim! ✨`;
+  } else if (healthScore >= 60) {
+    message += `Você está no caminho certo! Cada dia é uma oportunidade de cuidar ainda mais de você. Orgulho! 💪`;
+  } else if (healthScore >= 40) {
+    message += `Sei que nem sempre é fácil, mas você está tentando e isso é o que importa. Semana que vem será ainda melhor! 🌟`;
+  } else {
+    message += `Estou aqui com você, tá? Uma semana de cada vez. Pequenos passos fazem grandes jornadas. Vamos juntos! 🤝`;
+  }
+
+  // Recomendações (máx 2)
   if (report.recommendations && report.recommendations.length > 0) {
-    message += `\n\n💡 *Recomendações:*`;
-    report.recommendations.slice(0, 3).forEach((rec: string, i: number) => {
-      // Limitar cada recomendação a 100 caracteres
-      const shortRec = rec.length > 100 ? rec.substring(0, 97) + "..." : rec;
+    message += `\n\n💡 *Foco da semana:*`;
+    report.recommendations.slice(0, 2).forEach((rec: string, i: number) => {
+      const shortRec = rec.length > 80 ? rec.substring(0, 77) + "..." : rec;
       message += `\n${i + 1}. ${shortRec}`;
     });
   }
 
-  message += `\n\n━━━━━━━━━━━━━━━━━━
+  message += `\n\n━━━━━━━━━━━━━━━━
+
 _Acesse o app para ver o relatório completo!_
 
-Equipe Mission Health 💚`;
+Dr. Vital 🩺 & Sofia 💚
+_Instituto dos Sonhos_`;
 
   return message;
 }

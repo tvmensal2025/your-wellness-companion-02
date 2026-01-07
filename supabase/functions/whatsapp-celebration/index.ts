@@ -20,6 +20,11 @@ interface CelebrationPayload {
   };
 }
 
+// SOFIA - Voz para celebrações (calorosa e empolgada)
+const SOFIA_CELEBRATION = {
+  assinatura: "Com carinho,\nSofia 💚\n_Instituto dos Sonhos_",
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -45,7 +50,7 @@ serve(async (req) => {
       throw new Error("userId e type são obrigatórios");
     }
 
-    console.log(`🎉 Enviando celebração: ${type} para ${userId}`);
+    console.log(`🎉 Sofia celebrando: ${type} para ${userId}`);
 
     // Buscar dados do usuário
     const { data: user, error: userError } = await supabase
@@ -62,7 +67,7 @@ serve(async (req) => {
       throw new Error("Usuário sem telefone cadastrado");
     }
 
-    // Buscar configuração do WhatsApp (sem depender de relacionamento FK no PostgREST)
+    // Verificar configuração do WhatsApp
     const { data: settings, error: settingsError } = await supabase
       .from("user_notification_settings")
       .select("whatsapp_enabled")
@@ -70,55 +75,50 @@ serve(async (req) => {
       .maybeSingle();
 
     if (settingsError) {
-      console.error("Erro ao buscar configurações de notificação:", settingsError);
       throw new Error(settingsError.message);
     }
 
     if (!settings?.whatsapp_enabled) {
       return new Response(
-        JSON.stringify({
-          success: false,
-          reason: "WhatsApp desabilitado pelo usuário",
-        }),
-        {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
+        JSON.stringify({ success: false, reason: "WhatsApp desabilitado" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const firstName = user.full_name?.split(" ")[0] || "Campeão";
+    const firstName = user.full_name?.split(" ")[0] || "você";
     let celebrationMessage = "";
 
+    // TODAS as celebrações são feitas pela SOFIA (mais calorosa)
     switch (type) {
       case "achievement":
-        celebrationMessage = `🏆 *CONQUISTA DESBLOQUEADA!*
+        celebrationMessage = `*${firstName}*, VOCÊ CONSEGUIU! 🏆
 
-Parabéns, ${firstName}! 🎊
+${data.achievementIcon || "🌟"} *Conquista Desbloqueada:*
+_${data.achievementName || "Nova Conquista"}_
 
-Você acabou de desbloquear:
-${data.achievementIcon || "🌟"} *${data.achievementName || "Nova Conquista"}*
+Cada conquista representa seu esforço e dedicação. Eu sabia que você conseguiria! ✨
 
-Cada conquista representa seu esforço e dedicação. Continue assim! 💪
+Celebre essa vitória, você merece! 🎉
 
-_Acesse o app para ver todas as suas conquistas!_`;
+${SOFIA_CELEBRATION.assinatura}`;
         break;
 
       case "weight_milestone":
         const weightLost = Math.abs(data.weightLost || 0);
-        celebrationMessage = `⚖️ *MARCO DE PESO ATINGIDO!*
-
-${firstName}, você é incrível! 🎉
+        celebrationMessage = `*${firstName}*, que notícia maravilhosa! ⚖️
 
 Você perdeu *${weightLost.toFixed(1)}kg*! 📉
 
 Isso representa:
-• Disciplina e consistência 💪
-• Escolhas conscientes 🥗
-• Compromisso com sua saúde ❤️
+💪 Disciplina e consistência
+🥗 Escolhas conscientes
+❤️ Amor próprio em ação
 
-Celebre essa vitória! Você merece! 🎊
+Estou tão orgulhosa de você! Cada quilo representa uma vitória sobre velhos hábitos. 🌟
 
-_Continue acompanhando seu progresso no app!_`;
+_O Dr. Vital também mandou parabéns!_ 🩺
+
+${SOFIA_CELEBRATION.assinatura}`;
         break;
 
       case "streak_milestone":
@@ -128,52 +128,56 @@ _Continue acompanhando seu progresso no app!_`;
         
         if (streakDays >= 30) {
           streakEmoji = "👑";
-          streakMessage = "Você é uma LENDA!";
+          streakMessage = "Você é uma LENDA! 30 dias de pura dedicação!";
         } else if (streakDays >= 14) {
           streakEmoji = "💎";
-          streakMessage = "Você está IMPARÁVEL!";
+          streakMessage = "Duas semanas IMPARÁVEIS! Você está brilhando!";
         } else if (streakDays >= 7) {
           streakEmoji = "⭐";
-          streakMessage = "Uma semana inteira de dedicação!";
+          streakMessage = "Uma semana inteira de dedicação! Que orgulho!";
+        } else {
+          streakMessage = `${streakDays} dias consecutivos! Continue assim!`;
         }
 
-        celebrationMessage = `${streakEmoji} *${streakDays} DIAS DE STREAK!*
+        celebrationMessage = `*${firstName}*, ${streakEmoji} *${streakDays} DIAS DE STREAK!*
 
-${firstName}, ${streakMessage} 🎉
+${streakMessage}
 
-Você manteve o foco por *${streakDays} dias consecutivos*!
-
-Isso mostra:
-• Comprometimento real 💯
-• Hábitos sendo formados 🧠
-• Resultados chegando 📈
+Você está provando que é capaz de:
+💯 Manter o compromisso
+🧠 Criar novos hábitos
+📈 Construir resultados reais
 
 Não pare agora! Cada dia conta! 🚀
 
-_Sua jornada está no app!_`;
+${SOFIA_CELEBRATION.assinatura}`;
         break;
 
       case "goal_completed":
-        celebrationMessage = `🎯 *META ATINGIDA!*
-
-${firstName}, VOCÊ CONSEGUIU! 🎊🎉🏆
+        celebrationMessage = `*${firstName}*, PARABÉNS! 🎯🎊🏆
 
 Você completou: *${data.goalName || "sua meta"}*
 
 Esse é o resultado de:
-• Muito esforço 💪
-• Consistência 📊
-• Não desistir nos dias difíceis 🌟
+💪 Muito esforço
+📊 Consistência diária
+🌟 Não desistir nos dias difíceis
 
-Você provou que é capaz! Hora de definir novos objetivos! 🚀
+Eu sempre soube que você conseguiria! Agora é hora de celebrar e definir novos objetivos ainda maiores! 🚀
 
-_Celebre e planeje seus próximos passos no app!_`;
+_Estou aqui para te acompanhar na próxima jornada!_
+
+${SOFIA_CELEBRATION.assinatura}`;
         break;
 
       default:
-        celebrationMessage = `🎉 *PARABÉNS, ${firstName}!*
+        celebrationMessage = `*${firstName}*, PARABÉNS! 🎉
 
-Você está fazendo um trabalho incrível cuidando da sua saúde! Continue assim! 💪`;
+Você está fazendo um trabalho incrível cuidando da sua saúde!
+
+Cada passo conta, cada escolha importa. Orgulho de você! ✨
+
+${SOFIA_CELEBRATION.assinatura}`;
     }
 
     // Enviar mensagem
@@ -194,7 +198,6 @@ Você está fazendo um trabalho incrível cuidando da sua saúde! Continue assim
 
     const evolutionData = await evolutionResponse.json();
 
-    // Registrar log
     await supabase.from("whatsapp_evolution_logs").insert({
       user_id: userId,
       phone: phone,
@@ -211,6 +214,7 @@ Você está fazendo um trabalho incrível cuidando da sua saúde! Continue assim
       success: evolutionResponse.ok,
       type,
       userId,
+      voice: "Sofia",
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
