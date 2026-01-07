@@ -12,7 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { useAdminPermissions } from '@/hooks/useAdminPermissions';
-import { Target, CheckCircle2, XCircle, Edit, Trash2, ArrowRightLeft } from 'lucide-react';
+import { usePointsConfig } from '@/hooks/usePointsConfig';
+import { Target, CheckCircle2, XCircle, Edit, Trash2, ArrowRightLeft, Info } from 'lucide-react';
 
 export function GoalManagement() {
   const [selectedTab, setSelectedTab] = useState('pendente');
@@ -25,6 +26,7 @@ export function GoalManagement() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { isSuperAdmin } = useAdminPermissions();
+  const { getPoints, getConfig } = usePointsConfig();
 
   const { data: goals, isLoading } = useQuery({
     queryKey: ['admin-goals', selectedTab],
@@ -179,9 +181,15 @@ export function GoalManagement() {
 
   const handleApproval = (goal: any, status: 'aprovada' | 'rejeitada') => {
     setSelectedGoal(goal);
+    // Buscar pontos padrão da configuração
+    const defaultPoints = getPoints('goal_complete');
+    // Sugestão baseada na dificuldade
+    const difficultyMultiplier = goal.difficulty === 'facil' ? 0.5 : goal.difficulty === 'dificil' ? 2 : 1;
+    const suggestedPoints = Math.round((goal.estimated_points || defaultPoints || 100) * difficultyMultiplier);
+    
     setApprovalData({
       status,
-      points_awarded: status === 'aprovada' ? goal.estimated_points || 10 : 0,
+      points_awarded: status === 'aprovada' ? suggestedPoints : 0,
       comments: ''
     });
   };
@@ -376,16 +384,29 @@ export function GoalManagement() {
               </div>
 
               {approvalData.status === 'aprovada' && (
-                <div>
-                  <label className="text-sm font-medium">Pontos Finais</label>
-                  <Input
-                    type="number"
-                    value={approvalData.points_awarded}
-                    onChange={(e) => setApprovalData({
-                      ...approvalData, 
-                      points_awarded: parseInt(e.target.value) || 0
-                    })}
-                  />
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-sm font-medium">Pontos Finais</label>
+                    <Input
+                      type="number"
+                      value={approvalData.points_awarded}
+                      onChange={(e) => setApprovalData({
+                        ...approvalData, 
+                        points_awarded: parseInt(e.target.value) || 0
+                      })}
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Sugestão: Fácil={Math.round(getPoints('goal_complete') * 0.5)}, 
+                      Médio={getPoints('goal_complete')}, 
+                      Difícil={getPoints('goal_complete') * 2} pts
+                    </p>
+                  </div>
+                  <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg p-3 flex items-start gap-2">
+                    <Info className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                    <p className="text-xs text-amber-700 dark:text-amber-400">
+                      Os pontos serão creditados automaticamente quando o usuário concluir a meta (atingir 100% do progresso).
+                    </p>
+                  </div>
                 </div>
               )}
 
