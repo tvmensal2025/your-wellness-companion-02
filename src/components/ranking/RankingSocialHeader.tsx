@@ -43,12 +43,16 @@ export function RankingSocialHeader({
     },
   ];
 
+  // weightChange is negative when losing weight, positive when gaining
+  const weightChange = stats?.weightChange;
+  const isLosingWeight = weightChange !== null && weightChange < 0;
+
   const progressItems = [
     {
       icon: Scale,
-      value: stats?.weightLoss ? `${stats.weightLoss > 0 ? '-' : '+'}${Math.abs(stats.weightLoss).toFixed(1)}kg` : '--',
+      value: weightChange !== null ? `${weightChange < 0 ? '' : '+'}${weightChange.toFixed(1)}kg` : '--',
       label: 'Peso',
-      color: stats?.weightLoss && stats.weightLoss > 0 ? 'text-green-500' : 'text-muted-foreground',
+      color: isLosingWeight ? 'text-green-500' : 'text-muted-foreground',
     },
     {
       icon: Target,
@@ -108,7 +112,7 @@ export function RankingSocialHeader({
           </div>
 
           {/* Progress Summary */}
-          {stats && (stats.weightLoss !== null || stats.challengesCompleted > 0) && (
+          {stats && (weightChange !== null || stats.challengesCompleted > 0) && (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -126,14 +130,14 @@ export function RankingSocialHeader({
           )}
 
           {/* Motivational message */}
-          {stats?.weightLoss && stats.weightLoss > 0 && (
+          {isLosingWeight && weightChange !== null && (
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.6 }}
               className="text-center text-sm text-green-600 dark:text-green-400 mt-3 font-medium"
             >
-              🎉 Você já perdeu {stats.weightLoss.toFixed(1)}kg! Continue assim! 💪
+              🎉 Você já perdeu {Math.abs(weightChange).toFixed(1)}kg! Continue assim! 💪
             </motion.p>
           )}
         </div>

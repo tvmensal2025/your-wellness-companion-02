@@ -6647,6 +6647,7 @@ export type Database = {
           role: string | null
           show_points: boolean | null
           show_streak: boolean | null
+          show_weight_results: boolean | null
           state: string | null
           target_weight: number | null
           updated_at: string
@@ -6677,6 +6678,7 @@ export type Database = {
           role?: string | null
           show_points?: boolean | null
           show_streak?: boolean | null
+          show_weight_results?: boolean | null
           state?: string | null
           target_weight?: number | null
           updated_at?: string
@@ -6707,6 +6709,7 @@ export type Database = {
           role?: string | null
           show_points?: boolean | null
           show_streak?: boolean | null
+          show_weight_results?: boolean | null
           state?: string | null
           target_weight?: number | null
           updated_at?: string

@@ -38,7 +38,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useCommunityProfile, CommunityUserPost } from '@/hooks/useCommunityProfile';
 import { useUserProgressStats } from '@/hooks/useUserProgressStats';
 import { InviteToChallengeModal } from './InviteToChallengeModal';
-import { WeightProgressCard } from '@/components/profile/WeightProgressCard';
+import { WeightResultCard } from '@/components/profile/WeightResultCard';
+import { WeightPrivacyToggle } from '@/components/settings/WeightPrivacyToggle';
 import { ChallengesCompletedCard } from '@/components/profile/ChallengesCompletedCard';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -418,16 +419,32 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                   </div>
                 )}
 
+                {/* Privacy Toggle for Own Profile */}
+                {isOwnProfile && userId && (
+                  <div className="px-6">
+                    <WeightPrivacyToggle
+                      userId={userId}
+                      initialValue={progressStats?.showWeightResults ?? true}
+                    />
+                  </div>
+                )}
+
+                {/* Weight Result Card - with privacy control */}
+                {progressStats && (progressStats.showWeightResults || isOwnProfile) && (
+                  <div className="px-6">
+                    <WeightResultCard
+                      initialWeight={progressStats.initialWeight}
+                      currentWeight={progressStats.currentWeight}
+                      targetWeight={progressStats.targetWeight}
+                      isHidden={!progressStats.showWeightResults}
+                      isOwnProfile={isOwnProfile}
+                    />
+                  </div>
+                )}
+
                 {/* Progress Stats Cards */}
                 {progressStats && (
                   <div className="px-6 space-y-3">
-                    <WeightProgressCard
-                      currentWeight={progressStats.currentWeight}
-                      targetWeight={progressStats.targetWeight}
-                      initialWeight={null}
-                      weightLoss={progressStats.weightLoss}
-                      weightProgress={progressStats.weightProgress}
-                    />
                     <ChallengesCompletedCard
                       challengesCompleted={progressStats.challengesCompleted}
                       activeChallenges={progressStats.activeChallenges}
