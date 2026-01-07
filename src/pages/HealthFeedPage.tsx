@@ -37,6 +37,7 @@ import { NotificationBell } from '@/components/community/NotificationBell';
 import { SharePostModal } from '@/components/community/SharePostModal';
 import { UserProfileModal } from '@/components/community/UserProfileModal';
 import { FollowingList } from '@/components/community/FollowingList';
+import { FollowersList } from '@/components/community/FollowersList';
 import { CommunityHealthSummary } from '@/components/community/CommunityHealthSummary';
 import { RankingPodium } from '@/components/ranking/RankingPodium';
 import { CurrentUserRankCard } from '@/components/ranking/CurrentUserRankCard';
@@ -61,6 +62,7 @@ export default function HealthFeedPage() {
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [selectedProfileId, setSelectedProfileId] = useState<string | null>(null);
   const [initialDmUser, setInitialDmUser] = useState<string | null>(null);
+  const [showFollowersList, setShowFollowersList] = useState(false);
 
   const { user } = useAuth();
   const { ranking, loading: rankingLoading } = useRanking();
@@ -412,12 +414,29 @@ export default function HealthFeedPage() {
           {/* Ranking Tab */}
           <TabsContent value="ranking" className="mt-4">
             <div className="max-w-2xl mx-auto space-y-6">
+              {/* Followers List (shown when clicked from header) */}
+              {showFollowersList && (
+                <FollowersList
+                  onProfileClick={(userId) => {
+                    setSelectedProfileId(userId);
+                    setProfileModalOpen(true);
+                  }}
+                  onMessageClick={(userId) => {
+                    setInitialDmUser(userId);
+                    setDmModalOpen(true);
+                  }}
+                  onClose={() => setShowFollowersList(false)}
+                />
+              )}
+
               {/* Social Header with Followers/Following */}
               <RankingSocialHeader
                 userId={user?.id || null}
                 userName={userName}
                 avatarUrl={userProfile?.avatar_url}
                 rankingPosition={currentUserStats.position}
+                onFollowersClick={() => setShowFollowersList(!showFollowersList)}
+                onFollowingClick={() => setActiveTab('following')}
               />
 
               {/* Header */}

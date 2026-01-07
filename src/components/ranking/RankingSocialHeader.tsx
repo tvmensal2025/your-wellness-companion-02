@@ -9,6 +9,8 @@ interface RankingSocialHeaderProps {
   userName: string;
   avatarUrl?: string;
   rankingPosition: number;
+  onFollowersClick?: () => void;
+  onFollowingClick?: () => void;
 }
 
 export function RankingSocialHeader({
@@ -16,6 +18,8 @@ export function RankingSocialHeader({
   userName,
   avatarUrl,
   rankingPosition,
+  onFollowersClick,
+  onFollowingClick,
 }: RankingSocialHeaderProps) {
   const { stats, loading } = useUserProgressStats(userId);
 
@@ -26,6 +30,7 @@ export function RankingSocialHeader({
       label: 'Seguidores',
       color: 'text-primary',
       bgColor: 'bg-primary/10',
+      onClick: onFollowersClick,
     },
     {
       icon: UserPlus,
@@ -33,6 +38,7 @@ export function RankingSocialHeader({
       label: 'Seguindo',
       color: 'text-blue-500',
       bgColor: 'bg-blue-500/10',
+      onClick: onFollowingClick,
     },
     {
       icon: Trophy,
@@ -40,6 +46,7 @@ export function RankingSocialHeader({
       label: 'Posição',
       color: 'text-yellow-500',
       bgColor: 'bg-yellow-500/10',
+      onClick: undefined,
     },
   ];
 
@@ -104,7 +111,8 @@ export function RankingSocialHeader({
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: index * 0.1 }}
-                className={`text-center p-3 rounded-xl ${item.bgColor} border border-transparent hover:border-primary/20 transition-all cursor-pointer`}
+                onClick={item.onClick}
+                className={`text-center p-3 rounded-xl ${item.bgColor} border border-transparent hover:border-primary/20 transition-all ${item.onClick ? 'cursor-pointer hover:scale-105 active:scale-95' : ''}`}
               >
                 <item.icon className={`w-5 h-5 mx-auto mb-1 ${item.color}`} />
                 <span className="font-bold text-lg block">{item.value}</span>
