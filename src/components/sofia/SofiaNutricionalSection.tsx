@@ -3,13 +3,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
-import { Target, TrendingUp, ChefHat, Zap, Clock, Utensils, History } from 'lucide-react';
+import { Target, TrendingUp, ChefHat, Zap, Clock, Utensils } from 'lucide-react';
 import { MealPlanGeneratorModalV2 } from '@/components/nutrition-tracking/MealPlanGeneratorModalV2';
 import { useNutritionTracking } from '@/hooks/useNutritionTracking';
 
 import { MealPlanHistoryModal } from '@/components/meal-plan/MealPlanHistoryModal';
 import { MealPlanSuccessEffect } from '@/components/meal-plan/MealPlanSuccessEffect';
-import { UnifiedAnalysisHistory } from '@/components/analysis/UnifiedAnalysisHistory';
+
 import { useMealPlanGeneratorV2 } from '@/hooks/useMealPlanGeneratorV2';
 import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
@@ -102,29 +102,22 @@ export const SofiaNutricionalSection: React.FC<SofiaNutricionalSectionProps> = (
         </div>
       )}
 
-      {/* Tabs principais - mobile-friendly */}
+      {/* Tabs principais - 2 tabs maiores */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="w-full overflow-x-auto flex justify-start gap-1 bg-muted/50 p-1 rounded-lg scrollbar-hide">
+        <TabsList className="w-full grid grid-cols-2 gap-2 bg-muted/50 p-1.5 rounded-xl">
           <TabsTrigger 
             value="tracker" 
-            className="flex-none text-xs sm:text-sm px-3 py-2 data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-emerald-600"
+            className="flex items-center justify-center gap-2 text-sm py-3 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-md data-[state=active]:text-emerald-600 font-medium"
           >
-            <Utensils className="w-4 h-4 sm:mr-1.5" />
-            <span className="hidden sm:inline">Nutrição</span>
+            <Utensils className="w-5 h-5" />
+            Nutrição
           </TabsTrigger>
           <TabsTrigger 
             value="generator" 
-            className="flex-none text-xs sm:text-sm px-3 py-2 data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-emerald-600"
+            className="flex items-center justify-center gap-2 text-sm py-3 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-md data-[state=active]:text-emerald-600 font-medium"
           >
-            <ChefHat className="w-4 h-4 sm:mr-1.5" />
-            <span className="hidden sm:inline">Cardápios</span>
-          </TabsTrigger>
-          <TabsTrigger 
-            value="history" 
-            className="flex-none text-xs sm:text-sm px-3 py-2 data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-emerald-600"
-          >
-            <History className="w-4 h-4 sm:mr-1.5" />
-            <span className="hidden sm:inline">Histórico</span>
+            <ChefHat className="w-5 h-5" />
+            Cardápios
           </TabsTrigger>
         </TabsList>
 
@@ -266,11 +259,6 @@ export const SofiaNutricionalSection: React.FC<SofiaNutricionalSectionProps> = (
           </Card>
         </TabsContent>
 
-
-        {/* Tab Histórico */}
-        <TabsContent value="history" className="mt-4">
-          <UnifiedAnalysisHistory />
-        </TabsContent>
       </Tabs>
 
       {/* Modal do Gerador */}
