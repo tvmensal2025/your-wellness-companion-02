@@ -33,6 +33,8 @@ import {
   Apple,
   Moon,
   Brain,
+  Ban,
+  ShieldOff,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCommunityProfile, CommunityUserPost } from '@/hooks/useCommunityProfile';
@@ -40,6 +42,7 @@ import { useUserProgressStats } from '@/hooks/useUserProgressStats';
 import { InviteToChallengeModal } from './InviteToChallengeModal';
 import { WeightResultCard } from '@/components/profile/WeightResultCard';
 import { ChallengesCompletedCard } from '@/components/profile/ChallengesCompletedCard';
+import { useUserBlock } from '@/hooks/useUserBlock';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -154,6 +157,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
 }) => {
   const { loading, profile, userPosts, fetchProfile, clearProfile } = useCommunityProfile();
   const { stats: progressStats } = useUserProgressStats(userId);
+  const { isBlocked, loading: blockLoading, toggleBlock } = useUserBlock(userId);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
 
@@ -406,15 +410,38 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                         Mensagem
                       </Button>
                     </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full rounded-xl border-primary/30 text-primary hover:bg-primary/10"
-                      onClick={() => setInviteModalOpen(true)}
-                    >
-                      <Target className="w-4 h-4 mr-2" />
-                      Convidar para Desafio
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex-1 rounded-xl border-primary/30 text-primary hover:bg-primary/10"
+                        onClick={() => setInviteModalOpen(true)}
+                      >
+                        <Target className="w-4 h-4 mr-2" />
+                        Convidar para Desafio
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className={`rounded-xl ${isBlocked ? 'border-green-500/30 text-green-600 hover:bg-green-500/10' : 'border-red-500/30 text-red-600 hover:bg-red-500/10'}`}
+                        onClick={toggleBlock}
+                        disabled={blockLoading}
+                      >
+                        {blockLoading ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : isBlocked ? (
+                          <>
+                            <ShieldOff className="w-4 h-4 mr-1" />
+                            Desbloquear
+                          </>
+                        ) : (
+                          <>
+                            <Ban className="w-4 h-4 mr-1" />
+                            Bloquear
+                          </>
+                        )}
+                      </Button>
+                    </div>
                   </div>
                 )}
 
