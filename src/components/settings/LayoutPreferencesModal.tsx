@@ -162,28 +162,14 @@ export const LayoutPreferencesModal: React.FC<LayoutPreferencesModalProps> = ({
                       {item.label}
                     </span>
 
-                    <button
-                      className={cn(
-                        "w-8 h-8 rounded-full flex items-center justify-center transition-all",
-                        isDashboard 
-                          ? "bg-muted cursor-not-allowed" 
-                          : isHidden 
-                            ? "bg-red-500/20 hover:bg-red-500/30" 
-                            : "bg-green-500/20 hover:bg-green-500/30"
-                      )}
-                      onClick={() => toggleVisibility(itemId)}
+                    <Switch
+                      checked={!isHidden}
+                      onCheckedChange={() => toggleVisibility(itemId)}
                       disabled={isDashboard}
-                      title={isDashboard ? "Dashboard não pode ser oculto" : isHidden ? "Clique para mostrar" : "Clique para ocultar"}
-                    >
-                      <div className={cn(
-                        "w-3 h-3 rounded-full",
-                        isDashboard 
-                          ? "bg-muted-foreground/50" 
-                          : isHidden 
-                            ? "bg-red-500" 
-                            : "bg-green-500"
-                      )} />
-                    </button>
+                      className={cn(
+                        isDashboard && "opacity-50 cursor-not-allowed"
+                      )}
+                    />
                   </div>
                 );
               })}
