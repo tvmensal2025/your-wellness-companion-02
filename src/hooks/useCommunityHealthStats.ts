@@ -11,6 +11,7 @@ interface CommunityStats {
 interface TopLoser {
   name: string;
   weightLost: number;
+  avatarUrl: string | null;
 }
 
 export function useCommunityHealthStats() {
@@ -34,7 +35,7 @@ export function useCommunityHealthStats() {
       // Get weight measurements from users who allow showing results
       const { data: profiles } = await supabase
         .from('profiles')
-        .select('user_id, full_name')
+        .select('user_id, full_name, avatar_url')
         .eq('show_weight_results', true);
 
       if (!profiles || profiles.length === 0) {
@@ -43,9 +44,12 @@ export function useCommunityHealthStats() {
       }
 
       const allowedUserIds = profiles.map(p => p.user_id);
-      const userNames: Record<string, string> = {};
+      const userInfo: Record<string, { name: string; avatarUrl: string | null }> = {};
       profiles.forEach(p => {
-        userNames[p.user_id] = p.full_name || 'Usuário';
+        userInfo[p.user_id] = { 
+          name: p.full_name || 'Usuário',
+          avatarUrl: p.avatar_url 
+        };
       });
 
       // Get all weight measurements for allowed users
@@ -121,9 +125,11 @@ export function useCommunityHealthStats() {
       });
 
       if (topLoserId && maxWeightLost < 0) {
+        const info = userInfo[topLoserId];
         setTopLoser({
-          name: userNames[topLoserId] || 'Usuário',
+          name: info?.name || 'Usuário',
           weightLost: maxWeightLost,
+          avatarUrl: info?.avatarUrl || null,
         });
       }
     } catch (error) {
