@@ -67,10 +67,12 @@ serve(async (req) => {
       throw usersError;
     }
 
-    const eligibleUsers = users?.filter((u: any) => 
-      u.user_notification_settings?.whatsapp_enabled && 
-      u.user_notification_settings?.whatsapp_weekly_report
-    ) || [];
+    const eligibleUsers = users?.filter((u: any) => {
+      const settings = Array.isArray(u.user_notification_settings) 
+        ? u.user_notification_settings[0] 
+        : u.user_notification_settings;
+      return settings?.whatsapp_enabled && settings?.whatsapp_weekly_report;
+    }) || [];
 
     console.log(`📱 ${eligibleUsers.length} usuários elegíveis para relatório semanal`);
 

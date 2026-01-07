@@ -69,7 +69,10 @@ serve(async (req) => {
       throw new Error("Usuário sem telefone cadastrado");
     }
 
-    if (!user.user_notification_settings?.whatsapp_enabled) {
+    const settings = Array.isArray(user.user_notification_settings) 
+      ? user.user_notification_settings[0] 
+      : user.user_notification_settings;
+    if (!settings?.whatsapp_enabled) {
       return new Response(JSON.stringify({ 
         success: false, 
         reason: "WhatsApp desabilitado pelo usuário" 
