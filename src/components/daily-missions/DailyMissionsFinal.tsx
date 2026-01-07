@@ -202,6 +202,8 @@ export const DailyMissionsFinal: React.FC<DailyMissionsFinalProps> = ({ user }) 
         totalPoints={totalPoints}
         questions={allQuestions}
         onContinue={() => window.location.href = '/sofia-nutricional'}
+        userId={user?.id}
+        streakDays={session?.streak_days || 1}
       />
     );
   }
