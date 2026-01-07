@@ -36,7 +36,10 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCommunityProfile, CommunityUserPost } from '@/hooks/useCommunityProfile';
+import { useUserProgressStats } from '@/hooks/useUserProgressStats';
 import { InviteToChallengeModal } from './InviteToChallengeModal';
+import { WeightProgressCard } from '@/components/profile/WeightProgressCard';
+import { ChallengesCompletedCard } from '@/components/profile/ChallengesCompletedCard';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -150,6 +153,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   isOwnProfile,
 }) => {
   const { loading, profile, userPosts, fetchProfile, clearProfile } = useCommunityProfile();
+  const { stats: progressStats } = useUserProgressStats(userId);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
 
@@ -410,6 +414,27 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                       <Target className="w-4 h-4 mr-2" />
                       Convidar para Desafio
                     </Button>
+                  </div>
+                )}
+
+                {/* Progress Stats Cards */}
+                {progressStats && (
+                  <div className="px-6 space-y-3">
+                    <WeightProgressCard
+                      currentWeight={progressStats.currentWeight}
+                      targetWeight={progressStats.targetWeight}
+                      initialWeight={null}
+                      weightLoss={progressStats.weightLoss}
+                      weightProgress={progressStats.weightProgress}
+                    />
+                    <ChallengesCompletedCard
+                      challengesCompleted={progressStats.challengesCompleted}
+                      activeChallenges={progressStats.activeChallenges}
+                      activeGoals={0}
+                      completedGoals={0}
+                      currentStreak={progressStats.currentStreak}
+                      bestStreak={progressStats.bestStreak}
+                    />
                   </div>
                 )}
 

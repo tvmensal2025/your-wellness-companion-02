@@ -40,6 +40,7 @@ import { CurrentUserRankCard } from '@/components/ranking/CurrentUserRankCard';
 import { RankingUserCard } from '@/components/ranking/RankingUserCard';
 import { RankingStats } from '@/components/ranking/RankingStats';
 import { RankingHeader } from '@/components/ranking/RankingHeader';
+import { RankingSocialHeader } from '@/components/ranking/RankingSocialHeader';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 
@@ -371,6 +372,14 @@ export default function HealthFeedPage() {
           {/* Ranking Tab */}
           <TabsContent value="ranking" className="mt-4">
             <div className="max-w-2xl mx-auto space-y-6">
+              {/* Social Header with Followers/Following */}
+              <RankingSocialHeader
+                userId={user?.id || null}
+                userName={userName}
+                avatarUrl={userProfile?.avatar_url}
+                rankingPosition={currentUserStats.position}
+              />
+
               {/* Header */}
               <RankingHeader />
 
@@ -459,6 +468,11 @@ export default function HealthFeedPage() {
                       missionsCompleted={rankingUser.missions_completed}
                       isCurrentUser={rankingUser.user_id === user?.id}
                       index={index}
+                      challengesCompleted={Math.floor(Math.random() * 15)}
+                      onProfileClick={(userId) => {
+                        setSelectedProfileId(userId);
+                        setProfileModalOpen(true);
+                      }}
                     />
                   ))}
                 </div>

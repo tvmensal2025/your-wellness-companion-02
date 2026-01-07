@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Star, Flame, Target, Crown, Medal } from 'lucide-react';
+import { Star, Flame, Target, Crown, Medal, Scale, Trophy, TrendingDown } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 
@@ -13,6 +13,11 @@ interface RankingUserCardProps {
   missionsCompleted: number;
   isCurrentUser: boolean;
   index: number;
+  // New progress stats
+  weightLoss?: number | null;
+  challengesCompleted?: number;
+  activeGoals?: number;
+  onProfileClick?: (userId: string) => void;
 }
 
 export function RankingUserCard({
@@ -25,6 +30,10 @@ export function RankingUserCard({
   missionsCompleted,
   isCurrentUser,
   index,
+  weightLoss,
+  challengesCompleted = 0,
+  activeGoals = 0,
+  onProfileClick,
 }: RankingUserCardProps) {
   const getPositionStyle = (pos: number) => {
     const styles: Record<number, { bg: string; border: string; badge: string }> = {
@@ -55,6 +64,7 @@ export function RankingUserCard({
         scale: 1.02, 
         boxShadow: '0 10px 30px -10px rgba(0,0,0,0.2)',
       }}
+      onClick={() => onProfileClick?.(userId)}
       className={`
         relative overflow-hidden rounded-xl p-3 sm:p-4
         bg-gradient-to-r ${style.bg}
@@ -100,11 +110,29 @@ export function RankingUserCard({
               <span className="ml-1 text-xs text-primary/70 font-normal">(Você)</span>
             )}
           </p>
-          <div className="flex items-center gap-2 mt-0.5">
+          
+          {/* Progress stats row */}
+          <div className="flex items-center gap-2 mt-0.5 flex-wrap">
             <span className="text-xs text-muted-foreground flex items-center gap-1">
               <Target className="w-3 h-3" />
               {missionsCompleted}
             </span>
+            
+            {/* Weight loss badge */}
+            {weightLoss !== null && weightLoss !== undefined && weightLoss > 0 && (
+              <span className="text-xs text-green-600 dark:text-green-400 flex items-center gap-0.5 bg-green-500/10 px-1.5 py-0.5 rounded-full">
+                <TrendingDown className="w-3 h-3" />
+                -{weightLoss.toFixed(1)}kg
+              </span>
+            )}
+            
+            {/* Challenges completed */}
+            {challengesCompleted > 0 && (
+              <span className="text-xs text-yellow-600 dark:text-yellow-400 flex items-center gap-0.5 bg-yellow-500/10 px-1.5 py-0.5 rounded-full">
+                <Trophy className="w-3 h-3" />
+                {challengesCompleted}
+              </span>
+            )}
           </div>
         </div>
 
@@ -122,7 +150,7 @@ export function RankingUserCard({
                   text-xs px-2 py-0.5 
                   ${streak >= 7 
                     ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white border-0 shadow-lg' 
-                    : 'bg-orange-100 text-orange-700 border-orange-200'
+                    : 'bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-500/20 dark:text-orange-400 dark:border-orange-500/30'
                   }
                 `}
               >
