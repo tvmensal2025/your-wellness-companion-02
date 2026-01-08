@@ -755,25 +755,9 @@ async function processImage(user: { id: string }, phone: string, message: any, w
 
     console.log("[WhatsApp Nutrition] ✅ Upload concluído! URL:", imageUrl);
 
-    // 🔥 VERIFICAR SE TEM LOTE MÉDICO ATIVO (evita chamar detect-image-type)
-    const { data: activeMedicalBatch } = await supabase
-      .from("whatsapp_pending_medical")
-      .select("id, images_count, status")
-      .eq("user_id", user.id)
-      .eq("is_processed", false)
-      .in("status", ["collecting", "awaiting_confirm"])
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-
-    // Se tem lote ativo, assume que é MEDICAL (evita gasto de IA)
-    if (activeMedicalBatch) {
-      console.log(`[WhatsApp Nutrition] 🔥 Lote médico ativo detectado (${activeMedicalBatch.images_count} imgs) - pulando detect-image-type`);
-      await processMedicalImage(user, phone, imageUrl);
-      return;
-    }
-
-    // 🔥 DETECÇÃO INTELIGENTE DO TIPO DE IMAGEM (só se não tem lote)
+    // 🔥 SEMPRE DETECTAR O TIPO DA IMAGEM PRIMEIRO (mesmo com lote ativo)
+    // Isso permite enviar foto de COMIDA mesmo durante coleta de exames
+    
     let imageBase64ForDetection: string | null = null;
     const directBase64Check = directBase64 || await tryGetBase64FromEvolution();
     if (directBase64Check) {
@@ -782,7 +766,7 @@ async function processImage(user: { id: string }, phone: string, message: any, w
         : `data:image/jpeg;base64,${directBase64Check}`;
     }
     
-    console.log("[WhatsApp Nutrition] Detectando tipo de imagem...");
+    console.log("[WhatsApp Nutrition] 🔍 Detectando tipo de imagem SEMPRE...");
     
     const { data: imageTypeResult, error: typeError } = await supabase.functions.invoke("detect-image-type", {
       body: { 
@@ -794,18 +778,43 @@ async function processImage(user: { id: string }, phone: string, message: any, w
     const imageType = imageTypeResult?.type || "OTHER";
     const typeConfidence = imageTypeResult?.confidence || 0;
     
-    console.log(`[WhatsApp Nutrition] Tipo detectado: ${imageType} (confiança: ${typeConfidence})`);
+    console.log(`[WhatsApp Nutrition] 🎯 Tipo detectado: ${imageType} (confiança: ${typeConfidence})`);
 
-    // 🔥 ROTEAMENTO BASEADO NO TIPO
-    if (imageType === "MEDICAL") {
-      // 🔥 VERIFICAR SE JÁ TEM LOTE ATIVO (não chamar detect-image-type de novo)
-      console.log("[WhatsApp Nutrition] Redirecionando para processamento médico (modo lote)...");
+    // 🔥 ROTEAMENTO INTELIGENTE BASEADO NO TIPO DETECTADO
+    
+    // Se é COMIDA → processar como comida (independente de lote médico)
+    if (imageType === "FOOD") {
+      console.log("[WhatsApp Nutrition] 🍽️ Imagem de COMIDA detectada - processando como refeição...");
+      // Continuar com análise de comida (código abaixo)
+    }
+    // Se é MEDICAL → adicionar ao lote médico
+    else if (imageType === "MEDICAL") {
+      console.log("[WhatsApp Nutrition] 🩺 Imagem MÉDICA detectada - adicionando ao lote...");
       await processMedicalImage(user, phone, imageUrl);
       return;
     }
+    // Se é OTHER → verificar se tem lote ativo (assume médico) ou pedir clarificação
+    else {
+      // Verificar se tem lote médico ativo
+      const { data: activeMedicalBatch } = await supabase
+        .from("whatsapp_pending_medical")
+        .select("id, images_count, status")
+        .eq("user_id", user.id)
+        .eq("is_processed", false)
+        .in("status", ["collecting", "awaiting_confirm"])
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
-    if (imageType === "OTHER") {
-      console.log("[WhatsApp Nutrition] Imagem não reconhecida como comida ou exame");
+      if (activeMedicalBatch) {
+        // Se tem lote ativo e não é comida clara, assume que é exame
+        console.log(`[WhatsApp Nutrition] 📋 Lote médico ativo (${activeMedicalBatch.images_count} imgs) - assumindo exame`);
+        await processMedicalImage(user, phone, imageUrl);
+        return;
+      }
+      
+      // Sem lote ativo e não reconhecido
+      console.log("[WhatsApp Nutrition] ❓ Imagem não reconhecida como comida ou exame");
       await sendWhatsApp(phone,
         "📸 Recebi sua foto!\n\n" +
         "Para análise *nutricional*, envie fotos de refeições 🍽️\n" +
