@@ -497,37 +497,67 @@ async function processImage(user: { id: string }, phone: string, message: any, w
 
     console.log("[WhatsApp Nutrition] Análise completa:", JSON.stringify(analysis).slice(0, 500));
 
-    // Formatar lista de alimentos
-    const detectedFoods = analysis.detectedFoods || analysis.foods || [];
+    // Formatar lista de alimentos (normalizando formatos diferentes da resposta)
+    const normalizedFoods =
+      analysis?.detectedFoods ??
+      analysis?.foods ??
+      analysis?.foods_detected ??
+      analysis?.sofia_analysis?.foods_detected ??
+      analysis?.sofia_analysis?.foods ??
+      [];
+
+    const detectedFoods = Array.isArray(normalizedFoods) ? normalizedFoods : [];
+
     if (detectedFoods.length === 0) {
       await sendWhatsApp(phone, "🤔 Não consegui identificar alimentos na foto. Tente enviar uma foto mais clara do prato!");
       return;
     }
 
     const foodsList = detectedFoods
-      .map((f: any) => `• ${f.nome || f.name} (${f.quantidade || f.grams || "?"}g)`)
+      .map((f: any) => {
+        const name = f.nome || f.name || f.alimento || "(alimento)";
+        const grams = f.quantidade ?? f.grams ?? f.g ?? "?";
+        return `• ${name} (${grams}g)`;
+      })
       .join("\n");
 
-    const totalCalories = analysis.totalCalories || analysis.total_kcal || 0;
+    const totalCalories =
+      analysis?.totalCalories ??
+      analysis?.total_kcal ??
+      analysis?.nutrition_data?.total_kcal ??
+      analysis?.sofia_analysis?.totalCalories ??
+      analysis?.sofia_analysis?.total_kcal ??
+      analysis?.sofia_analysis?.nutrition_data?.total_kcal ??
+      0;
+
+    const kcalLine = totalCalories && Number(totalCalories) > 0
+      ? `📊 *Total estimado: ~${Math.round(Number(totalCalories))} kcal*\n\n`
+      : "";
 
     const confirmMessage =
       `🍽️ *Analisei sua refeição!*\n\n` +
       `${foodsList}\n\n` +
-      `📊 *Total estimado: ~${Math.round(totalCalories)} kcal*\n\n` +
+      kcalLine +
       `Está correto? Responda:\n` +
       `✅ *SIM* para confirmar\n` +
       `❌ *NÃO* para corrigir`;
 
     await sendWhatsApp(phone, confirmMessage);
 
-    // Salvar análise pendente
+    // Salvar análise pendente (sempre salva em formato estável para a confirmação)
+    const pendingPayload = {
+      detectedFoods,
+      totalCalories: Number(totalCalories) || null,
+      raw: analysis,
+    };
+
     const { error: insertError } = await supabase.from("whatsapp_pending_nutrition").upsert(
       {
         user_id: user.id,
         phone: phone,
         meal_type: detectMealType(),
         image_url: imageUrl,
-        analysis_result: analysis,
+        analysis_result: pendingPayload,
         waiting_confirmation: true,
         confirmed: null,
         is_processed: false,
@@ -627,9 +657,17 @@ async function handleConfirmation(
     if (isConfirmationPositive(messageText)) {
       console.log("[WhatsApp Nutrition] Confirmação positiva recebida");
 
-      // Extrair alimentos da análise pendente
+      // Extrair alimentos da análise pendente (formato estável)
       const analysis = pending.analysis_result || {};
-      const detectedFoods = analysis.detectedFoods || analysis.foods || [];
+      const detectedFoods =
+        analysis.detectedFoods ||
+        analysis.foods ||
+        analysis.foods_detected ||
+        analysis.raw?.sofia_analysis?.foods_detected ||
+        analysis.raw?.foods_detected ||
+        analysis.raw?.detectedFoods ||
+        analysis.raw?.foods ||
+        [];
 
       // Chamar sofia-deterministic para cálculo exato
       const { data: deterministicResult, error: deterministicError } = await supabase.functions.invoke(
@@ -651,7 +689,7 @@ async function handleConfirmation(
       }
 
       const nutritionData = deterministicResult?.nutrition_data || {
-        total_kcal: analysis.totalCalories || 0,
+        total_kcal: analysis.totalCalories || analysis.total_kcal || 0,
         total_proteina: 0,
         total_carbo: 0,
         total_gordura: 0,
