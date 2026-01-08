@@ -28,14 +28,14 @@ const Header: React.FC<HeaderProps> = ({ variant = 'default', className = '' }) 
         <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
           <div className="relative">
             <img 
-              src="/images/instituto-logo.png" 
-              alt="Instituto dos Sonhos" 
+              src="/images/maxnutrition-logo.png" 
+              alt="MaxNutrition" 
               className="h-10 w-10 object-contain"
             />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-foreground">Instituto dos Sonhos</h1>
-            <p className="text-xs text-muted-foreground">Transformação Real</p>
+            <h1 className="text-xl font-bold text-foreground">MaxNutrition</h1>
+            <p className="text-xs text-muted-foreground">Nutrição Inteligente</p>
           </div>
         </Link>
 

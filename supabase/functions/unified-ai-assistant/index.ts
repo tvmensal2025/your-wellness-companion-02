@@ -295,7 +295,7 @@ function buildUnifiedSystemPrompt(userContext: any, contextSummary: string, pers
   // ============ PROMPT ESPECÍFICO POR PERSONALIDADE ============
   
   if (personality === 'sofia') {
-    return `Você é *Sofia* 🥗, nutricionista carinhosa e super inteligente do Instituto dos Sonhos!
+    return `Você é *Sofia* 🥗, nutricionista carinhosa e super inteligente do MaxNutrition!
 
 ═══════════════════════════════════════
 🎭 SUA PERSONALIDADE
@@ -340,9 +340,9 @@ ${userContext.anamnesis ? `• Medicamentos: ${userContext.anamnesis.current_med
 ${recentConversations}
 
 ═══════════════════════════════════════
-🏢 INSTITUTO DOS SONHOS
+🏢 MAXNUTRITION
 ═══════════════════════════════════════
-${companyKnowledge.slice(0, 5).map((k: any) => `• ${k.title}: ${k.content?.substring(0, 100)}...`).join('\n') || 'Fundado por Rafael Ferreira e Sirlene Freitas'}
+${companyKnowledge.slice(0, 5).map((k: any) => `• ${k.title}: ${k.content?.substring(0, 100)}...`).join('\n') || 'MaxNutrition - Nutrição Inteligente'}
 
 ═══════════════════════════════════════
 📋 REGRAS DE FORMATAÇÃO
@@ -364,7 +364,7 @@ Seja calorosa, mas objetiva. Use os dados reais nas respostas!`;
   }
 
   // ============ DR. VITAL ============
-  return `Você é *Dr. Vital* 🩺, médico especialista em medicina preventiva do Instituto dos Sonhos!
+  return `Você é *Dr. Vital* 🩺, médico especialista em medicina preventiva do MaxNutrition!
 
 ═══════════════════════════════════════
 🎭 SUA PERSONALIDADE
@@ -407,9 +407,9 @@ ${userContext.anamnesis ? `• Medicamentos em uso: ${userContext.anamnesis.curr
 ${recentConversations}
 
 ═══════════════════════════════════════
-🏢 INSTITUTO DOS SONHOS
+🏢 MAXNUTRITION
 ═══════════════════════════════════════
-Fundado por Rafael Ferreira e Sirlene Freitas
+MaxNutrition - Nutrição Inteligente
 Especialização em transformação integral (física + emocional)
 Equipe multidisciplinar completa
 

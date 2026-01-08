@@ -317,11 +317,11 @@ export const WeeklyMealPlanModal: React.FC<WeeklyMealPlanModalProps> = ({
             </style>
           </head>
           <body>
-            <img class="watermark" src="http://45.67.221.216:8086/logoids.png" alt="Instituto dos Sonhos" />
+            <img class="watermark" src="/images/maxnutrition-logo.png" alt="MaxNutrition" />
             <div class="content">
               <div class="header">
                 <div class="brand">
-                  <img src="http://45.67.221.216:8086/logoids.png" alt="Instituto dos Sonhos" />
+                  <img src="/images/maxnutrition-logo.png" alt="MaxNutrition" />
                   <div>
                     <div class="title">${title}</div>
                     <div>Gerado em ${new Date().toLocaleDateString('pt-BR')}</div>
@@ -419,7 +419,7 @@ export const WeeklyMealPlanModal: React.FC<WeeklyMealPlanModalProps> = ({
             </div>
             
             <div class="footer">
-              <p><strong>Sofia Nutricional — Instituto dos Sonhos</strong></p>
+              <p><strong>Sofia Nutricional — MaxNutrition</strong></p>
               <p>Documento educativo • Consulte sempre um nutricionista</p>
               <p>${userFullName ? `${userFullName} • ` : ''}Gerado em ${new Date().toLocaleDateString('pt-BR')}</p>
             </div>

@@ -47,9 +47,9 @@ export default defineConfig(({ mode }) => ({
       registerType: 'prompt',
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
       manifest: {
-        name: 'Mission Health Nexus',
-        short_name: 'Health Nexus',
-        description: 'Seu companheiro de saúde e bem-estar',
+        name: 'MaxNutrition',
+        short_name: 'MaxNutrition',
+        description: 'Nutrição inteligente e personalizada para sua saúde',
         theme_color: '#10b981',
         background_color: '#0f172a',
         display: 'standalone',

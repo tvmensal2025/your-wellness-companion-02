@@ -1,7 +1,7 @@
 {
-  "name": "Instituto dos Sonhos",
-  "short_name": "Instituto Sonhos",
-  "description": "Transforme seu corpo e sua vida com nosso método exclusivo de emagrecimento integral",
+  "name": "MaxNutrition",
+  "short_name": "MaxNutrition",
+  "description": "Nutrição inteligente e personalizada para transformar sua saúde",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#1a1a2e",
@@ -20,7 +20,7 @@
       "purpose": "any maskable"
     },
     {
-      "src": "/images/instituto-logo.png",
+      "src": "/images/maxnutrition-logo.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"

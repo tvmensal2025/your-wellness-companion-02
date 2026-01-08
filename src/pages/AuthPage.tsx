@@ -186,7 +186,7 @@ const AuthPage = () => {
           } else {
             toast({
               title: "Login realizado!",
-              description: "Bem-vindo de volta ao Instituto dos Sonhos"
+              description: "Bem-vindo de volta ao MaxNutrition"
             });
             // Ir direto para o dashboard
             navigate("/dashboard");
@@ -195,7 +195,7 @@ const AuthPage = () => {
           // Se não conseguir verificar role, assume usuário comum
           toast({
             title: "Login realizado!",
-            description: "Bem-vindo de volta ao Instituto dos Sonhos"
+            description: "Bem-vindo de volta ao MaxNutrition"
           });
           navigate("/dashboard");
         }

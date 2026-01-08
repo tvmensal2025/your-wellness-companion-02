@@ -13,14 +13,14 @@ const Footer: React.FC<FooterProps> = ({ variant = 'default', className = '' }) 
         <div className="container mx-auto text-center">
           <div className="flex items-center justify-center gap-3 mb-4">
             <img 
-              src="/images/instituto-logo.png" 
-              alt="Instituto dos Sonhos" 
+              src="/images/maxnutrition-logo.png" 
+              alt="MaxNutrition" 
               className="h-8 w-8 object-contain"
             />
-            <span className="text-lg font-semibold text-foreground">Instituto dos Sonhos</span>
+            <span className="text-lg font-semibold text-foreground">MaxNutrition</span>
           </div>
           <p className="text-muted-foreground text-sm">
-            © 2024 Instituto dos Sonhos. Transformando vidas através da ciência e tecnologia.
+            © 2024 MaxNutrition. Transformando vidas através da nutrição inteligente.
           </p>
         </div>
       </footer>
@@ -35,18 +35,18 @@ const Footer: React.FC<FooterProps> = ({ variant = 'default', className = '' }) 
           <div className="md:col-span-2">
             <div className="flex items-center gap-3 mb-4">
               <img 
-                src="/images/instituto-logo.png" 
-                alt="Instituto dos Sonhos" 
+                src="/images/maxnutrition-logo.png" 
+                alt="MaxNutrition" 
                 className="h-12 w-12 object-contain"
               />
               <div>
-                <h3 className="text-xl font-bold text-foreground">Instituto dos Sonhos</h3>
-                <p className="text-sm text-muted-foreground">Transformação Real</p>
+                <h3 className="text-xl font-bold text-foreground">MaxNutrition</h3>
+                <p className="text-sm text-muted-foreground">Nutrição Inteligente</p>
               </div>
             </div>
             <p className="text-muted-foreground mb-4 max-w-md">
-              Transforme seu corpo e sua vida com nosso método exclusivo de emagrecimento integral. 
-              Aqui seus sonhos se tornam realidade através da ciência, tecnologia e apoio humano.
+              Nutrição inteligente e personalizada para transformar sua saúde. 
+              Aqui sua transformação se torna realidade através da ciência, tecnologia e apoio humano.
             </p>
             <div className="flex items-center gap-2 text-primary">
               <Heart className="h-5 w-5" />
@@ -72,7 +72,7 @@ const Footer: React.FC<FooterProps> = ({ variant = 'default', className = '' }) 
             <ul className="space-y-3 text-sm text-muted-foreground">
               <li className="flex items-center gap-2">
                 <Mail className="h-4 w-4 text-primary" />
-                <span>contato@institutodossonhos.com.br</span>
+                <span>contato@oficialmaxnutrition.com.br</span>
               </li>
               <li className="flex items-center gap-2">
                 <Phone className="h-4 w-4 text-primary" />
@@ -90,7 +90,7 @@ const Footer: React.FC<FooterProps> = ({ variant = 'default', className = '' }) 
         <div className="border-t border-border/20 mt-8 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-sm text-muted-foreground">
-              © 2024 Instituto dos Sonhos. Todos os direitos reservados.
+              © 2024 MaxNutrition. Todos os direitos reservados.
             </p>
             <div className="flex items-center gap-6 text-sm text-muted-foreground">
               <a href="/termos" className="hover:text-primary transition-colors">Termos de Uso</a>

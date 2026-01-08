@@ -1,11 +1,11 @@
-const CACHE_NAME = 'instituto-sonhos-v2.0';
+const CACHE_NAME = 'maxnutrition-v1.0';
 const APP_SHELL = [
   '/',
   '/index.html',
   '/manifest.json',
   '/favicon.ico',
   '/favicon.png',
-  '/images/instituto-logo.png'
+  '/images/maxnutrition-logo.png'
 ];
 
 // URLs que devem ser sempre buscadas da rede (não cached)
