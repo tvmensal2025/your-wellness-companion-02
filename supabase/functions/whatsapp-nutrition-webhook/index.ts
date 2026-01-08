@@ -609,16 +609,9 @@ async function processMedicalImage(user: { id: string }, phone: string, imageUrl
 
         console.log(`[WhatsApp Medical] ✅ Imagem ${newCount} adicionada ao lote ${existingBatch.id}`);
 
-        // 🔥 ENVIAR FEEDBACK APENAS NA 1ª IMAGEM E A CADA 10 IMAGENS (reduz spam)
-        if (newCount === 1) {
-          // Primeira imagem já enviou feedback ao criar lote
-        } else if (newCount % 10 === 0) {
-          await sendWhatsApp(phone,
-            `📷 *${newCount} imagens recebidas!*\n\n` +
-            `Continue enviando ou digite *PRONTO* quando terminar.\n\n` +
-            `_Dr. Vital 🩺_`
-          );
-        }
+        // 🔥 SILÊNCIO TOTAL - não envia nenhum feedback intermediário
+        // A função CRON medical-batch-timeout vai perguntar confirmação após 30s de inatividade
+        console.log(`[WhatsApp Medical] 📷 Imagem ${newCount} recebida silenciosamente`);
         
         console.log("[WhatsApp Medical] ========================================");
         return; // Sucesso!
@@ -657,14 +650,9 @@ async function processMedicalImage(user: { id: string }, phone: string, imageUrl
 
         console.log("[WhatsApp Medical] ✅ Novo lote criado:", insertResult?.[0]?.id);
 
-        // Instruir o usuário
-        await sendWhatsApp(phone,
-          `🩺 *Recebi seu exame!*\n\n` +
-          `📸 Pode enviar *todas as fotos* do exame agora.\n` +
-          `Quando terminar, digite *PRONTO*.\n\n` +
-          `_Eu só vou analisar depois que você confirmar!_\n\n` +
-          `_Dr. Vital 🩺_`
-        );
+        // 🔥 SILÊNCIO TOTAL - primeira imagem recebida silenciosamente
+        // A função CRON medical-batch-timeout vai perguntar confirmação após 30s de inatividade
+        console.log("[WhatsApp Medical] 📷 Primeira imagem recebida silenciosamente");
         
         console.log("[WhatsApp Medical] ========================================");
         return; // Sucesso!
@@ -1949,13 +1937,16 @@ async function handleMedicalResponse(
       }
     }
 
-    // 🔥 USUÁRIO RESPONDE 1/SIM - INICIAR ANÁLISE DO LOTE
+    // 🔥 USUÁRIO RESPONDE 1/SIM - AVISAR TEMPO E INICIAR ANÁLISE
     if (status === "awaiting_confirm" && (lower === "1" || lower === "sim" || lower === "s" || lower === "yes")) {
-      console.log("[WhatsApp Medical] ✅ Usuário confirmou - iniciando análise do lote...");
+      console.log("[WhatsApp Medical] ✅ Usuário confirmou - avisando tempo e iniciando análise...");
 
+      // 🔥 AVISO DE TEMPO ESTIMADO (até 5 minutos)
       await sendWhatsApp(phone,
-        `🩺 *Analisando ${imagesCount} ${imagesCount === 1 ? "imagem" : "imagens"}...*\n\n` +
-        `⏳ Isso pode levar alguns segundos.\n\n` +
+        `🩺 *Iniciando análise de ${imagesCount} ${imagesCount === 1 ? "imagem" : "imagens"}...*\n\n` +
+        `⏳ *Tempo estimado: até 5 minutos*\n` +
+        `(dependendo da quantidade e qualidade das fotos)\n\n` +
+        `☕ Aguarde, eu aviso quando terminar!\n\n` +
         `_Dr. Vital 🩺_`
       );
 

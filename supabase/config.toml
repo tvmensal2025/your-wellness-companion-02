@@ -125,3 +125,6 @@ verify_jwt = false
 
 [functions.vision-api]
 verify_jwt = false
+
+[functions.medical-batch-timeout]
+verify_jwt = false
