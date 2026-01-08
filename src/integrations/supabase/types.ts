@@ -11286,6 +11286,7 @@ export type Database = {
           response_type: string | null
           user_id: string
           waiting_confirmation: boolean | null
+          waiting_edit: boolean | null
         }
         Insert: {
           analysis_result?: Json | null
@@ -11304,6 +11305,7 @@ export type Database = {
           response_type?: string | null
           user_id: string
           waiting_confirmation?: boolean | null
+          waiting_edit?: boolean | null
         }
         Update: {
           analysis_result?: Json | null
@@ -11322,6 +11324,7 @@ export type Database = {
           response_type?: string | null
           user_id?: string
           waiting_confirmation?: boolean | null
+          waiting_edit?: boolean | null
         }
         Relationships: []
       }
