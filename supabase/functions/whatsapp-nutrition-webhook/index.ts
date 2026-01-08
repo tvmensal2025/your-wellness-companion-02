@@ -79,8 +79,32 @@ serve(async (req) => {
       console.log("[WhatsApp Nutrition] Processando edição:", messageText);
       await handleEdit(user, pending, messageText, phone);
     } else if (pending?.waiting_confirmation && messageText) {
-      console.log("[WhatsApp Nutrition] Processando confirmação:", messageText);
-      await handleConfirmation(user, pending, messageText, phone);
+      // 🔥 INTELIGÊNCIA: Verificar intenção ANTES de forçar confirmação
+      const analysis = pending.analysis_result || {};
+      const pendingFoods = analysis.detectedFoods || analysis.foods || [];
+      const intent = await interpretUserIntent(messageText, "awaiting_confirmation", pendingFoods);
+      
+      console.log("[WhatsApp Nutrition] Intenção detectada com pendência:", intent.intent);
+      
+      // Se for confirmação/edição, processa normalmente
+      if (["confirm", "cancel", "edit", "add_food", "remove_food", "replace_food"].includes(intent.intent)) {
+        console.log("[WhatsApp Nutrition] Processando confirmação:", messageText);
+        await handleConfirmation(user, pending, messageText, phone);
+      } else {
+        // 🔥 Se for pergunta/saudação/outro, deixa a IA responder e lembra da pendência
+        console.log("[WhatsApp Nutrition] Permitindo conversa livre com pendência ativa");
+        await handleSmartResponse(user, phone, messageText);
+        
+        // Enviar lembrete gentil da pendência
+        const foodsList = pendingFoods.slice(0, 3).map((f: any) => f.nome || f.name).join(", ");
+        const reminder = pendingFoods.length > 0 
+          ? `\n\n💡 _Ah, você ainda tem uma refeição pendente (${foodsList}${pendingFoods.length > 3 ? '...' : ''}). Responda *1 (SIM)*, *2 (NÃO)* ou *3 (EDITAR)* quando quiser finalizar!_`
+          : "";
+        
+        if (reminder) {
+          await sendWhatsApp(phone, reminder);
+        }
+      }
     } else if (pendingMedical && messageText) {
       console.log("[WhatsApp Nutrition] Processando resposta exame médico:", messageText);
       await handleMedicalResponse(user, pendingMedical, messageText, phone);
@@ -633,10 +657,22 @@ async function processImage(user: { id: string }, phone: string, message: any, w
     console.log("[WhatsApp Nutrition] ✅ Upload concluído! URL:", imageUrl);
 
     // 🔥 DETECÇÃO INTELIGENTE DO TIPO DE IMAGEM
+    // Obter base64 para passar ao detector (mais robusto que URL)
+    let imageBase64ForDetection: string | null = null;
+    const directBase64Check = directBase64 || await tryGetBase64FromEvolution();
+    if (directBase64Check) {
+      imageBase64ForDetection = directBase64Check.startsWith("data:") 
+        ? directBase64Check 
+        : `data:image/jpeg;base64,${directBase64Check}`;
+    }
+    
     console.log("[WhatsApp Nutrition] Detectando tipo de imagem...");
     
     const { data: imageTypeResult, error: typeError } = await supabase.functions.invoke("detect-image-type", {
-      body: { imageUrl }
+      body: { 
+        imageUrl,
+        imageBase64: imageBase64ForDetection // 🔥 Passa base64 para evitar timeout
+      }
     });
 
     const imageType = imageTypeResult?.type || "OTHER";
@@ -1215,13 +1251,31 @@ async function handleConfirmation(
       );
 
     } else {
-      await sendWhatsApp(
-        phone,
-        `🤔 Não entendi. Responda:\n` +
-        `✅ *SIM* para confirmar\n` +
-        `❌ *NÃO* para cancelar\n` +
-        `✏️ *EDITAR* para corrigir`
-      );
+      // 🔥 INTELIGÊNCIA: Se não entendeu como confirmação, tenta responder com IA
+      const lowerText = messageText.toLowerCase().trim();
+      const almostConfirmation = ["s", "si", "sim", "smi", "n", "na", "nao", "não", "e", "ed", "edi", "edt", "1", "2", "3"].includes(lowerText);
+      
+      if (almostConfirmation) {
+        // Parece tentativa de confirmação mas ambígua
+        await sendWhatsApp(
+          phone,
+          `🤔 Não entendi. Responda:\n` +
+          `✅ *1* ou *SIM* para confirmar\n` +
+          `❌ *2* ou *NÃO* para cancelar\n` +
+          `✏️ *3* ou *EDITAR* para corrigir`
+        );
+      } else {
+        // É outra coisa - deixar a IA responder
+        console.log("[WhatsApp Nutrition] Fallback para IA no handleConfirmation");
+        await handleSmartResponse(user, phone, messageText);
+        
+        // Lembrete da pendência
+        const foodsList = pendingFoods.slice(0, 3).map((f: any) => f.nome || f.name).join(", ");
+        await sendWhatsApp(
+          phone,
+          `\n💡 _Só pra lembrar: você tem uma refeição pendente (${foodsList}). Responda *1*, *2* ou *3* quando quiser finalizar!_`
+        );
+      }
     }
 
   } catch (error) {
