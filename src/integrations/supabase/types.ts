@@ -1432,6 +1432,39 @@ export type Database = {
         }
         Relationships: []
       }
+      chat_conversation_history: {
+        Row: {
+          content: string
+          created_at: string | null
+          id: string
+          metadata: Json | null
+          personality: string | null
+          role: string
+          session_id: string
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          personality?: string | null
+          role: string
+          session_id: string
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          personality?: string | null
+          role?: string
+          session_id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       chat_conversations: {
         Row: {
           created_at: string | null
@@ -12652,6 +12685,7 @@ export type Database = {
         Returns: boolean
       }
       calculate_level: { Args: { xp: number }; Returns: number }
+      cleanup_old_chat_history: { Args: never; Returns: undefined }
       consolidate_daily_health_snapshot: {
         Args: { p_date?: string; p_user_id: string }
         Returns: string
