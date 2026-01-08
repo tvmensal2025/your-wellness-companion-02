@@ -15,34 +15,11 @@ import { GaugeChart } from './ui/gauge-chart';
 import HealthDashboardResults from './dashboard/HealthDashboardResults';
 import SessionButton from './dashboard/SessionButton';
 import { useWeightMeasurement } from '@/hooks/useWeightMeasurement';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { useMemo } from 'react';
 
-// Mock data
-const weightData = [
-  { date: '01/01', peso: 75.5, meta: 70 },
-  { date: '01/02', peso: 75.2, meta: 70 },
-  { date: '01/03', peso: 74.8, meta: 70 },
-  { date: '01/04', peso: 74.9, meta: 70 },
-  { date: '01/05', peso: 74.4, meta: 70 },
-  { date: '01/06', peso: 74.0, meta: 70 },
-  { date: '01/07', peso: 73.8, meta: 70 },
-];
-
-const bodyComposition = [
-  { name: 'Massa Muscular', value: 35, color: '#10B981' },
-  { name: 'Gordura', value: 20, color: '#F59E0B' },
-  { name: 'Água', value: 45, color: '#3B82F6' },
-];
-
-const weeklyStats = [
-  { day: 'Seg', exercicio: 45, hidratacao: 1.8, sono: 7.5 },
-  { day: 'Ter', exercicio: 30, hidratacao: 2.1, sono: 8.0 },
-  { day: 'Qua', exercicio: 60, hidratacao: 2.0, sono: 7.0 },
-  { day: 'Qui', exercicio: 40, hidratacao: 1.9, sono: 7.5 },
-  { day: 'Sex', exercicio: 50, hidratacao: 2.2, sono: 8.5 },
-  { day: 'Sab', exercicio: 75, hidratacao: 2.0, sono: 9.0 },
-  { day: 'Dom', exercicio: 35, hidratacao: 1.7, sono: 8.0 },
-];
-
+// Configuração dos gráficos
 const chartConfig = {
   peso: { label: 'Peso', color: '#F97316' },
   meta: { label: 'Meta', color: '#10B981' },
@@ -125,6 +102,58 @@ const healthSystemsData = [
 export default function Dashboard() {
   const { measurements, loading, stats } = useWeightMeasurement();
   const latestMeasurement = measurements[0];
+
+  // Dados reais do peso (usando hook) em vez de mock data
+  const weightData = useMemo(() => {
+    if (!measurements || measurements.length === 0) {
+      // Fallback se não houver dados
+      return [{ date: format(new Date(), 'dd/MM'), peso: 0, meta: 70 }];
+    }
+    
+    // Pegar últimas 7 medições ordenadas por data
+    return measurements
+      .slice(0, 7)
+      .reverse()
+      .map((m) => ({
+        date: format(new Date(m.measurement_date), 'dd/MM', { locale: ptBR }),
+        peso: m.peso_kg || 0,
+        meta: 70, // Meta fixa por enquanto
+      }));
+  }, [measurements]);
+
+  // Composição corporal real
+  const bodyComposition = useMemo(() => {
+    if (!latestMeasurement) {
+      return [
+        { name: 'Massa Muscular', value: 35, color: '#10B981' },
+        { name: 'Gordura', value: 20, color: '#F59E0B' },
+        { name: 'Água', value: 45, color: '#3B82F6' },
+      ];
+    }
+
+    const musclePercent = latestMeasurement.massa_muscular_kg && latestMeasurement.peso_kg
+      ? Math.round((latestMeasurement.massa_muscular_kg / latestMeasurement.peso_kg) * 100)
+      : 35;
+    const fatPercent = latestMeasurement.gordura_corporal_percent || 20;
+    const waterPercent = latestMeasurement.agua_corporal_percent || (100 - musclePercent - fatPercent);
+
+    return [
+      { name: 'Massa Muscular', value: musclePercent, color: '#10B981' },
+      { name: 'Gordura', value: Math.round(fatPercent), color: '#F59E0B' },
+      { name: 'Água', value: Math.round(waterPercent), color: '#3B82F6' },
+    ];
+  }, [latestMeasurement]);
+
+  // Stats semanais (mantém como exemplo até termos tracking semanal)
+  const weeklyStats = [
+    { day: 'Seg', exercicio: 45, hidratacao: 1.8, sono: 7.5 },
+    { day: 'Ter', exercicio: 30, hidratacao: 2.1, sono: 8.0 },
+    { day: 'Qua', exercicio: 60, hidratacao: 2.0, sono: 7.0 },
+    { day: 'Qui', exercicio: 40, hidratacao: 1.9, sono: 7.5 },
+    { day: 'Sex', exercicio: 50, hidratacao: 2.2, sono: 8.5 },
+    { day: 'Sab', exercicio: 75, hidratacao: 2.0, sono: 9.0 },
+    { day: 'Dom', exercicio: 35, hidratacao: 1.7, sono: 8.0 },
+  ];
 
   return (
     <div className="p-6 space-y-6 animate-fade-up">
