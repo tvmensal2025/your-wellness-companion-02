@@ -110,3 +110,9 @@ verify_jwt = false
 
 [functions.interpret-user-intent]
 verify_jwt = false
+
+[functions.get-public-report]
+verify_jwt = false
+
+[functions.whatsapp-medical-handler]
+verify_jwt = false

@@ -83,6 +83,9 @@ serve(async (req) => {
       }
     }
 
+    // Verificar se há exame médico pendente
+    const pendingMedical = await getPendingMedical(user.id);
+
     if (pending?.waiting_edit && messageText) {
       // Usuário está editando a lista de alimentos
       console.log("[WhatsApp Nutrition] Processando edição:", messageText);
@@ -91,8 +94,12 @@ serve(async (req) => {
       // Usuário está respondendo SIM/NÃO/EDITAR
       console.log("[WhatsApp Nutrition] Processando confirmação:", messageText);
       await handleConfirmation(user, pending, messageText, phone);
+    } else if (pendingMedical && messageText) {
+      // Usuário respondendo sobre exame médico pendente
+      console.log("[WhatsApp Nutrition] Processando resposta exame médico:", messageText);
+      await handleMedicalResponse(user, pendingMedical, messageText, phone);
     } else if (hasImage(message)) {
-      // Nova foto - analisar com Sofia
+      // Nova foto - detectar se é comida ou exame médico
       console.log("[WhatsApp Nutrition] Processando imagem...");
       await processImage(user, phone, message, webhook);
     } else if (messageText) {
@@ -1281,4 +1288,212 @@ async function handleEdit(
     console.error("[WhatsApp Nutrition] Erro ao processar edição:", error);
     await sendWhatsApp(phone, "❌ Erro na edição. Tente novamente!");
   }
+}
+
+// =============== FUNÇÕES PARA EXAMES MÉDICOS ===============
+
+async function getPendingMedical(userId: string): Promise<any | null> {
+  const now = new Date().toISOString();
+  
+  const { data, error } = await supabase
+    .from("whatsapp_pending_medical")
+    .select("*")
+    .eq("user_id", userId)
+    .eq("status", "awaiting_info")
+    .gt("expires_at", now)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) {
+    console.error("[WhatsApp Nutrition] Erro ao buscar exame pendente:", error);
+    return null;
+  }
+
+  return data;
+}
+
+async function detectImageType(imageBase64: string): Promise<'food' | 'medical' | 'other'> {
+  try {
+    // Usar Gemini via Lovable AI para classificar a imagem
+    const { data, error } = await supabase.functions.invoke("sofia-image-analysis", {
+      body: {
+        imageBase64,
+        analysisType: "classify",
+        prompt: "Classifique esta imagem em UMA destas categorias: COMIDA (alimentos, refeição, prato), EXAME_MEDICO (exame de sangue, raio-x, ultrassom, resultado laboratorial), ou OUTRO. Responda apenas: COMIDA, EXAME_MEDICO ou OUTRO"
+      },
+    });
+
+    if (error || !data) {
+      console.log("[WhatsApp Nutrition] Erro na classificação, assumindo comida");
+      return 'food';
+    }
+
+    const response = String(data.classification || data.response || data.text || '').toUpperCase();
+    
+    if (response.includes('EXAME') || response.includes('MEDICAL')) {
+      return 'medical';
+    }
+    if (response.includes('COMIDA') || response.includes('FOOD') || response.includes('ALIMENTO')) {
+      return 'food';
+    }
+    
+    return 'other';
+  } catch (e) {
+    console.error("[WhatsApp Nutrition] Erro ao detectar tipo de imagem:", e);
+    return 'food'; // Default para comida
+  }
+}
+
+async function handleMedicalResponse(
+  user: { id: string },
+  pending: any,
+  messageText: string,
+  phone: string
+): Promise<void> {
+  try {
+    const text = messageText.toLowerCase().trim();
+    
+    // Detectar tipo de exame mencionado
+    const examTypes: Record<string, string[]> = {
+      'sangue': ['sangue', 'hemograma', 'glicose', 'colesterol', 'triglicerides', 'creatinina', 'ureia'],
+      'urina': ['urina', 'eas', 'urinocultura'],
+      'fezes': ['fezes', 'parasitologico', 'coprocultura'],
+      'imagem': ['raio-x', 'rx', 'ultrassom', 'ultrassonografia', 'tomografia', 'ressonancia'],
+      'hormonal': ['hormonio', 'tsh', 't4', 'tireoide', 'testosterona', 'estradiol'],
+    };
+
+    let detectedType = 'laboratorial';
+    for (const [type, keywords] of Object.entries(examTypes)) {
+      if (keywords.some(k => text.includes(k))) {
+        detectedType = type;
+        break;
+      }
+    }
+
+    // Detectar data mencionada
+    let examDate = new Date().toISOString().split('T')[0];
+    const datePatterns = [
+      /(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?/, // DD/MM ou DD/MM/YYYY
+      /ontem/i,
+      /hoje/i,
+      /semana passada/i,
+    ];
+
+    for (const pattern of datePatterns) {
+      const match = text.match(pattern);
+      if (match) {
+        if (text.includes('ontem')) {
+          const d = new Date();
+          d.setDate(d.getDate() - 1);
+          examDate = d.toISOString().split('T')[0];
+        } else if (text.includes('semana passada')) {
+          const d = new Date();
+          d.setDate(d.getDate() - 7);
+          examDate = d.toISOString().split('T')[0];
+        } else if (match[1] && match[2]) {
+          const day = parseInt(match[1]);
+          const month = parseInt(match[2]) - 1;
+          const year = match[3] ? parseInt(match[3]) : new Date().getFullYear();
+          const d = new Date(year < 100 ? 2000 + year : year, month, day);
+          examDate = d.toISOString().split('T')[0];
+        }
+        break;
+      }
+    }
+
+    // Se usuário respondeu "analisar" ou similar, processar direto
+    const quickProcess = ['analisar', 'analisa', 'processar', 'ok', 'vai', 'pode'];
+    const shouldProcessNow = quickProcess.some(k => text.includes(k));
+
+    if (shouldProcessNow || pending.exam_type) {
+      // Processar o exame
+      console.log("[WhatsApp Nutrition] Processando exame médico:", detectedType);
+      
+      await supabase
+        .from("whatsapp_pending_medical")
+        .update({
+          exam_type: pending.exam_type || detectedType,
+          exam_date: examDate,
+          status: "processing",
+        })
+        .eq("id", pending.id);
+
+      // Chamar o handler de exames médicos
+      await supabase.functions.invoke("whatsapp-medical-handler", {
+        body: {
+          action: "process_exam",
+          pendingId: pending.id,
+          userId: user.id,
+          phone,
+          imageBase64: pending.image_base64,
+          examType: pending.exam_type || detectedType,
+          examDate,
+          doctorName: pending.doctor_name,
+        },
+      });
+    } else {
+      // Atualizar informações e perguntar mais
+      await supabase
+        .from("whatsapp_pending_medical")
+        .update({
+          exam_type: detectedType,
+          exam_date: examDate,
+        })
+        .eq("id", pending.id);
+
+      await sendWhatsApp(phone,
+        `🩺 *Entendi!*\n\n` +
+        `📋 Exame de: *${detectedType}*\n` +
+        `📅 Data: *${formatDateBR(examDate)}*\n\n` +
+        `Está correto? Responda:\n` +
+        `✅ *ANALISAR* - Processar agora\n` +
+        `✏️ Ou corrija as informações`
+      );
+    }
+  } catch (error) {
+    console.error("[WhatsApp Nutrition] Erro ao processar resposta médica:", error);
+    await sendWhatsApp(phone, "❌ Erro ao processar. Tente enviar o exame novamente!");
+  }
+}
+
+function formatDateBR(dateStr: string): string {
+  try {
+    const [year, month, day] = dateStr.split('-');
+    return `${day}/${month}/${year}`;
+  } catch {
+    return dateStr;
+  }
+}
+
+async function createMedicalPending(
+  userId: string,
+  phone: string,
+  imageBase64: string
+): Promise<void> {
+  // Limpar pendentes antigos
+  await supabase
+    .from("whatsapp_pending_medical")
+    .delete()
+    .eq("user_id", userId)
+    .eq("status", "awaiting_info");
+
+  // Criar novo pendente
+  await supabase.from("whatsapp_pending_medical").insert({
+    user_id: userId,
+    phone,
+    image_base64: imageBase64,
+    status: "awaiting_info",
+    expires_at: new Date(Date.now() + 60 * 60 * 1000).toISOString(), // 1 hora
+  });
+
+  // Enviar mensagem do Dr. Vital
+  await sendWhatsApp(phone,
+    `🩺 *Dr. Vital aqui!*\n\n` +
+    `Recebi uma imagem do que parece ser um *exame médico*.\n\n` +
+    `📋 Para uma análise completa, me conta:\n` +
+    `1️⃣ Que tipo de exame é esse?\n` +
+    `2️⃣ Quando você realizou?\n\n` +
+    `_Ou responda *"analisar"* para eu processar direto!_`
+  );
 }

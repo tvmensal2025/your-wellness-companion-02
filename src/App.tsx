@@ -40,6 +40,7 @@ const ProfessionalEvaluationPage = lazy(() => import("./pages/ProfessionalEvalua
 const AutoLoginPage = lazy(() => import("./pages/AutoLoginPage"));
 const InstallPage = lazy(() => import("./pages/Install"));
 const PublicPostPage = lazy(() => import("./pages/PublicPostPage"));
+const PublicReport = lazy(() => import("./pages/PublicReport"));
 
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-screen bg-background">
@@ -94,6 +95,7 @@ const App: React.FC = () => {
                 <Route path="/auto-login" element={<Suspense fallback={<PageLoader />}><AutoLoginPage /></Suspense>} />
                 <Route path="/install" element={<Suspense fallback={<PageLoader />}><InstallPage /></Suspense>} />
                 <Route path="/community/post/:postId" element={<Suspense fallback={<PageLoader />}><PublicPostPage /></Suspense>} />
+                <Route path="/relatorio/:token" element={<Suspense fallback={<PageLoader />}><PublicReport /></Suspense>} />
                 <Route path="*" element={<NotFound />} />
                 </Routes>
                 <SofiaFloatingButton />
