@@ -25,14 +25,30 @@ serve(async (req) => {
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     let targetUserId: string | null = null;
+    let targetDate: string | null = null;
+    let consolidateOnly = false;
+    
     try {
       const body = await req.json();
       targetUserId = body?.userId || null;
+      targetDate = body?.date || null;
+      consolidateOnly = body?.consolidateOnly || false;
     } catch {
       // Execução via cron
     }
 
-    const today = new Date().toISOString().split('T')[0];
+    const today = targetDate || new Date().toISOString().split('T')[0];
+    
+    // 🔥 MODO CONSOLIDAÇÃO: Apenas atualiza o daily_nutrition_summary
+    if (consolidateOnly && targetUserId) {
+      console.log(`📊 Consolidando nutrição para ${targetUserId} em ${today}`);
+      await consolidateDailyNutrition(supabase, targetUserId, today);
+      return new Response(
+        JSON.stringify({ success: true, consolidated: true, userId: targetUserId, date: today }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     console.log(`📊 Sofia: Gerando resumos nutricionais do dia ${today}`);
 
     // Buscar usuários com resumo diário habilitado
@@ -246,4 +262,120 @@ function formatPhone(phone: string): string {
   if (cleaned.startsWith("0")) cleaned = cleaned.substring(1);
   if (!cleaned.startsWith("55")) cleaned = "55" + cleaned;
   return cleaned;
+}
+
+// 🔥 FUNÇÃO DE CONSOLIDAÇÃO DIÁRIA
+async function consolidateDailyNutrition(supabase: any, userId: string, date: string): Promise<void> {
+  try {
+    // Buscar todas as refeições do dia de food_history
+    const { data: meals, error } = await supabase
+      .from("food_history")
+      .select("*")
+      .eq("user_id", userId)
+      .eq("meal_date", date);
+
+    if (error) {
+      console.error("[Consolidation] Erro ao buscar refeições:", error);
+      return;
+    }
+
+    if (!meals || meals.length === 0) {
+      console.log(`[Consolidation] Nenhuma refeição encontrada para ${userId} em ${date}`);
+      return;
+    }
+
+    // Agrupar por tipo de refeição
+    const byType: Record<string, any[]> = {
+      cafe_da_manha: [],
+      lanche_manha: [],
+      almoco: [],
+      lanche_tarde: [],
+      jantar: [],
+      ceia: [],
+    };
+
+    for (const meal of meals) {
+      const type = meal.meal_type || "almoco";
+      if (byType[type]) {
+        byType[type].push(meal);
+      }
+    }
+
+    // Função auxiliar para somar
+    const sum = (arr: any[], field: string) => 
+      arr.reduce((s, m) => s + (Number(m[field]) || 0), 0);
+
+    // Calcular totais
+    const summary = {
+      user_id: userId,
+      date: date,
+      meals_count: meals.length,
+      
+      // Totais do dia
+      total_calories: sum(meals, 'total_calories'),
+      total_proteins: sum(meals, 'total_proteins'),
+      total_carbs: sum(meals, 'total_carbs'),
+      total_fats: sum(meals, 'total_fats'),
+      total_fiber: sum(meals, 'total_fiber'),
+      total_water_ml: sum(meals, 'water_ml') || null,
+      
+      // Por refeição
+      breakfast_calories: sum(byType.cafe_da_manha, 'total_calories'),
+      lunch_calories: sum(byType.almoco, 'total_calories'),
+      dinner_calories: sum(byType.jantar, 'total_calories'),
+      snacks_calories: sum([...byType.lanche_manha, ...byType.lanche_tarde, ...byType.ceia], 'total_calories'),
+      
+      // Health score baseado em balanço de macros
+      health_score: calculateHealthScore(meals),
+      
+      updated_at: new Date().toISOString(),
+    };
+
+    // Upsert no daily_nutrition_summary
+    const { error: upsertError } = await supabase
+      .from("daily_nutrition_summary")
+      .upsert(summary, { onConflict: "user_id,date" });
+
+    if (upsertError) {
+      console.error("[Consolidation] Erro ao salvar resumo:", upsertError);
+    } else {
+      console.log(`[Consolidation] ✅ Resumo consolidado: ${summary.total_calories} kcal, ${meals.length} refeições`);
+    }
+  } catch (e) {
+    console.error("[Consolidation] Erro:", e);
+  }
+}
+
+// Calcular health score simples baseado em macros
+function calculateHealthScore(meals: any[]): number {
+  if (!meals || meals.length === 0) return 0;
+  
+  const totals = {
+    protein: meals.reduce((s, m) => s + (Number(m.total_proteins) || 0), 0),
+    carbs: meals.reduce((s, m) => s + (Number(m.total_carbs) || 0), 0),
+    fats: meals.reduce((s, m) => s + (Number(m.total_fats) || 0), 0),
+    fiber: meals.reduce((s, m) => s + (Number(m.total_fiber) || 0), 0),
+    calories: meals.reduce((s, m) => s + (Number(m.total_calories) || 0), 0),
+  };
+  
+  let score = 50; // Base score
+  
+  // Proteína adequada (+15)
+  if (totals.protein >= 50 && totals.protein <= 150) score += 15;
+  
+  // Fibra adequada (+10)
+  if (totals.fiber >= 20) score += 10;
+  
+  // Carboidratos moderados (+10)
+  const carbRatio = totals.carbs / Math.max(totals.calories / 4, 1);
+  if (carbRatio >= 0.4 && carbRatio <= 0.6) score += 10;
+  
+  // Gordura moderada (+10)
+  const fatRatio = totals.fats / Math.max(totals.calories / 9, 1);
+  if (fatRatio >= 0.2 && fatRatio <= 0.35) score += 10;
+  
+  // Número de refeições adequado (+5)
+  if (meals.length >= 3 && meals.length <= 6) score += 5;
+  
+  return Math.min(100, Math.max(0, score));
 }

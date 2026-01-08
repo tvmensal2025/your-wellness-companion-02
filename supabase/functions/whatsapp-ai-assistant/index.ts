@@ -225,6 +225,68 @@ const TOOLS = [
       },
     },
   },
+  // 🔥 NOVA TOOL: REGISTRO DE DORES E SINTOMAS
+  {
+    type: "function",
+    function: {
+      name: "register_pain_symptom",
+      description: "Registra uma dor ou sintoma do usuário. Use quando o usuário mencionar DOR, DESCONFORTO, MAL-ESTAR ou qualquer sintoma físico como dor de cabeça, enjoo, tontura, cansaço excessivo.",
+      parameters: {
+        type: "object",
+        properties: {
+          pain_level: { 
+            type: "number", 
+            description: "Intensidade da dor de 1-10 (pergunte se não souber)" 
+          },
+          pain_location: { 
+            type: "string", 
+            description: "Local da dor: cabeça, costas, joelho, estômago, peito, etc." 
+          },
+          symptoms: { 
+            type: "array",
+            items: { type: "string" },
+            description: "Lista de sintomas: náusea, tontura, cansaço, febre, etc." 
+          },
+          notes: { 
+            type: "string", 
+            description: "Contexto adicional (quando começou, o que estava fazendo, duração)" 
+          },
+        },
+        required: ["pain_location"],
+      },
+    },
+  },
+  // 🔥 NOVA TOOL: BUSCAR ANAMNESE COMPLETA
+  {
+    type: "function",
+    function: {
+      name: "get_user_anamnesis",
+      description: "Busca a anamnese médica completa do usuário (histórico de doenças, medicamentos, alergias, etc). Use quando perguntar sobre saúde, histórico médico ou dados da anamnese.",
+      parameters: {
+        type: "object",
+        properties: {},
+        required: [],
+      },
+    },
+  },
+  // 🔥 NOVA TOOL: HISTÓRICO DE SINTOMAS
+  {
+    type: "function",
+    function: {
+      name: "get_symptom_history",
+      description: "Busca histórico de dores e sintomas registrados. Use quando perguntar sobre sintomas passados ou padrões de dor.",
+      parameters: {
+        type: "object",
+        properties: {
+          days: { 
+            type: "number", 
+            description: "Quantidade de dias para buscar (padrão: 30)" 
+          },
+        },
+        required: [],
+      },
+    },
+  },
 ];
 
 // ============ EXECUÇÃO DE TOOLS ============
@@ -711,6 +773,139 @@ async function executeTool(userId: string, toolName: string, args: any): Promise
       return `✅ Refeição registrada!\n\n${formatMealTypeSimple(mealType)}: ${foodsList}\n📊 ~${Math.round(totalCalories)} kcal`;
     }
 
+    // 🔥 NOVA: REGISTRO DE DOR/SINTOMA
+    case "register_pain_symptom": {
+      const now = new Date();
+      const time = now.toTimeString().split(' ')[0];
+      
+      // Buscar registro existente do dia
+      const { data: existing } = await supabase
+        .from("advanced_daily_tracking")
+        .select("symptoms, notes")
+        .eq("user_id", userId)
+        .eq("tracking_date", today)
+        .maybeSingle();
+      
+      // Agregar sintomas anteriores
+      const previousSymptoms = existing?.symptoms || [];
+      const newSymptoms = [...new Set([...previousSymptoms, ...(args.symptoms || [])])];
+      const previousNotes = existing?.notes || '';
+      const newNote = `[${time}] ${args.pain_location || 'Sintoma'} (${args.pain_level || '?'}/10): ${args.notes || 'registrado via WhatsApp'}`;
+      const combinedNotes = previousNotes ? `${previousNotes}\n${newNote}` : newNote;
+      
+      // Salvar no advanced_daily_tracking
+      const { error } = await supabase
+        .from("advanced_daily_tracking")
+        .upsert({
+          user_id: userId,
+          tracking_date: today,
+          pain_level: args.pain_level || null,
+          pain_location: args.pain_location,
+          symptoms: newSymptoms,
+          notes: combinedNotes,
+          updated_at: now.toISOString(),
+        }, { onConflict: "user_id,tracking_date" });
+      
+      if (error) {
+        console.error("[AI Assistant] Erro ao registrar sintoma:", error);
+        return `Erro ao registrar sintoma: ${error.message}`;
+      }
+      
+      // Também salvar no health_diary para histórico permanente
+      await supabase.from("health_diary").insert({
+        user_id: userId,
+        date: today,
+        notes: `🩺 Sintoma: ${args.pain_location} (${args.pain_level || '?'}/10) - ${args.symptoms?.join(', ') || ''} ${args.notes || ''}`.trim(),
+      });
+      
+      const emoji = (args.pain_level || 5) >= 7 ? "😰" : (args.pain_level || 5) >= 4 ? "😕" : "🙂";
+      return `${emoji} Registrado às ${time}:\n• Local: ${args.pain_location}\n• Intensidade: ${args.pain_level || '?'}/10\n${args.symptoms?.length ? `• Sintomas: ${args.symptoms.join(', ')}\n` : ''}${args.notes ? `• Obs: ${args.notes}` : ''}`;
+    }
+
+    // 🔥 NOVA: BUSCAR ANAMNESE
+    case "get_user_anamnesis": {
+      const { data: anamnesis } = await supabase
+        .from("user_anamnesis")
+        .select("*")
+        .eq("user_id", userId)
+        .maybeSingle();
+      
+      if (!anamnesis) {
+        return "Anamnese ainda não preenchida. Recomendo preencher para um acompanhamento mais personalizado!";
+      }
+      
+      return JSON.stringify({
+        historico_familiar: {
+          obesidade: anamnesis.family_obesity_history || false,
+          diabetes: anamnesis.family_diabetes_history || false,
+          cardiopatias: anamnesis.family_heart_disease_history || false,
+          tireoide: anamnesis.family_thyroid_problems_history || false,
+          depressao_ansiedade: anamnesis.family_depression_anxiety_history || false,
+          outros: anamnesis.family_other_chronic_diseases,
+        },
+        medicacoes_atuais: anamnesis.current_medications || [],
+        doencas_cronicas: anamnesis.chronic_diseases || [],
+        alergias: anamnesis.allergies || [],
+        intolerâncias_alimentares: anamnesis.food_intolerances || [],
+        suplementos: anamnesis.supplements || [],
+        relacionamento_comida: {
+          score: anamnesis.food_relationship_score,
+          compulsao: anamnesis.has_compulsive_eating,
+          come_escondido: anamnesis.eats_in_secret,
+          culpa_ao_comer: anamnesis.feels_guilt_after_eating,
+        },
+        qualidade_vida: {
+          sono_horas: anamnesis.sleep_hours_per_night,
+          sono_qualidade: anamnesis.sleep_quality_score,
+          estresse: anamnesis.daily_stress_level,
+          energia: anamnesis.daily_energy_level,
+        },
+        objetivos: {
+          peso_ideal: anamnesis.ideal_weight_goal,
+          principais_metas: anamnesis.main_treatment_goals,
+          maior_desafio: anamnesis.biggest_weight_loss_challenge,
+          motivacao: anamnesis.motivation_for_seeking_treatment,
+        },
+      });
+    }
+
+    // 🔥 NOVA: HISTÓRICO DE SINTOMAS
+    case "get_symptom_history": {
+      const daysToFetch = args.days || 30;
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - daysToFetch);
+      
+      const { data: symptoms } = await supabase
+        .from("advanced_daily_tracking")
+        .select("tracking_date, pain_level, pain_location, symptoms, notes")
+        .eq("user_id", userId)
+        .gte("tracking_date", startDate.toISOString().split('T')[0])
+        .not("pain_location", "is", null)
+        .order("tracking_date", { ascending: false });
+      
+      const { data: healthDiary } = await supabase
+        .from("health_diary")
+        .select("date, notes")
+        .eq("user_id", userId)
+        .gte("date", startDate.toISOString().split('T')[0])
+        .ilike("notes", "%Sintoma%")
+        .order("date", { ascending: false });
+      
+      if ((!symptoms || symptoms.length === 0) && (!healthDiary || healthDiary.length === 0)) {
+        return `Não encontrei registros de sintomas nos últimos ${daysToFetch} dias. Isso é um bom sinal! 💚`;
+      }
+      
+      const symptomList = symptoms?.map(s => 
+        `📅 ${s.tracking_date}: ${s.pain_location} (${s.pain_level || '?'}/10) ${s.symptoms?.join(', ') || ''}`
+      ).join('\n') || '';
+      
+      const diaryList = healthDiary?.map(d => 
+        `📅 ${d.date}: ${d.notes}`
+      ).join('\n') || '';
+      
+      return `🩺 Histórico de sintomas (${daysToFetch} dias):\n\n${symptomList}\n${diaryList ? '\n📝 Diário:\n' + diaryList : ''}`;
+    }
+
     default:
       return "Função não reconhecida.";
   }
@@ -742,7 +937,7 @@ function formatMealTypeSimple(mealType: string | null): string {
 
 // ============ SISTEMA DE PROMPTS HUMANIZADOS ============
 
-function buildSystemPrompt(userName: string, userContext: any, isFirstMessage: boolean = false): string {
+function buildSystemPrompt(userName: string, userContext: any, anamnesisData: any, symptomHistory: any[], isFirstMessage: boolean = false): string {
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Bom dia" : hour < 18 ? "Boa tarde" : "Boa noite";
   
@@ -754,6 +949,38 @@ function buildSystemPrompt(userName: string, userContext: any, isFirstMessage: b
     ? `Progresso: já perdeu ${userContext.peso_perdido}kg! 💪` 
     : "";
   
+  // Preparar dados da anamnese
+  const anamneseInfo = anamnesisData ? `
+📋 ANAMNESE DO USUÁRIO (dados importantes):
+- Doenças crônicas: ${anamnesisData.chronic_diseases?.join(', ') || 'nenhuma informada'}
+- Medicamentos em uso: ${anamnesisData.current_medications?.map((m: any) => m.name || m).join(', ') || 'nenhum'}
+- Alergias: ${anamnesisData.allergies?.join(', ') || 'nenhuma'}
+- Intolerâncias alimentares: ${anamnesisData.food_intolerances?.join(', ') || 'nenhuma'}
+- Histórico familiar: ${[
+    anamnesisData.family_obesity_history && 'obesidade',
+    anamnesisData.family_diabetes_history && 'diabetes',
+    anamnesisData.family_heart_disease_history && 'cardiopatias',
+    anamnesisData.family_thyroid_problems_history && 'tireoide',
+  ].filter(Boolean).join(', ') || 'não informado'}
+- Qualidade do sono: ${anamnesisData.sleep_quality_score || '?'}/10
+- Nível de estresse diário: ${anamnesisData.daily_stress_level || '?'}/10
+- Objetivo de peso: ${anamnesisData.ideal_weight_goal ? anamnesisData.ideal_weight_goal + 'kg' : 'não definido'}
+- Maior desafio: ${anamnesisData.biggest_weight_loss_challenge || 'não informado'}
+` : `
+📋 ANAMNESE: Não preenchida ainda. Se relevante, sugira preencher.
+`;
+
+  // Preparar histórico de sintomas
+  const sintomasInfo = symptomHistory.length > 0 ? `
+🩺 SINTOMAS RECENTES (últimos 30 dias):
+${symptomHistory.slice(0, 5).map(s => 
+  `- ${s.tracking_date}: ${s.pain_location} (${s.pain_level || '?'}/10) ${s.symptoms?.join(', ') || ''}`
+).join('\n')}
+${symptomHistory.length > 5 ? `... e mais ${symptomHistory.length - 5} registros` : ''}
+` : `
+🩺 SINTOMAS: Nenhum sintoma registrado recentemente. 💚
+`;
+
   return `Você é a assistente pessoal de saúde do Instituto dos Sonhos - uma IA super humana e carinhosa.
 
 Você tem DUAS personalidades que alternam conforme o contexto:
@@ -765,8 +992,9 @@ Você tem DUAS personalidades que alternam conforme o contexto:
 - SEMPRE assina: _Sofia 🥗_
 
 🩺 *Dr. Vital* - Médico virtual  
-- Especialista em exames, saúde, medicamentos, sintomas
+- Especialista em exames, saúde, medicamentos, sintomas, dores
 - Tom: profissional mas acolhedor e acessível
+- REGISTRA AUTOMATICAMENTE qualquer dor ou sintoma mencionado usando register_pain_symptom
 - Usa emojis médicos: 🩺 🟢 🟡 🔴 💊
 - SEMPRE assina: _Dr. Vital 🩺_
 
@@ -780,6 +1008,14 @@ REGRAS CRÍTICAS - RESPOSTAS DIRETAS:
 1. NUNCA diga "vou olhar", "vou verificar", "deixa eu ver", "um momento" - você TEM os dados, responda DIRETAMENTE
 2. Quando perguntarem sobre peso, responda: "${userName}, seu peso atual é ${userContext?.peso_atual || 'ainda não registrado'}kg!"
 3. Se não tiver dado, diga claramente: "${userName}, ainda não tenho esse dado registrado. Me conta?"
+4. Use SEMPRE as informações da ANAMNESE para personalizar respostas sobre saúde
+
+REGRAS CRÍTICAS - REGISTRO DE SINTOMAS:
+1. Quando o usuário mencionar DOR (cabeça, costas, estômago, etc), use IMEDIATAMENTE register_pain_symptom
+2. Quando mencionar mal-estar, enjoo, tontura, cansaço excessivo, febre, etc - REGISTRE como sintoma
+3. Pergunte a intensidade (1-10) se não souber
+4. Pergunte há quanto tempo está sentindo se não informado
+5. SEMPRE confirme que registrou o sintoma
 
 DADOS DO USUÁRIO PARA RESPOSTA DIRETA:
 - Nome: ${userName}
@@ -787,6 +1023,11 @@ DADOS DO USUÁRIO PARA RESPOSTA DIRETA:
 ${progressoInfo ? `- ${progressoInfo}` : ''}
 - Água hoje: ${userContext?.hoje?.agua_ml || 0}ml
 - Calorias hoje: ${userContext?.hoje?.calorias || 0}kcal
+- Exercício hoje: ${userContext?.hoje?.exercicio_min || 0}min
+- Humor hoje: ${userContext?.hoje?.humor ? userContext.hoje.humor + '/10' : 'não registrado'}
+- Sono: ${userContext?.hoje?.sono_horas ? userContext.hoje.sono_horas + 'h' : 'não registrado'}
+${anamneseInfo}
+${sintomasInfo}
 
 REGRAS DE FORMATAÇÃO WHATSAPP:
 1. Use *negrito* para destaques importantes
@@ -800,9 +1041,12 @@ REGRAS DE COMPORTAMENTO:
 3. Se o usuário perguntar "o que comi hoje?", use get_food_history
 4. Se mencionar peso (ex: "pesei 70kg"), use register_weight automaticamente
 5. Se descrever refeição, use register_meal_from_description
+6. Se perguntar sobre anamnese/histórico médico, use get_user_anamnesis
+7. Se mencionar DOR ou SINTOMA, use register_pain_symptom IMEDIATAMENTE
+8. Se perguntar sobre sintomas passados, use get_symptom_history
 
 IMPORTANTE: Responda SEMPRE em português brasileiro coloquial e natural.
-IMPORTANTE: Use a personalidade apropriada (nutrição=Sofia, saúde=Dr.Vital)`;
+IMPORTANTE: Use a personalidade apropriada (nutrição=Sofia, saúde=Dr.Vital, dor/sintoma=Dr.Vital)`;
 }
 
 // ============ HANDLER PRINCIPAL ============
@@ -840,9 +1084,29 @@ serve(async (req) => {
       userContext = JSON.parse(statusResult);
     } catch {}
 
-    // Construir mensagens para IA
+    // 🔥 NOVO: Buscar anamnese para contexto completo
+    const { data: anamnesisData } = await supabase
+      .from("user_anamnesis")
+      .select("*")
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    // 🔥 NOVO: Buscar histórico de sintomas recentes
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    
+    const { data: symptomHistory } = await supabase
+      .from("advanced_daily_tracking")
+      .select("tracking_date, pain_level, pain_location, symptoms")
+      .eq("user_id", userId)
+      .gte("tracking_date", thirtyDaysAgo.toISOString().split('T')[0])
+      .not("pain_location", "is", null)
+      .order("tracking_date", { ascending: false })
+      .limit(10);
+
+    // Construir mensagens para IA com contexto completo
     const messages = [
-      { role: "system", content: buildSystemPrompt(userName, userContext, isFirstMessage) },
+      { role: "system", content: buildSystemPrompt(userName, userContext, anamnesisData, symptomHistory || [], isFirstMessage) },
       ...conversationHistory.slice(-10),
       { role: "user", content: message },
     ];
