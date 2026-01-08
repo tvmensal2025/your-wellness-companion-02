@@ -239,7 +239,9 @@ export const FloatingCreateButton: React.FC<FloatingCreateButtonProps> = ({
               </Avatar>
               <div>
                 <p className="font-medium text-sm">{userName}</p>
-                <p className="text-xs text-muted-foreground">Publicar para todos</p>
+                <p className="text-xs text-muted-foreground">
+                  Publicando como <span className="font-medium text-foreground">{userName?.split(' ')[0]}</span>
+                </p>
               </div>
             </div>
 
@@ -300,7 +302,7 @@ export const FloatingCreateButton: React.FC<FloatingCreateButtonProps> = ({
                     {isVideo ? (
                       <video
                         src={previewUrl}
-                        className="w-full max-h-[300px] object-contain"
+                        className="w-full max-h-[180px] object-contain"
                         controls
                         playsInline
                       />
@@ -308,7 +310,7 @@ export const FloatingCreateButton: React.FC<FloatingCreateButtonProps> = ({
                       <img
                         src={previewUrl}
                         alt="Preview"
-                        className="w-full max-h-[300px] object-contain"
+                        className="w-full max-h-[180px] object-contain"
                       />
                     )}
                   </div>

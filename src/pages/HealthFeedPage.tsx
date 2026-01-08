@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useUserProfile } from '@/hooks/useUserProfile';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -205,11 +206,14 @@ export default function HealthFeedPage() {
   // Check if current user has their own story
   const hasOwnStory = groupedStories.some(g => g.is_own);
 
-  // Get current user's profile info
-  const userProfile = useMemo(() => {
+  // Get current user's profile info from ranking
+  const rankingProfile = useMemo(() => {
     const profile = ranking.find(r => r.user_id === user?.id);
     return profile;
   }, [ranking, user?.id]);
+
+  // Get real profile data
+  const { profileData: realProfile } = useUserProfile(user);
 
   // Suggested users (not following)
   const suggestedUsers = useMemo(() => {
@@ -270,7 +274,9 @@ export default function HealthFeedPage() {
     }))
   }));
 
-  const userName = userProfile?.user_name || user?.email?.split('@')[0] || 'Usuário';
+  // Prioridade correta: perfil real > ranking > metadata > email
+  const userName = realProfile?.fullName || rankingProfile?.user_name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Usuário';
+  const userAvatar = realProfile?.avatarUrl || rankingProfile?.avatar_url || user?.user_metadata?.avatar_url;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-primary/5 via-background to-accent/5 dark:from-primary/10 dark:via-background dark:to-accent/10">
@@ -307,7 +313,7 @@ export default function HealthFeedPage() {
                 {/* Hero Header */}
                 <CommunityHeroHeader
                   userName={userName}
-                  userAvatar={userProfile?.avatar_url}
+                  userAvatar={userAvatar}
                   userPosition={currentUserStats.position}
                   totalPoints={currentUserStats.points}
                   streakDays={currentUserStats.streak}
@@ -387,6 +393,7 @@ export default function HealthFeedPage() {
             {/* Floating Create Button */}
             <FloatingCreateButton
               userName={userName}
+              userAvatar={userAvatar}
               onCreatePost={handleCreatePost}
               onOpenStoryModal={() => setCreateStoryOpen(true)}
             />
@@ -442,7 +449,7 @@ export default function HealthFeedPage() {
               <RankingSocialHeader
                 userId={user?.id || null}
                 userName={userName}
-                avatarUrl={userProfile?.avatar_url}
+                avatarUrl={userAvatar}
                 rankingPosition={currentUserStats.position}
                 onFollowersClick={() => setShowFollowersList(!showFollowersList)}
                 onFollowingClick={() => setActiveTab('following')}
@@ -468,7 +475,7 @@ export default function HealthFeedPage() {
                 <CurrentUserRankCard
                   position={currentUserStats.position}
                   userName={userName}
-                  avatarUrl={userProfile?.avatar_url}
+                  avatarUrl={userAvatar}
                   totalPoints={currentUserStats.points}
                   streak={currentUserStats.streak}
                   pointsToNextRank={
