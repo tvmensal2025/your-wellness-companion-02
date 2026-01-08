@@ -134,8 +134,21 @@ serve(async (req) => {
       console.log("[WhatsApp Nutrition] Processando imagem...");
       await processImage(user, phone, message, webhook);
     } else if (messageText) {
-      console.log("[WhatsApp Nutrition] Processando texto:", messageText);
-      await processText(user, phone, messageText);
+      // 🔥 DETECTAR RESPOSTAS DE CONFIRMAÇÃO SEM PENDÊNCIA ATIVA
+      const lower = messageText.toLowerCase().trim();
+      const isConfirmResponse = ["1", "2", "3", "4", "sim", "não", "nao", "s", "n", "ok", "pronto", "confirmo", "cancela"].includes(lower);
+      
+      if (isConfirmResponse) {
+        console.log("[WhatsApp Nutrition] ✅ Resposta de confirmação sem pendência - feedback amigável");
+        await sendWhatsApp(phone,
+          "✅ *Entendi!*\n\n" +
+          "📸 Envie uma foto de refeição ou exame para eu analisar.\n\n" +
+          "_Sofia 🥗 | Dr. Vital 🩺_"
+        );
+      } else {
+        console.log("[WhatsApp Nutrition] Processando texto:", messageText);
+        await processText(user, phone, messageText);
+      }
     }
 
     return new Response(JSON.stringify({ ok: true }), { headers: corsHeaders });
@@ -499,20 +512,44 @@ async function updateFoodHistoryConfirmation(foodHistoryId: string, confirmed: b
 
 // =============== PROCESSAMENTO DE EXAME MÉDICO (MODO LOTE) ===============
 
+// 🔥 LIMPAR LOTES PRESOS (>10 min em processing)
+async function cleanupStuckMedicalBatches(userId: string): Promise<void> {
+  try {
+    const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+    
+    const { data: stuck } = await supabase
+      .from("whatsapp_pending_medical")
+      .update({ status: "error", is_processed: true })
+      .eq("user_id", userId)
+      .eq("status", "processing")
+      .lt("updated_at", tenMinutesAgo)
+      .select("id");
+    
+    if (stuck && stuck.length > 0) {
+      console.log(`[WhatsApp Medical] 🧹 Limpos ${stuck.length} lotes presos em processing`);
+    }
+  } catch (e) {
+    console.error("[WhatsApp Medical] Erro ao limpar lotes presos:", e);
+  }
+}
+
 async function processMedicalImage(user: { id: string }, phone: string, imageUrl: string): Promise<void> {
-  const MAX_RETRIES = 3;
+  const MAX_RETRIES = 5;
   
   try {
     console.log("[WhatsApp Medical] ========================================");
     console.log("[WhatsApp Medical] 🔥 MODO LOTE: Recebendo imagem de exame para", user.id);
     console.log("[WhatsApp Medical] 📷 URL da imagem:", imageUrl.slice(0, 100));
 
+    // 🔥 LIMPAR LOTES PRESOS ANTES DE PROCESSAR
+    await cleanupStuckMedicalBatches(user.id);
+
     const now = new Date().toISOString();
     const newImageEntry = { url: imageUrl, created_at: now };
 
-    // 🔥 IMPLEMENTAÇÃO COM LOCK OTIMISTA E RETRY
+    // 🔥 IMPLEMENTAÇÃO COM LOCK OTIMISTA E RETRY ROBUSTO
     for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-      // Buscar lote ativo
+      // Buscar lote ativo (APENAS collecting ou awaiting_confirm)
       const { data: existingBatch, error: fetchError } = await supabase
         .from("whatsapp_pending_medical")
         .select("*")
@@ -572,8 +609,10 @@ async function processMedicalImage(user: { id: string }, phone: string, imageUrl
 
         console.log(`[WhatsApp Medical] ✅ Imagem ${newCount} adicionada ao lote ${existingBatch.id}`);
 
-        // Enviar feedback a cada 5 imagens (para não poluir)
-        if (newCount % 5 === 0) {
+        // 🔥 ENVIAR FEEDBACK APENAS NA 1ª IMAGEM E A CADA 10 IMAGENS (reduz spam)
+        if (newCount === 1) {
+          // Primeira imagem já enviou feedback ao criar lote
+        } else if (newCount % 10 === 0) {
           await sendWhatsApp(phone,
             `📷 *${newCount} imagens recebidas!*\n\n` +
             `Continue enviando ou digite *PRONTO* quando terminar.\n\n` +
