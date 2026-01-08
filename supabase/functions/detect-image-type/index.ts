@@ -13,11 +13,26 @@ serve(async (req) => {
   }
 
   try {
-    const { imageUrl } = await req.json();
-
-    if (!imageUrl) {
+    const body = await req.json();
+    
+    // 🔥 ACEITAR TANTO imageUrl QUANTO imageBase64
+    const imageUrl = body.imageUrl;
+    const imageBase64 = body.imageBase64;
+    
+    // Determinar qual usar (prioriza base64 para evitar timeout)
+    let imageSource: string;
+    if (imageBase64) {
+      // Se é base64, formatar como data URL se necessário
+      imageSource = imageBase64.startsWith("data:") 
+        ? imageBase64 
+        : `data:image/jpeg;base64,${imageBase64}`;
+      console.log("[Detect Image Type] Usando base64 (mais robusto)");
+    } else if (imageUrl) {
+      imageSource = imageUrl;
+      console.log("[Detect Image Type] Usando URL:", imageUrl.slice(0, 100));
+    } else {
       return new Response(
-        JSON.stringify({ error: "imageUrl é obrigatório" }),
+        JSON.stringify({ error: "imageUrl ou imageBase64 é obrigatório" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -30,7 +45,7 @@ serve(async (req) => {
       );
     }
 
-    console.log("[Detect Image Type] Analisando imagem:", imageUrl.slice(0, 100));
+    console.log("[Detect Image Type] Analisando imagem...");
 
     // Chamar GPT-4o Vision para classificar a imagem
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -71,7 +86,7 @@ Responda APENAS com JSON válido no formato:
               {
                 type: "image_url",
                 image_url: {
-                  url: imageUrl,
+                  url: imageSource,
                   detail: "low" // Usar low para ser mais rápido e barato
                 }
               }
