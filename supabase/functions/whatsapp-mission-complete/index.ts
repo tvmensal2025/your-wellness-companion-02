@@ -102,7 +102,7 @@ serve(async (req) => {
 });
 
 async function generateCelebrationMessage(name: string, points: number, streak: number): Promise<string> {
-  const systemPrompt = `Você é Sofia, a assistente virtual carinhosa do Instituto dos Sonhos.
+  const systemPrompt = `Você é Sofia, a assistente virtual carinhosa do MaxNutrition.
 Sua missão é celebrar conquistas dos membros de forma genuína e motivadora.
 
 PERSONALIDADE:
@@ -224,7 +224,7 @@ async function generateDailySummaryImage(
       
       <!-- Footer -->
       <text x="300" y="370" font-family="Arial, sans-serif" font-size="12" fill="rgba(255,255,255,0.6)" text-anchor="middle">
-        Instituto dos Sonhos • Com carinho, Sofia 💚
+        MaxNutrition • Com carinho, Sofia 💚
       </text>
     </svg>`;
 

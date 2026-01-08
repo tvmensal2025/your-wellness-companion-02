@@ -39,7 +39,7 @@ const OnboardingFlow: React.FC<{ onComplete: () => void }> = ({ onComplete }) =>
   const steps: OnboardingStep[] = [
     {
       id: 'welcome',
-      title: 'Bem-vindo ao Instituto dos Sonhos!',
+      title: 'Bem-vindo ao MaxNutrition!',
       description: 'Sua jornada de transformação começa aqui',
       icon: Heart,
       content: (
@@ -279,7 +279,7 @@ const OnboardingFlow: React.FC<{ onComplete: () => void }> = ({ onComplete }) =>
       
       toast({
         title: "Onboarding Concluído!",
-        description: "Bem-vindo ao Instituto dos Sonhos! Sua jornada começa agora.",
+        description: "Bem-vindo ao MaxNutrition! Sua jornada começa agora.",
       });
       
       onComplete();

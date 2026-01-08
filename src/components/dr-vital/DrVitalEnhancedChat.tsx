@@ -383,7 +383,7 @@ export const DrVitalEnhancedChat: React.FC = () => {
   <body>
     <div class="container">
       <div class="header">
-        <img src="http://45.67.221.216:8086/Dr.Vital.png" alt="Dr. Vital" />
+        <img src="/images/dr-vital.png" alt="Dr. Vital" />
         <div style="flex: 1;">
           <h1>Dr. Vital IA - MaxNutrition</h1>
           <div class="subtitle">Análise para ${userName || 'Paciente'} • ${generateTitle(currentQuestion)} • ${new Date().toLocaleString('pt-BR')}</div>

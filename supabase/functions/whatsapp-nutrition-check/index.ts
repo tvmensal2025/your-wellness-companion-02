@@ -172,7 +172,7 @@ _Responda com:_
 
 Com carinho,
 Sofia 💚
-_Instituto dos Sonhos_`;
+_MaxNutrition_`;
 
         // Enviar mensagem via Evolution API
         const phone = formatPhone(profile.phone);

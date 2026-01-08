@@ -58,7 +58,7 @@ serve(async (req) => {
 
       // Prompts específicos por tipo de sessão
       const sessionPrompts: Record<string, string> = {
-        life_wheel: `Você é Dr. Vital, especialista em equilíbrio de vida do Instituto dos Sonhos.
+        life_wheel: `Você é Dr. Vital, especialista em equilíbrio de vida do MaxNutrition.
 Analise as respostas da Roda da Vida do paciente ${userName} considerando os 12 pilares:
 1. Identifique áreas fortes (notas altas) e celebre
 2. Identifique áreas de atenção (notas baixas) com empatia
@@ -68,7 +68,7 @@ Analise as respostas da Roda da Vida do paciente ${userName} considerando os 12 
 Use emojis como 🎯🌟💼❤️🧠🏃‍♂️💰🎨 para cada área.
 Seja motivador e mostre que pequenas mudanças fazem grande diferença.`,
 
-        saboteurs: `Você é Dr. Vital, especialista em inteligência emocional do Instituto dos Sonhos.
+        saboteurs: `Você é Dr. Vital, especialista em inteligência emocional do MaxNutrition.
 Analise os sabotadores mentais identificados nas respostas de ${userName}:
 1. Identifique os 2-3 sabotadores mais presentes
 2. Explique brevemente como eles afetam a vida do paciente
@@ -78,7 +78,7 @@ Analise os sabotadores mentais identificados nas respostas de ${userName}:
 Use emojis como 🧠🎭⚡🛡️💪 para ilustrar.
 Seja acolhedor - sabotadores são parte de ser humano, não defeitos.`,
 
-        health: `Você é Dr. Vital, médico preventivo do Instituto dos Sonhos.
+        health: `Você é Dr. Vital, médico preventivo do MaxNutrition.
 Analise o histórico de saúde de ${userName} considerando:
 1. Fatores de risco identificados
 2. Hábitos que impactam a saúde (positivos e negativos)
@@ -89,7 +89,7 @@ Use emojis como 💚🩺❤️💪🥗😴 para ilustrar.
 Seja cuidadoso e empático - saúde é assunto sensível.
 NÃO faça diagnósticos, apenas orientações gerais.`,
 
-        daily: `Você é Dr. Vital, um médico carinhoso e motivador do Instituto dos Sonhos.
+        daily: `Você é Dr. Vital, um médico carinhoso e motivador do MaxNutrition.
 Analise as reflexões diárias de ${userName} considerando:
 1. Padrões de sono e descanso
 2. Níveis de energia e hidratação
@@ -218,7 +218,7 @@ Seja caloroso, use o nome do paciente, e surpreenda com insights úteis!`;
     console.log(`👤 Usuário: ${firstName}, Telefone: ${phone}`);
 
     // Legenda para a imagem
-    const caption = `🩺 *Dr. Vital - Análise Personalizada*\n\n✨ +${totalPoints} pontos hoje!\n🔥 ${streakDays || 1} dias de sequência\n\n_${firstName}, sua análise completa está acima!_\n\n— *Instituto dos Sonhos* 💚`;
+    const caption = `🩺 *Dr. Vital - Análise Personalizada*\n\n✨ +${totalPoints} pontos hoje!\n🔥 ${streakDays || 1} dias de sequência\n\n_${firstName}, sua análise completa está acima!_\n\n— *MaxNutrition* 💚`;
 
     // Enviar imagem via Evolution API
     console.log("📤 Enviando imagem via Evolution API...");
