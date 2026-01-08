@@ -1,6 +1,4 @@
 import React from 'react';
-import { motion } from 'framer-motion';
-import { ChevronDown } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 interface WeightData {
@@ -13,7 +11,7 @@ interface WeightChartProps {
 }
 
 export const WeightChart: React.FC<WeightChartProps> = ({ data }) => {
-  // Se não houver dados, mostrar seta animada
+  // Se não houver dados, mostrar mensagem amigável
   if (!data || data.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-center p-6">
@@ -24,22 +22,6 @@ export const WeightChart: React.FC<WeightChartProps> = ({ data }) => {
         <p className="text-muted-foreground/60 text-xs mt-1">
           Acompanhe seu progresso ao longo do tempo
         </p>
-        
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-          className="mt-4"
-        >
-          <motion.div
-            animate={{ y: [0, 8, 0] }}
-            transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
-            className="flex flex-col items-center text-emerald-600"
-          >
-            <span className="text-xs font-medium mb-1">Registre seu peso</span>
-            <ChevronDown className="h-5 w-5" />
-          </motion.div>
-        </motion.div>
       </div>
     );
   }
