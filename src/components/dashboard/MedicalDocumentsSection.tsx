@@ -730,7 +730,7 @@ const MedicalDocumentsSection: React.FC<MedicalDocumentsSectionProps> = ({ hideS
       const examsCurrent: Exam[] = metrics.map(mapExam);
 
       const visitData: VisitData = {
-        logoUrl: 'http://45.67.221.216:8086/logoids.png',
+        logoUrl: '/images/maxnutrition-logo.png',
         patient: { name: profile?.full_name || 'Paciente', sex, birth: birth || toDDMMYYYY(new Date()), age },
         visit: { date: toDDMMYYYY(new Date()) },
         examsCurrent,
@@ -1027,7 +1027,7 @@ const MedicalDocumentsSection: React.FC<MedicalDocumentsSectionProps> = ({ hideS
                                   button_url: data.signedUrl,
                                   name: profile?.full_name || undefined,
                                   type: 'medical_report',
-                                  logo_url: 'http://45.67.221.216:8086/logoids.png'
+                                  logo_url: '/images/maxnutrition-logo.png'
                                 }
                               });
 

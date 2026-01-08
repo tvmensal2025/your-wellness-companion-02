@@ -34,13 +34,13 @@ serve(async (req) => {
       throw new Error('RESEND_API_KEY deve estar configurado');
     }
 
-    const logo = logo_url || 'http://45.67.221.216:8086/logoids.png';
+    const logo = logo_url || 'https://www.oficialmaxnutrition.com.br/images/maxnutrition-logo.png';
     const baseTemplate = (bodyHtml: string) => `
       <div style="background:#f6f7fb;padding:24px">
         <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="max-width:640px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden">
           <tr>
             <td style="padding:20px 24px;border-bottom:1px solid #eee;display:flex;align-items:center;gap:12px">
-              <img src="${logo}" width="120" alt="Instituto dos Sonhos" style="display:block"/>
+              <img src="${logo}" width="120" alt="MaxNutrition" style="display:block"/>
             </td>
           </tr>
           <tr>
@@ -61,7 +61,7 @@ serve(async (req) => {
           </tr>
           <tr>
             <td style="padding:16px 24px;border-top:1px solid #eee;color:#888;font-size:12px;font-family:Arial,sans-serif">
-              Este email foi enviado pela plataforma Instituto dos Sonhos.
+              Este email foi enviado pela plataforma MaxNutrition.
             </td>
           </tr>
         </table>

@@ -8,7 +8,7 @@ export type Exam = {
 };
 
 export type VisitData = {
-  logoUrl: string; // ex: http://45.67.221.216:8086/logoids.png
+  logoUrl: string; // ex: /images/maxnutrition-logo.png
   patient: { name: string; sex: "Feminino" | "Masculino" | "Outro"; birth: string /* DD/MM/AAAA */; age: number };
   visit: { date: string /* DD/MM/AAAA */ };
   vitals?: { weightKg?: number; heightCm?: number; bmi?: number; sbp?: number; dbp?: number; hr?: number; tempC?: number; spo2?: number };
