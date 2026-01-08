@@ -122,11 +122,11 @@ export default function PublicPostPage() {
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <img 
-              src="/lovable-uploads/6a9f94c5-e38a-4ce6-b597-ba09f8b40304.png" 
-              alt="Instituto dos Sonhos" 
+              src="/images/maxnutrition-logo.png" 
+              alt="MaxNutrition" 
               className="h-8 w-auto"
             />
-            <span className="font-semibold text-primary">Instituto dos Sonhos</span>
+            <span className="font-semibold text-primary">MaxNutrition</span>
           </div>
           <Link to="/auth">
             <Button size="sm">Entrar</Button>
@@ -194,7 +194,7 @@ export default function PublicPostPage() {
             {/* CTA */}
             <div className="p-4 bg-primary/5 border-t">
               <p className="text-center text-sm text-muted-foreground mb-3">
-                Entre no Instituto dos Sonhos para interagir com este post e muito mais!
+                Entre no MaxNutrition para interagir com este post e muito mais!
               </p>
               <Link to="/auth" className="block">
                 <Button className="w-full">
@@ -208,10 +208,10 @@ export default function PublicPostPage() {
 
       {/* Footer */}
       <footer className="py-8 text-center text-sm text-muted-foreground">
-        <p>© 2026 Instituto dos Sonhos. Todos os direitos reservados.</p>
+        <p>© 2026 MaxNutrition. Todos os direitos reservados.</p>
         <p className="mt-1">
-          <a href="https://institutodossonhos.com.br" className="text-primary hover:underline">
-            institutodossonhos.com.br
+          <a href="https://oficialmaxnutrition.com.br" className="text-primary hover:underline">
+            oficialmaxnutrition.com.br
           </a>
         </p>
       </footer>
