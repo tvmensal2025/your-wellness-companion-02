@@ -11271,6 +11271,7 @@ export type Database = {
       whatsapp_pending_nutrition: {
         Row: {
           analysis_result: Json | null
+          confirmed: boolean | null
           created_at: string | null
           expires_at: string | null
           id: string
@@ -11278,14 +11279,17 @@ export type Database = {
           is_processed: boolean | null
           meal_type: string
           nutrition_tracking_id: string | null
+          phone: string | null
           question_sent_at: string
           response_content: string | null
           response_received_at: string | null
           response_type: string | null
           user_id: string
+          waiting_confirmation: boolean | null
         }
         Insert: {
           analysis_result?: Json | null
+          confirmed?: boolean | null
           created_at?: string | null
           expires_at?: string | null
           id?: string
@@ -11293,14 +11297,17 @@ export type Database = {
           is_processed?: boolean | null
           meal_type: string
           nutrition_tracking_id?: string | null
+          phone?: string | null
           question_sent_at?: string
           response_content?: string | null
           response_received_at?: string | null
           response_type?: string | null
           user_id: string
+          waiting_confirmation?: boolean | null
         }
         Update: {
           analysis_result?: Json | null
+          confirmed?: boolean | null
           created_at?: string | null
           expires_at?: string | null
           id?: string
@@ -11308,11 +11315,13 @@ export type Database = {
           is_processed?: boolean | null
           meal_type?: string
           nutrition_tracking_id?: string | null
+          phone?: string | null
           question_sent_at?: string
           response_content?: string | null
           response_received_at?: string | null
           response_type?: string | null
           user_id?: string
+          waiting_confirmation?: boolean | null
         }
         Relationships: []
       }

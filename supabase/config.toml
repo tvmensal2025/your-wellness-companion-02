@@ -104,3 +104,6 @@ verify_jwt = false
 
 [functions.nutrition-daily-summary]
 verify_jwt = false
+
+[functions.whatsapp-nutrition-webhook]
+verify_jwt = false
