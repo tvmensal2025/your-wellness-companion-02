@@ -3,10 +3,9 @@ import { useLocation } from 'react-router-dom';
 import HealthChatBot from './HealthChatBot';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
-import { MessageCircle, Camera } from 'lucide-react';
+import { MessageCircle } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useActiveSection } from '@/contexts/ActiveSectionContext';
-import QuickPhotoCapture from './nutrition/QuickPhotoCapture';
 
 const HIDDEN_ROUTES = [
   '/sofia',
@@ -31,7 +30,6 @@ const SofiaFloatingButton: React.FC = () => {
   const [isHidden, setIsHidden] = useState(() => {
     return localStorage.getItem(STORAGE_KEY) === 'true';
   });
-  const [showQuickPhoto, setShowQuickPhoto] = useState(false);
 
   // Atalho de teclado Ctrl+Shift+S para alternar visibilidade
   useEffect(() => {
@@ -91,39 +89,7 @@ const SofiaFloatingButton: React.FC = () => {
     );
   }
 
-  return (
-    <>
-      {/* Botão de Foto Rápida - Acima do chat */}
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              onClick={() => setShowQuickPhoto(true)}
-              className="fixed bottom-32 right-4 z-40 h-12 w-12 rounded-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-lg hover:shadow-xl transition-all duration-200 lg:bottom-24"
-              size="icon"
-            >
-              <Camera className="w-5 h-5 text-white" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side="left">
-            <p className="text-xs">📸 Foto rápida da refeição</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-
-      {/* Sofia Flutuante Original - HealthChatBot */}
-      <HealthChatBot user={user} onHide={handleHide} />
-
-      {/* Modal de Foto Rápida */}
-      <QuickPhotoCapture 
-        isOpen={showQuickPhoto} 
-        onClose={() => setShowQuickPhoto(false)}
-        onSuccess={() => {
-          // Pode adicionar lógica adicional aqui
-        }}
-      />
-    </>
-  );
+  return <HealthChatBot user={user} onHide={handleHide} />;
 };
 
 export default SofiaFloatingButton;
