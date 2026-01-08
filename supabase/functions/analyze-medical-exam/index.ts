@@ -2407,85 +2407,131 @@ ANTES DO JSON, escreva uma análise clínica EDUCATIVA, curta e objetiva, basead
         console.error('❌ Erro ao extrair texto via OCR:', ocrError);
         console.log('⚠️ Continuando sem OCR...');
       }
-      // Função otimizada para chamar OpenAI
-      const callOpenAI = async (model: string) => {
-        // Ajustar tokens conforme o número de imagens - mais tokens para melhor precisão
-        const tokensPerImage = 3000; // Aumentar base de tokens por imagem
-        // Tokens máximos - GPT-4-Turbo tem limite de 4096, GPT-4o aceita 16000
-        const maxTokensForModel = model.includes('gpt-4o') ? 16000 : 4096;
-        const adjustedTokens = Math.min(maxTokensForModel, Math.max(4000, imagesLimited.length * tokensPerImage));
-        console.log(`🔢 Tokens ajustados: ${adjustedTokens} para ${imagesLimited.length} imagens`);
-        
-        // Sempre usar 'high' para máxima precisão na leitura de exames médicos
-        const imageDetail = 'high';
-        
-        // Validar formato das imagens
-        for (const img of imagesLimited) {
-          if (!img.data.startsWith('data:')) {
-            console.warn('⚠️ Imagem sem data URL prefix, adicionando...');
-            img.data = `data:${img.mime};base64,${img.data.replace(/^data:.*?;base64,/, '')}`;
-          }
+      // ========================================
+      // 🆕 USAR LOVABLE AI COMO MÉTODO PRIMÁRIO (google/gemini-2.5-pro)
+      // ========================================
+      const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+      
+      // Prompt especializado para máxima precisão em exames médicos
+      const MEDICAL_EXAM_PROMPT = `Você é um ESPECIALISTA em leitura de exames laboratoriais com MÁXIMA PRECISÃO.
+
+EXTRAIA TODOS OS DADOS DO EXAME NA IMAGEM COM EXATIDÃO ABSOLUTA:
+
+1. DADOS DO PACIENTE:
+   - Nome completo EXATAMENTE como aparece
+   - Data do exame
+   - Laboratório/Clínica
+
+2. PARA CADA EXAME, EXTRAIA:
+   - Nome do exame EXATAMENTE como aparece no documento
+   - Valor numérico EXATO (incluindo decimais)
+   - Unidade de medida correta
+   - Valores de referência completos
+   - Status: NORMAL (dentro da faixa), ALTO (acima), BAIXO (abaixo)
+
+3. REGRAS CRÍTICAS:
+   - LEIA CADA NÚMERO COM MÁXIMA ATENÇÃO
+   - NÃO CONFUNDA: 0 com O, 1 com l, 5 com S, 8 com B
+   - Se não conseguir ler algum valor, marque como "ILEGÍVEL"
+   - NÃO INVENTE valores - extraia APENAS o que está visível
+   - INCLUA TODOS os exames, mesmo os que parecem normais
+   - Preste atenção especial em: decimais, vírgulas e pontos
+
+RESPONDA EM JSON VÁLIDO:
+{
+  "patient_name": "Nome Exato do Paciente",
+  "exam_date": "DD/MM/YYYY",
+  "laboratory": "Nome do Laboratório",
+  "sections": [
+    {
+      "title": "Hemograma",
+      "icon": "🔬",
+      "metrics": [
+        {
+          "name": "Hemoglobina",
+          "value": "13.5",
+          "unit": "g/dL",
+          "reference": "12.0 - 16.0",
+          "status": "normal",
+          "how_it_works": "Mede a capacidade do sangue de transportar oxigênio"
+        }
+      ]
+    }
+  ],
+  "summary": "Resumo geral da saúde do paciente"
+}
+
+${extractedText ? `\n===== TEXTO OCR AUXILIAR =====\n${extractedText}\n===============================\nUse o texto acima para CONFIRMAR os valores lidos na imagem.` : ''}`;
+
+      // Função para chamar Lovable AI (mais preciso para exames)
+      const callLovableAI = async () => {
+        if (!LOVABLE_API_KEY) {
+          throw new Error('LOVABLE_API_KEY não configurada');
         }
         
-        // Montar prompt incluindo texto OCR se disponível
-        let enhancedPrompt = systemPrompt;
+        console.log('🤖 Chamando Lovable AI com google/gemini-2.5-pro para MÁXIMA PRECISÃO');
         
-        if (extractedText && extractedText.length > 0) {
-          enhancedPrompt += `\n\n===== TEXTO EXTRAÍDO VIA OCR =====\n${extractedText}\n===============================\n\n`;
-          enhancedPrompt += `IMPORTANTE: Use o texto OCR acima para ajudar na análise. Ele foi extraído da imagem usando Google Vision API.\n`;
-          enhancedPrompt += `EXTRAIA TODOS OS DADOS DOS EXAMES LABORATORIAIS do texto OCR acima E da imagem.`;
-        } else {
-          enhancedPrompt += '\n\nANALISE A IMAGEM ACIMA E EXTRAIA TODOS OS DADOS DOS EXAMES LABORATORIAIS.';
-        }
-        
-        // Verificar se o modelo suporta imagens (lista específica de modelos que sabemos que funcionam)
-        const modelsWithVision = ['gpt-4o', 'gpt-4-turbo', 'gpt-4-turbo-preview', 'gpt-4-vision-preview'];
-        const supportsImages = modelsWithVision.includes(model);
-        
-        let body;
-        if (supportsImages && imagesLimited.length > 0) {
-          console.log(`📸 Usando modelo ${model} com ${imagesLimited.length} imagens`);
-          body = {
-            model,
+        const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'google/gemini-2.5-pro', // Modelo mais potente para exames
             messages: [{
               role: 'user',
               content: [
-                { 
-                  type: 'text', 
-                  text: enhancedPrompt
-                },
-                ...imagesLimited.map((img, idx) => {
-                  console.log(`📸 Imagem ${idx + 1}: ${img.mime}, tamanho: ${img.data.length} chars`);
-                  return {
-                    type: 'image_url',
-                    image_url: { 
-                      url: img.data, 
-                      detail: imageDetail 
-                    }
-                  };
-                })
+                { type: 'text', text: MEDICAL_EXAM_PROMPT },
+                ...imagesLimited.map(img => ({
+                  type: 'image_url',
+                  image_url: { url: img.data }
+                }))
               ]
             }],
-            temperature: config.temperature || 0.1,
-            max_tokens: adjustedTokens
-          };
-        } else {
-          console.log(`📝 Usando modelo ${model} apenas com texto (não suporta imagens ou sem imagens)`);
-          body = {
-            model,
-            messages: [{
-              role: 'user',
-              content: enhancedPrompt + (extractedText ? `\n\nTEXTO EXTRAÍDO:\n${extractedText}` : '')
-            }],
-            temperature: 0.2,
-            max_tokens: adjustedTokens
-          };
+            max_tokens: 8000,
+            temperature: 0.1 // Baixa temperatura = mais preciso
+          })
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('❌ Lovable AI error:', response.status, errorText);
+          throw new Error(`Lovable AI error: ${response.status}`);
         }
+
+        const data = await response.json();
+        return {
+          choices: [{
+            message: {
+              content: data.choices?.[0]?.message?.content || ''
+            }
+          }]
+        };
+      };
+
+      // Função otimizada para chamar OpenAI (fallback)
+      const callOpenAI = async (model: string) => {
+        const adjustedTokens = model.includes('gpt-4o') ? 16000 : 4096;
+        console.log(`🔢 Tokens ajustados: ${adjustedTokens}`);
         
-        console.log(`🤖 Enviando ${imagesLimited.length} imagens para OpenAI (detail: ${imageDetail})`);
+        const body = {
+          model,
+          messages: [{
+            role: 'user',
+            content: [
+              { type: 'text', text: systemPrompt + (extractedText ? `\n\nTEXTO OCR:\n${extractedText}` : '') },
+              ...imagesLimited.map(img => ({
+                type: 'image_url',
+                image_url: { url: img.data, detail: 'high' }
+              }))
+            ]
+          }],
+          temperature: 0.1,
+          max_tokens: adjustedTokens
+        };
         
-        // OTIMIZAÇÃO: Timeout na requisição OpenAI
-        const openAIPromise = fetch('https://api.openai.com/v1/chat/completions', {
+        const resp = await fetch('https://api.openai.com/v1/chat/completions', {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${OPENAI_API_KEY}`,
@@ -2494,57 +2540,48 @@ ANTES DO JSON, escreva uma análise clínica EDUCATIVA, curta e objetiva, basead
           body: JSON.stringify(body),
         });
         
-        // Timeout maior para modelos com imagens (180s = 3 min)
-        const timeoutMs = model.includes('gpt-4o') || model.includes('gpt-4-turbo') ? 180000 : 60000;
-        const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error(`Timeout na chamada OpenAI (${timeoutMs/1000}s)`)), timeoutMs)
-        );
-        
-        const resp = await Promise.race([openAIPromise, timeoutPromise]) as Response;
         const json = await resp.json();
         if (!resp.ok) throw new Error(json?.error?.message || 'OpenAI error');
         return json;
       };
 
       // Usar o modelo definido na configuração
-      let usedModel: string = config.model;
+      let usedModel: string = 'google/gemini-2.5-pro';
       let aiResponse: any;
       
-      console.log('🤖 Chamando OpenAI com modelo PREMIUM:', usedModel);
+      console.log('🤖 Tentando Lovable AI primeiro (mais preciso)...');
       await supabase
         .from('medical_documents')
         .update({ 
-          processing_stage: 'chamando_openai_premium', 
+          processing_stage: 'chamando_lovable_ai_premium', 
           progress_pct: 85 
         })
         .eq('id', documentId || '')
         .eq('user_id', userIdEffective || '');
       
+      // ESTRATÉGIA: Lovable AI primeiro, OpenAI como fallback
       try { 
-        aiResponse = await callOpenAI(usedModel); 
-        console.log('✅ OpenAI Premium respondeu com sucesso');
+        aiResponse = await callLovableAI(); 
+        console.log('✅ Lovable AI (Gemini Pro) respondeu com sucesso');
       }
       catch (e) {
-        console.log('⚠️ Fallback 1 para GPT-4 Turbo:', e);
+        console.log('⚠️ Lovable AI falhou, tentando OpenAI:', e);
         try { 
-          usedModel = 'gpt-4-turbo'; 
+          usedModel = 'gpt-4o'; 
           aiResponse = await callOpenAI(usedModel); 
-          console.log('✅ Fallback 1 (GPT-4 Turbo) funcionou');
+          console.log('✅ Fallback 1 (GPT-4o) funcionou');
         }
         catch (e2) {
           console.log('⚠️ Fallback 2 para GPT-4o-mini:', e2);
           try {
-            // GPT-4o-mini é mais rápido e suporta imagens
             usedModel = 'gpt-4o-mini';
             aiResponse = await callOpenAI(usedModel);
             console.log('✅ Fallback 2 (GPT-4o-mini) funcionou');
           }
           catch (e3) {
             console.log('⚠️ Fallback 3 para modelo de texto:', e3);
-            // GPT-3.5-turbo não suporta imagens, então vamos usar apenas texto
             usedModel = 'gpt-3.5-turbo';
             
-            // Se temos texto OCR, usar apenas ele
             if (extractedText && extractedText.length > 0) {
               console.log('📝 Usando apenas texto OCR para GPT-3.5');
               const textOnlyResponse = await fetch('https://api.openai.com/v1/chat/completions', {

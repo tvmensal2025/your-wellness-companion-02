@@ -1,14 +1,14 @@
 // ========================================
 // 🔧 SISTEMA APRIMORADO DE DETECÇÃO DE ALIMENTOS
 // Usa tabela TACO para cálculos nutricionais precisos
-// Prioridade: Lovable AI (google/gemini-2.5-flash-lite) - MAIS RÁPIDO
+// Prioridade: Lovable AI (google/gemini-2.5-flash) - PRECISÃO MÁXIMA
 // ========================================
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.55.0';
 
 const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-const RATE_LIMIT_DELAY = 500; // Reduzido de 1000ms
-const MAX_RETRIES = 1; // Apenas 1 retry para velocidade
+const RATE_LIMIT_DELAY = 500;
+const MAX_RETRIES = 2; // 2 retries para garantir sucesso
 
 // Supabase client
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
@@ -18,11 +18,11 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
 // Cache em memória para TACO (dura durante a requisição)
 const tacoCache: Map<string, any> = new Map();
 
-// Configuração de IA - Usando modelo LITE para velocidade
+// Configuração de IA - Usando modelo FLASH para PRECISÃO
 let AI_MODEL_CONFIG = {
-  model: 'google/gemini-2.5-flash-lite', // Modelo mais rápido
-  max_tokens: 1500, // Reduzido para respostas mais rápidas
-  temperature: 0.2 // Menos criativo = mais rápido
+  model: 'google/gemini-2.5-flash', // Modelo preciso (não lite!)
+  max_tokens: 2500, // Mais tokens para análise detalhada
+  temperature: 0.15 // Baixa temperatura = mais preciso
 };
 
 // ========================================
@@ -480,29 +480,47 @@ async function calculateNutritionFromTaco(foods: Array<{ name: string; grams: nu
 }
 
 // ========================================
-// 🤖 PROMPTS PARA DETECÇÃO PRECISA
+// 🤖 PROMPTS PARA DETECÇÃO COM MÁXIMA PRECISÃO
 // ========================================
-const FOOD_DETECTION_PROMPT = `Analise esta foto de refeição brasileira COM MÁXIMA PRECISÃO.
+const FOOD_DETECTION_PROMPT = `Você é um NUTRICIONISTA ESPECIALIZADO em análise visual de refeições brasileiras.
 
-REGRAS CRÍTICAS:
-1. DIFERENCIE carne vermelha (bife, picanha) de frango - são DIFERENTES!
-2. IDENTIFIQUE o método de preparo: frito, grelhado, cozido, assado
-3. BATATA FRITA ≠ batata cozida (calorias MUITO diferentes)
-4. Se é carne marrom/escura = carne bovina. Se é clara/branca = frango.
-5. Se vir óleo/fritura = adicione "frito" ao nome
+ANALISE ESTA FOTO COM MÁXIMA PRECISÃO E ATENÇÃO AOS DETALHES.
 
-RESPONDA APENAS JSON:
-{"foods":[{"name":"alimento com preparo","grams":100,"confidence":0.9}],"meal_type":"refeicao","needs_confirmation":false,"ambiguous_items":[]}
+REGRAS OBRIGATÓRIAS:
+1. IDENTIFIQUE TODOS os alimentos visíveis, mesmo parcialmente cobertos
+2. ESTIME o peso em gramas baseado no tamanho do prato/recipiente
+3. DIFERENCIE com cuidado:
+   - Carne VERMELHA (bovina, marrom/escura) vs Carne BRANCA (frango/peixe, clara)
+   - Batata FRITA (dourada, crocante) vs Batata COZIDA (clara, macia) vs Batata ASSADA
+   - Arroz BRANCO vs Arroz INTEGRAL (mais escuro)
+   - Ovo FRITO (gema aparente, bordas crocantes) vs Ovo COZIDO (sem gordura) vs Ovo MEXIDO (desfiado)
+4. IDENTIFIQUE o método de preparo visualmente:
+   - FRITO: superfície dourada/crocante, brilho de óleo
+   - GRELHADO: marcas de grelha, superfície seca
+   - COZIDO: aparência úmida, cor mais clara
+   - ASSADO: superfície tostada uniforme
+5. INCLUA molhos, temperos e acompanhamentos visíveis
 
-EXEMPLOS de nomes CORRETOS:
-- "bife grelhado" (não apenas "carne")
-- "frango grelhado" (não confunda com bife)
-- "batata frita" (não apenas "batata")
-- "ovo frito" (não apenas "ovo")
+PORÇÕES TÍPICAS BRASILEIRAS (use como referência):
+- Prato raso: arroz ~150g, feijão ~100g, carne ~120g
+- Prato fundo: sopa ~300ml, macarrão ~200g
+- Copo: ~250ml, Xícara: ~150ml
+- Fatia de pizza: ~100g, Coxinha média: ~80g
 
-Porções típicas: arroz 120g, feijão 80g, bife 120g, frango 120g, batata frita 100g, salada 50g.
+NOMES CORRETOS (use EXATAMENTE assim):
+✅ "bife grelhado" (carne bovina escura)
+✅ "frango grelhado" (carne branca clara)
+✅ "batata frita" (dourada, crocante)
+✅ "batata cozida" (clara, macia)
+✅ "ovo frito" (com gema aparente)
+✅ "ovo cozido" (descascado, inteiro)
+✅ "arroz branco" (não apenas "arroz")
+✅ "feijão carioca" ou "feijão preto"
 
-Se houver DÚVIDA entre carne bovina e frango, defina needs_confirmation=true e liste em ambiguous_items.`;
+RESPONDA APENAS EM JSON VÁLIDO:
+{"foods":[{"name":"alimento com preparo","grams":100,"confidence":0.9}],"meal_type":"cafe_da_manha|almoco|jantar|lanche","needs_confirmation":false,"ambiguous_items":[],"notes":"observações importantes"}
+
+Se houver DÚVIDA entre dois alimentos similares, defina needs_confirmation=true e liste em ambiguous_items.`;
 
 // ========================================
 // 🤖 FUNÇÃO PRINCIPAL
