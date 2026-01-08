@@ -1337,9 +1337,13 @@ serve(async (req) => {
       throw new Error('OPENAI_API_KEY não configurada');
     }
 
-    const { imageData, storagePath, storagePaths, images: requestImages, examType, userId, documentId: docId, tmpPaths, title } = requestBody;
+    const { imageData, storagePath, storagePaths, images: requestImages, examType, userId, documentId: docId, tmpPaths, title, storageBucket } = requestBody;
     userIdEffective = userId || null;
     let examTypeEffective: string | null = examType || null;
+    
+    // 🔥 Determinar bucket de storage (padrão: medical-documents, WhatsApp usa chat-images)
+    const effectiveBucket = storageBucket || (tmpPaths && tmpPaths.length > 0 && tmpPaths[0]?.includes('whatsapp/') ? 'chat-images' : 'medical-documents');
+    console.log('📂 Bucket de storage:', effectiveBucket);
     
     // Validações após definir as variáveis - verificar se temos tmpPaths como alternativa
     if (!docId && !tmpPaths) {
@@ -1607,8 +1611,10 @@ ANTES DO JSON, escreva uma análise clínica EDUCATIVA, curta e objetiva, basead
         
         if (!blob) {
           console.log(`📥 Baixando blob para: ${storagePath}`);
+          // 🔥 Determinar bucket correto baseado no path
+          const bucketForDownload = storagePath.includes('whatsapp/') ? 'chat-images' : 'medical-documents';
           const { data: downloadBlob, error: downloadError } = await supabase.storage
-            .from('medical-documents')
+            .from(bucketForDownload)
             .download(storagePath);
           
           if (downloadError || !downloadBlob) {
@@ -1803,8 +1809,12 @@ ANTES DO JSON, escreva uma análise clínica EDUCATIVA, curta e objetiva, basead
           try {
             console.log(`🔄 Tentativa ${retryCount + 1}/${maxRetries + 1} para: ${p}`);
             
-            // TIMEOUT DRÁSTICO: 5s para evitar CPU timeout
-            const downloadPromise = supabase.storage.from('medical-documents').download(p);
+            // 🔥 Usar bucket correto (chat-images para WhatsApp, medical-documents para outros)
+            const bucketToUse = p.includes('whatsapp/') ? 'chat-images' : effectiveBucket;
+            console.log(`📂 Usando bucket: ${bucketToUse} para: ${p}`);
+            
+            // TIMEOUT DRÁSTICO: 15s para evitar CPU timeout
+            const downloadPromise = supabase.storage.from(bucketToUse).download(p);
             const timeoutPromise = new Promise((_, reject) => 
               setTimeout(() => reject(new Error('Timeout no download da imagem')), 15000)
             );
@@ -1891,7 +1901,9 @@ ANTES DO JSON, escreva uma análise clínica EDUCATIVA, curta e objetiva, basead
         throw new Error('Nenhuma imagem válida foi processada. Verifique se os arquivos existem no storage.');
       }
     } else if (storagePath) {
-      const { data: dl, error: dlErr } = await supabase.storage.from('medical-documents').download(storagePath);
+      // 🔥 Usar bucket correto baseado no path
+      const bucketForPath = storagePath.includes('whatsapp/') ? 'chat-images' : effectiveBucket;
+      const { data: dl, error: dlErr } = await supabase.storage.from(bucketForPath).download(storagePath);
       if (dlErr) throw dlErr;
       const mt = guessMimeFromPath(storagePath);
       images.push({ mime: mt, data: await new Promise<string>((resolve, reject) => {
