@@ -1,0 +1,238 @@
+import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { UserInfo } from "../services/user-service.ts";
+import { PendingNutrition, updateFoodHistoryConfirmation } from "../services/pending-service.ts";
+import { sendWhatsApp } from "../utils/whatsapp-sender.ts";
+import {
+  detectMealType,
+  formatMealType,
+  isClearPending,
+  parseEditCommand,
+  isAlmostConfirmation,
+} from "../utils/message-utils.ts";
+import { interpretUserIntent } from "../services/intent-service.ts";
+import { getDailyTotal } from "../services/user-service.ts";
+import { handleSmartResponseWithPending } from "./text-handler.ts";
+
+/**
+ * Handle direct confirmation (1, sim, etc)
+ */
+export async function handleDirectConfirm(
+  supabase: SupabaseClient,
+  user: UserInfo,
+  phone: string,
+  pending: PendingNutrition
+): Promise<void> {
+  console.log("[Confirmation] ✅ Confirmação DIRETA detectada");
+
+  const analysis = pending.analysis_result || {};
+  const foodHistoryId = analysis.food_history_id;
+
+  const detectedFoods =
+    analysis.detectedFoods ||
+    analysis.foods ||
+    analysis.foods_detected ||
+    analysis.raw?.sofia_analysis?.foods_detected ||
+    [];
+
+  // Call sofia-deterministic for exact calculation
+  const { data: deterministicResult } = await supabase.functions.invoke(
+    "sofia-deterministic",
+    {
+      body: {
+        detected_foods: detectedFoods.map((f: any) => ({
+          name: f.nome || f.name,
+          grams: f.quantidade || f.grams || 100,
+        })),
+        user_id: user.id,
+        analysis_type: "nutritional_sum",
+      },
+    }
+  );
+
+  const nutritionData = deterministicResult?.nutrition_data || {
+    total_kcal: analysis.totalCalories || 0,
+    total_proteina: 0,
+    total_carbo: 0,
+    total_gordura: 0,
+  };
+
+  // Update food_history as CONFIRMED
+  if (foodHistoryId) {
+    await updateFoodHistoryConfirmation(supabase, foodHistoryId, true, detectedFoods, nutritionData);
+  }
+
+  // Save to nutrition_tracking
+  const today = new Date().toISOString().split("T")[0];
+  const { data: tracking } = await supabase
+    .from("nutrition_tracking")
+    .insert({
+      user_id: user.id,
+      date: today,
+      meal_type: pending.meal_type || detectMealType(),
+      total_calories: nutritionData.total_kcal || 0,
+      total_proteins: nutritionData.total_proteina || 0,
+      total_carbs: nutritionData.total_carbo || 0,
+      total_fats: nutritionData.total_gordura || 0,
+      total_fiber: nutritionData.total_fibra || 0,
+      food_items: detectedFoods,
+      photo_url: pending.image_url,
+      notes: "Registrado via WhatsApp",
+    })
+    .select()
+    .single();
+
+  // Update pending as processed
+  await supabase
+    .from("whatsapp_pending_nutrition")
+    .update({
+      waiting_confirmation: false,
+      confirmed: true,
+      is_processed: true,
+      nutrition_tracking_id: tracking?.id,
+    })
+    .eq("id", pending.id);
+
+  const dailyTotal = await getDailyTotal(supabase, user.id);
+
+  await sendWhatsApp(
+    phone,
+    `✅ *Refeição registrada!*\n\n` +
+      `🍽️ ${formatMealType(pending.meal_type || detectMealType())}: *${Math.round(nutritionData.total_kcal)} kcal*\n\n` +
+      `📊 Total do dia: *${Math.round(dailyTotal)} kcal*\n\n` +
+      `Continue assim! 💪\n\n` +
+      `_Sofia 🥗_`
+  );
+}
+
+/**
+ * Handle direct cancel (2, não, etc)
+ */
+export async function handleDirectCancel(
+  supabase: SupabaseClient,
+  phone: string,
+  pending: PendingNutrition
+): Promise<void> {
+  console.log("[Confirmation] ❌ Cancelamento DIRETO detectado");
+
+  const analysis = pending.analysis_result || {};
+  const foodHistoryId = analysis.food_history_id;
+
+  if (foodHistoryId) {
+    await supabase
+      .from("food_history")
+      .update({ user_notes: "Cancelado pelo usuário" })
+      .eq("id", foodHistoryId);
+  }
+
+  await supabase
+    .from("whatsapp_pending_nutrition")
+    .update({
+      waiting_confirmation: false,
+      confirmed: false,
+      is_processed: true,
+    })
+    .eq("id", pending.id);
+
+  await sendWhatsApp(
+    phone,
+    `❌ *Registro cancelado!*\n\n` +
+      `📸 Envie uma nova foto quando quiser!\n\n` +
+      `_Sofia 🥗_`
+  );
+}
+
+/**
+ * Handle direct edit request (3, editar, etc)
+ */
+export async function handleDirectEdit(
+  supabase: SupabaseClient,
+  phone: string,
+  pending: PendingNutrition
+): Promise<void> {
+  console.log("[Confirmation] ✏️ Edição DIRETA detectada");
+
+  const analysis = pending.analysis_result || {};
+  const pendingFoods = analysis.detectedFoods || analysis.foods || [];
+
+  await supabase
+    .from("whatsapp_pending_nutrition")
+    .update({ waiting_edit: true })
+    .eq("id", pending.id);
+
+  const numberedList = pendingFoods
+    .map((f: any, i: number) => {
+      const name = f.nome || f.name || f.alimento || "(alimento)";
+      const grams = f.quantidade ?? f.grams ?? f.g ?? "?";
+      return `*${i + 1}.* ${name} (${grams}g)`;
+    })
+    .join("\n");
+
+  await sendWhatsApp(
+    phone,
+    `✏️ *Modo edição*\n\n` +
+      `Itens detectados:\n\n${numberedList}\n\n` +
+      `───────────────\n\n` +
+      `Me diga o que quer alterar:\n\n` +
+      `📝 _"Adiciona uma banana"_\n` +
+      `🗑️ _"Tira o arroz"_\n` +
+      `🔄 _"Era macarrão, não arroz"_\n\n` +
+      `Responda *PRONTO* quando terminar\n\n` +
+      `_Sofia 🥗_`
+  );
+}
+
+/**
+ * Handle direct clear pending (4, finalizar, etc)
+ */
+export async function handleDirectClear(
+  supabase: SupabaseClient,
+  phone: string,
+  pending: PendingNutrition
+): Promise<void> {
+  console.log("[Confirmation] 🧹 Limpando pendência por solicitação do usuário");
+
+  const analysis = pending.analysis_result || {};
+  const foodHistoryId = analysis.food_history_id;
+
+  if (foodHistoryId) {
+    await supabase
+      .from("food_history")
+      .update({ user_notes: "Descartado pelo usuário" })
+      .eq("id", foodHistoryId);
+  }
+
+  await supabase
+    .from("whatsapp_pending_nutrition")
+    .update({
+      waiting_confirmation: false,
+      waiting_edit: false,
+      confirmed: false,
+      is_processed: true,
+      status: "cleared_by_user",
+    })
+    .eq("id", pending.id);
+
+  await sendWhatsApp(
+    phone,
+    `✅ *Pendência finalizada!*\n\n` +
+      `Agora você pode continuar normalmente. 💚\n\n` +
+      `📸 Envie uma foto ou me conte o que comeu!\n\n` +
+      `_Sofia 🥗_`
+  );
+}
+
+/**
+ * Handle ambiguous confirmation attempt
+ */
+export async function handleAmbiguousConfirmation(phone: string): Promise<void> {
+  await sendWhatsApp(
+    phone,
+    `🤔 *Não entendi...*\n\n` +
+      `Escolha uma opção:\n\n` +
+      `*1* ✅ Confirmar\n` +
+      `*2* ❌ Cancelar\n` +
+      `*3* ✏️ Editar\n` +
+      `*4* 🔄 Limpar pendência\n\n` +
+      `_Sofia 🥗_`
+  );
+}
