@@ -1603,15 +1603,30 @@ async function analyzeExamBatch(
 
     console.log(`[WhatsApp Medical] Analisando lote de ${imagesCount} imagens...`);
 
-    // 🔥 CHAMAR analyze-medical-exam-batch (ou analyze-medical-exam com múltiplas imagens)
+    // 🔥 CONVERTER URLs públicas para paths de storage
+    // URL: https://xxx.supabase.co/storage/v1/object/public/chat-images/whatsapp/userId/123.jpg
+    // Path: whatsapp/userId/123.jpg
+    const tmpPaths = imageUrls.map((img: any) => {
+      const url = img.url || img;
+      const match = url.match(/\/chat-images\/(.+)$/);
+      return match ? match[1] : null;
+    }).filter(Boolean);
+
+    console.log(`[WhatsApp Medical] Paths extraídos: ${tmpPaths.length}`, tmpPaths.slice(0, 3));
+
+    if (tmpPaths.length === 0) {
+      console.error("[WhatsApp Medical] Nenhum path válido extraído das URLs");
+      await sendWhatsApp(phone, "❌ Erro ao processar imagens.\n\nTente enviar novamente.\n\n_Dr. Vital 🩺_");
+      return;
+    }
+
+    // 🔥 CHAMAR analyze-medical-exam com parâmetros CORRETOS
     const { data: analysisResult, error: analysisError } = await supabase.functions.invoke("analyze-medical-exam", {
       body: {
-        imageUrls: imageUrls.map((img: any) => img.url || img),
-        imageUrl: imageUrls[0]?.url || imageUrls[0], // Primeira imagem (fallback)
+        tmpPaths,
         userId: user.id,
-        source: "whatsapp_batch",
-        batchMode: true,
-        imagesCount,
+        examType: "exame_laboratorial",
+        title: `Exame via WhatsApp - ${new Date().toLocaleDateString("pt-BR")}`,
       },
     });
 
