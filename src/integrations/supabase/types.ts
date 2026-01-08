@@ -11416,6 +11416,7 @@ export type Database = {
           image_url: string | null
           image_urls: Json
           images_count: number
+          is_processed: boolean
           last_image_at: string | null
           medical_document_id: string | null
           phone: string
@@ -11436,6 +11437,7 @@ export type Database = {
           image_url?: string | null
           image_urls?: Json
           images_count?: number
+          is_processed?: boolean
           last_image_at?: string | null
           medical_document_id?: string | null
           phone: string
@@ -11456,6 +11458,7 @@ export type Database = {
           image_url?: string | null
           image_urls?: Json
           images_count?: number
+          is_processed?: boolean
           last_image_at?: string | null
           medical_document_id?: string | null
           phone?: string
