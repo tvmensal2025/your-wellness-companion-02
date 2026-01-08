@@ -1,9 +1,15 @@
 /**
- * SOFIA ENHANCED MEMORY
+ * UNIFIED AI ASSISTANT
  * 
- * Agora usa o sistema UNIFICADO com Sofia + Dr. Vital
- * Detecta automaticamente qual personalidade deve responder
- * baseado no conteúdo da mensagem.
+ * Sistema unificado que combina Sofia (nutrição) e Dr. Vital (médico)
+ * com acesso COMPLETO a todos os dados da plataforma.
+ * 
+ * Features:
+ * - Detecção automática de assunto (nutrição vs médico)
+ * - Alternância de personalidade (Sofia 🥗 vs Dr. Vital 🩺)
+ * - Formatação rica (negrito, emojis, espaçamento)
+ * - Acesso a 32+ categorias de dados do usuário
+ * - Respostas super inteligentes e humanizadas
  */
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
@@ -12,7 +18,15 @@ import {
   detectPersonality, 
   getPersonalityName,
   bold,
-  EMOJIS
+  bulletList,
+  formatGreeting,
+  formatSection,
+  formatTip,
+  formatSignature,
+  formatStreak,
+  formatGoalCard,
+  EMOJIS,
+  spacer
 } from '../_shared/format-helpers.ts'
 
 const corsHeaders = {
@@ -32,103 +46,66 @@ Deno.serve(async (req) => {
     
     const { message, userId, context, forcePersonality } = await req.json();
 
-    console.log('🧠 Sofia Enhanced Memory - Sistema UNIFICADO para usuário:', userId);
+    console.log('🤖 Unified AI Assistant iniciado para usuário:', userId);
 
     // ============================================
-    // BUSCAR CONFIGURAÇÕES DE IA SALVAS NO BANCO
+    // 1. CARREGAR CONTEXTO COMPLETO DO USUÁRIO
     // ============================================
-    console.log('📋 Buscando configurações de IA do banco...');
-    const { data: aiConfig, error: configError } = await supabase
+    console.log('📊 Carregando contexto completo do usuário...');
+    const userContext = await getUserCompleteContext(supabaseUrl, supabaseServiceKey, userId);
+    const contextSummary = generateUserContextSummary(userContext);
+
+    console.log('✅ Contexto carregado:', {
+      completeness: `${userContext.metadata.dataCompleteness.percentage}%`,
+      totalDataPoints: userContext.metadata.totalDataPoints,
+      hasAnamnesis: !!userContext.anamnesis,
+      weightRecords: userContext.weightHistory?.length || 0,
+      foodAnalysis: userContext.foodAnalysis?.length || 0,
+      medicalDocs: userContext.medicalDocuments?.length || 0,
+    });
+
+    // ============================================
+    // 2. DETECTAR PERSONALIDADE (SOFIA vs DR. VITAL)
+    // ============================================
+    const personality = forcePersonality || detectPersonality(message);
+    console.log(`🎭 Personalidade detectada: ${getPersonalityName(personality)}`);
+
+    // ============================================
+    // 3. BUSCAR CONFIGURAÇÕES DE IA
+    // ============================================
+    const { data: aiConfig } = await supabase
       .from('ai_configurations')
       .select('*')
       .eq('functionality', 'chat_daily')
       .single();
     
-    let aiSettings = {
-      service: 'lovable',
+    const aiSettings = {
       model: 'google/gemini-2.5-flash',
-      maxTokens: 2048,
-      temperature: 0.8,
-      systemPrompt: ''
+      maxTokens: aiConfig?.max_tokens || 2048,
+      temperature: aiConfig?.temperature || 0.8,
     };
-    
-    if (aiConfig && !configError) {
-      console.log('✅ Configurações encontradas:', {
-        service: aiConfig.service,
-        model: aiConfig.model,
-        maxTokens: aiConfig.max_tokens,
-        temperature: aiConfig.temperature,
-        isEnabled: aiConfig.is_enabled
-      });
-      
-      // Mapear serviço para modelo Lovable AI correto
-      let mappedModel = 'google/gemini-2.5-flash'; // default
-      
-      if (aiConfig.service === 'google' || aiConfig.service === 'gemini') {
-        if (aiConfig.model?.includes('pro')) {
-          mappedModel = 'google/gemini-2.5-pro';
-        } else if (aiConfig.model?.includes('flash')) {
-          mappedModel = 'google/gemini-2.5-flash';
-        }
-      } else if (aiConfig.service === 'openai') {
-        if (aiConfig.model?.includes('gpt-5')) {
-          mappedModel = 'openai/gpt-5';
-        } else if (aiConfig.model?.includes('gpt-5-mini')) {
-          mappedModel = 'openai/gpt-5-mini';
-        } else {
-          mappedModel = 'openai/gpt-5-mini';
-        }
-      }
-      
-      aiSettings = {
-        service: aiConfig.service || 'lovable',
-        model: mappedModel,
-        maxTokens: aiConfig.max_tokens || 2048,
-        temperature: aiConfig.temperature || 0.8,
-        systemPrompt: aiConfig.system_prompt || ''
-      };
-      
-      console.log('🎯 Configurações aplicadas:', aiSettings);
-    } else {
-      console.log('⚠️ Usando configurações padrão (sem config no banco)');
-    }
 
     // ============================================
-    // USAR SISTEMA UNIFICADO DE CONTEXTO
+    // 4. CONSTRUIR SYSTEM PROMPT COMPLETO
     // ============================================
-    const userContext = await getUserCompleteContext(supabaseUrl, supabaseServiceKey, userId);
-    const contextSummary = generateUserContextSummary(userContext);
-
-    console.log('📊 Contexto carregado:', {
-      completeness: `${userContext.metadata.dataCompleteness.percentage}%`,
-      totalDataPoints: userContext.metadata.totalDataPoints,
-      canReceiveFullAnalysis: userContext.metadata.dataCompleteness.canReceiveFullAnalysis
-    });
-
-    // ============================================
-    // DETECTAR PERSONALIDADE (SOFIA vs DR. VITAL)
-    // ============================================
-    const personality = forcePersonality || detectPersonality(message);
-    console.log(`🎭 Personalidade detectada: ${getPersonalityName(personality)}`);
-
-    // Gerar system prompt UNIFICADO
-    const systemPrompt = buildUnifiedSystemPrompt(userContext, contextSummary, personality, aiSettings.systemPrompt);
+    const systemPrompt = buildUnifiedSystemPrompt(userContext, contextSummary, personality);
     
     console.log('🤖 Gerando resposta com:', {
       personality,
       model: aiSettings.model,
-      maxTokens: aiSettings.maxTokens,
-      temperature: aiSettings.temperature
+      contextSize: contextSummary.length,
     });
-    
+
+    // ============================================
+    // 5. CHAMAR LOVABLE AI
+    // ============================================
     let response = '';
     let apiUsed = 'none';
 
-    // 1. LOVABLE AI como provedor PRINCIPAL
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (LOVABLE_API_KEY) {
       try {
-        console.log(`🤖 ${getPersonalityName(personality)} usando Lovable AI (${aiSettings.model})...`);
+        console.log(`🤖 Chamando Lovable AI (${aiSettings.model})...`);
         const lovableResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
           method: 'POST',
           headers: {
@@ -148,29 +125,31 @@ Deno.serve(async (req) => {
 
         if (lovableResponse.status === 429) {
           console.warn('⚠️ Rate limit exceeded');
-        } else if (lovableResponse.status === 402) {
+          throw new Error('Rate limit exceeded');
+        }
+
+        if (lovableResponse.status === 402) {
           console.warn('⚠️ Payment required');
-        } else {
-          const data = await lovableResponse.json();
-          if (data?.error) {
-            console.error('❌ Erro Lovable AI:', data.error);
-          } else if (data?.choices?.[0]?.message?.content) {
-            response = data.choices[0].message.content;
-            apiUsed = `lovable-${aiSettings.model}`;
-            console.log('✅ Lovable AI funcionou!');
-          }
+          throw new Error('Payment required');
+        }
+
+        const data = await lovableResponse.json();
+        if (data?.choices?.[0]?.message?.content) {
+          response = data.choices[0].message.content;
+          apiUsed = `lovable-${aiSettings.model}`;
+          console.log('✅ Lovable AI respondeu com sucesso!');
         }
       } catch (error) {
         console.error('❌ Erro Lovable AI:', error);
       }
     }
 
-    // 2. Fallback: OpenAI GPT-4o
+    // Fallback para OpenAI
     if (!response) {
       const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
       if (openaiApiKey) {
         try {
-          console.log(`🤖 ${getPersonalityName(personality)} usando OpenAI GPT-4o (fallback)...`);
+          console.log('🤖 Fallback para OpenAI...');
           const openaiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
             method: 'POST',
             headers: {
@@ -189,12 +168,10 @@ Deno.serve(async (req) => {
           });
 
           const data = await openaiResponse.json();
-          if (data?.error) {
-            console.error('❌ Erro OpenAI:', data.error);
-          } else if (data?.choices?.[0]?.message?.content) {
+          if (data?.choices?.[0]?.message?.content) {
             response = data.choices[0].message.content;
             apiUsed = 'openai-gpt-4o';
-            console.log('✅ OpenAI funcionou!');
+            console.log('✅ OpenAI respondeu!');
           }
         } catch (error) {
           console.error('❌ Erro OpenAI:', error);
@@ -202,133 +179,75 @@ Deno.serve(async (req) => {
       }
     }
 
-    // 3. Fallback: Google AI
+    // Fallback padrão
     if (!response) {
-      const googleApiKey = Deno.env.get('GOOGLE_AI_API_KEY');
-      if (googleApiKey) {
-        try {
-          console.log(`🤖 ${getPersonalityName(personality)} usando Google AI (fallback)...`);
-          const googleResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${googleApiKey}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{
-                parts: [{ text: `${systemPrompt}\n\nUsuário: ${message}` }]
-              }],
-              generationConfig: { 
-                temperature: 0.8, 
-                maxOutputTokens: 1500,
-                topP: 0.9,
-                topK: 40
-              }
-            })
-          });
-
-          if (!googleResponse.ok) {
-            console.error('❌ Erro Google AI:', googleResponse.status);
-            throw new Error(`Google AI error: ${googleResponse.status}`);
-          }
-
-          const gData = await googleResponse.json();
-          if (gData?.candidates?.[0]?.content?.parts?.[0]?.text) {
-            response = gData.candidates[0].content.parts[0].text;
-            apiUsed = 'google-ai';
-            console.log('✅ Google AI funcionou!');
-          }
-        } catch (error) {
-          console.error('❌ Erro Google AI:', error);
-        }
-      }
-    }
-
-    // 4. Resposta padrão se nenhuma IA funcionar
-    if (!response) {
+      const firstName = userContext.profile?.firstName || 'querido(a)';
       const avatar = personality === 'sofia' ? '🥗' : '🩺';
       const name = personality === 'sofia' ? 'Sofia' : 'Dr. Vital';
-      const heart = personality === 'sofia' ? '💚' : '💙';
-      response = `${avatar} Olá ${userContext.profile.firstName}! Sou ${name === 'Sofia' ? 'a' : 'o'} ${name}, ${personality === 'sofia' ? 'sua nutricionista pessoal' : 'seu médico de confiança'}. ${heart}\n\nComo posso ajudar você hoje?`;
+      response = `${avatar} Olá ${firstName}! Sou ${name === 'Sofia' ? 'a' : 'o'} ${name}. Como posso ajudar você hoje? 💚`;
       apiUsed = 'fallback';
     }
 
-    console.log('✅ Resposta gerada usando:', apiUsed, '| Personalidade:', getPersonalityName(personality));
-
     // ============================================
-    // SALVAR CONVERSA NO HISTÓRICO
+    // 6. SALVAR CONVERSA NO HISTÓRICO
     // ============================================
-    console.log('💾 Salvando conversa no histórico permanente...');
-    const conversationId = `conversation_${Date.now()}`;
+    console.log('💾 Salvando conversa...');
+    const conversationId = `unified_${Date.now()}`;
     
-    const { error: saveError } = await supabase
-      .from('user_conversations')
-      .insert([
-        {
-          user_id: userId,
-          conversation_id: conversationId,
-          message_role: 'user',
-          message_content: message,
-          timestamp: new Date().toISOString(),
-          session_metadata: context || {},
-          analysis_type: context?.imageUrl ? 'image_analysis' : 'text_chat',
-          context: { 
-            api_used: apiUsed,
-            personality,
-            data_completeness: userContext.metadata.dataCompleteness.percentage,
-            total_data_points: userContext.metadata.totalDataPoints
-          }
-        },
-        {
-          user_id: userId,
-          conversation_id: conversationId,
-          message_role: 'assistant',
-          message_content: response,
-          timestamp: new Date().toISOString(),
-          session_metadata: context || {},
-          analysis_type: context?.imageUrl ? 'image_analysis' : 'text_chat',
-          context: { 
-            api_used: apiUsed,
-            personality,
-            data_completeness: userContext.metadata.dataCompleteness.percentage
-          }
+    await supabase.from('user_conversations').insert([
+      {
+        user_id: userId,
+        conversation_id: conversationId,
+        message_role: 'user',
+        message_content: message,
+        timestamp: new Date().toISOString(),
+        analysis_type: 'unified_chat',
+        context: { 
+          personality,
+          api_used: apiUsed,
+          source: context?.source || 'app'
         }
-      ]);
-      
-    if (saveError) {
-      console.error('❌ Erro ao salvar conversa:', saveError);
-    } else {
-      console.log('✅ Conversa salva permanentemente');
-    }
+      },
+      {
+        user_id: userId,
+        conversation_id: conversationId,
+        message_role: 'assistant',
+        message_content: response,
+        timestamp: new Date().toISOString(),
+        analysis_type: 'unified_chat',
+        context: { 
+          personality,
+          api_used: apiUsed,
+          data_completeness: userContext.metadata.dataCompleteness.percentage
+        }
+      }
+    ]);
 
-    // Retornar resposta
-    console.log(`🎯 ${getPersonalityName(personality)} respondendo para: ${userContext.profile.firstName}`);
+    console.log(`✅ ${getPersonalityName(personality)} respondeu para: ${userContext.profile.firstName}`);
 
     return new Response(
       JSON.stringify({
         message: response,
         personality,
         personalityName: getPersonalityName(personality),
-        memory_updated: true,
         data_completeness: userContext.metadata.dataCompleteness.percentage,
         total_data_points: userContext.metadata.totalDataPoints,
-        can_receive_full_analysis: userContext.metadata.dataCompleteness.canReceiveFullAnalysis,
-        api_used: apiUsed
+        api_used: apiUsed,
+        success: true
       }),
-      {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
 
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
-    console.error('❌ Erro na função sofia-enhanced-memory:', error);
+    console.error('❌ Erro no Unified AI Assistant:', error);
     return new Response(
       JSON.stringify({ 
         error: errorMessage,
-        message: 'Olá! Sou a Sofia. No momento estou com dificuldades, mas estou aqui para ajudar! 💚'
+        message: 'Ops! Tive um probleminha técnico. Pode tentar novamente? 💚',
+        success: false
       }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
 });
@@ -337,15 +256,10 @@ Deno.serve(async (req) => {
 // CONSTRUTOR DE SYSTEM PROMPT UNIFICADO
 // ============================================
 
-function buildUnifiedSystemPrompt(
-  userContext: any, 
-  contextSummary: string, 
-  personality: 'sofia' | 'drvital',
-  customPrompt: string = ''
-): string {
+function buildUnifiedSystemPrompt(userContext: any, contextSummary: string, personality: 'sofia' | 'drvital'): string {
   const firstName = userContext.profile?.firstName || 'amor';
   
-  // Dados do usuário
+  // Dados do usuário formatados
   const weightData = userContext.weightHistory?.[0];
   const currentWeight = weightData?.peso_kg ? `${weightData.peso_kg}kg` : 'não registrado';
   const currentIMC = weightData?.imc?.toFixed(1) || 'não calculado';
@@ -373,18 +287,15 @@ function buildUnifiedSystemPrompt(
   // Base de conhecimento da empresa
   const companyKnowledge = userContext.companyKnowledge?.slice(0, 10) || [];
   
-  // Histórico de conversas
+  // Histórico de conversas recentes
   const recentConversations = userContext.conversations?.slice(0, 10)?.map((c: any) => 
     `[${c.message_role}]: ${c.message_content?.substring(0, 150)}...`
   ).join('\n') || 'Primeira conversa';
 
-  // Instruções customizadas
-  const customInstructions = customPrompt ? `\n📝 INSTRUÇÕES ESPECIAIS:\n${customPrompt}\n` : '';
-
   // ============ PROMPT ESPECÍFICO POR PERSONALIDADE ============
   
   if (personality === 'sofia') {
-    return `${customInstructions}Você é *Sofia* 🥗, nutricionista carinhosa e super inteligente do Instituto dos Sonhos!
+    return `Você é *Sofia* 🥗, nutricionista carinhosa e super inteligente do Instituto dos Sonhos!
 
 ═══════════════════════════════════════
 🎭 SUA PERSONALIDADE
@@ -453,7 +364,7 @@ Seja calorosa, mas objetiva. Use os dados reais nas respostas!`;
   }
 
   // ============ DR. VITAL ============
-  return `${customInstructions}Você é *Dr. Vital* 🩺, médico especialista em medicina preventiva do Instituto dos Sonhos!
+  return `Você é *Dr. Vital* 🩺, médico especialista em medicina preventiva do Instituto dos Sonhos!
 
 ═══════════════════════════════════════
 🎭 SUA PERSONALIDADE
