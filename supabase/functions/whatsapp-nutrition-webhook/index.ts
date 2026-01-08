@@ -284,7 +284,7 @@ async function getDailyTotal(userId: string): Promise<number> {
 
   const { data, error } = await supabase
     .from("nutrition_tracking")
-    .select("calories")
+    .select("total_calories")
     .eq("user_id", userId)
     .eq("date", today);
 
@@ -293,7 +293,7 @@ async function getDailyTotal(userId: string): Promise<number> {
     return 0;
   }
 
-  return data?.reduce((sum, item) => sum + (item.calories || 0), 0) || 0;
+  return data?.reduce((sum, item) => sum + (item.total_calories || 0), 0) || 0;
 }
 
 // =============== PROCESSAMENTO DE IMAGEM ===============
@@ -765,13 +765,14 @@ async function handleConfirmation(
           user_id: user.id,
           date: today,
           meal_type: pending.meal_type || detectMealType(),
-          source: "whatsapp",
-          calories: nutritionData.total_kcal,
-          protein_g: nutritionData.total_proteina,
-          carbs_g: nutritionData.total_carbo,
-          fat_g: nutritionData.total_gordura,
-          fiber_g: nutritionData.total_fibra || 0,
-          notes: `Registrado via WhatsApp`,
+          total_calories: nutritionData.total_kcal || 0,
+          total_proteins: nutritionData.total_proteina || 0,
+          total_carbs: nutritionData.total_carbo || 0,
+          total_fats: nutritionData.total_gordura || 0,
+          total_fiber: nutritionData.total_fibra || 0,
+          food_items: detectedFoods,
+          photo_url: pending.image_url,
+          notes: "Registrado via WhatsApp",
         })
         .select()
         .single();
