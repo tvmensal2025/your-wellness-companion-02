@@ -11,7 +11,7 @@ function getRequestOrigin(req: Request): string {
   try {
     return new URL(raw).origin;
   } catch {
-    return "https://plataforma.institutodossonhos.com.br";
+    return "https://www.oficialmaxnutrition.com.br";
   }
 }
 

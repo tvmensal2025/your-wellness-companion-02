@@ -86,7 +86,7 @@ const SofiaVoiceChat: React.FC<SofiaVoiceChatProps> = ({ user, className = '' })
   useEffect(() => {
     if (user && messages.length === 0) {
       const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'querido(a)';
-      const welcomeMessage = `Oi ${userName}! 👋 Sou a Sofia, sua nutricionista virtual do Instituto dos Sonhos!
+      const welcomeMessage = `Oi ${userName}! 👋 Sou a Sofia, sua nutricionista virtual da MaxNutrition!
 
 Estou aqui para te ajudar com:
 🍽️ Análise de refeições (envie fotos!)

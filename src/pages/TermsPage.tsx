@@ -39,7 +39,7 @@ const TermsPage = () => {
                 <div>
                   <h3 className="text-lg font-semibold mb-3">1. Aceitação dos Termos</h3>
                   <p className="text-muted-foreground">
-                    Ao acessar e usar a Plataforma dos Sonhos, criada pelo Instituto dos Sonhos, você
+                    Ao acessar e usar a Plataforma MaxNutrition, você
                     aceita estar vinculado a estes Termos de Uso. Se você não concordar com qualquer
                     parte destes termos, não deve usar nosso serviço.
                   </p>
@@ -48,7 +48,7 @@ const TermsPage = () => {
                 <div>
                   <h3 className="text-lg font-semibold mb-3">2. Descrição do Serviço</h3>
                   <p className="text-muted-foreground">
-                    A Plataforma dos Sonhos, criada pelo Instituto dos Sonhos, é uma plataforma digital
+                    A Plataforma MaxNutrition é uma plataforma digital
                     de saúde e bem-estar que oferece:
                   </p>
                   <ul className="list-disc pl-6 mt-2 text-muted-foreground">
@@ -75,7 +75,7 @@ const TermsPage = () => {
                 <div>
                   <h3 className="text-lg font-semibold mb-3">4. Limitações de Responsabilidade</h3>
                   <p className="text-muted-foreground">
-                    O Instituto dos Sonhos é uma ferramenta de apoio ao bem-estar e NÃO substitui 
+                    MaxNutrition é uma ferramenta de apoio ao bem-estar e NÃO substitui 
                     consultas médicas profissionais. As informações fornecidas são para fins 
                     educativos e de monitoramento pessoal.
                   </p>
@@ -85,7 +85,7 @@ const TermsPage = () => {
                   <h3 className="text-lg font-semibold mb-3">5. Propriedade Intelectual</h3>
                   <p className="text-muted-foreground">
                     Todo o conteúdo da plataforma (textos, imagens, algoritmos, design) é 
-                    propriedade do Instituto dos Sonhos e está protegido por direitos autorais.
+                    propriedade da MaxNutrition e está protegido por direitos autorais.
                   </p>
                 </div>
 
@@ -248,7 +248,7 @@ const TermsPage = () => {
                       Para exercer seus direitos ou esclarecer dúvidas sobre privacidade:
                     </p>
                     <p className="font-medium mt-2">
-                      Email: suporte@institutodossonhos.com.br
+                      Email: contato@oficialmaxnutrition.com.br
                     </p>
                     <p className="text-sm text-muted-foreground mt-1">
                       Resposta em até 15 dias úteis

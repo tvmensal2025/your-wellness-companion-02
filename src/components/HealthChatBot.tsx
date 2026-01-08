@@ -72,7 +72,7 @@ const HealthChatBot: React.FC<HealthChatBotProps> = ({ user: propUser, onHide })
       return {
         id: '1',
         type: 'sofia' as const,
-        content: 'Oi! Sou a Sofia, sua nutricionista virtual do Instituto dos Sonhos!\n\nEstou aqui para te ajudar com:\n📸 Análise de refeições (envie fotos!)\n📊 Dicas nutricionais personalizadas\n🍎 Orientações sobre alimentação saudável\n🎯 Apoio na sua jornada de transformação\n\nO que você gostaria de conversar hoje? Pode me enviar uma foto da sua refeição ou fazer qualquer pergunta sobre nutrição!',
+        content: 'Oi! Sou a Sofia, sua nutricionista virtual da MaxNutrition!\n\nEstou aqui para te ajudar com:\n📸 Análise de refeições (envie fotos!)\n📊 Dicas nutricionais personalizadas\n🍎 Orientações sobre alimentação saudável\n🎯 Apoio na sua jornada de transformação\n\nO que você gostaria de conversar hoje? Pode me enviar uma foto da sua refeição ou fazer qualquer pergunta sobre nutrição!',
         timestamp: new Date()
       };
     }
@@ -90,9 +90,9 @@ const HealthChatBot: React.FC<HealthChatBotProps> = ({ user: propUser, onHide })
       return {
         id: '1',
         type: 'sofia' as const,
-        content: `Oi! Sou a Sofia, sua nutricionista virtual do Instituto dos Sonhos! 👋
+        content: `Oi! Sou a Sofia, sua nutricionista virtual da MaxNutrition! 👋
 
-Antes de começarmos nossa conversa, preciso conhecer você melhor para oferecer o melhor acompanhamento possível! 
+Antes de começarmos nossa conversa, preciso conhecer você melhor para oferecer o melhor acompanhamento possível!
 
 📋 **Vamos fazer sua anamnese completa?**
 É um questionário rápido que me ajudará a:

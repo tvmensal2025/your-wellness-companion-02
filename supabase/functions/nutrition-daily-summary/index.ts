@@ -184,10 +184,10 @@ serve(async (req) => {
         } else if (calorieBalance > 300) {
           message += `\n💪 Dia com mais energia! Amanhã equilibramos com uma caminhada!\n`;
         } else {
-          message += `\n✨ Dia equilibrado! Você está no caminho certo!\n`;
+        message += `\n✨ Dia equilibrado! Você está no caminho certo!\n`;
         }
 
-        message += `\nCom carinho,\nSofia 💚\n_Instituto dos Sonhos_`;
+        message += `\nCom carinho,\nSofia 💚\n_MaxNutrition_`;
 
         // Enviar mensagem
         const phone = formatPhone(profile.phone);

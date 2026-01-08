@@ -240,7 +240,7 @@ ${criticalAreas.length > 0 ? criticalAreas.map(area => `   ⚠ ${area.name}: ${M
 ${areas.map(area => `   ${area.icon} ${area.name}: ${Math.round((scores[area.id] / maxPossible) * 100)}%`).join('\n')}
 
 ═══════════════════════════════════════════════════════════
-              Instituto dos Sonhos - Dr. Vital
+              MaxNutrition - Dr. Vital
             Avaliação Personalizada de Saúde
 ═══════════════════════════════════════════════════════════
     `.trim();
