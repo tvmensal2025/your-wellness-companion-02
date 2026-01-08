@@ -280,12 +280,103 @@ async function processImage(user: { id: string }, phone: string, message: any, w
       return uploadBytesToStorage(base64ToBytes(base64), ct || contentType);
     };
 
+    // Função para obter base64 via Evolution API - payload COMPLETO
     const tryGetBase64FromEvolution = async (): Promise<string | null> => {
-      if (!EVOLUTION_API_URL || !EVOLUTION_API_KEY || !EVOLUTION_INSTANCE) return null;
+      if (!EVOLUTION_API_URL || !EVOLUTION_API_KEY || !EVOLUTION_INSTANCE) {
+        console.log("[WhatsApp Nutrition] Evolution API não configurada para getBase64");
+        return null;
+      }
+
+      // Construir payload COMPLETO conforme esperado pela Evolution API
+      const messageKey = webhook.data?.key || {};
+      const messageContent = webhook.data?.message || {};
+      
+      // Log detalhado para debug
+      console.log("[WhatsApp Nutrition] Estrutura do webhook.data.key:", JSON.stringify(messageKey));
+      console.log("[WhatsApp Nutrition] Estrutura do webhook.data.message (resumo):", JSON.stringify({
+        hasImageMessage: !!messageContent.imageMessage,
+        hasMimetype: !!messageContent.imageMessage?.mimetype,
+        hasMediaKey: !!messageContent.imageMessage?.mediaKey,
+        hasDirectPath: !!messageContent.imageMessage?.directPath,
+        hasUrl: !!messageContent.imageMessage?.url,
+      }));
+
+      const payload = {
+        message: {
+          key: {
+            remoteJid: messageKey.remoteJid,
+            fromMe: messageKey.fromMe || false,
+            id: messageKey.id, // ID da mensagem é CRUCIAL
+          },
+          message: messageContent,
+        },
+        convertToMp4: false,
+      };
+
+      console.log("[WhatsApp Nutrition] Payload para getBase64FromMediaMessage:", JSON.stringify(payload).slice(0, 800));
 
       try {
         const base64Response = await fetch(
           `${EVOLUTION_API_URL}/chat/getBase64FromMediaMessage/${EVOLUTION_INSTANCE}`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              apikey: EVOLUTION_API_KEY,
+            },
+            body: JSON.stringify(payload),
+          }
+        );
+
+        const responseText = await base64Response.text();
+        
+        if (!base64Response.ok) {
+          console.error("[WhatsApp Nutrition] getBase64FromMediaMessage falhou:", base64Response.status, responseText);
+          return null;
+        }
+
+        try {
+          const responseData = JSON.parse(responseText);
+          const base64 = responseData?.base64 || responseData?.data?.base64 || responseData?.media || null;
+          
+          if (base64) {
+            console.log("[WhatsApp Nutrition] Base64 obtido via Evolution API (tamanho:", base64.length, ")");
+            return base64;
+          } else {
+            console.log("[WhatsApp Nutrition] Resposta da Evolution não contém base64:", JSON.stringify(responseData).slice(0, 300));
+            return null;
+          }
+        } catch (parseError) {
+          console.error("[WhatsApp Nutrition] Erro ao parsear resposta:", parseError, responseText.slice(0, 200));
+          return null;
+        }
+      } catch (e) {
+        console.error("[WhatsApp Nutrition] Erro no getBase64FromMediaMessage:", e);
+        return null;
+      }
+    };
+
+    // Função para download via directPath (fallback)
+    const tryDownloadViaDirectPath = async (): Promise<string | null> => {
+      const imageMessage = message?.imageMessage || {};
+      const directPath = imageMessage.directPath;
+      const mediaKey = imageMessage.mediaKey;
+      
+      if (!directPath) {
+        console.log("[WhatsApp Nutrition] Sem directPath disponível");
+        return null;
+      }
+
+      console.log("[WhatsApp Nutrition] Tentando download via directPath:", directPath);
+
+      // O directPath precisa ser decodificado com a mediaKey pelo servidor do WhatsApp
+      // A Evolution API deve ter um endpoint para isso
+      if (!EVOLUTION_API_URL || !EVOLUTION_API_KEY || !EVOLUTION_INSTANCE) return null;
+
+      try {
+        // Tentar via endpoint downloadMediaMessage (alguns provedores têm isso)
+        const downloadResponse = await fetch(
+          `${EVOLUTION_API_URL}/chat/downloadMediaMessage/${EVOLUTION_INSTANCE}`,
           {
             method: "POST",
             headers: {
@@ -301,15 +392,15 @@ async function processImage(user: { id: string }, phone: string, message: any, w
           }
         );
 
-        if (!base64Response.ok) {
-          console.error("[WhatsApp Nutrition] getBase64FromMedia falhou:", await base64Response.text());
+        if (!downloadResponse.ok) {
+          console.log("[WhatsApp Nutrition] downloadMediaMessage não disponível:", downloadResponse.status);
           return null;
         }
 
-        const payload = await base64Response.json();
-        return payload?.base64 || payload?.data?.base64 || null;
+        const data = await downloadResponse.json();
+        return data?.base64 || data?.media || null;
       } catch (e) {
-        console.error("[WhatsApp Nutrition] Erro no getBase64FromMedia:", e);
+        console.log("[WhatsApp Nutrition] Erro no downloadMediaMessage:", e);
         return null;
       }
     };
@@ -332,7 +423,12 @@ async function processImage(user: { id: string }, phone: string, message: any, w
 
     let imageUrl: string | null = null;
 
-    // 1) Base64 direto do webhook (o lugar varia conforme a config)
+    // Log da estrutura completa para debug
+    console.log("[WhatsApp Nutrition] === INÍCIO PROCESSAMENTO DE IMAGEM ===");
+    console.log("[WhatsApp Nutrition] webhook.data?.key:", JSON.stringify(webhook.data?.key));
+    console.log("[WhatsApp Nutrition] Campos imageMessage disponíveis:", Object.keys(message?.imageMessage || {}));
+
+    // 1) Base64 direto do webhook (se configurado "Base64: true" na Evolution)
     const directBase64 =
       webhook?.data?.message?.imageMessage?.base64 ??
       webhook?.data?.message?.base64 ??
@@ -340,35 +436,49 @@ async function processImage(user: { id: string }, phone: string, message: any, w
       message?.base64;
 
     if (directBase64) {
-      console.log("[WhatsApp Nutrition] Base64 veio no webhook");
+      console.log("[WhatsApp Nutrition] ✅ Base64 encontrado direto no webhook (tamanho:", directBase64.length, ")");
       imageUrl = await uploadBase64ToStorage(directBase64, contentTypeHint);
     }
 
-    // 2) Buscar base64 via Evolution (mais confiável que URL do WhatsApp)
+    // 2) Buscar base64 via Evolution getBase64FromMediaMessage
     if (!imageUrl) {
-      console.log("[WhatsApp Nutrition] Base64 não veio no webhook; tentando via Evolution...");
+      console.log("[WhatsApp Nutrition] Tentativa 2: getBase64FromMediaMessage...");
       const evoBase64 = await tryGetBase64FromEvolution();
       if (evoBase64) {
+        console.log("[WhatsApp Nutrition] ✅ Base64 obtido via getBase64FromMediaMessage");
         imageUrl = await uploadBase64ToStorage(evoBase64, contentTypeHint);
       }
     }
 
-    // 3) Último fallback: baixar URL e subir para o storage
+    // 3) Tentar download via directPath
+    if (!imageUrl) {
+      console.log("[WhatsApp Nutrition] Tentativa 3: downloadMediaMessage via directPath...");
+      const directPathBase64 = await tryDownloadViaDirectPath();
+      if (directPathBase64) {
+        console.log("[WhatsApp Nutrition] ✅ Base64 obtido via directPath");
+        imageUrl = await uploadBase64ToStorage(directPathBase64, contentTypeHint);
+      }
+    }
+
+    // 4) Último fallback: baixar URL direta (raramente funciona com WhatsApp)
     if (!imageUrl) {
       const mediaUrl = message?.imageMessage?.mediaUrl || message?.imageMessage?.url;
       if (mediaUrl) {
-        console.log("[WhatsApp Nutrition] Fallback: baixando URL da mídia");
+        console.log("[WhatsApp Nutrition] Tentativa 4: download direto da URL:", mediaUrl.slice(0, 100));
         imageUrl = await uploadFromUrlToStorage(mediaUrl, contentTypeHint);
       }
     }
 
+    console.log("[WhatsApp Nutrition] === FIM TENTATIVAS ===");
+
     if (!imageUrl) {
-      console.error("[WhatsApp Nutrition] Não foi possível obter a imagem");
+      console.error("[WhatsApp Nutrition] ❌ FALHA: Não foi possível obter a imagem por nenhum método");
+      console.error("[WhatsApp Nutrition] Dica: Verifique se 'Base64: true' está ativo nas configurações do webhook da Evolution API");
       await sendWhatsApp(phone, "❌ Não consegui processar sua foto. Tente enviar novamente!");
       return;
     }
 
-    console.log("[WhatsApp Nutrition] URL pública da imagem:", imageUrl);
+    console.log("[WhatsApp Nutrition] ✅ Upload concluído! URL:", imageUrl);
 
     // Chamar sofia-image-analysis
     const { data: analysis, error: analysisError } = await supabase.functions.invoke("sofia-image-analysis", {
