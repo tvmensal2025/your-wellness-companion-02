@@ -1803,41 +1803,88 @@ async function analyzeExamBatch(
       }
     }
 
-    // Gerar relatório público
+    // 🔥 CRIAR LINK PÚBLICO DIRETAMENTE (sem chamar generate-medical-report)
     let reportLink = "";
-    if (documentId) {
-      console.log("[WhatsApp Medical] 📊 Gerando relatório para documento:", documentId);
+    let publicLinkToken = "";
+    
+    // Extrair reportPath do resultado da análise
+    const reportPath = analysisResult?.reportPath || analysisResult?.report_path;
+    
+    if (reportPath) {
+      console.log("[WhatsApp Medical] 📊 Criando link público para:", reportPath);
       try {
-        const { data: reportResult, error: reportError } = await supabase.functions.invoke("generate-medical-report", {
-          body: { documentId, userId: user.id }
-        });
+        // Inserir diretamente em public_report_links
+        const { data: linkData, error: linkError } = await supabase
+          .from("public_report_links")
+          .insert({
+            user_id: user.id,
+            medical_document_id: documentId || null,
+            report_path: reportPath,
+            title: `Exame via WhatsApp - ${new Date().toLocaleDateString("pt-BR")}`,
+            exam_type: "exame_laboratorial",
+            exam_date: new Date().toISOString().split("T")[0],
+          })
+          .select("token")
+          .single();
 
-        console.log("[WhatsApp Medical] 📊 Resultado do relatório:", JSON.stringify(reportResult)?.slice(0, 500));
-        if (reportError) console.log("[WhatsApp Medical] 📊 Erro do relatório:", reportError);
-
-        // 🔥 CORREÇÃO: usar snake_case (public_url, public_token, signed_url)
-        const publicUrl = reportResult?.public_url || reportResult?.publicUrl;
-        const publicToken = reportResult?.public_token || reportResult?.token;
-        const signedUrl = reportResult?.signed_url || reportResult?.signedUrl;
-        
-        console.log("[WhatsApp Medical] 📊 public_url:", publicUrl);
-        console.log("[WhatsApp Medical] 📊 public_token:", publicToken);
-        console.log("[WhatsApp Medical] 📊 signed_url:", signedUrl?.slice(0, 80));
-
-        if (publicToken) {
-          // Preferir token público (link permanente)
-          reportLink = `\n\n📊 *Relatório completo:*\n👉 institutodossonhos.com.br/relatorio/${publicToken}`;
-        } else if (publicUrl) {
-          // Fallback: URL pública direta
-          reportLink = `\n\n📊 *Relatório completo:*\n👉 ${publicUrl}`;
-        } else if (signedUrl) {
-          // Último recurso: URL assinada (expira)
-          reportLink = `\n\n📊 *Relatório (válido por 24h):*\n👉 ${signedUrl}`;
+        if (linkError) {
+          console.log("[WhatsApp Medical] ⚠️ Erro ao criar link público:", linkError);
+        } else if (linkData?.token) {
+          publicLinkToken = linkData.token;
+          // Link permanente com https:// para ficar clicável
+          reportLink = `\n\n📊 *Relatório completo:*\n👉 https://institutodossonhos.com.br/relatorio/${publicLinkToken}`;
+          console.log("[WhatsApp Medical] ✅ Link público criado:", publicLinkToken);
         }
       } catch (e) {
-        console.log("[WhatsApp Medical] ⚠️ Relatório não disponível:", e);
+        console.log("[WhatsApp Medical] ⚠️ Erro ao criar link:", e);
+      }
+      
+      // Fallback: URL assinada se não conseguiu criar link público
+      if (!reportLink) {
+        try {
+          const { data: signedData } = await supabase.storage
+            .from("medical-reports")
+            .createSignedUrl(reportPath, 86400); // 24h
+          
+          if (signedData?.signedUrl) {
+            reportLink = `\n\n📊 *Relatório (válido por 24h):*\n👉 ${signedData.signedUrl}`;
+            console.log("[WhatsApp Medical] 📎 Fallback: URL assinada gerada");
+          }
+        } catch (e) {
+          console.log("[WhatsApp Medical] ⚠️ Fallback URL assinada falhou:", e);
+        }
+      }
+    } else if (documentId) {
+      // Se não tem reportPath mas tem documentId, tentar buscar o report_path no documento
+      console.log("[WhatsApp Medical] 🔍 Buscando report_path no documento:", documentId);
+      const { data: docData } = await supabase
+        .from("medical_documents")
+        .select("report_path")
+        .eq("id", documentId)
+        .single();
+      
+      if (docData?.report_path) {
+        const { data: linkData } = await supabase
+          .from("public_report_links")
+          .insert({
+            user_id: user.id,
+            medical_document_id: documentId,
+            report_path: docData.report_path,
+            title: `Exame via WhatsApp - ${new Date().toLocaleDateString("pt-BR")}`,
+            exam_type: "exame_laboratorial",
+          })
+          .select("token")
+          .single();
+        
+        if (linkData?.token) {
+          publicLinkToken = linkData.token;
+          reportLink = `\n\n📊 *Relatório completo:*\n👉 https://institutodossonhos.com.br/relatorio/${publicLinkToken}`;
+          console.log("[WhatsApp Medical] ✅ Link criado via documento:", publicLinkToken);
+        }
       }
     }
+    
+    console.log("[WhatsApp Medical] 📎 Link final:", reportLink ? "SIM" : "NÃO");
 
     // Enviar resultado
     console.log("[WhatsApp Medical] 📤 Enviando resultado para o usuário...");
@@ -1849,17 +1896,24 @@ async function analyzeExamBatch(
       `_Dr. Vital 🩺_`
     );
 
-    // Marcar como processado
+    // Marcar como processado e salvar token do link público
     console.log("[WhatsApp Medical] 💾 Atualizando lote como completed...");
+    const updateData: any = {
+      status: "completed",
+      is_processed: true,
+      confirmed: true,
+      analysis_result: analysisResult,
+      medical_document_id: documentId,
+    };
+    
+    // Salvar token do link público se existir
+    if (publicLinkToken) {
+      updateData.public_link_token = publicLinkToken;
+    }
+    
     await supabase
       .from("whatsapp_pending_medical")
-      .update({
-        status: "completed",
-        is_processed: true,
-        confirmed: true,
-        analysis_result: analysisResult,
-        medical_document_id: documentId,
-      })
+      .update(updateData)
       .eq("id", pending.id);
 
     console.log("[WhatsApp Medical] ✅ FLUXO COMPLETO - Análise finalizada com sucesso!");
