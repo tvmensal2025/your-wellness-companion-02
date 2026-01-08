@@ -144,7 +144,7 @@ const DrVitalAnalysis: React.FC = () => {
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Dr. Vital IA do Instituto dos Sonhos - Análise Preventiva</title>
+  <title>Dr. Vital IA - MaxNutrition - Análise Preventiva</title>
   <style>
     :root { --primary:#6366f1; --secondary:#06b6d4; --accent:#f59e0b; --success:#10b981; }
     * { box-sizing: border-box; }
@@ -172,17 +172,17 @@ const DrVitalAnalysis: React.FC = () => {
       <div class="header">
         <img src="http://45.67.221.216:8086/Dr.Vital.png" alt="Dr. Vital" />
         <div style="flex: 1;">
-          <h1>Dr. Vital IA do Instituto dos Sonhos</h1>
+          <h1>Dr. Vital IA - MaxNutrition</h1>
           <div class="subtitle">Análise Preventiva • ${analysis.analysis_type} • ${format(new Date(analysis.created_at), 'dd/MM/yyyy', { locale: ptBR })}</div>
         </div>
-        <img src="http://45.67.221.216:8086/logoids.png" alt="Instituto dos Sonhos" class="logo" />
+        <img src="/images/maxnutrition-logo.png" alt="MaxNutrition" class="logo" />
       </div>
       <div class="content">
         <pre>${analysis.dr_vital_analysis.replace(/</g,'&lt;')}</pre>
       </div>
       <div class="footer">
         <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
-          <img src="http://45.67.221.216:8086/logoids.png" alt="Instituto dos Sonhos" style="width: 20px; height: 20px;" />
+          <img src="/images/maxnutrition-logo.png" alt="MaxNutrition" style="width: 20px; height: 20px;" />
           <span>⚠️ Este material é educativo e não substitui consulta médica presencial.</span>
         </div>
       </div>

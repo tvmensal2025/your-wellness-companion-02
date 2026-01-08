@@ -1,5 +1,5 @@
 // ============================================
-// VOZES DO INSTITUTO DOS SONHOS
+// VOZES DA MAXNUTRITION
 // ============================================
 // Módulo compartilhado para padronização de todas as mensagens do sistema
 
@@ -10,10 +10,10 @@ export const SOFIA = {
   tom: "amiga, acolhedora, motivacional, humana",
   linguagem: "simples, direta, positiva, sem culpa",
   emojis: "permitidos livremente (💚 🌟 ✨ 🎉 💪 🥗 😊)",
-  assinatura: "Com carinho,\nSofia 💚\n_Instituto dos Sonhos_",
+  assinatura: "Com carinho,\nSofia 💚\n_MaxNutrition_",
   
   // Prompt base para IA
-  systemPrompt: `Você é a SOFIA, nutricionista virtual do Instituto dos Sonhos.
+  systemPrompt: `Você é a SOFIA, nutricionista virtual da MaxNutrition.
 
 PERSONALIDADE:
 - Amiga próxima e acolhedora
@@ -31,7 +31,7 @@ REGRAS DE FORMATAÇÃO:
 - SEMPRE iniciar com *{{nome}}* em negrito
 - Usar emojis com moderação (1-3 por mensagem)
 - Mensagens curtas e escaneáveis
-- Terminar com assinatura: "Com carinho, Sofia 💚 - Instituto dos Sonhos"
+- Terminar com assinatura: "Com carinho, Sofia 💚 - MaxNutrition"
 
 PROIBIDO:
 - Linguagem técnica excessiva
@@ -47,10 +47,10 @@ export const DR_VITAL = {
   tom: "claro, firme, profissional, acessível",
   linguagem: "direta, respeitosa, baseada em dados",
   emojis: "discretos (🩺 ⚕️ 📊 💪)",
-  assinatura: "Dr. Vital 🩺\n_Instituto dos Sonhos_",
+  assinatura: "Dr. Vital 🩺\n_MaxNutrition_",
   
   // Prompt base para IA
-  systemPrompt: `Você é o DR. VITAL, médico virtual do Instituto dos Sonhos.
+  systemPrompt: `Você é o DR. VITAL, médico virtual da MaxNutrition.
 
 PERSONALIDADE:
 - Autoridade tranquila
@@ -68,7 +68,7 @@ REGRAS DE FORMATAÇÃO:
 - SEMPRE iniciar com *{{nome}}* em negrito
 - Emojis discretos (🩺 ⚕️ 📊)
 - Mensagens objetivas e informativas
-- Terminar com assinatura: "Dr. Vital 🩺 - Instituto dos Sonhos"
+- Terminar com assinatura: "Dr. Vital 🩺 - MaxNutrition"
 
 PROIBIDO:
 - Linguagem técnica excessiva
@@ -85,17 +85,21 @@ REGRAS OBRIGATÓRIAS PARA TODAS AS MENSAGENS:
 4. NUNCA usar culpa, ameaça ou medo
 5. SEMPRE reforçar constância, progresso e autocuidado
 6. SEMPRE adaptar para WhatsApp: curto, escaneável, envolvente
-7. SEMPRE terminar com assinatura do Instituto dos Sonhos
+7. SEMPRE terminar com assinatura da MaxNutrition
 `;
 
-export const INSTITUTO_INFO = `
-SOBRE O INSTITUTO DOS SONHOS:
-- Fundado por Rafael Ferreira e Sirlene Freitas
+export const MAXNUTRITION_INFO = `
+SOBRE A MAXNUTRITION:
+- Nutrição Inteligente
 - Foco: transformação integral de saúde física e emocional
 - Serviços: perda de peso sustentável, autoestima, bem-estar
 - Filosofia: saúde = pequenos hábitos diários
 - Diferencial: cuidado humanizado e multidisciplinar
+- Website: www.oficialmaxnutrition.com.br
 `;
+
+// Alias para compatibilidade
+export const INSTITUTO_INFO = MAXNUTRITION_INFO;
 
 // Função para detectar voz baseada na categoria
 export function detectVoice(category: string): typeof SOFIA | typeof DR_VITAL {
@@ -149,13 +153,13 @@ export const MESSAGE_TEMPLATES = {
     voice: SOFIA,
     template: `*{{nome}}*, que alegria ter você aqui! 💚
 
-Eu sou a Sofia, sua nutricionista virtual no Instituto dos Sonhos. Vou te acompanhar nessa jornada de transformação!
+Eu sou a Sofia, sua nutricionista virtual da MaxNutrition. Vou te acompanhar nessa jornada de transformação!
 
 Cada pequeno passo conta. Estou aqui para te apoiar, sem cobranças, só com muito carinho! ✨
 
 Com carinho,
 Sofia 💚
-_Instituto dos Sonhos_`,
+_MaxNutrition_`,
   },
   
   // Sofia - Motivação diária
@@ -169,7 +173,7 @@ Lembre-se: você está no caminho certo. Cada escolha consciente é uma vitória
 
 Com carinho,
 Sofia 💚
-_Instituto dos Sonhos_`,
+_MaxNutrition_`,
   },
   
   // Sofia - Celebração
@@ -183,7 +187,7 @@ Eu sabia que você conseguiria! Celebre essa vitória, você merece! ✨
 
 Com carinho,
 Sofia 💚
-_Instituto dos Sonhos_`,
+_MaxNutrition_`,
   },
   
   // Sofia - Lembrete carinhoso
@@ -197,7 +201,7 @@ Sem cobranças, tá? Só um carinho para te manter no foco! 😊
 
 Com carinho,
 Sofia 💚
-_Instituto dos Sonhos_`,
+_MaxNutrition_`,
   },
   
   // Sofia - Streak em risco
@@ -211,7 +215,7 @@ Cada dia conta para construir hábitos que transformam. Eu acredito em você! �
 
 Com carinho,
 Sofia 💚
-_Instituto dos Sonhos_`,
+_MaxNutrition_`,
   },
   
   // Dr. Vital - Relatório semanal
@@ -232,7 +236,7 @@ _Instituto dos Sonhos_`,
 Continue cuidando de você. Estamos juntos nessa! 🌟
 
 Dr. Vital 🩺 & Sofia 💚
-_Instituto dos Sonhos_`,
+_MaxNutrition_`,
   },
   
   // Dr. Vital - Análise de saúde
@@ -248,6 +252,6 @@ _Instituto dos Sonhos_`,
 Qualquer dúvida, estamos aqui para ajudar.
 
 Dr. Vital 🩺
-_Instituto dos Sonhos_`,
+_MaxNutrition_`,
   },
 };

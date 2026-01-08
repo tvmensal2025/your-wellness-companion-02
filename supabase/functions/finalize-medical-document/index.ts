@@ -360,7 +360,7 @@ async function analyzeAndProcessExam(
   try {
     console.log('🤖 Chamando OpenAI para análise...');
     
-    const systemPrompt = `Você é o Dr. Vital, IA médica do Instituto dos Sonhos. Analise os exames médicos nas imagens e gere um relatório em português brasileiro.
+    const systemPrompt = `Você é o Dr. Vital, IA médica da MaxNutrition. Analise os exames médicos nas imagens e gere um relatório em português brasileiro.
 
 Paciente: ${profile?.full_name || 'Paciente'}
 Idade: ${profile?.age || 'Não informada'}

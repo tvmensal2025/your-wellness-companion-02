@@ -353,11 +353,11 @@ export const CompactMealPlanModal: React.FC<CompactMealPlanModalProps> = ({
             </style>
           </head>
           <body>
-            <img class="watermark" src="http://45.67.221.216:8086/logoids.png" alt="Instituto dos Sonhos" />
+            <img class="watermark" src="/images/maxnutrition-logo.png" alt="MaxNutrition" />
             <div class="content">
               <div class="header">
                 <div class="brand">
-                  <img src="http://45.67.221.216:8086/logoids.png" alt="Instituto dos Sonhos" />
+                  <img src="/images/maxnutrition-logo.png" alt="MaxNutrition" />
                   <div>
                     <div class="title">${title || `Plano Alimentar - Dia ${dayPlan.day}`}</div>
                     <div class="date">Gerado em ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'})}</div>

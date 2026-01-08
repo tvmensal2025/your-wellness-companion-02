@@ -26,7 +26,7 @@ export interface TutorialState {
 const TUTORIAL_STEPS: TutorialStep[] = [
   {
     id: 'welcome',
-    title: '🌟 Parabéns! Bem-vindo(a) à Plataforma dos Sonhos!',
+    title: '🌟 Parabéns! Bem-vindo(a) à Plataforma MaxNutrition!',
     description: 'Que alegria ter você aqui conosco! 🎉 Vou te guiar por todas as funcionalidades para que você aproveite ao máximo sua jornada de transformação.',
     target: 'body',
     position: 'center',

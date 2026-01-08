@@ -563,7 +563,7 @@ ${nutriEmoji} *Score Nutricional: ${nutritionScore}/100*`;
 _Acesse o app para ver o relatório completo._
 
 🩺 *Dr. Vital* & 💚 *Sofia*
-_Instituto dos Sonhos_`;
+_MaxNutrition_`;
 
   return message;
 }
