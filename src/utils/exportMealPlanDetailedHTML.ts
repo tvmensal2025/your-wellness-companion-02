@@ -670,7 +670,7 @@ export function generateDetailedMealPlanHTML(plan: DetailedMealPlanForHTML): str
         <div class="footer">
             <div class="footer-content">
                 <h3>Sofia Nutricional</h3>
-                <p>Instituto dos Sonhos - Documento educativo • Consulte sempre um nutricionista</p>
+                <p>MaxNutrition - Documento educativo • Consulte sempre um nutricionista</p>
             </div>
         </div>
     </div>

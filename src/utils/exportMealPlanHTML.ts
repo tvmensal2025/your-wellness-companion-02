@@ -175,7 +175,7 @@ export function generateMealPlanHTML(plan: MealPlanForHTML): string {
       <div class="legal">Aviso: material educativo gerado por IA. Valores nutricionais são estimativas e podem variar por marca/porção.</div>
 
       <div class="footer">
-        <div>Instituto dos Sonhos</div>
+        <div>MaxNutrition</div>
         <div>Sofia Nutricional</div>
       </div>
     </div>

@@ -566,7 +566,7 @@ export const DrVitalEnhancedChat: React.FC = () => {
                       <Button size="sm" variant="secondary" onClick={handlePrint} className="bg-white/90 text-indigo-700 hover:bg-white shadow-lg text-xs sm:text-sm px-2 sm:px-3">
                         📄 Imprimir
                       </Button>
-                      <img src="http://45.67.221.216:8086/logoids.png" alt="Instituto dos Sonhos" className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-white/20 p-1 hidden sm:block" />
+                      <img src="/images/maxnutrition-logo.png" alt="MaxNutrition" className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-white/20 p-1 hidden sm:block" />
                     </div>
                   </div>
                 </div>
@@ -845,7 +845,7 @@ export const DrVitalEnhancedChat: React.FC = () => {
                   
                   {/* Footer com logo */}
                   <div className="mt-3 sm:mt-4 flex items-center justify-center gap-2 text-[10px] sm:text-xs text-slate-500 bg-white/60 rounded-lg p-2 sm:p-3">
-                    <img src="http://45.67.221.216:8086/logoids.png" alt="Instituto dos Sonhos" className="w-4 h-4" />
+                    <img src="/images/maxnutrition-logo.png" alt="MaxNutrition" className="w-4 h-4" />
                     <span>⚠️ Este material é educativo e não substitui consulta médica presencial.</span>
                   </div>
                 </div>

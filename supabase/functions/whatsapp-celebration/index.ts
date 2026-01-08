@@ -22,7 +22,7 @@ interface CelebrationPayload {
 
 // SOFIA - Voz para celebrações (calorosa e empolgada)
 const SOFIA_CELEBRATION = {
-  assinatura: "Com carinho,\nSofia 💚\n_Instituto dos Sonhos_",
+  assinatura: "Com carinho,\nSofia 💚\n_MaxNutrition_",
 };
 
 serve(async (req) => {
