@@ -3538,10 +3538,12 @@ Por favor, analise as imagens dos exames médicos e extraia todos os valores enc
       }
     }
 
+    console.log('📤 Retornando resposta com documentId:', documentId);
     return new Response(JSON.stringify({
       success: true,
       message: 'Relatório HTML premium gerado com sucesso',
       reportPath: reportsPath,
+      documentId: documentId,
       service: 'openai-gpt4',
       imageCount: imagesLimited.length
     }), {
