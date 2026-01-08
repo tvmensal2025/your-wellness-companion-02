@@ -89,284 +89,677 @@ ESTILO DE COMUNICAÇÃO:
 - Sem jargões médicos não explicados
 - Use emojis com moderação para tornar mais amigável`;
 
-// 📚 BANCO DE EXPLICAÇÕES DIDÁTICAS PRÉ-PRONTAS
-const EXPLICACOES_EXAMES: Record<string, { categoria: string; icone: string; explicacao: string }> = {
+// 📚 BANCO DE EXPLICAÇÕES DIDÁTICAS PRÉ-PRONTAS (EXPANDIDO)
+interface ExplicacaoExame {
+  categoria: string;
+  icone: string;
+  explicacao_curta: string;
+  analogia: string;
+  se_baixo: string;
+  se_alto: string;
+  dicas_praticas: string[];
+  explicacao: string; // mantém compatibilidade
+}
+
+const EXPLICACOES_EXAMES: Record<string, ExplicacaoExame> = {
+  // 🫀 PERFIL LIPÍDICO (Colesterol e Gorduras)
   'colesterol_total': {
     categoria: '🫀 Perfil Lipídico',
     icone: '🫀',
-    explicacao: `Como funciona?
-O laboratório mede o colesterol total no sangue, que é a soma do que circula nas "ruas do corpo": o que é transportado por LDL/VLDL e o que é recolhido pelo HDL. É um retrato pontual do tráfego de colesterol e pode variar conforme alimentação recente, álcool, medicações e condições clínicas.`
+    explicacao_curta: 'O colesterol total é a soma de todas as gorduras que circulam no seu sangue.',
+    analogia: 'Imagine seu sangue como uma estrada: o colesterol total mostra quantos "carros de gordura" estão trafegando. Alguns são bons (HDL) e outros podem causar congestionamento (LDL).',
+    se_baixo: 'Raramente é problema. Se muito baixo, pode indicar má absorção ou desnutrição.',
+    se_alto: 'Aumenta risco de entupimento das artérias. Precisa avaliar se é LDL (ruim) ou HDL (bom) alto.',
+    dicas_praticas: ['Prefira azeite, peixes e castanhas', 'Reduza frituras e embutidos', 'Caminhe 30 min/dia'],
+    explicacao: 'O laboratório mede o colesterol total no sangue, que é a soma do que circula nas "ruas do corpo": o que é transportado por LDL/VLDL e o que é recolhido pelo HDL.'
   },
-  
   'ldl': {
     categoria: '🫀 Perfil Lipídico',
     icone: '🫀',
-    explicacao: `Como funciona?
-Quantifica o colesterol que viaja nos "caminhões LDL", os que têm maior tendência a aderir às paredes das artérias. Dependendo do laboratório, o LDL pode ser medido diretamente ou calculado a partir de Total, HDL e triglicerídeos. Por refletir média recente, é sensível a jejum/álcool, dieta e hormônios da tireoide.`
+    explicacao_curta: 'O LDL é o colesterol "ruim" que pode se acumular nas artérias.',
+    analogia: 'O LDL é como um caminhão de entrega que deixa pacotes de gordura grudados nas paredes das artérias. Com o tempo, esses pacotes podem bloquear o fluxo sanguíneo.',
+    se_baixo: 'Ótimo! Quanto menor o LDL, melhor para suas artérias.',
+    se_alto: 'Aumenta risco de infarto e AVC. Precisa de mudanças no estilo de vida e possivelmente medicação.',
+    dicas_praticas: ['Coma mais fibras (aveia, frutas)', 'Substitua carne vermelha por peixe 2x/semana', 'Evite alimentos industrializados'],
+    explicacao: 'Quantifica o colesterol que viaja nos "caminhões LDL", os que têm maior tendência a aderir às paredes das artérias.'
   },
-  
   'hdl': {
     categoria: '🫀 Perfil Lipídico',
     icone: '🫀',
-    explicacao: `Como funciona?
-Mede o colesterol presente no "caminhão de limpeza": partículas que retiram excesso de gordura dos tecidos e levam de volta ao fígado. Parte do nível é constitucional (genética), mas atividade física, peso corporal e hábitos influenciam bastante ao longo do tempo.`
+    explicacao_curta: 'O HDL é o colesterol "bom" que limpa as artérias.',
+    analogia: 'O HDL é como um caminhão de lixo que recolhe a gordura das artérias e leva de volta ao fígado para ser eliminada. Quanto mais caminhões, mais limpeza!',
+    se_baixo: 'Menos proteção para o coração. Exercícios e gorduras boas ajudam a aumentar.',
+    se_alto: 'Excelente! Indica proteção cardiovascular.',
+    dicas_praticas: ['Pratique exercícios aeróbicos', 'Consuma azeite, abacate e peixes', 'Pare de fumar se for o caso'],
+    explicacao: 'Mede o colesterol presente no "caminhão de limpeza": partículas que retiram excesso de gordura dos tecidos e levam de volta ao fígado.'
   },
-  
   'triglicerideos': {
     categoria: '🫀 Perfil Lipídico',
     icone: '🫀',
-    explicacao: `Como funciona?
-Dosam a gordura de transporte que sobe facilmente após açúcares, refeições ricas e álcool. Mesmo com jejum, os TG refletem como o corpo processa e estoca energia. Varia com resistência à insulina, peso abdominal, medicações e doenças da tireoide.`
+    explicacao_curta: 'Os triglicerídeos são gorduras que vêm principalmente do que você come.',
+    analogia: 'Pense nos triglicerídeos como o "tanque de combustível" do corpo. O excesso do que você come (especialmente açúcar e álcool) é convertido e guardado como triglicerídeos.',
+    se_baixo: 'Geralmente não é preocupante.',
+    se_alto: 'Aumenta risco de pancreatite e problemas cardíacos. Reduza açúcar e álcool.',
+    dicas_praticas: ['Reduza massas e pães brancos', 'Evite doces e refrigerantes', 'Limite consumo de álcool'],
+    explicacao: 'Dosam a gordura de transporte que sobe facilmente após açúcares, refeições ricas e álcool.'
   },
-  
   'vldl': {
     categoria: '🫀 Perfil Lipídico',
     icone: '🫀',
-    explicacao: `Como funciona?
-Avalia (muitas vezes estima) as partículas que o fígado fabrica para levar triglicerídeos até os tecidos. Como acompanha de perto os TG, tende a subir e descer junto com eles. Em jejum inadequado ou TG muito alto, a estimativa perde precisão.`
+    explicacao_curta: 'O VLDL é produzido pelo fígado e carrega triglicerídeos pelo corpo.',
+    analogia: 'O VLDL é como uma van de entrega do fígado, levando gordura (triglicerídeos) para as células usarem como energia.',
+    se_baixo: 'Geralmente normal.',
+    se_alto: 'Acompanha triglicerídeos altos. Mesmas medidas: reduzir açúcar e álcool.',
+    dicas_praticas: ['Controle os triglicerídeos', 'Evite jejum prolongado seguido de exageros', 'Mantenha peso saudável'],
+    explicacao: 'Avalia as partículas que o fígado fabrica para levar triglicerídeos até os tecidos.'
   },
-  
   'colesterol_nao_hdl': {
     categoria: '🫀 Perfil Lipídico',
     icone: '🫀',
-    explicacao: `Como funciona?
-É um valor derivado: Total – HDL. Na prática, reúne todas as frações que podem "sujar os canos" (LDL, VLDL e remanescentes). Por agregar múltiplas partículas, costuma ser estável mesmo quando os TG variam.`
+    explicacao_curta: 'É tudo que pode "sujar" suas artérias (total menos o HDL bom).',
+    analogia: 'Se o colesterol total são todos os carros na estrada, o não-HDL são todos EXCETO os caminhões de lixo (HDL). São os que podem causar problemas.',
+    se_baixo: 'Ótimo! Menos risco cardiovascular.',
+    se_alto: 'Indica risco de acúmulo nas artérias. Precisa de atenção.',
+    dicas_praticas: ['Foque em baixar o LDL', 'Aumente atividade física', 'Consulte cardiologista se muito alto'],
+    explicacao: 'É um valor derivado: Total – HDL. Reúne todas as frações que podem entupir as artérias.'
   },
-  
-  'apob': {
-    categoria: '🫀 Perfil Lipídico',
-    icone: '🫀',
-    explicacao: `Como funciona?
-É a contagem direta da proteína ApoB, presente uma por partícula nas lipoproteínas que podem entupir (LDL, VLDL, IDL, Lp(a)). Em vez de medir só quanto colesterol há, a ApoB mostra quantas partículas potencialmente aterogênicas estão circulando.`
-  },
-  
-  'lipoproteina_a': {
-    categoria: '🫀 Perfil Lipídico',
-    icone: '🫀',
-    explicacao: `Como funciona?
-Mede uma partícula semelhante ao LDL, mas com uma "peça extra" (apolipoproteína(a)) que tende a aumentar o risco ao longo da vida. É largamente herdada e pouco muda com dieta ou exercício; por isso, muitas vezes basta dosagem única em algum momento da vida adulta.`
-  },
-  
+
   // 🍬 GLICOSE & INSULINA
   'glicose': {
-    categoria: '🍬 Glicose & Insulina',
+    categoria: '🍬 Glicose',
     icone: '🍬',
-    explicacao: `Como funciona?
-Quantifica a glicose no sangue após um período de 8–12 horas sem comer, oferecendo um retrato do açúcar circulante naquele momento. Pode oscilar com estresse, infecções, corticoides, café muito forte e quebra de jejum, por isso a preparação importa.`
+    explicacao_curta: 'A glicose é o açúcar no seu sangue, principal fonte de energia do corpo.',
+    analogia: 'A glicose é como a gasolina do seu corpo. Precisa estar na medida certa: pouca faz o carro apagar, muita pode danificar o motor.',
+    se_baixo: 'Pode causar tontura, tremores e confusão. Coma algo imediatamente.',
+    se_alto: 'Pode indicar pré-diabetes ou diabetes. Precisa de acompanhamento.',
+    dicas_praticas: ['Evite açúcar e farinha branca', 'Faça exercícios regulares', 'Faça refeições a cada 3-4h'],
+    explicacao: 'Quantifica a glicose no sangue após jejum, oferecendo um retrato do açúcar circulante naquele momento.'
   },
-  
+  'glicemia': {
+    categoria: '🍬 Glicose',
+    icone: '🍬',
+    explicacao_curta: 'A glicemia é o nível de açúcar no seu sangue em jejum.',
+    analogia: 'A glicemia é como verificar o nível de combustível do carro pela manhã, antes de usar. Mostra quanto açúcar seu corpo mantém naturalmente.',
+    se_baixo: 'Pode causar fraqueza e tontura. Precisa investigar a causa.',
+    se_alto: 'Sinal de alerta para diabetes. Importante mudar hábitos e fazer acompanhamento.',
+    dicas_praticas: ['Prefira carboidratos integrais', 'Inclua proteína e fibra nas refeições', 'Caminhe após as refeições'],
+    explicacao: 'Mede o açúcar no sangue após 8-12h de jejum.'
+  },
   'hba1c': {
-    categoria: '🍬 Glicose & Insulina',
+    categoria: '🍬 Glicose',
     icone: '🍬',
-    explicacao: `Como funciona?
-Mostra a porcentagem de hemoglobina que ficou "açucarada" ao longo de ~3 meses. Como os glóbulos vermelhos vivem semanas, a HbA1c funciona como uma média de longo prazo da glicose e sofre interferência de anemias, hemoglobinopatias e transfusões.`
+    explicacao_curta: 'A hemoglobina glicada mostra a média do seu açúcar nos últimos 3 meses.',
+    analogia: 'Se a glicose é uma foto do momento, a HbA1c é um filme de 3 meses. Mostra como seu açúcar se comportou ao longo do tempo, não apenas hoje.',
+    se_baixo: 'Geralmente bom, mas se muito baixo pode indicar hipoglicemias frequentes.',
+    se_alto: 'Indica controle inadequado do açúcar. Risco de complicações do diabetes.',
+    dicas_praticas: ['Mantenha dieta equilibrada todos os dias', 'Não basta cuidar só antes do exame', 'Monitore glicose em casa se diabético'],
+    explicacao: 'Mostra a porcentagem de hemoglobina que ficou "açucarada" ao longo de ~3 meses.'
   },
-  
   'insulina': {
-    categoria: '🍬 Glicose & Insulina',
+    categoria: '🍬 Glicose',
     icone: '🍬',
-    explicacao: `Como funciona?
-Dosam a insulina em jejum e calculam o HOMA-IR (uma estimativa de resistência à insulina usando glicose+insulina). Refletem sinalização hormonal nas células e mudam com peso, sono, estresse, medicações e atividade física.
-
-Para que serve
-• Sinalizam resistência à insulina.
-• Ajudam a entender síndrome metabólica e esteatose.
-• Direcionam mudanças de estilo de vida.
-• Podem orientar acompanhamento em conjunto com glicose/HbA1c.`
+    explicacao_curta: 'A insulina é o hormônio que permite a glicose entrar nas células.',
+    analogia: 'A insulina é como a chave de uma porta. Sem ela, o açúcar fica trancado do lado de fora das células, acumulando no sangue.',
+    se_baixo: 'Pode indicar diabetes tipo 1 ou fase avançada do tipo 2.',
+    se_alto: 'Geralmente indica resistência à insulina. O corpo produz mais para compensar.',
+    dicas_praticas: ['Perder peso melhora a sensibilidade', 'Exercícios são essenciais', 'Reduza carboidratos refinados'],
+    explicacao: 'Dosam a insulina em jejum para avaliar resistência à insulina e função pancreática.'
   },
-  
+  'homa_ir': {
+    categoria: '🍬 Glicose',
+    icone: '🍬',
+    explicacao_curta: 'O HOMA-IR mede o quanto seu corpo resiste à ação da insulina.',
+    analogia: 'É como medir se a fechadura (suas células) está enferrujada. Quanto mais alta, mais força a chave (insulina) precisa fazer para abrir.',
+    se_baixo: 'Excelente! Suas células respondem bem à insulina.',
+    se_alto: 'Indica resistência à insulina. Primeiro passo para diabetes tipo 2.',
+    dicas_praticas: ['Emagrecer reduz resistência', 'Exercícios melhoram sensibilidade', 'Durma bem (sono ruim piora)'],
+    explicacao: 'Estimativa de resistência à insulina usando glicose + insulina de jejum.'
+  },
+
   // 💧 FUNÇÃO RENAL
   'creatinina': {
     categoria: '💧 Função Renal',
     icone: '💧',
-    explicacao: `Como funciona?
-É um subproduto do músculo que os rins precisam filtrar. Quando a filtração diminui, a creatinina acumula no sangue. O valor também depende de massa muscular, hidratação e medicações, então é interpretado junto de outros parâmetros.
-
-Para que serve
-• Base para calcular a eTFG (força do filtro).
-• Ajuda a monitorar função renal.
-• Contribui para ajuste de doses de medicamentos.
-• Contextualiza hidratação e massa muscular.`
+    explicacao_curta: 'A creatinina mostra como seus rins estão filtrando o sangue.',
+    analogia: 'A creatinina é como o lixo produzido pelos músculos. Se os rins estão funcionando bem, jogam fora. Se acumula, pode indicar que o filtro não está bom.',
+    se_baixo: 'Geralmente não é preocupante. Pode indicar pouca massa muscular.',
+    se_alto: 'Os rins podem não estar filtrando bem. Precisa de avaliação.',
+    dicas_praticas: ['Beba bastante água', 'Evite anti-inflamatórios em excesso', 'Controle pressão e açúcar'],
+    explicacao: 'É um subproduto do músculo que os rins precisam filtrar. Quando a filtração diminui, a creatinina acumula no sangue.'
   },
-  
   'ureia': {
     categoria: '💧 Função Renal',
     icone: '💧',
-    explicacao: `Como funciona?
-Formada no fígado a partir da amônia (proteínas), a ureia é eliminada pelos rins. Costuma subir com pouca água, dieta proteica ou redução da filtração; isoladamente é menos específica que a creatinina.
-
-Para que serve
-• Complementa a avaliação de função e hidratação.
-• Ajuda em ajuste de terapia (ex.: diuréticos).
-• Útil em monitorização hospitalar e ambulatorial.
-• Contextualiza sintomas (náusea, mal-estar).`
+    explicacao_curta: 'A ureia também avalia os rins e vem das proteínas que você come.',
+    analogia: 'A ureia é como a fumaça que sobra quando você queima lenha (proteínas). Os rins devem eliminar essa fumaça pela urina.',
+    se_baixo: 'Pode indicar dieta pobre em proteínas ou doença hepática.',
+    se_alto: 'Pode ser desidratação ou problema renal. Beba mais água e repita.',
+    dicas_praticas: ['Hidrate-se bem', 'Não exagere nas proteínas', 'Faça check-up renal anual'],
+    explicacao: 'Formada no fígado a partir das proteínas, a ureia é eliminada pelos rins.'
   },
-  
+  'tfg': {
+    categoria: '💧 Função Renal',
+    icone: '💧',
+    explicacao_curta: 'A Taxa de Filtração Glomerular mostra a força dos seus rins.',
+    analogia: 'A TFG é como medir quantos litros de água seu filtro de piscina consegue limpar por minuto. Quanto mais, melhor o filtro funciona.',
+    se_baixo: 'Indica que os rins perderam capacidade de filtração. Precisa acompanhamento.',
+    se_alto: 'Geralmente normal. Ótimo!',
+    dicas_praticas: ['Proteja seus rins controlando pressão e açúcar', 'Evite medicamentos nefrotóxicos', 'Beba água regularmente'],
+    explicacao: 'Calcula a capacidade de filtração dos rins baseado na creatinina.'
+  },
+
   // 🫁 FÍGADO
   'ast': {
-    categoria: '🫁 Fígado & Vias Biliares',
+    categoria: '🫁 Fígado',
     icone: '🫁',
-    explicacao: `Como funciona?
-São enzimas dentro das células do fígado. Quando as células sofrem, parte delas "vaza" para o sangue e os valores sobem (gordura, álcool, vírus, remédios, esforço intenso).
-
-Para que serve
-• Sugerem sofrimento hepático.
-• Ajudam a acompanhar evolução (melhora/piora).
-• Direcionam investigações (imagens, outros exames).
-• Auxiliam na segurança medicamentosa.`
+    explicacao_curta: 'O AST (TGO) mostra se o fígado ou músculos estão sofrendo algum dano.',
+    analogia: 'O AST é como um alarme de incêndio do fígado. Se sobe, algo está inflamando lá dentro.',
+    se_baixo: 'Normal. Significa que não há dano celular.',
+    se_alto: 'Pode indicar gordura no fígado, hepatite ou excesso de álcool.',
+    dicas_praticas: ['Evite álcool', 'Reduza gorduras e açúcares', 'Faça ultrassom de abdome'],
+    explicacao: 'Enzima dentro das células do fígado. Quando as células sofrem, parte delas "vaza" para o sangue.'
   },
-  
+  'tgo': {
+    categoria: '🫁 Fígado',
+    icone: '🫁',
+    explicacao_curta: 'O TGO é o mesmo que AST - avalia saúde do fígado.',
+    analogia: 'É um detector de vazamento. Quando as células do fígado estão irritadas, essa enzima escapa para o sangue.',
+    se_baixo: 'Excelente! Fígado saudável.',
+    se_alto: 'Investigue: gordura no fígado, hepatite, álcool ou medicamentos.',
+    dicas_praticas: ['Suspenda álcool por 30 dias', 'Perca peso se necessário', 'Revise medicamentos com seu médico'],
+    explicacao: 'TGO e AST são nomes diferentes para a mesma enzima hepática.'
+  },
   'alt': {
-    categoria: '🫁 Fígado & Vias Biliares',
+    categoria: '🫁 Fígado',
     icone: '🫁',
-    explicacao: `Como funciona?
-São enzimas dentro das células do fígado. Quando as células sofrem, parte delas "vaza" para o sangue e os valores sobem (gordura, álcool, vírus, remédios, esforço intenso).
-
-Para que serve
-• Sugerem sofrimento hepático.
-• Ajudam a acompanhar evolução (melhora/piora).
-• Direcionam investigações (imagens, outros exames).
-• Auxiliam na segurança medicamentosa.`
+    explicacao_curta: 'O ALT (TGP) é mais específico do fígado que o AST.',
+    analogia: 'Se o AST é um alarme geral, o ALT é específico do fígado. Quando ele sobe, o problema provavelmente está no fígado.',
+    se_baixo: 'Normal. Fígado funcionando bem.',
+    se_alto: 'Gordura no fígado é a causa mais comum hoje. Dieta e exercício ajudam.',
+    dicas_praticas: ['Corte refrigerantes e doces', 'Faça 150 min de exercício por semana', 'Considere ultrassom hepático'],
+    explicacao: 'Enzima mais específica do fígado. Eleva em esteatose, hepatites e uso de alguns medicamentos.'
   },
-  
+  'tgp': {
+    categoria: '🫁 Fígado',
+    icone: '🫁',
+    explicacao_curta: 'O TGP é o mesmo que ALT - específico do fígado.',
+    analogia: 'O TGP é um termômetro específico do fígado. Se está alto, o fígado está "com febre".',
+    se_baixo: 'Ótimo! Células hepáticas íntegras.',
+    se_alto: 'Comum em esteatose hepática (gordura no fígado). Mudanças de estilo de vida ajudam.',
+    dicas_praticas: ['Evite álcool e frituras', 'Perca 5-10% do peso se acima do ideal', 'Exercite-se regularmente'],
+    explicacao: 'TGP e ALT são nomes diferentes para a mesma enzima.'
+  },
+  'ggt': {
+    categoria: '🫁 Fígado',
+    icone: '🫁',
+    explicacao_curta: 'A GGT é sensível ao álcool e problemas nas vias biliares.',
+    analogia: 'A GGT é como um dedo-duro do álcool. Mesmo pequenas quantidades podem fazer ela subir.',
+    se_baixo: 'Normal.',
+    se_alto: 'Pode indicar consumo de álcool, gordura no fígado ou problema biliar.',
+    dicas_praticas: ['Pare o álcool completamente por 4 semanas', 'Faça exames de imagem se persistir alto', 'Hidrate-se bem'],
+    explicacao: 'Enzima sensível a álcool, medicamentos e obstrução biliar.'
+  },
+  'fosfatase_alcalina': {
+    categoria: '🫁 Fígado',
+    icone: '🫁',
+    explicacao_curta: 'A fosfatase alcalina vem do fígado e dos ossos.',
+    analogia: 'É como um marcador duplo: pode vir do fígado ou dos ossos. Outros exames ajudam a descobrir qual.',
+    se_baixo: 'Raro. Pode indicar deficiência de zinco ou magnésio.',
+    se_alto: 'Pode ser problema biliar, ósseo ou até normal na adolescência e gravidez.',
+    dicas_praticas: ['Verifique GGT junto para diferenciar', 'Faça ultrassom se suspeita biliar', 'Avalie vitamina D se suspeita óssea'],
+    explicacao: 'Presente no fígado, ossos e intestino. Sobe em obstruções biliares e doenças ósseas.'
+  },
+  'bilirrubina': {
+    categoria: '🫁 Fígado',
+    icone: '🫁',
+    explicacao_curta: 'A bilirrubina vem da degradação das hemácias e é processada pelo fígado.',
+    analogia: 'A bilirrubina é como a tinta amarela do corpo. Quando o fígado não processa bem, a pele e olhos ficam amarelados.',
+    se_baixo: 'Normal.',
+    se_alto: 'Pode causar icterícia (pele amarela). Investigar fígado ou sangue.',
+    dicas_praticas: ['Se olhos amarelos, procure médico urgente', 'Evite álcool', 'Faça exames de imagem'],
+    explicacao: 'Pigmento amarelo produzido na degradação do sangue. Fígado deve processar e eliminar.'
+  },
+
   // 🧠 TIREOIDE
   'tsh': {
     categoria: '🧠 Tireoide',
     icone: '🧠',
-    explicacao: `Como funciona?
-O TSH é o comando da hipófise para a tireoide; T4/T3 são os hormônios que ajustam o ritmo do metabolismo. Ensaios imunoquímicos quantificam esses níveis e mostram se o "motor" está acelerado, lento ou equilibrado.
-
-Para que serve
-• Detecta hipo e hipertireoidismo.
-• Acompanha ajustes de dose quando em uso de hormônio.
-• Investiga sintomas como cansaço, perda/ganho de peso, palpitações.
-• Integra check-ups e protocolos.`
+    explicacao_curta: 'O TSH é o "chefe" que controla sua tireoide.',
+    analogia: 'O TSH é como um termostato: quando a tireoide trabalha pouco, o TSH sobe para pedir mais. Quando trabalha demais, o TSH desce.',
+    se_baixo: 'Tireoide pode estar acelerada (hipertireoidismo).',
+    se_alto: 'Tireoide pode estar lenta (hipotireoidismo).',
+    dicas_praticas: ['Faça T4 livre junto para confirmar', 'Evite biotina antes do exame', 'Consulte endocrinologista se alterado'],
+    explicacao: 'O TSH é o comando da hipófise para a tireoide. Avalia se o "motor" do metabolismo está equilibrado.'
   },
-  
   't4_livre': {
     categoria: '🧠 Tireoide',
     icone: '🧠',
-    explicacao: `Como funciona?
-O TSH é o comando da hipófise para a tireoide; T4/T3 são os hormônios que ajustam o ritmo do metabolismo. Ensaios imunoquímicos quantificam esses níveis e mostram se o "motor" está acelerado, lento ou equilibrado.
-
-Para que serve
-• Detecta hipo e hipertireoidismo.
-• Acompanha ajustes de dose quando em uso de hormônio.
-• Investiga sintomas como cansaço, perda/ganho de peso, palpitações.
-• Integra check-ups e protocolos.`
+    explicacao_curta: 'O T4 livre é o hormônio tireoidiano disponível para uso.',
+    analogia: 'O T4 é como o combustível produzido pela tireoide. O "livre" é a parte que está pronta para ser usada pelas células.',
+    se_baixo: 'Tireoide produzindo pouco (hipotireoidismo). Causa cansaço e ganho de peso.',
+    se_alto: 'Tireoide produzindo demais (hipertireoidismo). Causa agitação e perda de peso.',
+    dicas_praticas: ['Avalie sintomas: cansaço, peso, humor', 'Reposição hormonal se necessário', 'Acompanhe a cada 6-12 meses'],
+    explicacao: 'Hormônio ativo da tireoide. Junto com TSH, define se a tireoide está funcionando bem.'
   },
-  
-  // 🩸 HEMATOLOGIA
+  't3': {
+    categoria: '🧠 Tireoide',
+    icone: '🧠',
+    explicacao_curta: 'O T3 é o hormônio tireoidiano mais ativo no corpo.',
+    analogia: 'Se o T4 é a gasolina, o T3 é quando ela está queimando no motor. É a forma mais potente do hormônio.',
+    se_baixo: 'Pode indicar hipotireoidismo ou síndrome do eutireoidiano doente.',
+    se_alto: 'Pode indicar hipertireoidismo.',
+    dicas_praticas: ['Sempre avaliar junto com TSH e T4', 'T3 isolado pode enganar', 'Consulte endocrinologista'],
+    explicacao: 'Forma mais ativa do hormônio tireoidiano. Converte-se a partir do T4.'
+  },
+
+  // 🩸 HEMATOLOGIA (Hemograma)
   'hemoglobina': {
-    categoria: '🩸 Hematologia & Nutrientes',
+    categoria: '🩸 Hemograma',
     icone: '🩸',
-    explicacao: `Como funciona?
-Usa contadores automatizados e, se necessário, microscopia para medir glóbulos vermelhos (oxigênio), brancos (defesa) e plaquetas (coagulação), além de índices como VCM e HCM.
-
-Para que serve
-• Investiga anemias.
-• Ajuda a identificar infecções e inflamações.
-• Avalia plaquetas (sangramento/coagulação).
-• Base do check-up e do seguimento clínico.`
+    explicacao_curta: 'A hemoglobina carrega oxigênio para todas as células do corpo.',
+    analogia: 'A hemoglobina é como táxis vermelhos que transportam oxigênio dos pulmões para todo o corpo. Poucos táxis = falta de ar e cansaço.',
+    se_baixo: 'Anemia. Causa cansaço, palidez e falta de ar.',
+    se_alto: 'Pode ser desidratação, tabagismo ou doença sanguínea.',
+    dicas_praticas: ['Coma carnes, feijão e folhas verde-escuras', 'Vitamina C ajuda absorver ferro', 'Investigue a causa com seu médico'],
+    explicacao: 'Proteína que carrega oxigênio. Base para diagnosticar anemia.'
   },
-  
-  'ferritina': {
-    categoria: '🩸 Hematologia & Nutrientes',
+  'hematocrito': {
+    categoria: '🩸 Hemograma',
     icone: '🩸',
-    explicacao: `Como funciona?
-A ferritina indica estoque de ferro; a transferrina é o transporte; a saturação mostra quanto do transporte está ocupado; o ferro sérico é o que circula. Juntos, mapeiam estoque + trânsito + entrega.
-
-Para que serve
-• Diferenciam falta de ferro de outras anemias.
-• Orientam reposição (dose/tempo).
-• Sugerem causas (ingestão, perdas).
-• Acompanham resposta ao tratamento.`
+    explicacao_curta: 'O hematócrito mostra a proporção de células vermelhas no sangue.',
+    analogia: 'Se o sangue fosse uma sopa, o hematócrito é a quantidade de "ingredientes sólidos" (células) versus o caldo (plasma).',
+    se_baixo: 'Indica anemia ou diluição do sangue.',
+    se_alto: 'Pode ser desidratação ou excesso de células vermelhas.',
+    dicas_praticas: ['Acompanha a hemoglobina', 'Beba água adequadamente', 'Investigue se muito alto ou baixo'],
+    explicacao: 'Porcentagem de glóbulos vermelhos no volume total de sangue.'
   },
-  
-  'vitamina_b12': {
-    categoria: '🩸 Hematologia & Nutrientes',
+  'eritrocitos': {
+    categoria: '🩸 Hemograma',
     icone: '🩸',
-    explicacao: `Como funciona?
-Dosagens sanguíneas de vitaminas essenciais para formação de sangue e sistema nervoso. Podem variar com ingestão, absorção intestinal, álcool e medicações; às vezes pedem marcadores complementares.
-
-Para que serve
-• Avaliam anemias com glóbulos grandes (VCM↑).
-• Ajudam a investigar formigamentos e queixas neurológicas (B12).
-• Guiam suplementação e dieta.
-• Monitoram resposta clínica/laboratorial.`
+    explicacao_curta: 'Os eritrócitos são as células vermelhas do sangue.',
+    analogia: 'São os próprios táxis vermelhos que circulam pelo corpo levando oxigênio.',
+    se_baixo: 'Anemia. Menos táxis = menos oxigênio entregue.',
+    se_alto: 'Policitemia ou desidratação.',
+    dicas_praticas: ['Avalie junto com hemoglobina', 'Investigue causa de anemia se baixo', 'Hidrate-se se alto'],
+    explicacao: 'Contagem de glóbulos vermelhos por microlitro de sangue.'
   },
-  
+  'leucocitos': {
+    categoria: '🩸 Hemograma',
+    icone: '🩸',
+    explicacao_curta: 'Os leucócitos são os soldados de defesa do seu corpo.',
+    analogia: 'Os leucócitos são como o exército do corpo. Quando há infecção, mais soldados são convocados para a batalha.',
+    se_baixo: 'Sistema imune mais vulnerável. Maior risco de infecções.',
+    se_alto: 'Geralmente indica infecção ou inflamação. O corpo está lutando contra algo.',
+    dicas_praticas: ['Se febre + leucócitos altos = infecção', 'Leucócitos baixos: evite aglomerações', 'Investigue causa com médico'],
+    explicacao: 'Células brancas de defesa. Aumentam em infecções e inflamações.'
+  },
+  'plaquetas': {
+    categoria: '🩸 Hemograma',
+    icone: '🩸',
+    explicacao_curta: 'As plaquetas ajudam o sangue a coagular e estancar sangramentos.',
+    analogia: 'As plaquetas são como curativos microscópicos que correm para tapar buracos quando você se corta.',
+    se_baixo: 'Maior risco de sangramento. Cuidado com cortes.',
+    se_alto: 'Maior risco de coágulos. Pode precisar investigação.',
+    dicas_praticas: ['Se muito baixo: evite atividades de risco', 'Hematomas fáceis podem ser sinal', 'Consulte hematologista se alterado'],
+    explicacao: 'Fragmentos celulares essenciais para coagulação do sangue.'
+  },
+  'vcm': {
+    categoria: '🩸 Hemograma',
+    icone: '🩸',
+    explicacao_curta: 'O VCM mostra o tamanho médio das suas células vermelhas.',
+    analogia: 'É como medir o tamanho dos táxis. Táxis pequenos demais (VCM baixo) podem indicar falta de ferro. Grandes demais (VCM alto) podem indicar falta de B12.',
+    se_baixo: 'Células pequenas. Geralmente falta de ferro.',
+    se_alto: 'Células grandes. Pode ser falta de B12 ou ácido fólico.',
+    dicas_praticas: ['VCM baixo: investigue ferro', 'VCM alto: verifique B12', 'Ajuda a descobrir tipo de anemia'],
+    explicacao: 'Volume Corpuscular Médio - tamanho das hemácias.'
+  },
+  'hcm': {
+    categoria: '🩸 Hemograma',
+    icone: '🩸',
+    explicacao_curta: 'O HCM mostra quanta hemoglobina cada célula vermelha carrega.',
+    analogia: 'É como medir quantos passageiros cada táxi consegue levar. Se poucos, os táxis estão vazios (falta ferro).',
+    se_baixo: 'Células com pouca hemoglobina. Típico de anemia ferropriva.',
+    se_alto: 'Células com muita hemoglobina. Pode ocorrer em anemias megaloblásticas.',
+    dicas_praticas: ['Acompanha o VCM na investigação', 'Ajuda a definir tipo de anemia', 'Oriente tratamento específico'],
+    explicacao: 'Hemoglobina Corpuscular Média - quantidade de hemoglobina por célula.'
+  },
+  'rdw': {
+    categoria: '🩸 Hemograma',
+    icone: '🩸',
+    explicacao_curta: 'O RDW mostra se suas células vermelhas têm tamanhos diferentes.',
+    analogia: 'É como medir se os táxis da sua frota são todos do mesmo tamanho ou se tem de vários tamanhos (indicando problemas na produção).',
+    se_baixo: 'Normal. Células uniformes.',
+    se_alto: 'Células de tamanhos variados. Sugere problemas na produção ou anemias mistas.',
+    dicas_praticas: ['RDW alto + anemia: investigar causas múltiplas', 'Útil para diferenciar tipos de anemia', 'Avalie ferro, B12 e ácido fólico'],
+    explicacao: 'Variação no tamanho das hemácias. Aumenta em anemias carenciais.'
+  },
+
   // 🌞 VITAMINAS
   'vitamina_d': {
     categoria: '🌞 Vitaminas',
     icone: '🌞',
-    explicacao: `Como funciona?
-Mede a forma de reserva da vitamina D, produzida na pele pelo sol e obtida por alimentos/suplementos. É o melhor indicador de estoque disponível para ossos e músculos.
-
-Para que serve
-• Avalia deficiência ou excesso.
-• Direciona suplementação e reavaliação.
-• Relaciona-se a saúde óssea e muscular.
-• Complementa o eixo cálcio/PTH.`
+    explicacao_curta: 'A vitamina D fortalece ossos e imunidade.',
+    analogia: 'A vitamina D é como o sol engarrafado. Ajuda seus ossos a absorver cálcio e fortalece suas defesas.',
+    se_baixo: 'Pode causar fraqueza óssea, dores musculares e baixa imunidade.',
+    se_alto: 'Excesso pode causar cálcio alto. Geralmente por suplementação excessiva.',
+    dicas_praticas: ['Tome 15-20 min de sol por dia', 'Consuma peixes gordurosos e ovos', 'Suplementar se deficiente'],
+    explicacao: 'Mede a forma de reserva da vitamina D, produzida na pele pelo sol.'
   },
-  
+  'vitamina_b12': {
+    categoria: '🌞 Vitaminas',
+    icone: '🌞',
+    explicacao_curta: 'A B12 é essencial para sangue e nervos.',
+    analogia: 'A B12 é como o eletricista do corpo: mantém os nervos funcionando e ajuda a fabricar sangue.',
+    se_baixo: 'Pode causar anemia, formigamentos e problemas de memória.',
+    se_alto: 'Geralmente não é problema. Pode ser suplementação.',
+    dicas_praticas: ['Carnes são a principal fonte', 'Veganos devem suplementar', 'Idosos podem ter má absorção'],
+    explicacao: 'Vitamina essencial para formação de sangue e sistema nervoso.'
+  },
+  'acido_folico': {
+    categoria: '🌞 Vitaminas',
+    icone: '🌞',
+    explicacao_curta: 'O ácido fólico ajuda a formar células novas.',
+    analogia: 'O ácido fólico é como um pedreiro: essencial para construir novas células, especialmente importante na gravidez.',
+    se_baixo: 'Pode causar anemia e problemas na gravidez.',
+    se_alto: 'Geralmente não é problema.',
+    dicas_praticas: ['Coma folhas verde-escuras', 'Essencial antes e durante gravidez', 'Suplementar se necessário'],
+    explicacao: 'Vitamina do complexo B essencial para formação celular.'
+  },
+
+  // 🧲 FERRO
+  'ferritina': {
+    categoria: '🧲 Ferro',
+    icone: '🧲',
+    explicacao_curta: 'A ferritina é o estoque de ferro do seu corpo.',
+    analogia: 'A ferritina é como a poupança de ferro. Mostra quanto você tem guardado para emergências.',
+    se_baixo: 'Estoque vazio. Mesmo sem anemia agora, está a caminho.',
+    se_alto: 'Excesso de ferro ou inflamação. Precisa investigar.',
+    dicas_praticas: ['Ferritina baixa: aumente carnes e feijão', 'Ferritina alta: evite suplementos de ferro', 'Faça hemograma junto'],
+    explicacao: 'A ferritina indica estoque de ferro; é o primeiro a cair na deficiência.'
+  },
+  'ferro_serico': {
+    categoria: '🧲 Ferro',
+    icone: '🧲',
+    explicacao_curta: 'O ferro sérico é o ferro circulando no sangue agora.',
+    analogia: 'Se a ferritina é a poupança, o ferro sérico é o dinheiro na carteira. É o que está disponível para uso imediato.',
+    se_baixo: 'Pouco ferro disponível. Pode estar a caminho da anemia.',
+    se_alto: 'Excesso de ferro circulando. Pode ser hemocromatose.',
+    dicas_praticas: ['Varia muito durante o dia', 'Avalie junto com ferritina', 'Colha pela manhã em jejum'],
+    explicacao: 'Ferro que circula no sangue naquele momento.'
+  },
+  'saturacao_transferrina': {
+    categoria: '🧲 Ferro',
+    icone: '🧲',
+    explicacao_curta: 'Mostra quanto da capacidade de transporte de ferro está sendo usada.',
+    analogia: 'É como ver quantos assentos do ônibus de ferro estão ocupados. Baixo = poucos passageiros. Alto = ônibus lotado.',
+    se_baixo: 'Deficiência de ferro.',
+    se_alto: 'Excesso de ferro. Risco de acúmulo nos órgãos.',
+    dicas_praticas: ['Avalie junto com ferritina e ferro sérico', 'Ajuda a diagnosticar anemia', 'Importante em hemocromatose'],
+    explicacao: 'Porcentagem de ocupação dos transportadores de ferro.'
+  },
+
   // 🔥 INFLAMAÇÃO
   'pcr': {
     categoria: '🔥 Inflamação',
     icone: '🔥',
-    explicacao: `Como funciona?
-É uma proteína de fase aguda produzida pelo fígado. No método de alta sensibilidade, detecta inflamações discretas, úteis para entender risco cardiovascular e resposta a hábitos ao longo do tempo.
-
-Para que serve
-• Sinaliza inflamação de baixo grau.
-• Contextualiza risco em conjunto com lipídios.
-• Ajuda a monitorar estilo de vida.
-• Apoia decisões em prevenção.`
+    explicacao_curta: 'A PCR detecta inflamação no corpo.',
+    analogia: 'A PCR é como um detector de fumaça: quando algo está inflamado ou infeccionado, ela sobe para alertar.',
+    se_baixo: 'Ótimo! Sem sinais de inflamação.',
+    se_alto: 'Inflamação ou infecção em algum lugar do corpo.',
+    dicas_praticas: ['PCR alta + febre = provável infecção', 'PCR levemente alta: pode ser obesidade ou estilo de vida', 'Excelente para acompanhar tratamentos'],
+    explicacao: 'Proteína de fase aguda produzida pelo fígado em resposta a inflamação.'
   },
-  
   'vhs': {
     categoria: '🔥 Inflamação',
     icone: '🔥',
-    explicacao: `Como funciona?
-Observa a velocidade com que as hemácias sedimentam num tubo padronizado. Proteínas inflamatórias alteram essa velocidade, tornando o VHS um sinal indireto de inflamação crônica.
+    explicacao_curta: 'O VHS também detecta inflamação, mas de forma mais lenta.',
+    analogia: 'O VHS é como um termômetro de inflamação crônica. Sobe devagar e desce devagar.',
+    se_baixo: 'Normal. Sem inflamação detectável.',
+    se_alto: 'Pode indicar infecção, inflamação ou doenças autoimunes.',
+    dicas_praticas: ['VHS alto persistente: investigar doenças reumáticas', 'Menos específico que PCR', 'Útil para acompanhar artrites'],
+    explicacao: 'Velocidade de sedimentação das hemácias. Sobe em processos inflamatórios.'
+  },
 
-Para que serve
-• Útil em doenças inflamatórias e infecções crônicas.
-• Interpreta-se junto com PCR e clínica.
-• Acompanha atividade de algumas doenças.
-• Ajuda a triagem de sintomas persistentes.`
+  // ⚡ ELETRÓLITOS
+  'sodio': {
+    categoria: '⚡ Eletrólitos',
+    icone: '⚡',
+    explicacao_curta: 'O sódio controla a água do corpo e a pressão arterial.',
+    analogia: 'O sódio é como a esponja que retém água no corpo. Muito sódio = muita água retida = pressão alta.',
+    se_baixo: 'Pode causar confusão, náuseas e tontura.',
+    se_alto: 'Geralmente desidratação. Beba mais água.',
+    dicas_praticas: ['Controle o sal na comida', 'Beba água regularmente', 'Cuidado com diuréticos'],
+    explicacao: 'Principal eletrólito extracelular. Regula volume e pressão.'
+  },
+  'potassio': {
+    categoria: '⚡ Eletrólitos',
+    icone: '⚡',
+    explicacao_curta: 'O potássio é vital para coração e músculos.',
+    analogia: 'O potássio é como a bateria dos músculos. Se está baixo ou alto demais, o coração pode falhar.',
+    se_baixo: 'Pode causar fraqueza, câimbras e arritmias.',
+    se_alto: 'Perigoso! Pode causar arritmias graves.',
+    dicas_praticas: ['Coma banana, laranja e vegetais', 'Cuidado com suplementos se função renal ruim', 'Potássio alto é urgência médica'],
+    explicacao: 'Essencial para função muscular e ritmo cardíaco.'
+  },
+  'calcio': {
+    categoria: '⚡ Eletrólitos',
+    icone: '⚡',
+    explicacao_curta: 'O cálcio fortalece ossos e participa da coagulação.',
+    analogia: 'O cálcio é como o cimento dos ossos. Também ajuda na contração muscular e coagulação.',
+    se_baixo: 'Pode causar formigamentos e câimbras.',
+    se_alto: 'Pode indicar problema na paratireoide ou câncer.',
+    dicas_praticas: ['Consuma leite, queijo e vegetais verdes', 'Vitamina D ajuda absorção', 'Cálcio alto precisa investigação'],
+    explicacao: 'Mineral essencial para ossos, músculos e coagulação.'
+  },
+  'magnesio': {
+    categoria: '⚡ Eletrólitos',
+    icone: '⚡',
+    explicacao_curta: 'O magnésio relaxa músculos e acalma o sistema nervoso.',
+    analogia: 'O magnésio é como um calmante natural. Ajuda os músculos a relaxar e o coração a bater direito.',
+    se_baixo: 'Causa câimbras, tremores e arritmias.',
+    se_alto: 'Raro. Pode ocorrer em doença renal grave.',
+    dicas_praticas: ['Coma castanhas, sementes e chocolate amargo', 'Suplementar pode ajudar câimbras', 'Diabéticos costumam ter deficiência'],
+    explicacao: 'Mineral essencial para mais de 300 reações no corpo.'
+  },
+
+  // 🧪 URINA
+  'eas': {
+    categoria: '🧪 Urina',
+    icone: '🧪',
+    explicacao_curta: 'O EAS analisa sua urina para detectar infecções e problemas renais.',
+    analogia: 'O EAS é como um detetive que analisa sua urina em busca de pistas: sangue, proteínas, bactérias e cristais.',
+    se_baixo: 'Não se aplica.',
+    se_alto: 'Depende do que foi encontrado: leucócitos = infecção, proteína = rim, etc.',
+    dicas_praticas: ['Beba bastante água', 'Urina escura ou turva: procure médico', 'Infecção urinária precisa de antibiótico'],
+    explicacao: 'Exame de rotina que avalia cor, pH, presença de células, bactérias e cristais.'
+  },
+  'urocultura': {
+    categoria: '🧪 Urina',
+    icone: '🧪',
+    explicacao_curta: 'A urocultura identifica qual bactéria está causando infecção.',
+    analogia: 'A urocultura é como um interrogatório: identifica o criminoso (bactéria) e descobre qual "arma" (antibiótico) funciona contra ele.',
+    se_baixo: 'Não se aplica.',
+    se_alto: 'Bactéria identificada = infecção confirmada. Antibiograma mostra o tratamento.',
+    dicas_praticas: ['Colha jato médio, após higiene', 'Resultado demora 3-5 dias', 'Só tome antibiótico com resultado'],
+    explicacao: 'Cultura de urina para identificar bactérias e testar antibióticos.'
   }
 };
 
-// 🧠 FUNÇÃO PARA BUSCAR EXPLICAÇÃO DIDÁTICA
-function getExplicacaoDidatica(nomeExame: string): {categoria: string, icone: string, explicacao: string} | null {
-  const nomeNormalizado = nomeExame.toLowerCase()
-    .replace(/[^a-z0-9]/g, '_')
-    .replace(/colesterol_total/g, 'colesterol_total')
-    .replace(/ldl/g, 'ldl')
-    .replace(/hdl/g, 'hdl')
-    .replace(/triglicerid/g, 'triglicerideos')
-    .replace(/vldl/g, 'vldl')
-    .replace(/colesterol_nao_hdl|nao_hdl|não_hdl/g, 'colesterol_nao_hdl')
-    .replace(/apob|apo_b/g, 'apob')
-    .replace(/lipoproteina_a|lp_a|lp\(a\)/g, 'lipoproteina_a')
-    .replace(/glicose/g, 'glicose')
-    .replace(/hba1c|hemoglobina_glicada/g, 'hba1c')
-    .replace(/insulina/g, 'insulina')
-    .replace(/creatinina/g, 'creatinina')
-    .replace(/ureia/g, 'ureia')
-    .replace(/ast|tgo/g, 'ast')
-    .replace(/alt|tgp/g, 'alt')
-    .replace(/tsh/g, 'tsh')
-    .replace(/t4_livre|t4/g, 't4_livre')
-    .replace(/hemoglobina/g, 'hemoglobina')
-    .replace(/ferritina/g, 'ferritina')
-    .replace(/vitamina_b12|b12/g, 'vitamina_b12')
-    .replace(/vitamina_d/g, 'vitamina_d')
-    .replace(/pcr|proteina_c_reativa/g, 'pcr')
-    .replace(/vhs/g, 'vhs');
+// 🎯 FUNÇÃO PARA AGRUPAR EXAMES POR CATEGORIA
+function groupExamsByCategory(metrics: any[]): Map<string, any[]> {
+  const groups = new Map<string, any[]>();
   
-  return EXPLICACOES_EXAMES[nomeNormalizado] || null;
+  for (const metric of metrics) {
+    const name = (metric.name || '').toLowerCase();
+    let categoria = '📋 Outros Exames';
+    
+    // Determinar categoria baseado no nome
+    if (name.includes('colesterol') || name.includes('ldl') || name.includes('hdl') || 
+        name.includes('triglicer') || name.includes('vldl') || name.includes('apob')) {
+      categoria = '🫀 Perfil Lipídico';
+    } else if (name.includes('glicose') || name.includes('glicemia') || 
+               name.includes('hba1c') || name.includes('hemoglobina glicada') ||
+               name.includes('insulina') || name.includes('homa')) {
+      categoria = '🍬 Glicose & Metabolismo';
+    } else if (name.includes('creatinina') || name.includes('ureia') || 
+               name.includes('tfg') || name.includes('filtração') ||
+               name.includes('ácido úrico') || name.includes('urico')) {
+      categoria = '💧 Função Renal';
+    } else if (name.includes('ast') || name.includes('alt') || 
+               name.includes('tgo') || name.includes('tgp') ||
+               name.includes('ggt') || name.includes('fosfatase') ||
+               name.includes('bilirrubina') || name.includes('albumina')) {
+      categoria = '🫁 Fígado';
+    } else if (name.includes('tsh') || name.includes('t4') || name.includes('t3') ||
+               name.includes('tireo')) {
+      categoria = '🧠 Tireoide';
+    } else if (name.includes('hemoglobina') || name.includes('hematocrito') || 
+               name.includes('eritroc') || name.includes('hemacia') ||
+               name.includes('leucocito') || name.includes('plaqueta') ||
+               name.includes('vcm') || name.includes('hcm') || name.includes('rdw') ||
+               name.includes('neutrofilo') || name.includes('linfocito') ||
+               name.includes('monocito') || name.includes('basofilo') ||
+               name.includes('eosinofilo')) {
+      categoria = '🩸 Hemograma';
+    } else if (name.includes('vitamina') || name.includes('b12') || 
+               name.includes('folico') || name.includes('folato')) {
+      categoria = '🌞 Vitaminas';
+    } else if (name.includes('ferritina') || name.includes('ferro') || 
+               name.includes('transferrina') || name.includes('tibc')) {
+      categoria = '🧲 Ferro';
+    } else if (name.includes('pcr') || name.includes('vhs') || 
+               name.includes('proteina c') || name.includes('sedimentação')) {
+      categoria = '🔥 Inflamação';
+    } else if (name.includes('sodio') || name.includes('potassio') || 
+               name.includes('calcio') || name.includes('magnesio') ||
+               name.includes('fosforo') || name.includes('cloro')) {
+      categoria = '⚡ Eletrólitos';
+    } else if (name.includes('urina') || name.includes('eas') || 
+               name.includes('urocultura') || name.includes('ph urinario')) {
+      categoria = '🧪 Urina';
+    } else if (name.includes('testosterona') || name.includes('estradiol') || 
+               name.includes('progesterona') || name.includes('fsh') ||
+               name.includes('lh') || name.includes('prolactina')) {
+      categoria = '⚗️ Hormônios';
+    } else if (name.includes('psa') || name.includes('cea') || 
+               name.includes('ca 125') || name.includes('afp')) {
+      categoria = '🔬 Marcadores';
+    }
+    
+    if (!groups.has(categoria)) {
+      groups.set(categoria, []);
+    }
+    groups.get(categoria)!.push(metric);
+  }
+  
+  return groups;
+}
+
+// 🎨 FUNÇÃO PARA GERAR RESUMO DA CATEGORIA
+function getCategorySummary(categoria: string, metrics: any[]): string {
+  const normalCount = metrics.filter(m => m.status === 'normal').length;
+  const totalCount = metrics.length;
+  const percentNormal = Math.round((normalCount / totalCount) * 100);
+  
+  if (percentNormal === 100) {
+    return `✅ Todos os ${totalCount} exames estão normais! Parabéns!`;
+  } else if (percentNormal >= 80) {
+    return `✅ ${normalCount} de ${totalCount} exames normais. Poucos pontos de atenção.`;
+  } else if (percentNormal >= 50) {
+    return `⚠️ ${normalCount} de ${totalCount} exames normais. Alguns precisam de atenção.`;
+  } else {
+    return `🔴 ${normalCount} de ${totalCount} exames normais. Vários pontos requerem cuidado.`;
+  }
+}
+
+// 🧠 FUNÇÃO PARA BUSCAR EXPLICAÇÃO DIDÁTICA
+function getExplicacaoDidatica(nomeExame: string): ExplicacaoExame | null {
+  const nomeNormalizado = nomeExame.toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]/g, '_')
+    .replace(/_+/g, '_')
+    .replace(/^_|_$/g, '');
+  
+  // Mapeamento de aliases para chaves
+  const aliasMap: Record<string, string> = {
+    'colesterol_total': 'colesterol_total',
+    'colesterol': 'colesterol_total',
+    'ldl_colesterol': 'ldl',
+    'ldl_c': 'ldl',
+    'hdl_colesterol': 'hdl',
+    'hdl_c': 'hdl',
+    'triglicerides': 'triglicerideos',
+    'trigliceridos': 'triglicerideos',
+    'glicemia_de_jejum': 'glicemia',
+    'glicose_de_jejum': 'glicose',
+    'hemoglobina_glicada': 'hba1c',
+    'hemoglobina_glicosilada': 'hba1c',
+    'a1c': 'hba1c',
+    'tgo': 'tgo',
+    'aspartato_aminotransferase': 'ast',
+    'tgp': 'tgp',
+    'alanina_aminotransferase': 'alt',
+    'gama_gt': 'ggt',
+    'gama_glutamil': 'ggt',
+    't4l': 't4_livre',
+    't4_livre': 't4_livre',
+    'tiroxina_livre': 't4_livre',
+    'hemoglobina': 'hemoglobina',
+    'hb': 'hemoglobina',
+    'hematocrito': 'hematocrito',
+    'ht': 'hematocrito',
+    'eritrocitos': 'eritrocitos',
+    'hemacias': 'eritrocitos',
+    'globulos_vermelhos': 'eritrocitos',
+    'leucocitos': 'leucocitos',
+    'globulos_brancos': 'leucocitos',
+    'plaquetas': 'plaquetas',
+    'trombocitos': 'plaquetas',
+    'vitamina_d': 'vitamina_d',
+    '25_oh_vitamina_d': 'vitamina_d',
+    'vitamina_b12': 'vitamina_b12',
+    'cobalamina': 'vitamina_b12',
+    'acido_folico': 'acido_folico',
+    'folato': 'acido_folico',
+    'ferritina': 'ferritina',
+    'ferro_serico': 'ferro_serico',
+    'ferro': 'ferro_serico',
+    'proteina_c_reativa': 'pcr',
+    'pcr_ultrassensivel': 'pcr',
+    'vhs': 'vhs',
+    'velocidade_de_hemossedimentacao': 'vhs',
+    'sodio': 'sodio',
+    'na': 'sodio',
+    'potassio': 'potassio',
+    'k': 'potassio',
+    'calcio': 'calcio',
+    'ca': 'calcio',
+    'magnesio': 'magnesio',
+    'mg': 'magnesio',
+    'exame_de_urina': 'eas',
+    'equ': 'eas',
+    'urina_tipo_1': 'eas'
+  };
+  
+  // Tentar encontrar pelo nome normalizado diretamente
+  if (EXPLICACOES_EXAMES[nomeNormalizado]) {
+    return EXPLICACOES_EXAMES[nomeNormalizado];
+  }
+  
+  // Tentar pelo mapa de aliases
+  const alias = aliasMap[nomeNormalizado];
+  if (alias && EXPLICACOES_EXAMES[alias]) {
+    return EXPLICACOES_EXAMES[alias];
+  }
+  
+  // Tentar encontrar por substring
+  for (const [key, value] of Object.entries(EXPLICACOES_EXAMES)) {
+    if (nomeNormalizado.includes(key) || key.includes(nomeNormalizado)) {
+      return value;
+    }
+  }
+  
+  return null;
 }
 
 // Funções para agrupar exames similares
