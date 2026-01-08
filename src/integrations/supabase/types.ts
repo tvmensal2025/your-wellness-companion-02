@@ -11152,6 +11152,45 @@ export type Database = {
           },
         ]
       }
+      whatsapp_message_logs: {
+        Row: {
+          created_at: string | null
+          error_message: string | null
+          id: string
+          message_content: string | null
+          message_type: string
+          metadata: Json | null
+          phone_number: string | null
+          sent_at: string | null
+          status: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          message_content?: string | null
+          message_type: string
+          metadata?: Json | null
+          phone_number?: string | null
+          sent_at?: string | null
+          status?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          message_content?: string | null
+          message_type?: string
+          metadata?: Json | null
+          phone_number?: string | null
+          sent_at?: string | null
+          status?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       whatsapp_message_templates: {
         Row: {
           ai_prompt: string | null
