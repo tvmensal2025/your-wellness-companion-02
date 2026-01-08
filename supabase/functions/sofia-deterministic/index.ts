@@ -176,14 +176,35 @@ async function searchTacoFood(supabase: any, foodName: string): Promise<any> {
   const normalized = normalizeText(foodName);
   
   // Mapeamento de sinônimos comuns para nomes TACO
+  // ⚠️ IMPORTANTE: Leguminosas mapeiam para versão COZIDA (não crua!)
   const synonyms: Record<string, string> = {
     'arroz': 'arroz, tipo 1, cozido',
     'arroz branco': 'arroz, tipo 1, cozido',
     'arroz cozido': 'arroz, tipo 1, cozido',
     'arroz integral': 'arroz, integral, cozido',
+    'arroz integral cozido': 'arroz, integral, cozido',
+    
+    // LEGUMINOSAS - SEMPRE versão cozida!
+    'grão de bico': 'grão-de-bico cozido',
+    'grao de bico': 'grão-de-bico cozido',
+    'grão de bico cozido': 'grão-de-bico cozido',
+    'grao de bico cozido': 'grão-de-bico cozido',
+    'grão-de-bico': 'grão-de-bico cozido',
+    'grão-de-bico cozido': 'grão-de-bico cozido',
+    'lentilha': 'lentilha cozida',
+    'lentilha cozida': 'lentilha cozida',
+    'ervilha': 'ervilha cozida',
+    'ervilha cozida': 'ervilha cozida',
+    'soja': 'soja cozida',
+    'soja cozida': 'soja cozida',
+    
     'feijao': 'feijão, carioca, cozido',
     'feijao carioca': 'feijão, carioca, cozido',
     'feijao preto': 'feijão, preto, cozido',
+    'feijão': 'feijão, carioca, cozido',
+    'feijão carioca': 'feijão, carioca, cozido',
+    'feijão preto': 'feijão, preto, cozido',
+    
     'ovo': 'ovo, de galinha, inteiro, cozido',
     'ovo cozido': 'ovo, de galinha, inteiro, cozido',
     'ovo frito': 'ovo, de galinha, inteiro, frito',
@@ -202,6 +223,7 @@ async function searchTacoFood(supabase: any, foodName: string): Promise<any> {
     'batata frita': 'batata, inglesa, frita',
     'batata doce': 'batata, doce, cozida',
     'mandioca': 'mandioca, cozida',
+    'mandioca cozida': 'mandioca, cozida',
     'aipim': 'mandioca, cozida',
     'macaxeira': 'mandioca, cozida',
     'salada': 'alface, crespa, crua',
@@ -220,8 +242,8 @@ async function searchTacoFood(supabase: any, foodName: string): Promise<any> {
     'pao': 'pão, trigo, francês',
     'pao frances': 'pão, trigo, francês',
     'pao de forma': 'pão, trigo, forma, integral',
-    'macarrao': 'macarrão, trigo, cru',
-    'macarrao cozido': 'lasanha, massa fresca, cozida',
+    'macarrao': 'macarrão, trigo, cozido',
+    'macarrao cozido': 'macarrão, trigo, cozido',
     'linguica': 'linguiça, de porco, frita',
     'bacon': 'bacon, defumado',
     'presunto': 'presunto, cru',
@@ -237,11 +259,35 @@ async function searchTacoFood(supabase: any, foodName: string): Promise<any> {
     'ketchup': 'ketchup',
     'farofa': 'farofa, de mandioca',
   };
+  
+  // Valores HARDCODED para leguminosas cozidas (fallback se não achar no banco)
+  const COOKED_LEGUMES_FALLBACK: Record<string, { kcal: number; protein: number; carbs: number; fat: number; fiber: number }> = {
+    'grão-de-bico cozido': { kcal: 128, protein: 8.5, carbs: 20.5, fat: 2.0, fiber: 6.0 },
+    'lentilha cozida': { kcal: 93, protein: 6.3, carbs: 16.3, fat: 0.5, fiber: 7.9 },
+    'ervilha cozida': { kcal: 72, protein: 5.0, carbs: 12.6, fat: 0.4, fiber: 4.3 },
+    'soja cozida': { kcal: 151, protein: 14.0, carbs: 8.0, fat: 6.8, fiber: 5.6 },
+  };
 
   // 1. Verificar sinônimos primeiro
   const synonymKey = Object.keys(synonyms).find(key => normalized.includes(key));
   if (synonymKey) {
     const tacoName = synonyms[synonymKey];
+    
+    // 1a. Verificar fallback de leguminosas cozidas PRIMEIRO
+    if (COOKED_LEGUMES_FALLBACK[tacoName]) {
+      const fallback = COOKED_LEGUMES_FALLBACK[tacoName];
+      console.log(`   🥗 Leguminosa cozida (fallback): "${normalized}" → ${fallback.kcal} kcal/100g`);
+      return {
+        food_name: tacoName,
+        energy_kcal: fallback.kcal,
+        protein_g: fallback.protein,
+        carbohydrate_g: fallback.carbs,
+        lipids_g: fallback.fat,
+        fiber_g: fallback.fiber,
+        sodium_mg: 0
+      };
+    }
+    
     const { data } = await supabase
       .from('taco_foods')
       .select('food_name, energy_kcal, protein_g, carbohydrate_g, lipids_g, fiber_g, sodium_mg')
@@ -249,6 +295,29 @@ async function searchTacoFood(supabase: any, foodName: string): Promise<any> {
       .limit(1);
     
     if (data && data.length > 0) {
+      // IMPORTANTE: Se encontrou versão CRU mas estamos buscando COZIDO, usar fallback
+      const foundName = data[0].food_name.toLowerCase();
+      if ((normalized.includes('cozid') || tacoName.includes('cozid')) && foundName.includes('cru')) {
+        console.log(`   ⚠️ Encontrou CRU mas buscamos COZIDO - verificando fallback...`);
+        // Tentar encontrar no fallback
+        const legumeFallbackKey = Object.keys(COOKED_LEGUMES_FALLBACK).find(k => 
+          normalized.includes(k.replace(' cozida', '').replace(' cozido', ''))
+        );
+        if (legumeFallbackKey) {
+          const fb = COOKED_LEGUMES_FALLBACK[legumeFallbackKey];
+          console.log(`   🥗 Usando fallback cozido: ${fb.kcal} kcal/100g (não ${data[0].energy_kcal})`);
+          return {
+            food_name: legumeFallbackKey,
+            energy_kcal: fb.kcal,
+            protein_g: fb.protein,
+            carbohydrate_g: fb.carbs,
+            lipids_g: fb.fat,
+            fiber_g: fb.fiber,
+            sodium_mg: 0
+          };
+        }
+      }
+      
       console.log(`   🔗 Sinônimo: "${normalized}" → "${tacoName}"`);
       return data[0];
     }
@@ -262,12 +331,50 @@ async function searchTacoFood(supabase: any, foodName: string): Promise<any> {
     .limit(1);
   
   if (exactMatch && exactMatch.length > 0) {
+    // Verificar se é leguminosa crua quando queremos cozida
+    const foundName = exactMatch[0].food_name.toLowerCase();
+    if ((normalized.includes('cozid') || foodName.toLowerCase().includes('cozid')) && foundName.includes('cru')) {
+      console.log(`   ⚠️ Match exato é CRU mas buscamos COZIDO`);
+      const legumeFallbackKey = Object.keys(COOKED_LEGUMES_FALLBACK).find(k => 
+        normalized.includes(k.replace(' cozida', '').replace(' cozido', ''))
+      );
+      if (legumeFallbackKey) {
+        const fb = COOKED_LEGUMES_FALLBACK[legumeFallbackKey];
+        return {
+          food_name: legumeFallbackKey,
+          energy_kcal: fb.kcal,
+          protein_g: fb.protein,
+          carbohydrate_g: fb.carbs,
+          lipids_g: fb.fat,
+          fiber_g: fb.fiber,
+          sodium_mg: 0
+        };
+      }
+    }
     return exactMatch[0];
   }
 
   // 3. Busca por palavras-chave principais
   const keywords = normalized.split(' ').filter(w => w.length > 2);
   for (const keyword of keywords) {
+    // Verificar se é leguminosa conhecida
+    const legumeFallbackKey = Object.keys(COOKED_LEGUMES_FALLBACK).find(k => 
+      k.includes(keyword) && (normalized.includes('cozid') || !normalized.includes('cru'))
+    );
+    if (legumeFallbackKey) {
+      const fb = COOKED_LEGUMES_FALLBACK[legumeFallbackKey];
+      console.log(`   🥗 Leguminosa por keyword: "${keyword}" → ${legumeFallbackKey}`);
+      return {
+        food_name: legumeFallbackKey,
+        energy_kcal: fb.kcal,
+        protein_g: fb.protein,
+        carbohydrate_g: fb.carbs,
+        lipids_g: fb.fat,
+        fiber_g: fb.fiber,
+        sodium_mg: 0
+      };
+    }
+    
     const { data: keywordMatch } = await supabase
       .from('taco_foods')
       .select('food_name, energy_kcal, protein_g, carbohydrate_g, lipids_g, fiber_g, sodium_mg')

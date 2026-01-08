@@ -216,16 +216,34 @@ const TACO_SYNONYMS: Record<string, string> = {
 // ========================================
 
 // Valores TACO pré-carregados com PREPARO específico (por 100g)
+// ⚠️ IMPORTANTE: Leguminosas usam valores COZIDOS (não crus!)
 const TACO_QUICK_LOOKUP: Record<string, { kcal: number; protein: number; carbs: number; fat: number; fiber: number }> = {
   // ARROZ
   'arroz': { kcal: 128, protein: 2.5, carbs: 28.1, fat: 0.2, fiber: 1.6 },
   'arroz branco': { kcal: 128, protein: 2.5, carbs: 28.1, fat: 0.2, fiber: 1.6 },
   'arroz integral': { kcal: 124, protein: 2.6, carbs: 25.8, fat: 1.0, fiber: 2.7 },
+  'arroz integral cozido': { kcal: 124, protein: 2.6, carbs: 25.8, fat: 1.0, fiber: 2.7 },
+  'arroz cozido': { kcal: 128, protein: 2.5, carbs: 28.1, fat: 0.2, fiber: 1.6 },
   
-  // FEIJÃO
+  // LEGUMINOSAS COZIDAS (valores corretos - NÃO usar valores crus!)
+  'grão de bico': { kcal: 128, protein: 8.5, carbs: 20.5, fat: 2.0, fiber: 6.0 },
+  'grão de bico cozido': { kcal: 128, protein: 8.5, carbs: 20.5, fat: 2.0, fiber: 6.0 },
+  'grao de bico': { kcal: 128, protein: 8.5, carbs: 20.5, fat: 2.0, fiber: 6.0 },
+  'grao de bico cozido': { kcal: 128, protein: 8.5, carbs: 20.5, fat: 2.0, fiber: 6.0 },
+  'grão-de-bico': { kcal: 128, protein: 8.5, carbs: 20.5, fat: 2.0, fiber: 6.0 },
+  'grão-de-bico cozido': { kcal: 128, protein: 8.5, carbs: 20.5, fat: 2.0, fiber: 6.0 },
+  'lentilha': { kcal: 93, protein: 6.3, carbs: 16.3, fat: 0.5, fiber: 7.9 },
+  'lentilha cozida': { kcal: 93, protein: 6.3, carbs: 16.3, fat: 0.5, fiber: 7.9 },
+  'ervilha': { kcal: 72, protein: 5.0, carbs: 12.6, fat: 0.4, fiber: 4.3 },
+  'ervilha cozida': { kcal: 72, protein: 5.0, carbs: 12.6, fat: 0.4, fiber: 4.3 },
+  'soja': { kcal: 151, protein: 14.0, carbs: 8.0, fat: 6.8, fiber: 5.6 },
+  'soja cozida': { kcal: 151, protein: 14.0, carbs: 8.0, fat: 6.8, fiber: 5.6 },
+  
+  // FEIJÃO (valores cozidos)
   'feijão': { kcal: 77, protein: 4.5, carbs: 14, fat: 0.5, fiber: 8.5 },
   'feijão carioca': { kcal: 77, protein: 4.5, carbs: 14, fat: 0.5, fiber: 8.5 },
   'feijão preto': { kcal: 77, protein: 4.5, carbs: 14, fat: 0.5, fiber: 8.4 },
+  'feijão cozido': { kcal: 77, protein: 4.5, carbs: 14, fat: 0.5, fiber: 8.5 },
   
   // CARNE BOVINA (DIFERENTE DE FRANGO!)
   'bife': { kcal: 219, protein: 32.8, carbs: 0, fat: 9.3, fiber: 0 },
@@ -270,6 +288,7 @@ const TACO_QUICK_LOOKUP: Record<string, { kcal: number; protein: number; carbs: 
   
   // MASSAS E PÃES
   'macarrão': { kcal: 102, protein: 3.4, carbs: 19.9, fat: 0.5, fiber: 1.5 },
+  'macarrão cozido': { kcal: 102, protein: 3.4, carbs: 19.9, fat: 0.5, fiber: 1.5 },
   'pão': { kcal: 300, protein: 8, carbs: 58.6, fat: 3.1, fiber: 2.3 },
   'pão francês': { kcal: 300, protein: 8, carbs: 58.6, fat: 3.1, fiber: 2.3 },
   
@@ -292,6 +311,7 @@ const TACO_QUICK_LOOKUP: Record<string, { kcal: number; protein: number; carbs: 
   
   // MANDIOCA/AIPIM
   'mandioca': { kcal: 125, protein: 0.6, carbs: 30.1, fat: 0.3, fiber: 1.9 },
+  'mandioca cozida': { kcal: 125, protein: 0.6, carbs: 30.1, fat: 0.3, fiber: 1.9 },
   'mandioca frita': { kcal: 304, protein: 1.1, carbs: 42, fat: 14.5, fiber: 2.1 },
   'farofa': { kcal: 365, protein: 1.2, carbs: 82, fat: 0.7, fiber: 4.5 },
   
