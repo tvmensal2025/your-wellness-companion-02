@@ -153,7 +153,32 @@ export async function handleSmartResponseWithPending(
 /**
  * Process text message for food analysis
  */
-export async function processTextForFood(
+/**
+ * Main handler for text messages
+ */
+export async function handleTextMessage(
+  supabase: SupabaseClient,
+  user: UserInfo,
+  phone: string,
+  text: string
+): Promise<void> {
+  try {
+    // Try to analyze as food first
+    const wasFood = await processTextForFood(supabase, user, phone, text);
+    if (!wasFood) {
+      // Fall back to smart response
+      await handleSmartResponse(supabase, user, phone, text);
+    }
+  } catch (error) {
+    console.error("[TextHandler] Erro:", error);
+    await handleSmartResponse(supabase, user, phone, text);
+  }
+}
+
+/**
+ * Process text message for food analysis
+ */
+async function processTextForFood(
   supabase: SupabaseClient,
   user: UserInfo,
   phone: string,

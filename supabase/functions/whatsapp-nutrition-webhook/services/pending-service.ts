@@ -108,7 +108,8 @@ export async function hasMedicalInProcessing(
  */
 export async function checkAndClearExpiredPending(
   supabase: SupabaseClient,
-  userId: string
+  userId: string,
+  phone?: string
 ): Promise<boolean> {
   const { data: expired, error } = await supabase
     .from("whatsapp_pending_nutrition")
