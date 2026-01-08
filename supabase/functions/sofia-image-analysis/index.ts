@@ -1599,25 +1599,41 @@ Ou você pode me contar o que está comendo! 😉✨`,
         : (detectedFoods as string[]).map((food) => `• ${food}`).join('\n');
     }
 
-    // 🔢 Integração determinística: calcular localmente (TACO-like) com itens detectados
-    let calcItems: Array<{ name: string; grams?: number; ml?: number; state?: string }>; 
-    const aiPortionItems = (globalThis as any).__AI_PORTION_ITEMS__ as Array<{name: string; grams?: number; ml?: number; method?: string}> | undefined;
-    if (aiPortionItems && aiPortionItems.length > 0) {
-      // Preferir itens estimados pela IA
-      let itemsForCalc: any[] = aiPortionItems.map((it) => ({
-        name: it.name,
-        grams: isLiquidName(it.name) ? undefined : it.grams,
-        ml: isLiquidName(it.name) ? it.ml : undefined,
-        state: it.method
-      }));
-      // Normalizar via Ollama (dedupe/canonizar) – não altera gramas, apenas nomes e soma duplicatas
-      itemsForCalc = await callOllamaNormalizer(itemsForCalc as any);
-      calcItems = itemsForCalc;
+    // 🔢 PRIORIZAR DADOS TACO quando disponíveis (já calculados pela IA)
+    let localDeterministic: any = null;
+    
+    if (tacoNutritionData && tacoNutritionData.total_kcal > 0) {
+      // ✅ Usar dados TACO diretamente - já calculados pela IA
+      console.log('✅ Usando dados TACO da análise IA');
+      localDeterministic = {
+        totals: {
+          kcal: tacoNutritionData.total_kcal,
+          protein: tacoNutritionData.total_protein || 0,
+          carbs: tacoNutritionData.total_carbs || 0,
+          fat: tacoNutritionData.total_fat || 0,
+          fiber: 0,
+          sodium: 0
+        },
+        grams_total: Array.isArray(detectedFoods) && detectedFoods.length > 0 && typeof detectedFoods[0] === 'object'
+          ? (detectedFoods as Array<{nome: string, quantidade: number}>).reduce((sum, f) => sum + (f.quantidade || 0), 0)
+          : 300, // estimativa padrão
+        flags: [],
+        taco_details: tacoNutritionData.taco_details || []
+      };
     } else {
-      // Sem AI items
-      if (strictMode) {
-        calcItems = [];
-      } else {
+      // Fallback: calcular localmente usando nutrition_foods
+      let calcItems: Array<{ name: string; grams?: number; ml?: number; state?: string }> = [];
+      const aiPortionItems = (globalThis as any).__AI_PORTION_ITEMS__ as Array<{name: string; grams?: number; ml?: number; method?: string}> | undefined;
+      
+      if (aiPortionItems && aiPortionItems.length > 0) {
+        calcItems = aiPortionItems.map((it) => ({
+          name: it.name,
+          grams: isLiquidName(it.name) ? undefined : it.grams,
+          ml: isLiquidName(it.name) ? it.ml : undefined,
+          state: it.method
+        }));
+        calcItems = await callOllamaNormalizer(calcItems as any);
+      } else if (!strictMode) {
         // Fallback: porções padrão (apenas quando strictMode=false)
         let itemsForCalc: any[] = (Array.isArray(detectedFoods) && detectedFoods.length > 0 && typeof detectedFoods[0] === 'object'
           ? detectedFoods as Array<{nome: string, quantidade: number}>
@@ -1631,39 +1647,37 @@ Ou você pode me contar o que está comendo! 😉✨`,
         itemsForCalc = await callOllamaNormalizer(itemsForCalc as any);
         calcItems = itemsForCalc;
       }
-    }
 
-    // Cálculo nutricional direto usando nutrition_foods
-    let localDeterministic: any = null;
-    try {
-      const itemsForLocal = (calcItems || [])
-        .filter(it => !!it.name && (Number(it.grams) || 0) > 0)
-        .map(it => ({ name: String(it.name), grams: Number(it.grams) }));
-      if (itemsForLocal.length > 0) {
-        const nutritionResult = await calculateNutritionDirect(itemsForLocal);
-        if (nutritionResult) {
-          const totalGrams = itemsForLocal.reduce((sum, item) => sum + item.grams, 0);
-          localDeterministic = {
-            totals: {
-              kcal: nutritionResult.kcal,
-              protein: nutritionResult.protein_g,
-              carbs: nutritionResult.carbs_g,
-              fat: nutritionResult.fat_g,
-              fiber: nutritionResult.fiber_g,
-              sodium: nutritionResult.sodium_mg
-            },
-            grams_total: totalGrams,
-            flags: []
-          };
+      // Cálculo nutricional direto usando nutrition_foods
+      try {
+        const itemsForLocal = (calcItems || [])
+          .filter(it => !!it.name && (Number(it.grams) || 0) > 0)
+          .map(it => ({ name: String(it.name), grams: Number(it.grams) }));
+        if (itemsForLocal.length > 0) {
+          const nutritionResult = await calculateNutritionDirect(itemsForLocal);
+          if (nutritionResult) {
+            const totalGrams = itemsForLocal.reduce((sum, item) => sum + item.grams, 0);
+            localDeterministic = {
+              totals: {
+                kcal: nutritionResult.kcal,
+                protein: nutritionResult.protein_g,
+                carbs: nutritionResult.carbs_g,
+                fat: nutritionResult.fat_g,
+                fiber: nutritionResult.fiber_g,
+                sodium: nutritionResult.sodium_mg
+              },
+              grams_total: totalGrams,
+              flags: []
+            };
+          }
         }
+      } catch (e) {
+        console.log('⚠️ Erro no cálculo nutricional:', e);
       }
-    } catch (e) {
-      console.log('⚠️ Erro no cálculo nutricional:', e);
     }
 
     let macrosBlock = '';
     if (localDeterministic && localDeterministic.grams_total > 0) {
-      // Cálculo por grama com base no peso efetivo total
       const totalGrams = Number(localDeterministic.grams_total) || 0;
       const perGram = totalGrams > 0 ? {
         kcal_pg: localDeterministic.totals.kcal / totalGrams,
@@ -1684,35 +1698,6 @@ Ou você pode me contar o que está comendo! 😉✨`,
 - Sódio: ${Number(localDeterministic.totals.sodium || 0).toFixed(0)} mg${perGramText}
 
 `;
-    } else if (strictMode) {
-      // Mensagem amigável pedindo gramas quando não há dados suficientes
-      const neededList = (Array.isArray(detectedFoods) && detectedFoods.length > 0 && typeof detectedFoods[0] === 'object')
-        ? (detectedFoods as Array<{nome: string, quantidade: number}>).map(f => f.nome)
-        : (detectedFoods as string[]);
-      const chips = ['30g','50g','80g','100g','150g'];
-      const ask = `Não consegui estimar as quantidades com segurança. Pode confirmar as gramas de cada item? Ex.: ${chips.join(', ')}.`;
-      const finalStrict = `Oi ${actualUserName}! 😊\n\n📸 Itens detectados:\n${neededList.map(n=>`• ${n}`).join('\n')}\n\n${ask}`;
-
-      return new Response(JSON.stringify({
-        success: true,
-        requires_confirmation: true,
-        analysis_id: null,
-        sofia_analysis: {
-          analysis: finalStrict,
-          personality: 'amigavel',
-          foods_detected: detectedFoods,
-          confirmation_required: true
-        },
-        food_detection: {
-          foods_detected: detectedFoods,
-          is_food: true,
-          confidence: confidence,
-          estimated_calories: 0,
-          nutrition_totals: null,
-          meal_type: userContext?.currentMeal || 'refeicao'
-        },
-        alimentos_identificados: neededList
-      }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
     // ✅ USAR DADOS DA TACO DIRETAMENTE
