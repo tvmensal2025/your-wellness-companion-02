@@ -167,6 +167,63 @@ const TOOLS = [
       },
     },
   },
+  // 🔥 NOVAS FERRAMENTAS PARA HISTÓRICO ALIMENTAR
+  {
+    type: "function",
+    function: {
+      name: "get_food_history",
+      description: "Busca histórico de refeições do usuário. Use para saber o que o usuário comeu hoje, ontem ou em uma data específica.",
+      parameters: {
+        type: "object",
+        properties: {
+          date: { 
+            type: "string", 
+            description: "Data no formato YYYY-MM-DD, ou 'hoje', 'ontem', 'semana'" 
+          },
+          meal_type: { 
+            type: "string", 
+            description: "Tipo de refeição: cafe_da_manha, almoco, jantar, lanche_manha, lanche_tarde, ceia (opcional)" 
+          },
+        },
+        required: [],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "get_daily_nutrition_summary",
+      description: "Resume a nutrição do dia: total de calorias, proteínas, carboidratos, gorduras. Use quando perguntar sobre o dia alimentar.",
+      parameters: {
+        type: "object",
+        properties: {
+          date: { 
+            type: "string", 
+            description: "Data no formato YYYY-MM-DD (opcional, padrão: hoje)" 
+          },
+        },
+        required: [],
+      },
+    },
+  },
+  {
+    type: "function",
+    function: {
+      name: "register_meal_from_description",
+      description: "Registra uma refeição a partir de descrição textual. Use quando o usuário descrever o que comeu.",
+      parameters: {
+        type: "object",
+        properties: {
+          description: { type: "string", description: "Descrição do que comeu" },
+          meal_type: { 
+            type: "string", 
+            description: "Tipo de refeição: cafe_da_manha, almoco, jantar, lanche_manha, lanche_tarde, ceia" 
+          },
+        },
+        required: ["description"],
+      },
+    },
+  },
 ];
 
 // ============ EXECUÇÃO DE TOOLS ============
@@ -178,7 +235,6 @@ async function executeTool(userId: string, toolName: string, args: any): Promise
 
   switch (toolName) {
     case "register_weight": {
-      // Upsert no tracking diário
       const { error } = await supabase
         .from("advanced_daily_tracking")
         .upsert({
@@ -194,7 +250,6 @@ async function executeTool(userId: string, toolName: string, args: any): Promise
         return `Erro ao registrar peso: ${error.message}`;
       }
       
-      // Também atualizar dados físicos
       await supabase
         .from("dados_físicos_do_usuário")
         .upsert({
@@ -207,7 +262,6 @@ async function executeTool(userId: string, toolName: string, args: any): Promise
     }
 
     case "register_water": {
-      // Buscar registro atual e somar
       const { data: current } = await supabase
         .from("advanced_daily_tracking")
         .select("water_ml")
@@ -230,7 +284,6 @@ async function executeTool(userId: string, toolName: string, args: any): Promise
     }
 
     case "complete_challenge_log": {
-      // Buscar participação ativa
       const { data: participation } = await supabase
         .from("challenge_participations")
         .select("id, challenge_id, current_streak, points_earned")
@@ -243,7 +296,6 @@ async function executeTool(userId: string, toolName: string, args: any): Promise
         return "Você não está participando deste desafio.";
       }
       
-      // Registrar log diário
       await supabase.from("challenge_daily_logs").insert({
         participation_id: participation.id,
         log_date: today,
@@ -253,7 +305,6 @@ async function executeTool(userId: string, toolName: string, args: any): Promise
         points_earned: 10,
       });
       
-      // Atualizar streak
       await supabase
         .from("challenge_participations")
         .update({
@@ -342,21 +393,18 @@ async function executeTool(userId: string, toolName: string, args: any): Promise
     }
 
     case "get_user_status": {
-      // Buscar perfil
       const { data: profile } = await supabase
         .from("profiles")
         .select("name, email")
         .eq("user_id", userId)
         .maybeSingle();
       
-      // Buscar dados físicos
       const { data: fisica } = await supabase
         .from("dados_físicos_do_usuário")
         .select("peso_atual_kg, altura_cm")
         .eq("user_id", userId)
         .maybeSingle();
       
-      // Buscar tracking de hoje
       const { data: tracking } = await supabase
         .from("advanced_daily_tracking")
         .select("*")
@@ -364,19 +412,26 @@ async function executeTool(userId: string, toolName: string, args: any): Promise
         .eq("tracking_date", today)
         .maybeSingle();
       
-      // Buscar metas ativas
       const { data: goals } = await supabase
         .from("nutritional_goals")
         .select("goal_type, target_calories, target_weight_kg, target_water_ml")
         .eq("user_id", userId)
         .eq("status", "active");
       
-      // Buscar desafios ativos
       const { data: challenges } = await supabase
         .from("challenge_participations")
         .select("challenge_id, current_streak, challenges(title)")
         .eq("user_id", userId)
         .eq("is_completed", false);
+
+      // Buscar calorias de hoje do food_history
+      const { data: foodHistory } = await supabase
+        .from("food_history")
+        .select("total_calories")
+        .eq("user_id", userId)
+        .eq("meal_date", today);
+
+      const caloriesConsumed = foodHistory?.reduce((sum, item) => sum + (Number(item.total_calories) || 0), 0) || 0;
       
       return JSON.stringify({
         nome: profile?.name || "Usuário",
@@ -384,7 +439,7 @@ async function executeTool(userId: string, toolName: string, args: any): Promise
         altura: fisica?.altura_cm,
         hoje: {
           agua_ml: tracking?.water_ml || 0,
-          calorias: tracking?.calories_consumed || 0,
+          calorias: caloriesConsumed,
           exercicio_min: tracking?.exercise_duration_minutes || 0,
           humor: tracking?.mood_rating,
           sono_horas: tracking?.sleep_hours,
@@ -405,7 +460,6 @@ async function executeTool(userId: string, toolName: string, args: any): Promise
         .eq("is_completed", false);
       
       if (!participations?.length) {
-        // Buscar desafios disponíveis
         const { data: available } = await supabase
           .from("challenges")
           .select("id, title, description, duration_days, xp_reward")
@@ -429,7 +483,6 @@ async function executeTool(userId: string, toolName: string, args: any): Promise
     }
 
     case "join_challenge": {
-      // Verificar se já participa
       const { data: existing } = await supabase
         .from("challenge_participations")
         .select("id")
@@ -441,7 +494,6 @@ async function executeTool(userId: string, toolName: string, args: any): Promise
         return "Você já está participando deste desafio!";
       }
       
-      // Buscar info do desafio
       const { data: challenge } = await supabase
         .from("challenges")
         .select("title, xp_reward")
@@ -452,7 +504,6 @@ async function executeTool(userId: string, toolName: string, args: any): Promise
         return "Desafio não encontrado.";
       }
       
-      // Inscrever
       await supabase.from("challenge_participations").insert({
         user_id: userId,
         challenge_id: args.challenge_id,
@@ -465,9 +516,204 @@ async function executeTool(userId: string, toolName: string, args: any): Promise
       return `Inscrito no desafio "${challenge.title}"! 🎯 XP possível: ${challenge.xp_reward}`;
     }
 
+    // 🔥 NOVAS FERRAMENTAS DE HISTÓRICO ALIMENTAR
+
+    case "get_food_history": {
+      let targetDate = today;
+      
+      if (args.date) {
+        if (args.date === 'hoje') {
+          targetDate = today;
+        } else if (args.date === 'ontem') {
+          const yesterday = new Date();
+          yesterday.setDate(yesterday.getDate() - 1);
+          targetDate = yesterday.toISOString().split('T')[0];
+        } else if (args.date === 'semana') {
+          const weekAgo = new Date();
+          weekAgo.setDate(weekAgo.getDate() - 7);
+          
+          let query = supabase
+            .from("food_history")
+            .select("*")
+            .eq("user_id", userId)
+            .gte("meal_date", weekAgo.toISOString().split('T')[0])
+            .order("meal_date", { ascending: false })
+            .order("meal_time", { ascending: false });
+          
+          const { data, error } = await query;
+          
+          if (error || !data?.length) {
+            return "Não encontrei registros de refeições na última semana.";
+          }
+
+          const summary = data.map(meal => {
+            const foods = (meal.food_items as any[]) || [];
+            const foodNames = foods.map((f: any) => f.nome || f.name).join(", ");
+            return `📅 ${meal.meal_date} ${meal.meal_time?.slice(0,5) || ""} - ${formatMealTypeSimple(meal.meal_type)}: ${foodNames} (${Math.round(Number(meal.total_calories) || 0)} kcal)`;
+          }).join("\n");
+
+          return `🗓️ Refeições da última semana:\n\n${summary}`;
+        } else {
+          targetDate = args.date;
+        }
+      }
+
+      let query = supabase
+        .from("food_history")
+        .select("*")
+        .eq("user_id", userId)
+        .eq("meal_date", targetDate)
+        .order("meal_time", { ascending: true });
+      
+      if (args.meal_type) {
+        query = query.eq("meal_type", args.meal_type);
+      }
+
+      const { data, error } = await query;
+
+      if (error || !data?.length) {
+        return `Não encontrei registros de refeições para ${targetDate === today ? 'hoje' : targetDate}.`;
+      }
+
+      const meals = data.map(meal => {
+        const foods = (meal.food_items as any[]) || [];
+        const foodsList = foods.map((f: any) => `  • ${f.nome || f.name} (${f.quantidade || f.grams || '?'}g)`).join("\n");
+        const mealLabel = formatMealTypeSimple(meal.meal_type);
+        const time = meal.meal_time?.slice(0, 5) || "";
+        const confirmed = meal.user_confirmed ? "✅" : "⏳";
+        
+        return `${confirmed} *${mealLabel}* (${time})\n${foodsList}\n📊 ${Math.round(Number(meal.total_calories) || 0)} kcal`;
+      }).join("\n\n");
+
+      const totalCalories = data.reduce((sum, m) => sum + (Number(m.total_calories) || 0), 0);
+
+      return `🍽️ Refeições de ${targetDate === today ? 'hoje' : targetDate}:\n\n${meals}\n\n📊 *Total: ${Math.round(totalCalories)} kcal*`;
+    }
+
+    case "get_daily_nutrition_summary": {
+      const targetDate = args.date || today;
+
+      const { data, error } = await supabase
+        .from("food_history")
+        .select("total_calories, total_proteins, total_carbs, total_fats, total_fiber, meal_type")
+        .eq("user_id", userId)
+        .eq("meal_date", targetDate);
+
+      if (error || !data?.length) {
+        return `Não encontrei registros nutricionais para ${targetDate === today ? 'hoje' : targetDate}.`;
+      }
+
+      const totals = {
+        calories: data.reduce((sum, m) => sum + (Number(m.total_calories) || 0), 0),
+        proteins: data.reduce((sum, m) => sum + (Number(m.total_proteins) || 0), 0),
+        carbs: data.reduce((sum, m) => sum + (Number(m.total_carbs) || 0), 0),
+        fats: data.reduce((sum, m) => sum + (Number(m.total_fats) || 0), 0),
+        fiber: data.reduce((sum, m) => sum + (Number(m.total_fiber) || 0), 0),
+        meals: data.length,
+      };
+
+      // Buscar meta de calorias
+      const { data: goals } = await supabase
+        .from("nutritional_goals")
+        .select("target_calories")
+        .eq("user_id", userId)
+        .eq("status", "active")
+        .maybeSingle();
+
+      const targetCalories = goals?.target_calories || 2000;
+      const progress = Math.round((totals.calories / targetCalories) * 100);
+
+      return JSON.stringify({
+        data: targetDate,
+        refeicoes: totals.meals,
+        calorias: Math.round(totals.calories),
+        proteinas_g: Math.round(totals.proteins),
+        carboidratos_g: Math.round(totals.carbs),
+        gorduras_g: Math.round(totals.fats),
+        fibras_g: Math.round(totals.fiber),
+        meta_calorias: targetCalories,
+        progresso_percentual: progress,
+        faltam: Math.max(0, targetCalories - totals.calories),
+      });
+    }
+
+    case "register_meal_from_description": {
+      // Chamar sofia-deterministic para extrair alimentos
+      const { data: analysis, error: analysisError } = await supabase.functions.invoke("sofia-deterministic", {
+        body: {
+          user_input: args.description,
+          user_id: userId,
+          analysis_type: "text_extraction",
+        },
+      });
+
+      if (analysisError || !analysis) {
+        return "Não consegui identificar os alimentos na descrição. Tente ser mais específico.";
+      }
+
+      const foods = analysis.detected_foods || analysis.foods || [];
+      if (foods.length === 0) {
+        return "Não encontrei alimentos na descrição. Tente algo como 'arroz, feijão e frango'.";
+      }
+
+      const totalCalories = analysis.nutrition_data?.total_kcal || analysis.total_kcal || 0;
+      const mealType = args.meal_type || detectMealType();
+
+      // Salvar em food_history
+      const { data: savedMeal, error: saveError } = await supabase
+        .from("food_history")
+        .insert({
+          user_id: userId,
+          meal_date: today,
+          meal_time: new Date().toTimeString().split(" ")[0],
+          meal_type: mealType,
+          food_items: foods,
+          total_calories: totalCalories,
+          total_proteins: analysis.nutrition_data?.total_proteina || 0,
+          total_carbs: analysis.nutrition_data?.total_carbo || 0,
+          total_fats: analysis.nutrition_data?.total_gordura || 0,
+          source: "whatsapp_ai",
+          user_confirmed: true,
+        })
+        .select("id")
+        .single();
+
+      if (saveError) {
+        return `Erro ao salvar refeição: ${saveError.message}`;
+      }
+
+      const foodsList = foods.map((f: any) => `${f.name || f.nome} (${f.grams || f.quantidade || '?'}g)`).join(", ");
+      
+      return `✅ Refeição registrada!\n\n${formatMealTypeSimple(mealType)}: ${foodsList}\n📊 ~${Math.round(totalCalories)} kcal`;
+    }
+
     default:
       return "Função não reconhecida.";
   }
+}
+
+// ============ HELPERS ============
+
+function detectMealType(): string {
+  const hour = new Date().getHours();
+  if (hour >= 5 && hour < 10) return "cafe_da_manha";
+  if (hour >= 10 && hour < 12) return "lanche_manha";
+  if (hour >= 12 && hour < 15) return "almoco";
+  if (hour >= 15 && hour < 18) return "lanche_tarde";
+  if (hour >= 18 && hour < 21) return "jantar";
+  return "ceia";
+}
+
+function formatMealTypeSimple(mealType: string | null): string {
+  const types: Record<string, string> = {
+    cafe_da_manha: "☕ Café",
+    lanche_manha: "🍎 Lanche",
+    almoco: "🍽️ Almoço",
+    lanche_tarde: "🥤 Lanche",
+    jantar: "🌙 Jantar",
+    ceia: "🌃 Ceia",
+  };
+  return types[mealType || ""] || mealType || "Refeição";
 }
 
 // ============ SISTEMA DE PROMPTS ============
@@ -489,31 +735,30 @@ Você tem DUAS personalidades que alternam conforme o contexto:
 - Tom: profissional mas acolhedor, usa emojis médicos
 - Fala: "Vamos analisar isso com cuidado", "Importante observar...", "Recomendo..."
 
-REGRAS:
+REGRAS CRÍTICAS:
 1. Responda SEMPRE em português brasileiro, de forma HUMANA e NATURAL
 2. Use a personalidade apropriada ao contexto (nutrição=Sofia, saúde=Dr.Vital)
 3. NUNCA pareça robótico - seja conversacional, use gírias leves
 4. Use emojis moderadamente para dar vida às mensagens
 5. Chame o usuário pelo nome: "${userName}"
-6. Seja PROATIVO: ofereça registrar dados quando o usuário mencionar algo relevante
+6. Seja PROATIVO: use as tools automaticamente quando detectar algo relevante
 7. ${greeting}! Adapte a saudação ao horário
+
+FERRAMENTAS IMPORTANTES - USE AUTOMATICAMENTE:
+- Quando perguntar "o que comi hoje?": use get_food_history
+- Quando mencionar peso (ex: "pesei 70kg"): use register_weight
+- Quando mencionar água: use register_water
+- Quando mencionar exercício: use register_exercise
+- Quando descrever refeição: use register_meal_from_description
+- Quando perguntar sobre nutrição do dia: use get_daily_nutrition_summary
+- Quando perguntar sobre desafios: use get_active_challenges
+- Quando quiser definir meta: use set_goal
 
 CONTEXTO DO USUÁRIO:
 ${JSON.stringify(userContext, null, 2)}
 
-AÇÕES DISPONÍVEIS (use as tools quando apropriado):
-- Registrar peso/cintura
-- Registrar água consumida
-- Registrar exercício
-- Registrar sono
-- Registrar humor
-- Definir metas
-- Ver desafios ativos
-- Completar desafios
-
-Quando o usuário mencionar algo acionável (ex: "pesei 70kg", "bebi 500ml de água", "fiz 30min de caminhada"), USE A TOOL APROPRIADA automaticamente e confirme o registro.
-
-Mantenha respostas CURTAS (2-4 linhas) a menos que precise explicar algo detalhado.`;
+Mantenha respostas CURTAS (2-4 linhas) a menos que precise explicar algo detalhado.
+Sempre confirme ações realizadas de forma positiva e motivadora.`;
 }
 
 // ============ HANDLER PRINCIPAL ============
@@ -535,7 +780,7 @@ serve(async (req) => {
 
     console.log(`[AI Assistant] Mensagem de ${userId}: ${message}`);
 
-    // Buscar dados do usuário para contexto
+    // Buscar dados do usuário
     const { data: profile } = await supabase
       .from("profiles")
       .select("name, email")
@@ -554,7 +799,7 @@ serve(async (req) => {
     // Construir mensagens para IA
     const messages = [
       { role: "system", content: buildSystemPrompt(userName, userContext) },
-      ...conversationHistory.slice(-10), // Últimas 10 mensagens
+      ...conversationHistory.slice(-10),
       { role: "user", content: message },
     ];
 
