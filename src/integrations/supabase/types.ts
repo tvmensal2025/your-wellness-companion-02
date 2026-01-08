@@ -226,14 +226,17 @@ export type Database = {
           carbs_g: number | null
           created_at: string | null
           diastolic_bp: number | null
+          energy_drop_time: string | null
           energy_level: number | null
           exercise_duration_minutes: number | null
           exercise_type: string | null
           fats_g: number | null
           focus_level: number | null
           id: string
+          light_walks_minutes: number | null
           medications_taken: string[] | null
           mood_rating: number | null
+          movement_quality: string | null
           muscle_mass_kg: number | null
           notes: string | null
           pain_level: number | null
@@ -241,6 +244,7 @@ export type Database = {
           photo_url: string | null
           protein_g: number | null
           resting_heart_rate: number | null
+          sitting_hours: number | null
           sleep_hours: number | null
           sleep_quality: number | null
           steps: number | null
@@ -266,14 +270,17 @@ export type Database = {
           carbs_g?: number | null
           created_at?: string | null
           diastolic_bp?: number | null
+          energy_drop_time?: string | null
           energy_level?: number | null
           exercise_duration_minutes?: number | null
           exercise_type?: string | null
           fats_g?: number | null
           focus_level?: number | null
           id?: string
+          light_walks_minutes?: number | null
           medications_taken?: string[] | null
           mood_rating?: number | null
+          movement_quality?: string | null
           muscle_mass_kg?: number | null
           notes?: string | null
           pain_level?: number | null
@@ -281,6 +288,7 @@ export type Database = {
           photo_url?: string | null
           protein_g?: number | null
           resting_heart_rate?: number | null
+          sitting_hours?: number | null
           sleep_hours?: number | null
           sleep_quality?: number | null
           steps?: number | null
@@ -306,14 +314,17 @@ export type Database = {
           carbs_g?: number | null
           created_at?: string | null
           diastolic_bp?: number | null
+          energy_drop_time?: string | null
           energy_level?: number | null
           exercise_duration_minutes?: number | null
           exercise_type?: string | null
           fats_g?: number | null
           focus_level?: number | null
           id?: string
+          light_walks_minutes?: number | null
           medications_taken?: string[] | null
           mood_rating?: number | null
+          movement_quality?: string | null
           muscle_mass_kg?: number | null
           notes?: string | null
           pain_level?: number | null
@@ -321,6 +332,7 @@ export type Database = {
           photo_url?: string | null
           protein_g?: number | null
           resting_heart_rate?: number | null
+          sitting_hours?: number | null
           sleep_hours?: number | null
           sleep_quality?: number | null
           steps?: number | null
@@ -951,6 +963,96 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      body_sensation_tracking: {
+        Row: {
+          associated_emotion: string | null
+          body_region: string | null
+          created_at: string | null
+          duration_minutes: number | null
+          id: string
+          intensity: number | null
+          notes: string | null
+          possible_trigger: string | null
+          sensation_type: string | null
+          tracking_date: string
+          tracking_time: string | null
+          user_id: string
+        }
+        Insert: {
+          associated_emotion?: string | null
+          body_region?: string | null
+          created_at?: string | null
+          duration_minutes?: number | null
+          id?: string
+          intensity?: number | null
+          notes?: string | null
+          possible_trigger?: string | null
+          sensation_type?: string | null
+          tracking_date?: string
+          tracking_time?: string | null
+          user_id: string
+        }
+        Update: {
+          associated_emotion?: string | null
+          body_region?: string | null
+          created_at?: string | null
+          duration_minutes?: number | null
+          id?: string
+          intensity?: number | null
+          notes?: string | null
+          possible_trigger?: string | null
+          sensation_type?: string | null
+          tracking_date?: string
+          tracking_time?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      breathing_mindfulness_tracking: {
+        Row: {
+          benefits_description: string | null
+          created_at: string | null
+          duration_minutes: number | null
+          felt_benefits: boolean | null
+          id: string
+          notes: string | null
+          post_practice_stress: number | null
+          practice_type: string | null
+          pre_practice_stress: number | null
+          tracking_date: string
+          tracking_time: string | null
+          user_id: string
+        }
+        Insert: {
+          benefits_description?: string | null
+          created_at?: string | null
+          duration_minutes?: number | null
+          felt_benefits?: boolean | null
+          id?: string
+          notes?: string | null
+          post_practice_stress?: number | null
+          practice_type?: string | null
+          pre_practice_stress?: number | null
+          tracking_date?: string
+          tracking_time?: string | null
+          user_id: string
+        }
+        Update: {
+          benefits_description?: string | null
+          created_at?: string | null
+          duration_minutes?: number | null
+          felt_benefits?: boolean | null
+          id?: string
+          notes?: string | null
+          post_practice_stress?: number | null
+          practice_type?: string | null
+          pre_practice_stress?: number | null
+          tracking_date?: string
+          tracking_time?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       carb_pool: {
         Row: {
@@ -2193,6 +2295,204 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_health_snapshot: {
+        Row: {
+          active_minutes: number | null
+          ai_insights: string | null
+          ai_recommendations: string[] | null
+          alerts: string[] | null
+          anxiety_level: number | null
+          bloating_level: number | null
+          calories_burned: number | null
+          consistency_feeling: number | null
+          created_at: string | null
+          cycle_day: number | null
+          cycle_phase: string | null
+          data_completeness: number | null
+          day_rating: number | null
+          digestion_score: number | null
+          digestive_symptoms: string[] | null
+          eating_behavior_score: number | null
+          emotional_eating_episodes: number | null
+          emotional_score: number | null
+          energy_level: number | null
+          exercise_duration: number | null
+          exercise_type: string | null
+          had_social_event: boolean | null
+          hunger_episodes: number | null
+          id: string
+          main_challenge: string | null
+          main_eating_environment: string | null
+          main_trigger: string | null
+          main_win: string | null
+          meals_logged: number | null
+          medication_adherence_percentage: number | null
+          medications_taken: string[] | null
+          menstrual_symptoms: string[] | null
+          mindfulness_minutes: number | null
+          mindfulness_practiced: boolean | null
+          mood_rating: number | null
+          movement_score: number | null
+          night_awakenings: number | null
+          nutritional_adherence: number | null
+          overall_health_score: number | null
+          pain_level: number | null
+          pain_locations: string[] | null
+          pain_reported: boolean | null
+          predominant_mood: string | null
+          sitting_hours: number | null
+          sleep_hours: number | null
+          sleep_quality: number | null
+          sleep_score: number | null
+          snapshot_date: string
+          social_support_level: number | null
+          sources_used: string[] | null
+          stress_level: number | null
+          symptoms_reported: string[] | null
+          total_calories: number | null
+          total_carbs_g: number | null
+          total_fats_g: number | null
+          total_fiber_g: number | null
+          total_protein_g: number | null
+          total_steps: number | null
+          total_water_ml: number | null
+          trend_vs_yesterday: string | null
+          updated_at: string | null
+          user_id: string
+          woke_tired: boolean | null
+        }
+        Insert: {
+          active_minutes?: number | null
+          ai_insights?: string | null
+          ai_recommendations?: string[] | null
+          alerts?: string[] | null
+          anxiety_level?: number | null
+          bloating_level?: number | null
+          calories_burned?: number | null
+          consistency_feeling?: number | null
+          created_at?: string | null
+          cycle_day?: number | null
+          cycle_phase?: string | null
+          data_completeness?: number | null
+          day_rating?: number | null
+          digestion_score?: number | null
+          digestive_symptoms?: string[] | null
+          eating_behavior_score?: number | null
+          emotional_eating_episodes?: number | null
+          emotional_score?: number | null
+          energy_level?: number | null
+          exercise_duration?: number | null
+          exercise_type?: string | null
+          had_social_event?: boolean | null
+          hunger_episodes?: number | null
+          id?: string
+          main_challenge?: string | null
+          main_eating_environment?: string | null
+          main_trigger?: string | null
+          main_win?: string | null
+          meals_logged?: number | null
+          medication_adherence_percentage?: number | null
+          medications_taken?: string[] | null
+          menstrual_symptoms?: string[] | null
+          mindfulness_minutes?: number | null
+          mindfulness_practiced?: boolean | null
+          mood_rating?: number | null
+          movement_score?: number | null
+          night_awakenings?: number | null
+          nutritional_adherence?: number | null
+          overall_health_score?: number | null
+          pain_level?: number | null
+          pain_locations?: string[] | null
+          pain_reported?: boolean | null
+          predominant_mood?: string | null
+          sitting_hours?: number | null
+          sleep_hours?: number | null
+          sleep_quality?: number | null
+          sleep_score?: number | null
+          snapshot_date: string
+          social_support_level?: number | null
+          sources_used?: string[] | null
+          stress_level?: number | null
+          symptoms_reported?: string[] | null
+          total_calories?: number | null
+          total_carbs_g?: number | null
+          total_fats_g?: number | null
+          total_fiber_g?: number | null
+          total_protein_g?: number | null
+          total_steps?: number | null
+          total_water_ml?: number | null
+          trend_vs_yesterday?: string | null
+          updated_at?: string | null
+          user_id: string
+          woke_tired?: boolean | null
+        }
+        Update: {
+          active_minutes?: number | null
+          ai_insights?: string | null
+          ai_recommendations?: string[] | null
+          alerts?: string[] | null
+          anxiety_level?: number | null
+          bloating_level?: number | null
+          calories_burned?: number | null
+          consistency_feeling?: number | null
+          created_at?: string | null
+          cycle_day?: number | null
+          cycle_phase?: string | null
+          data_completeness?: number | null
+          day_rating?: number | null
+          digestion_score?: number | null
+          digestive_symptoms?: string[] | null
+          eating_behavior_score?: number | null
+          emotional_eating_episodes?: number | null
+          emotional_score?: number | null
+          energy_level?: number | null
+          exercise_duration?: number | null
+          exercise_type?: string | null
+          had_social_event?: boolean | null
+          hunger_episodes?: number | null
+          id?: string
+          main_challenge?: string | null
+          main_eating_environment?: string | null
+          main_trigger?: string | null
+          main_win?: string | null
+          meals_logged?: number | null
+          medication_adherence_percentage?: number | null
+          medications_taken?: string[] | null
+          menstrual_symptoms?: string[] | null
+          mindfulness_minutes?: number | null
+          mindfulness_practiced?: boolean | null
+          mood_rating?: number | null
+          movement_score?: number | null
+          night_awakenings?: number | null
+          nutritional_adherence?: number | null
+          overall_health_score?: number | null
+          pain_level?: number | null
+          pain_locations?: string[] | null
+          pain_reported?: boolean | null
+          predominant_mood?: string | null
+          sitting_hours?: number | null
+          sleep_hours?: number | null
+          sleep_quality?: number | null
+          sleep_score?: number | null
+          snapshot_date?: string
+          social_support_level?: number | null
+          sources_used?: string[] | null
+          stress_level?: number | null
+          symptoms_reported?: string[] | null
+          total_calories?: number | null
+          total_carbs_g?: number | null
+          total_fats_g?: number | null
+          total_fiber_g?: number | null
+          total_protein_g?: number | null
+          total_steps?: number | null
+          total_water_ml?: number | null
+          trend_vs_yesterday?: string | null
+          updated_at?: string | null
+          user_id?: string
+          woke_tired?: boolean | null
+        }
+        Relationships: []
+      }
       daily_mission_sessions: {
         Row: {
           completed_sections: Json | null
@@ -2343,6 +2643,69 @@ export type Database = {
           section?: string | null
           text_response?: string | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      daily_self_assessment: {
+        Row: {
+          assessment_date: string
+          body_image_feeling: number | null
+          consistency_feeling: number | null
+          created_at: string | null
+          day_perception: string | null
+          day_rating: number | null
+          followed_plan: boolean | null
+          general_satisfaction: number | null
+          grateful_for: string | null
+          id: string
+          learned_today: string | null
+          main_challenge: string | null
+          main_win: string | null
+          notes: string | null
+          plan_adherence_percentage: number | null
+          tomorrow_focus: string | null
+          user_id: string
+          what_could_improve: string | null
+        }
+        Insert: {
+          assessment_date?: string
+          body_image_feeling?: number | null
+          consistency_feeling?: number | null
+          created_at?: string | null
+          day_perception?: string | null
+          day_rating?: number | null
+          followed_plan?: boolean | null
+          general_satisfaction?: number | null
+          grateful_for?: string | null
+          id?: string
+          learned_today?: string | null
+          main_challenge?: string | null
+          main_win?: string | null
+          notes?: string | null
+          plan_adherence_percentage?: number | null
+          tomorrow_focus?: string | null
+          user_id: string
+          what_could_improve?: string | null
+        }
+        Update: {
+          assessment_date?: string
+          body_image_feeling?: number | null
+          consistency_feeling?: number | null
+          created_at?: string | null
+          day_perception?: string | null
+          day_rating?: number | null
+          followed_plan?: boolean | null
+          general_satisfaction?: number | null
+          grateful_for?: string | null
+          id?: string
+          learned_today?: string | null
+          main_challenge?: string | null
+          main_win?: string | null
+          notes?: string | null
+          plan_adherence_percentage?: number | null
+          tomorrow_focus?: string | null
+          user_id?: string
+          what_could_improve?: string | null
         }
         Relationships: []
       }
@@ -2514,6 +2877,66 @@ export type Database = {
           sync_status?: string | null
           sync_type?: string | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      digestion_tracking: {
+        Row: {
+          bloating_level: number | null
+          bowel_movement_count: number | null
+          created_at: string | null
+          gas_level: number | null
+          has_constipation: boolean | null
+          has_diarrhea: boolean | null
+          has_nausea: boolean | null
+          has_reflux: boolean | null
+          has_stomach_pain: boolean | null
+          id: string
+          notes: string | null
+          related_food: string | null
+          stool_consistency: string | null
+          time_after_meal: number | null
+          tracking_date: string
+          tracking_time: string | null
+          user_id: string
+        }
+        Insert: {
+          bloating_level?: number | null
+          bowel_movement_count?: number | null
+          created_at?: string | null
+          gas_level?: number | null
+          has_constipation?: boolean | null
+          has_diarrhea?: boolean | null
+          has_nausea?: boolean | null
+          has_reflux?: boolean | null
+          has_stomach_pain?: boolean | null
+          id?: string
+          notes?: string | null
+          related_food?: string | null
+          stool_consistency?: string | null
+          time_after_meal?: number | null
+          tracking_date?: string
+          tracking_time?: string | null
+          user_id: string
+        }
+        Update: {
+          bloating_level?: number | null
+          bowel_movement_count?: number | null
+          created_at?: string | null
+          gas_level?: number | null
+          has_constipation?: boolean | null
+          has_diarrhea?: boolean | null
+          has_nausea?: boolean | null
+          has_reflux?: boolean | null
+          has_stomach_pain?: boolean | null
+          id?: string
+          notes?: string | null
+          related_food?: string | null
+          stool_consistency?: string | null
+          time_after_meal?: number | null
+          tracking_date?: string
+          tracking_time?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -3462,6 +3885,54 @@ export type Database = {
         }
         Relationships: []
       }
+      food_craving_tracking: {
+        Row: {
+          alternative_chosen: string | null
+          craving_intensity: number | null
+          craving_type: string | null
+          created_at: string | null
+          emotional_state: string | null
+          id: string
+          notes: string | null
+          satisfied_craving: boolean | null
+          specific_food: string | null
+          tracking_date: string
+          tracking_time: string | null
+          trigger_identified: string | null
+          user_id: string
+        }
+        Insert: {
+          alternative_chosen?: string | null
+          craving_intensity?: number | null
+          craving_type?: string | null
+          created_at?: string | null
+          emotional_state?: string | null
+          id?: string
+          notes?: string | null
+          satisfied_craving?: boolean | null
+          specific_food?: string | null
+          tracking_date?: string
+          tracking_time?: string | null
+          trigger_identified?: string | null
+          user_id: string
+        }
+        Update: {
+          alternative_chosen?: string | null
+          craving_intensity?: number | null
+          craving_type?: string | null
+          created_at?: string | null
+          emotional_state?: string | null
+          id?: string
+          notes?: string | null
+          satisfied_craving?: boolean | null
+          specific_food?: string | null
+          tracking_date?: string
+          tracking_time?: string | null
+          trigger_identified?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       food_densities: {
         Row: {
           density_g_ml: number | null
@@ -4227,6 +4698,51 @@ export type Database = {
         }
         Relationships: []
       }
+      gratitude_journal: {
+        Row: {
+          created_at: string | null
+          grateful_item_1: string | null
+          grateful_item_2: string | null
+          grateful_item_3: string | null
+          highlight_of_day: string | null
+          id: string
+          journal_date: string
+          learned_today: string | null
+          notes: string | null
+          person_to_thank: string | null
+          positive_affirmation: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          grateful_item_1?: string | null
+          grateful_item_2?: string | null
+          grateful_item_3?: string | null
+          highlight_of_day?: string | null
+          id?: string
+          journal_date?: string
+          learned_today?: string | null
+          notes?: string | null
+          person_to_thank?: string | null
+          positive_affirmation?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          grateful_item_1?: string | null
+          grateful_item_2?: string | null
+          grateful_item_3?: string | null
+          highlight_of_day?: string | null
+          id?: string
+          journal_date?: string
+          learned_today?: string | null
+          notes?: string | null
+          person_to_thank?: string | null
+          positive_affirmation?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       health_alerts: {
         Row: {
           acknowledged_at: string | null
@@ -4884,6 +5400,105 @@ export type Database = {
         }
         Relationships: []
       }
+      hunger_behavior_tracking: {
+        Row: {
+          ate_impulsively: boolean | null
+          ate_in_secret: boolean | null
+          created_at: string | null
+          critical_time: string | null
+          felt_guilt: boolean | null
+          hunger_intensity: number | null
+          hunger_type: string | null
+          id: string
+          location: string | null
+          notes: string | null
+          stopped_when_satisfied: boolean | null
+          tracking_date: string
+          tracking_time: string | null
+          trigger_category: string | null
+          trigger_perceived: string | null
+          user_id: string
+          with_whom: string | null
+        }
+        Insert: {
+          ate_impulsively?: boolean | null
+          ate_in_secret?: boolean | null
+          created_at?: string | null
+          critical_time?: string | null
+          felt_guilt?: boolean | null
+          hunger_intensity?: number | null
+          hunger_type?: string | null
+          id?: string
+          location?: string | null
+          notes?: string | null
+          stopped_when_satisfied?: boolean | null
+          tracking_date?: string
+          tracking_time?: string | null
+          trigger_category?: string | null
+          trigger_perceived?: string | null
+          user_id: string
+          with_whom?: string | null
+        }
+        Update: {
+          ate_impulsively?: boolean | null
+          ate_in_secret?: boolean | null
+          created_at?: string | null
+          critical_time?: string | null
+          felt_guilt?: boolean | null
+          hunger_intensity?: number | null
+          hunger_type?: string | null
+          id?: string
+          location?: string | null
+          notes?: string | null
+          stopped_when_satisfied?: boolean | null
+          tracking_date?: string
+          tracking_time?: string | null
+          trigger_category?: string | null
+          trigger_perceived?: string | null
+          user_id?: string
+          with_whom?: string | null
+        }
+        Relationships: []
+      }
+      hydration_details_tracking: {
+        Row: {
+          amount_ml: number | null
+          caffeine_content: boolean | null
+          created_at: string | null
+          drink_type: string | null
+          id: string
+          notes: string | null
+          sugar_content: boolean | null
+          tracking_date: string
+          tracking_time: string | null
+          user_id: string
+        }
+        Insert: {
+          amount_ml?: number | null
+          caffeine_content?: boolean | null
+          created_at?: string | null
+          drink_type?: string | null
+          id?: string
+          notes?: string | null
+          sugar_content?: boolean | null
+          tracking_date?: string
+          tracking_time?: string | null
+          user_id: string
+        }
+        Update: {
+          amount_ml?: number | null
+          caffeine_content?: boolean | null
+          created_at?: string | null
+          drink_type?: string | null
+          id?: string
+          notes?: string | null
+          sugar_content?: boolean | null
+          tracking_date?: string
+          tracking_time?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       image_cache: {
         Row: {
           access_count: number | null
@@ -5525,6 +6140,51 @@ export type Database = {
         }
         Relationships: []
       }
+      medication_adherence_tracking: {
+        Row: {
+          created_at: string | null
+          id: string
+          medication_name: string
+          missed_reason: string | null
+          notes: string | null
+          prescribed_dose: string | null
+          side_effects_observed: string[] | null
+          taken_dose: string | null
+          tracking_date: string
+          tracking_time: string | null
+          user_id: string
+          was_taken: boolean | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          medication_name: string
+          missed_reason?: string | null
+          notes?: string | null
+          prescribed_dose?: string | null
+          side_effects_observed?: string[] | null
+          taken_dose?: string | null
+          tracking_date?: string
+          tracking_time?: string | null
+          user_id: string
+          was_taken?: boolean | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          medication_name?: string
+          missed_reason?: string | null
+          notes?: string | null
+          prescribed_dose?: string | null
+          side_effects_observed?: string[] | null
+          taken_dose?: string | null
+          tracking_date?: string
+          tracking_time?: string | null
+          user_id?: string
+          was_taken?: boolean | null
+        }
+        Relationships: []
+      }
       medidas_de_peso: {
         Row: {
           agua_corporal_percentual: number | null
@@ -5696,6 +6356,78 @@ export type Database = {
         }
         Relationships: []
       }
+      menstrual_cycle_tracking: {
+        Row: {
+          cramps_intensity: number | null
+          craving_type: string | null
+          created_at: string | null
+          cycle_day: number | null
+          cycle_phase: string | null
+          flow_intensity: string | null
+          has_bloating: boolean | null
+          has_breast_tenderness: boolean | null
+          has_cramps: boolean | null
+          has_fatigue: boolean | null
+          has_food_cravings: boolean | null
+          has_headache: boolean | null
+          has_mood_swings: boolean | null
+          id: string
+          impact_on_appetite: string | null
+          impact_on_energy: string | null
+          impact_on_mood: string | null
+          is_period_day: boolean | null
+          notes: string | null
+          tracking_date: string
+          user_id: string
+        }
+        Insert: {
+          cramps_intensity?: number | null
+          craving_type?: string | null
+          created_at?: string | null
+          cycle_day?: number | null
+          cycle_phase?: string | null
+          flow_intensity?: string | null
+          has_bloating?: boolean | null
+          has_breast_tenderness?: boolean | null
+          has_cramps?: boolean | null
+          has_fatigue?: boolean | null
+          has_food_cravings?: boolean | null
+          has_headache?: boolean | null
+          has_mood_swings?: boolean | null
+          id?: string
+          impact_on_appetite?: string | null
+          impact_on_energy?: string | null
+          impact_on_mood?: string | null
+          is_period_day?: boolean | null
+          notes?: string | null
+          tracking_date?: string
+          user_id: string
+        }
+        Update: {
+          cramps_intensity?: number | null
+          craving_type?: string | null
+          created_at?: string | null
+          cycle_day?: number | null
+          cycle_phase?: string | null
+          flow_intensity?: string | null
+          has_bloating?: boolean | null
+          has_breast_tenderness?: boolean | null
+          has_cramps?: boolean | null
+          has_fatigue?: boolean | null
+          has_food_cravings?: boolean | null
+          has_headache?: boolean | null
+          has_mood_swings?: boolean | null
+          id?: string
+          impact_on_appetite?: string | null
+          impact_on_energy?: string | null
+          impact_on_mood?: string | null
+          is_period_day?: boolean | null
+          notes?: string | null
+          tracking_date?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       missions: {
         Row: {
           category: string | null
@@ -5815,37 +6547,52 @@ export type Database = {
       }
       mood_monitoring: {
         Row: {
+          anxiety_level: number | null
           context: string | null
           created_at: string | null
           date: string | null
+          emotion_intensity: number | null
           id: string
           mood_rating: number | null
           mood_tags: string[] | null
+          motivation_level: number | null
           notes: string | null
+          predominant_emotion: string | null
+          self_esteem_today: number | null
           time: string | null
           triggers: string[] | null
           user_id: string | null
         }
         Insert: {
+          anxiety_level?: number | null
           context?: string | null
           created_at?: string | null
           date?: string | null
+          emotion_intensity?: number | null
           id?: string
           mood_rating?: number | null
           mood_tags?: string[] | null
+          motivation_level?: number | null
           notes?: string | null
+          predominant_emotion?: string | null
+          self_esteem_today?: number | null
           time?: string | null
           triggers?: string[] | null
           user_id?: string | null
         }
         Update: {
+          anxiety_level?: number | null
           context?: string | null
           created_at?: string | null
           date?: string | null
+          emotion_intensity?: number | null
           id?: string
           mood_rating?: number | null
           mood_tags?: string[] | null
+          motivation_level?: number | null
           notes?: string | null
+          predominant_emotion?: string | null
+          self_esteem_today?: number | null
           time?: string | null
           triggers?: string[] | null
           user_id?: string | null
@@ -6744,6 +7491,54 @@ export type Database = {
           risk_factors?: Json | null
           risk_score?: number | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      productivity_tracking: {
+        Row: {
+          created_at: string | null
+          energy_correlation: string | null
+          focus_rating: number | null
+          id: string
+          main_distractions: string[] | null
+          notes: string | null
+          peak_productivity_time: string | null
+          procrastination_episodes: number | null
+          productivity_rating: number | null
+          tasks_completed: number | null
+          tasks_planned: number | null
+          tracking_date: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          energy_correlation?: string | null
+          focus_rating?: number | null
+          id?: string
+          main_distractions?: string[] | null
+          notes?: string | null
+          peak_productivity_time?: string | null
+          procrastination_episodes?: number | null
+          productivity_rating?: number | null
+          tasks_completed?: number | null
+          tasks_planned?: number | null
+          tracking_date?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          energy_correlation?: string | null
+          focus_rating?: number | null
+          id?: string
+          main_distractions?: string[] | null
+          notes?: string | null
+          peak_productivity_time?: string | null
+          procrastination_episodes?: number | null
+          productivity_rating?: number | null
+          tasks_completed?: number | null
+          tasks_planned?: number | null
+          tracking_date?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -7762,32 +8557,56 @@ export type Database = {
         Row: {
           created_at: string | null
           deep_sleep_hours: number | null
+          had_nightmares: boolean | null
           id: string
+          nap_duration_minutes: number | null
+          nap_during_day: boolean | null
+          night_awakenings: number | null
           notes: string | null
           sleep_date: string | null
           sleep_duration_hours: number | null
           sleep_quality_rating: number | null
+          time_to_fall_asleep_minutes: number | null
+          used_sleep_medication: boolean | null
           user_id: string | null
+          woke_tired: boolean | null
+          woke_up_naturally: boolean | null
         }
         Insert: {
           created_at?: string | null
           deep_sleep_hours?: number | null
+          had_nightmares?: boolean | null
           id?: string
+          nap_duration_minutes?: number | null
+          nap_during_day?: boolean | null
+          night_awakenings?: number | null
           notes?: string | null
           sleep_date?: string | null
           sleep_duration_hours?: number | null
           sleep_quality_rating?: number | null
+          time_to_fall_asleep_minutes?: number | null
+          used_sleep_medication?: boolean | null
           user_id?: string | null
+          woke_tired?: boolean | null
+          woke_up_naturally?: boolean | null
         }
         Update: {
           created_at?: string | null
           deep_sleep_hours?: number | null
+          had_nightmares?: boolean | null
           id?: string
+          nap_duration_minutes?: number | null
+          nap_during_day?: boolean | null
+          night_awakenings?: number | null
           notes?: string | null
           sleep_date?: string | null
           sleep_duration_hours?: number | null
           sleep_quality_rating?: number | null
+          time_to_fall_asleep_minutes?: number | null
+          used_sleep_medication?: boolean | null
           user_id?: string | null
+          woke_tired?: boolean | null
+          woke_up_naturally?: boolean | null
         }
         Relationships: []
       }
@@ -7832,6 +8651,69 @@ export type Database = {
           title?: string
           trigger_conditions?: Json | null
           type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      social_context_tracking: {
+        Row: {
+          ate_with_company: boolean | null
+          company_type: string | null
+          created_at: string | null
+          event_impact: string | null
+          event_impacted_eating: boolean | null
+          event_type: string | null
+          felt_diet_pressure: boolean | null
+          felt_food_pressure: boolean | null
+          felt_lonely: boolean | null
+          had_meaningful_connection: boolean | null
+          had_social_event: boolean | null
+          id: string
+          main_eating_environment: string | null
+          notes: string | null
+          received_body_comments: boolean | null
+          social_support_level: number | null
+          tracking_date: string
+          user_id: string
+        }
+        Insert: {
+          ate_with_company?: boolean | null
+          company_type?: string | null
+          created_at?: string | null
+          event_impact?: string | null
+          event_impacted_eating?: boolean | null
+          event_type?: string | null
+          felt_diet_pressure?: boolean | null
+          felt_food_pressure?: boolean | null
+          felt_lonely?: boolean | null
+          had_meaningful_connection?: boolean | null
+          had_social_event?: boolean | null
+          id?: string
+          main_eating_environment?: string | null
+          notes?: string | null
+          received_body_comments?: boolean | null
+          social_support_level?: number | null
+          tracking_date?: string
+          user_id: string
+        }
+        Update: {
+          ate_with_company?: boolean | null
+          company_type?: string | null
+          created_at?: string | null
+          event_impact?: string | null
+          event_impacted_eating?: boolean | null
+          event_type?: string | null
+          felt_diet_pressure?: boolean | null
+          felt_food_pressure?: boolean | null
+          felt_lonely?: boolean | null
+          had_meaningful_connection?: boolean | null
+          had_social_event?: boolean | null
+          id?: string
+          main_eating_environment?: string | null
+          notes?: string | null
+          received_body_comments?: boolean | null
+          social_support_level?: number | null
+          tracking_date?: string
           user_id?: string
         }
         Relationships: []
@@ -9203,6 +10085,60 @@ export type Database = {
           recipe_name?: string
           servings?: number | null
           therapeutic_benefits?: string[] | null
+        }
+        Relationships: []
+      }
+      trigger_incident_tracking: {
+        Row: {
+          coping_strategy_used: string | null
+          created_at: string | null
+          food_involved: string | null
+          id: string
+          lesson_learned: string | null
+          notes: string | null
+          outcome_rating: number | null
+          reaction_type: string | null
+          strategy_worked: boolean | null
+          tracking_date: string
+          tracking_time: string | null
+          trigger_description: string | null
+          trigger_intensity: number | null
+          trigger_type: string | null
+          user_id: string
+        }
+        Insert: {
+          coping_strategy_used?: string | null
+          created_at?: string | null
+          food_involved?: string | null
+          id?: string
+          lesson_learned?: string | null
+          notes?: string | null
+          outcome_rating?: number | null
+          reaction_type?: string | null
+          strategy_worked?: boolean | null
+          tracking_date?: string
+          tracking_time?: string | null
+          trigger_description?: string | null
+          trigger_intensity?: number | null
+          trigger_type?: string | null
+          user_id: string
+        }
+        Update: {
+          coping_strategy_used?: string | null
+          created_at?: string | null
+          food_involved?: string | null
+          id?: string
+          lesson_learned?: string | null
+          notes?: string | null
+          outcome_rating?: number | null
+          reaction_type?: string | null
+          strategy_worked?: boolean | null
+          tracking_date?: string
+          tracking_time?: string | null
+          trigger_description?: string | null
+          trigger_intensity?: number | null
+          trigger_type?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -11716,6 +12652,10 @@ export type Database = {
         Returns: boolean
       }
       calculate_level: { Args: { xp: number }; Returns: number }
+      consolidate_daily_health_snapshot: {
+        Args: { p_date?: string; p_user_id: string }
+        Returns: string
+      }
       has_role: { Args: { _role: string; _user_id: string }; Returns: boolean }
       has_role_text: {
         Args: { _role: string; _user_id: string }
