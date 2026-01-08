@@ -14,7 +14,7 @@ const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY")!;
 const AI_GATEWAY_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
 const AI_MODEL = "google/gemini-2.5-flash";
 
-// ============ CONTEXTO COMPACTO DO PACIENTE ============
+// ============ CONTEXTO EXPANDIDO DO PACIENTE ============
 
 interface PatientContext {
   nome: string;
@@ -43,14 +43,23 @@ interface PatientContext {
   maior_desafio: string | null;
   objetivo_principal: string | null;
   completude_dados: number;
+  // Novos campos expandidos
+  refeicoes_recentes: Array<{tipo: string, descricao: string, calorias: number, hora: string}>;
+  ciclo_menstrual: {fase: string | null, dia: number | null, sintomas: string[]} | null;
+  humor_7dias: {media: number | null, tendencia: string, pior_dia: string | null};
+  metas_macros: {calorias: number, proteina: number, carbs: number, gordura: number, agua: number} | null;
+  exercicios_7dias: {total_min: number, sessoes: number, tipo_principal: string | null};
+  exames_recentes: Array<{nome: string, valor: string, status: string, data: string}>;
+  proximas_consultas: Array<{tipo: string, data: string}>;
 }
 
 async function getPatientContext(supabase: any, userId: string): Promise<PatientContext> {
   const today = new Date().toISOString().split('T')[0];
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  const sevenDaysAgoStr = sevenDaysAgo.toISOString().split('T')[0];
   
-  // Buscar dados em paralelo
+  // Buscar dados em paralelo - expandido
   const [
     profileRes, 
     weightsRes, 
@@ -58,7 +67,13 @@ async function getPatientContext(supabase: any, userId: string): Promise<Patient
     anamnesisRes, 
     symptomsRes, 
     foodRes,
-    nutritionRes
+    nutritionRes,
+    recentMealsRes,
+    menstrualRes,
+    moodHistoryRes,
+    nutritionalGoalsRes,
+    exerciseHistoryRes,
+    examsRes
   ] = await Promise.all([
     supabase.from("profiles").select("full_name, age, gender, current_weight").eq("user_id", userId).maybeSingle(),
     supabase.from("weight_measurements").select("peso_kg, imc, gordura_corporal_percent, measurement_date").eq("user_id", userId).order("measurement_date", { ascending: false }).limit(5),
@@ -66,7 +81,14 @@ async function getPatientContext(supabase: any, userId: string): Promise<Patient
     supabase.from("user_anamnesis").select("*").eq("user_id", userId).maybeSingle(),
     supabase.from("advanced_daily_tracking").select("pain_location, pain_level, symptoms, tracking_date").eq("user_id", userId).not("pain_location", "is", null).order("tracking_date", { ascending: false }).limit(10),
     supabase.from("food_history").select("total_calories").eq("user_id", userId).eq("meal_date", today),
-    supabase.from("food_history").select("total_calories, meal_date").eq("user_id", userId).gte("meal_date", sevenDaysAgo.toISOString().split('T')[0]),
+    supabase.from("food_history").select("total_calories, meal_date").eq("user_id", userId).gte("meal_date", sevenDaysAgoStr),
+    // Novas queries
+    supabase.from("food_history").select("meal_type, food_items, total_calories, meal_time, meal_date").eq("user_id", userId).order("meal_date", { ascending: false }).order("meal_time", { ascending: false }).limit(5),
+    supabase.from("menstrual_cycle_tracking").select("cycle_phase, cycle_day, has_cramps, has_headache, has_mood_swings, has_fatigue, tracking_date").eq("user_id", userId).order("tracking_date", { ascending: false }).limit(1),
+    supabase.from("mood_monitoring").select("mood_level, mood_date").eq("user_id", userId).gte("mood_date", sevenDaysAgoStr).order("mood_date", { ascending: false }),
+    supabase.from("nutritional_goals").select("target_calories, target_protein_g, target_carbs_g, target_fats_g, target_water_ml").eq("user_id", userId).eq("status", "active").limit(1),
+    supabase.from("advanced_daily_tracking").select("exercise_type, exercise_duration_minutes, tracking_date").eq("user_id", userId).gte("tracking_date", sevenDaysAgoStr).not("exercise_duration_minutes", "is", null),
+    supabase.from("medical_exams").select("exam_name, result_value, result_unit, status, exam_date").eq("user_id", userId).order("exam_date", { ascending: false }).limit(10),
   ]);
 
   const profile = profileRes.data;
@@ -76,6 +98,12 @@ async function getPatientContext(supabase: any, userId: string): Promise<Patient
   const symptoms = symptomsRes.data || [];
   const foods = foodRes.data || [];
   const nutrition7d = nutritionRes.data || [];
+  const recentMeals = recentMealsRes.data || [];
+  const menstrual = menstrualRes.data?.[0];
+  const moodHistory = moodHistoryRes.data || [];
+  const nutritionalGoals = nutritionalGoalsRes.data?.[0];
+  const exerciseHistory = exerciseHistoryRes.data || [];
+  const exams = examsRes.data || [];
 
   const peso_atual = weights[0]?.peso_kg || profile?.current_weight || null;
   const peso_anterior = weights[1]?.peso_kg || null;
@@ -107,15 +135,91 @@ async function getPatientContext(supabase: any, userId: string): Promise<Patient
   if (anamnesis?.family_thyroid_problems_history) historico_familiar.push('tireoide');
   if (anamnesis?.family_depression_anxiety_history) historico_familiar.push('depressão/ansiedade');
 
+  // Processar refeições recentes
+  const refeicoes_recentes = recentMeals.slice(0, 5).map((meal: any) => {
+    const items = meal.food_items || [];
+    const nomes = items.map((f: any) => f.nome || f.name || 'item').slice(0, 3).join(', ');
+    return {
+      tipo: formatMealType(meal.meal_type),
+      descricao: nomes || 'não especificado',
+      calorias: Math.round(Number(meal.total_calories) || 0),
+      hora: meal.meal_time?.slice(0, 5) || '?',
+    };
+  });
+
+  // Processar ciclo menstrual
+  let ciclo_menstrual = null;
+  if (menstrual && profile?.gender?.toLowerCase() !== 'masculino' && profile?.gender?.toLowerCase() !== 'male') {
+    const sintomas: string[] = [];
+    if (menstrual.has_cramps) sintomas.push('cólicas');
+    if (menstrual.has_headache) sintomas.push('dor de cabeça');
+    if (menstrual.has_mood_swings) sintomas.push('oscilação de humor');
+    if (menstrual.has_fatigue) sintomas.push('fadiga');
+    ciclo_menstrual = {
+      fase: menstrual.cycle_phase,
+      dia: menstrual.cycle_day,
+      sintomas,
+    };
+  }
+
+  // Processar histórico de humor
+  const moodValues = moodHistory.map((m: any) => m.mood_level).filter(Boolean);
+  const humor_7dias = {
+    media: moodValues.length > 0 ? Math.round(moodValues.reduce((a: number, b: number) => a + b, 0) / moodValues.length * 10) / 10 : null,
+    tendencia: moodValues.length >= 2 
+      ? (moodValues[0] > moodValues[moodValues.length - 1] ? 'melhorando' : moodValues[0] < moodValues[moodValues.length - 1] ? 'piorando' : 'estável')
+      : 'indeterminado',
+    pior_dia: moodHistory.length > 0 
+      ? moodHistory.reduce((min: any, m: any) => (!min || (m.mood_level && m.mood_level < min.mood_level) ? m : min), null)?.mood_date 
+      : null,
+  };
+
+  // Processar metas de macros
+  const metas_macros = nutritionalGoals ? {
+    calorias: nutritionalGoals.target_calories || 2000,
+    proteina: nutritionalGoals.target_protein_g || 100,
+    carbs: nutritionalGoals.target_carbs_g || 250,
+    gordura: nutritionalGoals.target_fats_g || 65,
+    agua: nutritionalGoals.target_water_ml || 2000,
+  } : null;
+
+  // Processar histórico de exercícios
+  const totalExerciseMin = exerciseHistory.reduce((sum: number, e: any) => sum + (Number(e.exercise_duration_minutes) || 0), 0);
+  const exerciseTypes = exerciseHistory.map((e: any) => e.exercise_type).filter(Boolean);
+  const tipoPrincipal = exerciseTypes.length > 0 
+    ? exerciseTypes.sort((a: string, b: string) => 
+        exerciseTypes.filter((v: string) => v === a).length - exerciseTypes.filter((v: string) => v === b).length
+      ).pop() 
+    : null;
+  
+  const exercicios_7dias = {
+    total_min: totalExerciseMin,
+    sessoes: exerciseHistory.length,
+    tipo_principal: tipoPrincipal,
+  };
+
+  // Processar exames recentes
+  const exames_recentes = exams.slice(0, 6).map((exam: any) => ({
+    nome: exam.exam_name,
+    valor: `${exam.result_value || '?'} ${exam.result_unit || ''}`.trim(),
+    status: exam.status || 'normal',
+    data: exam.exam_date,
+  }));
+
   // Calcular completude
   let completude = 0;
   if (profile?.full_name) completude += 10;
-  if (peso_atual) completude += 15;
-  if (anamnesis) completude += 25;
-  if (weights.length > 0) completude += 15;
-  if (nutrition7d.length > 0) completude += 15;
+  if (peso_atual) completude += 10;
+  if (anamnesis) completude += 20;
+  if (weights.length > 0) completude += 10;
+  if (nutrition7d.length > 0) completude += 10;
   if (tracking) completude += 10;
-  if (symptoms.length > 0) completude += 10;
+  if (symptoms.length > 0) completude += 5;
+  if (recentMeals.length > 0) completude += 5;
+  if (moodHistory.length > 0) completude += 5;
+  if (nutritionalGoals) completude += 5;
+  if (exerciseHistory.length > 0) completude += 5;
+  if (exams.length > 0) completude += 5;
 
   return {
     nome: profile?.full_name?.split(' ')[0] || "Paciente",
@@ -143,8 +247,28 @@ async function getPatientContext(supabase: any, userId: string): Promise<Patient
     historico_familiar,
     maior_desafio: anamnesis?.biggest_weight_loss_challenge || null,
     objetivo_principal: anamnesis?.main_treatment_goals || null,
-    completude_dados: completude,
+    completude_dados: Math.min(completude, 100),
+    // Novos campos
+    refeicoes_recentes,
+    ciclo_menstrual,
+    humor_7dias,
+    metas_macros,
+    exercicios_7dias,
+    exames_recentes,
+    proximas_consultas: [], // Pode ser expandido no futuro
   };
+}
+
+function formatMealType(mealType: string | null): string {
+  const types: Record<string, string> = {
+    cafe_da_manha: "Café",
+    lanche_manha: "Lanche",
+    almoco: "Almoço",
+    lanche_tarde: "Lanche",
+    jantar: "Jantar",
+    ceia: "Ceia",
+  };
+  return types[mealType || ""] || mealType || "Refeição";
 }
 
 // ============ MEMÓRIA DE CONVERSA ============
@@ -174,6 +298,34 @@ async function saveMessage(supabase: any, userId: string, role: string, content:
 // ============ SYSTEM PROMPT OTIMIZADO ============
 
 function buildDrVitalPrompt(ctx: PatientContext): string {
+  // Construir seção de refeições
+  let refeicoesTxt = '';
+  if (ctx.refeicoes_recentes.length > 0) {
+    refeicoesTxt = ctx.refeicoes_recentes
+      .map(r => `  - ${r.tipo} (${r.hora}): ${r.descricao} ~${r.calorias}kcal`)
+      .join('\n');
+  }
+
+  // Construir seção de exames
+  let examesTxt = '';
+  if (ctx.exames_recentes.length > 0) {
+    examesTxt = ctx.exames_recentes
+      .map(e => `  - ${e.nome}: ${e.valor} ${e.status !== 'normal' ? '⚠️' : '✓'}`)
+      .join('\n');
+  }
+
+  // Calcular progresso de metas do dia
+  let metasProgress = '';
+  if (ctx.metas_macros) {
+    const calPct = Math.round((ctx.calorias_hoje / ctx.metas_macros.calorias) * 100);
+    const aguaPct = Math.round((ctx.agua_hoje / ctx.metas_macros.agua) * 100);
+    metasProgress = `
+PROGRESSO DO DIA:
+- Calorias: ${ctx.calorias_hoje}/${ctx.metas_macros.calorias}kcal (${calPct}%)
+- Água: ${ctx.agua_hoje}/${ctx.metas_macros.agua}ml (${aguaPct}%)
+- Meta proteína: ${ctx.metas_macros.proteina}g | Carbs: ${ctx.metas_macros.carbs}g | Gordura: ${ctx.metas_macros.gordura}g`;
+  }
+
   return `Você é o Dr. Vital, médico virtual do Instituto dos Sonhos.
 
 PERSONALIDADE:
@@ -181,30 +333,50 @@ PERSONALIDADE:
 - Respostas OBJETIVAS e práticas (3-5 linhas máximo)
 - Usa termos simples, não jargão médico excessivo
 - NUNCA diz "vou verificar" - você JÁ TEM os dados
+- Identifique PADRÕES entre os dados (ex: humor baixo quando dorme pouco)
 - Sempre recomenda consultar profissional quando necessário
 
-DADOS DO PACIENTE (USE ESTES DADOS DIRETAMENTE):
-- Nome: ${ctx.nome}
-${ctx.idade ? `- Idade: ${ctx.idade} anos` : ''}
-${ctx.genero ? `- Gênero: ${ctx.genero}` : ''}
+═══════════════════════════════════════
+PACIENTE: ${ctx.nome}${ctx.idade ? ` (${ctx.idade} anos)` : ''}${ctx.genero ? `, ${ctx.genero}` : ''}
+═══════════════════════════════════════
+
+COMPOSIÇÃO CORPORAL:
 - Peso atual: ${ctx.peso_atual ? ctx.peso_atual + 'kg' : 'não registrado'}
-${ctx.peso_perdido ? `- Já perdeu: ${ctx.peso_perdido}kg` : ''}
+${ctx.peso_perdido ? `- Já perdeu: ${ctx.peso_perdido}kg ↓` : ''}
 ${ctx.meta_peso ? `- Meta: ${ctx.meta_peso}kg` : ''}
 ${ctx.imc ? `- IMC: ${ctx.imc.toFixed(1)}` : ''}
 ${ctx.gordura_corporal ? `- Gordura corporal: ${ctx.gordura_corporal}%` : ''}
-- Tendência de peso: ${ctx.tendencia_peso}
+- Tendência: ${ctx.tendencia_peso}
+${metasProgress}
 
-DADOS DO DIA:
+HOJE:
 - Água: ${ctx.agua_hoje}ml
-- Calorias: ${ctx.calorias_hoje}kcal
-${ctx.calorias_media_7d ? `- Média 7 dias: ${ctx.calorias_media_7d}kcal` : ''}
 - Exercício: ${ctx.exercicio_hoje}min
 ${ctx.sono_horas ? `- Sono: ${ctx.sono_horas}h (qualidade: ${ctx.sono_qualidade || '?'}/10)` : ''}
 ${ctx.estresse_nivel ? `- Estresse: ${ctx.estresse_nivel}/10` : ''}
 ${ctx.energia_nivel ? `- Energia: ${ctx.energia_nivel}/10` : ''}
 ${ctx.humor_nivel ? `- Humor: ${ctx.humor_nivel}/10` : ''}
 
-HISTÓRICO DE SAÚDE:
+${ctx.refeicoes_recentes.length > 0 ? `ÚLTIMAS REFEIÇÕES:
+${refeicoesTxt}` : ''}
+
+${ctx.ciclo_menstrual ? `CICLO MENSTRUAL:
+- Fase: ${ctx.ciclo_menstrual.fase || 'não informada'}
+- Dia do ciclo: ${ctx.ciclo_menstrual.dia || '?'}
+${ctx.ciclo_menstrual.sintomas.length > 0 ? `- Sintomas: ${ctx.ciclo_menstrual.sintomas.join(', ')}` : ''}` : ''}
+
+HUMOR (7 dias):
+- Média: ${ctx.humor_7dias.media || '?'}/10
+- Tendência: ${ctx.humor_7dias.tendencia}
+
+EXERCÍCIOS (7 dias):
+- Total: ${ctx.exercicios_7dias.sessoes} treinos, ${ctx.exercicios_7dias.total_min}min
+${ctx.exercicios_7dias.tipo_principal ? `- Tipo principal: ${ctx.exercicios_7dias.tipo_principal}` : ''}
+
+${ctx.exames_recentes.length > 0 ? `EXAMES RECENTES:
+${examesTxt}` : ''}
+
+SAÚDE:
 ${ctx.sintomas_recentes.length > 0 ? `- Sintomas recentes: ${ctx.sintomas_recentes.join(', ')}` : '- Sem sintomas recentes registrados'}
 ${ctx.medicamentos.length > 0 ? `- Medicamentos: ${ctx.medicamentos.join(', ')}` : ''}
 ${ctx.doencas_cronicas.length > 0 ? `- Doenças crônicas: ${ctx.doencas_cronicas.join(', ')}` : ''}
@@ -214,15 +386,17 @@ ${ctx.maior_desafio ? `- Maior desafio: ${ctx.maior_desafio}` : ''}
 ${ctx.objetivo_principal ? `- Objetivo: ${ctx.objetivo_principal}` : ''}
 
 COMPLETUDE DOS DADOS: ${ctx.completude_dados}%
-${ctx.completude_dados < 60 ? '⚠️ DADOS INSUFICIENTES para análise completa. Oriente a preencher mais dados.' : ''}
+${ctx.completude_dados < 50 ? '⚠️ DADOS INSUFICIENTES para análise completa. Oriente a preencher mais dados.' : ''}
 
+═══════════════════════════════════════
 REGRAS:
 1. Responda SEMPRE baseado nos dados acima
-2. Identifique padrões e faça conexões entre os dados
-3. Dê recomendações práticas e seguras
-4. Se faltar dado importante, pergunte
-5. Assine sempre: _Dr. Vital 🩺_
-6. Use o nome "${ctx.nome}" frequentemente
+2. Identifique PADRÕES e faça conexões entre os dados
+3. Se encontrar exames alterados (⚠️), comente proativamente
+4. Dê recomendações práticas e seguras
+5. Se faltar dado importante, pergunte
+6. Assine sempre: _Dr. Vital 🩺_
+7. Use o nome "${ctx.nome}" frequentemente
 
 IMPORTANTE: Responda em português brasileiro, tom profissional mas acessível.`;
 }

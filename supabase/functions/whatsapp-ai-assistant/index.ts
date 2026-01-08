@@ -380,7 +380,7 @@ function formatMealType(mealType: string | null): string {
   return types[mealType || ""] || mealType || "Refeição";
 }
 
-// ============ CONTEXTO COMPACTO ============
+// ============ CONTEXTO EXPANDIDO ============
 
 interface CompactContext {
   nome: string;
@@ -396,19 +396,43 @@ interface CompactContext {
   medicamentos: string[];
   alergias: string[];
   maior_desafio: string | null;
+  // Campos expandidos
+  refeicoes_recentes: Array<{tipo: string, descricao: string, calorias: number}>;
+  metas_macros: {calorias: number, proteina: number, agua: number} | null;
+  exercicios_semana: {total_min: number, sessoes: number};
+  humor_semana: {media: number | null, tendencia: string};
 }
 
 async function getCompactUserContext(userId: string): Promise<CompactContext> {
   const today = new Date().toISOString().split('T')[0];
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  const sevenDaysAgoStr = sevenDaysAgo.toISOString().split('T')[0];
   
-  // Buscar dados em paralelo
-  const [profileRes, weightRes, trackingRes, anamnesisRes, symptomsRes, foodRes] = await Promise.all([
+  // Buscar dados em paralelo - expandido
+  const [
+    profileRes, 
+    weightRes, 
+    trackingRes, 
+    anamnesisRes, 
+    symptomsRes, 
+    foodRes,
+    recentMealsRes,
+    nutritionalGoalsRes,
+    exerciseHistoryRes,
+    moodHistoryRes
+  ] = await Promise.all([
     supabase.from("profiles").select("full_name, current_weight").eq("user_id", userId).maybeSingle(),
     supabase.from("weight_measurements").select("peso_kg").eq("user_id", userId).order("measurement_date", { ascending: false }).limit(2),
     supabase.from("advanced_daily_tracking").select("*").eq("user_id", userId).eq("tracking_date", today).maybeSingle(),
     supabase.from("user_anamnesis").select("ideal_weight_goal, biggest_weight_loss_challenge, current_medications, allergies").eq("user_id", userId).maybeSingle(),
     supabase.from("advanced_daily_tracking").select("pain_location, symptoms").eq("user_id", userId).not("pain_location", "is", null).order("tracking_date", { ascending: false }).limit(5),
     supabase.from("food_history").select("total_calories").eq("user_id", userId).eq("meal_date", today),
+    // Novas queries
+    supabase.from("food_history").select("meal_type, food_items, total_calories").eq("user_id", userId).order("meal_date", { ascending: false }).order("meal_time", { ascending: false }).limit(3),
+    supabase.from("nutritional_goals").select("target_calories, target_protein_g, target_water_ml").eq("user_id", userId).eq("status", "active").limit(1),
+    supabase.from("advanced_daily_tracking").select("exercise_duration_minutes").eq("user_id", userId).gte("tracking_date", sevenDaysAgoStr).not("exercise_duration_minutes", "is", null),
+    supabase.from("mood_monitoring").select("mood_level").eq("user_id", userId).gte("mood_date", sevenDaysAgoStr),
   ]);
 
   const profile = profileRes.data;
@@ -417,12 +441,50 @@ async function getCompactUserContext(userId: string): Promise<CompactContext> {
   const anamnesis = anamnesisRes.data;
   const symptoms = symptomsRes.data || [];
   const foods = foodRes.data || [];
+  const recentMeals = recentMealsRes.data || [];
+  const nutritionalGoals = nutritionalGoalsRes.data?.[0];
+  const exerciseHistory = exerciseHistoryRes.data || [];
+  const moodHistory = moodHistoryRes.data || [];
 
   const peso_atual = weights[0]?.peso_kg || profile?.current_weight || null;
   const peso_anterior = weights[1]?.peso_kg || null;
   const peso_perdido = peso_atual && peso_anterior && peso_anterior > peso_atual 
     ? Number((peso_anterior - peso_atual).toFixed(1)) 
     : null;
+
+  // Processar refeições recentes
+  const refeicoes_recentes = recentMeals.slice(0, 3).map((meal: any) => {
+    const items = meal.food_items || [];
+    const nomes = items.map((f: any) => f.nome || f.name || 'item').slice(0, 2).join(', ');
+    return {
+      tipo: formatMealType(meal.meal_type),
+      descricao: nomes || 'não especificado',
+      calorias: Math.round(Number(meal.total_calories) || 0),
+    };
+  });
+
+  // Metas de macros
+  const metas_macros = nutritionalGoals ? {
+    calorias: nutritionalGoals.target_calories || 2000,
+    proteina: nutritionalGoals.target_protein_g || 100,
+    agua: nutritionalGoals.target_water_ml || 2000,
+  } : null;
+
+  // Exercícios da semana
+  const totalExerciseMin = exerciseHistory.reduce((sum: number, e: any) => sum + (Number(e.exercise_duration_minutes) || 0), 0);
+  const exercicios_semana = {
+    total_min: totalExerciseMin,
+    sessoes: exerciseHistory.length,
+  };
+
+  // Humor da semana
+  const moodValues = moodHistory.map((m: any) => m.mood_level).filter(Boolean);
+  const humor_semana = {
+    media: moodValues.length > 0 ? Math.round(moodValues.reduce((a: number, b: number) => a + b, 0) / moodValues.length * 10) / 10 : null,
+    tendencia: moodValues.length >= 2 
+      ? (moodValues[0] > moodValues[moodValues.length - 1] ? 'melhorando' : 'piorando')
+      : 'estável',
+  };
 
   return {
     nome: profile?.full_name?.split(' ')[0] || "Usuário",
@@ -438,6 +500,11 @@ async function getCompactUserContext(userId: string): Promise<CompactContext> {
     medicamentos: (anamnesis?.current_medications || []).map((m: any) => m.name || m).slice(0, 5),
     alergias: (anamnesis?.allergies || []).slice(0, 5),
     maior_desafio: anamnesis?.biggest_weight_loss_challenge || null,
+    // Novos campos
+    refeicoes_recentes,
+    metas_macros,
+    exercicios_semana,
+    humor_semana,
   };
 }
 
@@ -465,11 +532,30 @@ async function saveMessage(userId: string, sessionId: string, role: string, cont
   });
 }
 
-// ============ SYSTEM PROMPT OTIMIZADO ============
+// ============ SYSTEM PROMPT EXPANDIDO ============
 
 function buildSystemPrompt(ctx: CompactContext): string {
   const hora = new Date().getHours();
   const saudacao = hora < 12 ? "Bom dia" : hora < 18 ? "Boa tarde" : "Boa noite";
+
+  // Construir seção de refeições
+  let refeicoesTxt = '';
+  if (ctx.refeicoes_recentes.length > 0) {
+    refeicoesTxt = ctx.refeicoes_recentes
+      .map(r => `  - ${r.tipo}: ${r.descricao} (~${r.calorias}kcal)`)
+      .join('\n');
+  }
+
+  // Calcular progresso de metas
+  let metasProgress = '';
+  if (ctx.metas_macros) {
+    const calPct = Math.round((ctx.calorias_hoje / ctx.metas_macros.calorias) * 100);
+    const aguaPct = Math.round((ctx.agua_hoje / ctx.metas_macros.agua) * 100);
+    metasProgress = `
+PROGRESSO HOJE:
+- Calorias: ${ctx.calorias_hoje}/${ctx.metas_macros.calorias}kcal (${calPct}%)
+- Água: ${ctx.agua_hoje}/${ctx.metas_macros.agua}ml (${aguaPct}%)`;
+  }
 
   return `Você é a Sofia, nutricionista virtual do Instituto dos Sonhos.
 
@@ -479,22 +565,39 @@ PERSONALIDADE:
 - Usa emojis com moderação 💚
 - Fala direto, sem enrolação
 - NUNCA diz "vou verificar" - você JÁ TEM os dados
+- Identifique PADRÕES nos dados do usuário
 
-DADOS DO USUÁRIO (USE ESTES DADOS DIRETAMENTE):
-- Nome: ${ctx.nome}
-- Peso atual: ${ctx.peso_atual ? ctx.peso_atual + 'kg' : 'não registrado'}
+═══════════════════════════════════════
+USUÁRIO: ${ctx.nome}
+═══════════════════════════════════════
+
+PESO:
+- Atual: ${ctx.peso_atual ? ctx.peso_atual + 'kg' : 'não registrado'}
 ${ctx.peso_perdido ? `- Já perdeu: ${ctx.peso_perdido}kg 💪` : ''}
 ${ctx.meta_peso ? `- Meta: ${ctx.meta_peso}kg` : ''}
-- Água hoje: ${ctx.agua_hoje}ml
-- Calorias hoje: ${ctx.calorias_hoje}kcal
-- Exercício hoje: ${ctx.exercicio_hoje}min
+${metasProgress}
+
+HOJE:
+- Água: ${ctx.agua_hoje}ml
+- Calorias: ${ctx.calorias_hoje}kcal
+- Exercício: ${ctx.exercicio_hoje}min
 ${ctx.humor_hoje ? `- Humor: ${ctx.humor_hoje}/10` : ''}
 ${ctx.sono_ontem ? `- Sono: ${ctx.sono_ontem}h` : ''}
-${ctx.sintomas_recentes.length > 0 ? `- Sintomas recentes: ${ctx.sintomas_recentes.join(', ')}` : ''}
+
+${ctx.refeicoes_recentes.length > 0 ? `ÚLTIMAS REFEIÇÕES:
+${refeicoesTxt}` : ''}
+
+SEMANA:
+- Exercícios: ${ctx.exercicios_semana.sessoes} treinos, ${ctx.exercicios_semana.total_min}min
+- Humor médio: ${ctx.humor_semana.media || '?'}/10 (${ctx.humor_semana.tendencia})
+
+SAÚDE:
+${ctx.sintomas_recentes.length > 0 ? `- Sintomas: ${ctx.sintomas_recentes.join(', ')}` : ''}
 ${ctx.medicamentos.length > 0 ? `- Medicamentos: ${ctx.medicamentos.join(', ')}` : ''}
 ${ctx.alergias.length > 0 ? `- Alergias: ${ctx.alergias.join(', ')}` : ''}
 ${ctx.maior_desafio ? `- Maior desafio: ${ctx.maior_desafio}` : ''}
 
+═══════════════════════════════════════
 REGRAS:
 1. Responda SEMPRE com base nos dados acima
 2. Se não tiver dado, diga claramente e pergunte
