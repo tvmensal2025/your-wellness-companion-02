@@ -11405,6 +11405,7 @@ export type Database = {
       }
       whatsapp_pending_medical: {
         Row: {
+          confirmed: boolean | null
           created_at: string | null
           doctor_name: string | null
           exam_date: string | null
@@ -11413,13 +11414,18 @@ export type Database = {
           id: string
           image_base64: string | null
           image_url: string | null
+          image_urls: Json
+          images_count: number
+          last_image_at: string | null
           medical_document_id: string | null
           phone: string
           public_link_token: string | null
           status: string | null
           user_id: string | null
+          waiting_confirmation: boolean
         }
         Insert: {
+          confirmed?: boolean | null
           created_at?: string | null
           doctor_name?: string | null
           exam_date?: string | null
@@ -11428,13 +11434,18 @@ export type Database = {
           id?: string
           image_base64?: string | null
           image_url?: string | null
+          image_urls?: Json
+          images_count?: number
+          last_image_at?: string | null
           medical_document_id?: string | null
           phone: string
           public_link_token?: string | null
           status?: string | null
           user_id?: string | null
+          waiting_confirmation?: boolean
         }
         Update: {
+          confirmed?: boolean | null
           created_at?: string | null
           doctor_name?: string | null
           exam_date?: string | null
@@ -11443,11 +11454,15 @@ export type Database = {
           id?: string
           image_base64?: string | null
           image_url?: string | null
+          image_urls?: Json
+          images_count?: number
+          last_image_at?: string | null
           medical_document_id?: string | null
           phone?: string
           public_link_token?: string | null
           status?: string | null
           user_id?: string | null
+          waiting_confirmation?: boolean
         }
         Relationships: []
       }
