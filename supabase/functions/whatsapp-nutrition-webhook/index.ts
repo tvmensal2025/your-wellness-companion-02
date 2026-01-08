@@ -37,13 +37,27 @@ serve(async (req) => {
       return new Response(JSON.stringify({ ok: true }), { headers: corsHeaders });
     }
 
-    // Extrair dados da mensagem
-    const remoteJid = webhook.data?.key?.remoteJid || "";
-    const phone = remoteJid.replace("@s.whatsapp.net", "").replace("@g.us", "");
+    // Extrair dados da mensagem (em alguns modos o WhatsApp usa JID "@lid"; nesse caso usamos remoteJidAlt)
+    const key = webhook.data?.key || {};
+    const jid = key.remoteJidAlt || key.remoteJid || "";
+
+    // Ignorar grupos
+    if (jid.includes("@g.us")) {
+      console.log("[WhatsApp Nutrition] Mensagem de grupo ignorada:", jid);
+      return new Response(JSON.stringify({ ok: true }), { headers: corsHeaders });
+    }
+
+    const phone = String(jid)
+      .replace("@s.whatsapp.net", "")
+      .replace("@lid", "")
+      .replace(/\D/g, "");
+
     const message = webhook.data?.message || {};
     const pushName = webhook.data?.pushName || "Usuário";
+    const instanceName = String(webhook.instance || EVOLUTION_INSTANCE || "");
 
     console.log(`[WhatsApp Nutrition] Mensagem de ${phone} (${pushName})`);
+    console.log(`[WhatsApp Nutrition] Instância: ${instanceName || "(vazia)"}`);
 
     // Encontrar usuário pelo telefone
     const user = await findUserByPhone(phone);
