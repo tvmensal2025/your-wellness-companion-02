@@ -50,7 +50,7 @@ const pickModel = () => ({
 });
 
 const SYSTEM_PT = `
-Você é o Dr. Vital (IA) do MaxNutrition. Fale em português do Brasil,
+Você é o Dr. Vital (IA) da MaxNutrition. Fale em português do Brasil,
 linguagem simples e respeitosa, SEM diagnóstico ou prescrição.
 Explique cada bloco de exames para leigos. Mantenha estrutura sênior:
 após cada tabela, inclua "O que isso significa?", "Dr. Vital sugere (em casa)" e
@@ -245,7 +245,7 @@ function renderHTML(input: VisitData, r: ReportJSON) {
   return `<!doctype html>
 <html lang="pt-BR"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Relatório Clínico — Instituto dos Sonhos</title>
+<title>Relatório Clínico — MaxNutrition</title>
 <style>
 :root{ --brand:#5A3DF0; --accent:#FF7A18; --ink:#1E2233; --muted:#5E6A81; --bg:#F6F7FC; --card:#FFFFFF; --line:#E7EAF3; --ok:#167C3B; --warn:#B26A00; --bad:#B11C1C;}
 *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;font-size:16px;line-height:1.65}
@@ -271,7 +271,7 @@ th{color:var(--muted)} .green{color:var(--ok)} .amber{color:var(--warn)} .red{co
 <div class="page">
   <button class="btn-print" onclick="window.print()">Imprimir / Salvar PDF</button>
   <div class="header">
-    <img src="${input.logoUrl}" alt="Instituto dos Sonhos">
+    <img src="${input.logoUrl}" alt="MaxNutrition">
     <div><h1>Relatório Clínico — linguagem simples</h1><div class="sub">Gerado por Sof.ia & Dr. Vital • ${now}</div></div>
   </div>
   ${kpi}

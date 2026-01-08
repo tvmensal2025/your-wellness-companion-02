@@ -219,7 +219,7 @@ export const SofiaWeeklyCard: React.FC<SofiaWeeklyCardProps> = ({
             </div>
           </div>
           <div className="text-right">
-            <p className="text-xs text-green-400/70 font-medium">Instituto dos Sonhos</p>
+            <p className="text-xs text-green-400/70 font-medium">MaxNutrition</p>
             <p className="text-xs text-gray-500">Alimentação consciente 🌱</p>
           </div>
         </div>

@@ -6,7 +6,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const SOFIA_ASSINATURA = "Com carinho,\nSofia 💚\n_Instituto dos Sonhos_";
+const SOFIA_ASSINATURA = "Com carinho,\nSofia 💚\n_MaxNutrition_";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {

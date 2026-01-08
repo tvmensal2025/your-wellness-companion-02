@@ -453,7 +453,7 @@ const DrVitalAnalysis: React.FC = () => {
                 <Button size="sm" variant="secondary" onClick={handlePrint} className="bg-white/90 text-indigo-700 hover:bg-white shadow-lg">
                   📄 Imprimir
                 </Button>
-                <img src="http://45.67.221.216:8086/logoids.png" alt="Instituto dos Sonhos" className="w-10 h-10 rounded-lg bg-white/20 p-1" />
+                <img src="/images/maxnutrition-logo.png" alt="MaxNutrition" className="w-10 h-10 rounded-lg bg-white/20 p-1" />
               </div>
             </div>
           </div>
@@ -468,7 +468,7 @@ const DrVitalAnalysis: React.FC = () => {
             
             {/* Footer com logo */}
             <div className="mt-4 flex items-center justify-center gap-2 text-xs text-slate-500 bg-white/60 rounded-lg p-3">
-              <img src="http://45.67.221.216:8086/logoids.png" alt="Instituto dos Sonhos" className="w-4 h-4" />
+              <img src="/images/maxnutrition-logo.png" alt="MaxNutrition" className="w-4 h-4" />
               <span>⚠️ Este material é educativo e não substitui consulta médica presencial.</span>
             </div>
           </div>

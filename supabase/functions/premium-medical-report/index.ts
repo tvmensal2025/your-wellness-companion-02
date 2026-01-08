@@ -173,7 +173,7 @@ function buildHTML(payload: { patient: any; sections: any[]; date: string }) {
       <div>${payload.patient?.name ?? "Paciente"} • ${payload.date}</div>
     </div><button onclick="window.print()">Imprimir / Salvar PDF</button></header>
     ${sections}
-    <footer><small>Instituto dos Sonhos • Documento educativo • ${payload.date}</small></footer>
+    <footer><small>MaxNutrition • Documento educativo • ${payload.date}</small></footer>
   </div></body></html>`;
 }
 

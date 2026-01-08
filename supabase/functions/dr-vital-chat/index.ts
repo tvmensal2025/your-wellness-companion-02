@@ -243,7 +243,7 @@ serve(async (req) => {
     };
 
     // Usar system_prompt do banco se existir, senão usar o padrão
-    const systemPrompt = aiConfig.system_prompt || `Você é o Dr. Vital, médico virtual especialista do Instituto dos Sonhos. Responda em português do Brasil,
+    const systemPrompt = aiConfig.system_prompt || `Você é o Dr. Vital, médico virtual especialista da MaxNutrition. Responda em português do Brasil,
 com linguagem simples e humana, sem diagnóstico/prescrição médica. Use TODOS OS DADOS DO PACIENTE abaixo para personalizar completamente sua resposta.
 
 📊 DADOS COMPLETOS DO PACIENTE:

@@ -9,7 +9,7 @@ const corsHeaders = {
 type ReminderType = "weighing" | "water" | "missions" | "streak_risk";
 
 // SOFIA - Voz para lembretes (carinhosa, sem cobrança)
-const SOFIA_ASSINATURA = "Com carinho,\nSofia 💚\n_Instituto dos Sonhos_";
+const SOFIA_ASSINATURA = "Com carinho,\nSofia 💚\n_MaxNutrition_";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
