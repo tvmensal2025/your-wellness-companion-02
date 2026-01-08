@@ -106,8 +106,19 @@ serve(async (req) => {
         }
       }
     } else if (pendingMedical && messageText) {
-      // 🔥 Se estiver em PROCESSING, apenas avisar que está analisando (não chamar Sofia)
-      if (pendingMedical.status === "processing") {
+      // 🔥 VERIFICAR SE EXPIROU ANTES DE BLOQUEAR
+      const isExpired = pendingMedical.expires_at && new Date(pendingMedical.expires_at) < new Date();
+      
+      if (isExpired) {
+        console.log("[WhatsApp Nutrition] ⚠️ Pendência médica expirada, limpando e continuando...");
+        await supabase
+          .from("whatsapp_pending_medical")
+          .update({ is_processed: true, status: "expired" })
+          .eq("id", pendingMedical.id);
+        
+        // Continuar processamento normal
+        await processText(user, phone, messageText);
+      } else if (pendingMedical.status === "processing") {
         console.log("[WhatsApp Nutrition] 🔄 Exame em processamento, aguardando...");
         await sendWhatsApp(phone, 
           "⏳ *Ainda estou analisando seus exames*\n\n" +
@@ -186,13 +197,17 @@ async function getPendingConfirmation(userId: string): Promise<any | null> {
 }
 
 // 🔥 BUSCAR LOTE MÉDICO ATIVO (collecting, awaiting_confirm, awaiting_info OU processing)
+// Agora também filtra por expires_at para ignorar registros expirados
 async function getPendingMedical(userId: string): Promise<any | null> {
+  const now = new Date().toISOString();
+  
   const { data, error } = await supabase
     .from("whatsapp_pending_medical")
     .select("*")
     .eq("user_id", userId)
     .eq("is_processed", false)
     .in("status", ["collecting", "awaiting_confirm", "awaiting_info", "processing"])
+    .gt("expires_at", now) // 🔥 Só retorna registros não expirados
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle();
@@ -201,14 +216,17 @@ async function getPendingMedical(userId: string): Promise<any | null> {
   return data;
 }
 
-// 🔥 VERIFICAR SE TEM LOTE MÉDICO EM PROCESSAMENTO
+// 🔥 VERIFICAR SE TEM LOTE MÉDICO EM PROCESSAMENTO (não expirado)
 async function hasMedicalInProcessing(userId: string): Promise<boolean> {
+  const now = new Date().toISOString();
+  
   const { data, error } = await supabase
     .from("whatsapp_pending_medical")
     .select("id")
     .eq("user_id", userId)
     .eq("is_processed", false)
     .eq("status", "processing")
+    .gt("expires_at", now) // 🔥 Só considera não expirados
     .limit(1)
     .maybeSingle();
 
