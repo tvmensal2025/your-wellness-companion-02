@@ -53,7 +53,7 @@ ${JSON.stringify(profile, null, 2)}
 **Dados Nutricionais (7 dias):**
 ${JSON.stringify(nutritionData?.slice(0, 20), null, 2)}
 
-Como Sofia, nutricionista especializada do Instituto dos Sonhos, forneça:
+Como Sofia, nutricionista especializada do MaxNutrition, forneça:
 
 1. **Score Nutricional** (0-100): Avaliação geral baseada nos dados
 2. **Insights Principais** (3-4 insights específicos com emojis):
@@ -115,7 +115,7 @@ Formato de resposta JSON:
         messages: [
           {
             role: 'system',
-            content: 'Você é Sofia, nutricionista especializada e empática do Instituto dos Sonhos. Forneça análises detalhadas e motivacionais em formato JSON.'
+            content: 'Você é Sofia, nutricionista especializada e empática do MaxNutrition. Forneça análises detalhadas e motivacionais em formato JSON.'
           },
           {
             role: 'user',

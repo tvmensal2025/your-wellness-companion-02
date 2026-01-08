@@ -8,7 +8,7 @@ const pickModel = () => ({
 });
 
 const SYSTEM_PT = `
-Você é o Dr. Vital, IA médica especializada do Instituto dos Sonhos. 
+Você é o Dr. Vital, IA médica especializada do MaxNutrition. 
 
 DIRETRIZES CLÍNICAS:
 - Use linguagem médica clara, objetiva e educativa
@@ -191,7 +191,7 @@ function renderHTML(input: VisitData, r: ReportJSON) {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Relatório Médico Clínico — ${input.patient.name}</title>
   <style>
-    /* Design Clínico Elegante - Instituto dos Sonhos */
+    /* Design Clínico Elegante - MaxNutrition */
     :root {
       --primary: #1E40AF;
       --primary-light: #3B82F6;

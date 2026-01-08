@@ -66,7 +66,7 @@ const Install = () => {
             </div>
             <CardTitle className="text-2xl text-emerald-600">App Instalado!</CardTitle>
             <CardDescription>
-              O Instituto dos Sonhos já está instalado no seu dispositivo.
+              O MaxNutrition já está instalado no seu dispositivo.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -98,7 +98,7 @@ const Install = () => {
             </div>
             <CardTitle className="text-2xl">Instalar App</CardTitle>
             <CardDescription>
-              Tenha acesso rápido ao Instituto dos Sonhos direto da tela inicial do seu celular!
+              Tenha acesso rápido ao MaxNutrition direto da tela inicial do seu celular!
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">

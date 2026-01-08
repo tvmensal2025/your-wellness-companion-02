@@ -80,14 +80,14 @@ async function getWelcomeTemplate(supabase: any, name: string): Promise<string> 
     // Fallback caso template não exista
     return `✨ *Olá, ${name}!* ✨
 
-Seja muito bem-vinda ao *Instituto dos Sonhos*! 💚
+Seja muito bem-vinda ao *MaxNutrition*! 💚
 
 Sou a *Sofia*, sua nutricionista virtual. Juntas, vamos construir uma *nova relação* com seu corpo e sua alimentação.
 
 💚 Estou muito feliz por você estar aqui!
 
 Com carinho, *Sofia* 💚
-_Instituto dos Sonhos_`;
+_MaxNutrition_`;
   }
 
   // Substituir placeholders

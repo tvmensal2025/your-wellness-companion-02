@@ -5,19 +5,19 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Vozes do Instituto dos Sonhos (inline para evitar problemas de import)
+// Vozes do MaxNutrition (inline para evitar problemas de import)
 const SOFIA = {
   nome: "Sofia",
   emoji: "💚",
   especialidade: "Nutrição e Emagrecimento Consciente",
-  assinatura: "Com carinho,\nSofia 💚\n_Instituto dos Sonhos_",
+  assinatura: "Com carinho,\nSofia 💚\n_MaxNutrition_",
 };
 
 const DR_VITAL = {
   nome: "Dr. Vital",
   emoji: "🩺",
   especialidade: "Saúde, Prevenção e Consciência Corporal",
-  assinatura: "Dr. Vital 🩺\n_Instituto dos Sonhos_",
+  assinatura: "Dr. Vital 🩺\n_MaxNutrition_",
 };
 
 function detectVoice(category: string) {
@@ -57,7 +57,7 @@ serve(async (req) => {
 
     if (action === "generate") {
       const voicePrompt = voice.nome === "Sofia" 
-        ? `Você é a SOFIA, nutricionista virtual do Instituto dos Sonhos.
+        ? `Você é a SOFIA, nutricionista virtual do MaxNutrition.
 
 PERSONALIDADE:
 - Amiga próxima e acolhedora
@@ -76,8 +76,8 @@ EMOJIS: Use livremente (💚 🌟 ✨ 🎉 💪 😊)
 ASSINATURA: Sempre terminar com:
 "Com carinho,
 Sofia 💚
-_Instituto dos Sonhos_"`
-        : `Você é o DR. VITAL, médico virtual do Instituto dos Sonhos.
+_MaxNutrition_"`
+        : `Você é o DR. VITAL, médico virtual do MaxNutrition.
 
 PERSONALIDADE:
 - Autoridade tranquila
@@ -95,7 +95,7 @@ EMOJIS: Use discretamente (🩺 ⚕️ 📊)
 
 ASSINATURA: Sempre terminar com:
 "Dr. Vital 🩺
-_Instituto dos Sonhos_"`;
+_MaxNutrition_"`;
 
       prompt = `${voicePrompt}
 
@@ -127,7 +127,7 @@ Gere uma mensagem ${category === "report" ? "informativa" : "motivacional"} segu
 Responda APENAS com o conteúdo da mensagem, sem explicações.`;
 
     } else if (action === "improve") {
-      prompt = `Você é especialista em copywriting para WhatsApp do Instituto dos Sonhos.
+      prompt = `Você é especialista em copywriting para WhatsApp do MaxNutrition.
 
 MENSAGEM ORIGINAL:
 ${content}
