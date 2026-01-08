@@ -690,12 +690,13 @@ async function processImage(user: { id: string }, phone: string, message: any, w
 async function processText(user: { id: string }, phone: string, text: string): Promise<void> {
   try {
     // Verificar se é uma descrição de refeição (contém palavras-chave de alimentos)
-    const foodKeywords = ["comi", "almocei", "jantei", "tomei", "bebi", "arroz", "feijão", "carne", "frango", "salada", "pão", "café", "leite"];
+    const foodKeywords = ["comi", "almocei", "jantei", "tomei", "bebi", "arroz", "feijão", "carne", "frango", "salada", "pão", "café", "leite", "ovo", "fruta", "suco", "vitamina"];
     const isFood = foodKeywords.some((k) => text.toLowerCase().includes(k));
 
     if (!isFood) {
-      // Mensagem genérica - talvez o usuário está só conversando
-      console.log("[WhatsApp Nutrition] Texto não parece ser sobre comida:", text);
+      // Usar IA inteligente para responder qualquer mensagem
+      console.log("[WhatsApp Nutrition] Usando IA inteligente para responder:", text);
+      await handleSmartResponse(user, phone, text);
       return;
     }
 
@@ -710,12 +711,15 @@ async function processText(user: { id: string }, phone: string, text: string): P
 
     if (analysisError || !analysis) {
       console.error("[WhatsApp Nutrition] Erro na análise de texto:", analysisError);
+      // Tentar resposta inteligente mesmo assim
+      await handleSmartResponse(user, phone, text);
       return;
     }
 
     const foods = analysis.detected_foods || analysis.foods || [];
     if (foods.length === 0) {
-      await sendWhatsApp(phone, "🤔 Não consegui identificar os alimentos. Pode descrever melhor ou enviar uma foto?");
+      // Pode ser uma mensagem sobre nutrição mas sem alimentos específicos
+      await handleSmartResponse(user, phone, text);
       return;
     }
 
@@ -757,6 +761,56 @@ async function processText(user: { id: string }, phone: string, text: string): P
 
   } catch (error) {
     console.error("[WhatsApp Nutrition] Erro ao processar texto:", error);
+    // Tentar resposta inteligente em caso de erro
+    try {
+      await handleSmartResponse(user, phone, text);
+    } catch {}
+  }
+}
+
+// =============== RESPOSTA INTELIGENTE COM IA ===============
+
+async function handleSmartResponse(user: { id: string }, phone: string, text: string): Promise<void> {
+  try {
+    console.log("[WhatsApp Nutrition] Chamando IA inteligente...");
+    
+    // Chamar a edge function de IA
+    const { data: aiResponse, error } = await supabase.functions.invoke("whatsapp-ai-assistant", {
+      body: {
+        userId: user.id,
+        message: text,
+        conversationHistory: [],
+      },
+    });
+
+    if (error) {
+      console.error("[WhatsApp Nutrition] Erro na IA:", error);
+      await sendWhatsApp(phone, 
+        "🤔 Hmm, não entendi muito bem. Pode reformular?\n\n" +
+        "💡 *Dica:* Envie uma foto da sua refeição ou me conte o que comeu!"
+      );
+      return;
+    }
+
+    const responseText = aiResponse?.response || "Estou aqui para ajudar! 💚";
+    
+    // Adicionar assinatura baseada na personalidade
+    const personality = aiResponse?.personality || 'sofia';
+    const signature = personality === 'drvital' 
+      ? "\n\n_Dr. Vital 🩺_"
+      : "\n\n_Sofia 🥗_";
+    
+    await sendWhatsApp(phone, responseText + signature);
+    
+    console.log("[WhatsApp Nutrition] Resposta IA enviada:", responseText.slice(0, 100));
+
+  } catch (error) {
+    console.error("[WhatsApp Nutrition] Erro na resposta inteligente:", error);
+    await sendWhatsApp(phone, 
+      "Oi! 👋 Estou aqui para ajudar com sua nutrição!\n\n" +
+      "📸 Envie uma foto da refeição\n" +
+      "✍️ Ou descreva o que comeu"
+    );
   }
 }
 
