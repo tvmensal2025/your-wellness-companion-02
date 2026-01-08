@@ -1310,6 +1310,11 @@ serve(async (req) => {
       }
     }
     
+    console.log('========================================');
+    console.log('🩺 analyze-medical-exam INICIADA');
+    console.log('📅 Timestamp:', new Date().toISOString());
+    console.log('📥 Body recebido:', JSON.stringify(requestBody).slice(0, 800));
+    console.log('📦 Campos disponíveis:', Object.keys(requestBody).join(', '));
     console.log('✅ Supabase inicializado com sucesso');
 
     // Buscar configuração de IA para análise médica
@@ -1323,6 +1328,9 @@ serve(async (req) => {
     const GOOGLE_AI_API_KEY = Deno.env.get('GOOGLE_AI_API_KEY');
     const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
 
+    console.log('🔑 OPENAI_API_KEY configurada:', !!OPENAI_API_KEY);
+    console.log('🔑 GOOGLE_AI_API_KEY configurada:', !!GOOGLE_AI_API_KEY);
+
     // Modelo GPT-4o (melhor para análise de imagens médicas)
     const config = {
       service: 'openai' as const,
@@ -1334,10 +1342,21 @@ serve(async (req) => {
 
     console.log(`🔬 Análise médica usando: ${config.service} ${config.model} (${config.max_tokens} tokens)`);
     if (config.service === 'openai' && !OPENAI_API_KEY) {
+      console.error('❌ OPENAI_API_KEY não está configurada!');
       throw new Error('OPENAI_API_KEY não configurada');
     }
 
     const { imageData, storagePath, storagePaths, images: requestImages, examType, userId, documentId: docId, tmpPaths, title, storageBucket } = requestBody;
+    
+    console.log('📋 Parâmetros extraídos:');
+    console.log('  - userId:', userId);
+    console.log('  - examType:', examType);
+    console.log('  - documentId:', docId);
+    console.log('  - title:', title);
+    console.log('  - tmpPaths:', JSON.stringify(tmpPaths));
+    console.log('  - storagePaths:', JSON.stringify(storagePaths));
+    console.log('  - storageBucket:', storageBucket);
+    
     userIdEffective = userId || null;
     let examTypeEffective: string | null = examType || null;
     
