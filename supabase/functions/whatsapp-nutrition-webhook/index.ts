@@ -242,7 +242,7 @@ async function processImage(user: { id: string }, phone: string, message: any, w
 
       const { error: uploadError } = await supabase.storage
         .from("chat-images")
-        .upload(fileName, new Blob([bytes], { type: contentType }), { contentType, upsert: true });
+        .upload(fileName, bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength), { contentType, upsert: true });
 
       if (uploadError) {
         console.error("[WhatsApp Nutrition] Erro no upload:", uploadError);
