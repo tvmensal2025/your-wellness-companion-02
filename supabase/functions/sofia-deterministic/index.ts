@@ -294,19 +294,29 @@ function generateSofiaResponse(userName: string, nutrition: NutritionCalculation
 
 async function saveFoodAnalysis(supabase: any, user_id: string, foods: DetectedFood[], nutrition: NutritionCalculation) {
   try {
+    // Salvar em sofia_food_analysis (tabela existente)
     const { error } = await supabase
-      .from('food_analysis_logs')
+      .from('sofia_food_analysis')
       .insert({
         user_id,
-        detected_foods: foods,
-        nutrition_data: nutrition,
+        foods_detected: foods,
+        analysis_result: nutrition,
+        total_calories: Math.round(nutrition.total_kcal || 0),
+        total_protein: nutrition.total_proteina || 0,
+        total_carbs: nutrition.total_carbo || 0,
+        total_fat: nutrition.total_gordura || 0,
+        total_fiber: nutrition.total_fibras || 0,
+        confirmation_status: 'confirmed',
+        confirmed_by_user: true,
         created_at: new Date().toISOString(),
       });
 
     if (error) {
-      console.error('Erro ao salvar food_analysis_logs:', error);
+      console.error('Erro ao salvar sofia_food_analysis:', error);
+    } else {
+      console.log('✅ Análise salva em sofia_food_analysis');
     }
   } catch (error) {
-    console.error('Erro inesperado ao salvar food_analysis_logs:', error);
+    console.error('Erro inesperado ao salvar:', error);
   }
 }

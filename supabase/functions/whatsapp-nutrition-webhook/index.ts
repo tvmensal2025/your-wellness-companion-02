@@ -74,6 +74,15 @@ serve(async (req) => {
     // Extrair texto da mensagem
     const messageText = extractText(message);
 
+    // Verificar se há análise expirada (para informar o usuário)
+    if (!pending && messageText) {
+      const hasExpired = await checkAndClearExpiredPending(user.id, phone);
+      if (hasExpired && isConfirmationPositive(messageText)) {
+        // Usuário tentou confirmar mas expirou
+        return new Response(JSON.stringify({ ok: true }), { headers: corsHeaders });
+      }
+    }
+
     if (pending?.waiting_edit && messageText) {
       // Usuário está editando a lista de alimentos
       console.log("[WhatsApp Nutrition] Processando edição:", messageText);
@@ -132,12 +141,15 @@ async function findUserByPhone(phone: string): Promise<{ id: string; email: stri
 }
 
 async function getPendingConfirmation(userId: string): Promise<any | null> {
+  const now = new Date().toISOString();
+  
   const { data, error } = await supabase
     .from("whatsapp_pending_nutrition")
     .select("*")
     .eq("user_id", userId)
     .eq("is_processed", false)
     .or("waiting_confirmation.eq.true,waiting_edit.eq.true")
+    .gt("expires_at", now) // Filtrar expirados
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle();
@@ -148,6 +160,40 @@ async function getPendingConfirmation(userId: string): Promise<any | null> {
   }
 
   return data;
+}
+
+// Verificar e limpar análises expiradas, informando o usuário
+async function checkAndClearExpiredPending(userId: string, phone: string): Promise<boolean> {
+  const { data: expired, error } = await supabase
+    .from("whatsapp_pending_nutrition")
+    .select("*")
+    .eq("user_id", userId)
+    .eq("is_processed", false)
+    .or("waiting_confirmation.eq.true,waiting_edit.eq.true")
+    .lt("expires_at", new Date().toISOString())
+    .order("created_at", { ascending: false })
+    .limit(1);
+
+  if (error || !expired || expired.length === 0) {
+    return false;
+  }
+
+  console.log("[WhatsApp Nutrition] Análise expirada encontrada, notificando usuário");
+  
+  // Limpar pendentes expirados
+  await supabase
+    .from("whatsapp_pending_nutrition")
+    .delete()
+    .eq("user_id", userId)
+    .lt("expires_at", new Date().toISOString());
+
+  // Notificar usuário
+  await sendWhatsApp(phone, 
+    "⏰ Sua análise anterior expirou.\n\n" +
+    "📸 Envie a foto novamente para registrar sua refeição!"
+  );
+
+  return true;
 }
 
 function extractText(message: any): string {
@@ -621,7 +667,7 @@ async function processImage(user: { id: string }, phone: string, message: any, w
       waiting_edit: false,
       confirmed: null,
       is_processed: false,
-      expires_at: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
+      expires_at: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(), // 2 horas
     });
 
     if (insertError) {
@@ -699,7 +745,7 @@ async function processText(user: { id: string }, phone: string, text: string): P
       waiting_edit: false,
       confirmed: null,
       is_processed: false,
-      expires_at: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
+      expires_at: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(), // 2 horas
     });
 
   } catch (error) {

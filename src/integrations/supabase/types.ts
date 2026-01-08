@@ -3399,6 +3399,30 @@ export type Database = {
         }
         Relationships: []
       }
+      food_analysis_logs: {
+        Row: {
+          created_at: string | null
+          detected_foods: Json | null
+          id: string
+          nutrition_data: Json | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          detected_foods?: Json | null
+          id?: string
+          nutrition_data?: Json | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          detected_foods?: Json | null
+          id?: string
+          nutrition_data?: Json | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       food_contraindications: {
         Row: {
           alternative_suggestions: string[] | null

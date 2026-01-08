@@ -308,6 +308,15 @@ O que você gostaria de conversar hoje? Pode me enviar uma foto da sua refeiçã
           }
         });
 
+        // Logging detalhado para debug
+        console.log('📊 Sofia Image Analysis Response:', {
+          success: analysisResult.data?.success,
+          requires_confirmation: analysisResult.data?.requires_confirmation,
+          foods_count: analysisResult.data?.food_detection?.foods_detected?.length,
+          error: analysisResult.error,
+          fullData: analysisResult.data
+        });
+
         data = analysisResult.data;
         error = analysisResult.error;
 
