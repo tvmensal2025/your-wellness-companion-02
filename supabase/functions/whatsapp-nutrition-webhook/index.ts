@@ -1220,7 +1220,151 @@ async function handleConfirmation(
     
     const lower = messageText.toLowerCase().trim();
     
-    // 🔥 Verificar opção 4 (limpar pendência) ANTES de chamar IA
+    // 🔥 RESPOSTAS DIRETAS - EXECUTAR IMEDIATAMENTE SEM CHAMAR IA
+    // Isso garante resposta instantânea quando usuário digita 1, 2, 3 ou 4
+    
+    // Opção 1: CONFIRMAR DIRETO
+    if (["1", "sim", "s", "ok", "confirmo", "confirma", "certo", "isso", "yes", "y"].includes(lower)) {
+      console.log("[WhatsApp Nutrition] ✅ Confirmação DIRETA detectada - executando imediatamente");
+      
+      const detectedFoods =
+        analysis.detectedFoods ||
+        analysis.foods ||
+        analysis.foods_detected ||
+        analysis.raw?.sofia_analysis?.foods_detected ||
+        [];
+
+      // Chamar sofia-deterministic para cálculo exato
+      const { data: deterministicResult } = await supabase.functions.invoke(
+        "sofia-deterministic",
+        {
+          body: {
+            detected_foods: detectedFoods.map((f: any) => ({
+              name: f.nome || f.name,
+              grams: f.quantidade || f.grams || 100,
+            })),
+            user_id: user.id,
+            analysis_type: "nutritional_sum",
+          },
+        }
+      );
+
+      const nutritionData = deterministicResult?.nutrition_data || {
+        total_kcal: analysis.totalCalories || 0,
+        total_proteina: 0,
+        total_carbo: 0,
+        total_gordura: 0,
+      };
+
+      // Atualizar food_history como CONFIRMADO
+      if (foodHistoryId) {
+        await updateFoodHistoryConfirmation(foodHistoryId, true, detectedFoods, nutritionData);
+      }
+
+      // Salvar em nutrition_tracking
+      const today = new Date().toISOString().split("T")[0];
+      const { data: tracking } = await supabase
+        .from("nutrition_tracking")
+        .insert({
+          user_id: user.id,
+          date: today,
+          meal_type: pending.meal_type || detectMealType(),
+          total_calories: nutritionData.total_kcal || 0,
+          total_proteins: nutritionData.total_proteina || 0,
+          total_carbs: nutritionData.total_carbo || 0,
+          total_fats: nutritionData.total_gordura || 0,
+          total_fiber: nutritionData.total_fibra || 0,
+          food_items: detectedFoods,
+          photo_url: pending.image_url,
+          notes: "Registrado via WhatsApp",
+        })
+        .select()
+        .single();
+
+      // Atualizar pendente como processado
+      await supabase
+        .from("whatsapp_pending_nutrition")
+        .update({
+          waiting_confirmation: false,
+          confirmed: true,
+          is_processed: true,
+          nutrition_tracking_id: tracking?.id,
+        })
+        .eq("id", pending.id);
+
+      const dailyTotal = await getDailyTotal(user.id);
+
+      await sendWhatsApp(phone,
+        `✅ *Refeição registrada!*\n\n` +
+        `🍽️ ${formatMealType(pending.meal_type || detectMealType())}: *${Math.round(nutritionData.total_kcal)} kcal*\n\n` +
+        `📊 Total do dia: *${Math.round(dailyTotal)} kcal*\n\n` +
+        `Continue assim! 💪\n\n` +
+        `_Sofia 🥗_`
+      );
+      return;
+    }
+    
+    // Opção 2: CANCELAR DIRETO
+    if (["2", "não", "nao", "n", "cancela", "cancelar", "nope", "no"].includes(lower)) {
+      console.log("[WhatsApp Nutrition] ❌ Cancelamento DIRETO detectado - executando imediatamente");
+      
+      if (foodHistoryId) {
+        await supabase
+          .from("food_history")
+          .update({ user_notes: "Cancelado pelo usuário" })
+          .eq("id", foodHistoryId);
+      }
+
+      await supabase
+        .from("whatsapp_pending_nutrition")
+        .update({
+          waiting_confirmation: false,
+          confirmed: false,
+          is_processed: true,
+        })
+        .eq("id", pending.id);
+
+      await sendWhatsApp(phone, 
+        `❌ *Registro cancelado!*\n\n` +
+        `📸 Envie uma nova foto quando quiser!\n\n` +
+        `_Sofia 🥗_`
+      );
+      return;
+    }
+    
+    // Opção 3: EDITAR DIRETO
+    if (["3", "editar", "edita", "corrigir", "mudar", "alterar", "edit"].includes(lower)) {
+      console.log("[WhatsApp Nutrition] ✏️ Edição DIRETA detectada - executando imediatamente");
+      
+      await supabase
+        .from("whatsapp_pending_nutrition")
+        .update({ waiting_edit: true })
+        .eq("id", pending.id);
+
+      const numberedList = pendingFoods
+        .map((f: any, i: number) => {
+          const name = f.nome || f.name || f.alimento || "(alimento)";
+          const grams = f.quantidade ?? f.grams ?? f.g ?? "?";
+          return `*${i + 1}.* ${name} (${grams}g)`;
+        })
+        .join("\n");
+
+      await sendWhatsApp(
+        phone,
+        `✏️ *Modo edição*\n\n` +
+        `Itens detectados:\n\n${numberedList}\n\n` +
+        `───────────────\n\n` +
+        `Me diga o que quer alterar:\n\n` +
+        `📝 _"Adiciona uma banana"_\n` +
+        `🗑️ _"Tira o arroz"_\n` +
+        `🔄 _"Era macarrão, não arroz"_\n\n` +
+        `Responda *PRONTO* quando terminar\n\n` +
+        `_Sofia 🥗_`
+      );
+      return;
+    }
+    
+    // Opção 4: LIMPAR/FINALIZAR DIRETO
     if (isClearPending(lower)) {
       console.log("[WhatsApp Nutrition] 🧹 Limpando pendência por solicitação do usuário");
       
@@ -1251,9 +1395,11 @@ async function handleConfirmation(
       return;
     }
     
+    // 🔥 Só chamar IA para mensagens complexas que não são respostas diretas
+    // Por exemplo: "adiciona uma banana" ou "tira o arroz"
     const intent = await interpretUserIntent(messageText, "awaiting_confirmation", pendingFoods);
     
-    console.log("[WhatsApp Nutrition] Intenção interpretada:", intent.intent);
+    console.log("[WhatsApp Nutrition] Intenção interpretada (via IA):", intent.intent);
     
     if (intent.intent === "confirm") {
       console.log("[WhatsApp Nutrition] Confirmação positiva recebida");
@@ -1711,23 +1857,53 @@ async function handleMedicalResponse(
 
     console.log(`[WhatsApp Medical] handleMedicalResponse: status=${status}, msg="${lower}", images=${imagesCount}`);
 
-    // 🔥 USUÁRIO DIGITA "PRONTO" - Perguntar se pode analisar
+    // 🔥 USUÁRIO DIGITA "PRONTO" - INICIAR ANÁLISE DIRETAMENTE (SEM PERGUNTAR)
     if (["pronto", "terminei", "finalizar", "fim", "acabou", "done"].includes(lower)) {
       if (status === "collecting") {
+        console.log("[WhatsApp Medical] ✅ PRONTO recebido - iniciando análise DIRETO (sem perguntar)");
+        
+        // Enviar mensagem de processamento imediatamente
+        await sendWhatsApp(phone,
+          `🩺 *Analisando ${imagesCount} ${imagesCount === 1 ? "imagem" : "imagens"}...*\n\n` +
+          `⏳ Isso pode levar alguns segundos.\n\n` +
+          `💡 Se quiser enviar mais fotos depois, digite *MAIS*.\n\n` +
+          `_Dr. Vital 🩺_`
+        );
+
+        // Atualizar status para processing
         await supabase
           .from("whatsapp_pending_medical")
           .update({
-            status: "awaiting_confirm",
-            waiting_confirmation: true,
+            status: "processing",
+            waiting_confirmation: false,
+            confirmed: true,
+          })
+          .eq("id", pending.id);
+
+        // Chamar análise diretamente
+        await analyzeExamBatch(user, phone, pending);
+        return;
+      }
+    }
+    
+    // 🔥 USUÁRIO QUER ADICIONAR MAIS FOTOS DEPOIS DE PRONTO
+    if (["mais", "add", "adicionar", "enviar mais", "more"].includes(lower)) {
+      if (status === "processing" || status === "awaiting_confirm") {
+        console.log("[WhatsApp Medical] 📸 Usuário quer enviar mais fotos - voltando para collecting");
+        
+        await supabase
+          .from("whatsapp_pending_medical")
+          .update({
+            status: "collecting",
+            waiting_confirmation: false,
+            confirmed: false,
           })
           .eq("id", pending.id);
 
         await sendWhatsApp(phone,
-          `✅ Recebi *${imagesCount} ${imagesCount === 1 ? "imagem" : "imagens"}* do seu exame.\n\n` +
-          `Posso analisar agora?\n\n` +
-          `*1* - ✅ SIM, pode analisar\n` +
-          `*2* - 📸 NÃO, vou enviar mais fotos\n` +
-          `*3* - ❌ CANCELAR\n\n` +
+          `📸 Ok! Continue enviando as fotos do exame.\n\n` +
+          `Você já tem *${imagesCount} ${imagesCount === 1 ? "foto" : "fotos"}*.\n\n` +
+          `Quando terminar, digite *PRONTO* novamente.\n\n` +
           `_Dr. Vital 🩺_`
         );
         return;
