@@ -237,7 +237,7 @@ const SystemicAnamnesis = () => {
             </Select>
           </div>
           <div>
-            <Label htmlFor="how_found_method">Como conheceu o Instituto dos Sonhos?</Label>
+            <Label htmlFor="how_found_method">Como conheceu o MaxNutrition?</Label>
             <Select value={formData.how_found_method || ''} onValueChange={(value) => handleInputChange('how_found_method', value)}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecione como nos conheceu" />

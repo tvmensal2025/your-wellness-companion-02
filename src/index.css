@@ -14,7 +14,7 @@
 
 @layer base {
   :root {
-    /* Instituto dos Sonhos Color Scheme - Verde Saúde */
+    /* MaxNutrition Color Scheme - Verde Saúde */
     --background: 209 40% 96%; /* Branco puro */
     --foreground: 222 47% 11%; /* Cinza escuro para texto */
 
@@ -26,7 +26,7 @@
     --popover: 214 31% 91%;
     --popover-foreground: 222 47% 11%;
 
-    /* Verde saúde como primary - Instituto dos Sonhos */
+    /* Verde saúde como primary - MaxNutrition */
     --primary: 200 98% 39%; /* Verde saúde #2E7D32 */
     --primary-foreground: 204 100% 97%;
 
@@ -52,13 +52,13 @@
     --warning: 32 95% 44%;
     --warning-foreground: 0 0% 100%;
 
-    /* Instituto cores específicas */
+    /* MaxNutrition cores específicas */
     --instituto-blue: 200 60% 50%; /* Azul instituto */
     --instituto-green: 140 60% 35%; /* Verde saúde */
     --instituto-red: 0 84% 60%; /* Vermelho suave */
     --instituto-gray: 215 16% 47%; /* Cinza neutro */
 
-    /* Cores customizadas para o Instituto dos Sonhos */
+    /* Cores customizadas para o MaxNutrition */
     --wellness-green: 140 60% 35%;
     --wellness-light: 140 45% 90%;
     --wellness-dark: 140 70% 25%;
@@ -76,13 +76,13 @@
     --health-calories: 32 95% 44%; /* Laranja energia */
     --health-hydration: 199 89% 48%; /* Azul hidratação */
 
-    /* Instituto dos Sonhos Gradients */
+    /* MaxNutrition Gradients */
     --gradient-primary: linear-gradient(135deg, hsl(140 60% 35%), hsl(200 60% 50%));
     --gradient-hero: linear-gradient(135deg, hsl(140 60% 35%) 0%, hsl(140 70% 25%) 50%, hsl(200 60% 50%) 100%);
     --gradient-card: linear-gradient(145deg, hsl(0 0% 100%) 0%, hsl(140 45% 98%) 100%);
     --gradient-accent: linear-gradient(135deg, hsl(200 60% 50%), hsl(200 60% 40%));
 
-    /* Instituto dos Sonhos Shadows */
+    /* MaxNutrition Shadows */
     --shadow-elegant: 0 10px 40px -10px hsl(140 60% 35% / 0.2);
     --shadow-glow: 0 0 40px hsl(140 60% 35% / 0.3);
     --shadow-card: 0 4px 20px -4px hsl(140 30% 50% / 0.15);

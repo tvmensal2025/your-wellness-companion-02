@@ -302,7 +302,7 @@ serve(async (req) => {
             <div class="success-icon">✅</div>
             <h1>Google Fit Conectado!</h1>
             <p>Seus dados de saúde foram sincronizados com sucesso.</p>
-            <p>Redirecionando para o Instituto dos Sonhos...</p>
+            <p>Redirecionando para o MaxNutrition...</p>
             <div class="redirecting">
               <span class="spinner"></span>
               Redirecionando em <span id="countdown">3</span> segundos...

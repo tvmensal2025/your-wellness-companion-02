@@ -233,7 +233,7 @@ export const HealthReportExport: React.FC<HealthReportExportProps> = ({
       
       pdf.setTextColor(255, 255, 255);
       pdf.setFontSize(8);
-      pdf.text('Instituto dos Sonhos - Relatório gerado automaticamente', margin, footerY);
+      pdf.text('MaxNutrition - Relatório gerado automaticamente', margin, footerY);
       pdf.text(new Date().toLocaleDateString('pt-BR', { 
         day: '2-digit', 
         month: 'long', 

@@ -130,7 +130,7 @@ export default function SofiaDataTestPanel() {
       const sofiaTest = await supabase.functions.invoke('sofia-enhanced-memory', {
         body: { 
           userId: user.id,
-          message: "Teste de acesso aos dados - me conte sobre os dados que você tem acesso sobre mim e sobre o Instituto dos Sonhos",
+          message: "Teste de acesso aos dados - me conte sobre os dados que você tem acesso sobre mim e sobre o MaxNutrition",
           type: 'test_access'
         }
       });
@@ -139,7 +139,7 @@ export default function SofiaDataTestPanel() {
       const drVitalTest = await supabase.functions.invoke('dr-vital-enhanced', {
         body: { 
           userId: user.id,
-          message: "Teste de acesso aos dados - me conte sobre os dados que você tem acesso sobre mim e sobre o Instituto dos Sonhos",
+          message: "Teste de acesso aos dados - me conte sobre os dados que você tem acesso sobre mim e sobre o MaxNutrition",
           type: 'test_access'
         }
       });
@@ -215,7 +215,7 @@ export default function SofiaDataTestPanel() {
             Teste de Dados - Sofia & Dr. Vital
           </h1>
           <p className="text-muted-foreground">
-            Verificação completa de acesso aos dados do usuário e Instituto dos Sonhos
+            Verificação completa de acesso aos dados do usuário e MaxNutrition
           </p>
         </div>
         <div className="flex gap-2">
@@ -375,7 +375,7 @@ export default function SofiaDataTestPanel() {
         <TabsContent value="company-data" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Base de Conhecimento - Instituto dos Sonhos</CardTitle>
+              <CardTitle>Base de Conhecimento - MaxNutrition</CardTitle>
             </CardHeader>
             <CardContent>
               {testResult ? (

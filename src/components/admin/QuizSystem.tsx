@@ -425,7 +425,7 @@ export const CertificatePreview = ({ courseName, studentName, score, date }: {
             <p className="font-semibold text-green-600">{score}%</p>
           </div>
           <div>
-            <p className="text-sm text-gray-600">Instituto dos Sonhos</p>
+            <p className="text-sm text-gray-600">MaxNutrition</p>
             <p className="font-semibold">Certificação Oficial</p>
           </div>
         </div>

@@ -34,7 +34,7 @@ export const DrVitalAnalysisCard: React.FC<DrVitalAnalysisCardProps> = ({
         </div>
         <div>
           <h1 className="text-xl font-bold text-white">Dr. Vital</h1>
-          <p className="text-xs text-emerald-400/80">Instituto dos Sonhos</p>
+          <p className="text-xs text-emerald-400/80">MaxNutrition</p>
         </div>
       </div>
 

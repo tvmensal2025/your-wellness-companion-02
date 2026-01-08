@@ -363,7 +363,7 @@ export const DailyMealPlanModal: React.FC<DailyMealPlanModalProps> = ({
               <div>
                 <h1 className="text-2xl font-bold text-primary">{dayTitle}</h1>
                 <p className="text-sm text-muted-foreground">
-                  Sofia Nutricional — Instituto dos Sonhos
+                  Sofia Nutricional — MaxNutrition
                 </p>
               </div>
             </div>
@@ -429,7 +429,7 @@ export const DailyMealPlanModal: React.FC<DailyMealPlanModalProps> = ({
           <div className="text-center text-sm text-muted-foreground border-t pt-6 mt-8 relative z-10">
             <div className="flex items-center justify-center gap-2 text-emerald-600">
               <img src={sofiaImage} alt="Sofia" className="w-6 h-6 rounded-full" />
-              <span className="font-semibold">Sofia Nutricional — Instituto dos Sonhos</span>
+              <span className="font-semibold">Sofia Nutricional — MaxNutrition</span>
             </div>
             <p className="mt-1">Documento educativo • Consulte sempre um nutricionista</p>
             <p className="text-xs mt-2">Gerado em {new Date().toLocaleDateString('pt-BR')}</p>

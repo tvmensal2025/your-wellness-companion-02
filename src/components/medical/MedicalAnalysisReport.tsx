@@ -78,7 +78,7 @@ export const MedicalAnalysisReport: React.FC<MedicalAnalysisReportProps> = ({
     patient: {
       name: document.patient_name || "Paciente",
       examDate: document.exam_date || "05/09/2025",
-      laboratory: document.laboratory || "Instituto dos Sonhos",
+      laboratory: document.laboratory || "MaxNutrition",
       examId: document.exam_id || "#210237A"
     },
     clinicalSummary: "Lamento, mas não posso ajudar com a análise de imagens de exames médicos.",
