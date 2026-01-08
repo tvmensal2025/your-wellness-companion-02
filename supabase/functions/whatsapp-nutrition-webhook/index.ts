@@ -23,8 +23,10 @@ serve(async (req) => {
     const webhook = await req.json();
     console.log("[WhatsApp Nutrition] Webhook recebido:", JSON.stringify(webhook).slice(0, 500));
 
-    // Ignorar eventos que não são mensagens
-    if (webhook.event !== "messages.upsert") {
+    // Ignorar eventos que não são mensagens (o provedor pode enviar formatos diferentes)
+    const event = String(webhook.event || "").toLowerCase();
+    const isUpsert = event === "messages.upsert" || event === "messages_upsert";
+    if (!isUpsert) {
       console.log("[WhatsApp Nutrition] Evento ignorado:", webhook.event);
       return new Response(JSON.stringify({ ok: true }), { headers: corsHeaders });
     }
@@ -232,72 +234,117 @@ async function getDailyTotal(userId: string): Promise<number> {
 
 async function processImage(user: { id: string }, phone: string, message: any, webhook: any): Promise<void> {
   try {
-    let imageUrl = "";
+    const contentTypeHint = message?.imageMessage?.mimetype || "image/jpeg";
 
-    // Tentar obter a imagem de diferentes formas
-    // 1. Base64 direto do webhook (se configurado)
-    if (webhook.data?.message?.base64) {
-      console.log("[WhatsApp Nutrition] Usando base64 do webhook");
-      const base64Data = webhook.data.message.base64;
-      
-      // Upload para Supabase Storage
-      const fileName = `whatsapp/${user.id}/${Date.now()}.jpg`;
-      const base64Clean = base64Data.replace(/^data:image\/\w+;base64,/, "");
-      const binaryData = Uint8Array.from(atob(base64Clean), c => c.charCodeAt(0));
-      
+    const uploadBytesToStorage = async (bytes: Uint8Array, contentType: string): Promise<string | null> => {
+      const ext = contentType.includes("png") ? "png" : contentType.includes("webp") ? "webp" : "jpg";
+      const fileName = `whatsapp/${user.id}/${Date.now()}.${ext}`;
+
       const { error: uploadError } = await supabase.storage
         .from("chat-images")
-        .upload(fileName, binaryData, { contentType: "image/jpeg", upsert: true });
+        .upload(fileName, new Blob([bytes], { type: contentType }), { contentType, upsert: true });
 
       if (uploadError) {
         console.error("[WhatsApp Nutrition] Erro no upload:", uploadError);
-        await sendWhatsApp(phone, "❌ Erro ao processar sua foto. Tente novamente!");
-        return;
+        return null;
       }
 
       const { data: urlData } = supabase.storage.from("chat-images").getPublicUrl(fileName);
-      imageUrl = urlData.publicUrl;
-    }
-    // 2. Baixar da mediaUrl usando Evolution API
-    else if (message.imageMessage?.mediaUrl) {
-      console.log("[WhatsApp Nutrition] Baixando da mediaUrl");
-      imageUrl = message.imageMessage.mediaUrl;
-    }
-    // 3. Usar getBase64FromMedia da Evolution API
-    else if (message.imageMessage?.mediaKey) {
-      console.log("[WhatsApp Nutrition] Usando getBase64FromMedia");
-      
-      const base64Response = await fetch(`${EVOLUTION_API_URL}/chat/getBase64FromMediaMessage/${EVOLUTION_INSTANCE}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          apikey: EVOLUTION_API_KEY!,
-        },
-        body: JSON.stringify({
-          message: {
-            key: webhook.data.key,
-            message: webhook.data.message,
-          },
-        }),
-      });
+      return urlData.publicUrl || null;
+    };
 
-      if (base64Response.ok) {
-        const base64Data = await base64Response.json();
-        if (base64Data.base64) {
-          // Upload para Supabase Storage
-          const fileName = `whatsapp/${user.id}/${Date.now()}.jpg`;
-          const base64Clean = base64Data.base64.replace(/^data:image\/\w+;base64,/, "");
-          const binaryData = Uint8Array.from(atob(base64Clean), c => c.charCodeAt(0));
-          
-          const { error: uploadError } = await supabase.storage
-            .from("chat-images")
-            .upload(fileName, binaryData, { contentType: "image/jpeg", upsert: true });
+    const base64ToBytes = (base64: string): Uint8Array => {
+      const clean = base64.includes(",") ? base64.split(",")[1] : base64;
+      const bin = atob(clean);
+      const bytes = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+      return bytes;
+    };
 
-          if (!uploadError) {
-            const { data: urlData } = supabase.storage.from("chat-images").getPublicUrl(fileName);
-            imageUrl = urlData.publicUrl;
+    const uploadBase64ToStorage = async (base64: string, contentType: string): Promise<string | null> => {
+      const ct = base64.startsWith("data:") ? base64.slice(5, base64.indexOf(";")) : contentType;
+      return uploadBytesToStorage(base64ToBytes(base64), ct || contentType);
+    };
+
+    const tryGetBase64FromEvolution = async (): Promise<string | null> => {
+      if (!EVOLUTION_API_URL || !EVOLUTION_API_KEY || !EVOLUTION_INSTANCE) return null;
+
+      try {
+        const base64Response = await fetch(
+          `${EVOLUTION_API_URL}/chat/getBase64FromMediaMessage/${EVOLUTION_INSTANCE}`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              apikey: EVOLUTION_API_KEY,
+            },
+            body: JSON.stringify({
+              message: {
+                key: webhook.data?.key,
+                message: webhook.data?.message,
+              },
+            }),
           }
+        );
+
+        if (!base64Response.ok) {
+          console.error("[WhatsApp Nutrition] getBase64FromMedia falhou:", await base64Response.text());
+          return null;
         }
+
+        const payload = await base64Response.json();
+        return payload?.base64 || payload?.data?.base64 || null;
+      } catch (e) {
+        console.error("[WhatsApp Nutrition] Erro no getBase64FromMedia:", e);
+        return null;
+      }
+    };
+
+    const uploadFromUrlToStorage = async (url: string, contentType: string): Promise<string | null> => {
+      try {
+        const res = await fetch(url);
+        if (!res.ok) {
+          console.error("[WhatsApp Nutrition] Falha ao baixar mídia:", res.status, await res.text());
+          return null;
+        }
+        const ct = res.headers.get("content-type") || contentType;
+        const bytes = new Uint8Array(await res.arrayBuffer());
+        return uploadBytesToStorage(bytes, ct);
+      } catch (e) {
+        console.error("[WhatsApp Nutrition] Erro ao baixar mídia:", e);
+        return null;
+      }
+    };
+
+    let imageUrl: string | null = null;
+
+    // 1) Base64 direto do webhook (o lugar varia conforme a config)
+    const directBase64 =
+      webhook?.data?.message?.imageMessage?.base64 ??
+      webhook?.data?.message?.base64 ??
+      message?.imageMessage?.base64 ??
+      message?.base64;
+
+    if (directBase64) {
+      console.log("[WhatsApp Nutrition] Base64 veio no webhook");
+      imageUrl = await uploadBase64ToStorage(directBase64, contentTypeHint);
+    }
+
+    // 2) Buscar base64 via Evolution (mais confiável que URL do WhatsApp)
+    if (!imageUrl) {
+      console.log("[WhatsApp Nutrition] Base64 não veio no webhook; tentando via Evolution...");
+      const evoBase64 = await tryGetBase64FromEvolution();
+      if (evoBase64) {
+        imageUrl = await uploadBase64ToStorage(evoBase64, contentTypeHint);
+      }
+    }
+
+    // 3) Último fallback: baixar URL e subir para o storage
+    if (!imageUrl) {
+      const mediaUrl = message?.imageMessage?.mediaUrl || message?.imageMessage?.url;
+      if (mediaUrl) {
+        console.log("[WhatsApp Nutrition] Fallback: baixando URL da mídia");
+        imageUrl = await uploadFromUrlToStorage(mediaUrl, contentTypeHint);
       }
     }
 
@@ -307,7 +354,7 @@ async function processImage(user: { id: string }, phone: string, message: any, w
       return;
     }
 
-    console.log("[WhatsApp Nutrition] URL da imagem:", imageUrl);
+    console.log("[WhatsApp Nutrition] URL pública da imagem:", imageUrl);
 
     // Chamar sofia-image-analysis
     const { data: analysis, error: analysisError } = await supabase.functions.invoke("sofia-image-analysis", {
@@ -339,7 +386,7 @@ async function processImage(user: { id: string }, phone: string, message: any, w
 
     const totalCalories = analysis.totalCalories || analysis.total_kcal || 0;
 
-    const confirmMessage = 
+    const confirmMessage =
       `🍽️ *Analisei sua refeição!*\n\n` +
       `${foodsList}\n\n` +
       `📊 *Total estimado: ~${Math.round(totalCalories)} kcal*\n\n` +
@@ -350,30 +397,31 @@ async function processImage(user: { id: string }, phone: string, message: any, w
     await sendWhatsApp(phone, confirmMessage);
 
     // Salvar análise pendente
-    const { error: insertError } = await supabase.from("whatsapp_pending_nutrition").upsert({
-      user_id: user.id,
-      phone: phone,
-      meal_type: detectMealType(),
-      image_url: imageUrl,
-      analysis_result: analysis,
-      waiting_confirmation: true,
-      confirmed: null,
-      is_processed: false,
-      expires_at: new Date(Date.now() + 30 * 60 * 1000).toISOString(), // 30 min
-    }, {
-      onConflict: "user_id",
-    });
+    const { error: insertError } = await supabase.from("whatsapp_pending_nutrition").upsert(
+      {
+        user_id: user.id,
+        phone: phone,
+        meal_type: detectMealType(),
+        image_url: imageUrl,
+        analysis_result: analysis,
+        waiting_confirmation: true,
+        confirmed: null,
+        is_processed: false,
+        expires_at: new Date(Date.now() + 30 * 60 * 1000).toISOString(), // 30 min
+      },
+      {
+        onConflict: "user_id",
+      }
+    );
 
     if (insertError) {
       console.error("[WhatsApp Nutrition] Erro ao salvar pendente:", insertError);
     }
-
   } catch (error) {
     console.error("[WhatsApp Nutrition] Erro ao processar imagem:", error);
     await sendWhatsApp(phone, "❌ Ocorreu um erro. Tente novamente!");
   }
 }
-
 // =============== PROCESSAMENTO DE TEXTO ===============
 
 async function processText(user: { id: string }, phone: string, text: string): Promise<void> {
