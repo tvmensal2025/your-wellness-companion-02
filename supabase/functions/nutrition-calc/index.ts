@@ -255,7 +255,7 @@ serve(async (req) => {
       // 6) Nutrients are per 100g
       const factor = grams / 100.0;
       const nutrients = {
-        kcal: 0, // Não usar kcal da tabela - será calculado depois
+        kcal: Number(food.kcal || 0) * factor, // Usar kcal direto da tabela (mais preciso)
         protein_g: Number(food.protein_g) * factor,
         fat_g: Number(food.fat_g) * factor,
         carbs_g: Number(food.carbs_g) * factor,
@@ -263,8 +263,10 @@ serve(async (req) => {
         sodium_mg: Number(food.sodium_mg || 0) * factor,
       };
       
-      // NOVA REGRA: Calcular kcal usando APENAS 4×P + 4×C + 9×G
-      nutrients.kcal = 4 * nutrients.protein_g + 4 * nutrients.carbs_g + 9 * nutrients.fat_g;
+      // Fallback: se kcal não existir na tabela, calcular via fórmula
+      if (!nutrients.kcal || nutrients.kcal <= 0) {
+        nutrients.kcal = 4 * nutrients.protein_g + 4 * nutrients.carbs_g + 9 * nutrients.fat_g;
+      }
 
       // 7) Oil absorption adjustment (applies when fried)
       // If item state or target_state is 'frito' and oil_absorption_factor > 0, add fat accordingly (per 100g basis)
