@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
-import { Target, TrendingUp, ChefHat, Zap, Clock, Utensils } from 'lucide-react';
+import { Target, TrendingUp, ChefHat, Zap, Clock, Utensils, Apple, Plus, Droplets, Coffee, UtensilsCrossed, Cookie, Moon } from 'lucide-react';
 import { MealPlanGeneratorModalV2 } from '@/components/nutrition-tracking/MealPlanGeneratorModalV2';
 import { useNutritionTracking } from '@/hooks/useNutritionTracking';
 
@@ -14,11 +14,138 @@ import { useMealPlanGeneratorV2 } from '@/hooks/useMealPlanGeneratorV2';
 import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
 import { PersonalizedSupplementsCard } from '@/components/sofia/PersonalizedSupplementsCard';
+import { useDailyNutritionTracking } from '@/hooks/useDailyNutritionTracking';
 
 interface SofiaNutricionalSectionProps {
   /** Se true, não renderiza o header (para uso dentro do dashboard) */
   embedded?: boolean;
 }
+
+// Componente Meu Dia - Diário alimentar compacto
+const MeuDiaContent: React.FC<{ goals: { calories: number; protein: number; carbs: number; fat: number } }> = ({ goals }) => {
+  const { dailySummary, loading, addWater, goals: nutritionGoals } = useDailyNutritionTracking();
+
+  const mealTypes = [
+    { key: 'cafe_da_manha', label: 'Café da Manhã', icon: Coffee, time: '07:00' },
+    { key: 'almoco', label: 'Almoço', icon: UtensilsCrossed, time: '12:00' },
+    { key: 'lanche', label: 'Lanche', icon: Cookie, time: '16:00' },
+    { key: 'jantar', label: 'Jantar', icon: Moon, time: '19:00' },
+  ];
+
+  const caloriesConsumed = dailySummary?.calories || 0;
+  const proteinConsumed = dailySummary?.protein || 0;
+  const carbsConsumed = dailySummary?.carbs || 0;
+  const fatConsumed = dailySummary?.fat || 0;
+  const waterMl = dailySummary?.water_ml || 0;
+
+  const targetCalories = nutritionGoals?.target_calories || goals.calories;
+  const calorieProgress = Math.min((caloriesConsumed / targetCalories) * 100, 100);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-emerald-600"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Progresso de Calorias */}
+      <Card className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30 border-emerald-200 dark:border-emerald-800">
+        <CardContent className="p-4">
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-sm font-medium text-emerald-700 dark:text-emerald-300">Calorias Hoje</span>
+            <span className="text-lg font-bold text-emerald-600">
+              {caloriesConsumed.toFixed(0)} / {targetCalories}
+            </span>
+          </div>
+          <Progress value={calorieProgress} className="h-3 bg-emerald-100 dark:bg-emerald-900" />
+          
+          {/* Macros */}
+          <div className="grid grid-cols-3 gap-3 mt-4">
+            <div className="text-center p-2 bg-white/60 dark:bg-black/20 rounded-lg">
+              <div className="text-sm font-bold text-orange-600">{proteinConsumed.toFixed(0)}g</div>
+              <div className="text-xs text-muted-foreground">Proteína</div>
+            </div>
+            <div className="text-center p-2 bg-white/60 dark:bg-black/20 rounded-lg">
+              <div className="text-sm font-bold text-blue-600">{carbsConsumed.toFixed(0)}g</div>
+              <div className="text-xs text-muted-foreground">Carbos</div>
+            </div>
+            <div className="text-center p-2 bg-white/60 dark:bg-black/20 rounded-lg">
+              <div className="text-sm font-bold text-yellow-600">{fatConsumed.toFixed(0)}g</div>
+              <div className="text-xs text-muted-foreground">Gordura</div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Água */}
+      <Card className="bg-card border">
+        <CardContent className="p-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Droplets className="w-5 h-5 text-blue-500" />
+              <span className="text-sm font-medium">Água</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-bold text-blue-600">{(waterMl / 1000).toFixed(1)}L</span>
+              <span className="text-xs text-muted-foreground">/ 2.5L</span>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-7 w-7 p-0"
+                onClick={() => addWater(250)}
+              >
+                <Plus className="w-3 h-3" />
+              </Button>
+            </div>
+          </div>
+          <Progress value={(waterMl / 2500) * 100} className="h-2 mt-2" />
+        </CardContent>
+      </Card>
+
+      {/* Refeições do Dia */}
+      <Card className="bg-card border">
+        <CardHeader className="pb-2 px-3 pt-3">
+          <CardTitle className="text-sm font-medium flex items-center gap-2">
+            <Apple className="w-4 h-4 text-emerald-600" />
+            Refeições de Hoje
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="px-3 pb-3">
+          <div className="space-y-2">
+            {mealTypes.map((meal) => {
+              const Icon = meal.icon;
+              return (
+                <div
+                  key={meal.key}
+                  className="flex items-center justify-between p-2.5 bg-muted/50 rounded-lg hover:bg-muted/70 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900 flex items-center justify-center">
+                      <Icon className="w-4 h-4 text-emerald-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">{meal.label}</p>
+                      <p className="text-xs text-muted-foreground">{meal.time}</p>
+                    </div>
+                  </div>
+                  <span className="text-xs text-muted-foreground italic">
+                    Converse com Sofia para registrar
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+          <p className="text-xs text-center text-muted-foreground mt-3">
+            💬 Diga à Sofia o que você comeu e ela registra automaticamente!
+          </p>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
 
 export const SofiaNutricionalSection: React.FC<SofiaNutricionalSectionProps> = ({ embedded = false }) => {
   const {
@@ -39,7 +166,7 @@ export const SofiaNutricionalSection: React.FC<SofiaNutricionalSectionProps> = (
   } = useMealPlanGeneratorV2();
   
   const [selectedDate] = useState(new Date().toISOString().split('T')[0]);
-  const [activeTab, setActiveTab] = useState('tracker');
+  const [activeTab, setActiveTab] = useState('meudia');
   const [showMealPlanGenerator, setShowMealPlanGenerator] = useState(false);
 
   const [selectedMeals, setSelectedMeals] = useState({
@@ -102,24 +229,39 @@ export const SofiaNutricionalSection: React.FC<SofiaNutricionalSectionProps> = (
         </div>
       )}
 
-      {/* Tabs principais - 2 tabs maiores */}
+      {/* Tabs principais - 3 tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="w-full grid grid-cols-2 gap-2 bg-muted/50 p-1.5 rounded-xl">
+        <TabsList className="w-full grid grid-cols-3 gap-1 bg-muted/50 p-1.5 rounded-xl">
+          <TabsTrigger 
+            value="meudia" 
+            className="flex items-center justify-center gap-1.5 text-xs sm:text-sm py-2.5 sm:py-3 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-md data-[state=active]:text-emerald-600 font-medium"
+          >
+            <Apple className="w-4 h-4 sm:w-5 sm:h-5" />
+            <span className="hidden sm:inline">Meu Dia</span>
+            <span className="sm:hidden">Dia</span>
+          </TabsTrigger>
           <TabsTrigger 
             value="tracker" 
-            className="flex items-center justify-center gap-2 text-sm py-3 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-md data-[state=active]:text-emerald-600 font-medium"
+            className="flex items-center justify-center gap-1.5 text-xs sm:text-sm py-2.5 sm:py-3 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-md data-[state=active]:text-emerald-600 font-medium"
           >
-            <Utensils className="w-5 h-5" />
-            Nutrição
+            <Utensils className="w-4 h-4 sm:w-5 sm:h-5" />
+            <span className="hidden sm:inline">Nutrição</span>
+            <span className="sm:hidden">Stats</span>
           </TabsTrigger>
           <TabsTrigger 
             value="generator" 
-            className="flex items-center justify-center gap-2 text-sm py-3 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-md data-[state=active]:text-emerald-600 font-medium"
+            className="flex items-center justify-center gap-1.5 text-xs sm:text-sm py-2.5 sm:py-3 rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-md data-[state=active]:text-emerald-600 font-medium"
           >
-            <ChefHat className="w-5 h-5" />
-            Cardápios
+            <ChefHat className="w-4 h-4 sm:w-5 sm:h-5" />
+            <span className="hidden sm:inline">Cardápios</span>
+            <span className="sm:hidden">Menu</span>
           </TabsTrigger>
         </TabsList>
+
+        {/* Tab Meu Dia - Diário Alimentar */}
+        <TabsContent value="meudia" className="space-y-4 mt-4">
+          <MeuDiaContent goals={goals} />
+        </TabsContent>
 
         {/* Tab Nutrição */}
         <TabsContent value="tracker" className="space-y-4 mt-4">
