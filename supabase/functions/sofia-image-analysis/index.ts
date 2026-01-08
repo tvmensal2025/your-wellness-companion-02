@@ -27,8 +27,8 @@ const sofiaUseGpt = (Deno.env.get('SOFIA_USE_GPT') || 'false').toLowerCase() ===
 // Modo estrito: sem fallback de porções padrão. Só calcula quando houver gramas/ml confiáveis
 // Default agora é 'true' para evitar números errados quando a IA não fornecer quantidades
 const strictMode = (Deno.env.get('SOFIA_STRICT_MODE') || 'true').toLowerCase() === 'true';
-// YOLO microserviço - VPS configurada
-const yoloEnabled = (Deno.env.get('YOLO_ENABLED') || 'true').toLowerCase() === 'true';
+// YOLO microserviço - DESABILITADO por padrão (VPS instável)
+const yoloEnabled = (Deno.env.get('YOLO_ENABLED') || 'false').toLowerCase() === 'true';
 const yoloServiceUrl = (Deno.env.get('YOLO_SERVICE_URL') || 'http://45.67.221.216:8002').replace(/\/$/, '');
 // Configurações avançadas para máxima precisão
 const yoloMaxRetries = Number(Deno.env.get('YOLO_MAX_RETRIES') || '3');
