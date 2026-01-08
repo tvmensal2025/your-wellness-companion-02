@@ -1,26 +1,18 @@
 // Configuração centralizada das imagens dos personagens
 // Sistema com múltiplos fallbacks para garantir exibição
 
-// URL base do servidor externo
-const EXTERNAL_BASE_URL = 'https://45.67.221.216:8086';
-
-// URLs externas (servidor de imagens) - sem cache busting para melhor performance
-const EXTERNAL_URLS = {
-  DR_VITAL: `${EXTERNAL_BASE_URL}/Dr.Vital.png`,
-  SOFIA: `${EXTERNAL_BASE_URL}/Sofia.png`
+// URLs locais (principal)
+const LOCAL_URLS = {
+  DR_VITAL: '/images/dr-vital.png',
+  SOFIA: '/images/sofia.png',
+  LOGO: '/images/maxnutrition-logo.png'
 };
 
-// URLs do Supabase atual (fallback)
+// URLs do Supabase (fallback)
 const SUPABASE_BASE_URL = 'https://ciszqtlaacrhfwsqnvjr.supabase.co/storage/v1/object/public/course-thumbnails';
 const SUPABASE_URLS = {
   DR_VITAL: `${SUPABASE_BASE_URL}/Dr.Vital.png`,
   SOFIA: `${SUPABASE_BASE_URL}/Sofia.png`
-};
-
-// URLs locais (último fallback)
-const LOCAL_URLS = {
-  DR_VITAL: '/images/dr-vital.png',
-  SOFIA: '/images/sofia.png'
 };
 
 // Dados base64 inline para fallback garantido (avatar placeholder)
@@ -29,11 +21,9 @@ const PLACEHOLDER_AVATAR = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3
 export const CHARACTER_IMAGES = {
   DR_VITAL: {
     name: 'Dr. Vital',
-    // URL principal externa
-    imageUrl: EXTERNAL_URLS.DR_VITAL,
-    // Fallbacks em ordem de prioridade
-    fallbackUrls: [SUPABASE_URLS.DR_VITAL, LOCAL_URLS.DR_VITAL, PLACEHOLDER_AVATAR],
-    fallbackUrl: LOCAL_URLS.DR_VITAL,
+    imageUrl: LOCAL_URLS.DR_VITAL,
+    fallbackUrls: [SUPABASE_URLS.DR_VITAL, PLACEHOLDER_AVATAR],
+    fallbackUrl: SUPABASE_URLS.DR_VITAL,
     description: 'Médico especialista em saúde e bem-estar',
     role: 'doctor',
     colors: {
@@ -43,17 +33,23 @@ export const CHARACTER_IMAGES = {
   },
   SOFIA: {
     name: 'Sofia',
-    // URL principal externa
-    imageUrl: EXTERNAL_URLS.SOFIA,
-    // Fallbacks em ordem de prioridade
-    fallbackUrls: [SUPABASE_URLS.SOFIA, LOCAL_URLS.SOFIA, PLACEHOLDER_AVATAR],
-    fallbackUrl: LOCAL_URLS.SOFIA,
+    imageUrl: LOCAL_URLS.SOFIA,
+    fallbackUrls: [SUPABASE_URLS.SOFIA, PLACEHOLDER_AVATAR],
+    fallbackUrl: SUPABASE_URLS.SOFIA,
     description: 'Assistente virtual e coach de saúde',
     role: 'assistant',
     colors: {
       primary: 'from-purple-500 to-purple-600',
       secondary: 'from-purple-400 to-purple-500'
     }
+  },
+  LOGO: {
+    name: 'MaxNutrition',
+    imageUrl: LOCAL_URLS.LOGO,
+    fallbackUrls: [PLACEHOLDER_AVATAR],
+    fallbackUrl: PLACEHOLDER_AVATAR,
+    description: 'Logo MaxNutrition',
+    role: 'branding'
   }
 };
 
