@@ -394,16 +394,29 @@ async function executeTool(userId: string, toolName: string, args: any): Promise
     }
 
     case "get_user_status": {
+      // Buscar perfil com campos corretos
       const { data: profile } = await supabase
         .from("profiles")
-        .select("name, email")
+        .select("full_name, email, current_weight")
         .eq("user_id", userId)
         .maybeSingle();
       
-      const { data: fisica } = await supabase
-        .from("dados_físicos_do_usuário")
-        .select("peso_atual_kg, altura_cm")
+      // Buscar peso mais recente de weight_measurements
+      const { data: lastWeight } = await supabase
+        .from("weight_measurements")
+        .select("peso_kg, measurement_date, gordura_corporal_percent, massa_muscular_kg")
         .eq("user_id", userId)
+        .order("measurement_date", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      // Buscar primeiro peso para calcular progresso
+      const { data: firstWeight } = await supabase
+        .from("weight_measurements")
+        .select("peso_kg, measurement_date")
+        .eq("user_id", userId)
+        .order("measurement_date", { ascending: true })
+        .limit(1)
         .maybeSingle();
       
       const { data: tracking } = await supabase
@@ -434,10 +447,20 @@ async function executeTool(userId: string, toolName: string, args: any): Promise
 
       const caloriesConsumed = foodHistory?.reduce((sum, item) => sum + (Number(item.total_calories) || 0), 0) || 0;
       
+      // Calcular peso atual e progresso
+      const peso_atual = lastWeight?.peso_kg || profile?.current_weight || null;
+      const peso_perdido = (firstWeight && lastWeight && firstWeight.peso_kg > lastWeight.peso_kg)
+        ? Number((firstWeight.peso_kg - lastWeight.peso_kg).toFixed(1))
+        : null;
+      
       return JSON.stringify({
-        nome: profile?.name || "Usuário",
-        peso_atual: fisica?.peso_atual_kg,
-        altura: fisica?.altura_cm,
+        nome: profile?.full_name?.split(' ')[0] || "Usuário",
+        nome_completo: profile?.full_name,
+        peso_atual: peso_atual,
+        ultimo_registro_peso: lastWeight?.measurement_date,
+        peso_perdido: peso_perdido,
+        gordura_corporal: lastWeight?.gordura_corporal_percent,
+        massa_muscular: lastWeight?.massa_muscular_kg,
         hoje: {
           agua_ml: tracking?.water_ml || 0,
           calorias: caloriesConsumed,
@@ -719,9 +742,17 @@ function formatMealTypeSimple(mealType: string | null): string {
 
 // ============ SISTEMA DE PROMPTS HUMANIZADOS ============
 
-function buildSystemPrompt(userName: string, userContext: any): string {
+function buildSystemPrompt(userName: string, userContext: any, isFirstMessage: boolean = false): string {
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Bom dia" : hour < 18 ? "Boa tarde" : "Boa noite";
+  
+  // Preparar dados do contexto para resposta direta
+  const pesoInfo = userContext?.peso_atual 
+    ? `Peso atual: ${userContext.peso_atual}kg (registrado em ${userContext.ultimo_registro_peso || 'recentemente'})` 
+    : "Peso: ainda não registrado";
+  const progressoInfo = userContext?.peso_perdido 
+    ? `Progresso: já perdeu ${userContext.peso_perdido}kg! 💪` 
+    : "";
   
   return `Você é a assistente pessoal de saúde do Instituto dos Sonhos - uma IA super humana e carinhosa.
 
@@ -731,35 +762,44 @@ Você tem DUAS personalidades que alternam conforme o contexto:
 - Especialista em alimentação, nutrição, peso, dieta, refeições
 - Tom: EXTREMAMENTE calorosa, motivadora, como uma amiga querida
 - Usa emojis de comida com moderação: 🥗 💚 ✨ 🍽️ 🥤
-- Frases: "Oi!", "Que delícia!", "Você está arrasando!", "Vamos juntas!"
 - SEMPRE assina: _Sofia 🥗_
 
 🩺 *Dr. Vital* - Médico virtual  
 - Especialista em exames, saúde, medicamentos, sintomas
 - Tom: profissional mas acolhedor e acessível
 - Usa emojis médicos: 🩺 🟢 🟡 🔴 💊
-- Explica termos médicos de forma SIMPLES
 - SEMPRE assina: _Dr. Vital 🩺_
 
-REGRAS CRÍTICAS DE FORMATAÇÃO WHATSAPP:
-1. Use *negrito* para destaques importantes (funciona no WhatsApp)
+REGRAS CRÍTICAS - SAUDAÇÕES:
+${isFirstMessage 
+  ? `1. Esta é a PRIMEIRA mensagem do dia - use "${greeting}, ${userName}!" apenas UMA vez no início`
+  : `1. NÃO use saudações (bom dia/tarde/noite) - você JÁ cumprimentou antes. Vá direto ao ponto.`}
+2. SEMPRE chame o usuário pelo nome: "${userName}"
+
+REGRAS CRÍTICAS - RESPOSTAS DIRETAS:
+1. NUNCA diga "vou olhar", "vou verificar", "deixa eu ver", "um momento" - você TEM os dados, responda DIRETAMENTE
+2. Quando perguntarem sobre peso, responda: "${userName}, seu peso atual é ${userContext?.peso_atual || 'ainda não registrado'}kg!"
+3. Se não tiver dado, diga claramente: "${userName}, ainda não tenho esse dado registrado. Me conta?"
+
+DADOS DO USUÁRIO PARA RESPOSTA DIRETA:
+- Nome: ${userName}
+- ${pesoInfo}
+${progressoInfo ? `- ${progressoInfo}` : ''}
+- Água hoje: ${userContext?.hoje?.agua_ml || 0}ml
+- Calorias hoje: ${userContext?.hoje?.calorias || 0}kcal
+
+REGRAS DE FORMATAÇÃO WHATSAPP:
+1. Use *negrito* para destaques importantes
 2. Use _itálico_ para ênfases suaves
-3. Quebre linhas para respiração visual
-4. Mantenha respostas CURTAS (2-5 linhas por bloco)
-5. Emojis moderadamente - não exagere
+3. Mantenha respostas CURTAS (2-5 linhas por bloco)
+4. Emojis moderadamente - não exagere
 
 REGRAS DE COMPORTAMENTO:
-1. ${greeting}! Adapte a saudação ao horário naturalmente
-2. Chame o usuário pelo nome: "${userName}"
-3. NUNCA pareça robótico - seja conversacional, use gírias leves brasileiras
-4. Seja PROATIVO: use as tools automaticamente quando detectar algo relevante
-5. Confirme ações de forma positiva e motivadora
-6. Se o usuário perguntar "o que comi hoje?", use get_food_history
-7. Se mencionar peso (ex: "pesei 70kg"), use register_weight automaticamente
-8. Se descrever refeição, use register_meal_from_description
-
-CONTEXTO DO USUÁRIO:
-${JSON.stringify(userContext, null, 2)}
+1. Seja conversacional, use gírias leves brasileiras
+2. Seja PROATIVO: use as tools automaticamente quando detectar algo relevante
+3. Se o usuário perguntar "o que comi hoje?", use get_food_history
+4. Se mencionar peso (ex: "pesei 70kg"), use register_weight automaticamente
+5. Se descrever refeição, use register_meal_from_description
 
 IMPORTANTE: Responda SEMPRE em português brasileiro coloquial e natural.
 IMPORTANTE: Use a personalidade apropriada (nutrição=Sofia, saúde=Dr.Vital)`;
@@ -773,7 +813,7 @@ serve(async (req) => {
   }
 
   try {
-    const { userId, message, conversationHistory = [] } = await req.json();
+    const { userId, message, conversationHistory = [], isFirstMessage = false } = await req.json();
 
     if (!userId || !message) {
       return new Response(
@@ -782,18 +822,18 @@ serve(async (req) => {
       );
     }
 
-    console.log(`[AI Assistant] Mensagem de ${userId}: ${message}`);
+    console.log(`[AI Assistant] Mensagem de ${userId}: ${message} (isFirstMessage: ${isFirstMessage})`);
 
-    // Buscar dados do usuário
+    // Buscar dados do usuário com campos corretos
     const { data: profile } = await supabase
       .from("profiles")
-      .select("name, email")
+      .select("full_name, email, current_weight")
       .eq("user_id", userId)
       .maybeSingle();
 
-    const userName = profile?.name?.split(' ')[0] || "Querido(a)";
+    const userName = profile?.full_name?.split(' ')[0] || "Querido(a)";
 
-    // Buscar status atual
+    // Buscar status atual (já inclui peso correto de weight_measurements)
     const statusResult = await executeTool(userId, "get_user_status", {});
     let userContext = {};
     try {
@@ -802,7 +842,7 @@ serve(async (req) => {
 
     // Construir mensagens para IA
     const messages = [
-      { role: "system", content: buildSystemPrompt(userName, userContext) },
+      { role: "system", content: buildSystemPrompt(userName, userContext, isFirstMessage) },
       ...conversationHistory.slice(-10),
       { role: "user", content: message },
     ];

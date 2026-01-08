@@ -1040,11 +1040,24 @@ async function handleSmartResponse(user: { id: string }, phone: string, text: st
   try {
     console.log("[WhatsApp Nutrition] Chamando IA inteligente...");
     
+    // Verificar se já enviou mensagem hoje para controlar saudações
+    const today = new Date().toISOString().split('T')[0];
+    const { data: todayMessages } = await supabase
+      .from("whatsapp_message_logs")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("message_type", "outbound")
+      .gte("sent_at", today)
+      .limit(1);
+    
+    const isFirstMessageToday = !todayMessages || todayMessages.length === 0;
+    
     const { data: aiResponse, error } = await supabase.functions.invoke("whatsapp-ai-assistant", {
       body: {
         userId: user.id,
         message: text,
         conversationHistory: [],
+        isFirstMessage: isFirstMessageToday,
       },
     });
 
@@ -1059,10 +1072,12 @@ async function handleSmartResponse(user: { id: string }, phone: string, text: st
 
     const responseText = aiResponse?.response || "Estou aqui para ajudar! 💚";
     
+    // Evitar assinatura duplicada
+    const hasSignature = responseText.includes("_Sofia") || responseText.includes("_Dr. Vital");
     const personality = aiResponse?.personality || 'sofia';
-    const signature = personality === 'drvital' 
+    const signature = hasSignature ? "" : (personality === 'drvital' 
       ? "\n\n_Dr. Vital 🩺_"
-      : "\n\n_Sofia 🥗_";
+      : "\n\n_Sofia 🥗_");
     
     await sendWhatsApp(phone, responseText + signature);
     
