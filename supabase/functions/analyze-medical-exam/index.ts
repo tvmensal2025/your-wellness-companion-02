@@ -2018,8 +2018,9 @@ ANTES DO JSON, escreva uma análise clínica EDUCATIVA, curta e objetiva, basead
       const callOpenAI = async (model: string) => {
         // Ajustar tokens conforme o número de imagens - mais tokens para melhor precisão
         const tokensPerImage = 3000; // Aumentar base de tokens por imagem
-        // Tokens máximos para processar exames com muitas páginas (até 30 páginas)
-        const adjustedTokens = Math.min(16000, Math.max(8000, imagesLimited.length * tokensPerImage));
+        // Tokens máximos - GPT-4-Turbo tem limite de 4096, GPT-4o aceita 16000
+        const maxTokensForModel = model.includes('gpt-4o') ? 16000 : 4096;
+        const adjustedTokens = Math.min(maxTokensForModel, Math.max(4000, imagesLimited.length * tokensPerImage));
         console.log(`🔢 Tokens ajustados: ${adjustedTokens} para ${imagesLimited.length} imagens`);
         
         // Sempre usar 'high' para máxima precisão na leitura de exames médicos
@@ -2100,8 +2101,10 @@ ANTES DO JSON, escreva uma análise clínica EDUCATIVA, curta e objetiva, basead
           body: JSON.stringify(body),
         });
         
+        // Timeout maior para modelos com imagens (180s = 3 min)
+        const timeoutMs = model.includes('gpt-4o') || model.includes('gpt-4-turbo') ? 180000 : 60000;
         const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Timeout na chamada OpenAI')), 60000) // Aumentar para 60 segundos
+          setTimeout(() => reject(new Error(`Timeout na chamada OpenAI (${timeoutMs/1000}s)`)), timeoutMs)
         );
         
         const resp = await Promise.race([openAIPromise, timeoutPromise]) as Response;
@@ -2129,45 +2132,54 @@ ANTES DO JSON, escreva uma análise clínica EDUCATIVA, curta e objetiva, basead
         console.log('✅ OpenAI Premium respondeu com sucesso');
       }
       catch (e) {
-        console.log('⚠️ Fallback para GPT-4 Turbo:', e);
+        console.log('⚠️ Fallback 1 para GPT-4 Turbo:', e);
         try { 
           usedModel = 'gpt-4-turbo'; 
           aiResponse = await callOpenAI(usedModel); 
           console.log('✅ Fallback 1 (GPT-4 Turbo) funcionou');
         }
         catch (e2) {
-          console.log('⚠️ Fallback para modelo de texto:', e2);
-          // GPT-3.5-turbo não suporta imagens, então vamos usar apenas texto
-          usedModel = 'gpt-3.5-turbo';
-          
-          // Se temos texto OCR, usar apenas ele
-          if (extractedText && extractedText.length > 0) {
-            console.log('📝 Usando apenas texto OCR para GPT-3.5');
-            const textOnlyResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-              method: 'POST',
-              headers: {
-                'Authorization': `Bearer ${OPENAI_API_KEY}`,
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({
-                model: usedModel,
-                messages: [{
-                  role: 'user',
-                  content: systemPrompt + '\n\nTEXTO EXTRAÍDO DO EXAME:\n' + extractedText + '\n\nAnalise os dados acima e responda no formato JSON especificado.'
-                }],
-                max_tokens: 4000,
-                temperature: 0.1
-              })
-            });
+          console.log('⚠️ Fallback 2 para GPT-4o-mini:', e2);
+          try {
+            // GPT-4o-mini é mais rápido e suporta imagens
+            usedModel = 'gpt-4o-mini';
+            aiResponse = await callOpenAI(usedModel);
+            console.log('✅ Fallback 2 (GPT-4o-mini) funcionou');
+          }
+          catch (e3) {
+            console.log('⚠️ Fallback 3 para modelo de texto:', e3);
+            // GPT-3.5-turbo não suporta imagens, então vamos usar apenas texto
+            usedModel = 'gpt-3.5-turbo';
             
-            if (!textOnlyResponse.ok) {
-              throw new Error('Falha no fallback de texto');
+            // Se temos texto OCR, usar apenas ele
+            if (extractedText && extractedText.length > 0) {
+              console.log('📝 Usando apenas texto OCR para GPT-3.5');
+              const textOnlyResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${OPENAI_API_KEY}`,
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                  model: usedModel,
+                  messages: [{
+                    role: 'user',
+                    content: systemPrompt + '\n\nTEXTO EXTRAÍDO DO EXAME:\n' + extractedText + '\n\nAnalise os dados acima e responda no formato JSON especificado.'
+                  }],
+                  max_tokens: 4000,
+                  temperature: 0.1
+                })
+              });
+              
+              if (!textOnlyResponse.ok) {
+                throw new Error('Falha no fallback de texto');
+              }
+              
+              aiResponse = await textOnlyResponse.json();
+              console.log('✅ Fallback 3 com texto funcionou');
+            } else {
+              throw new Error('GPT-3.5 não suporta imagens e não há texto OCR disponível');
             }
-            
-            aiResponse = await textOnlyResponse.json();
-            console.log('✅ Fallback 2 com texto funcionou');
-          } else {
-            throw new Error('GPT-3.5 não suporta imagens e não há texto OCR disponível');
           }
         }
       }
