@@ -98,3 +98,9 @@ verify_jwt = false
 
 [functions.whatsapp-goal-reminders]
 verify_jwt = false
+
+[functions.whatsapp-nutrition-check]
+verify_jwt = false
+
+[functions.nutrition-daily-summary]
+verify_jwt = false
