@@ -87,8 +87,9 @@ serve(async (req) => {
       const directConfirm = ["1", "sim", "s", "ok", "confirmo", "confirma", "certo", "isso"].includes(lower);
       const directCancel = ["2", "não", "nao", "n", "cancela", "cancelar", "nope"].includes(lower);
       const directEdit = ["3", "editar", "edita", "corrigir", "mudar", "alterar"].includes(lower);
+      const directClear = ["4", "finalizar", "limpar", "clear", "descartar"].includes(lower);
       
-      if (directConfirm || directCancel || directEdit) {
+      if (directConfirm || directCancel || directEdit || directClear) {
         console.log("[WhatsApp Nutrition] ✅ Resposta direta de confirmação detectada:", messageText);
         await handleConfirmation(user, pending, messageText, phone);
       } else {
@@ -96,23 +97,13 @@ serve(async (req) => {
         const intent = await interpretUserIntent(messageText, "awaiting_confirmation", pendingFoods);
         console.log("[WhatsApp Nutrition] Intenção detectada com pendência:", intent.intent);
         
-        if (["confirm", "cancel", "edit", "add_food", "remove_food", "replace_food"].includes(intent.intent)) {
+        if (["confirm", "cancel", "edit", "add_food", "remove_food", "replace_food", "clear_pending"].includes(intent.intent)) {
           console.log("[WhatsApp Nutrition] Processando confirmação:", messageText);
           await handleConfirmation(user, pending, messageText, phone);
         } else {
-          // Se for pergunta/saudação/outro, deixa a IA responder e lembra da pendência
+          // Se for pergunta/saudação/outro, deixa a IA responder com lembrete integrado
           console.log("[WhatsApp Nutrition] Permitindo conversa livre com pendência ativa");
-          await handleSmartResponse(user, phone, messageText);
-          
-          // Enviar lembrete gentil da pendência
-          const foodsList = pendingFoods.slice(0, 3).map((f: any) => f.nome || f.name).join(", ");
-          const reminder = pendingFoods.length > 0 
-            ? `\n\n💡 _Ah, você ainda tem uma refeição pendente (${foodsList}${pendingFoods.length > 3 ? '...' : ''}). Responda *1 (SIM)*, *2 (NÃO)* ou *3 (EDITAR)* quando quiser finalizar!_`
-            : "";
-          
-          if (reminder) {
-            await sendWhatsApp(phone, reminder);
-          }
+          await handleSmartResponseWithPending(user, phone, messageText, pendingFoods);
         }
       }
     } else if (pendingMedical && messageText) {
@@ -900,10 +891,12 @@ async function processImage(user: { id: string }, phone: string, message: any, w
       `🍽️ *Analisei sua refeição!*\n\n` +
       `${foodsList}\n\n` +
       kcalLine +
-      `Está correto? Responda:\n` +
-      `✅ *1* ou *SIM* - Confirmar\n` +
-      `❌ *2* ou *NÃO* - Cancelar\n` +
-      `✏️ *3* ou *EDITAR* - Corrigir itens`;
+      `───────────────\n\n` +
+      `*Está correto?* Escolha:\n\n` +
+      `*1* ✅ Confirmar\n` +
+      `*2* ❌ Cancelar\n` +
+      `*3* ✏️ Editar\n\n` +
+      `_Sofia 🥗_`;
 
     await sendWhatsApp(phone, confirmMessage);
 
@@ -1000,10 +993,12 @@ async function processText(user: { id: string }, phone: string, text: string): P
       `🍽️ *Entendi! Você comeu:*\n\n` +
       `${foodsList}\n\n` +
       `📊 *Total estimado: ~${Math.round(totalCalories)} kcal*\n\n` +
-      `Está correto? Responda:\n` +
-      `✅ *1* ou *SIM* - Confirmar\n` +
-      `❌ *2* ou *NÃO* - Cancelar\n` +
-      `✏️ *3* ou *EDITAR* - Corrigir itens`;
+      `───────────────\n\n` +
+      `*Está correto?* Escolha:\n\n` +
+      `*1* ✅ Confirmar\n` +
+      `*2* ❌ Cancelar\n` +
+      `*3* ✏️ Editar\n\n` +
+      `_Sofia 🥗_`;
 
     await sendWhatsApp(phone, confirmMessage);
 
@@ -1065,7 +1060,8 @@ async function handleSmartResponse(user: { id: string }, phone: string, text: st
       console.error("[WhatsApp Nutrition] Erro na IA:", error);
       await sendWhatsApp(phone, 
         "🤔 Hmm, não entendi muito bem. Pode reformular?\n\n" +
-        "💡 *Dica:* Envie uma foto da sua refeição ou me conte o que comeu!"
+        "💡 *Dica:* Envie uma foto da sua refeição ou me conte o que comeu!\n\n" +
+        "_Sofia 🥗_"
       );
       return;
     }
@@ -1088,8 +1084,67 @@ async function handleSmartResponse(user: { id: string }, phone: string, text: st
     await sendWhatsApp(phone, 
       "Oi! 👋 Estou aqui para ajudar com sua nutrição!\n\n" +
       "📸 Envie uma foto da refeição\n" +
-      "✍️ Ou descreva o que comeu"
+      "✍️ Ou descreva o que comeu\n\n" +
+      "_Sofia 🥗_"
     );
+  }
+}
+
+// Nova função para resposta com pendência integrada
+async function handleSmartResponseWithPending(
+  user: { id: string }, 
+  phone: string, 
+  text: string, 
+  pendingFoods: any[]
+): Promise<void> {
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const { data: todayMessages } = await supabase
+      .from("whatsapp_message_logs")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("message_type", "outbound")
+      .gte("sent_at", today)
+      .limit(1);
+    
+    const isFirstMessageToday = !todayMessages || todayMessages.length === 0;
+    
+    const { data: aiResponse, error } = await supabase.functions.invoke("whatsapp-ai-assistant", {
+      body: {
+        userId: user.id,
+        message: text,
+        conversationHistory: [],
+        isFirstMessage: isFirstMessageToday,
+      },
+    });
+
+    let responseText = aiResponse?.response || "Estou aqui para ajudar! 💚";
+    
+    // Remover assinatura existente para adicionar a consolidada
+    responseText = responseText.replace(/\n*_Sofia 🥗_\s*$/g, '').replace(/\n*_Dr\. Vital 🩺_\s*$/g, '');
+    
+    // Criar lembrete de pendência formatado
+    const foodsList = pendingFoods.slice(0, 4).map((f: any) => f.nome || f.name).join(", ");
+    const pendingReminder = pendingFoods.length > 0 
+      ? `\n\n───────────────\n\n` +
+        `⚠️ *Pendência ativa*\n\n` +
+        `📋 ${foodsList}${pendingFoods.length > 4 ? '...' : ''}\n\n` +
+        `Escolha uma opção:\n\n` +
+        `*1* ✅ Confirmar\n` +
+        `*2* ❌ Cancelar\n` +
+        `*3* ✏️ Editar\n` +
+        `*4* 🔄 Limpar pendência\n\n` +
+        `_Sofia 🥗_`
+      : "\n\n_Sofia 🥗_";
+    
+    // Enviar mensagem ÚNICA consolidada
+    await sendWhatsApp(phone, responseText + pendingReminder);
+    
+    console.log("[WhatsApp Nutrition] Resposta IA com pendência enviada");
+
+  } catch (error) {
+    console.error("[WhatsApp Nutrition] Erro na resposta com pendência:", error);
+    await handleSmartResponse(user, phone, text);
   }
 }
 
@@ -1131,8 +1186,14 @@ function fallbackIntentInterpretation(text: string): any {
   if (isConfirmationNegative(lower)) return { intent: "cancel", confidence: 0.8, details: {} };
   if (isConfirmationEdit(lower)) return { intent: "edit", confidence: 0.8, details: {} };
   if (isEditDone(lower)) return { intent: "confirm", confidence: 0.8, details: {} };
+  if (isClearPending(lower)) return { intent: "clear_pending", confidence: 0.8, details: {} };
   
   return { intent: "unknown", confidence: 0, details: {} };
+}
+
+function isClearPending(text: string): boolean {
+  const clearPatterns = ["4", "finalizar", "limpar", "clear", "descartar", "limpa", "descarta"];
+  return clearPatterns.includes(text.toLowerCase().trim());
 }
 
 // =============== PROCESSAMENTO DE CONFIRMAÇÃO ===============
@@ -1147,6 +1208,39 @@ async function handleConfirmation(
     const analysis = pending.analysis_result || {};
     const pendingFoods = analysis.detectedFoods || analysis.foods || analysis.foods_detected || [];
     const foodHistoryId = analysis.food_history_id; // Referência ao registro permanente
+    
+    const lower = messageText.toLowerCase().trim();
+    
+    // 🔥 Verificar opção 4 (limpar pendência) ANTES de chamar IA
+    if (isClearPending(lower)) {
+      console.log("[WhatsApp Nutrition] 🧹 Limpando pendência por solicitação do usuário");
+      
+      if (foodHistoryId) {
+        await supabase
+          .from("food_history")
+          .update({ user_notes: "Descartado pelo usuário" })
+          .eq("id", foodHistoryId);
+      }
+      
+      await supabase
+        .from("whatsapp_pending_nutrition")
+        .update({
+          waiting_confirmation: false,
+          waiting_edit: false,
+          confirmed: false,
+          is_processed: true,
+          status: "cleared_by_user"
+        })
+        .eq("id", pending.id);
+      
+      await sendWhatsApp(phone,
+        `✅ *Pendência finalizada!*\n\n` +
+        `Agora você pode continuar normalmente. 💚\n\n` +
+        `📸 Envie uma foto ou me conte o que comeu!\n\n` +
+        `_Sofia 🥗_`
+      );
+      return;
+    }
     
     const intent = await interpretUserIntent(messageText, "awaiting_confirmation", pendingFoods);
     
@@ -1228,9 +1322,10 @@ async function handleConfirmation(
 
       const successMessage =
         `✅ *Refeição registrada!*\n\n` +
-        `${formatMealType(pending.meal_type || detectMealType())}: ${Math.round(nutritionData.total_kcal)} kcal\n` +
-        `📊 Total do dia: ${Math.round(dailyTotal)} kcal\n\n` +
-        `Continue assim! 💪`;
+        `🍽️ ${formatMealType(pending.meal_type || detectMealType())}: *${Math.round(nutritionData.total_kcal)} kcal*\n\n` +
+        `📊 Total do dia: *${Math.round(dailyTotal)} kcal*\n\n` +
+        `Continue assim! 💪\n\n` +
+        `_Sofia 🥗_`;
 
       await sendWhatsApp(phone, successMessage);
 
@@ -1254,7 +1349,11 @@ async function handleConfirmation(
         })
         .eq("id", pending.id);
 
-      await sendWhatsApp(phone, "❌ Registro cancelado.\n\n📸 Envie uma nova foto quando quiser!");
+      await sendWhatsApp(phone, 
+        `❌ *Registro cancelado!*\n\n` +
+        `📸 Envie uma nova foto quando quiser!\n\n` +
+        `_Sofia 🥗_`
+      );
 
     } else if (intent.intent === "edit") {
       console.log("[WhatsApp Nutrition] Modo edição ativado");
@@ -1268,19 +1367,21 @@ async function handleConfirmation(
         .map((f: any, i: number) => {
           const name = f.nome || f.name || f.alimento || "(alimento)";
           const grams = f.quantidade ?? f.grams ?? f.g ?? "?";
-          return `${i + 1}. ${name} (${grams}g)`;
+          return `*${i + 1}.* ${name} (${grams}g)`;
         })
         .join("\n");
 
       await sendWhatsApp(
         phone,
         `✏️ *Modo edição*\n\n` +
-        `Itens detectados:\n${numberedList}\n\n` +
-        `Agora você pode me dizer naturalmente:\n` +
-        `• "Adiciona uma banana"\n` +
-        `• "Tira o arroz"\n` +
-        `• "Na verdade era macarrão, não arroz"\n\n` +
-        `Responda *PRONTO* quando terminar`
+        `Itens detectados:\n\n${numberedList}\n\n` +
+        `───────────────\n\n` +
+        `Me diga o que quer alterar:\n\n` +
+        `📝 _"Adiciona uma banana"_\n` +
+        `🗑️ _"Tira o arroz"_\n` +
+        `🔄 _"Era macarrão, não arroz"_\n\n` +
+        `Responda *PRONTO* quando terminar\n\n` +
+        `_Sofia 🥗_`
       );
 
     } else if (intent.intent === "add_food" && intent.details?.newFood) {
@@ -1314,10 +1415,13 @@ async function handleConfirmation(
       await sendWhatsApp(
         phone,
         `✅ *Adicionado!*\n\n` +
-        `Lista atualizada:\n${foodsList}\n\n` +
-        `✅ *SIM* para confirmar\n` +
-        `❌ *NÃO* para cancelar\n` +
-        `✏️ *EDITAR* para mais alterações`
+        `Lista atualizada:\n\n${foodsList}\n\n` +
+        `───────────────\n\n` +
+        `*Está correto?* Escolha:\n\n` +
+        `*1* ✅ Confirmar\n` +
+        `*2* ❌ Cancelar\n` +
+        `*3* ✏️ Editar mais\n\n` +
+        `_Sofia 🥗_`
       );
 
     } else if (intent.intent === "remove_food") {
@@ -1353,11 +1457,14 @@ async function handleConfirmation(
       
       await sendWhatsApp(
         phone,
-        `✅ *Removido!*\n\n` +
-        `Lista atualizada:\n${foodsList || "(lista vazia)"}\n\n` +
-        `✅ *SIM* para confirmar\n` +
-        `❌ *NÃO* para cancelar\n` +
-        `✏️ *EDITAR* para mais alterações`
+        `🗑️ *Removido!*\n\n` +
+        `Lista atualizada:\n\n${foodsList || "_lista vazia_"}\n\n` +
+        `───────────────\n\n` +
+        `*Está correto?* Escolha:\n\n` +
+        `*1* ✅ Confirmar\n` +
+        `*2* ❌ Cancelar\n` +
+        `*3* ✏️ Editar mais\n\n` +
+        `_Sofia 🥗_`
       );
 
     } else if (intent.intent === "replace_food" && intent.details?.newFood) {
@@ -1393,38 +1500,37 @@ async function handleConfirmation(
       
       await sendWhatsApp(
         phone,
-        `✅ *Substituído!*\n\n` +
-        `Lista atualizada:\n${foodsList}\n\n` +
-        `✅ *SIM* para confirmar\n` +
-        `❌ *NÃO* para cancelar\n` +
-        `✏️ *EDITAR* para mais alterações`
+        `🔄 *Substituído!*\n\n` +
+        `Lista atualizada:\n\n${foodsList}\n\n` +
+        `───────────────\n\n` +
+        `*Está correto?* Escolha:\n\n` +
+        `*1* ✅ Confirmar\n` +
+        `*2* ❌ Cancelar\n` +
+        `*3* ✏️ Editar mais\n\n` +
+        `_Sofia 🥗_`
       );
 
     } else {
       // 🔥 INTELIGÊNCIA: Se não entendeu como confirmação, tenta responder com IA
       const lowerText = messageText.toLowerCase().trim();
-      const almostConfirmation = ["s", "si", "sim", "smi", "n", "na", "nao", "não", "e", "ed", "edi", "edt", "1", "2", "3"].includes(lowerText);
+      const almostConfirmation = ["s", "si", "smi", "n", "na", "e", "ed", "edi", "edt"].includes(lowerText);
       
       if (almostConfirmation) {
         // Parece tentativa de confirmação mas ambígua
         await sendWhatsApp(
           phone,
-          `🤔 Não entendi. Responda:\n` +
-          `✅ *1* ou *SIM* para confirmar\n` +
-          `❌ *2* ou *NÃO* para cancelar\n` +
-          `✏️ *3* ou *EDITAR* para corrigir`
+          `🤔 *Não entendi...*\n\n` +
+          `Escolha uma opção:\n\n` +
+          `*1* ✅ Confirmar\n` +
+          `*2* ❌ Cancelar\n` +
+          `*3* ✏️ Editar\n` +
+          `*4* 🔄 Limpar pendência\n\n` +
+          `_Sofia 🥗_`
         );
       } else {
-        // É outra coisa - deixar a IA responder
+        // É outra coisa - deixar a IA responder com lembrete integrado
         console.log("[WhatsApp Nutrition] Fallback para IA no handleConfirmation");
-        await handleSmartResponse(user, phone, messageText);
-        
-        // Lembrete da pendência
-        const foodsList = pendingFoods.slice(0, 3).map((f: any) => f.nome || f.name).join(", ");
-        await sendWhatsApp(
-          phone,
-          `\n💡 _Só pra lembrar: você tem uma refeição pendente (${foodsList}). Responda *1*, *2* ou *3* quando quiser finalizar!_`
-        );
+        await handleSmartResponseWithPending(user, phone, messageText, pendingFoods);
       }
     }
 
