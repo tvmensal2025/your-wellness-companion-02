@@ -1,29 +1,29 @@
 
 // Configuração centralizada para variáveis de ambiente
 export const config = {
-  // Supabase Configuration
+  // Supabase Configuration - Lovable Cloud gerencia automaticamente
   supabase: {
-    url: import.meta.env.VITE_SUPABASE_URL || "https://vgmqcodfdslyculfaknx.supabase.co",
-    anonKey: import.meta.env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZnbXFjb2RmZHNseWN1bGZha254Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczODM3NzMsImV4cCI6MjA4Mjk1OTc3M30.NMM2EGBLJ7Unht4ZY4RY-_Lg9YPvZ5kfKWoyglBOLiw",
-    projectId: import.meta.env.VITE_SUPABASE_PROJECT_ID || "vgmqcodfdslyculfaknx"
+    url: import.meta.env.VITE_SUPABASE_URL,
+    anonKey: import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+    projectId: import.meta.env.VITE_SUPABASE_PROJECT_ID
   },
   
   // GitHub Configuration
   github: {
-    repoUrl: import.meta.env.VITE_GITHUB_REPO_URL || "https://github.com/tvmensal2025/mission-health-nexus-99.git",
-    repoName: import.meta.env.VITE_GITHUB_REPO_NAME || "mission-health-nexus-99"
+    repoUrl: import.meta.env.VITE_GITHUB_REPO_URL || "",
+    repoName: import.meta.env.VITE_GITHUB_REPO_NAME || ""
   },
   
   // App Configuration
   app: {
-    name: import.meta.env.VITE_APP_NAME || "Mission Health Nexus 99",
+    name: import.meta.env.VITE_APP_NAME || "Instituto dos Sonhos",
     version: import.meta.env.VITE_APP_VERSION || "1.0.0",
-    environment: import.meta.env.VITE_APP_ENVIRONMENT || "development"
+    environment: import.meta.env.VITE_APP_ENVIRONMENT || "production"
   },
   
-  // API Configuration
+  // API Configuration - usa a URL base do Supabase para edge functions
   api: {
-    baseUrl: import.meta.env.VITE_API_BASE_URL || "http://localhost:5173",
+    baseUrl: import.meta.env.VITE_SUPABASE_URL ? `${import.meta.env.VITE_SUPABASE_URL}/functions/v1` : "",
     timeout: 10000
   },
   

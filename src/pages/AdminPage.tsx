@@ -306,6 +306,7 @@ const AdminPage = () => {
           </div>
         );
       case 'mealie':
+        const mealieUrl = import.meta.env.VITE_MEALIE_URL || "";
         return (
           <div className="space-y-6">
             <div className="flex items-center justify-between">
@@ -318,15 +319,27 @@ const AdminPage = () => {
                   Painel de curadoria de receitas e token da API. Usuários não acessam este painel; apenas a Sofia consome a API com um token seguro.
                 </p>
               </div>
-              <div className="flex gap-2">
-                <Button onClick={() => window.open('http://localhost:9925/admin/site-settings', '_blank')}>
-                  Abrir Mealie Admin
-                </Button>
-                <Button variant="outline" onClick={() => window.open('http://localhost:9925/admin/recipes', '_blank')}>
-                  Receitas
-                </Button>
-              </div>
+              {mealieUrl && (
+                <div className="flex gap-2">
+                  <Button onClick={() => window.open(`${mealieUrl}/admin/site-settings`, '_blank')}>
+                    Abrir Mealie Admin
+                  </Button>
+                  <Button variant="outline" onClick={() => window.open(`${mealieUrl}/admin/recipes`, '_blank')}>
+                    Receitas
+                  </Button>
+                </div>
+              )}
             </div>
+
+            {!mealieUrl && (
+              <Card className="border-yellow-500/50 bg-yellow-50 dark:bg-yellow-950/20">
+                <CardContent className="pt-6">
+                  <p className="text-yellow-700 dark:text-yellow-400">
+                    ⚠️ URL do Mealie não configurada. Configure a variável de ambiente <code>VITE_MEALIE_URL</code> para habilitar os botões de acesso.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
 
             <Card>
               <CardHeader>
@@ -338,8 +351,7 @@ const AdminPage = () => {
                     Gerar um <strong>Token de API</strong>: em Settings → API Tokens (ou Personal Access Tokens) → Create Token. Copie e guarde.
                   </li>
                   <li>
-                    <strong>Salvar o token</strong> nos segredos (ex.: Supabase):
-                    <pre className="mt-2 p-2 bg-muted rounded">Sistema usando base TACO brasileira</pre>
+                    <strong>Salvar o token</strong> nos segredos do backend. Sistema usa base TACO brasileira.
                   </li>
                   <li>
                     Fazer <strong>curadoria de receitas</strong>: adicione títulos, imagens, ingredientes e nutrição quando disponível.
