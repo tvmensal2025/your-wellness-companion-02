@@ -15,7 +15,6 @@ import { CleanEvolutionChart } from './CleanEvolutionChart';
 import { QuickActionsGrid } from './QuickActionsGrid';
 import { MotivationalMascot } from './MotivationalMascot';
 import { SofiaTipsCard } from './SofiaTipsCard';
-import { NutritionDashboardCard } from '@/components/nutrition/NutritionDashboardCard';
 
 const DashboardOverview: React.FC = () => {
   const { measurements, stats, loading, fetchMeasurements } = useWeightMeasurement();
@@ -230,8 +229,6 @@ const DashboardOverview: React.FC = () => {
           onRegisterClick={() => setIsWeightModalOpen(true)}
         />
 
-        {/* Diário Alimentar */}
-        <NutritionDashboardCard />
 
         {/* Quick Actions */}
         <QuickActionsGrid onWeightClick={() => setIsWeightModalOpen(true)} />
