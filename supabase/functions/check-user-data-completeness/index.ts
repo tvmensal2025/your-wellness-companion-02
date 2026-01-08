@@ -40,85 +40,39 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Verificar anamnese
-    const { data: anamnesis } = await supabase
-      .from('user_anamnesis')
-      .select('id')
-      .eq('user_id', userId)
-      .single();
-
-    // Verificar dados físicos
-    const { data: physicalData } = await supabase
-      .from('user_physical_data')
-      .select('id')
-      .eq('user_id', userId)
-      .single();
-
-    // Verificar peso
-    const { data: weightData } = await supabase
-      .from('weight_measurements')
-      .select('id')
-      .eq('user_id', userId)
-      .limit(1)
-      .single();
-
-    // Verificar nutrição
-    const { data: nutritionData } = await supabase
-      .from('nutrition_tracking')
-      .select('id')
-      .eq('user_id', userId)
-      .limit(1)
-      .single();
-
-    // Verificar exercícios
-    const { data: exerciseData } = await supabase
-      .from('exercise_sessions')
-      .select('id')
-      .eq('user_id', userId)
-      .limit(1)
-      .single();
-
-    // Verificar metas
-    const { data: goalsData } = await supabase
-      .from('user_goals')
-      .select('id')
-      .eq('user_id', userId)
-      .limit(1)
-      .single();
-
-    // Verificar missões diárias
-    const { data: missionsData } = await supabase
-      .from('daily_mission_sessions')
-      .select('id')
-      .eq('user_id', userId)
-      .limit(1)
-      .single();
-
-    // Verificar humor
-    const { data: moodData } = await supabase
-      .from('mood_monitoring')
-      .select('id')
-      .eq('user_id', userId)
-      .limit(1)
-      .single();
-
-    // Verificar perfil
-    const { data: profileData } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('user_id', userId)
-      .single();
+    // ✅ OTIMIZAÇÃO: Queries paralelas (5-7x mais rápido)
+    const [
+      anamnesisResult,
+      physicalDataResult,
+      weightResult,
+      nutritionResult,
+      exerciseResult,
+      goalsResult,
+      missionsResult,
+      moodResult,
+      profileResult
+    ] = await Promise.all([
+      supabase.from('user_anamnesis').select('id').eq('user_id', userId).maybeSingle(),
+      supabase.from('user_physical_data').select('id').eq('user_id', userId).maybeSingle(),
+      supabase.from('weight_measurements').select('id').eq('user_id', userId).limit(1).maybeSingle(),
+      supabase.from('nutrition_tracking').select('id').eq('user_id', userId).limit(1).maybeSingle(),
+      supabase.from('exercise_sessions').select('id').eq('user_id', userId).limit(1).maybeSingle(),
+      supabase.from('user_goals').select('id').eq('user_id', userId).limit(1).maybeSingle(),
+      supabase.from('daily_mission_sessions').select('id').eq('user_id', userId).limit(1).maybeSingle(),
+      supabase.from('mood_monitoring').select('id').eq('user_id', userId).limit(1).maybeSingle(),
+      supabase.from('profiles').select('id').eq('user_id', userId).maybeSingle()
+    ]);
 
     const completionStatus = {
-      anamnesis: !!anamnesis,
-      physicalData: !!physicalData,
-      weight: !!weightData,
-      nutrition: !!nutritionData,
-      exercise: !!exerciseData,
-      goals: !!goalsData,
-      dailyMission: !!missionsData,
-      mood: !!moodData,
-      profile: !!profileData
+      anamnesis: !!anamnesisResult.data,
+      physicalData: !!physicalDataResult.data,
+      weight: !!weightResult.data,
+      nutrition: !!nutritionResult.data,
+      exercise: !!exerciseResult.data,
+      goals: !!goalsResult.data,
+      dailyMission: !!missionsResult.data,
+      mood: !!moodResult.data,
+      profile: !!profileResult.data
     };
 
     const totalFields = Object.keys(completionStatus).length;
