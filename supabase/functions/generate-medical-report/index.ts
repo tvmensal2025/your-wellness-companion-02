@@ -143,10 +143,43 @@ serve(async (req) => {
         .eq("user_id", userId || "");
     }
 
-    // URL assinada
+    // Criar link público permanente
+    let publicUrl: string | null = null;
+    let publicToken: string | null = null;
+    
+    if (userId) {
+      const appUrl = Deno.env.get("APP_URL") || "https://instituto-dos-sonhos.lovable.app";
+      
+      const { data: linkData, error: linkError } = await supabase
+        .from("public_report_links")
+        .insert({
+          user_id: userId,
+          medical_document_id: documentId || null,
+          report_path: path,
+          title: `Relatório Médico - ${visitData.patient?.name?.split(" ")[0] || "Paciente"}`,
+          exam_type: visitData.examsCurrent?.[0]?.name || null,
+          exam_date: visitData.visit?.date || null,
+        })
+        .select("token")
+        .single();
+      
+      if (!linkError && linkData) {
+        publicToken = linkData.token;
+        publicUrl = `${appUrl}/relatorio/${linkData.token}`;
+        console.log("[generate-medical-report] Link público criado:", publicUrl);
+      }
+    }
+
+    // URL assinada (mantém por compatibilidade)
     const signed = await supabase.storage.from("medical-documents-reports").createSignedUrl(path, 3600);
 
-    return new Response(JSON.stringify({ report, report_path: path, signed_url: signed.data?.signedUrl }), {
+    return new Response(JSON.stringify({ 
+      report, 
+      report_path: path, 
+      signed_url: signed.data?.signedUrl,
+      public_url: publicUrl,
+      public_token: publicToken,
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e: any) {

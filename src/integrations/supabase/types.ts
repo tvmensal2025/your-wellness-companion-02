@@ -6914,6 +6914,51 @@ export type Database = {
           },
         ]
       }
+      public_report_links: {
+        Row: {
+          created_at: string | null
+          exam_date: string | null
+          exam_type: string | null
+          expires_at: string | null
+          id: string
+          last_viewed_at: string | null
+          medical_document_id: string | null
+          report_path: string
+          title: string | null
+          token: string
+          user_id: string | null
+          view_count: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          exam_date?: string | null
+          exam_type?: string | null
+          expires_at?: string | null
+          id?: string
+          last_viewed_at?: string | null
+          medical_document_id?: string | null
+          report_path: string
+          title?: string | null
+          token?: string
+          user_id?: string | null
+          view_count?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          exam_date?: string | null
+          exam_type?: string | null
+          expires_at?: string | null
+          id?: string
+          last_viewed_at?: string | null
+          medical_document_id?: string | null
+          report_path?: string
+          title?: string | null
+          token?: string
+          user_id?: string | null
+          view_count?: number | null
+        }
+        Relationships: []
+      }
       reações_feed_de_saúde: {
         Row: {
           created_at: string | null
@@ -11291,6 +11336,54 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
         ]
+      }
+      whatsapp_pending_medical: {
+        Row: {
+          created_at: string | null
+          doctor_name: string | null
+          exam_date: string | null
+          exam_type: string | null
+          expires_at: string | null
+          id: string
+          image_base64: string | null
+          image_url: string | null
+          medical_document_id: string | null
+          phone: string
+          public_link_token: string | null
+          status: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          doctor_name?: string | null
+          exam_date?: string | null
+          exam_type?: string | null
+          expires_at?: string | null
+          id?: string
+          image_base64?: string | null
+          image_url?: string | null
+          medical_document_id?: string | null
+          phone: string
+          public_link_token?: string | null
+          status?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          doctor_name?: string | null
+          exam_date?: string | null
+          exam_type?: string | null
+          expires_at?: string | null
+          id?: string
+          image_base64?: string | null
+          image_url?: string | null
+          medical_document_id?: string | null
+          phone?: string
+          public_link_token?: string | null
+          status?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
       }
       whatsapp_pending_nutrition: {
         Row: {
