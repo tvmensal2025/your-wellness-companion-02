@@ -118,11 +118,11 @@ const QuickPhotoCapture: React.FC<QuickPhotoCaptureProps> = ({ isOpen, onClose, 
         date: new Date().toISOString().split('T')[0],
         meal_type: mealType,
         food_items: foods.map((f: any) => typeof f === 'string' ? f : f.nome),
-        calories: totalCalories,
-        protein_g: totalProtein,
-        carbs_g: totalCarbs,
-        fat_g: totalFat,
-        source: 'quick_photo'
+        total_calories: totalCalories,
+        total_proteins: totalProtein,
+        total_carbs: totalCarbs,
+        total_fats: totalFat,
+        notes: 'Foto rápida'
       });
 
       if (error) throw error;

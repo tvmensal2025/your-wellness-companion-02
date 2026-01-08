@@ -350,6 +350,39 @@ const SofiaConfirmationModal: React.FC<SofiaConfirmationModalProps> = ({
         const message = data.sofia_response || generateStandardResponse(nutrition);
         const calories = nutrition?.total_kcal || 0;
 
+        // NOVO: Salvar em nutrition_tracking
+        const today = new Date().toISOString().split('T')[0];
+        const hour = new Date().getHours();
+        let mealType = 'lanche';
+        if (hour >= 5 && hour < 10) mealType = 'cafe_da_manha';
+        else if (hour >= 10 && hour < 12) mealType = 'lanche_manha';
+        else if (hour >= 12 && hour < 15) mealType = 'almoco';
+        else if (hour >= 15 && hour < 18) mealType = 'lanche_tarde';
+        else if (hour >= 18 && hour < 21) mealType = 'jantar';
+        else mealType = 'ceia';
+
+        const { error: trackingError } = await supabase
+          .from('nutrition_tracking')
+          .insert({
+            user_id: userId,
+            date: today,
+            meal_type: mealType,
+            total_calories: Math.round(nutrition.total_kcal || 0),
+            total_proteins: nutrition.total_proteina || 0,
+            total_carbs: nutrition.total_carbo || 0,
+            total_fats: nutrition.total_gordura || 0,
+            total_fiber: nutrition.total_fibras || 0,
+            food_items: foodItems.map(f => ({ name: f.name, grams: f.quantity })),
+            notes: 'Registrado via Sofia Chat'
+          });
+
+        if (trackingError) {
+          console.error('Erro ao salvar nutrition_tracking:', trackingError);
+          // Não bloquear o fluxo, apenas logar
+        } else {
+          console.log('✅ Refeição salva em nutrition_tracking');
+        }
+
         onConfirmation(message, calories);
         toast.success('✅ Análise confirmada pela Sofia!');
         onClose();
