@@ -12,7 +12,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useGoogleAuth } from "@/hooks/useGoogleAuth";
 import { GoogleSignupModal } from "@/components/GoogleSignupModal";
-import { AuthChoiceModal } from "@/components/AuthChoiceModal";
 import { repairAuthSessionIfTooLarge } from "@/lib/auth-token-repair";
 const AuthPage = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -23,9 +22,7 @@ const AuthPage = () => {
 
   // Estados para os modais
   const [showGoogleModal, setShowGoogleModal] = useState(false);
-  const [showAuthChoiceModal, setShowAuthChoiceModal] = useState(false);
   const [googleUser, setGoogleUser] = useState(null);
-  const [authenticatedUser, setAuthenticatedUser] = useState(null);
   const navigate = useNavigate();
   const {
     toast
@@ -78,32 +75,13 @@ const AuthPage = () => {
             // segue fluxo normal
           }
 
-          // Mostrar modal de escolha
-          setAuthenticatedUser({
-            id: userData.id,
-            name: userData.user_metadata?.full_name || userData.email?.split('@')[0] || 'Usuário'
-          });
-          setShowAuthChoiceModal(true);
+          // Ir direto para o dashboard
+          navigate('/dashboard');
         }
       }
     };
     checkGoogleAuth();
   }, [navigate]);
-
-  // Listener para evento de mostrar modal de escolha
-  useEffect(() => {
-    const handleShowAuthChoice = (event: CustomEvent) => {
-      setAuthenticatedUser({
-        id: 'google-user',
-        name: event.detail.userName
-      });
-      setShowAuthChoiceModal(true);
-    };
-    window.addEventListener('showAuthChoice', handleShowAuthChoice as EventListener);
-    return () => {
-      window.removeEventListener('showAuthChoice', handleShowAuthChoice as EventListener);
-    };
-  }, []);
 
   // Login form state
   const [loginData, setLoginData] = useState({
@@ -205,17 +183,12 @@ const AuthPage = () => {
             });
             navigate("/admin");
           } else {
-            setAuthenticatedUser({
-              id: data.user.id,
-              name: (profileData as any)?.full_name || data.user.email?.split('@')[0] || 'Usuário'
-            });
             toast({
               title: "Login realizado!",
               description: "Bem-vindo de volta ao Instituto dos Sonhos"
             });
-
-            // Mostrar modal de escolha
-            setShowAuthChoiceModal(true);
+            // Ir direto para o dashboard
+            navigate("/dashboard");
           }
         } catch (roleError) {
           // Se não conseguir verificar role, assume usuário comum
@@ -506,15 +479,6 @@ const AuthPage = () => {
             console.log('✅ Dados físicos criados com sucesso!');
           }
 
-          // Buscar dados do usuário para mostrar no modal
-          const {
-            data: profile
-          } = await supabase.from('profiles').select('full_name').eq('user_id', data.user.id).single();
-          setAuthenticatedUser({
-            id: data.user.id,
-            name: profile?.full_name || data.user.email?.split('@')[0] || 'Usuário'
-          });
-          
           // Enviar mensagem de boas-vindas via WhatsApp (em background)
           try {
             console.log('📱 Enviando mensagem de boas-vindas...');
@@ -540,8 +504,8 @@ const AuthPage = () => {
             description: "Bem-vindo ao Instituto dos Sonhos. Seus dados foram salvos."
           });
 
-          // Mostrar modal de escolha
-          setShowAuthChoiceModal(true);
+          // Ir direto para o dashboard
+          navigate("/dashboard");
         }
       }
     } catch (error) {
@@ -1023,9 +987,6 @@ const AuthPage = () => {
 
       {/* Modal para completar perfil Google */}
       <GoogleSignupModal isOpen={showGoogleModal} onClose={() => setShowGoogleModal(false)} googleUser={googleUser} />
-
-      {/* Modal de escolha após autenticação */}
-      <AuthChoiceModal isOpen={showAuthChoiceModal} onClose={() => setShowAuthChoiceModal(false)} userName={authenticatedUser?.name} />
     </div>;
 };
 export default AuthPage;

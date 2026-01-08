@@ -41,6 +41,7 @@ const MyProgress = lazy(() => import('@/components/MyProgress'));
 const SaboteurTest = lazy(() => import('@/components/SaboteurTest'));
 const LayoutPreferencesModal = lazy(() => import('@/components/settings/LayoutPreferencesModal').then(m => ({ default: m.LayoutPreferencesModal })));
 const WhatsAppSettingsModal = lazy(() => import('@/components/settings/WhatsAppSettingsModal').then(m => ({ default: m.WhatsAppSettingsModal })));
+const WelcomeOnboardingModal = lazy(() => import('@/components/onboarding/WelcomeOnboardingModal').then(m => ({ default: m.WelcomeOnboardingModal })));
 
 // Sidebar components
 import { SidebarProfile } from '@/components/sidebar/SidebarProfile';
@@ -69,6 +70,7 @@ const CompleteDashboardPage = () => {
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [layoutPrefsModalOpen, setLayoutPrefsModalOpen] = useState(false);
   const [whatsappSettingsOpen, setWhatsappSettingsOpen] = useState(false);
+  const [welcomeModalOpen, setWelcomeModalOpen] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -256,6 +258,17 @@ const CompleteDashboardPage = () => {
     });
     return () => subscription.unsubscribe();
   }, [navigate]);
+
+  // Welcome modal - mostrar apenas na primeira vez
+  useEffect(() => {
+    if (!loading && user && !userDataLoading) {
+      const hasSeenWelcome = localStorage.getItem('hasSeenWelcomeModal');
+      if (!hasSeenWelcome) {
+        const timer = setTimeout(() => setWelcomeModalOpen(true), 500);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [loading, user, userDataLoading]);
 
   // Auto-análise removida - agora executa de 15 em 15 dias via scheduler
   // useEffect(() => {
@@ -659,6 +672,43 @@ const CompleteDashboardPage = () => {
         <WhatsAppSettingsModal 
           open={whatsappSettingsOpen} 
           onOpenChange={setWhatsappSettingsOpen}
+        />
+      </Suspense>
+
+      {/* Modal de Boas-vindas / Onboarding */}
+      <Suspense fallback={null}>
+        <WelcomeOnboardingModal
+          open={welcomeModalOpen}
+          onOpenChange={setWelcomeModalOpen}
+          userName={profileData?.fullName?.split(' ')[0] || user?.email?.split('@')[0] || 'Usuário'}
+          preferences={preferences}
+          menuItems={menuItems}
+          onSave={async (prefs) => {
+            if (!user) return false;
+            try {
+              const { error } = await supabase
+                .from('user_layout_preferences')
+                .upsert({
+                  user_id: user.id,
+                  sidebar_order: prefs.sidebarOrder || preferences.sidebarOrder,
+                  hidden_sidebar_items: prefs.hiddenSidebarItems || preferences.hiddenSidebarItems,
+                  default_section: prefs.defaultSection || preferences.defaultSection,
+                  updated_at: new Date().toISOString(),
+                }, { onConflict: 'user_id' });
+              
+              if (error) throw error;
+              invalidateUserDataCache();
+              refreshUserData();
+              return true;
+            } catch (err) {
+              console.error('Erro ao salvar preferências:', err);
+              return false;
+            }
+          }}
+          whatsappNumbers={{
+            sofia: '+5535988322535',
+            drVital: '+5535988322535'
+          }}
         />
       </Suspense>
     </div>;
