@@ -874,9 +874,9 @@ const AuthPage = () => {
                               className="bg-background border-border shadow-lg z-[9999] max-h-[300px] overflow-auto"
                               sideOffset={4}
                             >
-                        <SelectItem value="masculino">Homem</SelectItem>
-                        <SelectItem value="feminino">Mulher</SelectItem>
-                        <SelectItem value="nao_informar">Prefiro não informar</SelectItem>
+                              <SelectItem value="masculino">Homem</SelectItem>
+                              <SelectItem value="feminino">Mulher</SelectItem>
+                              <SelectItem value="nao_informar">Prefiro não informar</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
