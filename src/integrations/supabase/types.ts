@@ -3533,6 +3533,72 @@ export type Database = {
           },
         ]
       }
+      food_history: {
+        Row: {
+          ai_analysis: string | null
+          confidence_score: number | null
+          created_at: string | null
+          food_items: Json | null
+          id: string
+          meal_date: string
+          meal_time: string | null
+          meal_type: string | null
+          photo_url: string | null
+          source: string | null
+          total_calories: number | null
+          total_carbs: number | null
+          total_fats: number | null
+          total_fiber: number | null
+          total_proteins: number | null
+          updated_at: string | null
+          user_confirmed: boolean | null
+          user_id: string
+          user_notes: string | null
+        }
+        Insert: {
+          ai_analysis?: string | null
+          confidence_score?: number | null
+          created_at?: string | null
+          food_items?: Json | null
+          id?: string
+          meal_date?: string
+          meal_time?: string | null
+          meal_type?: string | null
+          photo_url?: string | null
+          source?: string | null
+          total_calories?: number | null
+          total_carbs?: number | null
+          total_fats?: number | null
+          total_fiber?: number | null
+          total_proteins?: number | null
+          updated_at?: string | null
+          user_confirmed?: boolean | null
+          user_id: string
+          user_notes?: string | null
+        }
+        Update: {
+          ai_analysis?: string | null
+          confidence_score?: number | null
+          created_at?: string | null
+          food_items?: Json | null
+          id?: string
+          meal_date?: string
+          meal_time?: string | null
+          meal_type?: string | null
+          photo_url?: string | null
+          source?: string | null
+          total_calories?: number | null
+          total_carbs?: number | null
+          total_fats?: number | null
+          total_fiber?: number | null
+          total_proteins?: number | null
+          updated_at?: string | null
+          user_confirmed?: boolean | null
+          user_id?: string
+          user_notes?: string | null
+        }
+        Relationships: []
+      }
       food_preparation_preservation: {
         Row: {
           best_practices: string[] | null
