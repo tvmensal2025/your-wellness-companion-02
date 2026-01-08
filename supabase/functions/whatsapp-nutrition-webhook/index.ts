@@ -753,6 +753,44 @@ async function processText(user: { id: string }, phone: string, text: string): P
   }
 }
 
+// =============== INTERPRETAÇÃO DE INTENÇÃO COM IA ===============
+
+async function interpretUserIntent(text: string, context: string, pendingFoods?: any[]): Promise<any> {
+  try {
+    const { data, error } = await supabase.functions.invoke("interpret-user-intent", {
+      body: {
+        text,
+        context,
+        pendingFoods: pendingFoods || []
+      }
+    });
+
+    if (error || !data) {
+      console.log("[WhatsApp Nutrition] Erro na interpretação IA, usando fallback");
+      return fallbackIntentInterpretation(text);
+    }
+
+    console.log("[WhatsApp Nutrition] Intenção IA:", data.intent, "confiança:", data.confidence);
+    return data;
+
+  } catch (e) {
+    console.error("[WhatsApp Nutrition] Erro ao chamar interpret-user-intent:", e);
+    return fallbackIntentInterpretation(text);
+  }
+}
+
+// Fallback simples para quando a IA falhar
+function fallbackIntentInterpretation(text: string): any {
+  const lower = text.toLowerCase().trim();
+  
+  if (isConfirmationPositive(lower)) return { intent: "confirm", confidence: 0.8, details: {} };
+  if (isConfirmationNegative(lower)) return { intent: "cancel", confidence: 0.8, details: {} };
+  if (isConfirmationEdit(lower)) return { intent: "edit", confidence: 0.8, details: {} };
+  if (isEditDone(lower)) return { intent: "confirm", confidence: 0.8, details: {} };
+  
+  return { intent: "unknown", confidence: 0, details: {} };
+}
+
 // =============== PROCESSAMENTO DE CONFIRMAÇÃO ===============
 
 async function handleConfirmation(
@@ -762,7 +800,17 @@ async function handleConfirmation(
   phone: string
 ): Promise<void> {
   try {
-    if (isConfirmationPositive(messageText)) {
+    // Extrair alimentos pendentes para contexto
+    const analysis = pending.analysis_result || {};
+    const pendingFoods = analysis.detectedFoods || analysis.foods || analysis.foods_detected || [];
+    
+    // Usar IA para interpretar a intenção do usuário
+    const intent = await interpretUserIntent(messageText, "awaiting_confirmation", pendingFoods);
+    
+    console.log("[WhatsApp Nutrition] Intenção interpretada:", intent.intent);
+    
+    // Processar baseado na intenção
+    if (intent.intent === "confirm") {
       console.log("[WhatsApp Nutrition] Confirmação positiva recebida");
 
       // Extrair alimentos da análise pendente (formato estável)
@@ -852,16 +900,8 @@ async function handleConfirmation(
 
       await sendWhatsApp(phone, successMessage);
 
-    } else if (isConfirmationEdit(messageText)) {
+    } else if (intent.intent === "edit") {
       console.log("[WhatsApp Nutrition] Modo edição ativado");
-
-      // Extrair alimentos
-      const analysis = pending.analysis_result || {};
-      const detectedFoods =
-        analysis.detectedFoods ||
-        analysis.foods ||
-        analysis.foods_detected ||
-        [];
 
       // Marcar como em edição
       await supabase
@@ -870,7 +910,7 @@ async function handleConfirmation(
         .eq("id", pending.id);
 
       // Montar lista numerada
-      const numberedList = detectedFoods
+      const numberedList = pendingFoods
         .map((f: any, i: number) => {
           const name = f.nome || f.name || f.alimento || "(alimento)";
           const grams = f.quantidade ?? f.grams ?? f.g ?? "?";
@@ -882,14 +922,137 @@ async function handleConfirmation(
         phone,
         `✏️ *Modo edição*\n\n` +
         `Itens detectados:\n${numberedList}\n\n` +
-        `Responda assim:\n` +
+        `Agora você pode me dizer naturalmente:\n` +
+        `• "Adiciona uma banana"\n` +
+        `• "Tira o arroz"\n` +
+        `• "Na verdade era macarrão, não arroz"\n\n` +
+        `Ou use comandos:\n` +
         `• "Trocar 1 por Macarrão 200g"\n` +
-        `• "Remover 2"\n` +
-        `• "Adicionar Bife 150g"\n\n` +
+        `• "Remover 2"\n\n` +
         `Responda *PRONTO* quando terminar`
       );
 
-    } else if (isConfirmationNegative(messageText)) {
+    } else if (intent.intent === "add_food" && intent.details?.newFood) {
+      // Usuário quer adicionar alimento diretamente (sem entrar em modo edição)
+      console.log("[WhatsApp Nutrition] Adicionando alimento via intent:", intent.details.newFood);
+      
+      const newFood = {
+        nome: intent.details.newFood.name,
+        quantidade: intent.details.newFood.grams || 100,
+        name: intent.details.newFood.name,
+        grams: intent.details.newFood.grams || 100
+      };
+      
+      const updatedFoods = [...pendingFoods, newFood];
+      const updatedAnalysis = { ...analysis, detectedFoods: updatedFoods };
+      
+      await supabase
+        .from("whatsapp_pending_nutrition")
+        .update({ analysis_result: updatedAnalysis })
+        .eq("id", pending.id);
+      
+      const foodsList = updatedFoods
+        .map((f: any) => {
+          const name = f.nome || f.name || "(alimento)";
+          const grams = f.quantidade ?? f.grams ?? "?";
+          return `• ${name} (${grams}g)`;
+        })
+        .join("\n");
+      
+      await sendWhatsApp(
+        phone,
+        `✅ *Adicionado!*\n\n` +
+        `Lista atualizada:\n${foodsList}\n\n` +
+        `Confirmar registro?\n` +
+        `✅ *SIM* para confirmar\n` +
+        `❌ *NÃO* para cancelar\n` +
+        `✏️ *EDITAR* para mais alterações`
+      );
+
+    } else if (intent.intent === "remove_food") {
+      // Usuário quer remover alimento diretamente
+      console.log("[WhatsApp Nutrition] Removendo alimento via intent:", intent.details);
+      
+      let updatedFoods = [...pendingFoods];
+      
+      if (intent.details?.foodIndex !== undefined && intent.details.foodIndex >= 0 && intent.details.foodIndex < updatedFoods.length) {
+        updatedFoods.splice(intent.details.foodIndex, 1);
+      } else if (intent.details?.newFood?.name) {
+        // Remover por nome
+        const nameToRemove = intent.details.newFood.name.toLowerCase();
+        updatedFoods = updatedFoods.filter((f: any) => {
+          const foodName = (f.nome || f.name || "").toLowerCase();
+          return !foodName.includes(nameToRemove);
+        });
+      }
+      
+      const updatedAnalysis = { ...analysis, detectedFoods: updatedFoods };
+      
+      await supabase
+        .from("whatsapp_pending_nutrition")
+        .update({ analysis_result: updatedAnalysis })
+        .eq("id", pending.id);
+      
+      const foodsList = updatedFoods
+        .map((f: any) => {
+          const name = f.nome || f.name || "(alimento)";
+          const grams = f.quantidade ?? f.grams ?? "?";
+          return `• ${name} (${grams}g)`;
+        })
+        .join("\n");
+      
+      await sendWhatsApp(
+        phone,
+        `✅ *Removido!*\n\n` +
+        `Lista atualizada:\n${foodsList || "(lista vazia)"}\n\n` +
+        `Confirmar registro?\n` +
+        `✅ *SIM* para confirmar\n` +
+        `❌ *NÃO* para cancelar\n` +
+        `✏️ *EDITAR* para mais alterações`
+      );
+
+    } else if (intent.intent === "replace_food" && intent.details?.newFood) {
+      // Usuário quer substituir alimento diretamente
+      console.log("[WhatsApp Nutrition] Substituindo alimento via intent:", intent.details);
+      
+      let updatedFoods = [...pendingFoods];
+      const indexToReplace = intent.details.foodIndex ?? 0; // Se não especificou, assume o primeiro
+      
+      if (indexToReplace >= 0 && indexToReplace < updatedFoods.length) {
+        updatedFoods[indexToReplace] = {
+          nome: intent.details.newFood.name,
+          quantidade: intent.details.newFood.grams || 100,
+          name: intent.details.newFood.name,
+          grams: intent.details.newFood.grams || 100
+        };
+      }
+      
+      const updatedAnalysis = { ...analysis, detectedFoods: updatedFoods };
+      
+      await supabase
+        .from("whatsapp_pending_nutrition")
+        .update({ analysis_result: updatedAnalysis })
+        .eq("id", pending.id);
+      
+      const foodsList = updatedFoods
+        .map((f: any) => {
+          const name = f.nome || f.name || "(alimento)";
+          const grams = f.quantidade ?? f.grams ?? "?";
+          return `• ${name} (${grams}g)`;
+        })
+        .join("\n");
+      
+      await sendWhatsApp(
+        phone,
+        `✅ *Substituído!*\n\n` +
+        `Lista atualizada:\n${foodsList}\n\n` +
+        `Confirmar registro?\n` +
+        `✅ *SIM* para confirmar\n` +
+        `❌ *NÃO* para cancelar\n` +
+        `✏️ *EDITAR* para mais alterações`
+      );
+
+    } else if (intent.intent === "cancel") {
       console.log("[WhatsApp Nutrition] Confirmação negativa recebida");
 
       // Limpar pendente
@@ -914,10 +1077,14 @@ async function handleConfirmation(
       await sendWhatsApp(
         phone,
         `🤔 Não entendi sua resposta.\n\n` +
-        `Responda:\n` +
-        `*1* ou *SIM* - Confirmar\n` +
-        `*2* ou *NÃO* - Cancelar\n` +
-        `*3* ou *EDITAR* - Corrigir itens`
+        `Você pode me dizer naturalmente:\n` +
+        `• "Beleza, pode salvar"\n` +
+        `• "Faltou uma banana"\n` +
+        `• "Tira o arroz"\n\n` +
+        `Ou responda:\n` +
+        `*SIM* - Confirmar\n` +
+        `*NÃO* - Cancelar\n` +
+        `*EDITAR* - Corrigir itens`
       );
     }
   } catch (error) {
@@ -943,8 +1110,13 @@ async function handleEdit(
         [])
     ];
 
+    // Usar IA para interpretar a intenção do usuário
+    const intent = await interpretUserIntent(messageText, "editing_food_list", detectedFoods);
+    
+    console.log("[WhatsApp Nutrition] Intenção no modo edição:", intent.intent);
+
     // Verificar se usuário terminou edição
-    if (isEditDone(messageText)) {
+    if (intent.intent === "confirm" || isEditDone(messageText)) {
       console.log("[WhatsApp Nutrition] Edição finalizada, solicitando confirmação");
 
       // Atualizar análise com alimentos editados
@@ -981,45 +1153,101 @@ async function handleEdit(
       return;
     }
 
-    // Tentar interpretar comando de edição
-    const command = parseEditCommand(messageText, detectedFoods);
+    // Processar baseado na intenção da IA
+    let actionTaken = false;
+    
+    if (intent.intent === "add_food" && intent.details?.newFood) {
+      detectedFoods.push({
+        nome: intent.details.newFood.name,
+        name: intent.details.newFood.name,
+        quantidade: intent.details.newFood.grams || 100,
+        grams: intent.details.newFood.grams || 100,
+      });
+      console.log(`[WhatsApp Nutrition] Adicionado via IA:`, intent.details.newFood);
+      actionTaken = true;
+      
+    } else if (intent.intent === "remove_food") {
+      if (intent.details?.foodIndex !== undefined && intent.details.foodIndex >= 0 && intent.details.foodIndex < detectedFoods.length) {
+        const removed = detectedFoods.splice(intent.details.foodIndex, 1);
+        console.log(`[WhatsApp Nutrition] Removido item ${intent.details.foodIndex + 1}:`, removed);
+        actionTaken = true;
+      } else if (intent.details?.newFood?.name) {
+        // Remover por nome
+        const nameToRemove = intent.details.newFood.name.toLowerCase();
+        const originalLength = detectedFoods.length;
+        detectedFoods = detectedFoods.filter((f: any) => {
+          const foodName = (f.nome || f.name || "").toLowerCase();
+          return !foodName.includes(nameToRemove);
+        });
+        if (detectedFoods.length < originalLength) {
+          console.log(`[WhatsApp Nutrition] Removido por nome:`, nameToRemove);
+          actionTaken = true;
+        }
+      }
+      
+    } else if (intent.intent === "replace_food" && intent.details?.newFood) {
+      const indexToReplace = intent.details.foodIndex ?? 0;
+      if (indexToReplace >= 0 && indexToReplace < detectedFoods.length) {
+        const oldFood = detectedFoods[indexToReplace];
+        detectedFoods[indexToReplace] = {
+          nome: intent.details.newFood.name,
+          name: intent.details.newFood.name,
+          quantidade: intent.details.newFood.grams || 100,
+          grams: intent.details.newFood.grams || 100,
+        };
+        console.log(`[WhatsApp Nutrition] Substituído item ${indexToReplace + 1}:`, oldFood, "->", intent.details.newFood);
+        actionTaken = true;
+      }
+    }
+    
+    // Se a IA não conseguiu, tentar o parser antigo como fallback
+    if (!actionTaken) {
+      const command = parseEditCommand(messageText, detectedFoods);
+      
+      if (command) {
+        if (command.action === 'replace' && command.index !== undefined && command.newFood) {
+          const oldFood = detectedFoods[command.index];
+          detectedFoods[command.index] = {
+            nome: command.newFood.name,
+            name: command.newFood.name,
+            quantidade: command.newFood.grams,
+            grams: command.newFood.grams,
+          };
+          console.log(`[WhatsApp Nutrition] Substituído item ${command.index + 1} (fallback):`, oldFood, "->", command.newFood);
+          actionTaken = true;
 
-    if (!command) {
+        } else if (command.action === 'remove' && command.index !== undefined) {
+          const removed = detectedFoods.splice(command.index, 1);
+          console.log(`[WhatsApp Nutrition] Removido item ${command.index + 1} (fallback):`, removed);
+          actionTaken = true;
+
+        } else if (command.action === 'add' && command.newFood) {
+          detectedFoods.push({
+            nome: command.newFood.name,
+            name: command.newFood.name,
+            quantidade: command.newFood.grams,
+            grams: command.newFood.grams,
+          });
+          console.log(`[WhatsApp Nutrition] Adicionado (fallback):`, command.newFood);
+          actionTaken = true;
+        }
+      }
+    }
+    
+    if (!actionTaken) {
       await sendWhatsApp(
         phone,
-        `🤔 Não entendi o comando.\n\n` +
-        `Exemplos:\n` +
-        `• "Trocar 1 por Macarrão 200g"\n` +
-        `• "Remover 2"\n` +
-        `• "Adicionar Bife 150g"\n\n` +
-        `Ou responda *PRONTO* para finalizar`
+        `🤔 Não entendi.\n\n` +
+        `Você pode dizer naturalmente:\n` +
+        `• "Adiciona uma maçã"\n` +
+        `• "Tira o arroz"\n` +
+        `• "Era macarrão, não arroz"\n\n` +
+        `Ou use comandos:\n` +
+        `• "Adicionar Bife 150g"\n` +
+        `• "Remover 2"\n\n` +
+        `Responda *PRONTO* para finalizar`
       );
       return;
-    }
-
-    // Aplicar comando
-    if (command.action === 'replace' && command.index !== undefined && command.newFood) {
-      const oldFood = detectedFoods[command.index];
-      detectedFoods[command.index] = {
-        nome: command.newFood.name,
-        name: command.newFood.name,
-        quantidade: command.newFood.grams,
-        grams: command.newFood.grams,
-      };
-      console.log(`[WhatsApp Nutrition] Substituído item ${command.index + 1}:`, oldFood, "->", command.newFood);
-
-    } else if (command.action === 'remove' && command.index !== undefined) {
-      const removed = detectedFoods.splice(command.index, 1);
-      console.log(`[WhatsApp Nutrition] Removido item ${command.index + 1}:`, removed);
-
-    } else if (command.action === 'add' && command.newFood) {
-      detectedFoods.push({
-        nome: command.newFood.name,
-        name: command.newFood.name,
-        quantidade: command.newFood.grams,
-        grams: command.newFood.grams,
-      });
-      console.log(`[WhatsApp Nutrition] Adicionado:`, command.newFood);
     }
 
     // Atualizar análise no banco
