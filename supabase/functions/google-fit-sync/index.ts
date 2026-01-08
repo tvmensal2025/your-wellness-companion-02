@@ -290,6 +290,56 @@ serve(async (req) => {
       };
 
       await supabaseClient.from('google_fit_data').upsert(googleFitRecord, { onConflict: 'user_id,date' });
+      
+      // === SINCRONIZAÇÃO AUTOMÁTICA COM NUTRITION_TRACKING ===
+      // Se houver dados de hidratação ou nutrição, salvar em nutrition_tracking
+      if ((d.hydration && d.hydration > 0) || (d.waterIntake && d.waterIntake > 0) || (d.nutritionCalories && d.nutritionCalories > 0)) {
+        const totalWater = Math.round((d.hydration || 0) + (d.waterIntake || 0));
+        
+        // Verificar se já existe registro do Google Fit para este dia
+        const { data: existingRecord } = await supabaseClient
+          .from('nutrition_tracking')
+          .select('id, water_ml')
+          .eq('user_id', user.user.id)
+          .eq('date', d.date)
+          .eq('source', 'google_fit')
+          .maybeSingle();
+
+        if (existingRecord) {
+          // Atualizar registro existente
+          await supabaseClient
+            .from('nutrition_tracking')
+            .update({
+              water_ml: totalWater,
+              calories: d.nutritionCalories || 0,
+              protein_g: d.protein || 0,
+              carbs_g: d.carbs || 0,
+              fat_g: d.fat || 0,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', existingRecord.id);
+            
+          console.log(`📊 Nutrition tracking atualizado para ${d.date}: ${totalWater}ml água`);
+        } else if (totalWater > 0 || (d.nutritionCalories && d.nutritionCalories > 0)) {
+          // Criar novo registro
+          await supabaseClient
+            .from('nutrition_tracking')
+            .insert({
+              user_id: user.user.id,
+              date: d.date,
+              meal_type: 'google_fit_sync',
+              water_ml: totalWater,
+              calories: d.nutritionCalories || 0,
+              protein_g: d.protein || 0,
+              carbs_g: d.carbs || 0,
+              fat_g: d.fat || 0,
+              source: 'google_fit',
+              food_items: ['Dados sincronizados do Google Fit']
+            });
+            
+          console.log(`📊 Nutrition tracking criado para ${d.date}: ${totalWater}ml água, ${d.nutritionCalories || 0} kcal`);
+        }
+      }
     }
 
     return new Response(
@@ -297,7 +347,7 @@ serve(async (req) => {
         success: true, 
         days: dailyData.length,
         dataTypes: Object.keys(dailyData[0] || {}).length,
-        message: 'Dados completos do Google Fit sincronizados com sucesso'
+        message: 'Dados completos do Google Fit sincronizados com sucesso (incluindo nutrição)'
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

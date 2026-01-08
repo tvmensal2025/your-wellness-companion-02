@@ -10085,12 +10085,16 @@ export type Database = {
           whatsapp_challenges_enabled: boolean | null
           whatsapp_challenges_time: string | null
           whatsapp_daily_motivation: boolean | null
+          whatsapp_daily_summary_enabled: boolean | null
+          whatsapp_daily_summary_time: string | null
           whatsapp_daily_time: string | null
           whatsapp_enabled: boolean | null
           whatsapp_goals_enabled: boolean | null
           whatsapp_goals_time: string | null
           whatsapp_mission_enabled: boolean | null
           whatsapp_mission_time: string | null
+          whatsapp_nutrition_enabled: boolean | null
+          whatsapp_nutrition_times: Json | null
           whatsapp_reminders: boolean | null
           whatsapp_water_enabled: boolean | null
           whatsapp_water_times: string[] | null
@@ -10112,12 +10116,16 @@ export type Database = {
           whatsapp_challenges_enabled?: boolean | null
           whatsapp_challenges_time?: string | null
           whatsapp_daily_motivation?: boolean | null
+          whatsapp_daily_summary_enabled?: boolean | null
+          whatsapp_daily_summary_time?: string | null
           whatsapp_daily_time?: string | null
           whatsapp_enabled?: boolean | null
           whatsapp_goals_enabled?: boolean | null
           whatsapp_goals_time?: string | null
           whatsapp_mission_enabled?: boolean | null
           whatsapp_mission_time?: string | null
+          whatsapp_nutrition_enabled?: boolean | null
+          whatsapp_nutrition_times?: Json | null
           whatsapp_reminders?: boolean | null
           whatsapp_water_enabled?: boolean | null
           whatsapp_water_times?: string[] | null
@@ -10139,12 +10147,16 @@ export type Database = {
           whatsapp_challenges_enabled?: boolean | null
           whatsapp_challenges_time?: string | null
           whatsapp_daily_motivation?: boolean | null
+          whatsapp_daily_summary_enabled?: boolean | null
+          whatsapp_daily_summary_time?: string | null
           whatsapp_daily_time?: string | null
           whatsapp_enabled?: boolean | null
           whatsapp_goals_enabled?: boolean | null
           whatsapp_goals_time?: string | null
           whatsapp_mission_enabled?: boolean | null
           whatsapp_mission_time?: string | null
+          whatsapp_nutrition_enabled?: boolean | null
+          whatsapp_nutrition_times?: Json | null
           whatsapp_reminders?: boolean | null
           whatsapp_water_enabled?: boolean | null
           whatsapp_water_times?: string[] | null
@@ -11255,6 +11267,54 @@ export type Database = {
             referencedColumns: ["user_id"]
           },
         ]
+      }
+      whatsapp_pending_nutrition: {
+        Row: {
+          analysis_result: Json | null
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          image_url: string | null
+          is_processed: boolean | null
+          meal_type: string
+          nutrition_tracking_id: string | null
+          question_sent_at: string
+          response_content: string | null
+          response_received_at: string | null
+          response_type: string | null
+          user_id: string
+        }
+        Insert: {
+          analysis_result?: Json | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          image_url?: string | null
+          is_processed?: boolean | null
+          meal_type: string
+          nutrition_tracking_id?: string | null
+          question_sent_at?: string
+          response_content?: string | null
+          response_received_at?: string | null
+          response_type?: string | null
+          user_id: string
+        }
+        Update: {
+          analysis_result?: Json | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          image_url?: string | null
+          is_processed?: boolean | null
+          meal_type?: string
+          nutrition_tracking_id?: string | null
+          question_sent_at?: string
+          response_content?: string | null
+          response_received_at?: string | null
+          response_type?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       whatsapp_scheduled_messages: {
         Row: {
