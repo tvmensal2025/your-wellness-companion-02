@@ -38,7 +38,7 @@ export const DrVitalHealthCard: React.FC<DrVitalHealthCardProps> = ({
         </div>
         <div className="flex-1">
           <h1 className="text-2xl font-bold text-white tracking-tight">Dr. Vital</h1>
-          <p className="text-xs text-emerald-400/90 font-medium tracking-wide">Instituto dos Sonhos</p>
+          <p className="text-xs text-emerald-400/90 font-medium tracking-wide">MaxNutrition</p>
         </div>
         <div className="text-3xl">💚</div>
       </div>

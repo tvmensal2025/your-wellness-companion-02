@@ -109,7 +109,7 @@ const CoursePlatformNetflix = ({ user }: CoursePlatformNetflixProps) => {
       description: "7 chaves que me ajudam no dia a dia para uma vida mais equilibrada",
       thumbnail_url: "/placeholder.svg",
       category: "Mindset",
-      instructor_name: "Instituto dos Sonhos",
+      instructor_name: "MaxNutrition",
       lessons: [
         {
           id: "1-1",
@@ -182,7 +182,7 @@ const CoursePlatformNetflix = ({ user }: CoursePlatformNetflixProps) => {
       description: "Guia completo dos 12 chás medicinais para saúde e bem-estar",
       thumbnail_url: "/placeholder.svg",
       category: "Nutrição",
-      instructor_name: "Instituto dos Sonhos",
+      instructor_name: "MaxNutrition",
       lessons: [
         {
           id: "2-1",
@@ -219,7 +219,7 @@ const CoursePlatformNetflix = ({ user }: CoursePlatformNetflixProps) => {
       description: "Suplementos naturais e eficazes para sua saúde",
       thumbnail_url: "/placeholder.svg",
       category: "Saúde",
-      instructor_name: "Instituto dos Sonhos",
+      instructor_name: "MaxNutrition",
       lessons: [
         {
           id: "3-1",
@@ -247,7 +247,7 @@ const CoursePlatformNetflix = ({ user }: CoursePlatformNetflixProps) => {
       description: "Aprenda a técnica do jejum intermitente de forma segura",
       thumbnail_url: "/placeholder.svg",
       category: "Nutrição",
-      instructor_name: "Instituto dos Sonhos",
+      instructor_name: "MaxNutrition",
       lessons: [
         {
           id: "4-1",
@@ -266,7 +266,7 @@ const CoursePlatformNetflix = ({ user }: CoursePlatformNetflixProps) => {
       description: "Dicas práticas para aplicar no seu dia a dia",
       thumbnail_url: "/placeholder.svg",
       category: "Bem-estar",
-      instructor_name: "Instituto dos Sonhos",
+      instructor_name: "MaxNutrition",
       lessons: [
         {
           id: "5-1",
@@ -285,7 +285,7 @@ const CoursePlatformNetflix = ({ user }: CoursePlatformNetflixProps) => {
       description: "Exercícios eficazes que você pode fazer em casa",
       thumbnail_url: "/placeholder.svg",
       category: "Exercício",
-      instructor_name: "Instituto dos Sonhos",
+      instructor_name: "MaxNutrition",
       lessons: [
         {
           id: "6-1",

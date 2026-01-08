@@ -19,7 +19,7 @@ export const GoogleFitCallback: React.FC = () => {
   const params = useMemo(() => new URLSearchParams(location.search), [location.search]);
 
   useEffect(() => {
-    document.title = 'Conectando Google Fit | Instituto dos Sonhos';
+    document.title = 'Conectando Google Fit | MaxNutrition';
 
     const run = async () => {
       const code = params.get('code');

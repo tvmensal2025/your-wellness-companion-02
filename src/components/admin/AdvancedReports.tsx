@@ -338,7 +338,7 @@ const AdvancedReports: React.FC = () => {
   const exportReport = () => {
     const csvContent = [
       // Cabeçalho do relatório
-      ['RELATÓRIO AVANÇADO - INSTITUTO DOS SONHOS'],
+      ['RELATÓRIO AVANÇADO - MAXNUTRITION'],
       [`Gerado em: ${new Date().toLocaleString('pt-BR')}`],
       [`Período: Últimos ${selectedPeriod} dias`],
       [''],

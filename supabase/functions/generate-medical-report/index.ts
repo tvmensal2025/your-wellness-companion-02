@@ -50,7 +50,7 @@ const pickModel = () => ({
 });
 
 const SYSTEM_PT = `
-Você é o Dr. Vital (IA) do Instituto dos Sonhos. Fale em português do Brasil,
+Você é o Dr. Vital (IA) do MaxNutrition. Fale em português do Brasil,
 linguagem simples e respeitosa, SEM diagnóstico ou prescrição.
 Explique cada bloco de exames para leigos. Mantenha estrutura sênior:
 após cada tabela, inclua "O que isso significa?", "Dr. Vital sugere (em casa)" e

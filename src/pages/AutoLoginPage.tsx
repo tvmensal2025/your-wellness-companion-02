@@ -100,7 +100,7 @@ const AutoLoginPage = () => {
           </div>
           
           <div className="space-y-2">
-            <h1 className="text-2xl font-bold">Instituto dos Sonhos</h1>
+            <h1 className="text-2xl font-bold">MaxNutrition</h1>
             <p className="text-muted-foreground">
               {loading ? "Realizando login automático..." : "Redirecionando..."}
             </p>

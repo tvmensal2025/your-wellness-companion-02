@@ -560,7 +560,7 @@ Clique no botão abaixo para começar! ⬇️`,
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <CardTitle className="text-xs sm:text-sm truncate">Sofia - Instituto dos Sonhos</CardTitle>
+                <CardTitle className="text-xs sm:text-sm truncate">Sofia - MaxNutrition</CardTitle>
                 <p className="text-[10px] sm:text-xs opacity-90 truncate">
                   {voiceEnabled ? 'Voz ativa' : 'Online e pronta para ajudar!'}
                 </p>

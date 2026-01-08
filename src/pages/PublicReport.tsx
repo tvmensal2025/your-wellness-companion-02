@@ -40,7 +40,7 @@ const PublicReport = () => {
       setTitle(data.title || "Relatório Médico");
       
       // Atualizar título da página
-      document.title = `${data.title || "Relatório"} - Instituto dos Sonhos`;
+      document.title = `${data.title || "Relatório"} - MaxNutrition`;
     } catch (err: any) {
       console.error("Erro ao carregar relatório:", err);
       setError(err.message || "Erro ao carregar relatório");
@@ -120,7 +120,7 @@ const PublicReport = () => {
               <h1 className="font-semibold text-gray-900 text-sm sm:text-base truncate max-w-[200px] sm:max-w-none">
                 {title}
               </h1>
-              <p className="text-xs text-gray-500">Instituto dos Sonhos</p>
+              <p className="text-xs text-gray-500">MaxNutrition</p>
             </div>
           </div>
           
@@ -157,7 +157,7 @@ const PublicReport = () => {
         <div className="max-w-5xl mx-auto px-4 text-center">
           <p className="text-sm text-gray-500">
             Relatório gerado pela plataforma{" "}
-            <span className="font-medium text-purple-600">Instituto dos Sonhos</span>
+            <span className="font-medium text-purple-600">MaxNutrition</span>
           </p>
           <p className="text-xs text-gray-400 mt-1">
             Este documento é educativo e não substitui consulta médica.

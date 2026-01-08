@@ -1095,7 +1095,7 @@ export default function UserSessions({ user }: UserSessionsProps) {
 
       {/* Print Footer */}
       <div className="hidden print:block text-center text-xs text-gray-500 border-t border-gray-200 pt-4 mt-8">
-        <p className="font-medium">Instituto dos Sonhos — Relatório de Sessões</p>
+        <p className="font-medium">MaxNutrition — Relatório de Sessões</p>
         <p className="mt-1">Gerado em {new Date().toLocaleDateString('pt-BR', { 
           day: '2-digit', 
           month: 'long', 

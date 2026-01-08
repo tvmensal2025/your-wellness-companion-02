@@ -161,7 +161,7 @@ TODAS AS ÁREAS:
 ${areas.map(area => `- ${area.name}: ${responses[area.id] * 20}%`).join('\n')}
 
 ---
-Instituto dos Sonhos - Avaliação Personalizada
+MaxNutrition - Avaliação Personalizada
     `.trim();
 
     const blob = new Blob([reportContent], { type: 'text/plain' });

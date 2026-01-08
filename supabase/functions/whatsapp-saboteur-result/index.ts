@@ -17,7 +17,7 @@ interface SaboteurResultPayload {
 
 // DR. VITAL - Voz para análise de sabotadores (profissional e acolhedor)
 const DR_VITAL_SABOTEUR = {
-  assinatura: "Com respeito e dedicação,\nDr. Vital 🩺\n_Instituto dos Sonhos_",
+  assinatura: "Com respeito e dedicação,\nDr. Vital 🩺\n_MaxNutrition_",
 };
 
 serve(async (req) => {
@@ -75,7 +75,7 @@ serve(async (req) => {
       .map((s, i) => `${i + 1}. ${s.emoji} ${s.name}: ${s.score.toFixed(0)}%`)
       .join("\n");
 
-    const systemPrompt = `Você é o Dr. Vital, médico especialista em saúde integrativa e comportamental do Instituto dos Sonhos.
+    const systemPrompt = `Você é o Dr. Vital, médico especialista em saúde integrativa e comportamental do MaxNutrition.
 
 PERSONA:
 - Tom: Profissional, acolhedor, mas objetivo
