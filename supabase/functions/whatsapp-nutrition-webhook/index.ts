@@ -68,14 +68,18 @@ serve(async (req) => {
 
     console.log(`[WhatsApp Nutrition] Usuário encontrado: ${user.id}`);
 
-    // Verificar se há análise pendente de confirmação
+    // Verificar se há análise pendente de confirmação ou edição
     const pending = await getPendingConfirmation(user.id);
 
     // Extrair texto da mensagem
     const messageText = extractText(message);
 
-    if (pending?.waiting_confirmation && messageText) {
-      // Usuário está respondendo SIM/NÃO
+    if (pending?.waiting_edit && messageText) {
+      // Usuário está editando a lista de alimentos
+      console.log("[WhatsApp Nutrition] Processando edição:", messageText);
+      await handleEdit(user, pending, messageText, phone);
+    } else if (pending?.waiting_confirmation && messageText) {
+      // Usuário está respondendo SIM/NÃO/EDITAR
       console.log("[WhatsApp Nutrition] Processando confirmação:", messageText);
       await handleConfirmation(user, pending, messageText, phone);
     } else if (hasImage(message)) {
@@ -132,8 +136,8 @@ async function getPendingConfirmation(userId: string): Promise<any | null> {
     .from("whatsapp_pending_nutrition")
     .select("*")
     .eq("user_id", userId)
-    .eq("waiting_confirmation", true)
     .eq("is_processed", false)
+    .or("waiting_confirmation.eq.true,waiting_edit.eq.true")
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle();
@@ -165,8 +169,56 @@ function isConfirmationPositive(text: string): boolean {
 }
 
 function isConfirmationNegative(text: string): boolean {
-  const negative = ["não", "nao", "n", "no", "❌", "errado", "incorreto", "0"];
+  const negative = ["não", "nao", "n", "no", "2", "❌", "errado", "incorreto", "0", "cancelar"];
   return negative.includes(text.toLowerCase().trim());
+}
+
+function isConfirmationEdit(text: string): boolean {
+  const edit = ["editar", "edit", "3", "✏️", "corrigir", "mudar", "alterar", "edita"];
+  return edit.includes(text.toLowerCase().trim());
+}
+
+function isEditDone(text: string): boolean {
+  const done = ["pronto", "done", "finalizar", "ok", "confirmar", "confirma", "terminar", "terminei"];
+  return done.includes(text.toLowerCase().trim());
+}
+
+function parseEditCommand(text: string, foods: any[]): { action: string; index?: number; newFood?: { name: string; grams: number } } | null {
+  const lower = text.toLowerCase().trim();
+  
+  // "Trocar 1 por Macarrão 200g" ou "Substituir 2 por Arroz 150g"
+  const replaceMatch = lower.match(/(?:trocar|substituir|mudar)\s+(\d+)\s+(?:por|para)\s+(.+)/i);
+  if (replaceMatch) {
+    const index = parseInt(replaceMatch[1]) - 1;
+    const foodPart = replaceMatch[2].trim();
+    const gramsMatch = foodPart.match(/(\d+)\s*g?$/);
+    const grams = gramsMatch ? parseInt(gramsMatch[1]) : 100;
+    const name = foodPart.replace(/\d+\s*g?$/, '').trim() || foodPart;
+    if (index >= 0 && index < foods.length) {
+      return { action: 'replace', index, newFood: { name, grams } };
+    }
+  }
+  
+  // "Remover 2" ou "Tirar 1"
+  const removeMatch = lower.match(/(?:remover|tirar|excluir|deletar)\s+(\d+)/i);
+  if (removeMatch) {
+    const index = parseInt(removeMatch[1]) - 1;
+    if (index >= 0 && index < foods.length) {
+      return { action: 'remove', index };
+    }
+  }
+  
+  // "Adicionar Bife 150g" ou "Incluir Salada 80g"
+  const addMatch = lower.match(/(?:adicionar|incluir|acrescentar|add)\s+(.+)/i);
+  if (addMatch) {
+    const foodPart = addMatch[1].trim();
+    const gramsMatch = foodPart.match(/(\d+)\s*g?$/);
+    const grams = gramsMatch ? parseInt(gramsMatch[1]) : 100;
+    const name = foodPart.replace(/\d+\s*g?$/, '').trim() || foodPart;
+    return { action: 'add', newFood: { name, grams } };
+  }
+  
+  return null;
 }
 
 function detectMealType(): string {
@@ -539,8 +591,9 @@ async function processImage(user: { id: string }, phone: string, message: any, w
       `${foodsList}\n\n` +
       kcalLine +
       `Está correto? Responda:\n` +
-      `✅ *SIM* para confirmar\n` +
-      `❌ *NÃO* para corrigir`;
+      `✅ *1* ou *SIM* - Confirmar\n` +
+      `❌ *2* ou *NÃO* - Cancelar\n` +
+      `✏️ *3* ou *EDITAR* - Corrigir itens`;
 
     await sendWhatsApp(phone, confirmMessage);
 
@@ -551,22 +604,25 @@ async function processImage(user: { id: string }, phone: string, message: any, w
       raw: analysis,
     };
 
-    const { error: insertError } = await supabase.from("whatsapp_pending_nutrition").upsert(
-      {
-        user_id: user.id,
-        phone: phone,
-        meal_type: detectMealType(),
-        image_url: imageUrl,
-        analysis_result: pendingPayload,
-        waiting_confirmation: true,
-        confirmed: null,
-        is_processed: false,
-        expires_at: new Date(Date.now() + 30 * 60 * 1000).toISOString(), // 30 min
-      },
-      {
-        onConflict: "user_id",
-      }
-    );
+    // Limpar pendentes antigos antes de inserir novo
+    await supabase
+      .from("whatsapp_pending_nutrition")
+      .delete()
+      .eq("user_id", user.id)
+      .eq("waiting_confirmation", true);
+
+    const { error: insertError } = await supabase.from("whatsapp_pending_nutrition").insert({
+      user_id: user.id,
+      phone: phone,
+      meal_type: detectMealType(),
+      image_url: imageUrl,
+      analysis_result: pendingPayload,
+      waiting_confirmation: true,
+      waiting_edit: false,
+      confirmed: null,
+      is_processed: false,
+      expires_at: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
+    });
 
     if (insertError) {
       console.error("[WhatsApp Nutrition] Erro ao salvar pendente:", insertError);
@@ -621,23 +677,29 @@ async function processText(user: { id: string }, phone: string, text: string): P
       `${foodsList}\n\n` +
       `📊 *Total estimado: ~${Math.round(totalCalories)} kcal*\n\n` +
       `Está correto? Responda:\n` +
-      `✅ *SIM* para confirmar\n` +
-      `❌ *NÃO* para corrigir`;
+      `✅ *1* ou *SIM* - Confirmar\n` +
+      `❌ *2* ou *NÃO* - Cancelar\n` +
+      `✏️ *3* ou *EDITAR* - Corrigir itens`;
 
     await sendWhatsApp(phone, confirmMessage);
 
-    // Salvar análise pendente
-    await supabase.from("whatsapp_pending_nutrition").upsert({
+    // Limpar pendentes antigos antes de inserir novo
+    await supabase
+      .from("whatsapp_pending_nutrition")
+      .delete()
+      .eq("user_id", user.id)
+      .eq("waiting_confirmation", true);
+
+    await supabase.from("whatsapp_pending_nutrition").insert({
       user_id: user.id,
       phone: phone,
       meal_type: detectMealType(),
       analysis_result: { detectedFoods: foods, totalCalories },
       waiting_confirmation: true,
+      waiting_edit: false,
       confirmed: null,
       is_processed: false,
       expires_at: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
-    }, {
-      onConflict: "user_id",
     });
 
   } catch (error) {
@@ -743,6 +805,43 @@ async function handleConfirmation(
 
       await sendWhatsApp(phone, successMessage);
 
+    } else if (isConfirmationEdit(messageText)) {
+      console.log("[WhatsApp Nutrition] Modo edição ativado");
+
+      // Extrair alimentos
+      const analysis = pending.analysis_result || {};
+      const detectedFoods =
+        analysis.detectedFoods ||
+        analysis.foods ||
+        analysis.foods_detected ||
+        [];
+
+      // Marcar como em edição
+      await supabase
+        .from("whatsapp_pending_nutrition")
+        .update({ waiting_edit: true })
+        .eq("id", pending.id);
+
+      // Montar lista numerada
+      const numberedList = detectedFoods
+        .map((f: any, i: number) => {
+          const name = f.nome || f.name || f.alimento || "(alimento)";
+          const grams = f.quantidade ?? f.grams ?? f.g ?? "?";
+          return `${i + 1}. ${name} (${grams}g)`;
+        })
+        .join("\n");
+
+      await sendWhatsApp(
+        phone,
+        `✏️ *Modo edição*\n\n` +
+        `Itens detectados:\n${numberedList}\n\n` +
+        `Responda assim:\n` +
+        `• "Trocar 1 por Macarrão 200g"\n` +
+        `• "Remover 2"\n` +
+        `• "Adicionar Bife 150g"\n\n` +
+        `Responda *PRONTO* quando terminar`
+      );
+
     } else if (isConfirmationNegative(messageText)) {
       console.log("[WhatsApp Nutrition] Confirmação negativa recebida");
 
@@ -768,11 +867,143 @@ async function handleConfirmation(
       await sendWhatsApp(
         phone,
         `🤔 Não entendi sua resposta.\n\n` +
-        `Responda *SIM* para confirmar ou *NÃO* para corrigir.`
+        `Responda:\n` +
+        `*1* ou *SIM* - Confirmar\n` +
+        `*2* ou *NÃO* - Cancelar\n` +
+        `*3* ou *EDITAR* - Corrigir itens`
       );
     }
   } catch (error) {
     console.error("[WhatsApp Nutrition] Erro ao processar confirmação:", error);
     await sendWhatsApp(phone, "❌ Ocorreu um erro. Tente novamente!");
+  }
+}
+
+// =============== PROCESSAMENTO DE EDIÇÃO ===============
+
+async function handleEdit(
+  user: { id: string },
+  pending: any,
+  messageText: string,
+  phone: string
+): Promise<void> {
+  try {
+    const analysis = pending.analysis_result || {};
+    let detectedFoods = [
+      ...(analysis.detectedFoods ||
+        analysis.foods ||
+        analysis.foods_detected ||
+        [])
+    ];
+
+    // Verificar se usuário terminou edição
+    if (isEditDone(messageText)) {
+      console.log("[WhatsApp Nutrition] Edição finalizada, solicitando confirmação");
+
+      // Atualizar análise com alimentos editados
+      const updatedAnalysis = {
+        ...analysis,
+        detectedFoods,
+      };
+
+      await supabase
+        .from("whatsapp_pending_nutrition")
+        .update({
+          waiting_edit: false,
+          analysis_result: updatedAnalysis,
+        })
+        .eq("id", pending.id);
+
+      // Mostrar lista final e pedir confirmação
+      const foodsList = detectedFoods
+        .map((f: any) => {
+          const name = f.nome || f.name || f.alimento || "(alimento)";
+          const grams = f.quantidade ?? f.grams ?? f.g ?? "?";
+          return `• ${name} (${grams}g)`;
+        })
+        .join("\n");
+
+      await sendWhatsApp(
+        phone,
+        `🍽️ *Lista final:*\n\n` +
+        `${foodsList}\n\n` +
+        `Confirmar registro?\n` +
+        `✅ *SIM* para confirmar\n` +
+        `❌ *NÃO* para cancelar`
+      );
+      return;
+    }
+
+    // Tentar interpretar comando de edição
+    const command = parseEditCommand(messageText, detectedFoods);
+
+    if (!command) {
+      await sendWhatsApp(
+        phone,
+        `🤔 Não entendi o comando.\n\n` +
+        `Exemplos:\n` +
+        `• "Trocar 1 por Macarrão 200g"\n` +
+        `• "Remover 2"\n` +
+        `• "Adicionar Bife 150g"\n\n` +
+        `Ou responda *PRONTO* para finalizar`
+      );
+      return;
+    }
+
+    // Aplicar comando
+    if (command.action === 'replace' && command.index !== undefined && command.newFood) {
+      const oldFood = detectedFoods[command.index];
+      detectedFoods[command.index] = {
+        nome: command.newFood.name,
+        name: command.newFood.name,
+        quantidade: command.newFood.grams,
+        grams: command.newFood.grams,
+      };
+      console.log(`[WhatsApp Nutrition] Substituído item ${command.index + 1}:`, oldFood, "->", command.newFood);
+
+    } else if (command.action === 'remove' && command.index !== undefined) {
+      const removed = detectedFoods.splice(command.index, 1);
+      console.log(`[WhatsApp Nutrition] Removido item ${command.index + 1}:`, removed);
+
+    } else if (command.action === 'add' && command.newFood) {
+      detectedFoods.push({
+        nome: command.newFood.name,
+        name: command.newFood.name,
+        quantidade: command.newFood.grams,
+        grams: command.newFood.grams,
+      });
+      console.log(`[WhatsApp Nutrition] Adicionado:`, command.newFood);
+    }
+
+    // Atualizar análise no banco
+    const updatedAnalysis = {
+      ...analysis,
+      detectedFoods,
+    };
+
+    await supabase
+      .from("whatsapp_pending_nutrition")
+      .update({ analysis_result: updatedAnalysis })
+      .eq("id", pending.id);
+
+    // Mostrar lista atualizada
+    const numberedList = detectedFoods
+      .map((f: any, i: number) => {
+        const name = f.nome || f.name || f.alimento || "(alimento)";
+        const grams = f.quantidade ?? f.grams ?? f.g ?? "?";
+        return `${i + 1}. ${name} (${grams}g)`;
+      })
+      .join("\n");
+
+    await sendWhatsApp(
+      phone,
+      `✅ *Atualizado!*\n\n` +
+      `${numberedList}\n\n` +
+      `Continue editando ou responda *PRONTO*`
+    );
+
+  } catch (error) {
+    console.error("[WhatsApp Nutrition] Erro ao processar edição:", error);
+    await sendWhatsApp(phone, "❌ Erro na edição. Tente novamente!");
   }
 }
