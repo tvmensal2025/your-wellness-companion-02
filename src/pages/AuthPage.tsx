@@ -7,6 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Heart, ArrowLeft, User, Phone, Calendar, MapPin, Ruler, Star } from "lucide-react";
+import { BirthDatePicker } from "@/components/ui/birth-date-picker";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -844,14 +845,17 @@ const AuthPage = () => {
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                          <div className="space-y-1.5">
-                           <Label htmlFor="signup-birth" className="text-xs sm:text-sm font-medium flex items-center gap-2">
+                           <Label className="text-xs sm:text-sm font-medium flex items-center gap-2">
                              <Calendar className="h-3 w-3" />
                              Data de Nascimento *
                            </Label>
-                           <Input id="signup-birth" type="date" value={signupData.birthDate} onChange={e => setSignupData({
-                          ...signupData,
-                          birthDate: e.target.value
-                        })} className="h-10 sm:h-11 bg-background/50 border-border/50 focus:border-primary focus:ring-primary/20 text-sm" required />
+                           <BirthDatePicker 
+                             value={signupData.birthDate} 
+                             onChange={(date) => setSignupData({
+                               ...signupData,
+                               birthDate: date
+                             })} 
+                           />
                          </div>
 
                         <div className="space-y-1.5">
