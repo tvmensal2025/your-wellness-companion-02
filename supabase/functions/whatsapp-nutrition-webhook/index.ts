@@ -79,30 +79,40 @@ serve(async (req) => {
       console.log("[WhatsApp Nutrition] Processando edição:", messageText);
       await handleEdit(user, pending, messageText, phone);
     } else if (pending?.waiting_confirmation && messageText) {
-      // 🔥 INTELIGÊNCIA: Verificar intenção ANTES de forçar confirmação
       const analysis = pending.analysis_result || {};
       const pendingFoods = analysis.detectedFoods || analysis.foods || [];
-      const intent = await interpretUserIntent(messageText, "awaiting_confirmation", pendingFoods);
+      const lower = messageText.toLowerCase().trim();
       
-      console.log("[WhatsApp Nutrition] Intenção detectada com pendência:", intent.intent);
+      // 🔥 PRIORIDADE: Verificar respostas diretas ANTES de chamar IA
+      const directConfirm = ["1", "sim", "s", "ok", "confirmo", "confirma", "certo", "isso"].includes(lower);
+      const directCancel = ["2", "não", "nao", "n", "cancela", "cancelar", "nope"].includes(lower);
+      const directEdit = ["3", "editar", "edita", "corrigir", "mudar", "alterar"].includes(lower);
       
-      // Se for confirmação/edição, processa normalmente
-      if (["confirm", "cancel", "edit", "add_food", "remove_food", "replace_food"].includes(intent.intent)) {
-        console.log("[WhatsApp Nutrition] Processando confirmação:", messageText);
+      if (directConfirm || directCancel || directEdit) {
+        console.log("[WhatsApp Nutrition] ✅ Resposta direta de confirmação detectada:", messageText);
         await handleConfirmation(user, pending, messageText, phone);
       } else {
-        // 🔥 Se for pergunta/saudação/outro, deixa a IA responder e lembra da pendência
-        console.log("[WhatsApp Nutrition] Permitindo conversa livre com pendência ativa");
-        await handleSmartResponse(user, phone, messageText);
+        // Para mensagens complexas, usar IA
+        const intent = await interpretUserIntent(messageText, "awaiting_confirmation", pendingFoods);
+        console.log("[WhatsApp Nutrition] Intenção detectada com pendência:", intent.intent);
         
-        // Enviar lembrete gentil da pendência
-        const foodsList = pendingFoods.slice(0, 3).map((f: any) => f.nome || f.name).join(", ");
-        const reminder = pendingFoods.length > 0 
-          ? `\n\n💡 _Ah, você ainda tem uma refeição pendente (${foodsList}${pendingFoods.length > 3 ? '...' : ''}). Responda *1 (SIM)*, *2 (NÃO)* ou *3 (EDITAR)* quando quiser finalizar!_`
-          : "";
-        
-        if (reminder) {
-          await sendWhatsApp(phone, reminder);
+        if (["confirm", "cancel", "edit", "add_food", "remove_food", "replace_food"].includes(intent.intent)) {
+          console.log("[WhatsApp Nutrition] Processando confirmação:", messageText);
+          await handleConfirmation(user, pending, messageText, phone);
+        } else {
+          // Se for pergunta/saudação/outro, deixa a IA responder e lembra da pendência
+          console.log("[WhatsApp Nutrition] Permitindo conversa livre com pendência ativa");
+          await handleSmartResponse(user, phone, messageText);
+          
+          // Enviar lembrete gentil da pendência
+          const foodsList = pendingFoods.slice(0, 3).map((f: any) => f.nome || f.name).join(", ");
+          const reminder = pendingFoods.length > 0 
+            ? `\n\n💡 _Ah, você ainda tem uma refeição pendente (${foodsList}${pendingFoods.length > 3 ? '...' : ''}). Responda *1 (SIM)*, *2 (NÃO)* ou *3 (EDITAR)* quando quiser finalizar!_`
+            : "";
+          
+          if (reminder) {
+            await sendWhatsApp(phone, reminder);
+          }
         }
       }
     } else if (pendingMedical && messageText) {
@@ -1082,6 +1092,15 @@ async function interpretUserIntent(text: string, context: string, pendingFoods?:
 
     if (error || !data) {
       return fallbackIntentInterpretation(text);
+    }
+
+    // 🔥 NOVO: Se IA retornou unknown, tentar fallback
+    if (data.intent === "unknown") {
+      const fallback = fallbackIntentInterpretation(text);
+      if (fallback.intent !== "unknown") {
+        console.log("[WhatsApp Nutrition] IA retornou unknown, usando fallback:", fallback.intent);
+        return fallback;
+      }
     }
 
     return data;
