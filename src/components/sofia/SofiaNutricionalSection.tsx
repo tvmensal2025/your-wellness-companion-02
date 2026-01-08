@@ -80,31 +80,6 @@ const MeuDiaContent: React.FC<{ goals: { calories: number; protein: number; carb
         </CardContent>
       </Card>
 
-      {/* Água */}
-      <Card className="bg-card border">
-        <CardContent className="p-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Droplets className="w-5 h-5 text-blue-500" />
-              <span className="text-sm font-medium">Água</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-bold text-blue-600">{(waterMl / 1000).toFixed(1)}L</span>
-              <span className="text-xs text-muted-foreground">/ 2.5L</span>
-              <Button
-                size="sm"
-                variant="outline"
-                className="h-7 w-7 p-0"
-                onClick={() => addWater(250)}
-              >
-                <Plus className="w-3 h-3" />
-              </Button>
-            </div>
-          </div>
-          <Progress value={(waterMl / 2500) * 100} className="h-2 mt-2" />
-        </CardContent>
-      </Card>
-
       {/* Refeições do Dia */}
       <Card className="bg-card border">
         <CardHeader className="pb-2 px-3 pt-3">
