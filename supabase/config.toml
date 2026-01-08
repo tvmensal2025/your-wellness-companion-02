@@ -119,3 +119,6 @@ verify_jwt = false
 
 [functions.whatsapp-ai-assistant]
 verify_jwt = false
+
+[functions.detect-image-type]
+verify_jwt = false

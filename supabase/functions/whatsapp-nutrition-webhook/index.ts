@@ -428,6 +428,101 @@ async function updateFoodHistoryConfirmation(foodHistoryId: string, confirmed: b
   }
 }
 
+// =============== PROCESSAMENTO DE EXAME MÉDICO ===============
+
+async function processMedicalImage(user: { id: string }, phone: string, imageUrl: string): Promise<void> {
+  try {
+    console.log("[WhatsApp Medical] Processando exame médico para", user.id);
+
+    // Mensagem de recebimento imediata
+    await sendWhatsApp(phone,
+      "🩺 *Recebi seu exame!*\n\n" +
+      "Estou analisando os resultados...\n" +
+      "⏳ Isso pode levar alguns segundos.\n\n" +
+      "_Dr. Vital 🩺_"
+    );
+
+    // Chamar analyze-medical-exam
+    const { data: analysisResult, error: analysisError } = await supabase.functions.invoke("analyze-medical-exam", {
+      body: { 
+        imageUrl, 
+        userId: user.id,
+        source: "whatsapp"
+      },
+    });
+
+    if (analysisError) {
+      console.error("[WhatsApp Medical] Erro na análise:", analysisError);
+      await sendWhatsApp(phone,
+        "❌ Não consegui analisar seu exame.\n\n" +
+        "Por favor, tente enviar uma foto mais clara.\n\n" +
+        "_Dr. Vital 🩺_"
+      );
+      return;
+    }
+
+    console.log("[WhatsApp Medical] Análise concluída:", JSON.stringify(analysisResult).slice(0, 300));
+
+    // Extrair resumo da análise
+    const summary = analysisResult?.summary || analysisResult?.analysis?.summary || "Análise concluída";
+    const documentId = analysisResult?.documentId || analysisResult?.document_id;
+    const findings = analysisResult?.findings || analysisResult?.analysis?.findings || [];
+
+    // Formatar achados principais
+    let findingsText = "";
+    if (findings.length > 0) {
+      findingsText = "\n\n📋 *Principais achados:*\n";
+      for (const finding of findings.slice(0, 5)) {
+        const status = finding.status === "normal" ? "🟢" : finding.status === "attention" ? "🟡" : "🔴";
+        findingsText += `${status} ${finding.name || finding.test}: ${finding.value || finding.result}\n`;
+      }
+    }
+
+    // Tentar gerar relatório se tiver documentId
+    let reportLink = "";
+    if (documentId) {
+      try {
+        const { data: reportResult } = await supabase.functions.invoke("generate-medical-report", {
+          body: { documentId, userId: user.id }
+        });
+
+        if (reportResult?.publicUrl || reportResult?.token) {
+          const token = reportResult.token || documentId.slice(0, 8);
+          reportLink = `\n\n📊 *Relatório completo:*\n👉 institutodossonhos.com.br/relatorio/${token}`;
+        }
+      } catch (e) {
+        console.log("[WhatsApp Medical] Relatório não disponível");
+      }
+    }
+
+    // Responder com análise
+    await sendWhatsApp(phone,
+      `🩺 *Análise Concluída!*\n\n` +
+      `${summary}${findingsText}${reportLink}\n\n` +
+      `Qualquer dúvida, estou aqui para ajudar!\n\n` +
+      `_Dr. Vital 🩺_`
+    );
+
+    // Salvar em pending medical para acompanhamento
+    await supabase.from("whatsapp_pending_medical").insert({
+      user_id: user.id,
+      phone: phone,
+      image_url: imageUrl,
+      analysis_result: analysisResult,
+      is_processed: false,
+      created_at: new Date().toISOString(),
+    });
+
+  } catch (error) {
+    console.error("[WhatsApp Medical] Erro:", error);
+    await sendWhatsApp(phone,
+      "❌ Ocorreu um erro ao processar seu exame.\n\n" +
+      "Por favor, tente novamente.\n\n" +
+      "_Dr. Vital 🩺_"
+    );
+  }
+}
+
 // =============== PROCESSAMENTO DE IMAGEM ===============
 
 async function processImage(user: { id: string }, phone: string, message: any, webhook: any): Promise<void> {
@@ -536,6 +631,39 @@ async function processImage(user: { id: string }, phone: string, message: any, w
     }
 
     console.log("[WhatsApp Nutrition] ✅ Upload concluído! URL:", imageUrl);
+
+    // 🔥 DETECÇÃO INTELIGENTE DO TIPO DE IMAGEM
+    console.log("[WhatsApp Nutrition] Detectando tipo de imagem...");
+    
+    const { data: imageTypeResult, error: typeError } = await supabase.functions.invoke("detect-image-type", {
+      body: { imageUrl }
+    });
+
+    const imageType = imageTypeResult?.type || "OTHER";
+    const typeConfidence = imageTypeResult?.confidence || 0;
+    
+    console.log(`[WhatsApp Nutrition] Tipo detectado: ${imageType} (confiança: ${typeConfidence})`);
+
+    // 🔥 ROTEAMENTO BASEADO NO TIPO
+    if (imageType === "MEDICAL") {
+      console.log("[WhatsApp Nutrition] Redirecionando para processamento médico...");
+      await processMedicalImage(user, phone, imageUrl);
+      return;
+    }
+
+    if (imageType === "OTHER") {
+      console.log("[WhatsApp Nutrition] Imagem não reconhecida como comida ou exame");
+      await sendWhatsApp(phone,
+        "📸 Recebi sua foto!\n\n" +
+        "Para análise *nutricional*, envie fotos de refeições 🍽️\n" +
+        "Para análise de *exames*, envie fotos de resultados 🩺\n\n" +
+        "_Sofia 🥗_"
+      );
+      return;
+    }
+
+    // Continuar com análise de COMIDA
+    console.log("[WhatsApp Nutrition] Processando como imagem de comida...");
 
     // Chamar sofia-image-analysis
     const { data: analysis, error: analysisError } = await supabase.functions.invoke("sofia-image-analysis", {

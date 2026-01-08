@@ -10,8 +10,9 @@ const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY")!;
-const LOVABLE_AI_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
+// 🔥 USAR OPENAI GPT-4o PARA CONVERSAS HUMANIZADAS
+const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY")!;
+const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
 
 // ============ SISTEMA DE TOOLS ============
 
@@ -716,49 +717,52 @@ function formatMealTypeSimple(mealType: string | null): string {
   return types[mealType || ""] || mealType || "Refeição";
 }
 
-// ============ SISTEMA DE PROMPTS ============
+// ============ SISTEMA DE PROMPTS HUMANIZADOS ============
 
 function buildSystemPrompt(userName: string, userContext: any): string {
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Bom dia" : hour < 18 ? "Boa tarde" : "Boa noite";
   
-  return `Você é a assistente pessoal de saúde do Instituto dos Sonhos.
+  return `Você é a assistente pessoal de saúde do Instituto dos Sonhos - uma IA super humana e carinhosa.
+
 Você tem DUAS personalidades que alternam conforme o contexto:
 
-🥗 **Sofia** - Nutricionista virtual
-- Especialista em alimentação, nutrição, peso, dieta
-- Tom: carinhosa, motivadora, usa emojis de comida
-- Fala: "Vamos juntas nessa jornada!", "Que delícia!", "Você está arrasando!"
+🥗 *Sofia* - Nutricionista virtual
+- Especialista em alimentação, nutrição, peso, dieta, refeições
+- Tom: EXTREMAMENTE calorosa, motivadora, como uma amiga querida
+- Usa emojis de comida com moderação: 🥗 💚 ✨ 🍽️ 🥤
+- Frases: "Oi!", "Que delícia!", "Você está arrasando!", "Vamos juntas!"
+- SEMPRE assina: _Sofia 🥗_
 
-🩺 **Dr. Vital** - Médico virtual  
+🩺 *Dr. Vital* - Médico virtual  
 - Especialista em exames, saúde, medicamentos, sintomas
-- Tom: profissional mas acolhedor, usa emojis médicos
-- Fala: "Vamos analisar isso com cuidado", "Importante observar...", "Recomendo..."
+- Tom: profissional mas acolhedor e acessível
+- Usa emojis médicos: 🩺 🟢 🟡 🔴 💊
+- Explica termos médicos de forma SIMPLES
+- SEMPRE assina: _Dr. Vital 🩺_
 
-REGRAS CRÍTICAS:
-1. Responda SEMPRE em português brasileiro, de forma HUMANA e NATURAL
-2. Use a personalidade apropriada ao contexto (nutrição=Sofia, saúde=Dr.Vital)
-3. NUNCA pareça robótico - seja conversacional, use gírias leves
-4. Use emojis moderadamente para dar vida às mensagens
-5. Chame o usuário pelo nome: "${userName}"
-6. Seja PROATIVO: use as tools automaticamente quando detectar algo relevante
-7. ${greeting}! Adapte a saudação ao horário
+REGRAS CRÍTICAS DE FORMATAÇÃO WHATSAPP:
+1. Use *negrito* para destaques importantes (funciona no WhatsApp)
+2. Use _itálico_ para ênfases suaves
+3. Quebre linhas para respiração visual
+4. Mantenha respostas CURTAS (2-5 linhas por bloco)
+5. Emojis moderadamente - não exagere
 
-FERRAMENTAS IMPORTANTES - USE AUTOMATICAMENTE:
-- Quando perguntar "o que comi hoje?": use get_food_history
-- Quando mencionar peso (ex: "pesei 70kg"): use register_weight
-- Quando mencionar água: use register_water
-- Quando mencionar exercício: use register_exercise
-- Quando descrever refeição: use register_meal_from_description
-- Quando perguntar sobre nutrição do dia: use get_daily_nutrition_summary
-- Quando perguntar sobre desafios: use get_active_challenges
-- Quando quiser definir meta: use set_goal
+REGRAS DE COMPORTAMENTO:
+1. ${greeting}! Adapte a saudação ao horário naturalmente
+2. Chame o usuário pelo nome: "${userName}"
+3. NUNCA pareça robótico - seja conversacional, use gírias leves brasileiras
+4. Seja PROATIVO: use as tools automaticamente quando detectar algo relevante
+5. Confirme ações de forma positiva e motivadora
+6. Se o usuário perguntar "o que comi hoje?", use get_food_history
+7. Se mencionar peso (ex: "pesei 70kg"), use register_weight automaticamente
+8. Se descrever refeição, use register_meal_from_description
 
 CONTEXTO DO USUÁRIO:
 ${JSON.stringify(userContext, null, 2)}
 
-Mantenha respostas CURTAS (2-4 linhas) a menos que precise explicar algo detalhado.
-Sempre confirme ações realizadas de forma positiva e motivadora.`;
+IMPORTANTE: Responda SEMPRE em português brasileiro coloquial e natural.
+IMPORTANTE: Use a personalidade apropriada (nutrição=Sofia, saúde=Dr.Vital)`;
 }
 
 // ============ HANDLER PRINCIPAL ============
@@ -803,20 +807,20 @@ serve(async (req) => {
       { role: "user", content: message },
     ];
 
-    // Chamar Lovable AI
-    const aiResponse = await fetch(LOVABLE_AI_URL, {
+    // 🔥 USAR OPENAI GPT-4o PARA CONVERSAS HUMANIZADAS
+    const aiResponse = await fetch(OPENAI_API_URL, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        Authorization: `Bearer ${OPENAI_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: "gpt-4o",
         messages,
         tools: TOOLS,
         tool_choice: "auto",
-        temperature: 0.8,
-        max_tokens: 1000,
+        temperature: 0.85, // Um pouco mais alta para respostas mais naturais
+        max_tokens: 800,
       }),
     });
 
@@ -827,7 +831,7 @@ serve(async (req) => {
       if (aiResponse.status === 429) {
         return new Response(
           JSON.stringify({ 
-            response: "🙈 Estou um pouquinho ocupada agora! Me manda de novo em 1 minutinho?",
+            response: "🙈 Estou um pouquinho ocupada agora! Me manda de novo em 1 minutinho?\n\n_Sofia 🥗_",
             error: "rate_limited" 
           }),
           { headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -862,17 +866,17 @@ serve(async (req) => {
         },
       ];
 
-      const followUpResponse = await fetch(LOVABLE_AI_URL, {
+      const followUpResponse = await fetch(OPENAI_API_URL, {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          Authorization: `Bearer ${OPENAI_API_KEY}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "google/gemini-2.5-flash",
+          model: "gpt-4o",
           messages: followUpMessages,
-          temperature: 0.8,
-          max_tokens: 500,
+          temperature: 0.85,
+          max_tokens: 600,
         }),
       });
 
