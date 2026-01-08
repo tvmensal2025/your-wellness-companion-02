@@ -2886,6 +2886,17 @@ Por favor, analise as imagens dos exames médicos e extraia todos os valores enc
       }
     }
     const allMetrics = (parsed.sections || []).flatMap((s: any) => Array.isArray(s?.metrics) ? s.metrics : []);
+    
+    // 📊 AGRUPAR EXAMES POR CATEGORIA
+    const groupedExams = groupExamsByCategory(allMetrics);
+    
+    // 📈 CALCULAR SCORECARD
+    const totalExams = allMetrics.length;
+    const normalExams = allMetrics.filter((m: any) => m.status === 'normal').length;
+    const warningExams = allMetrics.filter((m: any) => m.status === 'elevated' || m.status === 'attention').length;
+    const criticalExams = allMetrics.filter((m: any) => m.status === 'low' || m.status === 'high' || m.status === 'critical').length;
+    const percentNormal = totalExams > 0 ? Math.round((normalExams / totalExams) * 100) : 0;
+    
     const summaryText = (parsed.summary || analysis || '')
       .replace(/```json|```/gi, '')
       .replace(/JSON:/gi, '')
@@ -3512,6 +3523,212 @@ Por favor, analise as imagens dos exames médicos e extraia todos os valores enc
       box-shadow: 0 12px 32px rgba(201, 169, 98, 0.5);
     }
 
+    /* Scorecard Executivo */
+    .scorecard {
+      background: linear-gradient(135deg, var(--primary) 0%, #1e3a5f 100%);
+      border-radius: var(--radius-xl);
+      padding: 32px;
+      margin-bottom: 32px;
+      color: white;
+    }
+    .scorecard-title {
+      font-family: var(--font-display);
+      font-size: 20px;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+    .scorecard-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .score-item {
+      text-align: center;
+      padding: 20px 12px;
+      border-radius: var(--radius-md);
+      background: rgba(255,255,255,0.1);
+    }
+    .score-item.normal { border-left: 4px solid var(--success); }
+    .score-item.warning { border-left: 4px solid var(--warning); }
+    .score-item.critical { border-left: 4px solid var(--danger); }
+    .score-number {
+      font-family: var(--font-display);
+      font-size: 36px;
+      font-weight: 700;
+    }
+    .score-label {
+      font-size: 13px;
+      opacity: 0.9;
+      margin-top: 4px;
+    }
+    .score-progress {
+      text-align: center;
+    }
+    .progress-bar {
+      height: 8px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--success), var(--accent-light));
+      border-radius: 4px;
+      transition: width 0.5s ease;
+    }
+    .progress-text {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    /* Categorias de Exames */
+    .category-section {
+      background: var(--bg-card);
+      border-radius: var(--radius-xl);
+      padding: 28px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow-card);
+      border: 1px solid var(--border-light);
+    }
+    .category-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid var(--bg-soft);
+    }
+    .category-icon {
+      font-size: 40px;
+      width: 64px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, var(--bg-soft) 0%, var(--border-light) 100%);
+      border-radius: var(--radius-md);
+    }
+    .category-title {
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin: 0;
+    }
+    .category-summary {
+      font-size: 14px;
+      padding: 6px 14px;
+      border-radius: 100px;
+      margin-top: 8px;
+      display: inline-block;
+    }
+    .category-summary.all-normal {
+      background: var(--success-bg);
+      color: var(--success);
+    }
+    .category-summary.mostly-normal {
+      background: var(--success-bg);
+      color: var(--success);
+    }
+    .category-summary.needs-attention {
+      background: var(--warning-bg);
+      color: var(--warning);
+    }
+
+    /* Cards de Exame Compactos */
+    .exam-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    .exam-card-mini {
+      background: var(--bg-soft);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      border-left: 4px solid var(--border);
+      transition: all 0.2s ease;
+    }
+    .exam-card-mini.normal { border-left-color: var(--success); }
+    .exam-card-mini.warning { border-left-color: var(--warning); background: var(--warning-bg); }
+    .exam-card-mini.danger { border-left-color: var(--danger); background: var(--danger-bg); }
+    .exam-card-mini:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-card);
+    }
+    .exam-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .exam-card-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+    .exam-card-status {
+      font-size: 18px;
+    }
+    .exam-card-body {}
+    .exam-card-result {
+      margin-bottom: 8px;
+    }
+    .result-value {
+      font-family: var(--font-display);
+      font-size: 28px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .result-unit {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-left: 4px;
+    }
+    .exam-card-reference {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+      padding-bottom: 12px;
+      border-bottom: 1px dashed var(--border);
+    }
+    .exam-card-explanation {
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+    }
+    .exam-card-analogy {
+      font-size: 13px;
+      color: var(--text-muted);
+      background: rgba(201, 169, 98, 0.08);
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      margin-bottom: 12px;
+      border-left: 3px solid var(--gold);
+    }
+    .exam-card-status-msg {
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+    }
+    .exam-card-tips {
+      font-size: 12px;
+      background: rgba(16, 185, 129, 0.06);
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      color: var(--text-secondary);
+    }
+    .exam-card-tips ul {
+      margin: 4px 0 0 16px;
+      padding: 0;
+    }
+    .exam-card-tips li {
+      margin-bottom: 2px;
+    }
+
     /* Responsive */
     @media (max-width: 768px) {
       .container { padding: 20px 16px; }
@@ -3520,17 +3737,21 @@ Por favor, analise as imagens dos exames médicos e extraia todos os valores enc
       .welcome-card { flex-direction: column; text-align: center; }
       .welcome-avatar { margin: 0 auto; }
       .patient-bar { grid-template-columns: 1fr; }
+      .scorecard-grid { grid-template-columns: repeat(2, 1fr); }
+      .exam-cards-grid { grid-template-columns: 1fr; }
       .recommendations-grid { grid-template-columns: 1fr; }
-      .exam-values { grid-template-columns: 1fr; }
       .footer-contact { flex-direction: column; gap: 16px; }
       .print-btn { bottom: 20px; right: 20px; padding: 14px 24px; }
     }
 
     @media print {
       .print-btn { display: none; }
-      body { background: white; }
-      .section-card { box-shadow: none; border: 1px solid #e5e7eb; page-break-inside: avoid; }
-      .exam-card { page-break-inside: avoid; }
+      body { background: white; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .scorecard { background: #1e3a5f !important; -webkit-print-color-adjust: exact; }
+      .category-section { box-shadow: none; border: 1px solid #e5e7eb; page-break-inside: avoid; }
+      .exam-card-mini { page-break-inside: avoid; box-shadow: none; }
+      .hero-header { page-break-after: avoid; }
+      .category-header { page-break-after: avoid; }
     }
   </style>
 </head>
@@ -3578,6 +3799,35 @@ Por favor, analise as imagens dos exames médicos e extraia todos os valores enc
       </div>
     </div>
 
+    <!-- Scorecard Executivo -->
+    <section class="scorecard">
+      <h2 class="scorecard-title">📊 Resumo Rápido dos Seus Exames</h2>
+      <div class="scorecard-grid">
+        <div class="score-item total">
+          <div class="score-number">${totalExams}</div>
+          <div class="score-label">Total de Exames</div>
+        </div>
+        <div class="score-item normal">
+          <div class="score-number">${normalExams}</div>
+          <div class="score-label">🟢 Normais</div>
+        </div>
+        <div class="score-item warning">
+          <div class="score-number">${warningExams}</div>
+          <div class="score-label">🟡 Atenção</div>
+        </div>
+        <div class="score-item critical">
+          <div class="score-number">${criticalExams}</div>
+          <div class="score-label">🔴 Alterados</div>
+        </div>
+      </div>
+      <div class="score-progress">
+        <div class="progress-bar">
+          <div class="progress-fill" style="width: ${percentNormal}%"></div>
+        </div>
+        <div class="progress-text">${percentNormal}% dos exames estão normais</div>
+      </div>
+    </section>
+
     <!-- Visão Geral da Saúde -->
     <section class="section-card">
       <div class="section-header">
@@ -3588,94 +3838,108 @@ Por favor, analise as imagens dos exames médicos e extraia todos os valores enc
         ${summaryText ? `<p>${summaryText.substring(0, 1500)}</p>` : `
           <p><strong>Como você está de saúde?</strong> De modo geral, seus exames mostram que seu corpo está funcionando bem. 
           Você tem pontos positivos para celebrar e alguns detalhes que merecem atenção — mas nada alarmante.</p>
-          <p>Abaixo, vou explicar <em>cada exame</em> de forma simples, como se estivéssemos conversando. 
-          Meu objetivo é que você saia daqui sabendo exatamente o que significa cada número e o que fazer para cuidar ainda melhor da sua saúde. 💪</p>
+          <p>Abaixo, vou explicar <em>cada categoria de exames</em> de forma simples, agrupados por sistema do corpo. 💪</p>
         `}
       </div>
     </section>
 
-    <!-- Análise Detalhada dos Exames -->
-    <section class="section-card">
-      <div class="section-header">
-        <div class="section-icon">🔬</div>
-        <h2 class="section-title">Seus Exames Explicados</h2>
-      </div>
+    <!-- Exames Agrupados por Categoria -->
+    ${Array.from(groupedExams.entries()).map(([categoria, metrics]) => {
+      const catNormalCount = metrics.filter((m: any) => m.status === 'normal').length;
+      const catTotalCount = metrics.length;
+      const catPercentNormal = Math.round((catNormalCount / catTotalCount) * 100);
+      const catIcon = categoria.split(' ')[0];
+      const catName = categoria.split(' ').slice(1).join(' ');
       
-      <div class="exam-grid">
-        ${allMetrics && allMetrics.length > 0 ? allMetrics.map((metric: any) => {
-          const statusClass = metric.status === 'elevated' ? 'warning' : metric.status === 'low' ? 'danger' : 'normal';
-          const statusEmoji = metric.status === 'elevated' ? '🟡' : metric.status === 'low' ? '🔴' : '🟢';
-          const statusText = metric.status === 'elevated' ? 'Atenção' : metric.status === 'low' ? 'Precisa de Cuidado' : 'Tudo Certo';
-          
-          return `
-            <div class="exam-card">
-              <div class="exam-header">
-                <span class="exam-name">${metric.name || 'Exame'}</span>
-                <span class="exam-status ${statusClass}">${statusEmoji} ${statusText}</span>
-              </div>
-              <div class="exam-body">
-                <div class="exam-values">
-                  <div class="exam-value-item">
-                    <div class="exam-value-label">Seu Resultado</div>
-                    <div class="exam-value-number">${metric.value || '-'}<span class="exam-value-unit">${metric.unit || ''}</span></div>
-                  </div>
-                  <div class="exam-value-item">
-                    <div class="exam-value-label">Faixa Ideal</div>
-                    <div class="exam-value-number" style="font-size: 20px; color: var(--text-secondary);">${metric.us_reference || metric.reference || 'Consultar médico'}</div>
-                  </div>
-                </div>
-                
-                <div class="exam-explanation">
-                  <div class="exam-question">
-                    <div class="exam-question-icon">❓</div>
-                    <div class="exam-question-content">
-                      <h4>O que é esse exame?</h4>
-                      <p>${metric.how_it_works || 'Este exame avalia um aspecto importante da sua saúde. Converse com seu médico para uma explicação mais detalhada sobre o que ele mede e por que é importante.'}</p>
-                    </div>
-                  </div>
-                  
-                  <div class="exam-question">
-                    <div class="exam-question-icon">💡</div>
-                    <div class="exam-question-content">
-                      <h4>Isso é grave? Devo me preocupar?</h4>
-                      <p>${metric.status === 'normal' 
-                        ? '✅ <strong>Fique tranquilo(a)!</strong> Seu resultado está dentro da faixa considerada saudável. Continue mantendo seus bons hábitos!'
-                        : metric.status === 'elevated'
-                        ? '⚠️ <strong>Atenção, mas sem pânico!</strong> Seu resultado está um pouco acima do ideal. Isso não é uma emergência, mas vale conversar com seu médico sobre ajustes no estilo de vida.'
-                        : '🔔 <strong>Merece atenção!</strong> Seu resultado está fora da faixa ideal. Recomendo agendar uma consulta com seu médico para avaliar melhor e definir os próximos passos.'
-                      }</p>
-                    </div>
-                  </div>
-                </div>
-                
-                <div class="exam-example">
-                  <div class="exam-example-title"><span>💭</span> Exemplo Prático</div>
-                  <p>Pense no seu corpo como uma casa: cada exame verifica uma parte diferente dessa casa. 
-                  ${metric.name?.toLowerCase().includes('colesterol') ? 'O colesterol seria como a gordura que pode acumular nos canos da sua casa — um pouco é normal, mas muito pode causar entupimentos.' :
-                    metric.name?.toLowerCase().includes('glicose') || metric.name?.toLowerCase().includes('glicemia') ? 'A glicose é como o combustível que faz sua casa funcionar — precisa estar na medida certa, nem muito nem pouco.' :
-                    metric.name?.toLowerCase().includes('creatinina') ? 'A creatinina mostra como estão os "filtros" da sua casa (seus rins) — se acumula muito, pode indicar que os filtros precisam de atenção.' :
-                    'Esse exame verifica se essa parte específica da sua casa está funcionando bem.'}
-                  </p>
-                </div>
-              </div>
-            </div>
-          `;
-        }).join('') : `
-          <div class="exam-card">
-            <div class="exam-header">
-              <span class="exam-name">Aguardando Exames</span>
-              <span class="exam-status normal">📋 Em Processamento</span>
-            </div>
-            <div class="exam-body">
-              <div class="section-text">
-                <p>Não foi possível extrair os dados dos exames automaticamente. Isso pode acontecer se as imagens estiverem com baixa qualidade ou o formato não for reconhecido.</p>
-                <p><strong>O que fazer?</strong> Tente fazer upload novamente com imagens mais nítidas e bem iluminadas.</p>
-              </div>
+      return `
+      <section class="category-section">
+        <div class="category-header">
+          <div class="category-icon">${catIcon}</div>
+          <div class="category-info">
+            <h2 class="category-title">${catName}</h2>
+            <div class="category-summary ${catPercentNormal === 100 ? 'all-normal' : catPercentNormal >= 70 ? 'mostly-normal' : 'needs-attention'}">
+              ${catPercentNormal === 100 ? '✅ Todos normais!' : catPercentNormal >= 70 ? `✅ ${catNormalCount}/${catTotalCount} normais` : `⚠️ ${catTotalCount - catNormalCount} precisa(m) de atenção`}
             </div>
           </div>
-        `}
+        </div>
+        
+        <div class="exam-cards-grid">
+          ${metrics.map((metric: any) => {
+            const explicacao = getExplicacaoDidatica(metric.name || '');
+            const statusClass = metric.status === 'elevated' || metric.status === 'high' ? 'warning' : 
+                               metric.status === 'low' || metric.status === 'critical' ? 'danger' : 'normal';
+            const statusEmoji = statusClass === 'warning' ? '🟡' : statusClass === 'danger' ? '🔴' : '🟢';
+            const statusText = statusClass === 'warning' ? 'Atenção' : statusClass === 'danger' ? 'Alterado' : 'Normal';
+            
+            // Usar explicação personalizada do dicionário ou fallback
+            const explicacaoCurta = explicacao?.explicacao_curta || metric.how_it_works || 'Este exame avalia um aspecto importante da sua saúde.';
+            const analogia = explicacao?.analogia || '';
+            const dicas = explicacao?.dicas_praticas || [];
+            const seBaixo = explicacao?.se_baixo || '';
+            const seAlto = explicacao?.se_alto || '';
+            
+            // Determinar mensagem baseada no status
+            let mensagemStatus = '';
+            if (statusClass === 'normal') {
+              mensagemStatus = '✅ <strong>Parabéns!</strong> Seu resultado está dentro da faixa saudável.';
+            } else if (statusClass === 'warning') {
+              mensagemStatus = seAlto ? `⚠️ <strong>Atenção:</strong> ${seAlto}` : '⚠️ <strong>Atenção:</strong> Resultado um pouco acima do ideal. Converse com seu médico.';
+            } else {
+              mensagemStatus = seBaixo ? `🔴 <strong>Atenção:</strong> ${seBaixo}` : '🔴 <strong>Atenção:</strong> Resultado fora da faixa ideal. Consulte seu médico.';
+            }
+            
+            return `
+            <div class="exam-card-mini ${statusClass}">
+              <div class="exam-card-header">
+                <span class="exam-card-name">${metric.name || 'Exame'}</span>
+                <span class="exam-card-status ${statusClass}">${statusEmoji}</span>
+              </div>
+              <div class="exam-card-body">
+                <div class="exam-card-result">
+                  <span class="result-value">${metric.value || '-'}</span>
+                  <span class="result-unit">${metric.unit || ''}</span>
+                </div>
+                <div class="exam-card-reference">
+                  Referência: ${metric.us_reference || metric.reference || 'Consultar médico'}
+                </div>
+                <div class="exam-card-explanation">
+                  ${explicacaoCurta}
+                </div>
+                ${analogia ? `
+                <div class="exam-card-analogy">
+                  💭 <em>${analogia}</em>
+                </div>
+                ` : ''}
+                <div class="exam-card-status-msg">
+                  ${mensagemStatus}
+                </div>
+                ${dicas.length > 0 && statusClass !== 'normal' ? `
+                <div class="exam-card-tips">
+                  <strong>💡 Dicas:</strong>
+                  <ul>${dicas.slice(0, 2).map((d: string) => `<li>${d}</li>`).join('')}</ul>
+                </div>
+                ` : ''}
+              </div>
+            </div>
+            `;
+          }).join('')}
+        </div>
+      </section>
+      `;
+    }).join('')}
+
+    ${allMetrics.length === 0 ? `
+    <section class="section-card">
+      <div class="section-header">
+        <div class="section-icon">📋</div>
+        <h2 class="section-title">Aguardando Exames</h2>
+      </div>
+      <div class="section-text">
+        <p>Não foi possível extrair os dados dos exames automaticamente. Isso pode acontecer se as imagens estiverem com baixa qualidade ou o formato não for reconhecido.</p>
+        <p><strong>O que fazer?</strong> Tente fazer upload novamente com imagens mais nítidas e bem iluminadas.</p>
       </div>
     </section>
+    ` : ''}
 
     <!-- Recomendações Personalizadas -->
     <section class="section-card">
