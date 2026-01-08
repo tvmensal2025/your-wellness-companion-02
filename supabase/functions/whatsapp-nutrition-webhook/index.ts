@@ -106,8 +106,18 @@ serve(async (req) => {
         }
       }
     } else if (pendingMedical && messageText) {
-      console.log("[WhatsApp Nutrition] Processando resposta exame médico:", messageText);
-      await handleMedicalResponse(user, pendingMedical, messageText, phone);
+      // 🔥 Se estiver em PROCESSING, apenas avisar que está analisando (não chamar Sofia)
+      if (pendingMedical.status === "processing") {
+        console.log("[WhatsApp Nutrition] 🔄 Exame em processamento, aguardando...");
+        await sendWhatsApp(phone, 
+          "⏳ *Ainda estou analisando seus exames*\n\n" +
+          "Aguarde só mais um momento, assim que terminar eu envio o relatório completo.\n\n" +
+          "_Dr. Vital 🩺_"
+        );
+      } else {
+        console.log("[WhatsApp Nutrition] Processando resposta exame médico:", messageText);
+        await handleMedicalResponse(user, pendingMedical, messageText, phone);
+      }
     } else if (hasImage(message)) {
       console.log("[WhatsApp Nutrition] Processando imagem...");
       await processImage(user, phone, message, webhook);
@@ -175,20 +185,34 @@ async function getPendingConfirmation(userId: string): Promise<any | null> {
   return data;
 }
 
-// 🔥 BUSCAR LOTE MÉDICO ATIVO (collecting ou awaiting_confirm)
+// 🔥 BUSCAR LOTE MÉDICO ATIVO (collecting, awaiting_confirm, awaiting_info OU processing)
 async function getPendingMedical(userId: string): Promise<any | null> {
   const { data, error } = await supabase
     .from("whatsapp_pending_medical")
     .select("*")
     .eq("user_id", userId)
     .eq("is_processed", false)
-    .in("status", ["collecting", "awaiting_confirm", "awaiting_info"])
+    .in("status", ["collecting", "awaiting_confirm", "awaiting_info", "processing"])
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle();
 
   if (error) return null;
   return data;
+}
+
+// 🔥 VERIFICAR SE TEM LOTE MÉDICO EM PROCESSAMENTO
+async function hasMedicalInProcessing(userId: string): Promise<boolean> {
+  const { data, error } = await supabase
+    .from("whatsapp_pending_medical")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("is_processed", false)
+    .eq("status", "processing")
+    .limit(1)
+    .maybeSingle();
+
+  return !error && !!data;
 }
 
 async function checkAndClearExpiredPending(userId: string, phone: string): Promise<boolean> {
@@ -1779,7 +1803,7 @@ async function analyzeExamBatch(
       }
     }
 
-    // Gerar relatório
+    // Gerar relatório público
     let reportLink = "";
     if (documentId) {
       console.log("[WhatsApp Medical] 📊 Gerando relatório para documento:", documentId);
@@ -1788,12 +1812,27 @@ async function analyzeExamBatch(
           body: { documentId, userId: user.id }
         });
 
-        console.log("[WhatsApp Medical] 📊 Resultado do relatório:", JSON.stringify(reportResult)?.slice(0, 300));
+        console.log("[WhatsApp Medical] 📊 Resultado do relatório:", JSON.stringify(reportResult)?.slice(0, 500));
         if (reportError) console.log("[WhatsApp Medical] 📊 Erro do relatório:", reportError);
 
-        if (reportResult?.publicUrl || reportResult?.token) {
-          const token = reportResult.token || documentId.slice(0, 8);
-          reportLink = `\n\n📊 *Relatório completo:*\n👉 institutodossonhos.com.br/relatorio/${token}`;
+        // 🔥 CORREÇÃO: usar snake_case (public_url, public_token, signed_url)
+        const publicUrl = reportResult?.public_url || reportResult?.publicUrl;
+        const publicToken = reportResult?.public_token || reportResult?.token;
+        const signedUrl = reportResult?.signed_url || reportResult?.signedUrl;
+        
+        console.log("[WhatsApp Medical] 📊 public_url:", publicUrl);
+        console.log("[WhatsApp Medical] 📊 public_token:", publicToken);
+        console.log("[WhatsApp Medical] 📊 signed_url:", signedUrl?.slice(0, 80));
+
+        if (publicToken) {
+          // Preferir token público (link permanente)
+          reportLink = `\n\n📊 *Relatório completo:*\n👉 institutodossonhos.com.br/relatorio/${publicToken}`;
+        } else if (publicUrl) {
+          // Fallback: URL pública direta
+          reportLink = `\n\n📊 *Relatório completo:*\n👉 ${publicUrl}`;
+        } else if (signedUrl) {
+          // Último recurso: URL assinada (expira)
+          reportLink = `\n\n📊 *Relatório (válido por 24h):*\n👉 ${signedUrl}`;
         }
       } catch (e) {
         console.log("[WhatsApp Medical] ⚠️ Relatório não disponível:", e);
