@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Scale, ChevronRight } from 'lucide-react';
+import { Scale, ChevronRight, ChevronDown } from 'lucide-react';
 
 interface QuickActionsGridProps {
   onWeightClick: () => void;
@@ -8,7 +8,24 @@ interface QuickActionsGridProps {
 
 export const QuickActionsGrid: React.FC<QuickActionsGridProps> = ({ onWeightClick }) => {
   return (
-    <div className="space-y-3 sm:space-y-4">
+    <div className="space-y-2">
+      {/* Animated Arrow pointing down */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.3 }}
+        className="flex flex-col items-center"
+      >
+        <motion.div
+          animate={{ y: [0, 8, 0] }}
+          transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
+          className="flex flex-col items-center text-emerald-600"
+        >
+          <span className="text-xs font-medium mb-1">Registre seu peso</span>
+          <ChevronDown className="h-5 w-5" />
+        </motion.div>
+      </motion.div>
+
       {/* Primary CTA - Registrar Peso */}
       <motion.button
         initial={{ opacity: 0, y: 10 }}
