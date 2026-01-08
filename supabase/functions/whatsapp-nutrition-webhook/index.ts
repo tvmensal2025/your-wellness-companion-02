@@ -1,16 +1,10 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-// ============================================================
-// 🔥 REFATORAÇÃO FASE 2: Index modularizado
-// Imports dos novos módulos extraídos
-// Código antigo mantido comentado abaixo como backup
-// ============================================================
-
 // Services
-import { findUserByPhone, getDailyTotal, UserInfo } from "./services/user-service.ts";
+import { findUserByPhone, UserInfo } from "./services/user-service.ts";
 import { getPendingConfirmation, getPendingMedical, checkAndClearExpiredPending } from "./services/pending-service.ts";
-import { interpretUserIntent, fallbackIntentInterpretation } from "./services/intent-service.ts";
+import { interpretUserIntent } from "./services/intent-service.ts";
 
 // Handlers
 import { handleTextMessage } from "./handlers/text-handler.ts";
@@ -24,18 +18,9 @@ import {
   extractText,
   hasImage,
   isConfirmationPositive,
-  isConfirmationNegative,
-  isConfirmationEdit,
-  isEditDone,
-  isClearPending,
   detectMealType,
-  formatMealType,
 } from "./utils/message-utils.ts";
 import { sendWhatsApp } from "./utils/whatsapp-sender.ts";
-
-// ============================================================
-// CONFIGURAÇÃO
-// ============================================================
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -46,10 +31,6 @@ const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-// ============================================================
-// HANDLER PRINCIPAL
-// ============================================================
-
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -57,19 +38,17 @@ serve(async (req) => {
 
   try {
     const webhook = await req.json();
-    console.log("[WhatsApp Nutrition] Webhook recebido:", JSON.stringify(webhook).slice(0, 500));
+    console.log("[WhatsApp] Webhook recebido:", JSON.stringify(webhook).slice(0, 500));
 
     // Validar evento
     const event = String(webhook.event || "").toLowerCase();
     const isUpsert = event === "messages.upsert" || event === "messages_upsert";
     if (!isUpsert) {
-      console.log("[WhatsApp Nutrition] Evento ignorado:", webhook.event);
       return new Response(JSON.stringify({ ok: true }), { headers: corsHeaders });
     }
 
     // Ignorar mensagem própria
     if (webhook.data?.key?.fromMe) {
-      console.log("[WhatsApp Nutrition] Mensagem própria ignorada");
       return new Response(JSON.stringify({ ok: true }), { headers: corsHeaders });
     }
 
@@ -79,7 +58,6 @@ serve(async (req) => {
 
     // Ignorar grupos
     if (jid.includes("@g.us")) {
-      console.log("[WhatsApp Nutrition] Mensagem de grupo ignorada:", jid);
       return new Response(JSON.stringify({ ok: true }), { headers: corsHeaders });
     }
 
@@ -91,16 +69,14 @@ serve(async (req) => {
     const message = webhook.data?.message || {};
     const pushName = webhook.data?.pushName || "Usuário";
 
-    console.log(`[WhatsApp Nutrition] Mensagem de ${phone} (${pushName})`);
+    console.log(`[WhatsApp] Mensagem de ${phone} (${pushName})`);
 
     // Buscar usuário
     const user = await findUserByPhone(supabase, phone);
     if (!user) {
-      console.log("[WhatsApp Nutrition] Usuário não encontrado para telefone:", phone);
+      console.log("[WhatsApp] Usuário não encontrado:", phone);
       return new Response(JSON.stringify({ ok: true }), { headers: corsHeaders });
     }
-
-    console.log(`[WhatsApp Nutrition] Usuário encontrado: ${user.id}`);
 
     // Buscar pendências
     const pending = await getPendingConfirmation(supabase, user.id);
@@ -116,13 +92,10 @@ serve(async (req) => {
 
     const pendingMedical = await getPendingMedical(supabase, user.id);
 
-    // ============================================================
     // ROTEAMENTO DE MENSAGENS
-    // ============================================================
 
     // 1. Modo edição ativo
     if (pending?.waiting_edit && messageText) {
-      console.log("[WhatsApp Nutrition] Processando edição:", messageText);
       await handleEdit(supabase, user, pending, messageText, phone);
     }
     // 2. Aguardando confirmação nutricional
@@ -131,26 +104,21 @@ serve(async (req) => {
       const pendingFoods = analysis.detectedFoods || analysis.foods || [];
       const lower = messageText.toLowerCase().trim();
 
-      // Verificar respostas diretas ANTES de IA
+      // Verificar respostas diretas
       const directConfirm = ["1", "sim", "s", "ok", "confirmo", "confirma", "certo", "isso"].includes(lower);
       const directCancel = ["2", "não", "nao", "n", "cancela", "cancelar", "nope"].includes(lower);
       const directEdit = ["3", "editar", "edita", "corrigir", "mudar", "alterar"].includes(lower);
       const directClear = ["4", "finalizar", "limpar", "clear", "descartar"].includes(lower);
 
       if (directConfirm || directCancel || directEdit || directClear) {
-        console.log("[WhatsApp Nutrition] ✅ Resposta direta de confirmação detectada:", messageText);
         await handleConfirmation(supabase, user, pending, messageText, phone);
       } else {
         // Para mensagens complexas, usar IA
         const intent = await interpretUserIntent(supabase, messageText, "awaiting_confirmation", pendingFoods);
-        console.log("[WhatsApp Nutrition] Intenção detectada com pendência:", intent.intent);
 
         if (["confirm", "cancel", "edit", "add_food", "remove_food", "replace_food", "clear_pending"].includes(intent.intent)) {
-          console.log("[WhatsApp Nutrition] Processando confirmação:", messageText);
           await handleConfirmation(supabase, user, pending, messageText, phone);
         } else {
-          // Conversa livre com pendência ativa
-          console.log("[WhatsApp Nutrition] Permitindo conversa livre com pendência ativa");
           await handleSmartResponseWithPending(user, phone, messageText, pendingFoods);
         }
       }
@@ -160,7 +128,6 @@ serve(async (req) => {
       const isExpired = pendingMedical.expires_at && new Date(pendingMedical.expires_at) < new Date();
 
       if (isExpired) {
-        console.log("[WhatsApp Nutrition] ⚠️ Pendência médica expirada, limpando...");
         await supabase
           .from("whatsapp_pending_medical")
           .update({ is_processed: true, status: "expired" })
@@ -168,20 +135,17 @@ serve(async (req) => {
 
         await handleTextMessage(supabase, user, phone, messageText);
       } else if (pendingMedical.status === "processing") {
-        console.log("[WhatsApp Nutrition] 🔄 Exame em processamento...");
         await sendWhatsApp(phone,
           "⏳ *Ainda estou analisando seus exames*\n\n" +
           "Aguarde só mais um momento, assim que terminar eu envio o relatório completo.\n\n" +
           "_Dr. Vital 🩺_"
         );
       } else {
-        console.log("[WhatsApp Nutrition] Processando resposta exame médico:", messageText);
         await handleMedicalResponse(supabase, user, pendingMedical, messageText, phone);
       }
     }
     // 4. Imagem recebida
     else if (hasImage(message)) {
-      console.log("[WhatsApp Nutrition] Processando imagem...");
       await processImage(user, phone, message, webhook);
     }
     // 5. Texto sem pendência
@@ -190,21 +154,19 @@ serve(async (req) => {
       const isConfirmResponse = ["1", "2", "3", "4", "sim", "não", "nao", "s", "n", "ok", "pronto", "confirmo", "cancela"].includes(lower);
 
       if (isConfirmResponse) {
-        console.log("[WhatsApp Nutrition] ✅ Resposta de confirmação sem pendência - feedback amigável");
         await sendWhatsApp(phone,
           "✅ *Entendi!*\n\n" +
           "📸 Envie uma foto de refeição ou exame para eu analisar.\n\n" +
           "_Sofia 🥗 | Dr. Vital 🩺_"
         );
       } else {
-        console.log("[WhatsApp Nutrition] Processando texto:", messageText);
         await handleTextMessage(supabase, user, phone, messageText);
       }
     }
 
     return new Response(JSON.stringify({ ok: true }), { headers: corsHeaders });
   } catch (error) {
-    console.error("[WhatsApp Nutrition] Erro:", error);
+    console.error("[WhatsApp] Erro:", error);
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : "Erro desconhecido" }),
       { status: 500, headers: corsHeaders }
@@ -212,47 +174,33 @@ serve(async (req) => {
   }
 });
 
-// ============================================================
-// FUNÇÕES AUXILIARES QUE AINDA PRECISAM ESTAR AQUI
-// (Dependem de contexto do webhook ou são muito complexas)
-// ============================================================
+// Funções auxiliares
 
 async function processImage(user: UserInfo, phone: string, message: any, webhook: any): Promise<void> {
   try {
     const imageUrl = await processAndUploadImage(supabase, user.id, message, webhook);
 
     if (!imageUrl) {
-      console.error("[WhatsApp Nutrition] ❌ Não foi possível obter a imagem");
       await sendWhatsApp(phone, "❌ Não consegui processar sua foto. Tente enviar novamente!");
       return;
     }
 
-    console.log("[WhatsApp Nutrition] ✅ Upload concluído! URL:", imageUrl);
-
     // Detectar tipo de imagem
-    console.log("[WhatsApp Nutrition] 🔍 Detectando tipo de imagem...");
-
-    const { data: imageTypeResult, error: typeError } = await supabase.functions.invoke("detect-image-type", {
+    const { data: imageTypeResult } = await supabase.functions.invoke("detect-image-type", {
       body: { imageUrl }
     });
 
     const imageType = imageTypeResult?.type || "OTHER";
-    const typeConfidence = imageTypeResult?.confidence || 0;
 
-    console.log(`[WhatsApp Nutrition] 🎯 Tipo detectado: ${imageType} (confiança: ${typeConfidence})`);
-
-    // Roteamento baseado no tipo
     if (imageType === "FOOD") {
-      console.log("[WhatsApp Nutrition] 🍽️ Imagem de COMIDA detectada");
       await processFoodImage(user, phone, imageUrl);
     } else if (imageType === "MEDICAL") {
-      console.log("[WhatsApp Nutrition] 🩺 Imagem MÉDICA detectada");
       await processMedicalImage(supabase, user, phone, imageUrl);
     } else {
       // Verificar se tem lote médico ativo
       const { data: activeMedicalBatch } = await supabase
         .from("whatsapp_pending_medical")
-        .select("id, images_count, status")
+        .select("id")
         .eq("user_id", user.id)
         .eq("is_processed", false)
         .in("status", ["collecting", "awaiting_confirm"])
@@ -261,10 +209,8 @@ async function processImage(user: UserInfo, phone: string, message: any, webhook
         .maybeSingle();
 
       if (activeMedicalBatch) {
-        console.log(`[WhatsApp Nutrition] 📋 Lote médico ativo - assumindo exame`);
         await processMedicalImage(supabase, user, phone, imageUrl);
       } else {
-        console.log("[WhatsApp Nutrition] ❓ Imagem não reconhecida");
         await sendWhatsApp(phone,
           "📸 Recebi sua foto!\n\n" +
           "Para análise *nutricional*, envie fotos de refeições 🍽️\n" +
@@ -274,14 +220,13 @@ async function processImage(user: UserInfo, phone: string, message: any, webhook
       }
     }
   } catch (error) {
-    console.error("[WhatsApp Nutrition] Erro ao processar imagem:", error);
+    console.error("[WhatsApp] Erro ao processar imagem:", error);
     await sendWhatsApp(phone, "❌ Erro ao processar sua foto. Tente novamente!");
   }
 }
 
 async function processFoodImage(user: UserInfo, phone: string, imageUrl: string): Promise<void> {
   try {
-    // Chamar sofia-image-analysis
     const { data: analysis, error: analysisError } = await supabase.functions.invoke("sofia-image-analysis", {
       body: {
         imageUrl,
@@ -291,12 +236,10 @@ async function processFoodImage(user: UserInfo, phone: string, imageUrl: string)
     });
 
     if (analysisError || !analysis) {
-      console.error("[WhatsApp Nutrition] Erro na análise:", analysisError);
       await sendWhatsApp(phone, "❌ Erro ao analisar sua foto. Tente novamente!");
       return;
     }
 
-    // Normalizar alimentos
     const normalizedFoods =
       analysis?.detectedFoods ??
       analysis?.foods ??
@@ -307,7 +250,7 @@ async function processFoodImage(user: UserInfo, phone: string, imageUrl: string)
     const detectedFoods = Array.isArray(normalizedFoods) ? normalizedFoods : [];
 
     if (detectedFoods.length === 0) {
-      await sendWhatsApp(phone, "🤔 Não consegui identificar alimentos na foto. Tente enviar uma foto mais clara do prato!");
+      await sendWhatsApp(phone, "🤔 Não consegui identificar alimentos na foto. Tente enviar uma foto mais clara!");
       return;
     }
 
@@ -330,8 +273,6 @@ async function processFoodImage(user: UserInfo, phone: string, imageUrl: string)
       false,
       "whatsapp"
     );
-
-    console.log("[WhatsApp Nutrition] 🔥 Refeição salva em food_history:", foodHistoryId);
 
     // Formatar mensagem
     const foodsList = detectedFoods
@@ -385,7 +326,7 @@ async function processFoodImage(user: UserInfo, phone: string, imageUrl: string)
     });
 
   } catch (error) {
-    console.error("[WhatsApp Nutrition] Erro ao processar imagem de comida:", error);
+    console.error("[WhatsApp] Erro ao processar imagem de comida:", error);
     await sendWhatsApp(phone, "❌ Erro ao analisar sua foto. Tente novamente!");
   }
 }
@@ -428,13 +369,13 @@ async function saveToFoodHistory(
       .single();
 
     if (error) {
-      console.error("[WhatsApp Nutrition] Erro ao salvar food_history:", error);
+      console.error("[WhatsApp] Erro ao salvar food_history:", error);
       return null;
     }
 
     return data.id;
   } catch (e) {
-    console.error("[WhatsApp Nutrition] Erro ao salvar food_history:", e);
+    console.error("[WhatsApp] Erro ao salvar food_history:", e);
     return null;
   }
 }
@@ -462,7 +403,6 @@ async function handleSmartResponse(user: UserInfo, phone: string, text: string):
     });
 
     if (error) {
-      console.error("[WhatsApp Nutrition] Erro na IA:", error);
       await sendWhatsApp(phone,
         "🤔 Hmm, não entendi muito bem. Pode reformular?\n\n" +
         "💡 *Dica:* Envie uma foto da sua refeição ou me conte o que comeu!\n\n" +
@@ -481,7 +421,7 @@ async function handleSmartResponse(user: UserInfo, phone: string, text: string):
     await sendWhatsApp(phone, responseText + signature);
 
   } catch (error) {
-    console.error("[WhatsApp Nutrition] Erro na resposta inteligente:", error);
+    console.error("[WhatsApp] Erro na resposta inteligente:", error);
     await sendWhatsApp(phone,
       "Oi! 👋 Estou aqui para ajudar com sua nutrição!\n\n" +
       "📸 Envie uma foto da refeição\n" +
@@ -509,7 +449,7 @@ async function handleSmartResponseWithPending(
 
     const isFirstMessageToday = !todayMessages || todayMessages.length === 0;
 
-    const { data: aiResponse, error } = await supabase.functions.invoke("whatsapp-ai-assistant", {
+    const { data: aiResponse } = await supabase.functions.invoke("whatsapp-ai-assistant", {
       body: {
         userId: user.id,
         message: text,
@@ -537,22 +477,7 @@ async function handleSmartResponseWithPending(
     await sendWhatsApp(phone, responseText + pendingReminder);
 
   } catch (error) {
-    console.error("[WhatsApp Nutrition] Erro na resposta com pendência:", error);
+    console.error("[WhatsApp] Erro na resposta com pendência:", error);
     await handleSmartResponse(user, phone, text);
   }
 }
-
-// ============================================================
-// FIM DO ARQUIVO REFATORADO
-// Código original (2315 linhas) foi extraído para:
-// - services/user-service.ts
-// - services/pending-service.ts  
-// - services/intent-service.ts
-// - handlers/text-handler.ts
-// - handlers/confirmation-handler.ts
-// - handlers/edit-handler.ts
-// - handlers/medical-handler.ts
-// - handlers/image-upload.ts
-// - utils/message-utils.ts
-// - utils/whatsapp-sender.ts
-// ============================================================
