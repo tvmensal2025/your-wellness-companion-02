@@ -5,10 +5,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Search, Plus, X, Loader2 } from 'lucide-react';
+import { Search, Plus, X, Loader2, AlertTriangle, Ban } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useDailyNutritionTracking } from '@/hooks/useDailyNutritionTracking';
+import { useFoodRestrictionCheck } from '@/hooks/useFoodRestrictionCheck';
+import { FoodRestrictionAlert } from './FoodRestrictionAlert';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 
 interface FoodItem {
   id: string;
@@ -47,7 +50,10 @@ export const QuickMealEntry: React.FC<QuickMealEntryProps> = ({
   const [selectedFoods, setSelectedFoods] = useState<SelectedFood[]>([]);
   const [searching, setSearching] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [activeAlert, setActiveAlert] = useState<{ food: string; type: 'forbidden' | 'problematic' } | null>(null);
+  
   const { addMeal } = useDailyNutritionTracking();
+  const { checkRestriction } = useFoodRestrictionCheck();
 
   useEffect(() => {
     if (!open) {
@@ -90,6 +96,19 @@ export const QuickMealEntry: React.FC<QuickMealEntryProps> = ({
       toast.info('Alimento já adicionado');
       return;
     }
+
+    // Verificar restrições
+    const restriction = checkRestriction(food.name);
+    if (restriction.isRestricted && restriction.type) {
+      setActiveAlert({ food: food.name, type: restriction.type });
+      
+      if (restriction.type === 'forbidden') {
+        toast.error(`⚠️ ${food.name} está na sua lista de alimentos proibidos!`);
+      } else {
+        toast.warning(`⚠️ ${food.name} pode causar desconforto.`);
+      }
+    }
+
     setSelectedFoods(prev => [...prev, { ...food, quantity: 100 }]);
     setSearchTerm('');
     setSearchResults([]);
@@ -174,24 +193,53 @@ export const QuickMealEntry: React.FC<QuickMealEntryProps> = ({
             )}
           </div>
 
+          {/* Alerta de restrição */}
+          {activeAlert && (
+            <FoodRestrictionAlert
+              foodName={activeAlert.food}
+              restrictionType={activeAlert.type}
+              onDismiss={() => setActiveAlert(null)}
+            />
+          )}
+
           {/* Resultados da busca */}
           {searchResults.length > 0 && (
             <ScrollArea className="h-40 border rounded-lg p-2">
-              {searchResults.map((food) => (
-                <div
-                  key={food.id}
-                  className="flex items-center justify-between p-2 hover:bg-muted rounded cursor-pointer"
-                  onClick={() => handleAddFood(food)}
-                >
-                  <div>
-                    <div className="font-medium text-sm">{food.name}</div>
-                    <div className="text-xs text-muted-foreground">
-                      {food.calories_per_100g} kcal/100g
+              {searchResults.map((food) => {
+                const restriction = checkRestriction(food.name);
+                const isForbidden = restriction.type === 'forbidden';
+                const isProblematic = restriction.type === 'problematic';
+
+                return (
+                  <div
+                    key={food.id}
+                    className={cn(
+                      "flex items-center justify-between p-2 rounded cursor-pointer",
+                      isForbidden 
+                        ? "bg-destructive/10 hover:bg-destructive/20 border border-destructive/30" 
+                        : isProblematic 
+                          ? "bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30"
+                          : "hover:bg-muted"
+                    )}
+                    onClick={() => handleAddFood(food)}
+                  >
+                    <div className="flex items-center gap-2">
+                      {isForbidden && <Ban className="h-4 w-4 text-destructive" />}
+                      {isProblematic && <AlertTriangle className="h-4 w-4 text-amber-500" />}
+                      <div>
+                        <div className="font-medium text-sm">{food.name}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {food.calories_per_100g} kcal/100g
+                        </div>
+                      </div>
                     </div>
+                    <Plus className={cn(
+                      "h-4 w-4",
+                      isForbidden ? "text-destructive" : isProblematic ? "text-amber-500" : "text-primary"
+                    )} />
                   </div>
-                  <Plus className="h-4 w-4 text-primary" />
-                </div>
-              ))}
+                );
+              })}
             </ScrollArea>
           )}
 
