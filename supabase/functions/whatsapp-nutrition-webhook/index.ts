@@ -457,82 +457,144 @@ async function updateFoodHistoryConfirmation(foodHistoryId: string, confirmed: b
 // =============== PROCESSAMENTO DE EXAME MÉDICO (MODO LOTE) ===============
 
 async function processMedicalImage(user: { id: string }, phone: string, imageUrl: string): Promise<void> {
+  const MAX_RETRIES = 3;
+  
   try {
+    console.log("[WhatsApp Medical] ========================================");
     console.log("[WhatsApp Medical] 🔥 MODO LOTE: Recebendo imagem de exame para", user.id);
-
-    // 🔥 BUSCAR LOTE ATIVO
-    const { data: existingBatch } = await supabase
-      .from("whatsapp_pending_medical")
-      .select("*")
-      .eq("user_id", user.id)
-      .eq("is_processed", false)
-      .in("status", ["collecting", "awaiting_confirm"])
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
+    console.log("[WhatsApp Medical] 📷 URL da imagem:", imageUrl.slice(0, 100));
 
     const now = new Date().toISOString();
     const newImageEntry = { url: imageUrl, created_at: now };
 
-    if (existingBatch) {
-      // 🔥 ADICIONAR AO LOTE EXISTENTE
-      const currentUrls = existingBatch.image_urls || [];
-      const updatedUrls = [...currentUrls, newImageEntry];
-      const imagesCount = updatedUrls.length;
-
-      await supabase
+    // 🔥 IMPLEMENTAÇÃO COM LOCK OTIMISTA E RETRY
+    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+      // Buscar lote ativo
+      const { data: existingBatch, error: fetchError } = await supabase
         .from("whatsapp_pending_medical")
-        .update({
-          image_urls: updatedUrls,
-          images_count: imagesCount,
-          last_image_at: now,
-          status: "collecting",
-          waiting_confirmation: false,
-        })
-        .eq("id", existingBatch.id);
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("is_processed", false)
+        .in("status", ["collecting", "awaiting_confirm"])
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
 
-      console.log(`[WhatsApp Medical] ✅ Imagem ${imagesCount} adicionada ao lote ${existingBatch.id}`);
-
-      // Enviar feedback a cada 5 imagens (para não poluir)
-      if (imagesCount % 5 === 0) {
-        await sendWhatsApp(phone,
-          `📷 *${imagesCount} imagens recebidas!*\n\n` +
-          `Continue enviando ou digite *PRONTO* quando terminar.\n\n` +
-          `_Dr. Vital 🩺_`
-        );
+      if (fetchError) {
+        console.error("[WhatsApp Medical] ❌ Erro ao buscar lote:", fetchError);
+        throw fetchError;
       }
 
-    } else {
-      // 🔥 CRIAR NOVO LOTE
-      console.log("[WhatsApp Medical] Criando novo lote de exames...");
+      if (existingBatch) {
+        // 🔥 LOCK OTIMISTA: Verificar images_count no update
+        const currentUrls = existingBatch.image_urls || [];
+        const updatedUrls = [...currentUrls, newImageEntry];
+        const newCount = updatedUrls.length;
 
-      await supabase.from("whatsapp_pending_medical").insert({
-        user_id: user.id,
-        phone: phone,
-        image_url: imageUrl, // Primeira imagem (compatibilidade)
-        image_urls: [newImageEntry],
-        images_count: 1,
-        last_image_at: now,
-        status: "collecting",
-        waiting_confirmation: false,
-        confirmed: null,
-        is_processed: false,
-        expires_at: new Date(Date.now() + 30 * 60 * 1000).toISOString(), // 30 min
-        created_at: now,
-      });
+        console.log(`[WhatsApp Medical] 🔄 Tentativa ${attempt + 1}: Adicionando imagem ao lote ${existingBatch.id} (atual: ${existingBatch.images_count})`);
 
-      // Instruir o usuário
-      await sendWhatsApp(phone,
-        `🩺 *Recebi seu exame!*\n\n` +
-        `📸 Pode enviar *todas as fotos* do exame agora.\n` +
-        `Quando terminar, digite *PRONTO*.\n\n` +
-        `_Eu só vou analisar depois que você confirmar!_\n\n` +
-        `_Dr. Vital 🩺_`
-      );
+        const { data: updateResult, error: updateError } = await supabase
+          .from("whatsapp_pending_medical")
+          .update({
+            image_urls: updatedUrls,
+            images_count: newCount,
+            last_image_at: now,
+            status: "collecting",
+            waiting_confirmation: false,
+          })
+          .eq("id", existingBatch.id)
+          .eq("images_count", existingBatch.images_count) // LOCK OTIMISTA
+          .select();
+
+        if (updateError) {
+          console.error(`[WhatsApp Medical] ❌ Erro no update (tentativa ${attempt + 1}):`, updateError);
+          if (attempt < MAX_RETRIES - 1) {
+            await new Promise(r => setTimeout(r, 100 * (attempt + 1)));
+            continue;
+          }
+          throw updateError;
+        }
+
+        // Verificar se update funcionou (lock otimista)
+        if (!updateResult || updateResult.length === 0) {
+          console.log(`[WhatsApp Medical] 🔄 Conflito de lock otimista, retry ${attempt + 1}/${MAX_RETRIES}`);
+          if (attempt < MAX_RETRIES - 1) {
+            await new Promise(r => setTimeout(r, 100 * (attempt + 1)));
+            continue;
+          }
+          // Último retry falhou, buscar novamente e tentar inserir
+          console.log("[WhatsApp Medical] ⚠️ Lock otimista falhou, buscando lote atualizado...");
+          continue;
+        }
+
+        console.log(`[WhatsApp Medical] ✅ Imagem ${newCount} adicionada ao lote ${existingBatch.id}`);
+
+        // Enviar feedback a cada 5 imagens (para não poluir)
+        if (newCount % 5 === 0) {
+          await sendWhatsApp(phone,
+            `📷 *${newCount} imagens recebidas!*\n\n` +
+            `Continue enviando ou digite *PRONTO* quando terminar.\n\n` +
+            `_Dr. Vital 🩺_`
+          );
+        }
+        
+        console.log("[WhatsApp Medical] ========================================");
+        return; // Sucesso!
+
+      } else {
+        // 🔥 CRIAR NOVO LOTE
+        console.log("[WhatsApp Medical] 📁 Criando novo lote de exames...");
+
+        const { data: insertResult, error: insertError } = await supabase
+          .from("whatsapp_pending_medical")
+          .insert({
+            user_id: user.id,
+            phone: phone,
+            image_url: imageUrl,
+            image_urls: [newImageEntry],
+            images_count: 1,
+            last_image_at: now,
+            status: "collecting",
+            waiting_confirmation: false,
+            confirmed: null,
+            is_processed: false,
+            expires_at: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
+            created_at: now,
+          })
+          .select();
+
+        if (insertError) {
+          // Pode ser race condition - outro processo criou o lote
+          console.log(`[WhatsApp Medical] ⚠️ Erro ao criar lote (pode ser race condition): ${insertError.message}`);
+          if (attempt < MAX_RETRIES - 1) {
+            await new Promise(r => setTimeout(r, 100 * (attempt + 1)));
+            continue;
+          }
+          throw insertError;
+        }
+
+        console.log("[WhatsApp Medical] ✅ Novo lote criado:", insertResult?.[0]?.id);
+
+        // Instruir o usuário
+        await sendWhatsApp(phone,
+          `🩺 *Recebi seu exame!*\n\n` +
+          `📸 Pode enviar *todas as fotos* do exame agora.\n` +
+          `Quando terminar, digite *PRONTO*.\n\n` +
+          `_Eu só vou analisar depois que você confirmar!_\n\n` +
+          `_Dr. Vital 🩺_`
+        );
+        
+        console.log("[WhatsApp Medical] ========================================");
+        return; // Sucesso!
+      }
     }
 
+    console.error("[WhatsApp Medical] ❌ Todas as tentativas falharam");
+    throw new Error("Falha ao processar imagem após múltiplas tentativas");
+
   } catch (error) {
-    console.error("[WhatsApp Medical] Erro:", error);
+    console.error("[WhatsApp Medical] 💥 ERRO CRÍTICO:", error);
+    console.error("[WhatsApp Medical] Stack:", (error as Error).stack);
     await sendWhatsApp(phone,
       "❌ Ocorreu um erro ao receber seu exame.\n\n" +
       "Por favor, tente novamente.\n\n" +
@@ -1592,35 +1654,62 @@ async function analyzeExamBatch(
   phone: string,
   pending: any
 ): Promise<void> {
+  console.log("[WhatsApp Medical] ========================================");
+  console.log("[WhatsApp Medical] 🚀 INICIANDO analyzeExamBatch");
+  console.log("[WhatsApp Medical] 📌 pending.id:", pending.id);
+  console.log("[WhatsApp Medical] 👤 user.id:", user.id);
+  console.log("[WhatsApp Medical] 📱 phone:", phone);
+  
   try {
     const imageUrls = pending.image_urls || [];
     const imagesCount = imageUrls.length;
 
+    console.log("[WhatsApp Medical] 📸 image_urls recebidas:", imagesCount);
+    console.log("[WhatsApp Medical] 📸 Primeiras URLs:", JSON.stringify(imageUrls.slice(0, 2)));
+
     if (imagesCount === 0) {
+      console.error("[WhatsApp Medical] ❌ Nenhuma imagem no lote");
       await sendWhatsApp(phone, "❌ Nenhuma imagem encontrada para análise.\n\n_Dr. Vital 🩺_");
+      await supabase.from("whatsapp_pending_medical").update({ status: "error", is_processed: true }).eq("id", pending.id);
       return;
     }
-
-    console.log(`[WhatsApp Medical] Analisando lote de ${imagesCount} imagens...`);
 
     // 🔥 CONVERTER URLs públicas para paths de storage
     // URL: https://xxx.supabase.co/storage/v1/object/public/chat-images/whatsapp/userId/123.jpg
     // Path: whatsapp/userId/123.jpg
-    const tmpPaths = imageUrls.map((img: any) => {
+    console.log("[WhatsApp Medical] 🔄 Extraindo tmpPaths das URLs...");
+    
+    const tmpPaths = imageUrls.map((img: any, idx: number) => {
       const url = img.url || img;
+      console.log(`[WhatsApp Medical] 🔍 URL[${idx}]: ${url.slice(0, 100)}`);
       const match = url.match(/\/chat-images\/(.+)$/);
-      return match ? match[1] : null;
+      const path = match ? match[1] : null;
+      console.log(`[WhatsApp Medical] 📂 Path[${idx}]: ${path}`);
+      return path;
     }).filter(Boolean);
 
-    console.log(`[WhatsApp Medical] Paths extraídos: ${tmpPaths.length}`, tmpPaths.slice(0, 3));
+    console.log("[WhatsApp Medical] ✅ tmpPaths extraídos:", tmpPaths.length);
+    console.log("[WhatsApp Medical] 📂 Paths:", JSON.stringify(tmpPaths));
 
     if (tmpPaths.length === 0) {
-      console.error("[WhatsApp Medical] Nenhum path válido extraído das URLs");
+      console.error("[WhatsApp Medical] ❌ Nenhum path válido extraído das URLs");
+      console.error("[WhatsApp Medical] ❌ URLs originais:", JSON.stringify(imageUrls));
       await sendWhatsApp(phone, "❌ Erro ao processar imagens.\n\nTente enviar novamente.\n\n_Dr. Vital 🩺_");
+      await supabase.from("whatsapp_pending_medical").update({ status: "error", is_processed: true }).eq("id", pending.id);
       return;
     }
 
     // 🔥 CHAMAR analyze-medical-exam com parâmetros CORRETOS
+    console.log("[WhatsApp Medical] 📞 CHAMANDO analyze-medical-exam...");
+    console.log("[WhatsApp Medical] 📦 Body:", JSON.stringify({
+      tmpPaths,
+      userId: user.id,
+      examType: "exame_laboratorial",
+      title: `Exame via WhatsApp - ${new Date().toLocaleDateString("pt-BR")}`,
+    }));
+    
+    const startTime = Date.now();
+    
     const { data: analysisResult, error: analysisError } = await supabase.functions.invoke("analyze-medical-exam", {
       body: {
         tmpPaths,
@@ -1630,8 +1719,16 @@ async function analyzeExamBatch(
       },
     });
 
+    const elapsed = Date.now() - startTime;
+    console.log(`[WhatsApp Medical] ⏱️ Tempo de resposta: ${elapsed}ms`);
+    console.log("[WhatsApp Medical] 📥 analysisResult:", JSON.stringify(analysisResult)?.slice(0, 800));
+    console.log("[WhatsApp Medical] ❌ analysisError:", JSON.stringify(analysisError));
+
     if (analysisError) {
-      console.error("[WhatsApp Medical] Erro na análise em lote:", analysisError);
+      console.error("[WhatsApp Medical] 💥 ERRO na análise em lote:");
+      console.error("[WhatsApp Medical] 💥 Tipo:", typeof analysisError);
+      console.error("[WhatsApp Medical] 💥 Detalhes:", JSON.stringify(analysisError, null, 2));
+      
       await sendWhatsApp(phone,
         `❌ Não consegui analisar seu exame.\n\n` +
         `Tente enviar fotos mais claras.\n\n` +
@@ -1645,12 +1742,32 @@ async function analyzeExamBatch(
       return;
     }
 
-    console.log("[WhatsApp Medical] Análise concluída:", JSON.stringify(analysisResult).slice(0, 500));
+    // Verificar se resultado está vazio ou com erro interno
+    if (!analysisResult) {
+      console.error("[WhatsApp Medical] ❌ Resultado da análise é null/undefined");
+      await sendWhatsApp(phone, "❌ Erro interno na análise. Tente novamente.\n\n_Dr. Vital 🩺_");
+      await supabase.from("whatsapp_pending_medical").update({ status: "error", is_processed: true }).eq("id", pending.id);
+      return;
+    }
+
+    if (analysisResult.error) {
+      console.error("[WhatsApp Medical] ❌ Erro retornado pela análise:", analysisResult.error);
+      await sendWhatsApp(phone, `❌ Erro na análise: ${analysisResult.error}\n\n_Dr. Vital 🩺_`);
+      await supabase.from("whatsapp_pending_medical").update({ status: "error", is_processed: true }).eq("id", pending.id);
+      return;
+    }
+
+    console.log("[WhatsApp Medical] ✅ Análise concluída com sucesso!");
+    console.log("[WhatsApp Medical] 📊 Resultado completo:", JSON.stringify(analysisResult).slice(0, 1000));
 
     // Extrair resumo
-    const summary = analysisResult?.summary || analysisResult?.analysis?.summary || "Análise concluída com sucesso.";
+    const summary = analysisResult?.summary || analysisResult?.analysis?.summary || analysisResult?.message || "Análise concluída com sucesso.";
     const documentId = analysisResult?.documentId || analysisResult?.document_id;
     const findings = analysisResult?.findings || analysisResult?.analysis?.findings || [];
+
+    console.log("[WhatsApp Medical] 📝 Summary:", summary.slice(0, 200));
+    console.log("[WhatsApp Medical] 📄 DocumentId:", documentId);
+    console.log("[WhatsApp Medical] 🔬 Findings:", findings.length);
 
     // Formatar achados
     let findingsText = "";
@@ -1665,21 +1782,26 @@ async function analyzeExamBatch(
     // Gerar relatório
     let reportLink = "";
     if (documentId) {
+      console.log("[WhatsApp Medical] 📊 Gerando relatório para documento:", documentId);
       try {
-        const { data: reportResult } = await supabase.functions.invoke("generate-medical-report", {
+        const { data: reportResult, error: reportError } = await supabase.functions.invoke("generate-medical-report", {
           body: { documentId, userId: user.id }
         });
+
+        console.log("[WhatsApp Medical] 📊 Resultado do relatório:", JSON.stringify(reportResult)?.slice(0, 300));
+        if (reportError) console.log("[WhatsApp Medical] 📊 Erro do relatório:", reportError);
 
         if (reportResult?.publicUrl || reportResult?.token) {
           const token = reportResult.token || documentId.slice(0, 8);
           reportLink = `\n\n📊 *Relatório completo:*\n👉 institutodossonhos.com.br/relatorio/${token}`;
         }
       } catch (e) {
-        console.log("[WhatsApp Medical] Relatório não disponível");
+        console.log("[WhatsApp Medical] ⚠️ Relatório não disponível:", e);
       }
     }
 
     // Enviar resultado
+    console.log("[WhatsApp Medical] 📤 Enviando resultado para o usuário...");
     await sendWhatsApp(phone,
       `🩺 *Análise Concluída!*\n` +
       `📷 _${imagesCount} ${imagesCount === 1 ? "imagem analisada" : "imagens analisadas"}_\n\n` +
@@ -1689,6 +1811,7 @@ async function analyzeExamBatch(
     );
 
     // Marcar como processado
+    console.log("[WhatsApp Medical] 💾 Atualizando lote como completed...");
     await supabase
       .from("whatsapp_pending_medical")
       .update({
@@ -1700,12 +1823,27 @@ async function analyzeExamBatch(
       })
       .eq("id", pending.id);
 
+    console.log("[WhatsApp Medical] ✅ FLUXO COMPLETO - Análise finalizada com sucesso!");
+    console.log("[WhatsApp Medical] ========================================");
+
   } catch (error) {
-    console.error("[WhatsApp Medical] Erro na análise em lote:", error);
+    console.error("[WhatsApp Medical] 💥 ERRO CRÍTICO em analyzeExamBatch:");
+    console.error("[WhatsApp Medical] 💥 Mensagem:", (error as Error).message);
+    console.error("[WhatsApp Medical] 💥 Stack:", (error as Error).stack);
+    console.error("[WhatsApp Medical] 💥 Erro completo:", JSON.stringify(error, Object.getOwnPropertyNames(error)));
+    
+    // Marcar lote como erro
+    await supabase
+      .from("whatsapp_pending_medical")
+      .update({ status: "error", is_processed: true })
+      .eq("id", pending.id);
+    
     await sendWhatsApp(phone,
       `❌ Erro ao analisar exames.\n\n` +
-      `Tente novamente.\n\n` +
+      `Por favor, envie as fotos novamente.\n\n` +
       `_Dr. Vital 🩺_`
     );
+    
+    console.log("[WhatsApp Medical] ========================================");
   }
 }
