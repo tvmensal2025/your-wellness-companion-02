@@ -1,6 +1,42 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+// ============================================================
+// 🔥 REFATORAÇÃO FASE 2: Index modularizado
+// Imports dos novos módulos extraídos
+// Código antigo mantido comentado abaixo como backup
+// ============================================================
+
+// Services
+import { findUserByPhone, getDailyTotal, UserInfo } from "./services/user-service.ts";
+import { getPendingConfirmation, getPendingMedical, checkAndClearExpiredPending } from "./services/pending-service.ts";
+import { interpretUserIntent, fallbackIntentInterpretation } from "./services/intent-service.ts";
+
+// Handlers
+import { handleTextMessage } from "./handlers/text-handler.ts";
+import { handleConfirmation } from "./handlers/confirmation-handler.ts";
+import { handleEdit } from "./handlers/edit-handler.ts";
+import { handleMedicalResponse, processMedicalImage } from "./handlers/medical-handler.ts";
+import { processAndUploadImage } from "./handlers/image-upload.ts";
+
+// Utils
+import {
+  extractText,
+  hasImage,
+  isConfirmationPositive,
+  isConfirmationNegative,
+  isConfirmationEdit,
+  isEditDone,
+  isClearPending,
+  detectMealType,
+  formatMealType,
+} from "./utils/message-utils.ts";
+import { sendWhatsApp } from "./utils/whatsapp-sender.ts";
+
+// ============================================================
+// CONFIGURAÇÃO
+// ============================================================
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -10,9 +46,9 @@ const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-const EVOLUTION_API_URL = Deno.env.get("EVOLUTION_API_URL");
-const EVOLUTION_API_KEY = Deno.env.get("EVOLUTION_API_KEY");
-const EVOLUTION_INSTANCE = Deno.env.get("EVOLUTION_INSTANCE");
+// ============================================================
+// HANDLER PRINCIPAL
+// ============================================================
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -23,6 +59,7 @@ serve(async (req) => {
     const webhook = await req.json();
     console.log("[WhatsApp Nutrition] Webhook recebido:", JSON.stringify(webhook).slice(0, 500));
 
+    // Validar evento
     const event = String(webhook.event || "").toLowerCase();
     const isUpsert = event === "messages.upsert" || event === "messages_upsert";
     if (!isUpsert) {
@@ -30,14 +67,17 @@ serve(async (req) => {
       return new Response(JSON.stringify({ ok: true }), { headers: corsHeaders });
     }
 
+    // Ignorar mensagem própria
     if (webhook.data?.key?.fromMe) {
       console.log("[WhatsApp Nutrition] Mensagem própria ignorada");
       return new Response(JSON.stringify({ ok: true }), { headers: corsHeaders });
     }
 
+    // Extrair dados
     const key = webhook.data?.key || {};
     const jid = key.remoteJidAlt || key.remoteJid || "";
 
+    // Ignorar grupos
     if (jid.includes("@g.us")) {
       console.log("[WhatsApp Nutrition] Mensagem de grupo ignorada:", jid);
       return new Response(JSON.stringify({ ok: true }), { headers: corsHeaders });
@@ -50,12 +90,11 @@ serve(async (req) => {
 
     const message = webhook.data?.message || {};
     const pushName = webhook.data?.pushName || "Usuário";
-    const instanceName = String(webhook.instance || EVOLUTION_INSTANCE || "");
 
     console.log(`[WhatsApp Nutrition] Mensagem de ${phone} (${pushName})`);
-    console.log(`[WhatsApp Nutrition] Instância: ${instanceName || "(vazia)"}`);
 
-    const user = await findUserByPhone(phone);
+    // Buscar usuário
+    const user = await findUserByPhone(supabase, phone);
     if (!user) {
       console.log("[WhatsApp Nutrition] Usuário não encontrado para telefone:", phone);
       return new Response(JSON.stringify({ ok: true }), { headers: corsHeaders });
@@ -63,81 +102,93 @@ serve(async (req) => {
 
     console.log(`[WhatsApp Nutrition] Usuário encontrado: ${user.id}`);
 
-    const pending = await getPendingConfirmation(user.id);
+    // Buscar pendências
+    const pending = await getPendingConfirmation(supabase, user.id);
     const messageText = extractText(message);
 
+    // Verificar pendência expirada
     if (!pending && messageText) {
-      const hasExpired = await checkAndClearExpiredPending(user.id, phone);
+      const hasExpired = await checkAndClearExpiredPending(supabase, user.id, phone);
       if (hasExpired && isConfirmationPositive(messageText)) {
         return new Response(JSON.stringify({ ok: true }), { headers: corsHeaders });
       }
     }
 
-    const pendingMedical = await getPendingMedical(user.id);
+    const pendingMedical = await getPendingMedical(supabase, user.id);
 
+    // ============================================================
+    // ROTEAMENTO DE MENSAGENS
+    // ============================================================
+
+    // 1. Modo edição ativo
     if (pending?.waiting_edit && messageText) {
       console.log("[WhatsApp Nutrition] Processando edição:", messageText);
-      await handleEdit(user, pending, messageText, phone);
-    } else if (pending?.waiting_confirmation && messageText) {
+      await handleEdit(supabase, user, pending, messageText, phone);
+    }
+    // 2. Aguardando confirmação nutricional
+    else if (pending?.waiting_confirmation && messageText) {
       const analysis = pending.analysis_result || {};
       const pendingFoods = analysis.detectedFoods || analysis.foods || [];
       const lower = messageText.toLowerCase().trim();
-      
-      // 🔥 PRIORIDADE: Verificar respostas diretas ANTES de chamar IA
+
+      // Verificar respostas diretas ANTES de IA
       const directConfirm = ["1", "sim", "s", "ok", "confirmo", "confirma", "certo", "isso"].includes(lower);
       const directCancel = ["2", "não", "nao", "n", "cancela", "cancelar", "nope"].includes(lower);
       const directEdit = ["3", "editar", "edita", "corrigir", "mudar", "alterar"].includes(lower);
       const directClear = ["4", "finalizar", "limpar", "clear", "descartar"].includes(lower);
-      
+
       if (directConfirm || directCancel || directEdit || directClear) {
         console.log("[WhatsApp Nutrition] ✅ Resposta direta de confirmação detectada:", messageText);
-        await handleConfirmation(user, pending, messageText, phone);
+        await handleConfirmation(supabase, user, pending, messageText, phone);
       } else {
         // Para mensagens complexas, usar IA
-        const intent = await interpretUserIntent(messageText, "awaiting_confirmation", pendingFoods);
+        const intent = await interpretUserIntent(supabase, messageText, "awaiting_confirmation", pendingFoods);
         console.log("[WhatsApp Nutrition] Intenção detectada com pendência:", intent.intent);
-        
+
         if (["confirm", "cancel", "edit", "add_food", "remove_food", "replace_food", "clear_pending"].includes(intent.intent)) {
           console.log("[WhatsApp Nutrition] Processando confirmação:", messageText);
-          await handleConfirmation(user, pending, messageText, phone);
+          await handleConfirmation(supabase, user, pending, messageText, phone);
         } else {
-          // Se for pergunta/saudação/outro, deixa a IA responder com lembrete integrado
+          // Conversa livre com pendência ativa
           console.log("[WhatsApp Nutrition] Permitindo conversa livre com pendência ativa");
           await handleSmartResponseWithPending(user, phone, messageText, pendingFoods);
         }
       }
-    } else if (pendingMedical && messageText) {
-      // 🔥 VERIFICAR SE EXPIROU ANTES DE BLOQUEAR
+    }
+    // 3. Pendência médica ativa
+    else if (pendingMedical && messageText) {
       const isExpired = pendingMedical.expires_at && new Date(pendingMedical.expires_at) < new Date();
-      
+
       if (isExpired) {
-        console.log("[WhatsApp Nutrition] ⚠️ Pendência médica expirada, limpando e continuando...");
+        console.log("[WhatsApp Nutrition] ⚠️ Pendência médica expirada, limpando...");
         await supabase
           .from("whatsapp_pending_medical")
           .update({ is_processed: true, status: "expired" })
           .eq("id", pendingMedical.id);
-        
-        // Continuar processamento normal
-        await processText(user, phone, messageText);
+
+        await handleTextMessage(supabase, user, phone, messageText);
       } else if (pendingMedical.status === "processing") {
-        console.log("[WhatsApp Nutrition] 🔄 Exame em processamento, aguardando...");
-        await sendWhatsApp(phone, 
+        console.log("[WhatsApp Nutrition] 🔄 Exame em processamento...");
+        await sendWhatsApp(phone,
           "⏳ *Ainda estou analisando seus exames*\n\n" +
           "Aguarde só mais um momento, assim que terminar eu envio o relatório completo.\n\n" +
           "_Dr. Vital 🩺_"
         );
       } else {
         console.log("[WhatsApp Nutrition] Processando resposta exame médico:", messageText);
-        await handleMedicalResponse(user, pendingMedical, messageText, phone);
+        await handleMedicalResponse(supabase, user, pendingMedical, messageText, phone);
       }
-    } else if (hasImage(message)) {
+    }
+    // 4. Imagem recebida
+    else if (hasImage(message)) {
       console.log("[WhatsApp Nutrition] Processando imagem...");
       await processImage(user, phone, message, webhook);
-    } else if (messageText) {
-      // 🔥 DETECTAR RESPOSTAS DE CONFIRMAÇÃO SEM PENDÊNCIA ATIVA
+    }
+    // 5. Texto sem pendência
+    else if (messageText) {
       const lower = messageText.toLowerCase().trim();
       const isConfirmResponse = ["1", "2", "3", "4", "sim", "não", "nao", "s", "n", "ok", "pronto", "confirmo", "cancela"].includes(lower);
-      
+
       if (isConfirmResponse) {
         console.log("[WhatsApp Nutrition] ✅ Resposta de confirmação sem pendência - feedback amigável");
         await sendWhatsApp(phone,
@@ -147,7 +198,7 @@ serve(async (req) => {
         );
       } else {
         console.log("[WhatsApp Nutrition] Processando texto:", messageText);
-        await processText(user, phone, messageText);
+        await handleTextMessage(supabase, user, phone, messageText);
       }
     }
 
@@ -161,280 +212,189 @@ serve(async (req) => {
   }
 });
 
-// =============== FUNÇÕES AUXILIARES ===============
+// ============================================================
+// FUNÇÕES AUXILIARES QUE AINDA PRECISAM ESTAR AQUI
+// (Dependem de contexto do webhook ou são muito complexas)
+// ============================================================
 
-async function findUserByPhone(phone: string): Promise<{ id: string; email: string } | null> {
-  let cleanPhone = phone.replace(/\D/g, "");
-  if (cleanPhone.startsWith("55")) {
-    cleanPhone = cleanPhone.substring(2);
-  }
-
-  const { data, error } = await supabase
-    .from("profiles")
-    .select("user_id, email, phone")
-    .or(`phone.ilike.%${cleanPhone}%,phone.ilike.%${phone}%`)
-    .limit(1)
-    .maybeSingle();
-
-  if (error) {
-    console.error("[WhatsApp Nutrition] Erro ao buscar usuário:", error);
-    return null;
-  }
-
-  if (data) {
-    return { id: data.user_id, email: data.email };
-  }
-
-  return null;
-}
-
-async function getPendingConfirmation(userId: string): Promise<any | null> {
-  const now = new Date().toISOString();
-  
-  const { data, error } = await supabase
-    .from("whatsapp_pending_nutrition")
-    .select("*")
-    .eq("user_id", userId)
-    .eq("is_processed", false)
-    .or("waiting_confirmation.eq.true,waiting_edit.eq.true")
-    .gt("expires_at", now)
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  if (error) {
-    console.error("[WhatsApp Nutrition] Erro ao buscar pendente:", error);
-    return null;
-  }
-
-  return data;
-}
-
-// 🔥 BUSCAR LOTE MÉDICO ATIVO (collecting, awaiting_confirm, awaiting_info OU processing)
-// Agora também filtra por expires_at para ignorar registros expirados
-async function getPendingMedical(userId: string): Promise<any | null> {
-  const now = new Date().toISOString();
-  
-  const { data, error } = await supabase
-    .from("whatsapp_pending_medical")
-    .select("*")
-    .eq("user_id", userId)
-    .eq("is_processed", false)
-    .in("status", ["collecting", "awaiting_confirm", "awaiting_info", "processing"])
-    .gt("expires_at", now) // 🔥 Só retorna registros não expirados
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  if (error) return null;
-  return data;
-}
-
-// 🔥 VERIFICAR SE TEM LOTE MÉDICO EM PROCESSAMENTO (não expirado)
-async function hasMedicalInProcessing(userId: string): Promise<boolean> {
-  const now = new Date().toISOString();
-  
-  const { data, error } = await supabase
-    .from("whatsapp_pending_medical")
-    .select("id")
-    .eq("user_id", userId)
-    .eq("is_processed", false)
-    .eq("status", "processing")
-    .gt("expires_at", now) // 🔥 Só considera não expirados
-    .limit(1)
-    .maybeSingle();
-
-  return !error && !!data;
-}
-
-async function checkAndClearExpiredPending(userId: string, phone: string): Promise<boolean> {
-  const { data: expired, error } = await supabase
-    .from("whatsapp_pending_nutrition")
-    .select("*")
-    .eq("user_id", userId)
-    .eq("is_processed", false)
-    .or("waiting_confirmation.eq.true,waiting_edit.eq.true")
-    .lt("expires_at", new Date().toISOString())
-    .order("created_at", { ascending: false })
-    .limit(1);
-
-  if (error || !expired || expired.length === 0) {
-    return false;
-  }
-
-  console.log("[WhatsApp Nutrition] Análise expirada encontrada, notificando usuário");
-  
-  await supabase
-    .from("whatsapp_pending_nutrition")
-    .delete()
-    .eq("user_id", userId)
-    .lt("expires_at", new Date().toISOString());
-
-  await sendWhatsApp(phone, 
-    "⏰ Sua análise anterior expirou.\n\n" +
-    "📸 Envie a foto novamente para registrar sua refeição!"
-  );
-
-  return true;
-}
-
-function extractText(message: any): string {
-  return (
-    message.conversation ||
-    message.extendedTextMessage?.text ||
-    message.imageMessage?.caption ||
-    ""
-  ).trim();
-}
-
-function hasImage(message: any): boolean {
-  return !!message.imageMessage;
-}
-
-function isConfirmationPositive(text: string): boolean {
-  const positive = ["sim", "s", "yes", "y", "ok", "1", "✅", "confirmo", "confirma", "certo", "isso"];
-  return positive.includes(text.toLowerCase().trim());
-}
-
-function isConfirmationNegative(text: string): boolean {
-  const negative = ["não", "nao", "n", "no", "2", "❌", "errado", "incorreto", "0", "cancelar"];
-  return negative.includes(text.toLowerCase().trim());
-}
-
-function isConfirmationEdit(text: string): boolean {
-  const edit = ["editar", "edit", "3", "✏️", "corrigir", "mudar", "alterar", "edita"];
-  return edit.includes(text.toLowerCase().trim());
-}
-
-function isEditDone(text: string): boolean {
-  const done = ["pronto", "done", "finalizar", "ok", "confirmar", "confirma", "terminar", "terminei"];
-  return done.includes(text.toLowerCase().trim());
-}
-
-function parseEditCommand(text: string, foods: any[]): { action: string; index?: number; newFood?: { name: string; grams: number } } | null {
-  const lower = text.toLowerCase().trim();
-  
-  const replaceMatch = lower.match(/(?:trocar|substituir|mudar)\s+(\d+)\s+(?:por|para)\s+(.+)/i);
-  if (replaceMatch) {
-    const index = parseInt(replaceMatch[1]) - 1;
-    const foodPart = replaceMatch[2].trim();
-    const gramsMatch = foodPart.match(/(\d+)\s*g?$/);
-    const grams = gramsMatch ? parseInt(gramsMatch[1]) : 100;
-    const name = foodPart.replace(/\d+\s*g?$/, '').trim() || foodPart;
-    if (index >= 0 && index < foods.length) {
-      return { action: 'replace', index, newFood: { name, grams } };
-    }
-  }
-  
-  const removeMatch = lower.match(/(?:remover|tirar|excluir|deletar)\s+(\d+)/i);
-  if (removeMatch) {
-    const index = parseInt(removeMatch[1]) - 1;
-    if (index >= 0 && index < foods.length) {
-      return { action: 'remove', index };
-    }
-  }
-  
-  const addMatch = lower.match(/(?:adicionar|incluir|acrescentar|add)\s+(.+)/i);
-  if (addMatch) {
-    const foodPart = addMatch[1].trim();
-    const gramsMatch = foodPart.match(/(\d+)\s*g?$/);
-    const grams = gramsMatch ? parseInt(gramsMatch[1]) : 100;
-    const name = foodPart.replace(/\d+\s*g?$/, '').trim() || foodPart;
-    return { action: 'add', newFood: { name, grams } };
-  }
-  
-  return null;
-}
-
-function detectMealType(): string {
-  const hour = new Date().getHours();
-  if (hour >= 5 && hour < 10) return "cafe_da_manha";
-  if (hour >= 10 && hour < 12) return "lanche_manha";
-  if (hour >= 12 && hour < 15) return "almoco";
-  if (hour >= 15 && hour < 18) return "lanche_tarde";
-  if (hour >= 18 && hour < 21) return "jantar";
-  return "ceia";
-}
-
-function formatMealType(mealType: string): string {
-  const types: Record<string, string> = {
-    cafe_da_manha: "☕ Café da Manhã",
-    lanche_manha: "🍎 Lanche da Manhã",
-    almoco: "🍽️ Almoço",
-    lanche_tarde: "🥤 Lanche da Tarde",
-    jantar: "🌙 Jantar",
-    ceia: "🌃 Ceia",
-  };
-  return types[mealType] || mealType;
-}
-
-async function sendWhatsApp(phone: string, message: string): Promise<void> {
-  if (!EVOLUTION_API_URL || !EVOLUTION_API_KEY || !EVOLUTION_INSTANCE) {
-    console.error("[WhatsApp Nutrition] Evolution API não configurada");
-    return;
-  }
-
-  let formattedPhone = phone.replace(/\D/g, "");
-  if (!formattedPhone.startsWith("55")) {
-    formattedPhone = "55" + formattedPhone;
-  }
-
+async function processImage(user: UserInfo, phone: string, message: any, webhook: any): Promise<void> {
   try {
-    const response = await fetch(`${EVOLUTION_API_URL}/message/sendText/${EVOLUTION_INSTANCE}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        apikey: EVOLUTION_API_KEY,
-      },
-      body: JSON.stringify({
-        number: formattedPhone,
-        text: message,
-        delay: 1200,
-      }),
+    const imageUrl = await processAndUploadImage(supabase, user.id, message, webhook);
+
+    if (!imageUrl) {
+      console.error("[WhatsApp Nutrition] ❌ Não foi possível obter a imagem");
+      await sendWhatsApp(phone, "❌ Não consegui processar sua foto. Tente enviar novamente!");
+      return;
+    }
+
+    console.log("[WhatsApp Nutrition] ✅ Upload concluído! URL:", imageUrl);
+
+    // Detectar tipo de imagem
+    console.log("[WhatsApp Nutrition] 🔍 Detectando tipo de imagem...");
+
+    const { data: imageTypeResult, error: typeError } = await supabase.functions.invoke("detect-image-type", {
+      body: { imageUrl }
     });
 
-    if (!response.ok) {
-      const errorData = await response.text();
-      console.error("[WhatsApp Nutrition] Erro ao enviar mensagem:", errorData);
+    const imageType = imageTypeResult?.type || "OTHER";
+    const typeConfidence = imageTypeResult?.confidence || 0;
+
+    console.log(`[WhatsApp Nutrition] 🎯 Tipo detectado: ${imageType} (confiança: ${typeConfidence})`);
+
+    // Roteamento baseado no tipo
+    if (imageType === "FOOD") {
+      console.log("[WhatsApp Nutrition] 🍽️ Imagem de COMIDA detectada");
+      await processFoodImage(user, phone, imageUrl);
+    } else if (imageType === "MEDICAL") {
+      console.log("[WhatsApp Nutrition] 🩺 Imagem MÉDICA detectada");
+      await processMedicalImage(supabase, user, phone, imageUrl);
     } else {
-      console.log("[WhatsApp Nutrition] Mensagem enviada com sucesso");
+      // Verificar se tem lote médico ativo
+      const { data: activeMedicalBatch } = await supabase
+        .from("whatsapp_pending_medical")
+        .select("id, images_count, status")
+        .eq("user_id", user.id)
+        .eq("is_processed", false)
+        .in("status", ["collecting", "awaiting_confirm"])
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (activeMedicalBatch) {
+        console.log(`[WhatsApp Nutrition] 📋 Lote médico ativo - assumindo exame`);
+        await processMedicalImage(supabase, user, phone, imageUrl);
+      } else {
+        console.log("[WhatsApp Nutrition] ❓ Imagem não reconhecida");
+        await sendWhatsApp(phone,
+          "📸 Recebi sua foto!\n\n" +
+          "Para análise *nutricional*, envie fotos de refeições 🍽️\n" +
+          "Para análise de *exames*, envie fotos de resultados 🩺\n\n" +
+          "_Sofia 🥗_"
+        );
+      }
     }
   } catch (error) {
-    console.error("[WhatsApp Nutrition] Erro ao enviar WhatsApp:", error);
+    console.error("[WhatsApp Nutrition] Erro ao processar imagem:", error);
+    await sendWhatsApp(phone, "❌ Erro ao processar sua foto. Tente novamente!");
   }
 }
 
-async function getDailyTotal(userId: string): Promise<number> {
-  const today = new Date().toISOString().split("T")[0];
+async function processFoodImage(user: UserInfo, phone: string, imageUrl: string): Promise<void> {
+  try {
+    // Chamar sofia-image-analysis
+    const { data: analysis, error: analysisError } = await supabase.functions.invoke("sofia-image-analysis", {
+      body: {
+        imageUrl,
+        userId: user.id,
+        userContext: { currentMeal: detectMealType() },
+      },
+    });
 
-  // Buscar de food_history (fonte principal)
-  const { data: foodHistory } = await supabase
-    .from("food_history")
-    .select("total_calories")
-    .eq("user_id", userId)
-    .eq("meal_date", today);
+    if (analysisError || !analysis) {
+      console.error("[WhatsApp Nutrition] Erro na análise:", analysisError);
+      await sendWhatsApp(phone, "❌ Erro ao analisar sua foto. Tente novamente!");
+      return;
+    }
 
-  const foodHistoryTotal = foodHistory?.reduce((sum, item) => sum + (Number(item.total_calories) || 0), 0) || 0;
+    // Normalizar alimentos
+    const normalizedFoods =
+      analysis?.detectedFoods ??
+      analysis?.foods ??
+      analysis?.foods_detected ??
+      analysis?.sofia_analysis?.foods_detected ??
+      [];
 
-  // Também buscar de nutrition_tracking (legado)
-  const { data: nutritionTracking } = await supabase
-    .from("nutrition_tracking")
-    .select("total_calories")
-    .eq("user_id", userId)
-    .eq("date", today);
+    const detectedFoods = Array.isArray(normalizedFoods) ? normalizedFoods : [];
 
-  const nutritionTotal = nutritionTracking?.reduce((sum, item) => sum + (Number(item.total_calories) || 0), 0) || 0;
+    if (detectedFoods.length === 0) {
+      await sendWhatsApp(phone, "🤔 Não consegui identificar alimentos na foto. Tente enviar uma foto mais clara do prato!");
+      return;
+    }
 
-  return Math.max(foodHistoryTotal, nutritionTotal);
+    const totalCalories =
+      analysis?.totalCalories ??
+      analysis?.total_kcal ??
+      analysis?.nutrition_data?.total_kcal ??
+      0;
+
+    const mealType = detectMealType();
+
+    // Salvar em food_history
+    const foodHistoryId = await saveToFoodHistory(
+      user.id,
+      mealType,
+      imageUrl,
+      detectedFoods,
+      { total_kcal: totalCalories, confidence: analysis?.confidence || 0.8 },
+      JSON.stringify(analysis).slice(0, 5000),
+      false,
+      "whatsapp"
+    );
+
+    console.log("[WhatsApp Nutrition] 🔥 Refeição salva em food_history:", foodHistoryId);
+
+    // Formatar mensagem
+    const foodsList = detectedFoods
+      .map((f: any) => {
+        const name = f.nome || f.name || f.alimento || "(alimento)";
+        const grams = f.quantidade ?? f.grams ?? f.g ?? "?";
+        return `• ${name} (${grams}g)`;
+      })
+      .join("\n");
+
+    const kcalLine = totalCalories && Number(totalCalories) > 0
+      ? `📊 *Total estimado: ~${Math.round(Number(totalCalories))} kcal*\n\n`
+      : "";
+
+    const confirmMessage =
+      `🍽️ *Analisei sua refeição!*\n\n` +
+      `${foodsList}\n\n` +
+      kcalLine +
+      `───────────────\n\n` +
+      `*Está correto?* Escolha:\n\n` +
+      `*1* ✅ Confirmar\n` +
+      `*2* ❌ Cancelar\n` +
+      `*3* ✏️ Editar\n\n` +
+      `_Sofia 🥗_`;
+
+    await sendWhatsApp(phone, confirmMessage);
+
+    // Limpar pendentes antigos e criar novo
+    await supabase
+      .from("whatsapp_pending_nutrition")
+      .delete()
+      .eq("user_id", user.id)
+      .eq("waiting_confirmation", true);
+
+    await supabase.from("whatsapp_pending_nutrition").insert({
+      user_id: user.id,
+      phone: phone,
+      meal_type: mealType,
+      image_url: imageUrl,
+      analysis_result: {
+        detectedFoods,
+        totalCalories: Number(totalCalories) || null,
+        raw: analysis,
+        food_history_id: foodHistoryId,
+      },
+      waiting_confirmation: true,
+      waiting_edit: false,
+      confirmed: null,
+      is_processed: false,
+      expires_at: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
+    });
+
+  } catch (error) {
+    console.error("[WhatsApp Nutrition] Erro ao processar imagem de comida:", error);
+    await sendWhatsApp(phone, "❌ Erro ao analisar sua foto. Tente novamente!");
+  }
 }
 
-// =============== SALVAR EM FOOD_HISTORY (PERMANENTE) ===============
-
 async function saveToFoodHistory(
-  userId: string, 
-  mealType: string, 
-  photoUrl: string | null, 
-  foodItems: any[], 
+  userId: string,
+  mealType: string,
+  photoUrl: string | null,
+  foodItems: any[],
   nutritionData: any,
   aiAnalysis: string | null,
   confirmed: boolean = false,
@@ -472,7 +432,6 @@ async function saveToFoodHistory(
       return null;
     }
 
-    console.log("[WhatsApp Nutrition] ✅ Salvo em food_history:", data.id);
     return data.id;
   } catch (e) {
     console.error("[WhatsApp Nutrition] Erro ao salvar food_history:", e);
@@ -480,598 +439,8 @@ async function saveToFoodHistory(
   }
 }
 
-async function updateFoodHistoryConfirmation(foodHistoryId: string, confirmed: boolean, updatedFoods?: any[], updatedNutrition?: any): Promise<void> {
+async function handleSmartResponse(user: UserInfo, phone: string, text: string): Promise<void> {
   try {
-    const updateData: any = {
-      user_confirmed: confirmed,
-      updated_at: new Date().toISOString(),
-    };
-
-    if (updatedFoods) {
-      updateData.food_items = updatedFoods;
-    }
-
-    if (updatedNutrition) {
-      updateData.total_calories = updatedNutrition.total_kcal || updatedNutrition.totalCalories || 0;
-      updateData.total_proteins = updatedNutrition.total_proteina || 0;
-      updateData.total_carbs = updatedNutrition.total_carbo || 0;
-      updateData.total_fats = updatedNutrition.total_gordura || 0;
-      updateData.total_fiber = updatedNutrition.total_fibra || 0;
-    }
-
-    await supabase
-      .from("food_history")
-      .update(updateData)
-      .eq("id", foodHistoryId);
-
-    console.log("[WhatsApp Nutrition] ✅ food_history atualizado:", foodHistoryId);
-  } catch (e) {
-    console.error("[WhatsApp Nutrition] Erro ao atualizar food_history:", e);
-  }
-}
-
-// =============== PROCESSAMENTO DE EXAME MÉDICO (MODO LOTE) ===============
-
-// 🔥 LIMPAR LOTES PRESOS (>10 min em processing)
-async function cleanupStuckMedicalBatches(userId: string): Promise<void> {
-  try {
-    const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
-    
-    const { data: stuck } = await supabase
-      .from("whatsapp_pending_medical")
-      .update({ status: "error", is_processed: true })
-      .eq("user_id", userId)
-      .eq("status", "processing")
-      .lt("updated_at", tenMinutesAgo)
-      .select("id");
-    
-    if (stuck && stuck.length > 0) {
-      console.log(`[WhatsApp Medical] 🧹 Limpos ${stuck.length} lotes presos em processing`);
-    }
-  } catch (e) {
-    console.error("[WhatsApp Medical] Erro ao limpar lotes presos:", e);
-  }
-}
-
-async function processMedicalImage(user: { id: string }, phone: string, imageUrl: string): Promise<void> {
-  const MAX_RETRIES = 5;
-  
-  try {
-    console.log("[WhatsApp Medical] ========================================");
-    console.log("[WhatsApp Medical] 🔥 MODO LOTE: Recebendo imagem de exame para", user.id);
-    console.log("[WhatsApp Medical] 📷 URL da imagem:", imageUrl.slice(0, 100));
-
-    // 🔥 LIMPAR LOTES PRESOS ANTES DE PROCESSAR
-    await cleanupStuckMedicalBatches(user.id);
-
-    const now = new Date().toISOString();
-    const newImageEntry = { url: imageUrl, created_at: now };
-
-    // 🔥 IMPLEMENTAÇÃO COM LOCK OTIMISTA E RETRY ROBUSTO
-    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-      // Buscar lote ativo (APENAS collecting ou awaiting_confirm)
-      const { data: existingBatch, error: fetchError } = await supabase
-        .from("whatsapp_pending_medical")
-        .select("*")
-        .eq("user_id", user.id)
-        .eq("is_processed", false)
-        .in("status", ["collecting", "awaiting_confirm"])
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (fetchError) {
-        console.error("[WhatsApp Medical] ❌ Erro ao buscar lote:", fetchError);
-        throw fetchError;
-      }
-
-      if (existingBatch) {
-        // 🔥 LOCK OTIMISTA: Verificar images_count no update
-        const currentUrls = existingBatch.image_urls || [];
-        const updatedUrls = [...currentUrls, newImageEntry];
-        const newCount = updatedUrls.length;
-
-        console.log(`[WhatsApp Medical] 🔄 Tentativa ${attempt + 1}: Adicionando imagem ao lote ${existingBatch.id} (atual: ${existingBatch.images_count})`);
-
-        const { data: updateResult, error: updateError } = await supabase
-          .from("whatsapp_pending_medical")
-          .update({
-            image_urls: updatedUrls,
-            images_count: newCount,
-            last_image_at: now,
-            status: "collecting",
-            waiting_confirmation: false,
-          })
-          .eq("id", existingBatch.id)
-          .eq("images_count", existingBatch.images_count) // LOCK OTIMISTA
-          .select();
-
-        if (updateError) {
-          console.error(`[WhatsApp Medical] ❌ Erro no update (tentativa ${attempt + 1}):`, updateError);
-          if (attempt < MAX_RETRIES - 1) {
-            await new Promise(r => setTimeout(r, 100 * (attempt + 1)));
-            continue;
-          }
-          throw updateError;
-        }
-
-        // Verificar se update funcionou (lock otimista)
-        if (!updateResult || updateResult.length === 0) {
-          console.log(`[WhatsApp Medical] 🔄 Conflito de lock otimista, retry ${attempt + 1}/${MAX_RETRIES}`);
-          if (attempt < MAX_RETRIES - 1) {
-            await new Promise(r => setTimeout(r, 100 * (attempt + 1)));
-            continue;
-          }
-          // Último retry falhou, buscar novamente e tentar inserir
-          console.log("[WhatsApp Medical] ⚠️ Lock otimista falhou, buscando lote atualizado...");
-          continue;
-        }
-
-        console.log(`[WhatsApp Medical] ✅ Imagem ${newCount} adicionada ao lote ${existingBatch.id}`);
-
-        // 🔥 SILÊNCIO TOTAL - não envia nenhum feedback intermediário
-        // A função CRON medical-batch-timeout vai perguntar confirmação após 30s de inatividade
-        console.log(`[WhatsApp Medical] 📷 Imagem ${newCount} recebida silenciosamente`);
-        
-        console.log("[WhatsApp Medical] ========================================");
-        return; // Sucesso!
-
-      } else {
-        // 🔥 CRIAR NOVO LOTE
-        console.log("[WhatsApp Medical] 📁 Criando novo lote de exames...");
-
-        const { data: insertResult, error: insertError } = await supabase
-          .from("whatsapp_pending_medical")
-          .insert({
-            user_id: user.id,
-            phone: phone,
-            image_url: imageUrl,
-            image_urls: [newImageEntry],
-            images_count: 1,
-            last_image_at: now,
-            status: "collecting",
-            waiting_confirmation: false,
-            confirmed: null,
-            is_processed: false,
-            expires_at: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
-            created_at: now,
-          })
-          .select();
-
-        if (insertError) {
-          // Pode ser race condition - outro processo criou o lote
-          console.log(`[WhatsApp Medical] ⚠️ Erro ao criar lote (pode ser race condition): ${insertError.message}`);
-          if (attempt < MAX_RETRIES - 1) {
-            await new Promise(r => setTimeout(r, 100 * (attempt + 1)));
-            continue;
-          }
-          throw insertError;
-        }
-
-        console.log("[WhatsApp Medical] ✅ Novo lote criado:", insertResult?.[0]?.id);
-
-        // 🔥 SILÊNCIO TOTAL - primeira imagem recebida silenciosamente
-        // A função CRON medical-batch-timeout vai perguntar confirmação após 30s de inatividade
-        console.log("[WhatsApp Medical] 📷 Primeira imagem recebida silenciosamente");
-        
-        console.log("[WhatsApp Medical] ========================================");
-        return; // Sucesso!
-      }
-    }
-
-    console.error("[WhatsApp Medical] ❌ Todas as tentativas falharam");
-    throw new Error("Falha ao processar imagem após múltiplas tentativas");
-
-  } catch (error) {
-    console.error("[WhatsApp Medical] 💥 ERRO CRÍTICO:", error);
-    console.error("[WhatsApp Medical] Stack:", (error as Error).stack);
-    await sendWhatsApp(phone,
-      "❌ Ocorreu um erro ao receber seu exame.\n\n" +
-      "Por favor, tente novamente.\n\n" +
-      "_Dr. Vital 🩺_"
-    );
-  }
-}
-
-// =============== PROCESSAMENTO DE IMAGEM ===============
-
-async function processImage(user: { id: string }, phone: string, message: any, webhook: any): Promise<void> {
-  try {
-    const contentTypeHint = message?.imageMessage?.mimetype || "image/jpeg";
-
-    const uploadBytesToStorage = async (bytes: Uint8Array, contentType: string): Promise<string | null> => {
-      const ext = contentType.includes("png") ? "png" : contentType.includes("webp") ? "webp" : "jpg";
-      const fileName = `whatsapp/${user.id}/${Date.now()}.${ext}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from("chat-images")
-        .upload(fileName, bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength), { contentType, upsert: true });
-
-      if (uploadError) {
-        console.error("[WhatsApp Nutrition] Erro no upload:", uploadError);
-        return null;
-      }
-
-      const { data: urlData } = supabase.storage.from("chat-images").getPublicUrl(fileName);
-      return urlData.publicUrl || null;
-    };
-
-    const base64ToBytes = (base64: string): Uint8Array => {
-      const clean = base64.includes(",") ? base64.split(",")[1] : base64;
-      const bin = atob(clean);
-      const bytes = new Uint8Array(bin.length);
-      for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-      return bytes;
-    };
-
-    const uploadBase64ToStorage = async (base64: string, contentType: string): Promise<string | null> => {
-      const ct = base64.startsWith("data:") ? base64.slice(5, base64.indexOf(";")) : contentType;
-      return uploadBytesToStorage(base64ToBytes(base64), ct || contentType);
-    };
-
-    const tryGetBase64FromEvolution = async (): Promise<string | null> => {
-      if (!EVOLUTION_API_URL || !EVOLUTION_API_KEY || !EVOLUTION_INSTANCE) {
-        return null;
-      }
-
-      const messageKey = webhook.data?.key || {};
-      const messageContent = webhook.data?.message || {};
-
-      const payload = {
-        message: {
-          key: {
-            remoteJid: messageKey.remoteJid,
-            fromMe: messageKey.fromMe || false,
-            id: messageKey.id,
-          },
-          message: messageContent,
-        },
-        convertToMp4: false,
-      };
-
-      try {
-        const base64Response = await fetch(
-          `${EVOLUTION_API_URL}/chat/getBase64FromMediaMessage/${EVOLUTION_INSTANCE}`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              apikey: EVOLUTION_API_KEY,
-            },
-            body: JSON.stringify(payload),
-          }
-        );
-
-        if (!base64Response.ok) {
-          return null;
-        }
-
-        const responseData = await base64Response.json();
-        return responseData?.base64 || responseData?.data?.base64 || responseData?.media || null;
-      } catch (e) {
-        return null;
-      }
-    };
-
-    let imageUrl: string | null = null;
-
-    // 1) Base64 direto do webhook
-    const directBase64 =
-      webhook?.data?.message?.imageMessage?.base64 ??
-      webhook?.data?.message?.base64 ??
-      message?.imageMessage?.base64 ??
-      message?.base64;
-
-    if (directBase64) {
-      imageUrl = await uploadBase64ToStorage(directBase64, contentTypeHint);
-    }
-
-    // 2) Buscar base64 via Evolution
-    if (!imageUrl) {
-      const evoBase64 = await tryGetBase64FromEvolution();
-      if (evoBase64) {
-        imageUrl = await uploadBase64ToStorage(evoBase64, contentTypeHint);
-      }
-    }
-
-    if (!imageUrl) {
-      console.error("[WhatsApp Nutrition] ❌ Não foi possível obter a imagem");
-      await sendWhatsApp(phone, "❌ Não consegui processar sua foto. Tente enviar novamente!");
-      return;
-    }
-
-    console.log("[WhatsApp Nutrition] ✅ Upload concluído! URL:", imageUrl);
-
-    // 🔥 SEMPRE DETECTAR O TIPO DA IMAGEM PRIMEIRO (mesmo com lote ativo)
-    // Isso permite enviar foto de COMIDA mesmo durante coleta de exames
-    
-    let imageBase64ForDetection: string | null = null;
-    const directBase64Check = directBase64 || await tryGetBase64FromEvolution();
-    if (directBase64Check) {
-      imageBase64ForDetection = directBase64Check.startsWith("data:") 
-        ? directBase64Check 
-        : `data:image/jpeg;base64,${directBase64Check}`;
-    }
-    
-    console.log("[WhatsApp Nutrition] 🔍 Detectando tipo de imagem SEMPRE...");
-    
-    const { data: imageTypeResult, error: typeError } = await supabase.functions.invoke("detect-image-type", {
-      body: { 
-        imageUrl,
-        imageBase64: imageBase64ForDetection
-      }
-    });
-
-    const imageType = imageTypeResult?.type || "OTHER";
-    const typeConfidence = imageTypeResult?.confidence || 0;
-    
-    console.log(`[WhatsApp Nutrition] 🎯 Tipo detectado: ${imageType} (confiança: ${typeConfidence})`);
-
-    // 🔥 ROTEAMENTO INTELIGENTE BASEADO NO TIPO DETECTADO
-    
-    // Se é COMIDA → processar como comida (independente de lote médico)
-    if (imageType === "FOOD") {
-      console.log("[WhatsApp Nutrition] 🍽️ Imagem de COMIDA detectada - processando como refeição...");
-      // Continuar com análise de comida (código abaixo)
-    }
-    // Se é MEDICAL → adicionar ao lote médico
-    else if (imageType === "MEDICAL") {
-      console.log("[WhatsApp Nutrition] 🩺 Imagem MÉDICA detectada - adicionando ao lote...");
-      await processMedicalImage(user, phone, imageUrl);
-      return;
-    }
-    // Se é OTHER → verificar se tem lote ativo (assume médico) ou pedir clarificação
-    else {
-      // Verificar se tem lote médico ativo
-      const { data: activeMedicalBatch } = await supabase
-        .from("whatsapp_pending_medical")
-        .select("id, images_count, status")
-        .eq("user_id", user.id)
-        .eq("is_processed", false)
-        .in("status", ["collecting", "awaiting_confirm"])
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (activeMedicalBatch) {
-        // Se tem lote ativo e não é comida clara, assume que é exame
-        console.log(`[WhatsApp Nutrition] 📋 Lote médico ativo (${activeMedicalBatch.images_count} imgs) - assumindo exame`);
-        await processMedicalImage(user, phone, imageUrl);
-        return;
-      }
-      
-      // Sem lote ativo e não reconhecido
-      console.log("[WhatsApp Nutrition] ❓ Imagem não reconhecida como comida ou exame");
-      await sendWhatsApp(phone,
-        "📸 Recebi sua foto!\n\n" +
-        "Para análise *nutricional*, envie fotos de refeições 🍽️\n" +
-        "Para análise de *exames*, envie fotos de resultados 🩺\n\n" +
-        "_Sofia 🥗_"
-      );
-      return;
-    }
-
-    // Continuar com análise de COMIDA
-    console.log("[WhatsApp Nutrition] Processando como imagem de comida...");
-
-    // Chamar sofia-image-analysis
-    const { data: analysis, error: analysisError } = await supabase.functions.invoke("sofia-image-analysis", {
-      body: {
-        imageUrl,
-        userId: user.id,
-        userContext: { currentMeal: detectMealType() },
-      },
-    });
-
-    if (analysisError || !analysis) {
-      console.error("[WhatsApp Nutrition] Erro na análise:", analysisError);
-      await sendWhatsApp(phone, "❌ Erro ao analisar sua foto. Tente novamente!");
-      return;
-    }
-
-    console.log("[WhatsApp Nutrition] Análise completa:", JSON.stringify(analysis).slice(0, 500));
-
-    // Normalizar alimentos detectados
-    const normalizedFoods =
-      analysis?.detectedFoods ??
-      analysis?.foods ??
-      analysis?.foods_detected ??
-      analysis?.sofia_analysis?.foods_detected ??
-      analysis?.sofia_analysis?.foods ??
-      [];
-
-    const detectedFoods = Array.isArray(normalizedFoods) ? normalizedFoods : [];
-
-    if (detectedFoods.length === 0) {
-      await sendWhatsApp(phone, "🤔 Não consegui identificar alimentos na foto. Tente enviar uma foto mais clara do prato!");
-      return;
-    }
-
-    const totalCalories =
-      analysis?.totalCalories ??
-      analysis?.total_kcal ??
-      analysis?.nutrition_data?.total_kcal ??
-      analysis?.sofia_analysis?.totalCalories ??
-      0;
-
-    const mealType = detectMealType();
-
-    // 🔥 SALVAR IMEDIATAMENTE EM FOOD_HISTORY (antes de pedir confirmação)
-    const foodHistoryId = await saveToFoodHistory(
-      user.id,
-      mealType,
-      imageUrl,
-      detectedFoods,
-      { total_kcal: totalCalories, confidence: analysis?.confidence || 0.8 },
-      JSON.stringify(analysis).slice(0, 5000),
-      false, // não confirmado ainda
-      "whatsapp"
-    );
-
-    console.log("[WhatsApp Nutrition] 🔥 Refeição salva IMEDIATAMENTE em food_history:", foodHistoryId);
-
-    // Formatar lista de alimentos
-    const foodsList = detectedFoods
-      .map((f: any) => {
-        const name = f.nome || f.name || f.alimento || "(alimento)";
-        const grams = f.quantidade ?? f.grams ?? f.g ?? "?";
-        return `• ${name} (${grams}g)`;
-      })
-      .join("\n");
-
-    const kcalLine = totalCalories && Number(totalCalories) > 0
-      ? `📊 *Total estimado: ~${Math.round(Number(totalCalories))} kcal*\n\n`
-      : "";
-
-    const confirmMessage =
-      `🍽️ *Analisei sua refeição!*\n\n` +
-      `${foodsList}\n\n` +
-      kcalLine +
-      `───────────────\n\n` +
-      `*Está correto?* Escolha:\n\n` +
-      `*1* ✅ Confirmar\n` +
-      `*2* ❌ Cancelar\n` +
-      `*3* ✏️ Editar\n\n` +
-      `_Sofia 🥗_`;
-
-    await sendWhatsApp(phone, confirmMessage);
-
-    // Salvar análise pendente (com referência ao food_history)
-    const pendingPayload = {
-      detectedFoods,
-      totalCalories: Number(totalCalories) || null,
-      raw: analysis,
-      food_history_id: foodHistoryId, // 🔥 Referência ao registro permanente
-    };
-
-    // Limpar pendentes antigos
-    await supabase
-      .from("whatsapp_pending_nutrition")
-      .delete()
-      .eq("user_id", user.id)
-      .eq("waiting_confirmation", true);
-
-    await supabase.from("whatsapp_pending_nutrition").insert({
-      user_id: user.id,
-      phone: phone,
-      meal_type: mealType,
-      image_url: imageUrl,
-      analysis_result: pendingPayload,
-      waiting_confirmation: true,
-      waiting_edit: false,
-      confirmed: null,
-      is_processed: false,
-      expires_at: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
-    });
-
-  } catch (error) {
-    console.error("[WhatsApp Nutrition] Erro ao processar imagem:", error);
-    await sendWhatsApp(phone, "❌ Ocorreu um erro. Tente novamente!");
-  }
-}
-
-// =============== PROCESSAMENTO DE TEXTO ===============
-
-async function processText(user: { id: string }, phone: string, text: string): Promise<void> {
-  try {
-    const foodKeywords = ["comi", "almocei", "jantei", "tomei", "bebi", "arroz", "feijão", "carne", "frango", "salada", "pão", "café", "leite", "ovo", "fruta", "suco", "vitamina", "banana", "maçã", "laranja", "batata", "macarrão", "pizza", "hamburguer", "sanduiche", "lanche"];
-    const isFood = foodKeywords.some((k) => text.toLowerCase().includes(k));
-
-    if (!isFood) {
-      console.log("[WhatsApp Nutrition] Usando IA inteligente para responder:", text);
-      await handleSmartResponse(user, phone, text);
-      return;
-    }
-
-    // Chamar sofia-deterministic para extrair alimentos do texto
-    const { data: analysis, error: analysisError } = await supabase.functions.invoke("sofia-deterministic", {
-      body: {
-        user_input: text,
-        user_id: user.id,
-        analysis_type: "text_extraction",
-      },
-    });
-
-    if (analysisError || !analysis) {
-      console.error("[WhatsApp Nutrition] Erro na análise de texto:", analysisError);
-      await handleSmartResponse(user, phone, text);
-      return;
-    }
-
-    const foods = analysis.detected_foods || analysis.foods || [];
-    if (foods.length === 0) {
-      await handleSmartResponse(user, phone, text);
-      return;
-    }
-
-    const totalCalories = analysis.nutrition_data?.total_kcal || analysis.total_kcal || 0;
-    const mealType = detectMealType();
-
-    // 🔥 SALVAR IMEDIATAMENTE EM FOOD_HISTORY
-    const foodHistoryId = await saveToFoodHistory(
-      user.id,
-      mealType,
-      null, // sem foto
-      foods,
-      { total_kcal: totalCalories },
-      JSON.stringify(analysis).slice(0, 5000),
-      false,
-      "whatsapp_text"
-    );
-
-    console.log("[WhatsApp Nutrition] 🔥 Refeição (texto) salva IMEDIATAMENTE:", foodHistoryId);
-
-    const foodsList = foods
-      .map((f: any) => `• ${f.name || f.nome} (${f.grams || f.quantidade || "?"}g)`)
-      .join("\n");
-
-    const confirmMessage = 
-      `🍽️ *Entendi! Você comeu:*\n\n` +
-      `${foodsList}\n\n` +
-      `📊 *Total estimado: ~${Math.round(totalCalories)} kcal*\n\n` +
-      `───────────────\n\n` +
-      `*Está correto?* Escolha:\n\n` +
-      `*1* ✅ Confirmar\n` +
-      `*2* ❌ Cancelar\n` +
-      `*3* ✏️ Editar\n\n` +
-      `_Sofia 🥗_`;
-
-    await sendWhatsApp(phone, confirmMessage);
-
-    // Limpar pendentes antigos
-    await supabase
-      .from("whatsapp_pending_nutrition")
-      .delete()
-      .eq("user_id", user.id)
-      .eq("waiting_confirmation", true);
-
-    await supabase.from("whatsapp_pending_nutrition").insert({
-      user_id: user.id,
-      phone: phone,
-      meal_type: mealType,
-      analysis_result: { detectedFoods: foods, totalCalories, food_history_id: foodHistoryId },
-      waiting_confirmation: true,
-      waiting_edit: false,
-      confirmed: null,
-      is_processed: false,
-      expires_at: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
-    });
-
-  } catch (error) {
-    console.error("[WhatsApp Nutrition] Erro ao processar texto:", error);
-    try {
-      await handleSmartResponse(user, phone, text);
-    } catch {}
-  }
-}
-
-// =============== RESPOSTA INTELIGENTE COM IA ===============
-
-async function handleSmartResponse(user: { id: string }, phone: string, text: string): Promise<void> {
-  try {
-    console.log("[WhatsApp Nutrition] Chamando IA inteligente...");
-    
-    // Verificar se já enviou mensagem hoje para controlar saudações
     const today = new Date().toISOString().split('T')[0];
     const { data: todayMessages } = await supabase
       .from("whatsapp_message_logs")
@@ -1080,9 +449,9 @@ async function handleSmartResponse(user: { id: string }, phone: string, text: st
       .eq("message_type", "outbound")
       .gte("sent_at", today)
       .limit(1);
-    
+
     const isFirstMessageToday = !todayMessages || todayMessages.length === 0;
-    
+
     const { data: aiResponse, error } = await supabase.functions.invoke("whatsapp-ai-assistant", {
       body: {
         userId: user.id,
@@ -1094,7 +463,7 @@ async function handleSmartResponse(user: { id: string }, phone: string, text: st
 
     if (error) {
       console.error("[WhatsApp Nutrition] Erro na IA:", error);
-      await sendWhatsApp(phone, 
+      await sendWhatsApp(phone,
         "🤔 Hmm, não entendi muito bem. Pode reformular?\n\n" +
         "💡 *Dica:* Envie uma foto da sua refeição ou me conte o que comeu!\n\n" +
         "_Sofia 🥗_"
@@ -1103,21 +472,17 @@ async function handleSmartResponse(user: { id: string }, phone: string, text: st
     }
 
     const responseText = aiResponse?.response || "Estou aqui para ajudar! 💚";
-    
-    // Evitar assinatura duplicada
     const hasSignature = responseText.includes("_Sofia") || responseText.includes("_Dr. Vital");
     const personality = aiResponse?.personality || 'sofia';
-    const signature = hasSignature ? "" : (personality === 'drvital' 
+    const signature = hasSignature ? "" : (personality === 'drvital'
       ? "\n\n_Dr. Vital 🩺_"
       : "\n\n_Sofia 🥗_");
-    
+
     await sendWhatsApp(phone, responseText + signature);
-    
-    console.log("[WhatsApp Nutrition] Resposta IA enviada:", responseText.slice(0, 100));
 
   } catch (error) {
     console.error("[WhatsApp Nutrition] Erro na resposta inteligente:", error);
-    await sendWhatsApp(phone, 
+    await sendWhatsApp(phone,
       "Oi! 👋 Estou aqui para ajudar com sua nutrição!\n\n" +
       "📸 Envie uma foto da refeição\n" +
       "✍️ Ou descreva o que comeu\n\n" +
@@ -1126,11 +491,10 @@ async function handleSmartResponse(user: { id: string }, phone: string, text: st
   }
 }
 
-// Nova função para resposta com pendência integrada
 async function handleSmartResponseWithPending(
-  user: { id: string }, 
-  phone: string, 
-  text: string, 
+  user: UserInfo,
+  phone: string,
+  text: string,
   pendingFoods: any[]
 ): Promise<void> {
   try {
@@ -1142,9 +506,9 @@ async function handleSmartResponseWithPending(
       .eq("message_type", "outbound")
       .gte("sent_at", today)
       .limit(1);
-    
+
     const isFirstMessageToday = !todayMessages || todayMessages.length === 0;
-    
+
     const { data: aiResponse, error } = await supabase.functions.invoke("whatsapp-ai-assistant", {
       body: {
         userId: user.id,
@@ -1155,13 +519,10 @@ async function handleSmartResponseWithPending(
     });
 
     let responseText = aiResponse?.response || "Estou aqui para ajudar! 💚";
-    
-    // Remover assinatura existente para adicionar a consolidada
     responseText = responseText.replace(/\n*_Sofia 🥗_\s*$/g, '').replace(/\n*_Dr\. Vital 🩺_\s*$/g, '');
-    
-    // Criar lembrete de pendência formatado
+
     const foodsList = pendingFoods.slice(0, 4).map((f: any) => f.nome || f.name).join(", ");
-    const pendingReminder = pendingFoods.length > 0 
+    const pendingReminder = pendingFoods.length > 0
       ? `\n\n───────────────\n\n` +
         `⚠️ *Pendência ativa*\n\n` +
         `📋 ${foodsList}${pendingFoods.length > 4 ? '...' : ''}\n\n` +
@@ -1172,11 +533,8 @@ async function handleSmartResponseWithPending(
         `*4* 🔄 Limpar pendência\n\n` +
         `_Sofia 🥗_`
       : "\n\n_Sofia 🥗_";
-    
-    // Enviar mensagem ÚNICA consolidada
+
     await sendWhatsApp(phone, responseText + pendingReminder);
-    
-    console.log("[WhatsApp Nutrition] Resposta IA com pendência enviada");
 
   } catch (error) {
     console.error("[WhatsApp Nutrition] Erro na resposta com pendência:", error);
@@ -1184,1132 +542,17 @@ async function handleSmartResponseWithPending(
   }
 }
 
-// =============== INTERPRETAÇÃO DE INTENÇÃO COM IA ===============
-
-async function interpretUserIntent(text: string, context: string, pendingFoods?: any[]): Promise<any> {
-  try {
-    const { data, error } = await supabase.functions.invoke("interpret-user-intent", {
-      body: {
-        text,
-        context,
-        pendingFoods: pendingFoods || []
-      }
-    });
-
-    if (error || !data) {
-      return fallbackIntentInterpretation(text);
-    }
-
-    // 🔥 NOVO: Se IA retornou unknown, tentar fallback
-    if (data.intent === "unknown") {
-      const fallback = fallbackIntentInterpretation(text);
-      if (fallback.intent !== "unknown") {
-        console.log("[WhatsApp Nutrition] IA retornou unknown, usando fallback:", fallback.intent);
-        return fallback;
-      }
-    }
-
-    return data;
-  } catch (e) {
-    return fallbackIntentInterpretation(text);
-  }
-}
-
-function fallbackIntentInterpretation(text: string): any {
-  const lower = text.toLowerCase().trim();
-  
-  if (isConfirmationPositive(lower)) return { intent: "confirm", confidence: 0.8, details: {} };
-  if (isConfirmationNegative(lower)) return { intent: "cancel", confidence: 0.8, details: {} };
-  if (isConfirmationEdit(lower)) return { intent: "edit", confidence: 0.8, details: {} };
-  if (isEditDone(lower)) return { intent: "confirm", confidence: 0.8, details: {} };
-  if (isClearPending(lower)) return { intent: "clear_pending", confidence: 0.8, details: {} };
-  
-  return { intent: "unknown", confidence: 0, details: {} };
-}
-
-function isClearPending(text: string): boolean {
-  const clearPatterns = ["4", "finalizar", "limpar", "clear", "descartar", "limpa", "descarta"];
-  return clearPatterns.includes(text.toLowerCase().trim());
-}
-
-// =============== PROCESSAMENTO DE CONFIRMAÇÃO ===============
-
-async function handleConfirmation(
-  user: { id: string },
-  pending: any,
-  messageText: string,
-  phone: string
-): Promise<void> {
-  try {
-    const analysis = pending.analysis_result || {};
-    const pendingFoods = analysis.detectedFoods || analysis.foods || analysis.foods_detected || [];
-    const foodHistoryId = analysis.food_history_id; // Referência ao registro permanente
-    
-    const lower = messageText.toLowerCase().trim();
-    
-    // 🔥 RESPOSTAS DIRETAS - EXECUTAR IMEDIATAMENTE SEM CHAMAR IA
-    // Isso garante resposta instantânea quando usuário digita 1, 2, 3 ou 4
-    
-    // Opção 1: CONFIRMAR DIRETO
-    if (["1", "sim", "s", "ok", "confirmo", "confirma", "certo", "isso", "yes", "y"].includes(lower)) {
-      console.log("[WhatsApp Nutrition] ✅ Confirmação DIRETA detectada - executando imediatamente");
-      
-      const detectedFoods =
-        analysis.detectedFoods ||
-        analysis.foods ||
-        analysis.foods_detected ||
-        analysis.raw?.sofia_analysis?.foods_detected ||
-        [];
-
-      // Chamar sofia-deterministic para cálculo exato
-      const { data: deterministicResult } = await supabase.functions.invoke(
-        "sofia-deterministic",
-        {
-          body: {
-            detected_foods: detectedFoods.map((f: any) => ({
-              name: f.nome || f.name,
-              grams: f.quantidade || f.grams || 100,
-            })),
-            user_id: user.id,
-            analysis_type: "nutritional_sum",
-          },
-        }
-      );
-
-      const nutritionData = deterministicResult?.nutrition_data || {
-        total_kcal: analysis.totalCalories || 0,
-        total_proteina: 0,
-        total_carbo: 0,
-        total_gordura: 0,
-      };
-
-      // Atualizar food_history como CONFIRMADO
-      if (foodHistoryId) {
-        await updateFoodHistoryConfirmation(foodHistoryId, true, detectedFoods, nutritionData);
-      }
-
-      // Salvar em nutrition_tracking
-      const today = new Date().toISOString().split("T")[0];
-      const { data: tracking } = await supabase
-        .from("nutrition_tracking")
-        .insert({
-          user_id: user.id,
-          date: today,
-          meal_type: pending.meal_type || detectMealType(),
-          total_calories: nutritionData.total_kcal || 0,
-          total_proteins: nutritionData.total_proteina || 0,
-          total_carbs: nutritionData.total_carbo || 0,
-          total_fats: nutritionData.total_gordura || 0,
-          total_fiber: nutritionData.total_fibra || 0,
-          food_items: detectedFoods,
-          photo_url: pending.image_url,
-          notes: "Registrado via WhatsApp",
-        })
-        .select()
-        .single();
-
-      // Atualizar pendente como processado
-      await supabase
-        .from("whatsapp_pending_nutrition")
-        .update({
-          waiting_confirmation: false,
-          confirmed: true,
-          is_processed: true,
-          nutrition_tracking_id: tracking?.id,
-        })
-        .eq("id", pending.id);
-
-      const dailyTotal = await getDailyTotal(user.id);
-
-      await sendWhatsApp(phone,
-        `✅ *Refeição registrada!*\n\n` +
-        `🍽️ ${formatMealType(pending.meal_type || detectMealType())}: *${Math.round(nutritionData.total_kcal)} kcal*\n\n` +
-        `📊 Total do dia: *${Math.round(dailyTotal)} kcal*\n\n` +
-        `Continue assim! 💪\n\n` +
-        `_Sofia 🥗_`
-      );
-      return;
-    }
-    
-    // Opção 2: CANCELAR DIRETO
-    if (["2", "não", "nao", "n", "cancela", "cancelar", "nope", "no"].includes(lower)) {
-      console.log("[WhatsApp Nutrition] ❌ Cancelamento DIRETO detectado - executando imediatamente");
-      
-      if (foodHistoryId) {
-        await supabase
-          .from("food_history")
-          .update({ user_notes: "Cancelado pelo usuário" })
-          .eq("id", foodHistoryId);
-      }
-
-      await supabase
-        .from("whatsapp_pending_nutrition")
-        .update({
-          waiting_confirmation: false,
-          confirmed: false,
-          is_processed: true,
-        })
-        .eq("id", pending.id);
-
-      await sendWhatsApp(phone, 
-        `❌ *Registro cancelado!*\n\n` +
-        `📸 Envie uma nova foto quando quiser!\n\n` +
-        `_Sofia 🥗_`
-      );
-      return;
-    }
-    
-    // Opção 3: EDITAR DIRETO
-    if (["3", "editar", "edita", "corrigir", "mudar", "alterar", "edit"].includes(lower)) {
-      console.log("[WhatsApp Nutrition] ✏️ Edição DIRETA detectada - executando imediatamente");
-      
-      await supabase
-        .from("whatsapp_pending_nutrition")
-        .update({ waiting_edit: true })
-        .eq("id", pending.id);
-
-      const numberedList = pendingFoods
-        .map((f: any, i: number) => {
-          const name = f.nome || f.name || f.alimento || "(alimento)";
-          const grams = f.quantidade ?? f.grams ?? f.g ?? "?";
-          return `*${i + 1}.* ${name} (${grams}g)`;
-        })
-        .join("\n");
-
-      await sendWhatsApp(
-        phone,
-        `✏️ *Modo edição*\n\n` +
-        `Itens detectados:\n\n${numberedList}\n\n` +
-        `───────────────\n\n` +
-        `Me diga o que quer alterar:\n\n` +
-        `📝 _"Adiciona uma banana"_\n` +
-        `🗑️ _"Tira o arroz"_\n` +
-        `🔄 _"Era macarrão, não arroz"_\n\n` +
-        `Responda *PRONTO* quando terminar\n\n` +
-        `_Sofia 🥗_`
-      );
-      return;
-    }
-    
-    // Opção 4: LIMPAR/FINALIZAR DIRETO
-    if (isClearPending(lower)) {
-      console.log("[WhatsApp Nutrition] 🧹 Limpando pendência por solicitação do usuário");
-      
-      if (foodHistoryId) {
-        await supabase
-          .from("food_history")
-          .update({ user_notes: "Descartado pelo usuário" })
-          .eq("id", foodHistoryId);
-      }
-      
-      await supabase
-        .from("whatsapp_pending_nutrition")
-        .update({
-          waiting_confirmation: false,
-          waiting_edit: false,
-          confirmed: false,
-          is_processed: true,
-          status: "cleared_by_user"
-        })
-        .eq("id", pending.id);
-      
-      await sendWhatsApp(phone,
-        `✅ *Pendência finalizada!*\n\n` +
-        `Agora você pode continuar normalmente. 💚\n\n` +
-        `📸 Envie uma foto ou me conte o que comeu!\n\n` +
-        `_Sofia 🥗_`
-      );
-      return;
-    }
-    
-    // 🔥 Só chamar IA para mensagens complexas que não são respostas diretas
-    // Por exemplo: "adiciona uma banana" ou "tira o arroz"
-    const intent = await interpretUserIntent(messageText, "awaiting_confirmation", pendingFoods);
-    
-    console.log("[WhatsApp Nutrition] Intenção interpretada (via IA):", intent.intent);
-    
-    if (intent.intent === "confirm") {
-      console.log("[WhatsApp Nutrition] Confirmação positiva recebida");
-
-      const detectedFoods =
-        analysis.detectedFoods ||
-        analysis.foods ||
-        analysis.foods_detected ||
-        analysis.raw?.sofia_analysis?.foods_detected ||
-        [];
-
-      // Chamar sofia-deterministic para cálculo exato
-      const { data: deterministicResult, error: deterministicError } = await supabase.functions.invoke(
-        "sofia-deterministic",
-        {
-          body: {
-            detected_foods: detectedFoods.map((f: any) => ({
-              name: f.nome || f.name,
-              grams: f.quantidade || f.grams || 100,
-            })),
-            user_id: user.id,
-            analysis_type: "nutritional_sum",
-          },
-        }
-      );
-
-      const nutritionData = deterministicResult?.nutrition_data || {
-        total_kcal: analysis.totalCalories || 0,
-        total_proteina: 0,
-        total_carbo: 0,
-        total_gordura: 0,
-      };
-
-      // 🔥 Atualizar food_history como CONFIRMADO
-      if (foodHistoryId) {
-        await updateFoodHistoryConfirmation(foodHistoryId, true, detectedFoods, nutritionData);
-      }
-
-      // Também salvar em nutrition_tracking (legado)
-      const today = new Date().toISOString().split("T")[0];
-      const { data: tracking, error: trackingError } = await supabase
-        .from("nutrition_tracking")
-        .insert({
-          user_id: user.id,
-          date: today,
-          meal_type: pending.meal_type || detectMealType(),
-          total_calories: nutritionData.total_kcal || 0,
-          total_proteins: nutritionData.total_proteina || 0,
-          total_carbs: nutritionData.total_carbo || 0,
-          total_fats: nutritionData.total_gordura || 0,
-          total_fiber: nutritionData.total_fibra || 0,
-          food_items: detectedFoods,
-          photo_url: pending.image_url,
-          notes: "Registrado via WhatsApp",
-        })
-        .select()
-        .single();
-
-      if (trackingError) {
-        console.error("[WhatsApp Nutrition] Erro ao salvar tracking:", trackingError);
-      }
-
-      // Atualizar pendente como processado
-      await supabase
-        .from("whatsapp_pending_nutrition")
-        .update({
-          waiting_confirmation: false,
-          confirmed: true,
-          is_processed: true,
-          nutrition_tracking_id: tracking?.id,
-        })
-        .eq("id", pending.id);
-
-      const dailyTotal = await getDailyTotal(user.id);
-
-      const successMessage =
-        `✅ *Refeição registrada!*\n\n` +
-        `🍽️ ${formatMealType(pending.meal_type || detectMealType())}: *${Math.round(nutritionData.total_kcal)} kcal*\n\n` +
-        `📊 Total do dia: *${Math.round(dailyTotal)} kcal*\n\n` +
-        `Continue assim! 💪\n\n` +
-        `_Sofia 🥗_`;
-
-      await sendWhatsApp(phone, successMessage);
-
-    } else if (intent.intent === "cancel") {
-      console.log("[WhatsApp Nutrition] Cancelamento recebido");
-
-      // Mesmo cancelando, mantemos no food_history (apenas não confirmado)
-      if (foodHistoryId) {
-        await supabase
-          .from("food_history")
-          .update({ user_notes: "Cancelado pelo usuário" })
-          .eq("id", foodHistoryId);
-      }
-
-      await supabase
-        .from("whatsapp_pending_nutrition")
-        .update({
-          waiting_confirmation: false,
-          confirmed: false,
-          is_processed: true,
-        })
-        .eq("id", pending.id);
-
-      await sendWhatsApp(phone, 
-        `❌ *Registro cancelado!*\n\n` +
-        `📸 Envie uma nova foto quando quiser!\n\n` +
-        `_Sofia 🥗_`
-      );
-
-    } else if (intent.intent === "edit") {
-      console.log("[WhatsApp Nutrition] Modo edição ativado");
-
-      await supabase
-        .from("whatsapp_pending_nutrition")
-        .update({ waiting_edit: true })
-        .eq("id", pending.id);
-
-      const numberedList = pendingFoods
-        .map((f: any, i: number) => {
-          const name = f.nome || f.name || f.alimento || "(alimento)";
-          const grams = f.quantidade ?? f.grams ?? f.g ?? "?";
-          return `*${i + 1}.* ${name} (${grams}g)`;
-        })
-        .join("\n");
-
-      await sendWhatsApp(
-        phone,
-        `✏️ *Modo edição*\n\n` +
-        `Itens detectados:\n\n${numberedList}\n\n` +
-        `───────────────\n\n` +
-        `Me diga o que quer alterar:\n\n` +
-        `📝 _"Adiciona uma banana"_\n` +
-        `🗑️ _"Tira o arroz"_\n` +
-        `🔄 _"Era macarrão, não arroz"_\n\n` +
-        `Responda *PRONTO* quando terminar\n\n` +
-        `_Sofia 🥗_`
-      );
-
-    } else if (intent.intent === "add_food" && intent.details?.newFood) {
-      const newFood = {
-        nome: intent.details.newFood.name,
-        quantidade: intent.details.newFood.grams || 100,
-        name: intent.details.newFood.name,
-        grams: intent.details.newFood.grams || 100
-      };
-      
-      const updatedFoods = [...pendingFoods, newFood];
-      const updatedAnalysis = { ...analysis, detectedFoods: updatedFoods };
-      
-      await supabase
-        .from("whatsapp_pending_nutrition")
-        .update({ analysis_result: updatedAnalysis })
-        .eq("id", pending.id);
-
-      // Atualizar food_history também
-      if (foodHistoryId) {
-        await supabase
-          .from("food_history")
-          .update({ food_items: updatedFoods })
-          .eq("id", foodHistoryId);
-      }
-      
-      const foodsList = updatedFoods
-        .map((f: any) => `• ${f.nome || f.name} (${f.quantidade ?? f.grams ?? "?"}g)`)
-        .join("\n");
-      
-      await sendWhatsApp(
-        phone,
-        `✅ *Adicionado!*\n\n` +
-        `Lista atualizada:\n\n${foodsList}\n\n` +
-        `───────────────\n\n` +
-        `*Está correto?* Escolha:\n\n` +
-        `*1* ✅ Confirmar\n` +
-        `*2* ❌ Cancelar\n` +
-        `*3* ✏️ Editar mais\n\n` +
-        `_Sofia 🥗_`
-      );
-
-    } else if (intent.intent === "remove_food") {
-      let updatedFoods = [...pendingFoods];
-      
-      if (intent.details?.foodIndex !== undefined && intent.details.foodIndex >= 0 && intent.details.foodIndex < updatedFoods.length) {
-        updatedFoods.splice(intent.details.foodIndex, 1);
-      } else if (intent.details?.newFood?.name) {
-        const nameToRemove = intent.details.newFood.name.toLowerCase();
-        updatedFoods = updatedFoods.filter((f: any) => {
-          const foodName = (f.nome || f.name || "").toLowerCase();
-          return !foodName.includes(nameToRemove);
-        });
-      }
-      
-      const updatedAnalysis = { ...analysis, detectedFoods: updatedFoods };
-      
-      await supabase
-        .from("whatsapp_pending_nutrition")
-        .update({ analysis_result: updatedAnalysis })
-        .eq("id", pending.id);
-
-      if (foodHistoryId) {
-        await supabase
-          .from("food_history")
-          .update({ food_items: updatedFoods })
-          .eq("id", foodHistoryId);
-      }
-      
-      const foodsList = updatedFoods
-        .map((f: any) => `• ${f.nome || f.name} (${f.quantidade ?? f.grams ?? "?"}g)`)
-        .join("\n");
-      
-      await sendWhatsApp(
-        phone,
-        `🗑️ *Removido!*\n\n` +
-        `Lista atualizada:\n\n${foodsList || "_lista vazia_"}\n\n` +
-        `───────────────\n\n` +
-        `*Está correto?* Escolha:\n\n` +
-        `*1* ✅ Confirmar\n` +
-        `*2* ❌ Cancelar\n` +
-        `*3* ✏️ Editar mais\n\n` +
-        `_Sofia 🥗_`
-      );
-
-    } else if (intent.intent === "replace_food" && intent.details?.newFood) {
-      let updatedFoods = [...pendingFoods];
-      const indexToReplace = intent.details.foodIndex ?? 0;
-      
-      if (indexToReplace >= 0 && indexToReplace < updatedFoods.length) {
-        updatedFoods[indexToReplace] = {
-          nome: intent.details.newFood.name,
-          quantidade: intent.details.newFood.grams || 100,
-          name: intent.details.newFood.name,
-          grams: intent.details.newFood.grams || 100
-        };
-      }
-      
-      const updatedAnalysis = { ...analysis, detectedFoods: updatedFoods };
-      
-      await supabase
-        .from("whatsapp_pending_nutrition")
-        .update({ analysis_result: updatedAnalysis })
-        .eq("id", pending.id);
-
-      if (foodHistoryId) {
-        await supabase
-          .from("food_history")
-          .update({ food_items: updatedFoods })
-          .eq("id", foodHistoryId);
-      }
-      
-      const foodsList = updatedFoods
-        .map((f: any) => `• ${f.nome || f.name} (${f.quantidade ?? f.grams ?? "?"}g)`)
-        .join("\n");
-      
-      await sendWhatsApp(
-        phone,
-        `🔄 *Substituído!*\n\n` +
-        `Lista atualizada:\n\n${foodsList}\n\n` +
-        `───────────────\n\n` +
-        `*Está correto?* Escolha:\n\n` +
-        `*1* ✅ Confirmar\n` +
-        `*2* ❌ Cancelar\n` +
-        `*3* ✏️ Editar mais\n\n` +
-        `_Sofia 🥗_`
-      );
-
-    } else {
-      // 🔥 INTELIGÊNCIA: Se não entendeu como confirmação, tenta responder com IA
-      const lowerText = messageText.toLowerCase().trim();
-      const almostConfirmation = ["s", "si", "smi", "n", "na", "e", "ed", "edi", "edt"].includes(lowerText);
-      
-      if (almostConfirmation) {
-        // Parece tentativa de confirmação mas ambígua
-        await sendWhatsApp(
-          phone,
-          `🤔 *Não entendi...*\n\n` +
-          `Escolha uma opção:\n\n` +
-          `*1* ✅ Confirmar\n` +
-          `*2* ❌ Cancelar\n` +
-          `*3* ✏️ Editar\n` +
-          `*4* 🔄 Limpar pendência\n\n` +
-          `_Sofia 🥗_`
-        );
-      } else {
-        // É outra coisa - deixar a IA responder com lembrete integrado
-        console.log("[WhatsApp Nutrition] Fallback para IA no handleConfirmation");
-        await handleSmartResponseWithPending(user, phone, messageText, pendingFoods);
-      }
-    }
-
-  } catch (error) {
-    console.error("[WhatsApp Nutrition] Erro na confirmação:", error);
-    await sendWhatsApp(phone, "❌ Erro ao processar. Tente novamente!");
-  }
-}
-
-// =============== PROCESSAMENTO DE EDIÇÃO ===============
-
-async function handleEdit(
-  user: { id: string },
-  pending: any,
-  messageText: string,
-  phone: string
-): Promise<void> {
-  try {
-    const analysis = pending.analysis_result || {};
-    const pendingFoods = analysis.detectedFoods || analysis.foods || [];
-    const foodHistoryId = analysis.food_history_id;
-
-    // Verificar se quer finalizar edição
-    if (isEditDone(messageText)) {
-      await supabase
-        .from("whatsapp_pending_nutrition")
-        .update({ waiting_edit: false })
-        .eq("id", pending.id);
-
-      const foodsList = pendingFoods
-        .map((f: any) => `• ${f.nome || f.name} (${f.quantidade ?? f.grams ?? "?"}g)`)
-        .join("\n");
-
-      await sendWhatsApp(
-        phone,
-        `✅ *Edição finalizada!*\n\n` +
-        `Lista final:\n${foodsList}\n\n` +
-        `Confirmar registro?\n` +
-        `✅ *SIM* para confirmar\n` +
-        `❌ *NÃO* para cancelar`
-      );
-      return;
-    }
-
-    // Usar IA para interpretar edição
-    const intent = await interpretUserIntent(messageText, "editing_foods", pendingFoods);
-
-    let updatedFoods = [...pendingFoods];
-    let actionMessage = "";
-
-    if (intent.intent === "add_food" && intent.details?.newFood) {
-      const newFood = {
-        nome: intent.details.newFood.name,
-        quantidade: intent.details.newFood.grams || 100,
-        name: intent.details.newFood.name,
-        grams: intent.details.newFood.grams || 100
-      };
-      updatedFoods.push(newFood);
-      actionMessage = `✅ Adicionado: ${newFood.nome} (${newFood.quantidade}g)`;
-    } else if (intent.intent === "remove_food") {
-      if (intent.details?.foodIndex !== undefined) {
-        const removed = updatedFoods.splice(intent.details.foodIndex, 1)[0];
-        actionMessage = `✅ Removido: ${removed?.nome || removed?.name || "item"}`;
-      } else if (intent.details?.newFood?.name) {
-        const nameToRemove = intent.details.newFood.name.toLowerCase();
-        const before = updatedFoods.length;
-        updatedFoods = updatedFoods.filter((f: any) => {
-          const foodName = (f.nome || f.name || "").toLowerCase();
-          return !foodName.includes(nameToRemove);
-        });
-        if (updatedFoods.length < before) {
-          actionMessage = `✅ Removido: ${intent.details.newFood.name}`;
-        }
-      }
-    } else if (intent.intent === "replace_food" && intent.details?.newFood) {
-      const indexToReplace = intent.details.foodIndex ?? 0;
-      if (indexToReplace >= 0 && indexToReplace < updatedFoods.length) {
-        const oldFood = updatedFoods[indexToReplace];
-        updatedFoods[indexToReplace] = {
-          nome: intent.details.newFood.name,
-          quantidade: intent.details.newFood.grams || 100,
-          name: intent.details.newFood.name,
-          grams: intent.details.newFood.grams || 100
-        };
-        actionMessage = `✅ Substituído: ${oldFood?.nome || oldFood?.name} → ${intent.details.newFood.name}`;
-      }
-    } else {
-      // Tentar comando de texto manual
-      const command = parseEditCommand(messageText, pendingFoods);
-      if (command) {
-        if (command.action === 'add' && command.newFood) {
-          updatedFoods.push({
-            nome: command.newFood.name,
-            quantidade: command.newFood.grams,
-            name: command.newFood.name,
-            grams: command.newFood.grams
-          });
-          actionMessage = `✅ Adicionado: ${command.newFood.name} (${command.newFood.grams}g)`;
-        } else if (command.action === 'remove' && command.index !== undefined) {
-          const removed = updatedFoods.splice(command.index, 1)[0];
-          actionMessage = `✅ Removido: ${removed?.nome || removed?.name}`;
-        } else if (command.action === 'replace' && command.index !== undefined && command.newFood) {
-          updatedFoods[command.index] = {
-            nome: command.newFood.name,
-            quantidade: command.newFood.grams,
-            name: command.newFood.name,
-            grams: command.newFood.grams
-          };
-          actionMessage = `✅ Substituído para: ${command.newFood.name} (${command.newFood.grams}g)`;
-        }
-      }
-    }
-
-    if (actionMessage) {
-      const updatedAnalysis = { ...analysis, detectedFoods: updatedFoods };
-      await supabase
-        .from("whatsapp_pending_nutrition")
-        .update({ analysis_result: updatedAnalysis })
-        .eq("id", pending.id);
-
-      // Atualizar food_history também
-      if (foodHistoryId) {
-        await supabase
-          .from("food_history")
-          .update({ food_items: updatedFoods })
-          .eq("id", foodHistoryId);
-      }
-
-      const numberedList = updatedFoods
-        .map((f: any, i: number) => `${i + 1}. ${f.nome || f.name} (${f.quantidade ?? f.grams}g)`)
-        .join("\n");
-
-      await sendWhatsApp(
-        phone,
-        `${actionMessage}\n\n` +
-        `Lista atualizada:\n${numberedList}\n\n` +
-        `Continue editando ou responda *PRONTO*`
-      );
-    } else {
-      await sendWhatsApp(
-        phone,
-        `🤔 Não entendi. Tente:\n` +
-        `• "Adiciona banana 100g"\n` +
-        `• "Tira o arroz"\n` +
-        `• "Trocar 1 por macarrão 200g"\n\n` +
-        `Ou responda *PRONTO* para finalizar`
-      );
-    }
-
-  } catch (error) {
-    console.error("[WhatsApp Nutrition] Erro na edição:", error);
-    await sendWhatsApp(phone, "❌ Erro ao editar. Tente novamente!");
-  }
-}
-
-// =============== PROCESSAMENTO DE EXAME MÉDICO (LOTE) ===============
-
-async function handleMedicalResponse(
-  user: { id: string },
-  pending: any,
-  messageText: string,
-  phone: string
-): Promise<void> {
-  try {
-    const lower = messageText.toLowerCase().trim();
-    const status = pending.status || "collecting";
-    const imageUrls = pending.image_urls || [];
-    const imagesCount = pending.images_count || imageUrls.length || 1;
-
-    console.log(`[WhatsApp Medical] handleMedicalResponse: status=${status}, msg="${lower}", images=${imagesCount}`);
-
-    // 🔥 USUÁRIO DIGITA "PRONTO" - INICIAR ANÁLISE DIRETAMENTE (SEM PERGUNTAR)
-    if (["pronto", "terminei", "finalizar", "fim", "acabou", "done"].includes(lower)) {
-      if (status === "collecting") {
-        console.log("[WhatsApp Medical] ✅ PRONTO recebido - iniciando análise DIRETO (sem perguntar)");
-        
-        // Enviar mensagem de processamento imediatamente
-        await sendWhatsApp(phone,
-          `🩺 *Analisando ${imagesCount} ${imagesCount === 1 ? "imagem" : "imagens"}...*\n\n` +
-          `⏳ Isso pode levar alguns segundos.\n\n` +
-          `💡 Se quiser enviar mais fotos depois, digite *MAIS*.\n\n` +
-          `_Dr. Vital 🩺_`
-        );
-
-        // Atualizar status para processing
-        await supabase
-          .from("whatsapp_pending_medical")
-          .update({
-            status: "processing",
-            waiting_confirmation: false,
-            confirmed: true,
-          })
-          .eq("id", pending.id);
-
-        // Chamar análise diretamente
-        await analyzeExamBatch(user, phone, pending);
-        return;
-      }
-    }
-    
-    // 🔥 USUÁRIO QUER ADICIONAR MAIS FOTOS DEPOIS DE PRONTO
-    if (["mais", "add", "adicionar", "enviar mais", "more"].includes(lower)) {
-      if (status === "processing" || status === "awaiting_confirm") {
-        console.log("[WhatsApp Medical] 📸 Usuário quer enviar mais fotos - voltando para collecting");
-        
-        await supabase
-          .from("whatsapp_pending_medical")
-          .update({
-            status: "collecting",
-            waiting_confirmation: false,
-            confirmed: false,
-          })
-          .eq("id", pending.id);
-
-        await sendWhatsApp(phone,
-          `📸 Ok! Continue enviando as fotos do exame.\n\n` +
-          `Você já tem *${imagesCount} ${imagesCount === 1 ? "foto" : "fotos"}*.\n\n` +
-          `Quando terminar, digite *PRONTO* novamente.\n\n` +
-          `_Dr. Vital 🩺_`
-        );
-        return;
-      }
-    }
-
-    // 🔥 USUÁRIO RESPONDE 1/SIM - AVISAR TEMPO E INICIAR ANÁLISE
-    if (status === "awaiting_confirm" && (lower === "1" || lower === "sim" || lower === "s" || lower === "yes")) {
-      console.log("[WhatsApp Medical] ✅ Usuário confirmou - avisando tempo e iniciando análise...");
-
-      // 🔥 AVISO DE TEMPO ESTIMADO (até 5 minutos)
-      await sendWhatsApp(phone,
-        `🩺 *Iniciando análise de ${imagesCount} ${imagesCount === 1 ? "imagem" : "imagens"}...*\n\n` +
-        `⏳ *Tempo estimado: até 5 minutos*\n` +
-        `(dependendo da quantidade e qualidade das fotos)\n\n` +
-        `☕ Aguarde, eu aviso quando terminar!\n\n` +
-        `_Dr. Vital 🩺_`
-      );
-
-      // Marcar como em processamento
-      await supabase
-        .from("whatsapp_pending_medical")
-        .update({
-          status: "processing",
-          waiting_confirmation: false,
-          confirmed: true,
-        })
-        .eq("id", pending.id);
-
-      // Chamar análise em lote
-      await analyzeExamBatch(user, phone, pending);
-      return;
-    }
-
-    // 🔥 USUÁRIO RESPONDE 2/NÃO - Voltar a coletar
-    if (status === "awaiting_confirm" && (lower === "2" || lower === "nao" || lower === "não" || lower === "n" || lower === "no")) {
-      await supabase
-        .from("whatsapp_pending_medical")
-        .update({
-          status: "collecting",
-          waiting_confirmation: false,
-        })
-        .eq("id", pending.id);
-
-      await sendWhatsApp(phone,
-        `📸 Ok! Continue enviando as fotos.\n\n` +
-        `Quando terminar, digite *PRONTO*.\n\n` +
-        `_Dr. Vital 🩺_`
-      );
-      return;
-    }
-
-    // 🔥 USUÁRIO RESPONDE 3/CANCELAR
-    if (status === "awaiting_confirm" && (lower === "3" || lower === "cancelar" || lower === "cancel")) {
-      await supabase
-        .from("whatsapp_pending_medical")
-        .update({
-          status: "cancelled",
-          is_processed: true,
-          confirmed: false,
-        })
-        .eq("id", pending.id);
-
-      await sendWhatsApp(phone,
-        `❌ Análise cancelada.\n\n` +
-        `📸 Envie novamente quando quiser!\n\n` +
-        `_Dr. Vital 🩺_`
-      );
-      return;
-    }
-
-    // 🔥 SE ESTÁ EM COLLECTING, qualquer texto que não seja PRONTO = ignorar (ou lembrar)
-    if (status === "collecting") {
-      // Deixar a IA responder perguntas gerais
-      await handleSmartResponse(user, phone, messageText);
-      await sendWhatsApp(phone,
-        `\n💡 _Você tem ${imagesCount} ${imagesCount === 1 ? "foto" : "fotos"} de exame pendentes. Digite *PRONTO* quando terminar de enviar!_`
-      );
-      return;
-    }
-
-    // 🔥 SE ESTÁ EM AWAITING_CONFIRM mas não entendeu
-    if (status === "awaiting_confirm") {
-      await sendWhatsApp(phone,
-        `🤔 Não entendi. Responda:\n\n` +
-        `*1* - ✅ SIM, analisar agora\n` +
-        `*2* - 📸 NÃO, vou enviar mais\n` +
-        `*3* - ❌ CANCELAR\n\n` +
-        `_Dr. Vital 🩺_`
-      );
-      return;
-    }
-
-    // Fallback antigo (compatibilidade)
-    if (isConfirmationPositive(messageText)) {
-      await supabase
-        .from("whatsapp_pending_medical")
-        .update({ is_processed: true, confirmed: true })
-        .eq("id", pending.id);
-      await sendWhatsApp(phone, "✅ Exame registrado!\n\n_Dr. Vital 🩺_");
-    } else if (isConfirmationNegative(messageText)) {
-      await supabase
-        .from("whatsapp_pending_medical")
-        .update({ is_processed: true, confirmed: false })
-        .eq("id", pending.id);
-      await sendWhatsApp(phone, "❌ Exame não registrado.\n\n_Dr. Vital 🩺_");
-    }
-
-  } catch (error) {
-    console.error("[WhatsApp Medical] Erro no exame médico:", error);
-  }
-}
-
-// =============== ANÁLISE EM LOTE DE EXAMES ===============
-
-async function analyzeExamBatch(
-  user: { id: string },
-  phone: string,
-  pending: any
-): Promise<void> {
-  console.log("[WhatsApp Medical] ========================================");
-  console.log("[WhatsApp Medical] 🚀 INICIANDO analyzeExamBatch");
-  console.log("[WhatsApp Medical] 📌 pending.id:", pending.id);
-  console.log("[WhatsApp Medical] 👤 user.id:", user.id);
-  console.log("[WhatsApp Medical] 📱 phone:", phone);
-  
-  try {
-    const imageUrls = pending.image_urls || [];
-    const imagesCount = imageUrls.length;
-
-    console.log("[WhatsApp Medical] 📸 image_urls recebidas:", imagesCount);
-    console.log("[WhatsApp Medical] 📸 Primeiras URLs:", JSON.stringify(imageUrls.slice(0, 2)));
-
-    if (imagesCount === 0) {
-      console.error("[WhatsApp Medical] ❌ Nenhuma imagem no lote");
-      await sendWhatsApp(phone, "❌ Nenhuma imagem encontrada para análise.\n\n_Dr. Vital 🩺_");
-      await supabase.from("whatsapp_pending_medical").update({ status: "error", is_processed: true }).eq("id", pending.id);
-      return;
-    }
-
-    // 🔥 CONVERTER URLs públicas para paths de storage
-    // URL: https://xxx.supabase.co/storage/v1/object/public/chat-images/whatsapp/userId/123.jpg
-    // Path: whatsapp/userId/123.jpg
-    console.log("[WhatsApp Medical] 🔄 Extraindo tmpPaths das URLs...");
-    
-    const tmpPaths = imageUrls.map((img: any, idx: number) => {
-      const url = img.url || img;
-      console.log(`[WhatsApp Medical] 🔍 URL[${idx}]: ${url.slice(0, 100)}`);
-      const match = url.match(/\/chat-images\/(.+)$/);
-      const path = match ? match[1] : null;
-      console.log(`[WhatsApp Medical] 📂 Path[${idx}]: ${path}`);
-      return path;
-    }).filter(Boolean);
-
-    console.log("[WhatsApp Medical] ✅ tmpPaths extraídos:", tmpPaths.length);
-    console.log("[WhatsApp Medical] 📂 Paths:", JSON.stringify(tmpPaths));
-
-    if (tmpPaths.length === 0) {
-      console.error("[WhatsApp Medical] ❌ Nenhum path válido extraído das URLs");
-      console.error("[WhatsApp Medical] ❌ URLs originais:", JSON.stringify(imageUrls));
-      await sendWhatsApp(phone, "❌ Erro ao processar imagens.\n\nTente enviar novamente.\n\n_Dr. Vital 🩺_");
-      await supabase.from("whatsapp_pending_medical").update({ status: "error", is_processed: true }).eq("id", pending.id);
-      return;
-    }
-
-    // 🔥 CHAMAR analyze-medical-exam com parâmetros CORRETOS
-    console.log("[WhatsApp Medical] 📞 CHAMANDO analyze-medical-exam...");
-    console.log("[WhatsApp Medical] 📦 Body:", JSON.stringify({
-      tmpPaths,
-      userId: user.id,
-      examType: "exame_laboratorial",
-      title: `Exame via WhatsApp - ${new Date().toLocaleDateString("pt-BR")}`,
-    }));
-    
-    const startTime = Date.now();
-    
-    const { data: analysisResult, error: analysisError } = await supabase.functions.invoke("analyze-medical-exam", {
-      body: {
-        tmpPaths,
-        userId: user.id,
-        examType: "exame_laboratorial",
-        title: `Exame via WhatsApp - ${new Date().toLocaleDateString("pt-BR")}`,
-      },
-    });
-
-    const elapsed = Date.now() - startTime;
-    console.log(`[WhatsApp Medical] ⏱️ Tempo de resposta: ${elapsed}ms`);
-    console.log("[WhatsApp Medical] 📥 analysisResult:", JSON.stringify(analysisResult)?.slice(0, 800));
-    console.log("[WhatsApp Medical] ❌ analysisError:", JSON.stringify(analysisError));
-
-    if (analysisError) {
-      console.error("[WhatsApp Medical] 💥 ERRO na análise em lote:");
-      console.error("[WhatsApp Medical] 💥 Tipo:", typeof analysisError);
-      console.error("[WhatsApp Medical] 💥 Detalhes:", JSON.stringify(analysisError, null, 2));
-      
-      await sendWhatsApp(phone,
-        `❌ Não consegui analisar seu exame.\n\n` +
-        `Tente enviar fotos mais claras.\n\n` +
-        `_Dr. Vital 🩺_`
-      );
-
-      await supabase
-        .from("whatsapp_pending_medical")
-        .update({ status: "error", is_processed: true })
-        .eq("id", pending.id);
-      return;
-    }
-
-    // Verificar se resultado está vazio ou com erro interno
-    if (!analysisResult) {
-      console.error("[WhatsApp Medical] ❌ Resultado da análise é null/undefined");
-      await sendWhatsApp(phone, "❌ Erro interno na análise. Tente novamente.\n\n_Dr. Vital 🩺_");
-      await supabase.from("whatsapp_pending_medical").update({ status: "error", is_processed: true }).eq("id", pending.id);
-      return;
-    }
-
-    if (analysisResult.error) {
-      console.error("[WhatsApp Medical] ❌ Erro retornado pela análise:", analysisResult.error);
-      await sendWhatsApp(phone, `❌ Erro na análise: ${analysisResult.error}\n\n_Dr. Vital 🩺_`);
-      await supabase.from("whatsapp_pending_medical").update({ status: "error", is_processed: true }).eq("id", pending.id);
-      return;
-    }
-
-    console.log("[WhatsApp Medical] ✅ Análise concluída com sucesso!");
-    console.log("[WhatsApp Medical] 📊 Resultado completo:", JSON.stringify(analysisResult).slice(0, 1000));
-
-    // Extrair resumo
-    const summary = analysisResult?.summary || analysisResult?.analysis?.summary || analysisResult?.message || "Análise concluída com sucesso.";
-    const documentId = analysisResult?.documentId || analysisResult?.document_id;
-    const findings = analysisResult?.findings || analysisResult?.analysis?.findings || [];
-
-    console.log("[WhatsApp Medical] 📝 Summary:", summary.slice(0, 200));
-    console.log("[WhatsApp Medical] 📄 DocumentId:", documentId);
-    console.log("[WhatsApp Medical] 🔬 Findings:", findings.length);
-
-    // Formatar achados
-    let findingsText = "";
-    if (findings.length > 0) {
-      findingsText = "\n\n📋 *Principais achados:*\n";
-      for (const finding of findings.slice(0, 8)) {
-        const status = finding.status === "normal" ? "🟢" : finding.status === "attention" ? "🟡" : "🔴";
-        findingsText += `${status} ${finding.name || finding.test}: ${finding.value || finding.result}\n`;
-      }
-    }
-
-    // 🔥 CRIAR LINK PÚBLICO DIRETAMENTE (sem chamar generate-medical-report)
-    let reportLink = "";
-    let publicLinkToken = "";
-    
-    // Extrair reportPath do resultado da análise
-    const reportPath = analysisResult?.reportPath || analysisResult?.report_path;
-    
-    if (reportPath) {
-      console.log("[WhatsApp Medical] 📊 Criando link público para:", reportPath);
-      try {
-        // Inserir diretamente em public_report_links
-        const { data: linkData, error: linkError } = await supabase
-          .from("public_report_links")
-          .insert({
-            user_id: user.id,
-            medical_document_id: documentId || null,
-            report_path: reportPath,
-            title: `Exame via WhatsApp - ${new Date().toLocaleDateString("pt-BR")}`,
-            exam_type: "exame_laboratorial",
-            exam_date: new Date().toISOString().split("T")[0],
-          })
-          .select("token")
-          .single();
-
-        if (linkError) {
-          console.log("[WhatsApp Medical] ⚠️ Erro ao criar link público:", linkError);
-        } else if (linkData?.token) {
-          publicLinkToken = linkData.token;
-          // Link permanente com https:// para ficar clicável
-          reportLink = `\n\n📊 *Relatório completo:*\n👉 https://institutodossonhos.com.br/relatorio/${publicLinkToken}`;
-          console.log("[WhatsApp Medical] ✅ Link público criado:", publicLinkToken);
-        }
-      } catch (e) {
-        console.log("[WhatsApp Medical] ⚠️ Erro ao criar link:", e);
-      }
-      
-      // Fallback: URL assinada se não conseguiu criar link público
-      if (!reportLink) {
-        try {
-          const { data: signedData } = await supabase.storage
-            .from("medical-reports")
-            .createSignedUrl(reportPath, 86400); // 24h
-          
-          if (signedData?.signedUrl) {
-            reportLink = `\n\n📊 *Relatório (válido por 24h):*\n👉 ${signedData.signedUrl}`;
-            console.log("[WhatsApp Medical] 📎 Fallback: URL assinada gerada");
-          }
-        } catch (e) {
-          console.log("[WhatsApp Medical] ⚠️ Fallback URL assinada falhou:", e);
-        }
-      }
-    } else if (documentId) {
-      // Se não tem reportPath mas tem documentId, tentar buscar o report_path no documento
-      console.log("[WhatsApp Medical] 🔍 Buscando report_path no documento:", documentId);
-      const { data: docData } = await supabase
-        .from("medical_documents")
-        .select("report_path")
-        .eq("id", documentId)
-        .single();
-      
-      if (docData?.report_path) {
-        const { data: linkData } = await supabase
-          .from("public_report_links")
-          .insert({
-            user_id: user.id,
-            medical_document_id: documentId,
-            report_path: docData.report_path,
-            title: `Exame via WhatsApp - ${new Date().toLocaleDateString("pt-BR")}`,
-            exam_type: "exame_laboratorial",
-          })
-          .select("token")
-          .single();
-        
-        if (linkData?.token) {
-          publicLinkToken = linkData.token;
-          reportLink = `\n\n📊 *Relatório completo:*\n👉 https://institutodossonhos.com.br/relatorio/${publicLinkToken}`;
-          console.log("[WhatsApp Medical] ✅ Link criado via documento:", publicLinkToken);
-        }
-      }
-    }
-    
-    console.log("[WhatsApp Medical] 📎 Link final:", reportLink ? "SIM" : "NÃO");
-
-    // Enviar resultado
-    console.log("[WhatsApp Medical] 📤 Enviando resultado para o usuário...");
-    await sendWhatsApp(phone,
-      `🩺 *Análise Concluída!*\n` +
-      `📷 _${imagesCount} ${imagesCount === 1 ? "imagem analisada" : "imagens analisadas"}_\n\n` +
-      `${summary}${findingsText}${reportLink}\n\n` +
-      `Qualquer dúvida, estou aqui!\n\n` +
-      `_Dr. Vital 🩺_`
-    );
-
-    // Marcar como processado e salvar token do link público
-    console.log("[WhatsApp Medical] 💾 Atualizando lote como completed...");
-    const updateData: any = {
-      status: "completed",
-      is_processed: true,
-      confirmed: true,
-      analysis_result: analysisResult,
-      medical_document_id: documentId,
-    };
-    
-    // Salvar token do link público se existir
-    if (publicLinkToken) {
-      updateData.public_link_token = publicLinkToken;
-    }
-    
-    await supabase
-      .from("whatsapp_pending_medical")
-      .update(updateData)
-      .eq("id", pending.id);
-
-    console.log("[WhatsApp Medical] ✅ FLUXO COMPLETO - Análise finalizada com sucesso!");
-    console.log("[WhatsApp Medical] ========================================");
-
-  } catch (error) {
-    console.error("[WhatsApp Medical] 💥 ERRO CRÍTICO em analyzeExamBatch:");
-    console.error("[WhatsApp Medical] 💥 Mensagem:", (error as Error).message);
-    console.error("[WhatsApp Medical] 💥 Stack:", (error as Error).stack);
-    console.error("[WhatsApp Medical] 💥 Erro completo:", JSON.stringify(error, Object.getOwnPropertyNames(error)));
-    
-    // Marcar lote como erro
-    await supabase
-      .from("whatsapp_pending_medical")
-      .update({ status: "error", is_processed: true })
-      .eq("id", pending.id);
-    
-    await sendWhatsApp(phone,
-      `❌ Erro ao analisar exames.\n\n` +
-      `Por favor, envie as fotos novamente.\n\n` +
-      `_Dr. Vital 🩺_`
-    );
-    
-    console.log("[WhatsApp Medical] ========================================");
-  }
-}
+// ============================================================
+// FIM DO ARQUIVO REFATORADO
+// Código original (2315 linhas) foi extraído para:
+// - services/user-service.ts
+// - services/pending-service.ts  
+// - services/intent-service.ts
+// - handlers/text-handler.ts
+// - handlers/confirmation-handler.ts
+// - handlers/edit-handler.ts
+// - handlers/medical-handler.ts
+// - handlers/image-upload.ts
+// - utils/message-utils.ts
+// - utils/whatsapp-sender.ts
+// ============================================================

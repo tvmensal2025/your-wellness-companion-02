@@ -236,3 +236,228 @@ export async function handleAmbiguousConfirmation(phone: string): Promise<void> 
       `_Sofia 🥗_`
   );
 }
+
+/**
+ * Main confirmation handler - routes to appropriate sub-handler
+ */
+export async function handleConfirmation(
+  supabase: SupabaseClient,
+  user: UserInfo,
+  pending: PendingNutrition,
+  messageText: string,
+  phone: string
+): Promise<void> {
+  const lower = messageText.toLowerCase().trim();
+  const analysis = pending.analysis_result || {};
+  const pendingFoods = analysis.detectedFoods || analysis.foods || [];
+
+  // Direct confirm
+  if (["1", "sim", "s", "ok", "confirmo", "confirma", "certo", "isso", "yes", "y"].includes(lower)) {
+    await handleDirectConfirm(supabase, user, phone, pending);
+    return;
+  }
+
+  // Direct cancel
+  if (["2", "não", "nao", "n", "cancela", "cancelar", "nope", "no"].includes(lower)) {
+    await handleDirectCancel(supabase, phone, pending);
+    return;
+  }
+
+  // Direct edit
+  if (["3", "editar", "edita", "corrigir", "mudar", "alterar", "edit"].includes(lower)) {
+    await handleDirectEdit(supabase, phone, pending);
+    return;
+  }
+
+  // Direct clear
+  if (isClearPending(lower)) {
+    await handleDirectClear(supabase, phone, pending);
+    return;
+  }
+
+  // For complex messages, use AI
+  const intent = await interpretUserIntent(supabase, messageText, "awaiting_confirmation", pendingFoods);
+  
+  if (intent.intent === "confirm") {
+    await handleDirectConfirm(supabase, user, phone, pending);
+  } else if (intent.intent === "cancel") {
+    await handleDirectCancel(supabase, phone, pending);
+  } else if (intent.intent === "edit") {
+    await handleDirectEdit(supabase, phone, pending);
+  } else if (intent.intent === "add_food" && intent.details?.newFood) {
+    await handleAddFood(supabase, phone, pending, intent.details.newFood, pendingFoods);
+  } else if (intent.intent === "remove_food") {
+    await handleRemoveFood(supabase, phone, pending, intent.details, pendingFoods);
+  } else if (intent.intent === "replace_food" && intent.details?.newFood) {
+    await handleReplaceFood(supabase, phone, pending, intent.details, pendingFoods);
+  } else {
+    // Check if it looks like an almost-confirmation
+    if (isAlmostConfirmation(lower)) {
+      await handleAmbiguousConfirmation(phone);
+    } else {
+      // Let AI respond with pending reminder
+      await handleSmartResponseWithPending(supabase, user, phone, messageText, pendingFoods);
+    }
+  }
+}
+
+/**
+ * Handle add food intent
+ */
+async function handleAddFood(
+  supabase: SupabaseClient,
+  phone: string,
+  pending: PendingNutrition,
+  newFood: { name: string; grams: number },
+  pendingFoods: any[]
+): Promise<void> {
+  const food = {
+    nome: newFood.name,
+    quantidade: newFood.grams || 100,
+    name: newFood.name,
+    grams: newFood.grams || 100
+  };
+  
+  const updatedFoods = [...pendingFoods, food];
+  const analysis = pending.analysis_result || {};
+  const updatedAnalysis = { ...analysis, detectedFoods: updatedFoods };
+  const foodHistoryId = analysis.food_history_id;
+  
+  await supabase
+    .from("whatsapp_pending_nutrition")
+    .update({ analysis_result: updatedAnalysis })
+    .eq("id", pending.id);
+
+  if (foodHistoryId) {
+    await supabase
+      .from("food_history")
+      .update({ food_items: updatedFoods })
+      .eq("id", foodHistoryId);
+  }
+  
+  const foodsList = updatedFoods
+    .map((f: any) => `• ${f.nome || f.name} (${f.quantidade ?? f.grams ?? "?"}g)`)
+    .join("\n");
+  
+  await sendWhatsApp(
+    phone,
+    `✅ *Adicionado!*\n\n` +
+    `Lista atualizada:\n\n${foodsList}\n\n` +
+    `───────────────\n\n` +
+    `*Está correto?* Escolha:\n\n` +
+    `*1* ✅ Confirmar\n` +
+    `*2* ❌ Cancelar\n` +
+    `*3* ✏️ Editar mais\n\n` +
+    `_Sofia 🥗_`
+  );
+}
+
+/**
+ * Handle remove food intent
+ */
+async function handleRemoveFood(
+  supabase: SupabaseClient,
+  phone: string,
+  pending: PendingNutrition,
+  details: any,
+  pendingFoods: any[]
+): Promise<void> {
+  let updatedFoods = [...pendingFoods];
+  
+  if (details?.foodIndex !== undefined && details.foodIndex >= 0 && details.foodIndex < updatedFoods.length) {
+    updatedFoods.splice(details.foodIndex, 1);
+  } else if (details?.newFood?.name) {
+    const nameToRemove = details.newFood.name.toLowerCase();
+    updatedFoods = updatedFoods.filter((f: any) => {
+      const foodName = (f.nome || f.name || "").toLowerCase();
+      return !foodName.includes(nameToRemove);
+    });
+  }
+  
+  const analysis = pending.analysis_result || {};
+  const updatedAnalysis = { ...analysis, detectedFoods: updatedFoods };
+  const foodHistoryId = analysis.food_history_id;
+  
+  await supabase
+    .from("whatsapp_pending_nutrition")
+    .update({ analysis_result: updatedAnalysis })
+    .eq("id", pending.id);
+
+  if (foodHistoryId) {
+    await supabase
+      .from("food_history")
+      .update({ food_items: updatedFoods })
+      .eq("id", foodHistoryId);
+  }
+  
+  const foodsList = updatedFoods
+    .map((f: any) => `• ${f.nome || f.name} (${f.quantidade ?? f.grams ?? "?"}g)`)
+    .join("\n");
+  
+  await sendWhatsApp(
+    phone,
+    `🗑️ *Removido!*\n\n` +
+    `Lista atualizada:\n\n${foodsList || "_lista vazia_"}\n\n` +
+    `───────────────\n\n` +
+    `*Está correto?* Escolha:\n\n` +
+    `*1* ✅ Confirmar\n` +
+    `*2* ❌ Cancelar\n` +
+    `*3* ✏️ Editar mais\n\n` +
+    `_Sofia 🥗_`
+  );
+}
+
+/**
+ * Handle replace food intent
+ */
+async function handleReplaceFood(
+  supabase: SupabaseClient,
+  phone: string,
+  pending: PendingNutrition,
+  details: any,
+  pendingFoods: any[]
+): Promise<void> {
+  let updatedFoods = [...pendingFoods];
+  const indexToReplace = details.foodIndex ?? 0;
+  
+  if (indexToReplace >= 0 && indexToReplace < updatedFoods.length) {
+    updatedFoods[indexToReplace] = {
+      nome: details.newFood.name,
+      quantidade: details.newFood.grams || 100,
+      name: details.newFood.name,
+      grams: details.newFood.grams || 100
+    };
+  }
+  
+  const analysis = pending.analysis_result || {};
+  const updatedAnalysis = { ...analysis, detectedFoods: updatedFoods };
+  const foodHistoryId = analysis.food_history_id;
+  
+  await supabase
+    .from("whatsapp_pending_nutrition")
+    .update({ analysis_result: updatedAnalysis })
+    .eq("id", pending.id);
+
+  if (foodHistoryId) {
+    await supabase
+      .from("food_history")
+      .update({ food_items: updatedFoods })
+      .eq("id", foodHistoryId);
+  }
+  
+  const foodsList = updatedFoods
+    .map((f: any) => `• ${f.nome || f.name} (${f.quantidade ?? f.grams ?? "?"}g)`)
+    .join("\n");
+  
+  await sendWhatsApp(
+    phone,
+    `🔄 *Substituído!*\n\n` +
+    `Lista atualizada:\n\n${foodsList}\n\n` +
+    `───────────────\n\n` +
+    `*Está correto?* Escolha:\n\n` +
+    `*1* ✅ Confirmar\n` +
+    `*2* ❌ Cancelar\n` +
+    `*3* ✏️ Editar mais\n\n` +
+    `_Sofia 🥗_`
+  );
+}
