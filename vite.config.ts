@@ -44,8 +44,8 @@ export default defineConfig(({ mode }) => ({
     react(),
     mode === 'development' && componentTagger(),
     VitePWA({
-      registerType: 'prompt',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
+      registerType: 'autoUpdate',
+      includeAssets: ['pwa-192x192.png', 'pwa-512x512.png', 'pwa-maskable-512x512.png'],
       manifest: {
         name: 'MaxNutrition',
         short_name: 'MaxNutrition',
@@ -56,7 +56,10 @@ export default defineConfig(({ mode }) => ({
         orientation: 'portrait',
         scope: '/',
         start_url: '/',
+        id: '/',
         categories: ['health', 'fitness', 'lifestyle'],
+        lang: 'pt-BR',
+        prefer_related_applications: false,
         icons: [
           {
             src: '/pwa-192x192.png',
@@ -80,15 +83,17 @@ export default defineConfig(({ mode }) => ({
         screenshots: [
           {
             src: '/screenshot-wide.png',
-            sizes: '1280x720',
+            sizes: '1280x736',
             type: 'image/png',
-            form_factor: 'wide'
+            form_factor: 'wide',
+            label: 'Dashboard MaxNutrition'
           },
           {
             src: '/screenshot-narrow.png',
-            sizes: '750x1334',
+            sizes: '576x1024',
             type: 'image/png',
-            form_factor: 'narrow'
+            form_factor: 'narrow',
+            label: 'Dashboard Mobile'
           }
         ]
       },
