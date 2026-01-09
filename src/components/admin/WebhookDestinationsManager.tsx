@@ -64,18 +64,24 @@ export default function WebhookDestinationsManager() {
   });
 
   const saveMutation = useMutation({
-    mutationFn: async (data: Partial<WebhookDestination>) => {
-      let headers = {};
-      try {
-        headers = JSON.parse(formData.headers || '{}');
-      } catch {
-        throw new Error('Headers JSON inválido');
+    mutationFn: async (data: Partial<WebhookDestination> & { headers?: unknown }) => {
+      let headers: Record<string, string> = {};
+
+      // Prioriza headers já parseados (evita erro de tipo)
+      if (data.headers && typeof data.headers === 'object') {
+        headers = data.headers as Record<string, string>;
+      } else {
+        try {
+          headers = JSON.parse(formData.headers || '{}');
+        } catch {
+          throw new Error('Headers JSON inválido');
+        }
       }
 
       const payload = {
-        name: data.name,
-        url: data.url,
-        secret_key: data.secret_key || null,
+        name: data.name?.trim(),
+        url: data.url?.trim(),
+        secret_key: data.secret_key ? String(data.secret_key).trim() : null,
         headers,
         events: data.events,
         retry_count: data.retry_count,
@@ -102,7 +108,11 @@ export default function WebhookDestinationsManager() {
       resetForm();
     },
     onError: (error) => {
-      toast({ title: 'Erro ao salvar', description: error.message, variant: 'destructive' });
+      const msg = error.message || 'Erro desconhecido';
+      const friendly = msg.toLowerCase().includes('row-level security')
+        ? 'Você precisa ser administrador para salvar destinos.'
+        : msg;
+      toast({ title: 'Erro ao salvar', description: friendly, variant: 'destructive' });
     },
   });
 
@@ -139,73 +149,34 @@ export default function WebhookDestinationsManager() {
   const testWebhook = async (destination: WebhookDestination) => {
     setTestingId(destination.id);
     try {
-      const testPayload = {
-        event: 'lead.test',
-        event_type: 'test',
-        timestamp: new Date().toISOString(),
-        source: 'mission-health-nexus',
-        webhook_id: 'test-' + Date.now(),
-        contact: {
-          id: 'test-user-id',
-          email: 'teste@exemplo.com',
-          phone: '+5511999999999',
-          full_name: 'Usuário de Teste',
-          first_name: 'Usuário',
-          last_name: 'de Teste',
-        },
-        location: { city: 'São Paulo', state: 'SP', country: 'BR' },
-        profile: { gender: 'male', birth_date: '1990-01-15', age: 36 },
-        health_data: {
-          height_cm: 175,
-          current_weight_kg: 80,
-          target_weight_kg: 70,
-          activity_level: 'moderate',
-          fitness_level: 'intermediate',
-        },
-        engagement: { points: 100, registered_at: new Date().toISOString() },
-        meta: { is_test: true },
-      };
-
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-        'X-Webhook-Event': 'test',
-        'X-Webhook-Timestamp': new Date().toISOString(),
-      };
-
-      if (destination.secret_key) {
-        headers['X-Webhook-Secret'] = destination.secret_key;
-        headers['Authorization'] = `Bearer ${destination.secret_key}`;
-      }
-
-      if (destination.headers) {
-        Object.assign(headers, destination.headers);
-      }
-
-      const response = await fetch(destination.url, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify(testPayload),
+      const { data, error } = await supabase.functions.invoke('test-webhook', {
+        body: { destination_id: destination.id },
       });
 
-      const responseText = await response.text();
+      if (error) throw error;
 
-      if (response.ok) {
-        toast({ 
-          title: 'Teste enviado com sucesso!', 
-          description: `Status: ${response.status}` 
+      const ok = (data as any)?.success;
+      const status = (data as any)?.status;
+      const timeMs = (data as any)?.time_ms;
+      const responseBody = (data as any)?.response_body;
+
+      if (ok) {
+        toast({
+          title: 'Teste enviado com sucesso!',
+          description: `Status: ${status} (${timeMs}ms)`,
         });
       } else {
-        toast({ 
-          title: 'Erro no teste', 
-          description: `Status: ${response.status} - ${responseText.substring(0, 100)}`,
-          variant: 'destructive' 
+        toast({
+          title: 'Erro no teste',
+          description: `Status: ${status} - ${String(responseBody || '').slice(0, 120)}`,
+          variant: 'destructive',
         });
       }
     } catch (error) {
-      toast({ 
-        title: 'Erro ao testar', 
+      toast({
+        title: 'Erro ao testar',
         description: error instanceof Error ? error.message : 'Erro desconhecido',
-        variant: 'destructive' 
+        variant: 'destructive',
       });
     } finally {
       setTestingId(null);
