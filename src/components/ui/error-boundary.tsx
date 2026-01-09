@@ -71,8 +71,8 @@ export const ErrorFallback: React.FC<ErrorFallbackProps> = ({
           
           <p className="text-xs text-muted-foreground text-center">
             Se o problema persistir, entre em contato conosco em{' '}
-            <a href="mailto:suporte@institutodossonhos.com.br" className="text-primary hover:underline">
-              suporte@institutodossonhos.com.br
+            <a href="mailto:suporte@maxnutrition.com.br" className="text-primary hover:underline">
+              suporte@maxnutrition.com.br
             </a>
           </p>
         </CardContent>
