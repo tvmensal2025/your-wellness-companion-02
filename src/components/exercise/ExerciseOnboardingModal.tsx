@@ -69,6 +69,7 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
   user,
 }) => {
   const [step, setStep] = useState<Step>('welcome');
+  const [stepHistory, setStepHistory] = useState<Step[]>([]);
   const [answers, setAnswers] = useState<Answers>({
     level: '',
     experience: '',
@@ -88,6 +89,36 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
   
   // Buscar gênero e idade do perfil do usuário
   const { profileData, isLoading: profileLoading } = useExerciseProfileData(user?.id);
+
+  // Função para avançar salvando histórico
+  const goToNextStep = (nextStep: Step) => {
+    setStepHistory(prev => [...prev, step]);
+    setStep(nextStep);
+  };
+
+  // Função para voltar à pergunta anterior
+  const goToPreviousStep = () => {
+    if (stepHistory.length > 0) {
+      const prevStep = stepHistory[stepHistory.length - 1];
+      setStepHistory(prev => prev.slice(0, -1));
+      setStep(prevStep);
+    }
+  };
+
+  // Botão de voltar reutilizável
+  const BackButton = () => (
+    stepHistory.length > 0 ? (
+      <Button 
+        variant="ghost" 
+        size="sm"
+        onClick={goToPreviousStep} 
+        className="absolute top-0 left-0 gap-1 text-muted-foreground hover:text-foreground"
+      >
+        <ArrowLeft className="w-4 h-4" />
+        Voltar
+      </Button>
+    ) : null
+  );
 
   // 9 perguntas agora (removemos gênero e idade)
   const totalSteps = 9;
@@ -178,8 +209,9 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
   );
 
   const renderQuestion1 = () => (
-    <div className="space-y-6 py-4">
-      <div className="text-center space-y-3">
+    <div className="space-y-6 py-4 relative">
+      <BackButton />
+      <div className="text-center space-y-3 pt-6">
         <div className="flex justify-center mb-4">
           <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg">
             <Activity className="w-8 h-8 text-white" />
@@ -207,7 +239,7 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
             }`}
             onClick={() => {
               handleAnswer('level', option.value);
-              setTimeout(() => setStep('question2'), 300);
+              setTimeout(() => goToNextStep('question2'), 300);
             }}
           >
             <CardContent className="p-4">
@@ -227,8 +259,9 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
   );
 
   const renderQuestion2 = () => (
-    <div className="space-y-6 py-4">
-      <div className="text-center space-y-3">
+    <div className="space-y-6 py-4 relative">
+      <BackButton />
+      <div className="text-center space-y-3 pt-6">
         <div className="flex justify-center mb-4">
           <div className="w-16 h-16 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg">
             <Dumbbell className="w-8 h-8 text-white" />
@@ -256,7 +289,7 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
             }`}
             onClick={() => {
               handleAnswer('experience', option.value);
-              setTimeout(() => setStep('question3'), 300);
+              setTimeout(() => goToNextStep('question3'), 300);
             }}
           >
             <CardContent className="p-4">
@@ -276,8 +309,9 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
   );
 
   const renderQuestion3 = () => (
-    <div className="space-y-6 py-4">
-      <div className="text-center space-y-3">
+    <div className="space-y-6 py-4 relative">
+      <BackButton />
+      <div className="text-center space-y-3 pt-6">
         <div className="flex justify-center mb-4">
           <div className="w-16 h-16 rounded-full bg-gradient-to-br from-green-500 to-teal-600 flex items-center justify-center shadow-lg">
             <Timer className="w-8 h-8 text-white" />
@@ -305,7 +339,7 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
             }`}
             onClick={() => {
               handleAnswer('time', option.value);
-              setTimeout(() => setStep('question3b'), 300);
+              setTimeout(() => goToNextStep('question3b'), 300);
             }}
           >
             <CardContent className="p-4">
@@ -326,8 +360,9 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
 
   // PERGUNTA 3B: Quantos exercícios por treino
   const renderQuestion3b = () => (
-    <div className="space-y-6 py-4">
-      <div className="text-center space-y-3">
+    <div className="space-y-6 py-4 relative">
+      <BackButton />
+      <div className="text-center space-y-3 pt-6">
         <div className="flex justify-center mb-4">
           <div className="w-16 h-16 rounded-full bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center shadow-lg">
             <Dumbbell className="w-8 h-8 text-white" />
@@ -355,7 +390,7 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
             }`}
             onClick={() => {
               handleAnswer('exercisesPerDay', option.value);
-              setTimeout(() => setStep('question4'), 300);
+              setTimeout(() => goToNextStep('question4'), 300);
             }}
           >
             <CardContent className="p-3">
@@ -375,8 +410,9 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
   );
 
   const renderQuestion4 = () => (
-    <div className="space-y-6 py-4">
-      <div className="text-center space-y-3">
+    <div className="space-y-6 py-4 relative">
+      <BackButton />
+      <div className="text-center space-y-3 pt-6">
         <div className="flex justify-center mb-4">
           <div className="w-16 h-16 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
             <Calendar className="w-8 h-8 text-white" />
@@ -403,7 +439,7 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
             }`}
             onClick={() => {
               handleAnswer('frequency', option.value);
-              setTimeout(() => setStep('question4b'), 300);
+              setTimeout(() => goToNextStep('question4b'), 300);
             }}
           >
             <CardContent className="p-4">
@@ -435,8 +471,9 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
     const canContinue = answers.selectedDays.length === maxDays;
 
     return (
-      <div className="space-y-6 py-4">
-        <div className="text-center space-y-3">
+      <div className="space-y-6 py-4 relative">
+        <BackButton />
+        <div className="text-center space-y-3 pt-6">
           <div className="flex justify-center mb-4">
             <div className="w-16 h-16 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg">
               <Calendar className="w-8 h-8 text-white" />
@@ -459,7 +496,7 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
         <Button
           className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white"
           disabled={!canContinue}
-          onClick={() => setStep('question5')}
+          onClick={() => goToNextStep('question5')}
         >
           {canContinue ? (
             <>
@@ -475,8 +512,9 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
   };
 
   const renderQuestion5 = () => (
-    <div className="space-y-6 py-4">
-      <div className="text-center space-y-3">
+    <div className="space-y-6 py-4 relative">
+      <BackButton />
+      <div className="text-center space-y-3 pt-6">
         <div className="flex justify-center mb-4">
           <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center shadow-lg">
             <Home className="w-8 h-8 text-white" />
@@ -505,7 +543,7 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
               // Se academia e nível moderado/avançado, mostrar divisão de treino
               const shouldShowSplit = option.value === 'academia' && 
                 ['moderado', 'avancado'].includes(answers.level);
-              setTimeout(() => setStep(shouldShowSplit ? 'question5b' : 'question6'), 300);
+              setTimeout(() => goToNextStep(shouldShowSplit ? 'question5b' : 'question6'), 300);
             }}
           >
             <CardContent className="p-4">
@@ -526,8 +564,9 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
 
   // PERGUNTA 5B: Divisão de treino para Academia (moderado/avançado)
   const renderQuestion5b = () => (
-    <div className="space-y-6 py-4">
-      <div className="text-center space-y-3">
+    <div className="space-y-6 py-4 relative">
+      <BackButton />
+      <div className="text-center space-y-3 pt-6">
         <div className="flex justify-center mb-4">
           <div className="w-16 h-16 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg">
             <Dumbbell className="w-8 h-8 text-white" />
@@ -543,7 +582,7 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
         value={answers.trainingSplit as TrainingSplit | ''}
         onChange={(split) => {
           setAnswers(prev => ({ ...prev, trainingSplit: split }));
-          setTimeout(() => setStep('question6'), 300);
+          setTimeout(() => goToNextStep('question6'), 300);
         }}
         frequency={answers.frequency}
         level={answers.level}
@@ -552,8 +591,9 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
   );
 
   const renderQuestion6 = () => (
-    <div className="space-y-6 py-4">
-      <div className="text-center space-y-3">
+    <div className="space-y-6 py-4 relative">
+      <BackButton />
+      <div className="text-center space-y-3 pt-6">
         <div className="flex justify-center mb-4">
           <div className="w-16 h-16 rounded-full bg-gradient-to-br from-rose-500 to-orange-600 flex items-center justify-center shadow-lg">
             <Target className="w-8 h-8 text-white" />
@@ -582,7 +622,7 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
             }`}
             onClick={() => {
               handleAnswer('goal', option.value);
-              setTimeout(() => setStep('question7'), 300);
+              setTimeout(() => goToNextStep('question7'), 300);
             }}
           >
             <CardContent className="p-4">
@@ -602,8 +642,9 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
   );
 
   const renderQuestion7 = () => (
-    <div className="space-y-6 py-4">
-      <div className="text-center space-y-3">
+    <div className="space-y-6 py-4 relative">
+      <BackButton />
+      <div className="text-center space-y-3 pt-6">
         <div className="flex justify-center mb-4">
           <div className="w-16 h-16 rounded-full bg-gradient-to-br from-amber-500 to-yellow-600 flex items-center justify-center shadow-lg">
             <AlertTriangle className="w-8 h-8 text-white" />
@@ -632,7 +673,7 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
             }`}
             onClick={() => {
               handleAnswer('limitation', option.value);
-              setTimeout(() => setStep('question8'), 300);
+              setTimeout(() => goToNextStep('question8'), 300);
             }}
           >
             <CardContent className="p-4">
@@ -653,8 +694,9 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
 
   // PERGUNTA 8: Foco Corporal (era pergunta 9)
   const renderQuestion8 = () => (
-    <div className="space-y-6 py-4">
-      <div className="text-center space-y-3">
+    <div className="space-y-6 py-4 relative">
+      <BackButton />
+      <div className="text-center space-y-3 pt-6">
         <div className="flex justify-center mb-4">
           <div className="w-16 h-16 rounded-full bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center shadow-lg">
             <Target className="w-8 h-8 text-white" />
@@ -684,7 +726,7 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
             }`}
             onClick={() => {
               handleAnswer('bodyFocus', option.value);
-              setTimeout(() => setStep('question9'), 300);
+              setTimeout(() => goToNextStep('question9'), 300);
             }}
           >
             <CardContent className="p-4">
@@ -705,8 +747,9 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
 
   // PERGUNTA 9: Condição Especial (era pergunta 11)
   const renderQuestion9 = () => (
-    <div className="space-y-6 py-4">
-      <div className="text-center space-y-3">
+    <div className="space-y-6 py-4 relative">
+      <BackButton />
+      <div className="text-center space-y-3 pt-6">
         <div className="flex justify-center mb-4">
           <div className="w-16 h-16 rounded-full bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center shadow-lg">
             <Heart className="w-8 h-8 text-white" />
@@ -735,7 +778,7 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
             }`}
             onClick={() => {
               handleAnswer('specialCondition', option.value);
-              setTimeout(() => setStep('result'), 300);
+              setTimeout(() => goToNextStep('result'), 300);
             }}
           >
             <CardContent className="p-4">

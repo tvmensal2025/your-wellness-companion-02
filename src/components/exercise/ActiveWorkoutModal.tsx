@@ -358,6 +358,9 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
   };
 
   const handleTimerComplete = () => {
+    // Tocar som ao voltar para o exercício
+    playStartBeep();
+    vibrateMedium();
     setShowTimer(false);
     if (currentIndex < totalExercises - 1) {
       setCurrentIndex((prev) => prev + 1);
@@ -397,13 +400,36 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
     setIsExerciseStarted(false);
   };
 
-  const handleStartExercise = () => {
+  const handleStartExercise = async () => {
     setIsExerciseStarted(true);
     setExerciseSeconds(0);
     setIsExerciseTimerRunning(true);
     setCurrentSet(Math.max(1, (progress[currentIndex]?.setsCompleted ?? 0) + 1));
     playStartBeep();
     vibrateMedium();
+    
+    // Verificar se tem histórico para mostrar popup de evolução
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user && currentExercise) {
+        const { data: evolution } = await supabase
+          .from('user_workout_evolution')
+          .select('total_sets')
+          .eq('user_id', user.id)
+          .eq('exercise_name', currentExercise.name)
+          .maybeSingle();
+        
+        // Se tiver histórico, mostrar popup brevemente
+        if (evolution && (evolution.total_sets || 0) > 0) {
+          setEvolutionExercise(currentExercise.name);
+          setShowEvolutionPopup(true);
+          // Auto-fechar após 3 segundos
+          setTimeout(() => setShowEvolutionPopup(false), 3000);
+        }
+      }
+    } catch (err) {
+      // Ignorar erros na busca de evolução
+    }
   };
 
   const handleConcludeSetOrExercise = () => {
@@ -633,6 +659,9 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
                     defaultSeconds={parseRestTime(currentExercise?.rest_time)}
                     onComplete={handleTimerComplete}
                     autoStart={true}
+                    externalSoundEnabled={soundEnabled}
+                    onCountdownBeep={playCountdownBeep}
+                    onFinishBeep={playFinishBeep}
                   />
                   
                   <Button
