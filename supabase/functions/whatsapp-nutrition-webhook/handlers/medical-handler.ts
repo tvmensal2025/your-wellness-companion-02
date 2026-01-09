@@ -428,7 +428,7 @@ async function analyzeExamBatch(
 
         if (linkData?.token) {
           publicLinkToken = linkData.token;
-          reportLink = `\n\n📊 *Relatório completo:*\n👉 https://institutodossonhos.com.br/relatorio/${publicLinkToken}`;
+          reportLink = `\n\n📊 *Relatório completo:*\n👉 https://app.maxnutrition.com.br/relatorio/${publicLinkToken}`;
         }
       } catch (e) {
         console.log("[Medical] ⚠️ Erro ao criar link público:", e);

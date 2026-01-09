@@ -148,7 +148,7 @@ serve(async (req) => {
     let publicToken: string | null = null;
     
     if (userId) {
-      const appUrl = "https://institutodossonhos.com.br";
+      const appUrl = "https://app.maxnutrition.com.br";
       
       const { data: linkData, error: linkError } = await supabase
         .from("public_report_links")

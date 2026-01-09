@@ -815,7 +815,7 @@ function generateHTMLReport(analysis: string, userId: string, documentId: string
     
     <footer class="footer">
       <div class="footer-logo">🏥</div>
-      <div class="footer-title">Instituto dos Sonhos</div>
+      <div class="footer-title">MaxNutrition</div>
       <div class="footer-subtitle">Análise Médica Inteligente</div>
       
       <div class="footer-contact">
@@ -825,7 +825,7 @@ function generateHTMLReport(analysis: string, userId: string, documentId: string
         </div>
         <div class="contact-item">
           <span class="contact-icon">🌐</span>
-          <span>www.institutodossonhos.com.br</span>
+          <span>www.maxnutrition.com.br</span>
         </div>
       </div>
       

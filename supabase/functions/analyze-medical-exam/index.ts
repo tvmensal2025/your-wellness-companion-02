@@ -2358,39 +2358,53 @@ ANTES DO JSON, escreva uma análise clínica EDUCATIVA, curta e objetiva, basead
         .eq('id', documentId || '')
         .eq('user_id', userIdEffective || '');
       
-      // PASSO 1: Usar Google Vision para extrair texto da imagem
-      console.log('🔍 Usando Google Vision para OCR...');
+      // PASSO 1: Usar Google Vision para extrair texto de TODAS as imagens
+      console.log(`🔍 Extraindo texto de ${imagesLimited.length} imagens via OCR...`);
       let extractedText = '';
       
       try {
-        // Preparar imagem para Google Vision
-        const img = imagesLimited[0]; // Usar a primeira imagem
-        
-        // Chamar nossa função vision-api
-        const visionResponse = await fetch(
-          `${Deno.env.get('SUPABASE_URL')}/functions/v1/vision-api`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              // Usar a chave pública da Lovable Cloud apenas como apikey, sem JWT
-              apikey: SUPABASE_ANON_KEY || '',
-            },
-            body: JSON.stringify({
-              image: img.data,
-              features: ['TEXT_DETECTION', 'DOCUMENT_TEXT_DETECTION']
-            })
+        // 🔥 EXTRAIR OCR DE TODAS AS IMAGENS (não apenas a primeira!)
+        for (let i = 0; i < imagesLimited.length; i++) {
+          const img = imagesLimited[i];
+          console.log(`📄 OCR imagem ${i + 1}/${imagesLimited.length}...`);
+          
+          try {
+            const visionResponse = await fetch(
+              `${Deno.env.get('SUPABASE_URL')}/functions/v1/vision-api`,
+              {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  apikey: SUPABASE_ANON_KEY || '',
+                },
+                body: JSON.stringify({
+                  image: img.data,
+                  features: ['TEXT_DETECTION', 'DOCUMENT_TEXT_DETECTION']
+                })
+              }
+            );
+            
+            if (visionResponse.ok) {
+              const visionData = await visionResponse.json();
+              const pageText = visionData.extractedText || '';
+              if (pageText) {
+                extractedText += `\n\n--- PÁGINA ${i + 1} ---\n${pageText}`;
+                console.log(`✅ Página ${i + 1}: ${pageText.length} caracteres`);
+              }
+            } else {
+              console.warn(`⚠️ OCR falhou para imagem ${i + 1}: ${visionResponse.status}`);
+            }
+          } catch (pageError) {
+            console.warn(`⚠️ Erro OCR página ${i + 1}:`, pageError);
           }
-        );
-        
-        if (!visionResponse.ok) {
-          throw new Error(`Google Vision API error: ${visionResponse.status}`);
+          
+          // Pequena pausa entre chamadas para evitar rate limit
+          if (i < imagesLimited.length - 1) {
+            await new Promise(r => setTimeout(r, 150));
+          }
         }
         
-        const visionData = await visionResponse.json();
-        extractedText = visionData.extractedText || '';
-        
-        console.log('✅ Texto extraído via OCR:', extractedText.substring(0, 200) + '...');
+        console.log(`✅ OCR completo: ${extractedText.length} caracteres de ${imagesLimited.length} imagens`);
         
         // Atualizar status
         await supabase
@@ -2482,10 +2496,13 @@ ${extractedText ? `\n===== TEXTO OCR AUXILIAR =====\n${extractedText}\n=========
             messages: [{
               role: 'user',
               content: [
-                { type: 'text', text: MEDICAL_EXAM_PROMPT },
-                ...imagesLimited.map(img => ({
+                { type: 'text', text: `Você está analisando ${imagesLimited.length} imagens de exames médicos. ANALISE TODAS AS PÁGINAS COMO UM ÚNICO DOCUMENTO COMPLETO.\n\n${MEDICAL_EXAM_PROMPT}` },
+                ...imagesLimited.map((img, idx) => ({
                   type: 'image_url',
-                  image_url: { url: img.data }
+                  image_url: { 
+                    url: img.data,
+                    detail: 'high' // 🔥 USAR HIGH para melhor leitura de texto pequeno
+                  }
                 }))
               ]
             }],
