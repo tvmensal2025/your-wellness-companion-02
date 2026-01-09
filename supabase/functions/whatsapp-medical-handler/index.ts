@@ -155,7 +155,7 @@ async function processExam(
     console.log("[whatsapp-medical-handler] Relatório gerado:", reportData?.report_path);
 
     // 6. Criar link público permanente
-    const appUrl = "https://app.maxnutrition.com.br";
+    const appUrl = Deno.env.get("SITE_URL") || "https://app.oficialmaxnutrition.com.br";
     
     const { data: linkData, error: linkError } = await supabase
       .from("public_report_links")
