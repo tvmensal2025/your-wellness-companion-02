@@ -119,6 +119,16 @@ export async function processMedicalImage(
 
         console.log("[Medical] ✅ Novo lote criado:", insertResult?.[0]?.id);
         console.log("[Medical] ========================================");
+        
+        // 🔥 ENVIAR ACK IMEDIATO NA PRIMEIRA FOTO
+        await sendWhatsApp(
+          phone,
+          `🩺 *Recebi sua foto de exame!*\n\n` +
+          `📸 Continue enviando mais fotos se precisar.\n` +
+          `✅ Quando terminar, digite *PRONTO* para eu analisar.\n\n` +
+          `_Dr. Vital 🩺_`
+        );
+        
         return;
       }
     }

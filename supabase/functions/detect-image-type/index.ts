@@ -87,7 +87,7 @@ Responda APENAS com JSON válido no formato:
                 type: "image_url",
                 image_url: {
                   url: imageSource,
-                  detail: "low" // Usar low para ser mais rápido e barato
+                  detail: "high" // 🔥 Usar HIGH para detectar documentos/exames com precisão
                 }
               }
             ]
