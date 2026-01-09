@@ -182,56 +182,82 @@ serve(async (req) => {
       } else if (pendingMedical.status === "processing") {
         const lower = messageText.toLowerCase().trim();
         
+        // VERIFICAR SE JÁ FOI CONCLUÍDO (tem medical_document_id ou public_link_token)
+        if (pendingMedical.medical_document_id || pendingMedical.public_link_token) {
+          // Já está pronto! Marcar como completed e oferecer link
+          await supabase
+            .from("whatsapp_pending_medical")
+            .update({ status: "completed", is_processed: true })
+            .eq("id", pendingMedical.id);
+          
+          if (pendingMedical.public_link_token) {
+            const reportLink = `${Deno.env.get("SITE_URL") || "https://app.maxnutrition.com.br"}/relatorio/${pendingMedical.public_link_token}`;
+            await sendWhatsApp(phone,
+              `✅ *Seu relatório já está pronto!*\n\n` +
+              `📋 Acesse aqui: ${reportLink}\n\n` +
+              `Quer enviar novos exames? Basta me mandar as fotos!\n\n` +
+              `_Dr. Vital 🩺_`
+            );
+          } else {
+            await sendWhatsApp(phone,
+              `✅ *Análise concluída!*\n\n` +
+              `Quer enviar novos exames? Basta me mandar as fotos!\n\n` +
+              `_Dr. Vital 🩺_`
+            );
+          }
+          return new Response(JSON.stringify({ ok: true }), { headers: corsHeaders });
+        }
+        
         // Calcular tempo desde início
         const startTime = new Date(pendingMedical.last_image_at || pendingMedical.created_at);
         const elapsedMinutes = Math.floor((Date.now() - startTime.getTime()) / 60000);
         
+        // Cancelar
+        if (isMedicalCancel(lower)) {
+          await supabase
+            .from("whatsapp_pending_medical")
+            .update({ status: "cancelled", is_processed: true })
+            .eq("id", pendingMedical.id);
+          
+          await sendWhatsApp(phone, 
+            `❌ *Análise cancelada*\n\n` +
+            `Quando quiser, envie novas fotos de exame!\n\n` +
+            `_Dr. Vital 🩺_`
+          );
+          return new Response(JSON.stringify({ ok: true }), { headers: corsHeaders });
+        }
+        
+        // Retentar
+        if (isMedicalRetry(lower)) {
+          await supabase
+            .from("whatsapp_pending_medical")
+            .update({ status: "collecting", confirmed: false })
+            .eq("id", pendingMedical.id);
+          
+          await sendWhatsApp(phone,
+            `🔄 *Ok! Vou reiniciar a análise.*\n\n` +
+            `Quando estiver pronto, digite *PRONTO* ou *ANALISAR*.\n\n` +
+            `_Dr. Vital 🩺_`
+          );
+          return new Response(JSON.stringify({ ok: true }), { headers: corsHeaders });
+        }
+        
         // Se está demorando muito (>10 min), oferecer opções
         if (elapsedMinutes > 10) {
-          // Verificar se quer cancelar
-          if (isMedicalCancel(lower)) {
-            await supabase
-              .from("whatsapp_pending_medical")
-              .update({ status: "cancelled", is_processed: true })
-              .eq("id", pendingMedical.id);
-            
-            await sendWhatsApp(phone, 
-              `❌ *Análise cancelada*\n\n` +
-              `Quando quiser, envie novas fotos de exame!\n\n` +
-              `_Dr. Vital 🩺_`
-            );
-            return new Response(JSON.stringify({ ok: true }), { headers: corsHeaders });
-          }
-          
-          // Verificar se quer retentar
-          if (isMedicalRetry(lower)) {
-            await supabase
-              .from("whatsapp_pending_medical")
-              .update({ status: "collecting", confirmed: false })
-              .eq("id", pendingMedical.id);
-            
-            await sendWhatsApp(phone,
-              `🔄 *Ok! Vou reiniciar a análise.*\n\n` +
-              `Quando estiver pronto, digite *PRONTO* ou *ANALISAR*.\n\n` +
-              `_Dr. Vital 🩺_`
-            );
-            return new Response(JSON.stringify({ ok: true }), { headers: corsHeaders });
-          }
-          
           await sendWhatsApp(phone,
             `⏳ *A análise está demorando mais que o esperado*\n\n` +
             `Já se passaram ${elapsedMinutes} minutos.\n\n` +
             `*O que deseja fazer?*\n\n` +
-            `⏳ Digite qualquer coisa para *AGUARDAR*\n` +
-            `🔄 *RETENTAR* - Tentar analisar novamente\n` +
-            `❌ *CANCELAR* - Desistir desta análise\n\n` +
+            `1️⃣ *AGUARDAR* - Continuo esperando\n` +
+            `2️⃣ *RETENTAR* - Tentar analisar novamente\n` +
+            `3️⃣ *CANCELAR* - Desistir desta análise\n\n` +
             `_Dr. Vital 🩺_`
           );
           return new Response(JSON.stringify({ ok: true }), { headers: corsHeaders });
         }
         
         // Perguntas sobre status
-        if (/quanto\s*tempo|demora|est[aá]\s*pronto|j[aá]\s*acabou|status|como\s*(est[aá]|vai)/i.test(lower)) {
+        if (/quanto|demora|pronto|acabou|status|cad[eê]/i.test(lower)) {
           const remaining = Math.max(1, 5 - elapsedMinutes);
           await sendWhatsApp(phone,
             `⏳ *Analisando seus exames...*\n\n` +
@@ -243,26 +269,9 @@ serve(async (req) => {
           return new Response(JSON.stringify({ ok: true }), { headers: corsHeaders });
         }
         
-        // Se for cancelar durante processamento
-        if (isMedicalCancel(lower)) {
-          await supabase
-            .from("whatsapp_pending_medical")
-            .update({ status: "cancelled", is_processed: true })
-            .eq("id", pendingMedical.id);
-          
-          await sendWhatsApp(phone, "❌ Análise cancelada.\n\n_Dr. Vital 🩺_");
-          return new Response(JSON.stringify({ ok: true }), { headers: corsHeaders });
-        }
-        
-        // Resposta contextual mas com informação útil
-        await sendWhatsApp(phone,
-          `🩺 *Estou analisando seus ${pendingMedical.images_count} exames*\n\n` +
-          `⏱️ Faltam aproximadamente ${Math.max(1, 5 - elapsedMinutes)} minutos.\n\n` +
-          `💡 Você pode:\n` +
-          `• Perguntar "*status*" para ver o progresso\n` +
-          `• Dizer "*cancelar*" para desistir\n\n` +
-          `_Dr. Vital 🩺_`
-        );
+        // Qualquer outra mensagem: NÃO REPETIR mensagem de processamento
+        // Isso evita spam de mensagens repetitivas
+        return new Response(JSON.stringify({ ok: true, note: "processing_in_progress" }), { headers: corsHeaders });
       } else {
         await handleMedicalResponse(supabase, user, pendingMedical, messageText, phone);
       }
