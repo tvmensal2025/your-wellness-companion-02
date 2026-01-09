@@ -98,13 +98,21 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
     return undefined;
   }, [activeProgram, programData]);
 
+  // Extrair parâmetros adicionais do programa
+  const time = useMemo(() => programData?.time || '30-45', [programData]);
+  const level = useMemo(() => programData?.level || 'moderado', [programData]);
+  const exercisesPerDay = useMemo(() => programData?.exercisesPerDay || programData?.exercises_per_day || '5-6', [programData]);
+
   // Só usar biblioteca se não tiver plano salvo OU se usuário quiser ver
   const shouldUseLibrary = !hasSavedWeekPlan || showLibraryPlan;
   
   const { weeklyPlan, todayWorkout, loading: libraryLoading, error, refreshPlan } = useExercisesLibrary(
     location,
     goal,
-    difficulty
+    difficulty,
+    time,
+    level,
+    exercisesPerDay
   );
 
   const loading = programLoading || (shouldUseLibrary && libraryLoading);
