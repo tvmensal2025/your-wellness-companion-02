@@ -94,6 +94,7 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
   const [showDetailedTips, setShowDetailedTips] = useState(false);
   const [isExerciseStarted, setIsExerciseStarted] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
+  const [showCongratulations, setShowCongratulations] = useState(false);
 
   const [exerciseSeconds, setExerciseSeconds] = useState(0);
   const [isExerciseTimerRunning, setIsExerciseTimerRunning] = useState(false);
@@ -180,8 +181,25 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
   const handleFinishWorkout = (progressOverride?: ExerciseProgress[]) => {
     const base = progressOverride ?? progress;
     const completedIds = base.filter((p) => p.completed).map((p) => p.exerciseId);
-    onComplete(completedIds);
-    onClose();
+    
+    // Mostrar tela de parabéns
+    playFinishBeep();
+    setShowCongratulations(true);
+    
+    // Confetti grande
+    confetti({
+      particleCount: 150,
+      spread: 100,
+      origin: { y: 0.5 },
+      colors: ['#22c55e', '#16a34a', '#f97316', '#eab308', '#ec4899'],
+      scalar: 1.2,
+    });
+    
+    // Auto fechar após 5 segundos
+    setTimeout(() => {
+      onComplete(completedIds);
+      onClose();
+    }, 5000);
   };
 
   // Animação de confete ao completar exercício
@@ -342,15 +360,113 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
     return parsed > 0 ? parsed : 60; // Garantir mínimo de 60s se 0 ou inválido
   };
 
+  // Tela de parabéns
+  if (showCongratulations) {
+    const totalTime = Math.floor(elapsedTime / 60);
+    const completedExercises = progress.filter(p => p.completed).length;
+    const totalSets = progress.reduce((acc, p) => acc + p.setsCompleted, 0);
+
+    return (
+      <Dialog open={isOpen} onOpenChange={() => {}}>
+        <DialogContent className="w-[calc(100vw-24px)] max-w-sm p-0 overflow-hidden">
+          <VisuallyHidden>
+            <DialogTitle>Treino Concluído!</DialogTitle>
+            <DialogDescription>Parabéns pelo treino</DialogDescription>
+          </VisuallyHidden>
+          
+          <div className="p-6 text-center space-y-6 bg-gradient-to-br from-green-50 via-emerald-50 to-teal-50 dark:from-green-950 dark:via-emerald-950 dark:to-teal-950">
+            {/* Ícone animado */}
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: 'spring', bounce: 0.5, duration: 0.8 }}
+              className="mx-auto"
+            >
+              <div className="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center shadow-2xl">
+                <Trophy className="w-12 h-12 text-white" />
+              </div>
+            </motion.div>
+
+            {/* Mensagem */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="space-y-2"
+            >
+              <h2 className="text-2xl font-bold text-green-700 dark:text-green-300">
+                🎉 Treino Concluído!
+              </h2>
+              <p className="text-muted-foreground">
+                Você arrasou! Continue assim!
+              </p>
+            </motion.div>
+
+            {/* Estatísticas */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+              className="grid grid-cols-3 gap-3"
+            >
+              <Card className="border-green-200 dark:border-green-800">
+                <CardContent className="p-3 text-center">
+                  <Clock className="w-5 h-5 mx-auto mb-1 text-green-600" />
+                  <p className="text-lg font-bold">{totalTime}</p>
+                  <p className="text-[10px] text-muted-foreground">minutos</p>
+                </CardContent>
+              </Card>
+              <Card className="border-green-200 dark:border-green-800">
+                <CardContent className="p-3 text-center">
+                  <Dumbbell className="w-5 h-5 mx-auto mb-1 text-green-600" />
+                  <p className="text-lg font-bold">{completedExercises}</p>
+                  <p className="text-[10px] text-muted-foreground">exercícios</p>
+                </CardContent>
+              </Card>
+              <Card className="border-green-200 dark:border-green-800">
+                <CardContent className="p-3 text-center">
+                  <Flame className="w-5 h-5 mx-auto mb-1 text-green-600" />
+                  <p className="text-lg font-bold">{totalSets}</p>
+                  <p className="text-[10px] text-muted-foreground">séries</p>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* Botão */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.8 }}
+            >
+              <Button
+                className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white"
+                onClick={() => {
+                  const completedIds = progress.filter(p => p.completed).map(p => p.exerciseId);
+                  onComplete(completedIds);
+                  onClose();
+                }}
+              >
+                Voltar ao Dashboard
+              </Button>
+              <p className="text-xs text-muted-foreground mt-2">
+                Fechando automaticamente em 5s...
+              </p>
+            </motion.div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="w-[calc(100vw-24px)] max-w-md max-h-[85vh] p-0 overflow-hidden mx-3">
+      <DialogContent className="w-[calc(100vw-16px)] max-w-[400px] max-h-[90vh] p-0 overflow-hidden">
         <VisuallyHidden>
           <DialogTitle>Treino Ativo - {workout.title}</DialogTitle>
           <DialogDescription>Acompanhe seu progresso durante o treino</DialogDescription>
         </VisuallyHidden>
         
-        <ScrollArea className="max-h-[85vh]">
+        <ScrollArea className="max-h-[90vh]">
           <div className="p-3 space-y-3">
             <AnimatePresence mode="wait">
               {showTimer ? (
@@ -422,10 +538,16 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
                     </div>
                   </div>
 
-                  {/* Descrição */}
+                  {/* Descrição RESUMIDA */}
                   {currentExercise.description && (
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      {currentExercise.description}
+                    <p className="text-xs text-muted-foreground line-clamp-1">
+                      {currentExercise.description.slice(0, 50)}...
+                      <button 
+                        onClick={() => setShowDetailedInstructions(true)}
+                        className="text-primary ml-1 font-medium"
+                      >
+                        Ver mais
+                      </button>
                     </p>
                   )}
 
@@ -748,7 +870,7 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
                         onClick={() => !showTimer && setCurrentIndex(i)}
                         disabled={showTimer}
                         className={cn(
-                          "w-full flex items-center gap-3 p-3 rounded-lg transition-all text-left",
+                          "w-full flex items-center gap-2 p-2 rounded-lg transition-all text-left",
                           isCurrent 
                             ? "bg-orange-100 dark:bg-orange-950 border border-orange-300 dark:border-orange-700" 
                             : isCompleted 
@@ -758,37 +880,37 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
                       >
                         {/* Número/Check */}
                         <div className={cn(
-                          "w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm shrink-0",
+                          "w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs shrink-0",
                           isCurrent 
                             ? "bg-orange-500 text-white" 
                             : isCompleted 
                               ? "bg-green-500 text-white"
                               : "bg-muted text-muted-foreground"
                         )}>
-                          {isCompleted ? <Check className="w-4 h-4" /> : i + 1}
+                          {isCompleted ? <Check className="w-3 h-3" /> : i + 1}
                         </div>
 
                         {/* Info */}
                         <div className="flex-1 min-w-0">
                           <p className={cn(
-                            "font-medium text-sm truncate",
+                            "font-medium text-xs truncate",
                             isCompleted && "line-through text-muted-foreground"
                           )}>
                             {ex.name}
                           </p>
-                          <p className="text-xs text-muted-foreground capitalize">
-                            {ex.muscle_group} • {ex.sets || '3'}x{ex.reps || '12'} • {parseRestTime(ex.rest_time)}s desc
+                          <p className="text-[10px] text-muted-foreground truncate">
+                            {ex.muscle_group} • {ex.sets || '3'}x{ex.reps || '12'}
                           </p>
                         </div>
 
-                        {/* Status/Arrow */}
+                        {/* Status */}
                         <div className="shrink-0">
                           {isCompleted ? (
-                            <Badge className="bg-green-500 text-white text-xs">Concluído</Badge>
+                            <Badge className="bg-green-500 text-white text-[10px] px-1.5 py-0.5">✓</Badge>
                           ) : isCurrent ? (
-                            <ChevronRight className="w-5 h-5 text-orange-500" />
+                            <ChevronRight className="w-4 h-4 text-orange-500" />
                           ) : (
-                            <ChevronRight className="w-5 h-5 text-muted-foreground/50" />
+                            <ChevronRight className="w-4 h-4 text-muted-foreground/50" />
                           )}
                         </div>
                       </button>

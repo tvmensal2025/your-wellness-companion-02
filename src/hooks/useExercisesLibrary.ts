@@ -83,16 +83,37 @@ const TRAINING_SPLITS = {
 const DAY_NAMES = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
 const DAY_SHORT = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 
+// Calcula quantidade de exercícios por grupo baseado no tempo e nível
+const getExercisesPerGroup = (time?: string, level?: string): number => {
+  // Baseado no tempo disponível
+  if (time === '10-15') return 3;
+  if (time === '20-30') return 4;
+  if (time === '30-45') return 5;
+  if (time === '45-60') return 6;
+  
+  // Ajuste por nível se tempo não especificado
+  if (level === 'sedentario') return 3;
+  if (level === 'leve') return 4;
+  if (level === 'moderado') return 5;
+  if (level === 'avancado') return 6;
+  
+  return 4; // default
+};
+
 export const useExercisesLibrary = (
   location: 'casa' | 'academia' = 'casa',
   goal: string = 'condicionamento',
-  difficulty?: string
+  difficulty?: string,
+  time?: string,
+  level?: string
 ) => {
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [weeklyPlan, setWeeklyPlan] = useState<WeeklyPlan[]>([]);
   const [todayWorkout, setTodayWorkout] = useState<WeeklyPlan | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const exercisesPerGroup = getExercisesPerGroup(time, level);
 
   // Buscar exercícios por grupos musculares
   const fetchExercisesByMuscleGroups = useCallback(async (muscleGroups: string[]): Promise<Exercise[]> => {
@@ -114,10 +135,10 @@ export const useExercisesLibrary = (
 
       if (queryError) throw queryError;
 
-      // Limitar a 4-6 exercícios por grupo muscular para não sobrecarregar
+      // Limitar exercícios por grupo muscular baseado no tempo/nível do usuário
       const grouped = (data || []).reduce((acc: Record<string, Exercise[]>, ex: any) => {
         if (!acc[ex.muscle_group]) acc[ex.muscle_group] = [];
-        if (acc[ex.muscle_group].length < 3) {
+        if (acc[ex.muscle_group].length < exercisesPerGroup) {
           acc[ex.muscle_group].push(ex as Exercise);
         }
         return acc;
@@ -129,7 +150,7 @@ export const useExercisesLibrary = (
       console.error('Erro ao buscar exercícios:', err);
       return [];
     }
-  }, [location, difficulty]);
+  }, [location, difficulty, exercisesPerGroup]);
 
   // Gerar plano semanal baseado no objetivo
   const generateWeeklyPlan = useCallback(async () => {
