@@ -277,7 +277,8 @@ async function executeTool(userId: string, toolName: string, args: any): Promise
         .from("food_history")
         .select("total_calories")
         .eq("user_id", userId)
-        .eq("meal_date", today);
+        .eq("meal_date", today)
+        .eq("user_confirmed", true);
 
       const caloriesConsumed = foodHistory?.reduce((sum, item) => sum + (Number(item.total_calories) || 0), 0) || 0;
       const peso_atual = lastWeight?.peso_kg || profile?.current_weight || null;
@@ -815,6 +816,7 @@ serve(async (req) => {
     ];
 
     // 🔥 Chamar OpenAI via Lovable AI Gateway (melhor compreensão)
+    // NOTA: Não usar temperature com tool_choice="auto" pois alguns modelos não suportam
     const aiResponse = await fetch(AI_GATEWAY_URL, {
       method: "POST",
       headers: {
@@ -826,8 +828,7 @@ serve(async (req) => {
         messages,
         tools: TOOLS,
         tool_choice: "auto",
-        temperature: 0.7,  // Mais preciso para entender voz
-        max_completion_tokens: 700,  // OpenAI usa max_completion_tokens (não max_tokens)
+        max_completion_tokens: 700,
       }),
     });
 
@@ -894,7 +895,6 @@ serve(async (req) => {
         body: JSON.stringify({
           model: AI_MODEL,
           messages: followUpMessages,
-          temperature: 0.8,
           max_completion_tokens: 400,
         }),
       });

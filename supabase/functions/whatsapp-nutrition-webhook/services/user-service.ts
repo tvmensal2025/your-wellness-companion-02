@@ -38,6 +38,7 @@ export async function findUserByPhone(
 
 /**
  * Get user's daily calorie total
+ * IMPORTANTE: Somar apenas refeições CONFIRMADAS pelo usuário
  */
 export async function getDailyTotal(
   supabase: SupabaseClient,
@@ -45,29 +46,34 @@ export async function getDailyTotal(
 ): Promise<number> {
   const today = new Date().toISOString().split("T")[0];
 
-  // Buscar de food_history (fonte principal)
+  // Buscar de food_history - APENAS confirmados!
   const { data: foodHistory } = await supabase
     .from("food_history")
     .select("total_calories")
     .eq("user_id", userId)
-    .eq("meal_date", today);
+    .eq("meal_date", today)
+    .eq("user_confirmed", true);
 
   const foodHistoryTotal = foodHistory?.reduce(
     (sum, item) => sum + (Number(item.total_calories) || 0),
     0
   ) || 0;
 
-  // Também buscar de nutrition_tracking (legado)
-  const { data: nutritionTracking } = await supabase
-    .from("nutrition_tracking")
-    .select("total_calories")
-    .eq("user_id", userId)
-    .eq("date", today);
+  // Se não tiver food_history confirmado, tentar nutrition_tracking
+  if (foodHistoryTotal === 0) {
+    const { data: nutritionTracking } = await supabase
+      .from("nutrition_tracking")
+      .select("total_calories")
+      .eq("user_id", userId)
+      .eq("date", today);
 
-  const nutritionTotal = nutritionTracking?.reduce(
-    (sum, item) => sum + (Number(item.total_calories) || 0),
-    0
-  ) || 0;
+    const nutritionTotal = nutritionTracking?.reduce(
+      (sum, item) => sum + (Number(item.total_calories) || 0),
+      0
+    ) || 0;
 
-  return Math.max(foodHistoryTotal, nutritionTotal);
+    return nutritionTotal;
+  }
+
+  return foodHistoryTotal;
 }
