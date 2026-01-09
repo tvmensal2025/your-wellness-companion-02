@@ -638,7 +638,7 @@ const AuthPage = () => {
                 Comece sua
                 
               </h1>
-              <p className="text-sm sm:text-base text-muted-foreground">
+              <p className="text-sm sm:text-base text-muted-foreground my-0 mx-[9px] py-0 px-0">
                 Faça login ou crie sua conta gratuita
               </p>
             </div>
