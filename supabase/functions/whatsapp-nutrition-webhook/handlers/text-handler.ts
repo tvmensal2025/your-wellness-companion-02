@@ -1,6 +1,6 @@
 import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { UserInfo } from "../services/user-service.ts";
-import { sendWhatsApp } from "../utils/whatsapp-sender.ts";
+import { sendWhatsApp, sendWhatsAppWithFallback } from "../utils/whatsapp-sender.ts";
 import { detectMealType, formatMealType } from "../utils/message-utils.ts";
 import {
   saveToFoodHistory,
@@ -8,8 +8,30 @@ import {
 } from "../services/pending-service.ts";
 import { getDailyTotal } from "../services/user-service.ts";
 
+// Fallback responses para quando IA falha
+const FALLBACK_RESPONSES = {
+  technical_error: (name: string) =>
+    `Oi ${name}! 👋 Tive um probleminha técnico, mas estou aqui!\n\n` +
+    `Como posso te ajudar?\n\n` +
+    `📸 *Foto de refeição* → analiso calorias\n` +
+    `🩺 *Foto de exame* → analiso resultados\n` +
+    `💬 *Me conta o que comeu* → registro pra você\n\n` +
+    `_Sofia 💚_`,
+  
+  generic_help: () =>
+    `Oi! 👋 Estou aqui para ajudar com sua nutrição!\n\n` +
+    `📸 Envie uma foto da refeição\n` +
+    `✍️ Ou descreva o que comeu\n\n` +
+    `_Sofia 🥗_`,
+  
+  rate_limited: (name: string) =>
+    `${name}, estou um pouquinho ocupada! 😅\n\n` +
+    `Me manda de novo em 1 minutinho? 🙏\n\n` +
+    `_Sofia 💚_`,
+};
+
 /**
- * Handle AI-powered smart response
+ * Handle AI-powered smart response com fallback robusto
  */
 export async function handleSmartResponse(
   supabase: SupabaseClient,
@@ -17,6 +39,8 @@ export async function handleSmartResponse(
   phone: string,
   text: string
 ): Promise<void> {
+  const userName = user.full_name?.split(' ')[0] || 'Querido(a)';
+  
   try {
     console.log("[SmartResponse] Chamando IA inteligente...");
 
@@ -32,6 +56,10 @@ export async function handleSmartResponse(
 
     const isFirstMessageToday = !todayMessages || todayMessages.length === 0;
 
+    // Timeout para a chamada de IA
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 25000);
+
     const { data: aiResponse, error } = await supabase.functions.invoke(
       "whatsapp-ai-assistant",
       {
@@ -43,18 +71,19 @@ export async function handleSmartResponse(
         },
       }
     );
+    
+    clearTimeout(timeoutId);
 
     if (error) {
       console.error("[SmartResponse] Erro na IA:", error);
-      await sendWhatsApp(
-        phone,
-        `Oi! 👋 Tive um probleminha técnico, mas estou aqui!\n\n` +
-          `Como posso te ajudar?\n\n` +
-          `📸 *Foto de refeição* → analiso calorias\n` +
-          `🩺 *Foto de exame* → analiso resultados\n` +
-          `💬 *Me conta o que comeu* → registro pra você\n\n` +
-          `_Sofia 💚_`
-      );
+      
+      // Detectar tipo de erro para fallback apropriado
+      const errorMsg = error.message || '';
+      if (errorMsg.includes('429') || errorMsg.includes('rate')) {
+        await sendWhatsApp(phone, FALLBACK_RESPONSES.rate_limited(userName));
+      } else {
+        await sendWhatsApp(phone, FALLBACK_RESPONSES.technical_error(userName));
+      }
       return;
     }
 
@@ -74,14 +103,11 @@ export async function handleSmartResponse(
 
     console.log("[SmartResponse] Resposta IA enviada:", responseText.slice(0, 100));
   } catch (error) {
-    console.error("[SmartResponse] Erro na resposta inteligente:", error);
-    await sendWhatsApp(
-      phone,
-      "Oi! 👋 Estou aqui para ajudar com sua nutrição!\n\n" +
-        "📸 Envie uma foto da refeição\n" +
-        "✍️ Ou descreva o que comeu\n\n" +
-        "_Sofia 🥗_"
-    );
+    const err = error as Error;
+    console.error("[SmartResponse] Erro na resposta inteligente:", err.message);
+    
+    // Fallback determinístico
+    await sendWhatsApp(phone, FALLBACK_RESPONSES.generic_help());
   }
 }
 
