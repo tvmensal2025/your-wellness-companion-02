@@ -35,6 +35,19 @@ export function useFollow() {
     return following.has(userId);
   }, [following]);
 
+  const ensureOwnProfileExists = useCallback(async () => {
+    if (!user) return;
+
+    const { error } = await supabase
+      .from('profiles')
+      .upsert({ user_id: user.id }, { onConflict: 'user_id', ignoreDuplicates: true });
+
+    if (error) {
+      console.error('Erro ao garantir perfil do usuário:', error);
+      throw error;
+    }
+  }, [user]);
+
   // Follow a user
   const followUser = async (userId: string) => {
     if (!user) {
@@ -47,67 +60,80 @@ export function useFollow() {
       return false;
     }
 
-    // Verificar se o usuário alvo existe no profiles antes de seguir
-    const { data: targetProfile, error: profileError } = await supabase
-      .from('profiles')
-      .select('user_id')
-      .eq('user_id', userId)
-      .maybeSingle();
-
-    if (profileError) {
-      console.error('Erro ao verificar perfil:', profileError);
-      toast.error('Erro ao verificar usuário');
-      return false;
-    }
-
-    if (!targetProfile) {
-      toast.error('Usuário não encontrado');
-      return false;
-    }
-
-    // Optimistic update
-    setFollowing(prev => new Set([...prev, userId]));
-
     try {
-      const { error } = await supabase
+      // Garante que o usuário atual tem um perfil (necessário por FK em health_feed_follows)
+      await ensureOwnProfileExists();
+
+      // Verificar se o usuário alvo existe no profiles antes de seguir
+      const { data: targetProfile, error: profileError } = await supabase
+        .from('profiles')
+        .select('user_id')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (profileError) {
+        console.error('Erro ao verificar perfil:', profileError);
+        toast.error('Erro ao verificar usuário');
+        return false;
+      }
+
+      if (!targetProfile) {
+        toast.error('Usuário não encontrado');
+        return false;
+      }
+
+      // Optimistic update
+      setFollowing((prev) => new Set([...prev, userId]));
+
+      // Criar follow
+      const { error: followError } = await supabase
         .from('health_feed_follows')
         .insert({
           follower_id: user.id,
-          following_id: userId
+          following_id: userId,
         });
 
-      if (error) {
-        if (error.code === '23505') {
+      if (followError) {
+        if (followError.code === '23505') {
           // Already following
+          toast.success('Seguindo!');
           return true;
         }
-        throw error;
+        throw followError;
       }
 
-      // Create notification for the user being followed
-      await supabase
-        .from('health_feed_notifications')
-        .insert({
-          user_id: userId,
-          type: 'follow',
-          title: 'Novo Seguidor! 👋',
-          message: 'Alguém começou a te seguir na comunidade',
-          actor_id: user.id,
-          entity_type: 'follow',
-          is_read: false,
-        });
+      // Criar notificação (não deve quebrar o follow se falhar)
+      const { error: notifError } = await supabase.from('health_feed_notifications').insert({
+        user_id: userId,
+        type: 'follow',
+        title: 'Novo Seguidor! 👋',
+        message: 'Alguém começou a te seguir na comunidade',
+        actor_id: user.id,
+        entity_type: 'follow',
+        is_read: false,
+      });
+
+      if (notifError) {
+        console.warn('Falha ao criar notificação de follow (ignorada):', notifError);
+      }
 
       toast.success('Seguindo!');
       return true;
     } catch (err: any) {
       console.error('Error following user:', err);
       // Revert optimistic update
-      setFollowing(prev => {
+      setFollowing((prev) => {
         const next = new Set(prev);
         next.delete(userId);
         return next;
       });
-      toast.error('Erro ao seguir usuário');
+
+      const message =
+        err?.code === '23503'
+          ? 'Não foi possível seguir: perfil incompleto. Tente sair e entrar novamente.'
+          : 'Erro ao seguir usuário';
+
+      toast.error(message);
       return false;
     }
   };
