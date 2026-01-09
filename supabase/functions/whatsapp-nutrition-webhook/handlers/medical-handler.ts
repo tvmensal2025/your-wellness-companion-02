@@ -91,9 +91,45 @@ export async function processMedicalImage(
           await sendWhatsApp(
             phone,
             `📸 *${newCount} fotos recebidas!*\n\n` +
-            `Continue enviando ou aguarde que perguntarei quando analisar.\n\n` +
+            `Continue enviando ou aguarde...\n\n` +
             `_Dr. Vital 🩺_`
           );
+        }
+        
+        // 🔥 AUTO-DETECT: Wait 8s and check if more images arrived
+        console.log(`[Medical] ⏳ Aguardando 8s para detectar fim do envio...`);
+        await new Promise(resolve => setTimeout(resolve, 8000));
+        
+        // Re-fetch batch to check if count changed
+        const { data: refreshedBatch } = await supabase
+          .from("whatsapp_pending_medical")
+          .select("images_count, status")
+          .eq("id", existingBatch.id)
+          .single();
+        
+        // If no new images arrived in 8s and still collecting, ask to analyze
+        if (refreshedBatch && refreshedBatch.images_count === newCount && refreshedBatch.status === "collecting") {
+          console.log(`[Medical] 🔔 Nenhuma nova imagem em 8s, perguntando se pode analisar...`);
+          
+          await supabase
+            .from("whatsapp_pending_medical")
+            .update({
+              status: "awaiting_confirm",
+              waiting_confirmation: true,
+            })
+            .eq("id", existingBatch.id);
+          
+          await sendWhatsApp(
+            phone,
+            `📋 *${newCount} ${newCount === 1 ? "imagem recebida" : "imagens recebidas"}*\n\n` +
+            `*Posso analisar agora?*\n\n` +
+            `1️⃣ *SIM*, pode analisar\n` +
+            `2️⃣ *NÃO*, vou enviar mais\n` +
+            `3️⃣ *CANCELAR*\n\n` +
+            `_Dr. Vital 🩺_`
+          );
+        } else {
+          console.log(`[Medical] 📸 Mais imagens chegaram ou status mudou, continuando...`);
         }
         
         console.log("[Medical] ========================================");
