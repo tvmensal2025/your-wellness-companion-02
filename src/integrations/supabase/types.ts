@@ -7925,6 +7925,42 @@ export type Database = {
         }
         Relationships: []
       }
+      received_leads: {
+        Row: {
+          created_at: string
+          id: string
+          lead_data: Json
+          notes: string | null
+          processed: boolean | null
+          processed_at: string | null
+          received_at: string
+          source_name: string | null
+          source_url: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          lead_data: Json
+          notes?: string | null
+          processed?: boolean | null
+          processed_at?: string | null
+          received_at?: string
+          source_name?: string | null
+          source_url?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          lead_data?: Json
+          notes?: string | null
+          processed?: boolean | null
+          processed_at?: string | null
+          received_at?: string
+          source_name?: string | null
+          source_url?: string | null
+        }
+        Relationships: []
+      }
       recipe_components: {
         Row: {
           food_name: string | null
