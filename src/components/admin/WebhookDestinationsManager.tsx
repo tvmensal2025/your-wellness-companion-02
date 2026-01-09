@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Plus, Edit, Trash2, TestTube, Globe, Key, RefreshCw, Loader2 } from 'lucide-react';
+import { Plus, Edit, Trash2, TestTube, Globe, Key, RefreshCw, Loader2, Send, Play } from 'lucide-react';
 
 interface WebhookDestination {
   id: string;
@@ -38,6 +38,8 @@ export default function WebhookDestinationsManager() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingDestination, setEditingDestination] = useState<WebhookDestination | null>(null);
   const [testingId, setTestingId] = useState<string | null>(null);
+  const [bulkLoading, setBulkLoading] = useState(false);
+  const [processingQueue, setProcessingQueue] = useState(false);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -183,6 +185,58 @@ export default function WebhookDestinationsManager() {
     }
   };
 
+  const bulkQueueLeads = async () => {
+    setBulkLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('bulk-queue-leads');
+      if (error) throw error;
+
+      const result = data as { success: boolean; queued?: number; error?: string };
+      if (result.success) {
+        toast({
+          title: 'Leads enfileirados!',
+          description: `${result.queued} webhooks adicionados à fila`,
+        });
+      } else {
+        toast({
+          title: 'Erro',
+          description: result.error || 'Erro desconhecido',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Erro ao enfileirar leads',
+        description: error instanceof Error ? error.message : 'Erro desconhecido',
+        variant: 'destructive',
+      });
+    } finally {
+      setBulkLoading(false);
+    }
+  };
+
+  const processQueue = async () => {
+    setProcessingQueue(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('send-lead-webhooks');
+      if (error) throw error;
+
+      const result = data as { processed?: number; success?: number; failed?: number };
+      toast({
+        title: 'Fila processada!',
+        description: `${result.success || 0} enviados, ${result.failed || 0} falhas`,
+      });
+    } catch (error) {
+      toast({
+        title: 'Erro ao processar fila',
+        description: error instanceof Error ? error.message : 'Erro desconhecido',
+        variant: 'destructive',
+      });
+    } finally {
+      setProcessingQueue(false);
+    }
+  };
+
   const resetForm = () => {
     setFormData({
       name: '',
@@ -253,12 +307,21 @@ export default function WebhookDestinationsManager() {
           <h2 className="text-2xl font-bold">Destinos de Webhook</h2>
           <p className="text-muted-foreground">Configure para onde enviar os dados de leads</p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={() => { resetForm(); setIsDialogOpen(true); }}>
-              <Plus className="h-4 w-4 mr-2" /> Adicionar Destino
-            </Button>
-          </DialogTrigger>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={bulkQueueLeads} disabled={bulkLoading}>
+            {bulkLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
+            Enviar Leads Existentes
+          </Button>
+          <Button variant="outline" onClick={processQueue} disabled={processingQueue}>
+            {processingQueue ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Play className="h-4 w-4 mr-2" />}
+            Processar Fila
+          </Button>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button onClick={() => { resetForm(); setIsDialogOpen(true); }}>
+                <Plus className="h-4 w-4 mr-2" /> Adicionar Destino
+              </Button>
+            </DialogTrigger>
           <DialogContent className="max-w-lg">
             <DialogHeader>
               <DialogTitle>{editingDestination ? 'Editar Destino' : 'Novo Destino'}</DialogTitle>
@@ -361,6 +424,7 @@ export default function WebhookDestinationsManager() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       {destinations && destinations.length === 0 ? (
