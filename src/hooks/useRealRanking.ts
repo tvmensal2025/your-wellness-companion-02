@@ -10,6 +10,7 @@ interface RankingUser {
   achievements: number;
   streak: number;
   isCurrentUser: boolean;
+  currentWeight?: number;
 }
 
 export const useRealRanking = () => {
@@ -18,10 +19,10 @@ export const useRealRanking = () => {
     queryFn: async (): Promise<{ ranking: RankingUser[]; currentUserRank: number }> => {
       const { data: { user } } = await supabase.auth.getUser();
 
-      // Buscar todos os usuários com seus pontos
+      // Buscar todos os usuários com seus pontos e peso atual
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('id, user_id, full_name, avatar_url');
+        .select('id, user_id, full_name, avatar_url, current_weight');
 
       if (profilesError) {
         console.error('Erro ao buscar perfis:', profilesError);
@@ -83,6 +84,7 @@ export const useRealRanking = () => {
           achievements: achievements?.length || 0,
           streak,
           isCurrentUser: userId === user?.id,
+          currentWeight: profile.current_weight ? Number(profile.current_weight) : undefined,
         };
       });
 
