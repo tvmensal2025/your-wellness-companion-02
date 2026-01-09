@@ -183,9 +183,9 @@ const MyProgress: React.FC = () => {
                 className="flex items-center justify-center gap-3"
               >
                 <div className="p-2 bg-white/20 rounded-xl backdrop-blur-sm">
-                  <img src="/favicon.png" alt="Instituto dos Sonhos" className="h-8 w-8 rounded" />
+                  <img src="/images/maxnutrition-logo.png" alt="MaxNutrition" className="h-8 w-8 rounded" />
                 </div>
-                <span className="text-sm font-bold tracking-wide">Instituto dos Sonhos</span>
+                <span className="text-sm font-bold tracking-wide">MaxNutrition</span>
               </motion.div>
 
               {/* Título principal */}

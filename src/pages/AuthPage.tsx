@@ -497,7 +497,7 @@ const AuthPage = () => {
           }
           toast({
             title: "Conta criada com sucesso!",
-            description: "Bem-vindo ao Instituto dos Sonhos. Seus dados foram salvos."
+            description: "Bem-vindo(a) à MaxNutrition. Seus dados foram salvos."
           });
 
           // Ir direto para o dashboard

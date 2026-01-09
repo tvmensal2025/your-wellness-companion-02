@@ -438,7 +438,7 @@ export const CompactMealPlanModal: React.FC<CompactMealPlanModalProps> = ({
             }).join('')}
             
               <div class="footer">
-                <p><strong>Sofia Nutricional — Instituto dos Sonhos</strong></p>
+                <p><strong>Sofia Nutricional — MaxNutrition</strong></p>
                 <p>Documento educativo • Consulte sempre um nutricionista</p>
                 <p>Versão: ${new Date().toISOString().split('T')[0]}</p>
               </div>
@@ -612,7 +612,7 @@ export const CompactMealPlanModal: React.FC<CompactMealPlanModalProps> = ({
         {/* Footer */}
         <div className="text-center text-sm text-muted-foreground border-t pt-4 mt-6">
           <div className="flex items-center justify-center gap-2 text-primary">
-            <span className="font-semibold">Sofia Nutricional — Instituto dos Sonhos</span>
+            <span className="font-semibold">Sofia Nutricional — MaxNutrition</span>
           </div>
           <p className="mt-1">Documento educativo • Consulte sempre um nutricionista</p>
           <p className="text-xs mt-2">Gerado em {new Date().toLocaleDateString('pt-BR')}</p>

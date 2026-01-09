@@ -548,7 +548,7 @@ export const XiaomiScaleButton: React.FC = () => {
               <CardContent className="p-6">
                 <div className="space-y-4">
                   <div className="text-center">
-                    <div className="text-2xl font-bold mb-2">⚖️ INSTITUTO DOS SONHOS</div>
+                    <div className="text-2xl font-bold mb-2">⚖️ MAXNUTRITION</div>
                     <div className="text-6xl mb-4">👤</div>
                     <div className="text-sm text-muted-foreground">[PESSOA EM PÉ]</div>
                   </div>

@@ -11,7 +11,7 @@ export const createEmailTemplate = (type: 'weekly' | 'monthly', data: any) => {
     <head>
       <meta charset="utf-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Relatório ${type === 'weekly' ? 'Semanal' : 'Mensal'} - Instituto dos Sonhos</title>
+      <title>Relatório ${type === 'weekly' ? 'Semanal' : 'Mensal'} - MaxNutrition</title>
       <style>
         body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
         .container { max-width: 600px; margin: 0 auto; padding: 20px; }
@@ -80,7 +80,7 @@ export const createEmailTemplate = (type: 'weekly' | 'monthly', data: any) => {
         </div>
 
         <div class="footer">
-          <p>© 2024 Instituto dos Sonhos - Transformando vidas através da saúde</p>
+          <p>© 2024 MaxNutrition - Nutrição Inteligente</p>
           <p>Para dúvidas, entre em contato conosco</p>
         </div>
       </div>
@@ -97,7 +97,7 @@ export const createWeeklyReportTemplate = (data: any) => {
     ...data,
     drVitalMessage: data.drVitalMessage || 'Excelente progresso esta semana! Continue mantendo a consistência nos seus hábitos saudáveis.',
     sofiaMessage: data.sofiaMessage || 'Você está no caminho certo! Vamos manter o foco nos seus objetivos.',
-    appUrl: import.meta.env.VITE_APP_URL || 'https://institutodossonhos.com'
+    appUrl: import.meta.env.VITE_APP_URL || 'https://maxnutrition.com.br'
   });
 };
 
@@ -107,7 +107,7 @@ export const createMonthlyReportTemplate = (data: any) => {
     ...data,
     drVitalMessage: data.drVitalMessage || 'Parabéns pelo seu comprometimento este mês! Os resultados mostram sua dedicação.',
     sofiaMessage: data.sofiaMessage || 'Um mês incrível! Você está construindo hábitos duradouros para uma vida mais saudável.',
-    appUrl: import.meta.env.VITE_APP_URL || 'https://institutodossonhos.com'
+    appUrl: import.meta.env.VITE_APP_URL || 'https://maxnutrition.com.br'
   });
 };
 
@@ -117,7 +117,7 @@ export const createWhatsAppTemplate = (type: 'weekly' | 'monthly', data: any) =>
   const sofiaImage = getCharacterImageUrl('sofia');
 
   return `
-📊 *Relatório ${type === 'weekly' ? 'Semanal' : 'Mensal'} - Instituto dos Sonhos*
+📊 *Relatório ${type === 'weekly' ? 'Semanal' : 'Mensal'} - MaxNutrition*
 
 👨‍⚕️ *Dr. Vital*:
 ${data.drVitalMessage || 'Continue focado nos seus objetivos de saúde!'}
@@ -130,9 +130,9 @@ ${data.stats ? data.stats.map((stat: any) => `• ${stat.label}: ${stat.value}`)
 
 ${data.highlight ? `\n🌟 *Destaque*: ${data.highlight}` : ''}
 
-📱 Acesse a plataforma para mais detalhes: ${data.appUrl || 'https://institutodossonhos.com'}
+📱 Acesse a plataforma para mais detalhes: ${data.appUrl || 'https://maxnutrition.com.br'}
 
 ---
-Instituto dos Sonhos - Transformando vidas através da saúde
+MaxNutrition - Nutrição Inteligente
   `;
 }; 
