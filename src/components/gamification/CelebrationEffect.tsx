@@ -63,11 +63,11 @@ export const CelebrationEffect: React.FC<CelebrationEffectProps> = ({
       });
     }
 
-    // Auto-hide overlay
+    // Auto-hide overlay (4.5s para dar tempo de ler)
     const timer = setTimeout(() => {
       setShowOverlay(false);
       onComplete?.();
-    }, 2500);
+    }, 4500);
 
     return () => clearTimeout(timer);
   }, [trigger, type, onComplete]);
@@ -138,10 +138,10 @@ export const useCelebration = () => {
       message: options.message || '',
     });
 
-    // Reset after animation
+    // Reset after animation (5s para dar tempo)
     setTimeout(() => {
       setCelebrationState((prev) => ({ ...prev, trigger: false }));
-    }, 3000);
+    }, 5000);
   };
 
   const CelebrationComponent = () => (

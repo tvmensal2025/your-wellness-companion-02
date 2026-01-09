@@ -118,7 +118,7 @@ export const MissionCompletePage: React.FC<MissionCompletePageProps> = ({
   };
 
   useEffect(() => {
-    const timer = setTimeout(() => setShowConfetti(false), 3000);
+    const timer = setTimeout(() => setShowConfetti(false), 5000);
     return () => clearTimeout(timer);
   }, []);
 

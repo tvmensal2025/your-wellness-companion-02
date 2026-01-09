@@ -5,6 +5,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -241,6 +242,14 @@ export const ExerciseEvolutionPopup: React.FC<ExerciseEvolutionPopupProps> = ({
               )}
             </>
           )}
+
+          {/* Botão para fechar manualmente */}
+          <Button 
+            onClick={onClose} 
+            className="w-full mt-4 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600"
+          >
+            Entendi! Bora treinar 💪
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
