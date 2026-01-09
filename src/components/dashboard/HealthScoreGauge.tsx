@@ -32,7 +32,7 @@ export const HealthScoreGauge: React.FC<HealthScoreGaugeProps> = ({
         origin: { y: 0.3 },
         colors: ['#22c55e', '#10b981', '#14b8a6', '#06b6d4']
       });
-      setTimeout(() => setShowCelebration(false), 3000);
+      setTimeout(() => setShowCelebration(false), 5000);
     }
 
     return () => clearTimeout(timer);

@@ -243,11 +243,11 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
       scalar: 1.2,
     });
     
-    // Auto fechar após 5 segundos
+    // Auto fechar após 8 segundos (mais tempo para celebrar!)
     setTimeout(() => {
       onComplete(completedIds);
       onClose();
-    }, 5000);
+    }, 8000);
   };
 
   // Animação de confete ao completar exercício
@@ -459,8 +459,8 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
         if (evolution && (evolution.total_sets || 0) > 0) {
           setEvolutionExercise(currentExercise.name);
           setShowEvolutionPopup(true);
-          // Auto-fechar após 3 segundos
-          setTimeout(() => setShowEvolutionPopup(false), 3000);
+          // Auto-fechar após 8 segundos (mais tempo para ler)
+          setTimeout(() => setShowEvolutionPopup(false), 8000);
         }
       }
     } catch (err) {
