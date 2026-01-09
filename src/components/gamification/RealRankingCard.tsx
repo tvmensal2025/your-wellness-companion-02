@@ -2,11 +2,20 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Crown, Medal, Trophy, Flame, Star, TrendingUp } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Crown, Medal, Trophy, Flame, Star, UserPlus, UserCheck } from 'lucide-react';
 import { useRealRanking } from '@/hooks/useRealRanking';
+import { useFollow } from '@/hooks/useFollow';
 
 export const RealRankingCard: React.FC = () => {
-  const { data, isLoading } = useRealRanking();
+  const { data, isLoading, refetch } = useRealRanking();
+  const { isFollowing, toggleFollow } = useFollow();
+
+  const handleFollow = async (userId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    await toggleFollow(userId);
+    refetch();
+  };
 
   if (isLoading) {
     return (
@@ -123,10 +132,25 @@ export const RealRankingCard: React.FC = () => {
                 </div>
               </div>
 
-              <div className="text-right">
+              <div className="text-right mr-2">
                 <div className="font-bold text-sm">{user.totalXP.toLocaleString()}</div>
                 <div className="text-xs text-muted-foreground">XP</div>
               </div>
+
+              {!user.isCurrentUser && (
+                <Button
+                  size="sm"
+                  variant={isFollowing(user.id) ? "secondary" : "default"}
+                  className="h-8 px-2 min-w-[32px]"
+                  onClick={(e) => handleFollow(user.id, e)}
+                >
+                  {isFollowing(user.id) ? (
+                    <UserCheck className="w-4 h-4" />
+                  ) : (
+                    <UserPlus className="w-4 h-4" />
+                  )}
+                </Button>
+              )}
             </motion.div>
           ))
         )}
