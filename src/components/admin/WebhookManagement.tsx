@@ -28,7 +28,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 
-const DEFAULT_WEBHOOK_URL = 'https://financeiromaxnutrition.lovable.app/functions/v1/receive-leads';
+const DEFAULT_WEBHOOK_URL = 'https://tljbxoakdzuipkxkecph.supabase.co/functions/v1/receive-leads';
 
 export default function WebhookManagement() {
   const { toast } = useToast();
