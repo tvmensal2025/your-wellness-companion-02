@@ -79,12 +79,14 @@ export function useWebhookManagement() {
 
       if (error) throw error;
 
+      const sent = (data as any)?.sent ?? (data as any)?.succeeded ?? 0;
+      const failed = (data as any)?.failed ?? 0;
+
       toast({
-        title: 'Webhooks enviados',
-        description: `${data.sent} enviados, ${data.failed} falharam`,
+        title: 'Webhooks processados',
+        description: `${sent} enviados, ${failed} falharam`,
       });
 
-      // Recarregar lista
       await fetchWebhooks();
     } catch (error) {
       console.error('Erro ao enviar webhooks:', error);
@@ -136,12 +138,13 @@ export function useWebhookManagement() {
 
     const headers = ['Nome', 'Email', 'Telefone', 'Cidade', 'Status', 'Data', 'Enviado em'];
     const rows = webhooks.map(w => {
-      const lead = w.payload?.lead || {};
+      const contact = w.payload?.contact || w.payload?.lead || {};
+      const location = w.payload?.location || {};
       return [
-        lead.full_name || '',
-        lead.email || '',
-        lead.phone || '',
-        lead.city || '',
+        contact.full_name || '',
+        contact.email || '',
+        contact.phone || '',
+        location.city || contact.city || '',
         w.status,
         new Date(w.created_at).toLocaleString('pt-BR'),
         w.sent_at ? new Date(w.sent_at).toLocaleString('pt-BR') : '',
