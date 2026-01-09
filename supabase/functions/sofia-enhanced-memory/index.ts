@@ -20,6 +20,245 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+// ============================================
+// SISTEMA DE DETECÇÃO DE INTENÇÃO (INTENT DETECTION)
+// ============================================
+
+interface IntentResult {
+  intent: string;
+  confidence: number;
+  params?: Record<string, any>;
+}
+
+function detectIntent(message: string): IntentResult {
+  const msg = message.toLowerCase().trim();
+  
+  // Intenções de consulta de dados (respostas RÁPIDAS)
+  const intentPatterns: { intent: string; patterns: RegExp[]; confidence: number }[] = [
+    {
+      intent: 'query_weight',
+      patterns: [
+        /(?:quanto|qual|meu)\s*(?:é|está|estou|peso|pesando)/i,
+        /peso\s*(?:atual|agora)?/i,
+        /(?:estou|tô)\s*(?:pesando|com)\s*(?:quanto)?/i,
+        /^peso$/i
+      ],
+      confidence: 0.95
+    },
+    {
+      intent: 'query_imc',
+      patterns: [
+        /(?:meu|qual|quanto)\s*(?:é|está)?\s*(?:o)?\s*imc/i,
+        /imc\s*(?:atual)?/i,
+        /^imc$/i
+      ],
+      confidence: 0.95
+    },
+    {
+      intent: 'query_goals',
+      patterns: [
+        /(?:minhas?|quais?)\s*metas?/i,
+        /(?:meus?|quais?)\s*objetivos?/i,
+        /meta\s*(?:atual|ativas?)?/i
+      ],
+      confidence: 0.90
+    },
+    {
+      intent: 'query_streak',
+      patterns: [
+        /(?:meu|qual|quanto)\s*streak/i,
+        /dias?\s*seguidos?/i,
+        /sequência\s*(?:de)?\s*dias?/i,
+        /^streak$/i
+      ],
+      confidence: 0.95
+    },
+    {
+      intent: 'query_points',
+      patterns: [
+        /(?:meus?|quantos?)\s*pontos?/i,
+        /(?:meu|qual)\s*nível/i,
+        /pontuação/i
+      ],
+      confidence: 0.90
+    },
+    {
+      intent: 'greeting',
+      patterns: [
+        /^(?:oi|olá|ola|hey|hi|bom\s*dia|boa\s*tarde|boa\s*noite|e\s*aí|eai)[\s!?]*$/i,
+        /^(?:tudo\s*bem|como\s*vai|como\s*você\s*está?)[\s!?]*$/i
+      ],
+      confidence: 0.85
+    },
+    {
+      intent: 'hungry',
+      patterns: [
+        /(?:estou|tô|to)\s*(?:com)?\s*fome/i,
+        /(?:quero|preciso)\s*comer/i,
+        /fome\s*(?:demais|muito)?/i
+      ],
+      confidence: 0.90
+    },
+    {
+      intent: 'meal_suggestion',
+      patterns: [
+        /(?:o\s*que|que)\s*(?:posso|devo|vou)\s*comer/i,
+        /sugest(?:ão|ões?)\s*(?:de)?\s*(?:refeição|comida|almoço|jantar|café)/i,
+        /(?:me\s*)?(?:indica|sugere|recomenda)\s*(?:algo|comida|refeição)?/i
+      ],
+      confidence: 0.85
+    },
+    {
+      intent: 'query_meals',
+      patterns: [
+        /(?:minhas?|últimas?)\s*refei(?:ção|ções)/i,
+        /(?:o\s*que|que)\s*comi\s*(?:hoje|ontem|recentemente)?/i,
+        /histórico\s*(?:de)?\s*(?:alimentação|refeições)/i
+      ],
+      confidence: 0.85
+    },
+    {
+      intent: 'query_exams',
+      patterns: [
+        /(?:meus?|últimos?)\s*exames?/i,
+        /resultados?\s*(?:de)?\s*exames?/i,
+        /exame\s*(?:de)?\s*sangue/i
+      ],
+      confidence: 0.85
+    }
+  ];
+  
+  for (const { intent, patterns, confidence } of intentPatterns) {
+    for (const pattern of patterns) {
+      if (pattern.test(msg)) {
+        console.log(`🎯 Intent detectado: ${intent} (confidence: ${confidence})`);
+        return { intent, confidence };
+      }
+    }
+  }
+  
+  return { intent: 'general_chat', confidence: 0.5 };
+}
+
+// ============================================
+// GERADOR DE RESPOSTAS RÁPIDAS (QUICK REPLIES)
+// ============================================
+
+function generateQuickReply(intent: string, userContext: any): string | null {
+  const firstName = userContext.profile?.firstName || 'amor';
+  const weightData = userContext.weightHistory?.[0];
+  const streak = userContext.userPoints?.current_streak || 0;
+  const totalPoints = userContext.userPoints?.total_points || 0;
+  const level = userContext.userPoints?.level || 1;
+  
+  switch (intent) {
+    case 'query_weight':
+      if (weightData?.peso_kg) {
+        const measureDate = weightData.measurement_date 
+          ? new Date(weightData.measurement_date).toLocaleDateString('pt-BR')
+          : 'recentemente';
+        const imc = weightData.imc?.toFixed(1) || null;
+        const targetWeight = userContext.anamnesis?.target_weight_kg || userContext.physicalData?.target_weight_kg;
+        
+        let response = `💚 *${firstName}*, seu peso atual está em *${weightData.peso_kg}kg*! ⚖️\n\n`;
+        response += `📅 Última pesagem: ${measureDate}\n`;
+        if (imc) response += `📊 Seu IMC: *${imc}*\n`;
+        if (targetWeight && weightData.peso_kg > targetWeight) {
+          const diff = (weightData.peso_kg - targetWeight).toFixed(1);
+          response += `\n🎯 Faltam *${diff}kg* para sua meta de *${targetWeight}kg*!\n`;
+          response += `\nEstamos juntas nessa, amor! Você consegue! 💪✨`;
+        } else if (targetWeight) {
+          response += `\n🎉 Você já alcançou sua meta de *${targetWeight}kg*! Parabéns, meu bem!`;
+        }
+        return response;
+      } else {
+        return `💚 *${firstName}*, ainda não temos seu peso registrado!\n\n⚖️ Que tal pesar e me contar? Assim consigo te ajudar muito melhor com dicas personalizadas!\n\n📱 É só digitar algo como "Peso 75kg" que eu registro pra você! 💪`;
+      }
+      
+    case 'query_imc':
+      if (weightData?.imc) {
+        const imc = weightData.imc;
+        let classification = '';
+        if (imc < 18.5) classification = 'abaixo do peso';
+        else if (imc < 25) classification = 'peso normal - ótimo!';
+        else if (imc < 30) classification = 'sobrepeso';
+        else classification = 'obesidade';
+        
+        return `💚 *${firstName}*, seu IMC atual é *${imc.toFixed(1)}* (${classification})!\n\n📊 Calculado com peso de *${weightData.peso_kg}kg*\n\n${imc >= 18.5 && imc < 25 ? '🎉 Parabéns, está ótimo!' : 'Vamos juntas melhorar isso! 💪'}`;
+      } else {
+        return `💚 *${firstName}*, preciso do seu peso e altura pra calcular o IMC!\n\n⚖️ Me conta: quanto você pesa e qual sua altura?`;
+      }
+      
+    case 'query_streak':
+      if (streak > 0) {
+        let emoji = '🔥';
+        let msg = '';
+        if (streak >= 30) { emoji = '🏆'; msg = 'Você é INCRÍVEL!'; }
+        else if (streak >= 14) { emoji = '⭐'; msg = 'Que dedicação!'; }
+        else if (streak >= 7) { emoji = '💪'; msg = 'Uma semana inteira!'; }
+        else { msg = 'Continue assim!'; }
+        
+        return `${emoji} *${firstName}*, seu streak está em *${streak} dias seguidos*! ${msg}\n\n🎯 Total de pontos: *${totalPoints}*\n⭐ Nível: *${level}*\n\nQue orgulho de você, amor! 💚`;
+      } else {
+        return `💚 *${firstName}*, vamos começar seu streak hoje?\n\n🔥 Registre suas atividades diariamente e veja seu streak crescer!\n\nEstou aqui torcendo por você! 💪`;
+      }
+      
+    case 'query_points':
+      return `💚 *${firstName}*, aqui estão suas conquistas:\n\n⭐ *Nível:* ${level}\n🎯 *Pontos totais:* ${totalPoints}\n🔥 *Streak atual:* ${streak} dias\n\nContinue assim, amor! Cada ponto conta! 💪✨`;
+      
+    case 'query_goals':
+      const goals = userContext.goals?.filter((g: any) => g.status === 'active' || g.status === 'em_andamento')?.slice(0, 5) || [];
+      if (goals.length > 0) {
+        let response = `💚 *${firstName}*, suas metas ativas:\n\n`;
+        goals.forEach((g: any, i: number) => {
+          const progress = g.progress_percentage || 0;
+          response += `${i + 1}. 🎯 *${g.goal_name || g.title}*\n   📊 Progresso: ${progress}%\n\n`;
+        });
+        response += `Você está no caminho certo! 💪✨`;
+        return response;
+      } else {
+        return `💚 *${firstName}*, você ainda não tem metas definidas!\n\n🎯 Que tal criarmos juntas? Me conta: qual seu maior objetivo de saúde agora?\n\nVou te ajudar a alcançar! 💪`;
+      }
+      
+    case 'greeting':
+      const greetings = [
+        `💚 Oi *${firstName}*! Que bom te ver por aqui! Como você está hoje? ✨`,
+        `💚 Olá *${firstName}*, meu amor! Estava pensando em você! Como posso te ajudar hoje? 💪`,
+        `💚 Oi *${firstName}*! ${streak > 0 ? `Amando seu streak de ${streak} dias! 🔥` : 'Vamos arrasar hoje?'} Como está se sentindo?`
+      ];
+      return greetings[Math.floor(Math.random() * greetings.length)];
+      
+    case 'hungry':
+      return `💚 *${firstName}*, fome é sinal de que seu corpo precisa de energia!\n\n🥗 *Dicas rápidas:*\n• Beba um copo de água primeiro\n• Prefira proteínas + fibras para saciar\n• Frutas são ótimas opções!\n\n📸 Me manda foto do que for comer que eu analiso pra você! 💪`;
+      
+    case 'meal_suggestion':
+      const hour = new Date().getHours();
+      let meal = '';
+      if (hour < 10) meal = 'café da manhã';
+      else if (hour < 14) meal = 'almoço';
+      else if (hour < 18) meal = 'lanche da tarde';
+      else meal = 'jantar';
+      
+      return `💚 *${firstName}*, para o ${meal} sugiro:\n\n🥗 *Opção saudável:*\n• Proteína magra (frango, peixe, ovos)\n• Legumes coloridos\n• Carboidrato integral\n\n📸 Me manda foto do prato que eu analiso certinho pra você! 💪`;
+      
+    case 'query_meals':
+      const meals = userContext.foodAnalysis?.slice(0, 3) || [];
+      if (meals.length > 0) {
+        let response = `💚 *${firstName}*, suas últimas refeições:\n\n`;
+        meals.forEach((m: any, i: number) => {
+          const date = new Date(m.created_at).toLocaleDateString('pt-BR');
+          response += `${i + 1}. 📅 ${date}\n   🍽️ ${m.meal_type || 'Refeição'}: ${m.foods_identified?.slice(0, 3).join(', ') || 'registrada'}\n\n`;
+        });
+        return response;
+      } else {
+        return `💚 *${firstName}*, ainda não temos refeições registradas!\n\n📸 Me manda foto do que você comer que eu analiso tudo certinho! 🥗`;
+      }
+      
+    default:
+      return null; // Não é uma intenção de resposta rápida
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -32,99 +271,96 @@ Deno.serve(async (req) => {
     
     const { message, userId, context, forcePersonality } = await req.json();
 
-    console.log('🧠 Sofia Enhanced Memory - Sistema UNIFICADO para usuário:', userId);
+    console.log('🧠 Sofia Enhanced Memory - Sistema INTELIGENTE para usuário:', userId);
 
     // ============================================
-    // BUSCAR CONFIGURAÇÕES DE IA SALVAS NO BANCO
-    // ============================================
-    console.log('📋 Buscando configurações de IA do banco...');
-    const { data: aiConfig, error: configError } = await supabase
-      .from('ai_configurations')
-      .select('*')
-      .eq('functionality', 'chat_daily')
-      .single();
-    
-    let aiSettings = {
-      service: 'lovable',
-      model: 'google/gemini-2.5-flash',
-      maxTokens: 2048,
-      temperature: 0.8,
-      systemPrompt: ''
-    };
-    
-    if (aiConfig && !configError) {
-      console.log('✅ Configurações encontradas:', {
-        service: aiConfig.service,
-        model: aiConfig.model,
-        maxTokens: aiConfig.max_tokens,
-        temperature: aiConfig.temperature,
-        isEnabled: aiConfig.is_enabled
-      });
-      
-      // Mapear serviço para modelo Lovable AI correto
-      let mappedModel = 'google/gemini-2.5-flash'; // default
-      
-      if (aiConfig.service === 'google' || aiConfig.service === 'gemini') {
-        if (aiConfig.model?.includes('pro')) {
-          mappedModel = 'google/gemini-2.5-pro';
-        } else if (aiConfig.model?.includes('flash')) {
-          mappedModel = 'google/gemini-2.5-flash';
-        }
-      } else if (aiConfig.service === 'openai') {
-        if (aiConfig.model?.includes('gpt-5')) {
-          mappedModel = 'openai/gpt-5';
-        } else if (aiConfig.model?.includes('gpt-5-mini')) {
-          mappedModel = 'openai/gpt-5-mini';
-        } else {
-          mappedModel = 'openai/gpt-5-mini';
-        }
-      }
-      
-      aiSettings = {
-        service: aiConfig.service || 'lovable',
-        model: mappedModel,
-        maxTokens: aiConfig.max_tokens || 2048,
-        temperature: aiConfig.temperature || 0.8,
-        systemPrompt: aiConfig.system_prompt || ''
-      };
-      
-      console.log('🎯 Configurações aplicadas:', aiSettings);
-    } else {
-      console.log('⚠️ Usando configurações padrão (sem config no banco)');
-    }
-
-    // ============================================
-    // USAR SISTEMA UNIFICADO DE CONTEXTO
+    // CARREGAR CONTEXTO DO USUÁRIO PRIMEIRO (necessário para Quick Replies)
     // ============================================
     const userContext = await getUserCompleteContext(supabaseUrl, supabaseServiceKey, userId);
     const contextSummary = generateUserContextSummary(userContext);
 
     console.log('📊 Contexto carregado:', {
       completeness: `${userContext.metadata.dataCompleteness.percentage}%`,
-      totalDataPoints: userContext.metadata.totalDataPoints,
-      canReceiveFullAnalysis: userContext.metadata.dataCompleteness.canReceiveFullAnalysis
+      totalDataPoints: userContext.metadata.totalDataPoints
     });
+
+    // ============================================
+    // DETECTAR INTENÇÃO (INTENT DETECTION)
+    // ============================================
+    const intentResult = detectIntent(message);
+    console.log(`🎯 Intent: ${intentResult.intent} (${intentResult.confidence})`);
+
+    // ============================================
+    // RESPOSTAS RÁPIDAS (SEM CHAMAR IA)
+    // ============================================
+    if (intentResult.confidence >= 0.85 && intentResult.intent !== 'general_chat') {
+      const quickReply = generateQuickReply(intentResult.intent, userContext);
+      
+      if (quickReply) {
+        console.log('⚡ Resposta RÁPIDA gerada! Sem chamada de IA.');
+        
+        // Salvar no histórico
+        const conversationId = `quick_${Date.now()}`;
+        await supabase.from('user_conversations').insert([
+          {
+            user_id: userId,
+            conversation_id: conversationId,
+            message_role: 'user',
+            message_content: message,
+            timestamp: new Date().toISOString(),
+            context: { intent: intentResult.intent, quick_reply: true }
+          },
+          {
+            user_id: userId,
+            conversation_id: conversationId,
+            message_role: 'assistant',
+            message_content: quickReply,
+            timestamp: new Date().toISOString(),
+            context: { intent: intentResult.intent, quick_reply: true, api_used: 'quick_reply' }
+          }
+        ]);
+        
+        return new Response(
+          JSON.stringify({
+            message: quickReply,
+            personality: 'sofia',
+            personalityName: '🥗 Sofia',
+            memory_updated: true,
+            data_completeness: userContext.metadata.dataCompleteness.percentage,
+            api_used: 'quick_reply',
+            intent: intentResult.intent,
+            response_time: 'instant'
+          }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    }
+
+    // ============================================
+    // CONFIGURAÇÕES DE IA (MODELO RÁPIDO)
+    // ============================================
+    const aiSettings = {
+      service: 'lovable',
+      model: 'google/gemini-3-flash-preview', // MODELO MAIS RÁPIDO E INTELIGENTE
+      maxTokens: 1024, // Respostas mais curtas = mais rápidas
+      temperature: 0.8
+    };
+    
+    console.log('🤖 Usando modelo rápido:', aiSettings.model);
 
     // ============================================
     // DETECTAR PERSONALIDADE (SOFIA vs DR. VITAL)
     // ============================================
     const personality = forcePersonality || detectPersonality(message);
-    console.log(`🎭 Personalidade detectada: ${getPersonalityName(personality)}`);
+    console.log(`🎭 Personalidade: ${getPersonalityName(personality)}`);
 
-    // Gerar system prompt UNIFICADO
-    const systemPrompt = buildUnifiedSystemPrompt(userContext, contextSummary, personality, aiSettings.systemPrompt);
-    
-    console.log('🤖 Gerando resposta com:', {
-      personality,
-      model: aiSettings.model,
-      maxTokens: aiSettings.maxTokens,
-      temperature: aiSettings.temperature
-    });
+    // Gerar system prompt
+    const systemPrompt = buildUnifiedSystemPrompt(userContext, contextSummary, personality, '');
     
     let response = '';
     let apiUsed = 'none';
 
-    // 1. LOVABLE AI como provedor PRINCIPAL
+    // LOVABLE AI com modelo rápido
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (LOVABLE_API_KEY) {
       try {
@@ -147,17 +383,15 @@ Deno.serve(async (req) => {
         });
 
         if (lovableResponse.status === 429) {
-          console.warn('⚠️ Rate limit exceeded');
+          console.warn('⚠️ Rate limit - usando fallback');
         } else if (lovableResponse.status === 402) {
           console.warn('⚠️ Payment required');
         } else {
           const data = await lovableResponse.json();
-          if (data?.error) {
-            console.error('❌ Erro Lovable AI:', data.error);
-          } else if (data?.choices?.[0]?.message?.content) {
+          if (data?.choices?.[0]?.message?.content) {
             response = data.choices[0].message.content;
             apiUsed = `lovable-${aiSettings.model}`;
-            console.log('✅ Lovable AI funcionou!');
+            console.log('✅ Lovable AI respondeu!');
           }
         }
       } catch (error) {
