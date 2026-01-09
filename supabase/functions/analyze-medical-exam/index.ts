@@ -13,13 +13,23 @@ const corsHeaders = {
 
 // 📊 CONFIGURAÇÃO DO MODELO PREMIUM (valores padrão, serão sobrescritos pelo banco)
 let AI_CONFIG = {
-  // Modelo premium principal
-  premium_model: "gpt-4o",
-  fallback_models: ["gpt-4-vision-preview", "gpt-4-turbo"],
+  // Modelo premium principal - USAR LOVABLE AI
+  premium_model: "google/gemini-2.5-pro",
+  fallback_models: ["openai/gpt-5", "openai/gpt-5-mini"],
   max_completion_tokens: 4096,
   temperature: 0.2,
   system_prompt: ''
 };
+
+// 🔧 FUNÇÃO UTILITÁRIA: Normalizar URL de imagem para evitar duplicação de prefixo
+function normalizeImageUrl(imgData: string, mime: string): string {
+  // Se já começa com 'data:', usar como está
+  if (imgData.startsWith('data:')) {
+    return imgData;
+  }
+  // Senão, adicionar prefixo
+  return `data:${mime};base64,${imgData}`;
+}
 
 // 🎯 TEMPLATE PARA ANÁLISE PREMIUM HUMANIZADA DE EXAMES
 const PREMIUM_ANALYSIS_PROMPT = `Você é uma IA médica educativa premium especializada em traduzir exames laboratoriais para linguagem totalmente leiga, humana e compreensível.
@@ -2436,69 +2446,21 @@ ANTES DO JSON, escreva uma análise clínica EDUCATIVA, curta e objetiva, basead
         .eq('id', documentId || '')
         .eq('user_id', userIdEffective || '');
       
-      // PASSO 1: Usar Google Vision para extrair texto de TODAS as imagens
-      console.log(`🔍 Extraindo texto de ${imagesLimited.length} imagens via OCR...`);
+      // PASSO 1: Preparar para análise com Lovable AI (OCR integrado nos modelos de visão)
+      console.log(`🔍 Preparando ${imagesLimited.length} imagens para análise com IA...`);
       let extractedText = '';
       
-      try {
-        // 🔥 EXTRAIR OCR DE TODAS AS IMAGENS (não apenas a primeira!)
-        for (let i = 0; i < imagesLimited.length; i++) {
-          const img = imagesLimited[i];
-          console.log(`📄 OCR imagem ${i + 1}/${imagesLimited.length}...`);
-          
-          try {
-            const visionResponse = await fetch(
-              `${Deno.env.get('SUPABASE_URL')}/functions/v1/vision-api`,
-              {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                  apikey: SUPABASE_ANON_KEY || '',
-                },
-                body: JSON.stringify({
-                  image: img.data,
-                  features: ['TEXT_DETECTION', 'DOCUMENT_TEXT_DETECTION']
-                })
-              }
-            );
-            
-            if (visionResponse.ok) {
-              const visionData = await visionResponse.json();
-              const pageText = visionData.extractedText || '';
-              if (pageText) {
-                extractedText += `\n\n--- PÁGINA ${i + 1} ---\n${pageText}`;
-                console.log(`✅ Página ${i + 1}: ${pageText.length} caracteres`);
-              }
-            } else {
-              console.warn(`⚠️ OCR falhou para imagem ${i + 1}: ${visionResponse.status}`);
-            }
-          } catch (pageError) {
-            console.warn(`⚠️ Erro OCR página ${i + 1}:`, pageError);
-          }
-          
-          // Pequena pausa entre chamadas para evitar rate limit
-          if (i < imagesLimited.length - 1) {
-            await new Promise(r => setTimeout(r, 150));
-          }
-        }
-        
-        console.log(`✅ OCR completo: ${extractedText.length} caracteres de ${imagesLimited.length} imagens`);
-        
-        // Atualizar status
-        await supabase
-          .from('medical_documents')
-          .update({ 
-            processing_stage: 'analisando_com_ia', 
-            progress_pct: 80,
-            ocr_text: extractedText.substring(0, 10000) // Limitar tamanho
-          })
-          .eq('id', documentId || '')
-          .eq('user_id', userIdEffective || '');
-          
-      } catch (ocrError) {
-        console.error('❌ Erro ao extrair texto via OCR:', ocrError);
-        console.log('⚠️ Continuando sem OCR...');
-      }
+      // Atualizar status - Lovable AI faz OCR nativo, não precisa de Google Vision
+      await supabase
+        .from('medical_documents')
+        .update({ 
+          processing_stage: 'analisando_com_ia', 
+          progress_pct: 80
+        })
+        .eq('id', documentId || '')
+        .eq('user_id', userIdEffective || '');
+      
+      console.log('✅ Imagens preparadas para análise com Lovable AI (OCR nativo)');
       // ========================================
       // 🆕 USAR LOVABLE AI COMO MÉTODO PRIMÁRIO (google/gemini-2.5-pro)
       // ========================================
@@ -2555,13 +2517,24 @@ RESPONDA EM JSON VÁLIDO:
 
 ${extractedText ? `\n===== TEXTO OCR AUXILIAR =====\n${extractedText}\n===============================\nUse o texto acima para CONFIRMAR os valores lidos na imagem.` : ''}`;
 
-      // Função para chamar Lovable AI (mais preciso para exames)
-      const callLovableAI = async () => {
+      // 🔧 Função unificada para chamar Lovable AI Gateway (suporta Gemini e GPT)
+      const callLovableAI = async (model: string = 'google/gemini-2.5-pro') => {
         if (!LOVABLE_API_KEY) {
           throw new Error('LOVABLE_API_KEY não configurada');
         }
         
-        console.log('🤖 Chamando Lovable AI com google/gemini-2.5-pro para MÁXIMA PRECISÃO');
+        console.log(`🤖 Chamando Lovable AI com ${model} para MÁXIMA PRECISÃO`);
+        
+        // 🔧 NORMALIZAR URLs de imagem para evitar duplicação de prefixo
+        const imageContent = imagesLimited.map((img) => ({
+          type: 'image_url',
+          image_url: { 
+            url: normalizeImageUrl(img.data, img.mime),
+            detail: 'high' // 🔥 USAR HIGH para melhor leitura de texto pequeno
+          }
+        }));
+        
+        console.log(`📸 Enviando ${imageContent.length} imagens normalizadas`);
         
         const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
           method: 'POST',
@@ -2570,18 +2543,12 @@ ${extractedText ? `\n===== TEXTO OCR AUXILIAR =====\n${extractedText}\n=========
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            model: 'google/gemini-2.5-pro', // Modelo mais potente para exames
+            model,
             messages: [{
               role: 'user',
               content: [
                 { type: 'text', text: `Você está analisando ${imagesLimited.length} imagens de exames médicos. ANALISE TODAS AS PÁGINAS COMO UM ÚNICO DOCUMENTO COMPLETO.\n\n${MEDICAL_EXAM_PROMPT}` },
-                ...imagesLimited.map((img, idx) => ({
-                  type: 'image_url',
-                  image_url: { 
-                    url: img.data,
-                    detail: 'high' // 🔥 USAR HIGH para melhor leitura de texto pequeno
-                  }
-                }))
+                ...imageContent
               ]
             }],
             max_tokens: 8000,
@@ -2591,11 +2558,22 @@ ${extractedText ? `\n===== TEXTO OCR AUXILIAR =====\n${extractedText}\n=========
 
         if (!response.ok) {
           const errorText = await response.text();
-          console.error('❌ Lovable AI error:', response.status, errorText);
+          console.error(`❌ Lovable AI error (${model}):`, response.status, errorText);
+          
+          // Tratar rate limit e erro de pagamento
+          if (response.status === 429) {
+            throw new Error('Rate limit exceeded - aguarde alguns segundos');
+          }
+          if (response.status === 402) {
+            throw new Error('Payment required - adicione créditos na Lovable');
+          }
+          
           throw new Error(`Lovable AI error: ${response.status}`);
         }
 
         const data = await response.json();
+        console.log(`✅ ${model} respondeu com sucesso`);
+        
         return {
           choices: [{
             message: {
@@ -2605,46 +2583,11 @@ ${extractedText ? `\n===== TEXTO OCR AUXILIAR =====\n${extractedText}\n=========
         };
       };
 
-      // Função otimizada para chamar OpenAI (fallback)
-      const callOpenAI = async (model: string) => {
-        const adjustedTokens = model.includes('gpt-4o') ? 16000 : 4096;
-        console.log(`🔢 Tokens ajustados: ${adjustedTokens}`);
-        
-        const body = {
-          model,
-          messages: [{
-            role: 'user',
-            content: [
-              { type: 'text', text: systemPrompt + (extractedText ? `\n\nTEXTO OCR:\n${extractedText}` : '') },
-              ...imagesLimited.map(img => ({
-                type: 'image_url',
-                image_url: { url: img.data, detail: 'high' }
-              }))
-            ]
-          }],
-          temperature: 0.1,
-          max_tokens: adjustedTokens
-        };
-        
-        const resp = await fetch('https://api.openai.com/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${OPENAI_API_KEY}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(body),
-        });
-        
-        const json = await resp.json();
-        if (!resp.ok) throw new Error(json?.error?.message || 'OpenAI error');
-        return json;
-      };
-
       // Usar o modelo definido na configuração
       let usedModel: string = 'google/gemini-2.5-pro';
       let aiResponse: any;
       
-      console.log('🤖 Tentando Lovable AI primeiro (mais preciso)...');
+      console.log('🤖 Iniciando cascata de modelos Lovable AI...');
       await supabase
         .from('medical_documents')
         .update({ 
@@ -2654,57 +2597,32 @@ ${extractedText ? `\n===== TEXTO OCR AUXILIAR =====\n${extractedText}\n=========
         .eq('id', documentId || '')
         .eq('user_id', userIdEffective || '');
       
-      // ESTRATÉGIA: Lovable AI primeiro, OpenAI como fallback
-      try { 
-        aiResponse = await callLovableAI(); 
-        console.log('✅ Lovable AI (Gemini Pro) respondeu com sucesso');
-      }
-      catch (e) {
-        console.log('⚠️ Lovable AI falhou, tentando OpenAI:', e);
-        try { 
-          usedModel = 'gpt-4o'; 
-          aiResponse = await callOpenAI(usedModel); 
-          console.log('✅ Fallback 1 (GPT-4o) funcionou');
-        }
-        catch (e2) {
-          console.log('⚠️ Fallback 2 para GPT-4o-mini:', e2);
-          try {
-            usedModel = 'gpt-4o-mini';
-            aiResponse = await callOpenAI(usedModel);
-            console.log('✅ Fallback 2 (GPT-4o-mini) funcionou');
+      // 🔧 CASCATA DE MODELOS VIA LOVABLE AI GATEWAY (Gemini + GPT)
+      const modelCascade = [
+        'google/gemini-2.5-pro',   // Melhor para imagens de exames
+        'openai/gpt-5',            // Fallback robusto
+        'openai/gpt-5-mini'        // Fallback rápido
+      ];
+      
+      for (const model of modelCascade) {
+        try {
+          console.log(`🔄 Tentando modelo: ${model}`);
+          aiResponse = await callLovableAI(model);
+          usedModel = model;
+          console.log(`✅ Sucesso com ${model}`);
+          break;
+        } catch (error: any) {
+          console.warn(`⚠️ Falhou com ${model}:`, error.message);
+          
+          // Se for rate limit, aguardar antes de tentar próximo
+          if (error.message.includes('Rate limit')) {
+            console.log('⏳ Aguardando 2 segundos antes de tentar próximo modelo...');
+            await new Promise(r => setTimeout(r, 2000));
           }
-          catch (e3) {
-            console.log('⚠️ Fallback 3 para modelo de texto:', e3);
-            usedModel = 'gpt-3.5-turbo';
-            
-            if (extractedText && extractedText.length > 0) {
-              console.log('📝 Usando apenas texto OCR para GPT-3.5');
-              const textOnlyResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-                method: 'POST',
-                headers: {
-                  'Authorization': `Bearer ${OPENAI_API_KEY}`,
-                  'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                  model: usedModel,
-                  messages: [{
-                    role: 'user',
-                    content: systemPrompt + '\n\nTEXTO EXTRAÍDO DO EXAME:\n' + extractedText + '\n\nAnalise os dados acima e responda no formato JSON especificado.'
-                  }],
-                  max_tokens: 4000,
-                  temperature: 0.1
-                })
-              });
-              
-              if (!textOnlyResponse.ok) {
-                throw new Error('Falha no fallback de texto');
-              }
-              
-              aiResponse = await textOnlyResponse.json();
-              console.log('✅ Fallback 3 com texto funcionou');
-            } else {
-              throw new Error('GPT-3.5 não suporta imagens e não há texto OCR disponível');
-            }
+          
+          // Se for último modelo, propagar erro
+          if (model === modelCascade[modelCascade.length - 1]) {
+            throw new Error(`Todos os modelos falharam. Último erro: ${error.message}`);
           }
         }
       }
@@ -2732,14 +2650,15 @@ ${extractedText ? `\n===== TEXTO OCR AUXILIAR =====\n${extractedText}\n=========
 EXTRAIA EXATAMENTE O QUE ESTÁ ESCRITO NA IMAGEM. NÃO INVENTE DADOS.`;
 
         try {
-          const simpleResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+          // 🔧 USAR LOVABLE AI GATEWAY para retry também
+          const simpleResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
             method: 'POST',
             headers: {
-              'Authorization': `Bearer ${OPENAI_API_KEY}`,
+              'Authorization': `Bearer ${LOVABLE_API_KEY}`,
               'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-              model: 'gpt-4o',
+              model: 'openai/gpt-5', // Modelo correto via Lovable AI
               messages: [{
                 role: 'user',
                 content: [
@@ -2747,7 +2666,7 @@ EXTRAIA EXATAMENTE O QUE ESTÁ ESCRITO NA IMAGEM. NÃO INVENTE DADOS.`;
                   ...imagesLimited.map(img => ({
                     type: 'image_url',
                     image_url: {
-                      url: `data:${img.mime};base64,${img.data}`,
+                      url: normalizeImageUrl(img.data, img.mime), // 🔧 NORMALIZAR URL
                       detail: 'high'
                     }
                   }))
