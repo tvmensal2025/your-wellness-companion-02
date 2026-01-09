@@ -2174,11 +2174,89 @@ ANTES DO JSON, escreva uma análise clínica EDUCATIVA, curta e objetiva, basead
       }
     }
 
-    // Limitação de imagens com base no modelo
-    const MAX_IMAGES = 30; // Permitir até 30 imagens para exames com muitas páginas
+    // Limitação de imagens com base no modelo - Aumentado para suportar exames grandes
+    const MAX_IMAGES = 50; // Permitir até 50 imagens para exames com muitas páginas
+    const BATCH_SIZE = 5; // Processar em lotes de 5 para evitar timeout
     
     // OTIMIZAÇÃO: Preparar para processamento eficiente
     console.log('🚀 Processamento otimizado habilitado');
+    
+    // 🔧 Parser JSON robusto com múltiplas tentativas
+    function parseAIResponseRobust(rawText: string): any {
+      if (!rawText || rawText.trim().length === 0) {
+        console.warn('⚠️ Texto vazio recebido para parse');
+        return null;
+      }
+      
+      const jsonStart = rawText.indexOf('{');
+      const jsonEnd = rawText.lastIndexOf('}');
+      
+      if (jsonStart === -1 || jsonEnd === -1 || jsonEnd <= jsonStart) {
+        console.warn('⚠️ Nenhum JSON encontrado no texto');
+        return null;
+      }
+      
+      let jsonStr = rawText.substring(jsonStart, jsonEnd + 1);
+      
+      // Tentativa 1: Parse direto
+      try {
+        const result = JSON.parse(jsonStr);
+        console.log('✅ JSON extraído com sucesso (tentativa 1)');
+        return result;
+      } catch (e) {
+        console.warn('⚠️ Tentativa 1 falhou, tentando corrigir JSON...');
+      }
+      
+      // Tentativa 2: Remover caracteres problemáticos
+      try {
+        jsonStr = jsonStr
+          .replace(/[\x00-\x1F\x7F]/g, '') // Remover caracteres de controle
+          .replace(/,\s*]/g, ']') // Remover vírgulas antes de ]
+          .replace(/,\s*}/g, '}') // Remover vírgulas antes de }
+          .replace(/\n/g, ' ') // Remover quebras de linha
+          .replace(/\r/g, ''); // Remover carriage returns
+        const result = JSON.parse(jsonStr);
+        console.log('✅ JSON extraído com sucesso (tentativa 2 - chars removidos)');
+        return result;
+      } catch (e) {
+        console.warn('⚠️ Tentativa 2 falhou, tentando extrair parcialmente...');
+      }
+      
+      // Tentativa 3: Tentar fechar arrays/objetos incompletos
+      try {
+        let depth = 0;
+        let lastValidPos = 0;
+        for (let i = 0; i < jsonStr.length; i++) {
+          if (jsonStr[i] === '{' || jsonStr[i] === '[') depth++;
+          if (jsonStr[i] === '}' || jsonStr[i] === ']') depth--;
+          if (depth === 0) lastValidPos = i + 1;
+        }
+        
+        if (lastValidPos > 0 && lastValidPos < jsonStr.length) {
+          const truncated = jsonStr.substring(0, lastValidPos);
+          const result = JSON.parse(truncated);
+          console.log('✅ JSON extraído com sucesso (tentativa 3 - truncado)');
+          return result;
+        }
+      } catch (e) {
+        console.warn('⚠️ Tentativa 3 falhou, tentando regex...');
+      }
+      
+      // Tentativa 4: Extrair apenas sections via regex
+      try {
+        const sectionsMatch = jsonStr.match(/"sections"\s*:\s*\[[\s\S]*?\]/);
+        if (sectionsMatch) {
+          const partialJson = `{"sections": ${sectionsMatch[0].split(':').slice(1).join(':')}}`;
+          const result = JSON.parse(partialJson);
+          console.log('✅ Sections extraídas via regex');
+          return result;
+        }
+      } catch (e) {
+        console.error('❌ Todas as tentativas de parse falharam');
+      }
+      
+      return null;
+    }
 
     let images: { mime: string; data: string }[] = [];
     if (resolvedPaths && resolvedPaths.length > 0) {
@@ -2841,16 +2919,7 @@ EXTRAIA EXATAMENTE O QUE ESTÁ ESCRITO NA IMAGEM. NÃO INVENTE DADOS.`;
       } else {
         // Extrair JSON dos dados apenas se não foi processado acima
         if (!extracted || Object.keys(extracted).length === 0) {
-          const jsonStart = rawText.indexOf('{');
-          const jsonEnd = rawText.lastIndexOf('}');
-          if (jsonStart !== -1 && jsonEnd !== -1 && jsonEnd > jsonStart) {
-            try {
-              extracted = JSON.parse(rawText.substring(jsonStart, jsonEnd + 1));
-              console.log('✅ JSON extraído com sucesso');
-            } catch (e) {
-              console.log('❌ Erro ao parsear JSON:', e);
-            }
-          }
+          extracted = parseAIResponseRobust(rawText);
         }
 
         // Análise textual (antes do JSON ou texto completo se não houver JSON)

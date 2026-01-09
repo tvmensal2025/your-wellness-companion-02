@@ -267,11 +267,16 @@ export async function handleMedicalResponse(
       status === "awaiting_confirm" &&
       (lower === "1" || lower === "sim" || lower === "s" || lower === "yes")
     ) {
+      // Estimate time based on image count
+      const estimatedMinutes = Math.max(1, Math.ceil(imagesCount * 0.3));
+      const timeText = estimatedMinutes <= 1 ? "menos de 1 minuto" : `até ${estimatedMinutes} minutos`;
+      const coffeeHint = imagesCount > 10 ? "São várias páginas! Pode aproveitar para tomar um café enquanto analiso. " : "";
+      
       await sendWhatsApp(
         phone,
         `🩺 *Iniciando análise de ${imagesCount} ${imagesCount === 1 ? "imagem" : "imagens"}...*\n\n` +
-          `⏳ *Tempo estimado: até 5 minutos*\n\n` +
-          `☕ Aguarde, eu aviso quando terminar!\n\n` +
+          `⏳ *Tempo estimado: ${timeText}*\n\n` +
+          `☕ ${coffeeHint}Aguarde, eu aviso quando terminar!\n\n` +
           `_Dr. Vital 🩺_`
       );
 
@@ -324,11 +329,13 @@ export async function handleMedicalResponse(
       return;
     }
 
-    // If collecting and not PRONTO, remind user
+    // If collecting and not PRONTO, remind user with gentle message
     if (status === "collecting") {
       await sendWhatsApp(
         phone,
-        `💡 _Você tem ${imagesCount} ${imagesCount === 1 ? "foto" : "fotos"} de exame pendentes. Digite *PRONTO* quando terminar de enviar!_`
+        `📋 *Oi! Ainda tenho ${imagesCount} ${imagesCount === 1 ? "foto" : "fotos"} do seu exame aguardando análise.*\n\n` +
+        `Quando estiver pronto, é só me avisar ou digitar *PRONTO*! 😊\n\n` +
+        `_Dr. Vital 🩺_`
       );
       return;
     }
