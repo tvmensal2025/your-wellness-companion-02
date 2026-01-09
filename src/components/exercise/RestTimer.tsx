@@ -20,22 +20,33 @@ interface RestTimerProps {
   onComplete?: () => void;
   autoStart?: boolean;
   className?: string;
+  // Callbacks externos para sincronizar som com o modal pai
+  onCountdownBeep?: () => void;
+  onFinishBeep?: () => void;
+  externalSoundEnabled?: boolean;
 }
 
 export const RestTimer: React.FC<RestTimerProps> = ({
   defaultSeconds = 60,
   onComplete,
   autoStart = false,
-  className
+  className,
+  onCountdownBeep,
+  onFinishBeep,
+  externalSoundEnabled
 }) => {
   const [seconds, setSeconds] = useState(defaultSeconds);
   const [isRunning, setIsRunning] = useState(autoStart);
-  const [soundEnabled, setSoundEnabled] = useState(true);
+  const [localSoundEnabled, setLocalSoundEnabled] = useState(true);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Criar audio context para o beep
-  const playBeep = useCallback(() => {
+  // Usar som externo se disponível, senão usar local
+  const soundEnabled = externalSoundEnabled !== undefined ? externalSoundEnabled : localSoundEnabled;
+  const setSoundEnabled = setLocalSoundEnabled;
+
+  // Criar audio context para o beep (fallback se não tiver callbacks externos)
+  const playLocalBeep = useCallback(() => {
     if (!soundEnabled) return;
     
     try {
@@ -66,14 +77,23 @@ export const RestTimer: React.FC<RestTimerProps> = ({
         setSeconds((prev) => {
           if (prev <= 1) {
             setIsRunning(false);
-            playBeep();
-            playBeep();
+            // Usar callback externo se disponível
+            if (onFinishBeep) {
+              onFinishBeep();
+            } else {
+              playLocalBeep();
+              playLocalBeep();
+            }
             onComplete?.();
             return 0;
           }
           // Beep nos últimos 3 segundos
           if (prev <= 4) {
-            playBeep();
+            if (onCountdownBeep) {
+              onCountdownBeep();
+            } else {
+              playLocalBeep();
+            }
           }
           return prev - 1;
         });
@@ -85,7 +105,7 @@ export const RestTimer: React.FC<RestTimerProps> = ({
         clearInterval(intervalRef.current);
       }
     };
-  }, [isRunning, seconds, playBeep, onComplete]);
+  }, [isRunning, seconds, playLocalBeep, onComplete, onCountdownBeep, onFinishBeep]);
 
   const toggleTimer = () => {
     if (seconds === 0) {
