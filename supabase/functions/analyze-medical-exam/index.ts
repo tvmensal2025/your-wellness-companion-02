@@ -2191,7 +2191,7 @@ ANTES DO JSON, escreva uma análise clínica EDUCATIVA, curta e objetiva, basead
     // OTIMIZAÇÃO: Preparar para processamento eficiente
     console.log('🚀 Processamento otimizado habilitado');
     
-    // 🔧 Parser JSON robusto com múltiplas tentativas
+      // 🔧 Parser JSON robusto com múltiplas tentativas - MELHORADO para JSON truncado
     function parseAIResponseRobust(rawText: string): any {
       if (!rawText || rawText.trim().length === 0) {
         console.warn('⚠️ Texto vazio recebido para parse');
@@ -2201,12 +2201,17 @@ ANTES DO JSON, escreva uma análise clínica EDUCATIVA, curta e objetiva, basead
       const jsonStart = rawText.indexOf('{');
       const jsonEnd = rawText.lastIndexOf('}');
       
-      if (jsonStart === -1 || jsonEnd === -1 || jsonEnd <= jsonStart) {
+      if (jsonStart === -1) {
         console.warn('⚠️ Nenhum JSON encontrado no texto');
         return null;
       }
       
-      let jsonStr = rawText.substring(jsonStart, jsonEnd + 1);
+      // Se não encontrou o fechamento, provavelmente está truncado
+      let jsonStr = jsonEnd > jsonStart 
+        ? rawText.substring(jsonStart, jsonEnd + 1)
+        : rawText.substring(jsonStart);
+      
+      console.log(`📊 JSON detectado: ${jsonStr.length} chars, fechado: ${jsonEnd > jsonStart}`);
       
       // Tentativa 1: Parse direto
       try {
@@ -2229,36 +2234,101 @@ ANTES DO JSON, escreva uma análise clínica EDUCATIVA, curta e objetiva, basead
         console.log('✅ JSON extraído com sucesso (tentativa 2 - chars removidos)');
         return result;
       } catch (e) {
-        console.warn('⚠️ Tentativa 2 falhou, tentando extrair parcialmente...');
+        console.warn('⚠️ Tentativa 2 falhou, tentando fechar JSON truncado...');
       }
       
-      // Tentativa 3: Tentar fechar arrays/objetos incompletos
+      // Tentativa 3: NOVO - Fechar automaticamente arrays/objetos abertos (para JSON truncado)
       try {
-        let depth = 0;
-        let lastValidPos = 0;
-        for (let i = 0; i < jsonStr.length; i++) {
-          if (jsonStr[i] === '{' || jsonStr[i] === '[') depth++;
-          if (jsonStr[i] === '}' || jsonStr[i] === ']') depth--;
-          if (depth === 0) lastValidPos = i + 1;
+        // Limpar string primeiro
+        let fixedJson = jsonStr
+          .replace(/[\x00-\x1F\x7F]/g, '')
+          .replace(/\n/g, ' ')
+          .replace(/\r/g, '');
+        
+        // Remover texto incompleto no final (após última vírgula ou dois-pontos)
+        // Exemplo: ..."how_it_works": "texto incompleto  <- cortar aqui
+        fixedJson = fixedJson.replace(/,\s*"[^"]*":\s*"[^"]*$/g, '');
+        fixedJson = fixedJson.replace(/,\s*"[^"]*":\s*$/g, '');
+        fixedJson = fixedJson.replace(/,\s*"[^"]*$/g, '');
+        fixedJson = fixedJson.replace(/,\s*$/g, '');
+        
+        // Contar chaves/colchetes abertos
+        let openBraces = (fixedJson.match(/{/g) || []).length;
+        let closeBraces = (fixedJson.match(/}/g) || []).length;
+        let openBrackets = (fixedJson.match(/\[/g) || []).length;
+        let closeBrackets = (fixedJson.match(/]/g) || []).length;
+        
+        console.log(`🔧 Fechamentos faltantes: ${openBrackets - closeBrackets} colchetes, ${openBraces - closeBraces} chaves`);
+        
+        // Adicionar fechamentos faltantes (na ordem correta: ] primeiro, depois })
+        while (openBrackets > closeBrackets) {
+          // Verificar se o último elemento precisa de fechamento
+          if (fixedJson.match(/"\s*$/)) {
+            fixedJson += '}'; // Fechar objeto dentro do array
+            closeBraces++;
+          }
+          fixedJson += ']';
+          closeBrackets++;
+        }
+        while (openBraces > closeBraces) {
+          fixedJson += '}';
+          closeBraces++;
         }
         
-        if (lastValidPos > 0 && lastValidPos < jsonStr.length) {
-          const truncated = jsonStr.substring(0, lastValidPos);
-          const result = JSON.parse(truncated);
-          console.log('✅ JSON extraído com sucesso (tentativa 3 - truncado)');
-          return result;
-        }
+        const result = JSON.parse(fixedJson);
+        console.log('✅ JSON recuperado com fechamentos automáticos (tentativa 3)');
+        return result;
       } catch (e) {
-        console.warn('⚠️ Tentativa 3 falhou, tentando regex...');
+        console.warn('⚠️ Tentativa 3 falhou, tentando extrair seções parciais...');
       }
       
-      // Tentativa 4: Extrair apenas sections via regex
+      // Tentativa 4: Extrair métricas parciais mesmo de JSON incompleto
+      try {
+        // Extrair patient_name se existir
+        const patientMatch = jsonStr.match(/"patient_name"\s*:\s*"([^"]+)"/);
+        const dateMatch = jsonStr.match(/"exam_date"\s*:\s*"([^"]+)"/);
+        const labMatch = jsonStr.match(/"laboratory"\s*:\s*"([^"]+)"/);
+        
+        // Extrair métricas individuais com regex
+        const metricRegex = /\{\s*"name"\s*:\s*"([^"]+)"\s*,\s*"value"\s*:\s*"([^"]+)"\s*,\s*"unit"\s*:\s*"([^"]+)"\s*,\s*"reference"\s*:\s*"([^"]+)"\s*,\s*"status"\s*:\s*"([^"]+)"/g;
+        const metrics: any[] = [];
+        let match;
+        
+        while ((match = metricRegex.exec(jsonStr)) !== null) {
+          metrics.push({
+            name: match[1],
+            value: match[2],
+            unit: match[3],
+            reference: match[4],
+            status: match[5]
+          });
+        }
+        
+        if (metrics.length > 0) {
+          console.log(`✅ Extraídas ${metrics.length} métricas via regex (tentativa 4)`);
+          return {
+            patient_name: patientMatch?.[1] || 'Paciente',
+            exam_date: dateMatch?.[1] || new Date().toLocaleDateString('pt-BR'),
+            laboratory: labMatch?.[1] || 'Laboratório',
+            sections: [{
+              title: 'Exames Laboratoriais',
+              icon: '🔬',
+              metrics
+            }],
+            summary: `Análise recuperada com ${metrics.length} exames identificados.`
+          };
+        }
+      } catch (e) {
+        console.warn('⚠️ Tentativa 4 falhou, tentando última opção...');
+      }
+      
+      // Tentativa 5: Extrair apenas sections via regex tradicional
       try {
         const sectionsMatch = jsonStr.match(/"sections"\s*:\s*\[[\s\S]*?\]/);
         if (sectionsMatch) {
           const partialJson = `{"sections": ${sectionsMatch[0].split(':').slice(1).join(':')}}`;
           const result = JSON.parse(partialJson);
-          console.log('✅ Sections extraídas via regex');
+          console.log('✅ Sections extraídas via regex (tentativa 5)');
           return result;
         }
       } catch (e) {
@@ -2491,29 +2561,23 @@ EXTRAIA TODOS OS DADOS DO EXAME NA IMAGEM COM EXATIDÃO ABSOLUTA:
    - INCLUA TODOS os exames, mesmo os que parecem normais
    - Preste atenção especial em: decimais, vírgulas e pontos
 
-RESPONDA EM JSON VÁLIDO:
+RESPONDA EM JSON COMPACTO (NÃO inclua how_it_works para economizar tokens):
 {
-  "patient_name": "Nome Exato do Paciente",
+  "patient_name": "Nome Exato",
   "exam_date": "DD/MM/YYYY",
-  "laboratory": "Nome do Laboratório",
+  "laboratory": "Lab",
   "sections": [
     {
       "title": "Hemograma",
-      "icon": "🔬",
       "metrics": [
-        {
-          "name": "Hemoglobina",
-          "value": "13.5",
-          "unit": "g/dL",
-          "reference": "12.0 - 16.0",
-          "status": "normal",
-          "how_it_works": "Mede a capacidade do sangue de transportar oxigênio"
-        }
+        {"name": "Hemoglobina", "value": "13.5", "unit": "g/dL", "reference": "12.0-16.0", "status": "normal"}
       ]
     }
   ],
-  "summary": "Resumo geral da saúde do paciente"
+  "summary": "Resumo breve"
 }
+
+IMPORTANTE: Seja CONCISO. Use apenas os campos mostrados acima. NÃO adicione campos extras.
 
 ${extractedText ? `\n===== TEXTO OCR AUXILIAR =====\n${extractedText}\n===============================\nUse o texto acima para CONFIRMAR os valores lidos na imagem.` : ''}`;
 
@@ -2551,7 +2615,7 @@ ${extractedText ? `\n===== TEXTO OCR AUXILIAR =====\n${extractedText}\n=========
                 ...imageContent
               ]
             }],
-            max_tokens: 8000,
+            max_tokens: 16000, // 🔥 DOBRADO para suportar exames com muitas páginas
             temperature: 0.1 // Baixa temperatura = mais preciso
           })
         });
