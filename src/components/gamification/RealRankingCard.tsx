@@ -129,6 +129,11 @@ export const RealRankingCard: React.FC = () => {
                       {user.streak}
                     </span>
                   )}
+                  {user.currentWeight && (
+                    <span className="flex items-center gap-1 text-emerald-600">
+                      {user.currentWeight.toFixed(1)} kg
+                    </span>
+                  )}
                 </div>
               </div>
 
