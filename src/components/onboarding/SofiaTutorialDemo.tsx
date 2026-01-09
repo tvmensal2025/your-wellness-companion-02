@@ -95,7 +95,7 @@ export const SofiaTutorialDemo: React.FC<SofiaTutorialDemoProps> = ({
                       transition={{ duration: 0.4, delay: 0.3 }}
                     >
                       <p className="message-text">
-                        Seja bem-vindo(a) à <strong className="sofia-name">Plataforma dos Sonhos</strong>! 
+                        Seja bem-vindo(a) à <strong className="sofia-name">MaxNutrition</strong>! 
                       </p>
                       
                       <p className="message-text">

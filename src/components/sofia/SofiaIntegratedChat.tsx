@@ -100,7 +100,7 @@ const SofiaIntegratedChat: React.FC<SofiaIntegratedChatProps> = ({
       setMessages([{
         id: '1',
         type: 'sofia',
-        content: `Oi ${userName}! Sou a Sofia, sua nutricionista virtual do Instituto dos Sonhos!
+        content: `Oi ${userName}! Sou a Sofia, sua nutricionista virtual da MaxNutrition!
 
 Estou aqui para te ajudar com:
 📸 Análise de refeições (envie fotos!)

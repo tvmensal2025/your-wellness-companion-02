@@ -187,7 +187,7 @@ Como posso ajudá-lo hoje?`,
     if (msg.includes('saúde') || msg.includes('bem-estar') || msg.includes('geral')) {
       return `🏥 **Dr. Vital - Análise de Saúde:**
 
-Estou processando seus dados completos do Instituto dos Sonhos para uma análise precisa. Seus dados incluem:
+Estou processando seus dados completos da MaxNutrition para uma análise precisa. Seus dados incluem:
 
 ✅ **Perfil Médico**: Anamnese, histórico familiar
 ✅ **Dados Físicos**: Peso, altura, composição corporal  

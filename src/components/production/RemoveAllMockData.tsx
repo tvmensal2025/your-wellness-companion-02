@@ -59,7 +59,7 @@ export const RemoveAllMockData: React.FC = () => {
             <li>Dados simulados de participações, medições, conversas</li>
             <li>Challenges e cursos de demonstração</li>
             <li>Perfis e dados físicos fictícios</li>
-            <li>Empresa configurada para "Instituto dos Sonhos"</li>
+            <li>Empresa configurada para "MaxNutrition"</li>
           </ul>
           
           <p className="mt-4"><strong>⚠️ AÇÃO NECESSÁRIA:</strong></p>

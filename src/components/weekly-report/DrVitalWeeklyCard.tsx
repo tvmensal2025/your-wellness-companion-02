@@ -232,8 +232,8 @@ export const DrVitalWeeklyCard: React.FC<DrVitalWeeklyCardProps> = ({
             </div>
           </div>
           <div className="text-right">
-            <p className="text-xs text-emerald-400/70 font-medium">Instituto dos Sonhos</p>
-            <p className="text-xs text-gray-500">Cuidando da sua saúde ✨</p>
+            <p className="text-xs text-emerald-400/70 font-medium">MaxNutrition</p>
+            <p className="text-xs text-gray-500">Nutrição Inteligente ✨</p>
           </div>
         </div>
       </div>
