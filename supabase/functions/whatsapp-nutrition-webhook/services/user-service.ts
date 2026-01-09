@@ -3,6 +3,7 @@ import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 export interface UserInfo {
   id: string;
   email: string;
+  full_name?: string;
 }
 
 /**
@@ -19,7 +20,7 @@ export async function findUserByPhone(
 
   const { data, error } = await supabase
     .from("profiles")
-    .select("user_id, email, phone")
+    .select("user_id, email, phone, full_name")
     .or(`phone.ilike.%${cleanPhone}%,phone.ilike.%${phone}%`)
     .limit(1)
     .maybeSingle();
@@ -30,7 +31,11 @@ export async function findUserByPhone(
   }
 
   if (data) {
-    return { id: data.user_id, email: data.email };
+    return { 
+      id: data.user_id, 
+      email: data.email,
+      full_name: data.full_name || undefined,
+    };
   }
 
   return null;
