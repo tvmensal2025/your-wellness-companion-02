@@ -10,13 +10,13 @@ import { motion } from "framer-motion";
 import { ExerciseDetailModal } from "./ExerciseDetailModal";
 import { WeeklyPlanView } from "./WeeklyPlanView";
 import { ActiveWorkoutModal } from "./ActiveWorkoutModal";
-import { WorkoutHistory, WorkoutHistoryContent } from "./WorkoutHistory";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { ProgressShareButton } from "./ProgressShareButton";
 import { Library } from "lucide-react";
 import { SavedProgramView } from "./SavedProgramView";
 
 import { useExerciseProgram } from "@/hooks/useExerciseProgram";
 import { useExercisesLibrary, Exercise, WeeklyPlan } from "@/hooks/useExercisesLibrary";
+import { useUserProgressStats } from "@/hooks/useUserProgressStats";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { matchExercisesFromActivities } from "@/lib/exercise-matching";
@@ -27,6 +27,7 @@ interface ExerciseDashboardProps {
 
 export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) => {
   const { activeProgram, completeWorkout, workoutLogs, loading: programLoading } = useExerciseProgram(user?.id);
+  const { stats: progressStats } = useUserProgressStats(user?.id || null);
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [activeWorkout, setActiveWorkout] = useState<WeeklyPlan | null>(null);
@@ -336,18 +337,15 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
         
         {/* Ações compactas no topo */}
         <div className="flex items-center gap-1 sm:gap-1.5">
-          {/* Botão Histórico */}
-          <Popover>
-            <PopoverTrigger asChild>
-              <WorkoutHistory logs={workoutLogs as any} />
-            </PopoverTrigger>
-            <PopoverContent className="w-72 sm:w-80 p-0" align="end">
-              <div className="p-3 border-b border-border/50">
-                <h4 className="font-semibold text-sm">Histórico de Treinos</h4>
-              </div>
-              <WorkoutHistoryContent logs={workoutLogs as any} />
-            </PopoverContent>
-          </Popover>
+          {/* Botão Progresso Compartilhável */}
+          <ProgressShareButton 
+            stats={{
+              totalWorkouts: (workoutLogs as any[])?.length || 0,
+              currentStreak: progressStats?.currentStreak || 0,
+              weightChange: progressStats?.weightChange || null,
+              challengesCompleted: progressStats?.challengesCompleted || 0,
+            }} 
+          />
 
           {/* Botão Biblioteca */}
           {hasSavedWeekPlan && (
