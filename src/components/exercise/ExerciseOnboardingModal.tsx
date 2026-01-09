@@ -42,8 +42,8 @@ interface ExerciseOnboardingModalProps {
 }
 
 // Removido: question8 (gênero) e question10 (idade) - buscamos do perfil do usuário
-// Adicionado: question4b (seleção de dias) e question5b (divisão de treino para academia)
-type Step = 'welcome' | 'question1' | 'question2' | 'question3' | 'question4' | 'question4b' | 'question5' | 'question5b' | 'question6' | 'question7' | 'question8' | 'question9' | 'result';
+// Adicionado: question4b (seleção de dias), question3b (quantidade de exercícios) e question5b (divisão de treino para academia)
+type Step = 'welcome' | 'question1' | 'question2' | 'question3' | 'question3b' | 'question4' | 'question4b' | 'question5' | 'question5b' | 'question6' | 'question7' | 'question8' | 'question9' | 'result';
 
 interface Answers {
   level: string;
@@ -59,6 +59,8 @@ interface Answers {
   // Novas perguntas de dias e divisão
   selectedDays: string[];
   trainingSplit: string;
+  // Nova: quantidade de exercícios por treino
+  exercisesPerDay: string;
 }
 
 export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = ({
@@ -79,6 +81,7 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
     specialCondition: '',
     selectedDays: [],
     trainingSplit: '',
+    exercisesPerDay: '',
   });
   const [saving, setSaving] = useState(false);
   const { saveProgram } = useExerciseProgram(user?.id);
@@ -302,7 +305,7 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
             }`}
             onClick={() => {
               handleAnswer('time', option.value);
-              setTimeout(() => setStep('question4'), 300);
+              setTimeout(() => setStep('question3b'), 300);
             }}
           >
             <CardContent className="p-4">
@@ -313,6 +316,56 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
                   <p className="text-sm opacity-80">{option.desc}</p>
                 </div>
                 {answers.time === option.value && <CheckCircle2 className="w-5 h-5" />}
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+
+  // PERGUNTA 3B: Quantos exercícios por treino
+  const renderQuestion3b = () => (
+    <div className="space-y-6 py-4">
+      <div className="text-center space-y-3">
+        <div className="flex justify-center mb-4">
+          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center shadow-lg">
+            <Dumbbell className="w-8 h-8 text-white" />
+          </div>
+        </div>
+        <h3 className="text-xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
+          Quantos exercícios por treino?
+        </h3>
+        <p className="text-sm text-muted-foreground">Escolha a intensidade ideal para você</p>
+      </div>
+
+      <div className="grid gap-3">
+        {[
+          { value: '3-4', icon: '⚡', title: 'Treino Rápido', desc: '3-4 exercícios (~15min)', color: 'from-green-500 to-emerald-500' },
+          { value: '5-6', icon: '🎯', title: 'Treino Padrão', desc: '5-6 exercícios (~25min)', color: 'from-blue-500 to-cyan-500' },
+          { value: '7-8', icon: '🏋️', title: 'Treino Completo', desc: '7-8 exercícios (~35min)', color: 'from-purple-500 to-pink-500' },
+          { value: '9-12', icon: '💪', title: 'Treino Avançado', desc: '9-12 exercícios (~45min)', color: 'from-orange-500 to-red-500' },
+        ].map(option => (
+          <Card 
+            key={option.value}
+            className={`cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-[1.02] ${
+              answers.exercisesPerDay === option.value 
+                ? `bg-gradient-to-r ${option.color} text-white shadow-2xl` 
+                : 'hover:bg-muted/50'
+            }`}
+            onClick={() => {
+              handleAnswer('exercisesPerDay', option.value);
+              setTimeout(() => setStep('question4'), 300);
+            }}
+          >
+            <CardContent className="p-3">
+              <div className="flex items-center gap-3">
+                <span className="text-xl">{option.icon}</span>
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-bold text-sm">{option.title}</h4>
+                  <p className="text-xs opacity-80">{option.desc}</p>
+                </div>
+                {answers.exercisesPerDay === option.value && <CheckCircle2 className="w-4 h-4 shrink-0" />}
               </div>
             </CardContent>
           </Card>
@@ -898,6 +951,7 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
           {step === 'question1' && renderQuestion1()}
           {step === 'question2' && renderQuestion2()}
           {step === 'question3' && renderQuestion3()}
+          {step === 'question3b' && renderQuestion3b()}
           {step === 'question4' && renderQuestion4()}
           {step === 'question4b' && renderQuestion4b()}
           {step === 'question5' && renderQuestion5()}

@@ -83,9 +83,15 @@ const TRAINING_SPLITS = {
 const DAY_NAMES = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
 const DAY_SHORT = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 
-// Calcula quantidade de exercícios por grupo baseado no tempo e nível
-const getExercisesPerGroup = (time?: string, level?: string): number => {
-  // Baseado no tempo disponível
+// Calcula quantidade de exercícios por grupo baseado na escolha do usuário, tempo e nível
+const getExercisesPerGroup = (exercisesPerDay?: string, time?: string, level?: string): number => {
+  // Se o usuário escolheu quantidade específica, usar essa
+  if (exercisesPerDay === '3-4') return 4;
+  if (exercisesPerDay === '5-6') return 6;
+  if (exercisesPerDay === '7-8') return 8;
+  if (exercisesPerDay === '9-12') return 12;
+  
+  // Fallback: baseado no tempo disponível
   if (time === '10-15') return 3;
   if (time === '20-30') return 4;
   if (time === '30-45') return 5;
@@ -97,7 +103,7 @@ const getExercisesPerGroup = (time?: string, level?: string): number => {
   if (level === 'moderado') return 5;
   if (level === 'avancado') return 6;
   
-  return 4; // default
+  return 5; // default
 };
 
 export const useExercisesLibrary = (
@@ -105,7 +111,8 @@ export const useExercisesLibrary = (
   goal: string = 'condicionamento',
   difficulty?: string,
   time?: string,
-  level?: string
+  level?: string,
+  exercisesPerDay?: string
 ) => {
   const [exercises, setExercises] = useState<Exercise[]>([]);
   const [weeklyPlan, setWeeklyPlan] = useState<WeeklyPlan[]>([]);
@@ -113,7 +120,7 @@ export const useExercisesLibrary = (
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const exercisesPerGroup = getExercisesPerGroup(time, level);
+  const exercisesPerGroup = getExercisesPerGroup(exercisesPerDay, time, level);
 
   // Buscar exercícios por grupos musculares
   const fetchExercisesByMuscleGroups = useCallback(async (muscleGroups: string[]): Promise<Exercise[]> => {
