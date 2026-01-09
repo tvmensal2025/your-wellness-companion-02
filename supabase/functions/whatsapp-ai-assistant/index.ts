@@ -740,7 +740,7 @@ serve(async (req) => {
         tools: TOOLS,
         tool_choice: "auto",
         temperature: 0.7,  // Mais preciso para entender voz
-        max_tokens: 700,
+        max_completion_tokens: 700,  // OpenAI usa max_completion_tokens (não max_tokens)
       }),
     });
 
@@ -808,7 +808,7 @@ serve(async (req) => {
           model: AI_MODEL,
           messages: followUpMessages,
           temperature: 0.8,
-          max_tokens: 400,
+          max_completion_tokens: 400,
         }),
       });
 

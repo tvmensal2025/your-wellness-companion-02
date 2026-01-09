@@ -403,10 +403,14 @@ async function handleSmartResponse(user: UserInfo, phone: string, text: string):
     });
 
     if (error) {
+      console.error("[WhatsApp] Erro na IA:", error);
       await sendWhatsApp(phone,
-        "🤔 Hmm, não entendi muito bem. Pode reformular?\n\n" +
-        "💡 *Dica:* Envie uma foto da sua refeição ou me conte o que comeu!\n\n" +
-        "_Sofia 🥗_"
+        `Oi! 👋 Tive um probleminha técnico, mas estou aqui!\n\n` +
+        `Como posso te ajudar?\n\n` +
+        `📸 *Foto de refeição* → analiso calorias\n` +
+        `🩺 *Foto de exame* → analiso resultados\n` +
+        `💬 *Me conta o que comeu* → registro pra você\n\n` +
+        `_Sofia 💚_`
       );
       return;
     }
