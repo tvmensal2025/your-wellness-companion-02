@@ -1,14 +1,14 @@
 // ========================================
 // 🔧 SISTEMA APRIMORADO DE DETECÇÃO DE ALIMENTOS
 // Usa tabela TACO para cálculos nutricionais precisos
-// Prioridade: Lovable AI (google/gemini-2.5-flash) - PRECISÃO MÁXIMA
+// Prioridade: Lovable AI (google/gemini-2.5-pro) - MÁXIMA PRECISÃO VISUAL
 // ========================================
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.55.0';
 
 const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
 const RATE_LIMIT_DELAY = 500;
-const MAX_RETRIES = 2; // 2 retries para garantir sucesso
+const MAX_RETRIES = 3; // 3 retries para garantir sucesso
 
 // Supabase client
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
@@ -18,11 +18,11 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
 // Cache em memória para TACO (dura durante a requisição)
 const tacoCache: Map<string, any> = new Map();
 
-// Configuração de IA - Usando modelo FLASH para PRECISÃO
+// Configuração de IA - Usando modelo PRO para MÁXIMA PRECISÃO em imagens
 let AI_MODEL_CONFIG = {
-  model: 'google/gemini-2.5-flash', // Modelo preciso (não lite!)
-  max_tokens: 2500, // Mais tokens para análise detalhada
-  temperature: 0.15 // Baixa temperatura = mais preciso
+  model: 'google/gemini-2.5-pro', // Modelo PRO = melhor para análise visual complexa
+  max_tokens: 4000, // Mais tokens para análise detalhada
+  temperature: 0.1 // Temperatura muito baixa = máxima precisão
 };
 
 // ========================================
@@ -482,45 +482,54 @@ async function calculateNutritionFromTaco(foods: Array<{ name: string; grams: nu
 // ========================================
 // 🤖 PROMPTS PARA DETECÇÃO COM MÁXIMA PRECISÃO
 // ========================================
-const FOOD_DETECTION_PROMPT = `Você é um NUTRICIONISTA ESPECIALIZADO em análise visual de refeições brasileiras.
+const FOOD_DETECTION_PROMPT = `Você é um NUTRICIONISTA CERTIFICADO especialista em análise visual de refeições.
 
-ANALISE ESTA FOTO COM MÁXIMA PRECISÃO E ATENÇÃO AOS DETALHES.
+🎯 TAREFA: Analise esta foto de refeição com MÁXIMA PRECISÃO e identifique TODOS os alimentos visíveis.
 
-REGRAS OBRIGATÓRIAS:
-1. IDENTIFIQUE TODOS os alimentos visíveis, mesmo parcialmente cobertos
-2. ESTIME o peso em gramas baseado no tamanho do prato/recipiente
-3. DIFERENCIE com cuidado:
-   - Carne VERMELHA (bovina, marrom/escura) vs Carne BRANCA (frango/peixe, clara)
-   - Batata FRITA (dourada, crocante) vs Batata COZIDA (clara, macia) vs Batata ASSADA
-   - Arroz BRANCO vs Arroz INTEGRAL (mais escuro)
-   - Ovo FRITO (gema aparente, bordas crocantes) vs Ovo COZIDO (sem gordura) vs Ovo MEXIDO (desfiado)
-4. IDENTIFIQUE o método de preparo visualmente:
-   - FRITO: superfície dourada/crocante, brilho de óleo
-   - GRELHADO: marcas de grelha, superfície seca
-   - COZIDO: aparência úmida, cor mais clara
-   - ASSADO: superfície tostada uniforme
-5. INCLUA molhos, temperos e acompanhamentos visíveis
+📏 REGRAS DE ESTIMATIVA DE PESO (OBRIGATÓRIO):
+1. Use referências visuais do prato/recipiente para estimar gramas
+2. Prato raso padrão = 22-26cm de diâmetro
+3. Colher de sopa cheia ≈ 15g (sólidos) ou 15ml (líquidos)
+4. Porção que ocupa 1/4 do prato ≈ 80-100g
+5. Porção que ocupa 1/3 do prato ≈ 100-130g
+6. Porção que ocupa 1/2 do prato ≈ 150-200g
 
-PORÇÕES TÍPICAS BRASILEIRAS (use como referência):
-- Prato raso: arroz ~150g, feijão ~100g, carne ~120g
-- Prato fundo: sopa ~300ml, macarrão ~200g
-- Copo: ~250ml, Xícara: ~150ml
-- Fatia de pizza: ~100g, Coxinha média: ~80g
+🍖 IDENTIFICAÇÃO DE PROTEÍNAS (CRÍTICO):
+- CARNE BOVINA: cor marrom/escura, textura fibrosa, pode ter gordura branca
+- FRANGO: cor clara/branca, textura lisa, sem veios de gordura
+- PEIXE: cor clara, textura em lascas, pode ser rosado (salmão)
+- PORCO: cor rosada clara, pode ter camada de gordura
 
-NOMES CORRETOS (use EXATAMENTE assim):
-✅ "bife grelhado" (carne bovina escura)
-✅ "frango grelhado" (carne branca clara)
-✅ "batata frita" (dourada, crocante)
-✅ "batata cozida" (clara, macia)
-✅ "ovo frito" (com gema aparente)
-✅ "ovo cozido" (descascado, inteiro)
-✅ "arroz branco" (não apenas "arroz")
-✅ "feijão carioca" ou "feijão preto"
+🥔 IDENTIFICAÇÃO DE PREPAROS (CRÍTICO):
+- FRITO: superfície dourada/crocante, brilho de óleo, bordas irregulares
+- GRELHADO: marcas de grelha, superfície seca, listras escuras
+- COZIDO: aparência úmida, cor mais clara, textura macia
+- ASSADO: superfície tostada uniforme, cor dourada
 
-RESPONDA APENAS EM JSON VÁLIDO:
-{"foods":[{"name":"alimento com preparo","grams":100,"confidence":0.9}],"meal_type":"cafe_da_manha|almoco|jantar|lanche","needs_confirmation":false,"ambiguous_items":[],"notes":"observações importantes"}
+🍳 OVOS:
+- FRITO: gema amarela visível, clara com bordas crocantes, brilho de óleo
+- COZIDO: formato oval perfeito, sem óleo, cor uniforme
+- MEXIDO: pedaços irregulares amarelos, textura cremosa
 
-Se houver DÚVIDA entre dois alimentos similares, defina needs_confirmation=true e liste em ambiguous_items.`;
+📋 FORMATO DE RESPOSTA (JSON VÁLIDO OBRIGATÓRIO):
+{
+  "foods": [
+    {"name": "nome_alimento_com_preparo", "grams": 150, "confidence": 0.95}
+  ],
+  "meal_type": "cafe_da_manha|almoco|jantar|lanche",
+  "needs_confirmation": false,
+  "ambiguous_items": [],
+  "notes": "observações sobre a análise"
+}
+
+⚠️ REGRAS IMPORTANTES:
+1. SEMPRE inclua o método de preparo no nome: "bife grelhado", "ovo frito", "batata frita"
+2. Estime gramas com base no tamanho visual - NÃO use valores genéricos
+3. Confidence > 0.8 = certeza alta, 0.6-0.8 = média, < 0.6 = baixa
+4. Se não conseguir identificar um alimento, defina confidence baixa
+5. Inclua TODOS os itens visíveis: molhos, temperos, acompanhamentos
+
+ANALISE A IMAGEM AGORA E RETORNE APENAS O JSON:`;
 
 // ========================================
 // 🤖 FUNÇÃO PRINCIPAL
