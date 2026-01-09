@@ -149,6 +149,24 @@ const TOOLS = [
       },
     },
   },
+  {
+    type: "function",
+    function: {
+      name: "manage_medical_exams",
+      description: "Gerencia exames médicos pendentes. Use quando usuário perguntar sobre status de exames, quiser cancelar análises, ou ver exames pendentes.",
+      parameters: {
+        type: "object",
+        properties: {
+          action: { 
+            type: "string", 
+            enum: ["status", "cancel", "list", "cleanup"],
+            description: "Ação: status (ver progresso), cancel (cancelar análise), list (listar pendentes), cleanup (limpar antigos)" 
+          },
+        },
+        required: ["action"],
+      },
+    },
+  },
 ];
 
 // ============ EXECUÇÃO DE TOOLS ============
@@ -349,6 +367,58 @@ async function executeTool(userId: string, toolName: string, args: any): Promise
       }, { onConflict: "user_id,tracking_date" });
       
       return `🩺 Registrado: ${args.pain_location} (${args.pain_level || '?'}/10)`;
+    }
+
+    case "manage_medical_exams": {
+      const { action } = args;
+      
+      // Buscar lotes pendentes
+      const { data: batches } = await supabase
+        .from("whatsapp_pending_medical")
+        .select("id, status, images_count, created_at")
+        .eq("user_id", userId)
+        .eq("is_processed", false)
+        .in("status", ["collecting", "awaiting_confirm", "processing", "stuck"])
+        .order("created_at", { ascending: false })
+        .limit(5);
+      
+      if (action === "list" || action === "status") {
+        if (!batches || batches.length === 0) {
+          return "✅ Não há exames pendentes. Pode enviar novas fotos quando quiser!";
+        }
+        
+        const formatStatus = (s: string) => {
+          const map: Record<string, string> = {
+            collecting: "📥 Coletando",
+            awaiting_confirm: "⏳ Aguardando confirmação",
+            processing: "🔄 Analisando",
+            stuck: "⚠️ Travado",
+          };
+          return map[s] || s;
+        };
+        
+        const list = batches.map((b: any, i: number) => 
+          `${i+1}. ${b.images_count} foto(s) - ${formatStatus(b.status)}`
+        ).join("\n");
+        
+        return `📋 *Exames Pendentes:*\n${list}\n\nDigite "cancelar exames" para limpar tudo.`;
+      }
+      
+      if (action === "cancel" || action === "cleanup") {
+        if (!batches || batches.length === 0) {
+          return "✅ Não há exames para cancelar.";
+        }
+        
+        await supabase
+          .from("whatsapp_pending_medical")
+          .update({ status: "cancelled", is_processed: true })
+          .eq("user_id", userId)
+          .eq("is_processed", false);
+        
+        return `❌ ${batches.length} análise(s) cancelada(s). Pode enviar novos exames quando quiser!`;
+      }
+      
+      return "Ação não reconhecida.";
     }
 
     default:
@@ -633,16 +703,29 @@ ${ctx.maior_desafio ? `- Maior desafio: ${ctx.maior_desafio}` : ''}`;
 
   // ===== DR. VITAL =====
   if (personality === 'drvital') {
-    return `Você é o Dr. Vital, médico virtual do Instituto dos Sonhos.
+    return `Você é o Dr. Vital, médico virtual e assistente pessoal de saúde do Instituto dos Sonhos.
 
-PERSONALIDADE:
-- Profissional, acolhedor e empático
-- Tom médico mas acessível e humano
+🩺 SEU PAPEL:
+- Você é o MÉDICO PESSOAL do usuário ${ctx.nome}
+- Analisa exames laboratoriais e de imagem
+- Explica resultados de forma clara e acessível
+- Dá orientações preventivas de saúde
+- Gerencia análises de exames pendentes
+
+💬 PERSONALIDADE:
+- Profissional mas acolhedor e empático
+- Usa linguagem simples, evita jargão médico
 - Respostas OBJETIVAS (3-5 linhas máximo)
 - Usa emojis médicos com moderação 🩺💊🏥
 - Fala com autoridade médica, mas acessível
-- NUNCA prescreve medicamentos - orienta buscar médico presencial
-- Identifica urgências e recomenda atendimento quando necessário
+- Sempre mostra empatia
+
+📋 CAPACIDADES:
+- Receber e analisar fotos de exames
+- Explicar o que cada exame significa
+- Comparar com valores de referência
+- Dar orientações de saúde preventiva
+- Gerenciar múltiplas análises pendentes (use manage_medical_exams)
 
 ${dadosUsuario}
 
@@ -655,10 +738,14 @@ REGRAS DO DR. VITAL:
 5. Quando mencionar DOR ou mal-estar, use a tool register_pain_symptom
 6. NUNCA prescreva medicamentos - oriente consulta presencial
 7. Seja tranquilizador mas responsável
+8. Se perguntarem sobre exames pendentes, use manage_medical_exams
 
 Saudação do momento: "${saudacao}, ${ctx.nome}!"
 
-IMPORTANTE: Responda em português brasileiro, tom profissional mas acolhedor.`;
+⚠️ IMPORTANTE: 
+- Sempre recomendar consulta médica para casos preocupantes
+- Nunca diagnosticar doenças, apenas interpretar resultados
+- Responda em português brasileiro, tom profissional mas acolhedor.`;
   }
 
   // ===== SOFIA (padrão) =====

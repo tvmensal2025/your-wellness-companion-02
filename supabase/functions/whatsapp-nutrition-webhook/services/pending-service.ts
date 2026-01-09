@@ -26,6 +26,8 @@ export interface PendingMedical {
   confirmed: boolean | null;
   is_processed: boolean;
   expires_at: string;
+  created_at: string;
+  last_image_at: string | null;
   analysis_result?: any;
 }
 
@@ -142,13 +144,13 @@ export async function checkAndClearExpiredPending(
 export async function cleanupStuckMedicalBatches(
   supabase: SupabaseClient,
   userId: string
-): Promise<void> {
+): Promise<number> {
   try {
     const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
 
     const { data: stuck } = await supabase
       .from("whatsapp_pending_medical")
-      .update({ status: "error", is_processed: true })
+      .update({ status: "stuck", is_processed: true })
       .eq("user_id", userId)
       .eq("status", "processing")
       .lt("updated_at", tenMinutesAgo)
@@ -157,8 +159,56 @@ export async function cleanupStuckMedicalBatches(
     if (stuck && stuck.length > 0) {
       console.log(`[PendingService] Limpos ${stuck.length} lotes presos em processing`);
     }
+    return stuck?.length || 0;
   } catch (e) {
     console.error("[PendingService] Erro ao limpar lotes presos:", e);
+    return 0;
+  }
+}
+
+/**
+ * Get all stuck or pending medical batches for user
+ */
+export async function getStuckMedicalBatches(
+  supabase: SupabaseClient,
+  userId: string
+): Promise<Array<{ id: string; status: string; images_count: number; created_at: string }>> {
+  try {
+    const { data } = await supabase
+      .from("whatsapp_pending_medical")
+      .select("id, status, images_count, created_at")
+      .eq("user_id", userId)
+      .eq("is_processed", false)
+      .in("status", ["collecting", "awaiting_confirm", "processing", "stuck"])
+      .order("created_at", { ascending: false })
+      .limit(5);
+    
+    return data || [];
+  } catch (e) {
+    console.error("[PendingService] Erro ao buscar lotes:", e);
+    return [];
+  }
+}
+
+/**
+ * Cancel all pending medical batches for user
+ */
+export async function cancelAllMedicalBatches(
+  supabase: SupabaseClient,
+  userId: string
+): Promise<number> {
+  try {
+    const { data } = await supabase
+      .from("whatsapp_pending_medical")
+      .update({ status: "cancelled", is_processed: true })
+      .eq("user_id", userId)
+      .eq("is_processed", false)
+      .select("id");
+    
+    return data?.length || 0;
+  } catch (e) {
+    console.error("[PendingService] Erro ao cancelar lotes:", e);
+    return 0;
   }
 }
 

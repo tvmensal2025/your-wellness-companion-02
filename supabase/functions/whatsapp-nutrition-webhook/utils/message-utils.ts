@@ -257,3 +257,55 @@ export function isMedicalAddMore(text: string): boolean {
   
   return patterns.some(p => p.test(lower));
 }
+
+/**
+ * Check if user wants to manage/check exam status
+ */
+export function isMedicalManage(text: string): boolean {
+  const lower = text.toLowerCase().trim();
+  const patterns = [
+    /gerenciar|manage|ver\s*exames?|meus\s*exames?/i,
+    /status|situa[cç][aã]o|como\s*(est[aá]|vai)/i,
+    /o\s*que\s*tenho|pendente/i,
+    /exames?\s*pendentes?/i,
+  ];
+  return patterns.some(p => p.test(lower));
+}
+
+/**
+ * Check if user wants to reset/start fresh
+ */
+export function isMedicalReset(text: string): boolean {
+  const lower = text.toLowerCase().trim();
+  const patterns = [
+    /^(limpar|reset|zerar|limpa\s*tudo|apagar)$/i,
+    /come[cç]ar\s*(de\s*novo|novo)|novo\s*exame/i,
+  ];
+  return patterns.some(p => p.test(lower));
+}
+
+/**
+ * Check if user wants to resume previous analysis
+ */
+export function isMedicalResume(text: string): boolean {
+  const lower = text.toLowerCase().trim();
+  const patterns = [
+    /^(retomar|continuar|voltar)$/i,
+    /pegar\s*de\s*onde|anterior/i,
+    /continuar\s*(análise|analise|exame)/i,
+  ];
+  return patterns.some(p => p.test(lower));
+}
+
+/**
+ * Check if user wants to retry stuck analysis
+ */
+export function isMedicalRetry(text: string): boolean {
+  const lower = text.toLowerCase().trim();
+  const patterns = [
+    /^(retentar|retry|tentar\s*de\s*novo|novamente)$/i,
+    /tentar\s*novamente/i,
+    /analisar\s*de\s*novo/i,
+  ];
+  return patterns.some(p => p.test(lower));
+}
