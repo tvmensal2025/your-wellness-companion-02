@@ -1,13 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
-  'Access-Control-Max-Age': '86400',
-};
+import { corsHeaders } from "../_shared/utils/cors.ts";
 
 // 🔥 USAR LOVABLE AI GATEWAY
 const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY")!;
