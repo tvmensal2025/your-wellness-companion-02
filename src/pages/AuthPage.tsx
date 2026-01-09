@@ -622,14 +622,11 @@ const AuthPage = () => {
       {/* Header */}
       <header className="absolute top-0 left-0 right-0 z-10 bg-background/60 backdrop-blur-xl border-b border-border/20">
         <div className="container py-3 px-4">
-          <Link to="/" className="flex items-center gap-3 group w-fit">
+          <Link to="/" className="flex items-center gap-2 group w-fit">
             <div className="flex items-center gap-2 p-2 rounded-xl bg-primary/10 group-hover:bg-primary/20 transition-colors">
               <ArrowLeft className="h-4 w-4 text-primary transition-transform group-hover:-translate-x-1" />
-              <img alt="MaxNutrition" className="h-7 w-7 object-contain" src="/lovable-uploads/3bfd6e33-93b0-415c-bd98-5ea8803813b3.png" />
             </div>
-            <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-primary via-primary/80 to-success bg-clip-text text-transparent">
-              MaxNutrition
-            </h1>
+            <span className="text-sm text-muted-foreground group-hover:text-foreground transition-colors">Voltar</span>
           </Link>
         </div>
       </header>
