@@ -500,6 +500,51 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_response_cache: {
+        Row: {
+          created_at: string
+          expires_at: string
+          hit_count: number | null
+          id: string
+          last_hit_at: string | null
+          model_used: string | null
+          query_hash: string
+          query_input: string
+          query_type: string
+          response_text: string
+          tokens_used: number | null
+          ttl_hours: number | null
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          hit_count?: number | null
+          id?: string
+          last_hit_at?: string | null
+          model_used?: string | null
+          query_hash: string
+          query_input: string
+          query_type: string
+          response_text: string
+          tokens_used?: number | null
+          ttl_hours?: number | null
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          hit_count?: number | null
+          id?: string
+          last_hit_at?: string | null
+          model_used?: string | null
+          query_hash?: string
+          query_input?: string
+          query_type?: string
+          response_text?: string
+          tokens_used?: number | null
+          ttl_hours?: number | null
+        }
+        Relationships: []
+      }
       ai_system_logs: {
         Row: {
           created_at: string | null
@@ -7853,6 +7898,48 @@ export type Database = {
         }
         Relationships: []
       }
+      rate_limits: {
+        Row: {
+          blocked_until: string | null
+          created_at: string
+          endpoint: string
+          id: string
+          is_blocked: boolean | null
+          max_requests: number | null
+          request_count: number | null
+          updated_at: string
+          user_id: string
+          window_hours: number | null
+          window_start: string
+        }
+        Insert: {
+          blocked_until?: string | null
+          created_at?: string
+          endpoint: string
+          id?: string
+          is_blocked?: boolean | null
+          max_requests?: number | null
+          request_count?: number | null
+          updated_at?: string
+          user_id: string
+          window_hours?: number | null
+          window_start?: string
+        }
+        Update: {
+          blocked_until?: string | null
+          created_at?: string
+          endpoint?: string
+          id?: string
+          is_blocked?: boolean | null
+          max_requests?: number | null
+          request_count?: number | null
+          updated_at?: string
+          user_id?: string
+          window_hours?: number | null
+          window_start?: string
+        }
+        Relationships: []
+      }
       reações_feed_de_saúde: {
         Row: {
           created_at: string | null
@@ -9893,6 +9980,33 @@ export type Database = {
           stock_quantity?: number | null
           tags?: string[] | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      system_metrics: {
+        Row: {
+          id: string
+          metadata: Json | null
+          metric_name: string
+          metric_type: string
+          metric_value: number
+          recorded_at: string
+        }
+        Insert: {
+          id?: string
+          metadata?: Json | null
+          metric_name: string
+          metric_type: string
+          metric_value: number
+          recorded_at?: string
+        }
+        Update: {
+          id?: string
+          metadata?: Json | null
+          metric_name?: string
+          metric_type?: string
+          metric_value?: number
+          recorded_at?: string
         }
         Relationships: []
       }
@@ -12876,6 +12990,16 @@ export type Database = {
         Returns: boolean
       }
       calculate_level: { Args: { xp: number }; Returns: number }
+      check_rate_limit: {
+        Args: {
+          p_endpoint: string
+          p_max_requests?: number
+          p_user_id: string
+          p_window_hours?: number
+        }
+        Returns: Json
+      }
+      cleanup_expired_cache: { Args: never; Returns: number }
       cleanup_old_chat_history: { Args: never; Returns: undefined }
       consolidate_daily_health_snapshot: {
         Args: { p_date?: string; p_user_id: string }

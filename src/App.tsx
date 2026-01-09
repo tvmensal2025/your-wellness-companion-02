@@ -41,6 +41,7 @@ const AutoLoginPage = lazy(() => import("./pages/AutoLoginPage"));
 const InstallPage = lazy(() => import("./pages/Install"));
 const PublicPostPage = lazy(() => import("./pages/PublicPostPage"));
 const PublicReport = lazy(() => import("./pages/PublicReport"));
+const SystemHealth = lazy(() => import("./pages/admin/SystemHealth"));
 
 const PageLoader = () => (
   <div className="flex items-center justify-center min-h-screen bg-background">
@@ -96,6 +97,7 @@ const App: React.FC = () => {
                 <Route path="/install" element={<Suspense fallback={<PageLoader />}><InstallPage /></Suspense>} />
                 <Route path="/community/post/:postId" element={<Suspense fallback={<PageLoader />}><PublicPostPage /></Suspense>} />
                 <Route path="/relatorio/:token" element={<Suspense fallback={<PageLoader />}><PublicReport /></Suspense>} />
+                <Route path="/admin/system-health" element={<Suspense fallback={<PageLoader />}><SystemHealth /></Suspense>} />
                 <Route path="*" element={<NotFound />} />
                 </Routes>
                 <SofiaFloatingButton />
