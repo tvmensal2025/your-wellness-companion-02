@@ -11,7 +11,8 @@ import {
   TrendingUp,
   Users,
   AlertTriangle,
-  Settings
+  Settings,
+  Inbox
 } from 'lucide-react';
 import { useWebhookManagement } from '@/hooks/useWebhookManagement';
 import {
@@ -24,6 +25,7 @@ import {
 } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import WebhookDestinationsManager from './WebhookDestinationsManager';
+import { ReceivedLeadsViewer } from './ReceivedLeadsViewer';
 
 export default function WebhookManagement() {
   const {
@@ -99,6 +101,10 @@ export default function WebhookManagement() {
           <TabsTrigger value="destinations" className="flex items-center gap-2">
             <Settings className="h-4 w-4" />
             Destinos
+          </TabsTrigger>
+          <TabsTrigger value="received" className="flex items-center gap-2">
+            <Inbox className="h-4 w-4" />
+            Recebidos
           </TabsTrigger>
         </TabsList>
 
@@ -237,6 +243,10 @@ export default function WebhookManagement() {
 
         <TabsContent value="destinations">
           <WebhookDestinationsManager />
+        </TabsContent>
+
+        <TabsContent value="received">
+          <ReceivedLeadsViewer />
         </TabsContent>
       </Tabs>
     </div>

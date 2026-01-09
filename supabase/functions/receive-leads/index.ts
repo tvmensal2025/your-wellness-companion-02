@@ -179,6 +179,21 @@ serve(async (req) => {
       }
     }
 
+    // Salvar na tabela received_leads para histórico
+    const sourceUrl = req.headers.get("origin") || req.headers.get("referer") || "unknown";
+    const { error: logError } = await supabase
+      .from("received_leads")
+      .insert({
+        source_url: sourceUrl,
+        source_name: payload.source_name || "webhook",
+        lead_data: payload,
+        received_at: new Date().toISOString(),
+      });
+
+    if (logError) {
+      console.warn("Failed to log received lead:", logError);
+    }
+
     // Log do recebimento
     console.log(`Lead ${action}: ${email} (${userId})`);
 
