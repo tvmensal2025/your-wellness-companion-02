@@ -622,7 +622,7 @@ const AuthPage = () => {
                 <img alt="Instituto dos Sonhos" className="h-6 w-6 sm:h-8 sm:w-8 object-contain" src="/lovable-uploads/3bfd6e33-93b0-415c-bd98-5ea8803813b3.png" />
               </div>
             </div>
-            <h1 className="text-lg sm:text-xl md:text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent text-center my-[13px] mx-[40px]">
+            <h1 className="sm:text-xl md:text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent text-center my-[13px] text-3xl mx-[25px]">
               ​MaxNutrition
             </h1>
           </Link>
@@ -636,9 +636,7 @@ const AuthPage = () => {
             <div className="space-y-1">
               <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
                 Comece sua
-                <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-                  {" "}transformação
-                </span>
+                
               </h1>
               <p className="text-sm sm:text-base text-muted-foreground">
                 Faça login ou crie sua conta gratuita
