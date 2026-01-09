@@ -451,6 +451,82 @@ function formatMealType(mealType: string | null): string {
   return types[mealType || ""] || mealType || "Refeição";
 }
 
+// ============ FALLBACK INTELIGENTE ============
+
+/**
+ * Gera resposta de fallback quando a IA não retorna conteúdo
+ * Especialmente útil para saudações simples como "Boa noite", "Oi", etc.
+ */
+function generateSmartFallback(message: string, ctx: CompactContext, personality: string): string {
+  const msgLower = message.toLowerCase().trim();
+  const nome = ctx.nome;
+  const signature = personality === 'drvital' ? '\n\n_Dr. Vital 🩺_' : '\n\n_Sofia 💚_';
+  
+  // Saudações - categoria mais comum de falha
+  const saudacoes = [
+    'oi', 'olá', 'ola', 'hey', 'hi', 'eai', 'e ai', 'e aí',
+    'boa noite', 'boa tarde', 'bom dia', 'boa madrugada',
+    'tudo bem', 'tudo bom', 'como vai', 'como você está',
+    'bom feriado', 'feliz feriado', 'salve', 'fala'
+  ];
+  
+  const isSaudacao = saudacoes.some(s => msgLower.includes(s));
+  
+  if (isSaudacao) {
+    const hora = new Date().getHours();
+    let saudacao = 'Olá';
+    if (hora >= 5 && hora < 12) saudacao = 'Bom dia';
+    else if (hora >= 12 && hora < 18) saudacao = 'Boa tarde';
+    else saudacao = 'Boa noite';
+    
+    // Contexto do dia para resposta mais rica
+    const aguaInfo = ctx.agua_hoje > 0 ? `\n💧 Água hoje: ${ctx.agua_hoje}ml` : '';
+    const calInfo = ctx.calorias_hoje > 0 ? `\n🍽️ Calorias: ${Math.round(ctx.calorias_hoje)} kcal` : '';
+    const statusDia = (aguaInfo || calInfo) ? `\n${aguaInfo}${calInfo}` : '';
+    
+    return `${saudacao}, ${nome}! 😊\n\n` +
+      `Como posso te ajudar hoje?${statusDia}\n\n` +
+      `📸 Envie foto da refeição\n` +
+      `✍️ Ou me conta o que comeu${signature}`;
+  }
+  
+  // Agradecimentos
+  const agradecimentos = ['obrigado', 'obrigada', 'valeu', 'thanks', 'brigado', 'brigada'];
+  if (agradecimentos.some(a => msgLower.includes(a))) {
+    return `Por nada, ${nome}! 😊 Estou aqui sempre que precisar!${signature}`;
+  }
+  
+  // Despedidas
+  const despedidas = ['tchau', 'até mais', 'ate mais', 'bye', 'adeus', 'fui', 'até logo', 'ate logo'];
+  if (despedidas.some(d => msgLower.includes(d))) {
+    return `Até mais, ${nome}! 👋 Cuide-se bem e volte sempre!${signature}`;
+  }
+  
+  // OK/Confirmações
+  const confirmacoes = ['ok', 'certo', 'entendi', 'blz', 'beleza', 'show', 'top', 'massa'];
+  if (confirmacoes.some(c => msgLower === c || msgLower.includes(c))) {
+    return `Perfeito, ${nome}! 😊 Precisa de mais alguma coisa?${signature}`;
+  }
+  
+  // Pedidos de ajuda
+  const ajuda = ['ajuda', 'help', 'menu', 'comandos', 'o que você faz', 'como funciona'];
+  if (ajuda.some(a => msgLower.includes(a))) {
+    return `${nome}, posso te ajudar com:\n\n` +
+      `📸 *Foto de refeição* → analiso calorias\n` +
+      `🩺 *Foto de exame* → interpreto resultados\n` +
+      `💬 *Descreva o que comeu* → registro pra você\n` +
+      `⚖️ *Diga seu peso* → registro e acompanho\n` +
+      `💧 *Registrar água* → ex: "bebi 500ml"\n` +
+      `📊 *Como estou?* → resumo do dia${signature}`;
+  }
+  
+  // Fallback genérico - resposta amigável que incentiva interação
+  return `Oi ${nome}! 😊\n\n` +
+    `Como posso te ajudar?\n\n` +
+    `📸 Envie uma foto da refeição\n` +
+    `✍️ Ou me conta o que comeu${signature}`;
+}
+
 // ============ CONTEXTO EXPANDIDO ============
 
 interface CompactContext {
@@ -905,6 +981,12 @@ serve(async (req) => {
       }
     }
 
+    // 🔥 FALLBACK INTELIGENTE para saudações e mensagens simples
+    if (!finalResponse || finalResponse.trim() === '') {
+      console.log(`[Sofia] Resposta vazia, gerando fallback para: "${message}"`);
+      finalResponse = generateSmartFallback(message, ctx, personality);
+    }
+
     // Salvar resposta da IA com personalidade correta
     if (finalResponse) {
       await saveMessage(userId, sessionId, "assistant", finalResponse, personality);
@@ -912,7 +994,7 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify({
-        response: finalResponse || "Hmm, não entendi. Pode repetir?",
+        response: finalResponse,
         personality: personality,  // Retorna qual voz foi usada
         toolResults: toolResults.length > 0 ? toolResults : undefined,
       }),
