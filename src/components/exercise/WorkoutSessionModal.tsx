@@ -78,7 +78,7 @@ export const WorkoutSessionModal: React.FC<WorkoutSessionModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="w-[calc(100vw-16px)] max-w-[400px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Play className="w-5 h-5 text-orange-600" />
@@ -88,9 +88,9 @@ export const WorkoutSessionModal: React.FC<WorkoutSessionModalProps> = ({
 
         <div className="space-y-6">
           {/* Timer */}
-          <div className="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950 dark:to-red-950 rounded-lg p-8 text-center">
-            <h3 className="text-lg font-semibold mb-4">{workoutName}</h3>
-            <div className="text-5xl font-bold text-orange-600 mb-4">
+          <div className="bg-gradient-to-br from-orange-50 to-red-50 dark:from-orange-950 dark:to-red-950 rounded-lg p-4 text-center">
+            <h3 className="text-base font-semibold mb-2 truncate">{workoutName}</h3>
+            <div className="text-4xl font-bold text-orange-600 mb-3">
               {formatTime(elapsedTime)}
             </div>
             <Button
