@@ -93,7 +93,22 @@ serve(async (req) => {
       // Trocar código por tokens
       const clientId = Deno.env.get('GOOGLE_FIT_CLIENT_ID')
       const clientSecret = Deno.env.get('GOOGLE_FIT_CLIENT_SECRET')
-      const redirectUri = `${Deno.env.get('SUPABASE_URL')}/functions/v1/google-fit-callback`
+      
+      // IMPORTANTE: Usar o mesmo redirectUri que foi usado na autorização (google-fit-token)
+      // O state contém o redirectUri original para garantir consistência
+      let redirectUri = `${Deno.env.get("SITE_URL") || "https://app.oficialmaxnutrition.com.br"}/google-fit-callback`;
+      
+      if (state) {
+        try {
+          const stateData = JSON.parse(decodeURIComponent(state));
+          if (stateData.redirectUri) {
+            redirectUri = stateData.redirectUri;
+            console.log('📍 Usando redirectUri do state:', redirectUri);
+          }
+        } catch (e) {
+          console.log('📍 Usando redirectUri padrão do SITE_URL');
+        }
+      }
 
       console.log('🔧 Configuração OAuth:')
       console.log('  - clientId:', clientId ? '✅ Configurado' : '❌ Não configurado')
