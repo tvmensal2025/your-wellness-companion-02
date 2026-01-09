@@ -3,7 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 // Services
 import { findUserByPhone, UserInfo } from "./services/user-service.ts";
-import { getPendingConfirmation, getPendingMedical, checkAndClearExpiredPending } from "./services/pending-service.ts";
+import { getPendingConfirmation, getPendingMedical, checkAndClearExpiredPending, getStuckMedicalBatches, cancelAllMedicalBatches, cleanupStuckMedicalBatches } from "./services/pending-service.ts";
 import { interpretUserIntent } from "./services/intent-service.ts";
 
 // Handlers
@@ -19,6 +19,9 @@ import {
   hasImage,
   isConfirmationPositive,
   detectMealType,
+  isMedicalCancel,
+  isMedicalReset,
+  isMedicalRetry,
 } from "./utils/message-utils.ts";
 import { sendWhatsApp } from "./utils/whatsapp-sender.ts";
 
@@ -179,31 +182,87 @@ serve(async (req) => {
       } else if (pendingMedical.status === "processing") {
         const lower = messageText.toLowerCase().trim();
         
-        // Verificar se é uma pergunta sobre o status
-        if (/quanto\s*tempo|demora|est[aá]\s*pronto|j[aá]\s*acabou|status|como\s*(est[aá]|vai)/i.test(lower)) {
+        // Calcular tempo desde início
+        const startTime = new Date(pendingMedical.last_image_at || pendingMedical.created_at);
+        const elapsedMinutes = Math.floor((Date.now() - startTime.getTime()) / 60000);
+        
+        // Se está demorando muito (>10 min), oferecer opções
+        if (elapsedMinutes > 10) {
+          // Verificar se quer cancelar
+          if (isMedicalCancel(lower)) {
+            await supabase
+              .from("whatsapp_pending_medical")
+              .update({ status: "cancelled", is_processed: true })
+              .eq("id", pendingMedical.id);
+            
+            await sendWhatsApp(phone, 
+              `❌ *Análise cancelada*\n\n` +
+              `Quando quiser, envie novas fotos de exame!\n\n` +
+              `_Dr. Vital 🩺_`
+            );
+            return new Response(JSON.stringify({ ok: true }), { headers: corsHeaders });
+          }
+          
+          // Verificar se quer retentar
+          if (isMedicalRetry(lower)) {
+            await supabase
+              .from("whatsapp_pending_medical")
+              .update({ status: "collecting", confirmed: false })
+              .eq("id", pendingMedical.id);
+            
+            await sendWhatsApp(phone,
+              `🔄 *Ok! Vou reiniciar a análise.*\n\n` +
+              `Quando estiver pronto, digite *PRONTO* ou *ANALISAR*.\n\n` +
+              `_Dr. Vital 🩺_`
+            );
+            return new Response(JSON.stringify({ ok: true }), { headers: corsHeaders });
+          }
+          
           await sendWhatsApp(phone,
-            "⏳ *Ainda estou analisando seus exames*\n\n" +
-            "Aguarde só mais um momento, assim que terminar eu envio o relatório completo.\n\n" +
-            "_Dr. Vital 🩺_"
+            `⏳ *A análise está demorando mais que o esperado*\n\n` +
+            `Já se passaram ${elapsedMinutes} minutos.\n\n` +
+            `*O que deseja fazer?*\n\n` +
+            `⏳ Digite qualquer coisa para *AGUARDAR*\n` +
+            `🔄 *RETENTAR* - Tentar analisar novamente\n` +
+            `❌ *CANCELAR* - Desistir desta análise\n\n` +
+            `_Dr. Vital 🩺_`
           );
+          return new Response(JSON.stringify({ ok: true }), { headers: corsHeaders });
         }
+        
+        // Perguntas sobre status
+        if (/quanto\s*tempo|demora|est[aá]\s*pronto|j[aá]\s*acabou|status|como\s*(est[aá]|vai)/i.test(lower)) {
+          const remaining = Math.max(1, 5 - elapsedMinutes);
+          await sendWhatsApp(phone,
+            `⏳ *Analisando seus exames...*\n\n` +
+            `📊 ${pendingMedical.images_count} imagens em processamento\n` +
+            `⏱️ Tempo decorrido: ${elapsedMinutes} min\n` +
+            `📈 Previsão: ~${remaining} min restantes\n\n` +
+            `_Dr. Vital 🩺_`
+          );
+          return new Response(JSON.stringify({ ok: true }), { headers: corsHeaders });
+        }
+        
         // Se for cancelar durante processamento
-        else if (/cancelar|cancela|parar|para|desist/i.test(lower)) {
+        if (isMedicalCancel(lower)) {
           await supabase
             .from("whatsapp_pending_medical")
             .update({ status: "cancelled", is_processed: true })
             .eq("id", pendingMedical.id);
           
           await sendWhatsApp(phone, "❌ Análise cancelada.\n\n_Dr. Vital 🩺_");
+          return new Response(JSON.stringify({ ok: true }), { headers: corsHeaders });
         }
-        // Qualquer outra coisa: confirmar que está processando de forma amigável
-        else {
-          await sendWhatsApp(phone,
-            "👍 *Entendi! Estou finalizando a análise dos seus exames.*\n\n" +
-            "⏳ Assim que terminar, envio o relatório completo!\n\n" +
-            "_Dr. Vital 🩺_"
-          );
-        }
+        
+        // Resposta contextual mas com informação útil
+        await sendWhatsApp(phone,
+          `🩺 *Estou analisando seus ${pendingMedical.images_count} exames*\n\n` +
+          `⏱️ Faltam aproximadamente ${Math.max(1, 5 - elapsedMinutes)} minutos.\n\n` +
+          `💡 Você pode:\n` +
+          `• Perguntar "*status*" para ver o progresso\n` +
+          `• Dizer "*cancelar*" para desistir\n\n` +
+          `_Dr. Vital 🩺_`
+        );
       } else {
         await handleMedicalResponse(supabase, user, pendingMedical, messageText, phone);
       }
