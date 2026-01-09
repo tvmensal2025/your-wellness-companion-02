@@ -1,11 +1,11 @@
-const CACHE_NAME = 'maxnutrition-v1.0';
+const CACHE_NAME = 'maxnutrition-v1.1';
 const APP_SHELL = [
   '/',
   '/index.html',
   '/manifest.json',
-  '/favicon.ico',
-  '/favicon.png',
-  '/images/maxnutrition-logo.png'
+  '/pwa-192x192.png',
+  '/pwa-512x512.png',
+  '/pwa-maskable-512x512.png'
 ];
 
 // URLs que devem ser sempre buscadas da rede (não cached)
