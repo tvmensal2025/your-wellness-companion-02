@@ -172,3 +172,88 @@ export function isAlmostConfirmation(text: string): boolean {
   const lower = text.toLowerCase().trim();
   return ["s", "si", "smi", "n", "na", "e", "ed", "edi", "edt"].includes(lower);
 }
+
+/**
+ * Check if user wants to finalize/process medical exams - FLEXIBLE patterns
+ */
+export function isMedicalReady(text: string): boolean {
+  const lower = text.toLowerCase().trim();
+  
+  // Exact keywords
+  const exactMatch = ["pronto", "terminei", "finalizar", "fim", "acabou", "done", "ok", "vai", "1", "sim", "s", "yes"];
+  if (exactMatch.includes(lower)) return true;
+  
+  // Flexible patterns for natural language variations
+  const patterns = [
+    /^finaliz/i,                    // finalizado, finalizei, finaliza
+    /^termin/i,                     // terminei, terminado, termina
+    /pode\s*(analisar|processar|ver|olhar)/i,
+    /^analisa/i,                    // analisa, analise
+    /^process/i,                    // processa, processar
+    /j[aá]\s*(foi|est[aá]|pode|acabou|terminou|finalizou)/i,  // já foi, já está, já pode
+    /pronto\s*(pra|para)/i,
+    /manda\s*(ver|bala)/i,
+    /^bora$/i,
+    /vai\s*l[aá]/i,
+    /pode\s*ir/i,
+    /t[aá]\s*pronto/i,
+    /^acabei$/i,
+    /enviei\s*tudo/i,
+    /s[oó]\s*isso/i,                // só isso
+    /era\s*isso/i,
+    /tudo\s*a[ií]/i,                // tudo aí
+    /pode\s*come[cç]ar/i,
+    /^segue$/i,
+    /^manda$/i,
+    /^ta\s*bom$/i,
+    /^beleza$/i,
+  ];
+  
+  return patterns.some(p => p.test(lower));
+}
+
+/**
+ * Check if user wants to cancel medical analysis - FLEXIBLE patterns
+ */
+export function isMedicalCancel(text: string): boolean {
+  const lower = text.toLowerCase().trim();
+  
+  // Exact keywords
+  const exactMatch = ["3", "cancelar", "cancela", "nao", "não", "n", "para", "parar"];
+  if (exactMatch.includes(lower)) return true;
+  
+  // Flexible patterns
+  const patterns = [
+    /^cancel/i,
+    /n[aã]o\s*quero/i,
+    /deixa\s*(pra|para)\s*l[aá]/i,
+    /esquece/i,
+    /desist/i,                      // desistir, desisto
+    /^para$/i,
+    /^parar$/i,
+  ];
+  
+  return patterns.some(p => p.test(lower));
+}
+
+/**
+ * Check if user wants to add more medical images
+ */
+export function isMedicalAddMore(text: string): boolean {
+  const lower = text.toLowerCase().trim();
+  
+  const exactMatch = ["2", "mais", "add", "adicionar", "enviar mais", "more"];
+  if (exactMatch.includes(lower)) return true;
+  
+  const patterns = [
+    /vou\s*(enviar|mandar)\s*mais/i,
+    /tem\s*mais/i,
+    /falta/i,
+    /espera/i,
+    /aguarda/i,
+    /mais\s*fotos?/i,
+    /outras?\s*fotos?/i,
+  ];
+  
+  return patterns.some(p => p.test(lower));
+}

@@ -177,11 +177,33 @@ serve(async (req) => {
 
         await handleTextMessage(supabase, user, phone, messageText);
       } else if (pendingMedical.status === "processing") {
-        await sendWhatsApp(phone,
-          "⏳ *Ainda estou analisando seus exames*\n\n" +
-          "Aguarde só mais um momento, assim que terminar eu envio o relatório completo.\n\n" +
-          "_Dr. Vital 🩺_"
-        );
+        const lower = messageText.toLowerCase().trim();
+        
+        // Verificar se é uma pergunta sobre o status
+        if (/quanto\s*tempo|demora|est[aá]\s*pronto|j[aá]\s*acabou|status|como\s*(est[aá]|vai)/i.test(lower)) {
+          await sendWhatsApp(phone,
+            "⏳ *Ainda estou analisando seus exames*\n\n" +
+            "Aguarde só mais um momento, assim que terminar eu envio o relatório completo.\n\n" +
+            "_Dr. Vital 🩺_"
+          );
+        }
+        // Se for cancelar durante processamento
+        else if (/cancelar|cancela|parar|para|desist/i.test(lower)) {
+          await supabase
+            .from("whatsapp_pending_medical")
+            .update({ status: "cancelled", is_processed: true })
+            .eq("id", pendingMedical.id);
+          
+          await sendWhatsApp(phone, "❌ Análise cancelada.\n\n_Dr. Vital 🩺_");
+        }
+        // Qualquer outra coisa: confirmar que está processando de forma amigável
+        else {
+          await sendWhatsApp(phone,
+            "👍 *Entendi! Estou finalizando a análise dos seus exames.*\n\n" +
+            "⏳ Assim que terminar, envio o relatório completo!\n\n" +
+            "_Dr. Vital 🩺_"
+          );
+        }
       } else {
         await handleMedicalResponse(supabase, user, pendingMedical, messageText, phone);
       }
