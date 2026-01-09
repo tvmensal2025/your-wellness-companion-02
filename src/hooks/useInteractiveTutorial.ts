@@ -63,59 +63,8 @@ export const useInteractiveTutorial = () => {
     return 'pc';
   }, []);
 
-  // Verificar se deve mostrar o tutorial (após cadastro/login)
-  useEffect(() => {
-    if (IS_DEVELOPMENT) {
-      console.log('🔍 useInteractiveTutorial: Verificando status...');
-    }
-    
-    const checkUserAndShowTutorial = async () => {
-      try {
-        // Verificar se há usuário logado
-        const { data: { user } } = await supabase.auth.getUser();
-        
-        if (!user) {
-          if (IS_DEVELOPMENT) {
-            console.log('🔍 Nenhum usuário logado, não mostrar tutorial');
-          }
-          return; // Não mostrar tutorial se não há usuário logado
-        }
-        
-        if (IS_DEVELOPMENT) {
-          console.log('🔍 Usuário logado:', user.id);
-        }
-        
-        // Verificar se já foi completado ou iniciado
-        const isCompleted = localStorage.getItem('interactive-tutorial-completed') === 'true';
-        const isStarted = localStorage.getItem('interactive-tutorial-started') === 'true';
-        
-        // Mostrar tutorial APENAS se:
-        // 1. Nunca foi visto (novo usuário) E
-        // 2. Nunca foi iniciado E  
-        // 3. Nunca foi completado
-        if (!isCompleted && !isStarted) {
-          const timer = setTimeout(() => {
-            if (IS_DEVELOPMENT) {
-              console.log('🚀 Definindo showWelcomeModal como true para novo usuário');
-            }
-            setShowWelcomeModal(true);
-          }, 1000);
-
-          return () => clearTimeout(timer);
-        } else {
-          if (IS_DEVELOPMENT) {
-            console.log('🔍 Tutorial já foi visto ou iniciado, não mostrar');
-          }
-        }
-      } catch (error) {
-        if (IS_DEVELOPMENT) {
-          console.error('Erro ao verificar usuário:', error);
-        }
-      }
-    };
-    
-    checkUserAndShowTutorial();
-  }, []);
+  // REMOVIDO: Tutorial automático no início
+  // Agora o tutorial só aparece quando o usuário acessa manualmente pelo menu
 
   // Iniciar tutorial - OTIMIZADO
   const startTutorial = useCallback(() => {
