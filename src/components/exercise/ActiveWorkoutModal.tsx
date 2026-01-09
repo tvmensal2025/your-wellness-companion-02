@@ -30,6 +30,7 @@ import {
   Pause,
   Play,
   RefreshCw,
+  Share2,
   SkipForward,
   ThumbsDown,
   ThumbsUp,
@@ -37,6 +38,7 @@ import {
   Trophy,
   X,
   Youtube,
+  Instagram,
 } from 'lucide-react';
 import { Volume2, VolumeX } from 'lucide-react';
 import { Exercise, WeeklyPlan } from '@/hooks/useExercisesLibrary';
@@ -46,6 +48,8 @@ import { useToast } from '@/hooks/use-toast';
 import confetti from 'canvas-confetti';
 import { supabase } from '@/integrations/supabase/client';
 import { useWorkoutSound } from '@/hooks/useWorkoutSound';
+import { WeightInputPopup } from './WeightInputPopup';
+import { WorkoutShareModal } from './WorkoutShareModal';
 
 interface ActiveWorkoutModalProps {
   isOpen: boolean;
@@ -95,6 +99,10 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
   const [isExerciseStarted, setIsExerciseStarted] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
   const [showCongratulations, setShowCongratulations] = useState(false);
+  const [showWeightInput, setShowWeightInput] = useState(false);
+  const [pendingExerciseForWeight, setPendingExerciseForWeight] = useState<Exercise | null>(null);
+  const [workoutWeights, setWorkoutWeights] = useState<Record<string, number>>({});
+  const [showShareModal, setShowShareModal] = useState(false);
 
   const [exerciseSeconds, setExerciseSeconds] = useState(0);
   const [isExerciseTimerRunning, setIsExerciseTimerRunning] = useState(false);
@@ -217,27 +225,103 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
   }, []);
 
   // Salvar exercício no histórico para análise da Sofia e Dr. Vital
-  const saveExerciseToHistory = useCallback(async (exercise: Exercise, setsCompleted: number, durationSeconds: number) => {
+  const saveExerciseToHistory = useCallback(async (exercise: Exercise, setsCompleted: number, durationSeconds: number, weight?: number) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
+
+      const repsCompleted = parseInt(String(exercise.reps || '0').replace(/\D/g, '')) || 0;
 
       await supabase.from('user_exercise_history').insert({
         user_id: user.id,
         exercise_name: exercise.name,
         exercise_type: exercise.muscle_group || 'general',
         sets_completed: setsCompleted,
-        reps_completed: parseInt(String(exercise.reps || '0').replace(/\D/g, '')) || 0,
+        reps_completed: repsCompleted,
         duration_seconds: durationSeconds,
         calories_burned: 0,
         difficulty_level: exerciseFeedback || 'ok',
-        notes: `Treino: ${workout.dayName}`,
+        notes: weight ? `Treino: ${workout.dayName} | Peso: ${weight}kg` : `Treino: ${workout.dayName}`,
         completed_at: new Date().toISOString()
       });
+
+      // Atualizar evolução se peso foi informado
+      if (weight && weight > 0) {
+        const volume = weight * repsCompleted * setsCompleted;
+        
+        // Verificar se já existe registro para este exercício
+        const { data: existing } = await supabase
+          .from('user_workout_evolution')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('exercise_name', exercise.name)
+          .maybeSingle();
+
+        if (existing) {
+          await supabase
+            .from('user_workout_evolution')
+            .update({
+              weight_kg: weight,
+              max_weight_kg: Math.max(existing.max_weight_kg || 0, weight),
+              max_reps: Math.max(existing.max_reps || 0, repsCompleted),
+              total_sets: (existing.total_sets || 0) + setsCompleted,
+              total_volume: (Number(existing.total_volume) || 0) + volume,
+              last_workout_date: new Date().toISOString(),
+              progression_trend: weight > (existing.weight_kg || 0) ? 'up' : weight < (existing.weight_kg || 0) ? 'down' : 'stable',
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', existing.id);
+        } else {
+          await supabase.from('user_workout_evolution').insert({
+            user_id: user.id,
+            exercise_name: exercise.name,
+            weight_kg: weight,
+            max_weight_kg: weight,
+            max_reps: repsCompleted,
+            total_sets: setsCompleted,
+            total_volume: volume,
+            last_workout_date: new Date().toISOString(),
+            progression_trend: 'stable'
+          });
+        }
+      }
     } catch (error) {
       console.error('Erro ao salvar exercício no histórico:', error);
     }
   }, [workout.dayName, exerciseFeedback]);
+
+  // Função para lidar com peso do exercício
+  const handleWeightSave = async (weight: number | null) => {
+    if (pendingExerciseForWeight) {
+      if (weight !== null) {
+        setWorkoutWeights(prev => ({
+          ...prev,
+          [pendingExerciseForWeight.id]: weight
+        }));
+      }
+      
+      // Salvar no histórico com peso
+      await saveExerciseToHistory(
+        pendingExerciseForWeight, 
+        totalSetsForExercise, 
+        exerciseSeconds,
+        weight || undefined
+      );
+      
+      // Animação de sucesso
+      triggerSuccessAnimation();
+
+      // Ir para próximo ou finalizar
+      if (currentIndex < totalExercises - 1) {
+        setCurrentIndex((prev) => prev + 1);
+      } else {
+        handleFinishWorkout();
+      }
+      
+      setPendingExerciseForWeight(null);
+    }
+    setShowWeightInput(false);
+  };
 
   const handleCompleteExercise = async () => {
     const nextProgress = progress.map((p, i) =>
@@ -253,18 +337,9 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
     setProgress(nextProgress);
     setIsExerciseTimerRunning(false);
     
-    // Salvar no histórico para Sofia e Dr. Vital analisarem
-    await saveExerciseToHistory(currentExercise, totalSetsForExercise, exerciseSeconds);
-    
-    // Animação de sucesso
-    triggerSuccessAnimation();
-
-    // Ir direto para o próximo exercício
-    if (currentIndex < totalExercises - 1) {
-      setCurrentIndex((prev) => prev + 1);
-    } else {
-      handleFinishWorkout(nextProgress);
-    }
+    // Mostrar popup de peso (opcional)
+    setPendingExerciseForWeight(currentExercise);
+    setShowWeightInput(true);
   };
 
   const handleSkipExercise = () => {
@@ -432,14 +507,31 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
               </Card>
             </motion.div>
 
-            {/* Botão */}
+            {/* Botões de ação */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.8 }}
+              transition={{ delay: 0.7 }}
+              className="space-y-2"
             >
               <Button
-                className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white"
+                className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white gap-2"
+                onClick={() => setShowShareModal(true)}
+              >
+                <Instagram className="w-4 h-4" />
+                Compartilhar no Instagram
+              </Button>
+            </motion.div>
+
+            {/* Botão principal */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.9 }}
+            >
+              <Button
+                variant="outline"
+                className="w-full"
                 onClick={() => {
                   const completedIds = progress.filter(p => p.completed).map(p => p.exerciseId);
                   onComplete(completedIds);
@@ -448,17 +540,45 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
               >
                 Voltar ao Dashboard
               </Button>
-              <p className="text-xs text-muted-foreground mt-2">
-                Fechando automaticamente em 5s...
-              </p>
             </motion.div>
           </div>
+
+          {/* Modal de compartilhamento */}
+          <WorkoutShareModal
+            isOpen={showShareModal}
+            onClose={() => setShowShareModal(false)}
+            stats={{
+              duration: totalTime,
+              exercises: completedExercises,
+              sets: totalSets,
+            }}
+          />
         </DialogContent>
       </Dialog>
     );
   }
 
   return (
+    <>
+      {/* Popup de peso */}
+      <WeightInputPopup
+        isOpen={showWeightInput}
+        onClose={() => {
+          setShowWeightInput(false);
+          setPendingExerciseForWeight(null);
+          // Se pular, continuar sem peso
+          if (pendingExerciseForWeight) {
+            triggerSuccessAnimation();
+            if (currentIndex < totalExercises - 1) {
+              setCurrentIndex((prev) => prev + 1);
+            } else {
+              handleFinishWorkout();
+            }
+          }
+        }}
+        exerciseName={pendingExerciseForWeight?.name || ''}
+        onSave={handleWeightSave}
+      />
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="w-[calc(100vw-16px)] max-w-[400px] max-h-[90vh] p-0 overflow-hidden">
         <VisuallyHidden>
@@ -949,5 +1069,6 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
         </ScrollArea>
       </DialogContent>
     </Dialog>
+    </>
   );
 };

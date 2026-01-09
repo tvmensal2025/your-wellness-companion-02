@@ -11779,6 +11779,51 @@ export type Database = {
           },
         ]
       }
+      user_workout_evolution: {
+        Row: {
+          created_at: string | null
+          exercise_name: string
+          id: string
+          last_workout_date: string | null
+          max_reps: number | null
+          max_weight_kg: number | null
+          progression_trend: string | null
+          total_sets: number | null
+          total_volume: number | null
+          updated_at: string | null
+          user_id: string
+          weight_kg: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          exercise_name: string
+          id?: string
+          last_workout_date?: string | null
+          max_reps?: number | null
+          max_weight_kg?: number | null
+          progression_trend?: string | null
+          total_sets?: number | null
+          total_volume?: number | null
+          updated_at?: string | null
+          user_id: string
+          weight_kg?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          exercise_name?: string
+          id?: string
+          last_workout_date?: string | null
+          max_reps?: number | null
+          max_weight_kg?: number | null
+          progression_trend?: string | null
+          total_sets?: number | null
+          total_volume?: number | null
+          updated_at?: string | null
+          user_id?: string
+          weight_kg?: number | null
+        }
+        Relationships: []
+      }
       users_needing_analysis: {
         Row: {
           analysis_type: string | null
