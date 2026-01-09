@@ -1572,3 +1572,29 @@ html {
     gap: 0.75rem;
   }
 }
+
+/* Performance animations - CSS only (no framer-motion needed) */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.5s ease-out forwards;
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in,
+  .animate-ping,
+  .animate-pulse,
+  .animate-spin {
+    animation: none;
+  }
+}
