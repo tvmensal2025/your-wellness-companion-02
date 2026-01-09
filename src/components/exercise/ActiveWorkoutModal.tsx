@@ -39,6 +39,7 @@ import {
   X,
   Youtube,
   Instagram,
+  BarChart3,
 } from 'lucide-react';
 import { Volume2, VolumeX } from 'lucide-react';
 import { Exercise, WeeklyPlan } from '@/hooks/useExercisesLibrary';
@@ -50,6 +51,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useWorkoutSound } from '@/hooks/useWorkoutSound';
 import { WeightInputPopup } from './WeightInputPopup';
 import { WorkoutShareModal } from './WorkoutShareModal';
+import { ExerciseEvolutionPopup } from './ExerciseEvolutionPopup';
 
 interface ActiveWorkoutModalProps {
   isOpen: boolean;
@@ -103,6 +105,8 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
   const [pendingExerciseForWeight, setPendingExerciseForWeight] = useState<Exercise | null>(null);
   const [workoutWeights, setWorkoutWeights] = useState<Record<string, number>>({});
   const [showShareModal, setShowShareModal] = useState(false);
+  const [showEvolutionPopup, setShowEvolutionPopup] = useState(false);
+  const [evolutionExercise, setEvolutionExercise] = useState<string>('');
 
   const [exerciseSeconds, setExerciseSeconds] = useState(0);
   const [isExerciseTimerRunning, setIsExerciseTimerRunning] = useState(false);
@@ -245,45 +249,49 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
         completed_at: new Date().toISOString()
       });
 
-      // Atualizar evolução se peso foi informado
-      if (weight && weight > 0) {
-        const volume = weight * repsCompleted * setsCompleted;
-        
-        // Verificar se já existe registro para este exercício
-        const { data: existing } = await supabase
-          .from('user_workout_evolution')
-          .select('*')
-          .eq('user_id', user.id)
-          .eq('exercise_name', exercise.name)
-          .maybeSingle();
+      // SEMPRE atualizar evolução (mesmo sem peso)
+      const volume = (weight || 0) * repsCompleted * setsCompleted;
+      
+      // Verificar se já existe registro para este exercício
+      const { data: existing } = await supabase
+        .from('user_workout_evolution')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('exercise_name', exercise.name)
+        .maybeSingle();
 
-        if (existing) {
-          await supabase
-            .from('user_workout_evolution')
-            .update({
-              weight_kg: weight,
-              max_weight_kg: Math.max(existing.max_weight_kg || 0, weight),
-              max_reps: Math.max(existing.max_reps || 0, repsCompleted),
-              total_sets: (existing.total_sets || 0) + setsCompleted,
-              total_volume: (Number(existing.total_volume) || 0) + volume,
-              last_workout_date: new Date().toISOString(),
-              progression_trend: weight > (existing.weight_kg || 0) ? 'up' : weight < (existing.weight_kg || 0) ? 'down' : 'stable',
-              updated_at: new Date().toISOString()
-            })
-            .eq('id', existing.id);
-        } else {
-          await supabase.from('user_workout_evolution').insert({
-            user_id: user.id,
-            exercise_name: exercise.name,
-            weight_kg: weight,
-            max_weight_kg: weight,
-            max_reps: repsCompleted,
-            total_sets: setsCompleted,
-            total_volume: volume,
-            last_workout_date: new Date().toISOString(),
-            progression_trend: 'stable'
-          });
+      if (existing) {
+        const updateData: Record<string, any> = {
+          total_sets: (existing.total_sets || 0) + setsCompleted,
+          last_workout_date: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+
+        // Só atualizar peso se foi informado
+        if (weight && weight > 0) {
+          updateData.weight_kg = weight;
+          updateData.max_weight_kg = Math.max(existing.max_weight_kg || 0, weight);
+          updateData.max_reps = Math.max(existing.max_reps || 0, repsCompleted);
+          updateData.total_volume = (Number(existing.total_volume) || 0) + volume;
+          updateData.progression_trend = weight > (existing.weight_kg || 0) ? 'up' : weight < (existing.weight_kg || 0) ? 'down' : 'stable';
         }
+
+        await supabase
+          .from('user_workout_evolution')
+          .update(updateData)
+          .eq('id', existing.id);
+      } else {
+        await supabase.from('user_workout_evolution').insert({
+          user_id: user.id,
+          exercise_name: exercise.name,
+          weight_kg: weight || null,
+          max_weight_kg: weight || null,
+          max_reps: repsCompleted,
+          total_sets: setsCompleted,
+          total_volume: volume || null,
+          last_workout_date: new Date().toISOString(),
+          progression_trend: 'stable'
+        });
       }
     } catch (error) {
       console.error('Erro ao salvar exercício no histórico:', error);
@@ -563,11 +571,15 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
       {/* Popup de peso */}
       <WeightInputPopup
         isOpen={showWeightInput}
-        onClose={() => {
-          setShowWeightInput(false);
-          setPendingExerciseForWeight(null);
-          // Se pular, continuar sem peso
+        onClose={async () => {
+          // SEMPRE salvar histórico, mesmo sem peso
           if (pendingExerciseForWeight) {
+            await saveExerciseToHistory(
+              pendingExerciseForWeight, 
+              totalSetsForExercise, 
+              exerciseSeconds,
+              undefined // sem peso
+            );
             triggerSuccessAnimation();
             if (currentIndex < totalExercises - 1) {
               setCurrentIndex((prev) => prev + 1);
@@ -575,10 +587,20 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
               handleFinishWorkout();
             }
           }
+          setShowWeightInput(false);
+          setPendingExerciseForWeight(null);
         }}
         exerciseName={pendingExerciseForWeight?.name || ''}
         onSave={handleWeightSave}
       />
+      
+      {/* Popup de Evolução do Exercício */}
+      <ExerciseEvolutionPopup
+        isOpen={showEvolutionPopup}
+        onClose={() => setShowEvolutionPopup(false)}
+        exerciseName={evolutionExercise}
+      />
+      
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="w-[calc(100vw-16px)] max-w-[400px] max-h-[90vh] p-0 overflow-hidden">
         <VisuallyHidden>
@@ -631,8 +653,20 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
                 >
                   {/* Header: Título + Badge Local + Timer + Som */}
                   <div className="flex items-start justify-between">
-                    <div>
+                    <div className="flex-1">
                       <h2 className="text-xl font-bold">{currentExercise.name}</h2>
+                      {/* Botão de evolução */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEvolutionExercise(currentExercise.name);
+                          setShowEvolutionPopup(true);
+                        }}
+                        className="flex items-center gap-1 text-xs text-orange-600 hover:text-orange-700 mt-1"
+                      >
+                        <BarChart3 className="w-3.5 h-3.5" />
+                        Ver evolução
+                      </button>
                     </div>
                     <div className="flex items-center gap-2">
                       {/* Botão de som */}

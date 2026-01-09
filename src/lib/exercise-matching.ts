@@ -86,9 +86,10 @@ export function matchExercisesFromActivities(
   options: {
     maxPerActivity?: number;
     preferWithVideo?: boolean;
+    minExercises?: number;
   } = {}
 ): MatchResult {
-  const { maxPerActivity = 3, preferWithVideo = true } = options;
+  const { maxPerActivity = 3, preferWithVideo = true, minExercises = 5 } = options;
   
   const result: Exercise[] = [];
   const usedIds = new Set<string>();
@@ -165,6 +166,30 @@ export function matchExercisesFromActivities(
         addedForActivity++;
         if (addedForActivity === 1) matchedCount++;
       }
+    }
+  }
+
+  // FALLBACK: Se não encontrou exercícios suficientes, adicionar exercícios aleatórios
+  if (result.length < minExercises) {
+    const remaining = indexed
+      .filter(i => !usedIds.has(i.ex.id))
+      .sort((a, b) => {
+        if (preferWithVideo) {
+          const aHasVideo = !!a.ex.youtube_url;
+          const bHasVideo = !!b.ex.youtube_url;
+          if (aHasVideo !== bHasVideo) return bHasVideo ? 1 : -1;
+        }
+        // Priorizar exercícios "funcional" e "full body"
+        const aIsFunctional = a.muscleKey.includes('funcional') || a.nameKey.includes('funcional');
+        const bIsFunctional = b.muscleKey.includes('funcional') || b.nameKey.includes('funcional');
+        if (aIsFunctional !== bIsFunctional) return bIsFunctional ? 1 : -1;
+        return 0;
+      });
+
+    for (const item of remaining) {
+      if (result.length >= minExercises) break;
+      usedIds.add(item.ex.id);
+      result.push(item.ex);
     }
   }
 

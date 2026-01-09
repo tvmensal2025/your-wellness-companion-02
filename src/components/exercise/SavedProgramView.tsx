@@ -240,7 +240,9 @@ export const SavedProgramView: React.FC<SavedProgramProps> = ({
     (async () => {
       try {
         setLibraryLoading(true);
-        const { data, error } = await supabase
+        
+        // Primeiro tenta buscar com location específico
+        let { data, error } = await supabase
           .from('exercises_library')
           .select('*')
           .eq('is_active', true)
@@ -248,6 +250,20 @@ export const SavedProgramView: React.FC<SavedProgramProps> = ({
 
         if (!mounted) return;
         if (error) throw error;
+
+        // Se não encontrou exercícios suficientes, buscar TODOS
+        if (!data || data.length < 10) {
+          const { data: allData, error: allError } = await supabase
+            .from('exercises_library')
+            .select('*')
+            .eq('is_active', true);
+
+          if (!allError && allData && allData.length > (data?.length || 0)) {
+            data = allData;
+            console.log(`Fallback: carregando ${data.length} exercícios de todos os locais`);
+          }
+        }
+
         setLibraryExercises((data || []) as Exercise[]);
       } catch (e) {
         console.error('Erro ao carregar biblioteca de exercícios:', e);
