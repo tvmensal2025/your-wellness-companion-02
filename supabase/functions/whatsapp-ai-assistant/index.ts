@@ -10,10 +10,10 @@ const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-// 🔥 USAR LOVABLE AI GATEWAY
+// 🔥 USAR LOVABLE AI GATEWAY - OpenAI como principal (melhor compreensão de voz)
 const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY")!;
 const AI_GATEWAY_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
-const AI_MODEL = "google/gemini-2.5-flash";
+const AI_MODEL = "openai/gpt-5-mini"; // OpenAI é mais inteligente para entender contexto de voz
 
 // ============ SISTEMA DE TOOLS ============
 
@@ -532,9 +532,51 @@ async function saveMessage(userId: string, sessionId: string, role: string, cont
   });
 }
 
-// ============ SYSTEM PROMPT EXPANDIDO ============
+// ============ DETECÇÃO DE PERSONALIDADE (Sofia vs DrVital) ============
 
-function buildSystemPrompt(ctx: CompactContext): string {
+type Personality = 'sofia' | 'drvital';
+
+function detectPersonality(message: string, ctx: CompactContext): Personality {
+  const lowerMsg = message.toLowerCase();
+  
+  // Palavras-chave do Dr. Vital (saúde médica)
+  const drVitalKeywords = [
+    'exame', 'dor', 'remedio', 'remédio', 'medicamento', 'sintoma',
+    'pressao', 'pressão', 'glicemia', 'colesterol', 'doenca', 'doença',
+    'médico', 'medico', 'consulta', 'tratamento', 'dr', 'doutor', 'vital',
+    'febre', 'infecção', 'infeccao', 'sangue', 'cirurgia', 'hospital',
+    'receita médica', 'diagnostico', 'diagnóstico', 'vacina', 'alergia grave'
+  ];
+  
+  // Palavras-chave da Sofia (nutrição/alimentação)
+  const sofiaKeywords = [
+    'comida', 'refeição', 'refeicao', 'almoco', 'almoço', 'jantar', 'cafe', 'café',
+    'caloria', 'dieta', 'peso', 'emagrecer', 'nutricao', 'nutrição',
+    'agua', 'água', 'sofia', 'receita', 'alimento', 'comer', 'comi',
+    'fome', 'saciedade', 'proteína', 'proteina', 'carboidrato', 'gordura',
+    'lanche', 'fruta', 'legume', 'verdura', 'vitamina'
+  ];
+  
+  const drVitalScore = drVitalKeywords.filter(k => lowerMsg.includes(k)).length;
+  const sofiaScore = sofiaKeywords.filter(k => lowerMsg.includes(k)).length;
+  
+  // Se mencionar sintomas recentes com keywords médicas, usar Dr. Vital
+  if (ctx.sintomas_recentes.length > 0 && drVitalScore >= 2) {
+    return 'drvital';
+  }
+  
+  // Se tiver mais keywords médicas que nutricionais
+  if (drVitalScore > sofiaScore && drVitalScore >= 2) {
+    return 'drvital';
+  }
+  
+  // Padrão: Sofia
+  return 'sofia';
+}
+
+// ============ SYSTEM PROMPT POR PERSONALIDADE ============
+
+function buildSystemPrompt(ctx: CompactContext, personality: Personality = 'sofia'): string {
   const hora = new Date().getHours();
   const saudacao = hora < 12 ? "Bom dia" : hora < 18 ? "Boa tarde" : "Boa noite";
 
@@ -557,16 +599,8 @@ PROGRESSO HOJE:
 - Água: ${ctx.agua_hoje}/${ctx.metas_macros.agua}ml (${aguaPct}%)`;
   }
 
-  return `Você é a Sofia, nutricionista virtual do Instituto dos Sonhos.
-
-PERSONALIDADE:
-- Calorosa e empática como uma amiga querida
-- Respostas CURTAS (2-4 linhas máximo)
-- Usa emojis com moderação 💚
-- Fala direto, sem enrolação
-- NUNCA diz "vou verificar" - você JÁ TEM os dados
-- Identifique PADRÕES nos dados do usuário
-
+  // Dados comuns do usuário
+  const dadosUsuario = `
 ═══════════════════════════════════════
 USUÁRIO: ${ctx.nome}
 ═══════════════════════════════════════
@@ -595,10 +629,53 @@ SAÚDE:
 ${ctx.sintomas_recentes.length > 0 ? `- Sintomas: ${ctx.sintomas_recentes.join(', ')}` : ''}
 ${ctx.medicamentos.length > 0 ? `- Medicamentos: ${ctx.medicamentos.join(', ')}` : ''}
 ${ctx.alergias.length > 0 ? `- Alergias: ${ctx.alergias.join(', ')}` : ''}
-${ctx.maior_desafio ? `- Maior desafio: ${ctx.maior_desafio}` : ''}
+${ctx.maior_desafio ? `- Maior desafio: ${ctx.maior_desafio}` : ''}`;
+
+  // ===== DR. VITAL =====
+  if (personality === 'drvital') {
+    return `Você é o Dr. Vital, médico virtual do Instituto dos Sonhos.
+
+PERSONALIDADE:
+- Profissional, acolhedor e empático
+- Tom médico mas acessível e humano
+- Respostas OBJETIVAS (3-5 linhas máximo)
+- Usa emojis médicos com moderação 🩺💊🏥
+- Fala com autoridade médica, mas acessível
+- NUNCA prescreve medicamentos - orienta buscar médico presencial
+- Identifica urgências e recomenda atendimento quando necessário
+
+${dadosUsuario}
 
 ═══════════════════════════════════════
-REGRAS:
+REGRAS DO DR. VITAL:
+1. Responda SEMPRE com base nos dados do paciente
+2. Se identificar sintomas graves, ORIENTE buscar atendimento urgente
+3. Use o nome "${ctx.nome}" para criar conexão
+4. Assine sempre: _Dr. Vital 🩺_
+5. Quando mencionar DOR ou mal-estar, use a tool register_pain_symptom
+6. NUNCA prescreva medicamentos - oriente consulta presencial
+7. Seja tranquilizador mas responsável
+
+Saudação do momento: "${saudacao}, ${ctx.nome}!"
+
+IMPORTANTE: Responda em português brasileiro, tom profissional mas acolhedor.`;
+  }
+
+  // ===== SOFIA (padrão) =====
+  return `Você é a Sofia, nutricionista virtual do Instituto dos Sonhos.
+
+PERSONALIDADE:
+- Calorosa e empática como uma amiga querida
+- Respostas CURTAS (2-4 linhas máximo)
+- Usa emojis com moderação 💚
+- Fala direto, sem enrolação
+- NUNCA diz "vou verificar" - você JÁ TEM os dados
+- Identifique PADRÕES nos dados do usuário
+
+${dadosUsuario}
+
+═══════════════════════════════════════
+REGRAS DA SOFIA:
 1. Responda SEMPRE com base nos dados acima
 2. Se não tiver dado, diga claramente e pergunte
 3. Use o nome "${ctx.nome}" frequentemente
@@ -636,17 +713,21 @@ serve(async (req) => {
       getConversationHistory(userId, sessionId),
     ]);
 
-    // Salvar mensagem do usuário
-    await saveMessage(userId, sessionId, "user", message, "sofia");
+    // 🎯 Detectar personalidade baseada na mensagem e contexto
+    const personality = detectPersonality(message, ctx);
+    console.log(`[IA] Personalidade detectada: ${personality}`);
 
-    // Construir mensagens para IA
+    // Salvar mensagem do usuário com personalidade detectada
+    await saveMessage(userId, sessionId, "user", message, personality);
+
+    // Construir mensagens para IA com prompt da personalidade correta
     const messages = [
-      { role: "system", content: buildSystemPrompt(ctx) },
+      { role: "system", content: buildSystemPrompt(ctx, personality) },
       ...conversationHistory,
       { role: "user", content: message },
     ];
 
-    // 🔥 Chamar Lovable AI Gateway
+    // 🔥 Chamar OpenAI via Lovable AI Gateway (melhor compreensão)
     const aiResponse = await fetch(AI_GATEWAY_URL, {
       method: "POST",
       headers: {
@@ -654,12 +735,12 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: AI_MODEL,
+        model: AI_MODEL,  // openai/gpt-5-mini
         messages,
         tools: TOOLS,
         tool_choice: "auto",
-        temperature: 0.8,
-        max_tokens: 600,
+        temperature: 0.7,  // Mais preciso para entender voz
+        max_tokens: 700,
       }),
     });
 
@@ -737,14 +818,15 @@ serve(async (req) => {
       }
     }
 
-    // Salvar resposta da IA
+    // Salvar resposta da IA com personalidade correta
     if (finalResponse) {
-      await saveMessage(userId, sessionId, "assistant", finalResponse, "sofia");
+      await saveMessage(userId, sessionId, "assistant", finalResponse, personality);
     }
 
     return new Response(
       JSON.stringify({
         response: finalResponse || "Hmm, não entendi. Pode repetir?",
+        personality: personality,  // Retorna qual voz foi usada
         toolResults: toolResults.length > 0 ? toolResults : undefined,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
