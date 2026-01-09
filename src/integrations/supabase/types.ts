@@ -12374,6 +12374,7 @@ export type Database = {
       }
       whatsapp_pending_medical: {
         Row: {
+          analysis_result: Json | null
           confirmed: boolean | null
           created_at: string | null
           doctor_name: string | null
@@ -12391,10 +12392,12 @@ export type Database = {
           phone: string
           public_link_token: string | null
           status: string | null
+          updated_at: string | null
           user_id: string | null
           waiting_confirmation: boolean
         }
         Insert: {
+          analysis_result?: Json | null
           confirmed?: boolean | null
           created_at?: string | null
           doctor_name?: string | null
@@ -12412,10 +12415,12 @@ export type Database = {
           phone: string
           public_link_token?: string | null
           status?: string | null
+          updated_at?: string | null
           user_id?: string | null
           waiting_confirmation?: boolean
         }
         Update: {
+          analysis_result?: Json | null
           confirmed?: boolean | null
           created_at?: string | null
           doctor_name?: string | null
@@ -12433,6 +12438,7 @@ export type Database = {
           phone?: string
           public_link_token?: string | null
           status?: string | null
+          updated_at?: string | null
           user_id?: string | null
           waiting_confirmation?: boolean
         }

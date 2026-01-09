@@ -459,7 +459,7 @@ async function analyzeExamBatch(
         `_Dr. Vital 🩺_`
     );
 
-    // Mark as completed
+    // Mark as completed - update à prova de falhas
     const updateData: any = {
       status: "completed",
       is_processed: true,
@@ -472,7 +472,25 @@ async function analyzeExamBatch(
       updateData.public_link_token = publicLinkToken;
     }
 
-    await supabase.from("whatsapp_pending_medical").update(updateData).eq("id", pending.id);
+    const { error: updateError } = await supabase
+      .from("whatsapp_pending_medical")
+      .update(updateData)
+      .eq("id", pending.id);
+
+    // Se falhar, tentar update mínimo para não ficar stuck
+    if (updateError) {
+      console.error("[Medical] ⚠️ Erro no update completo, tentando fallback:", updateError);
+      await supabase
+        .from("whatsapp_pending_medical")
+        .update({
+          status: "completed",
+          is_processed: true,
+          confirmed: true,
+          medical_document_id: documentId,
+          public_link_token: publicLinkToken || null
+        })
+        .eq("id", pending.id);
+    }
 
     console.log("[Medical] ✅ FLUXO COMPLETO - Análise finalizada com sucesso!");
     console.log("[Medical] ========================================");

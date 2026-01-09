@@ -29,6 +29,9 @@ export interface PendingMedical {
   created_at: string;
   last_image_at: string | null;
   analysis_result?: any;
+  medical_document_id?: string | null;
+  public_link_token?: string | null;
+  updated_at?: string | null;
 }
 
 /**
@@ -146,14 +149,26 @@ export async function cleanupStuckMedicalBatches(
   userId: string
 ): Promise<number> {
   try {
-    const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+    const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString();
 
+    // Primeiro: marcar como completed lotes que já têm medical_document_id
+    await supabase
+      .from("whatsapp_pending_medical")
+      .update({ status: "completed", is_processed: true })
+      .eq("user_id", userId)
+      .in("status", ["processing", "stuck"])
+      .eq("is_processed", false)
+      .not("medical_document_id", "is", null);
+
+    // Segundo: marcar como stuck lotes sem documento e muito antigos
     const { data: stuck } = await supabase
       .from("whatsapp_pending_medical")
       .update({ status: "stuck", is_processed: true })
       .eq("user_id", userId)
       .eq("status", "processing")
-      .lt("updated_at", tenMinutesAgo)
+      .eq("is_processed", false)
+      .is("medical_document_id", null)
+      .lt("last_image_at", thirtyMinutesAgo)
       .select("id");
 
     if (stuck && stuck.length > 0) {
