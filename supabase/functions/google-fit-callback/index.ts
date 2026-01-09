@@ -142,7 +142,7 @@ serve(async (req) => {
       const referer = req.headers.get('referer') || '';
       let returnUrl = referer.includes('lovableproject.com') 
         ? referer.split('?')[0].replace(/\/$/, '')
-        : 'https://app.maxnutrition.com.br'
+        : Deno.env.get("SITE_URL") || 'https://app.oficialmaxnutrition.com.br'
 
       if (state) {
         try {

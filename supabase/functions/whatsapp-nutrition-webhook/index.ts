@@ -191,7 +191,7 @@ serve(async (req) => {
             .eq("id", pendingMedical.id);
           
           if (pendingMedical.public_link_token) {
-            const reportLink = `${Deno.env.get("SITE_URL") || "https://app.maxnutrition.com.br"}/relatorio/${pendingMedical.public_link_token}`;
+            const reportLink = `${Deno.env.get("SITE_URL") || "https://app.oficialmaxnutrition.com.br"}/relatorio/${pendingMedical.public_link_token}`;
             await sendWhatsApp(phone,
               `✅ *Seu relatório já está pronto!*\n\n` +
               `📋 Acesse aqui: ${reportLink}\n\n` +

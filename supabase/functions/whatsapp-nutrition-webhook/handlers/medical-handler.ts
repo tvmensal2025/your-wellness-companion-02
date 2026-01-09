@@ -442,7 +442,8 @@ async function analyzeExamBatch(
 
         if (linkData?.token) {
           publicLinkToken = linkData.token;
-          reportLink = `\n\n📊 *Relatório completo:*\n👉 https://app.maxnutrition.com.br/relatorio/${publicLinkToken}`;
+          const siteUrl = Deno.env.get("SITE_URL") || "https://app.oficialmaxnutrition.com.br";
+          reportLink = `\n\n📊 *Relatório completo:*\n👉 ${siteUrl}/relatorio/${publicLinkToken}`;
         }
       } catch (e) {
         console.log("[Medical] ⚠️ Erro ao criar link público:", e);
