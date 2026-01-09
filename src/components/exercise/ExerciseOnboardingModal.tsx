@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { 
   Sparkles, 
   ArrowRight, 
+  ArrowLeft,
   Home, 
   Clock, 
   Target, 
@@ -31,6 +32,8 @@ import { User } from '@supabase/supabase-js';
 import { parseWeekPlan } from '@/utils/workoutParser';
 import { generateRecommendation, UserAnswers } from '@/hooks/useExerciseRecommendation';
 import { useExerciseProfileData } from '@/hooks/useExerciseProfileData';
+import { DaySelector } from './DaySelector';
+import { TrainingSplitSelector, TrainingSplit } from './TrainingSplitSelector';
 
 interface ExerciseOnboardingModalProps {
   isOpen: boolean;
@@ -39,7 +42,8 @@ interface ExerciseOnboardingModalProps {
 }
 
 // Removido: question8 (gênero) e question10 (idade) - buscamos do perfil do usuário
-type Step = 'welcome' | 'question1' | 'question2' | 'question3' | 'question4' | 'question5' | 'question6' | 'question7' | 'question8' | 'question9' | 'result';
+// Adicionado: question4b (seleção de dias) e question5b (divisão de treino para academia)
+type Step = 'welcome' | 'question1' | 'question2' | 'question3' | 'question4' | 'question4b' | 'question5' | 'question5b' | 'question6' | 'question7' | 'question8' | 'question9' | 'result';
 
 interface Answers {
   level: string;
@@ -52,6 +56,9 @@ interface Answers {
   // Novas perguntas (gênero e idade vêm do perfil)
   bodyFocus: string;
   specialCondition: string;
+  // Novas perguntas de dias e divisão
+  selectedDays: string[];
+  trainingSplit: string;
 }
 
 export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = ({
@@ -70,6 +77,8 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
     limitation: '',
     bodyFocus: '',
     specialCondition: '',
+    selectedDays: [],
+    trainingSplit: '',
   });
   const [saving, setSaving] = useState(false);
   const { saveProgram } = useExerciseProgram(user?.id);
@@ -341,7 +350,7 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
             }`}
             onClick={() => {
               handleAnswer('frequency', option.value);
-              setTimeout(() => setStep('question5'), 300);
+              setTimeout(() => setStep('question4b'), 300);
             }}
           >
             <CardContent className="p-4">
@@ -360,6 +369,58 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
     </div>
   );
 
+  // PERGUNTA 4B: Seleção de dias da semana
+  const getMaxDaysFromFrequency = (freq: string): number => {
+    if (freq === '2-3x') return 3;
+    if (freq === '4-5x') return 5;
+    if (freq === '6x') return 6;
+    return 3;
+  };
+
+  const renderQuestion4b = () => {
+    const maxDays = getMaxDaysFromFrequency(answers.frequency);
+    const canContinue = answers.selectedDays.length === maxDays;
+
+    return (
+      <div className="space-y-6 py-4">
+        <div className="text-center space-y-3">
+          <div className="flex justify-center mb-4">
+            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center shadow-lg">
+              <Calendar className="w-8 h-8 text-white" />
+            </div>
+          </div>
+          <h3 className="text-2xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">
+            Quais dias você vai treinar?
+          </h3>
+          <p className="text-muted-foreground">
+            Escolha os {maxDays} dias que melhor se encaixam na sua rotina
+          </p>
+        </div>
+
+        <DaySelector
+          selectedDays={answers.selectedDays}
+          onChange={(days) => setAnswers(prev => ({ ...prev, selectedDays: days }))}
+          maxDays={maxDays}
+        />
+
+        <Button
+          className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white"
+          disabled={!canContinue}
+          onClick={() => setStep('question5')}
+        >
+          {canContinue ? (
+            <>
+              Continuar
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </>
+          ) : (
+            `Selecione ${maxDays - answers.selectedDays.length} dia(s)`
+          )}
+        </Button>
+      </div>
+    );
+  };
+
   const renderQuestion5 = () => (
     <div className="space-y-6 py-4">
       <div className="text-center space-y-3">
@@ -377,7 +438,6 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
       <div className="grid gap-3">
         {[
           { value: 'casa_sem', emoji: '🏠', title: 'Casa (sem equipamentos)', desc: 'Usando móveis: cadeira, mesa, escada, parede', color: 'from-green-500 to-emerald-500' },
-          { value: 'casa_com', emoji: '🏋️‍♂️', title: 'Casa (com equipamentos)', desc: 'Halteres, elásticos, banco, barra', color: 'from-blue-500 to-cyan-500' },
           { value: 'academia', emoji: '💪', title: 'Academia', desc: 'Acesso a equipamentos completos', color: 'from-purple-500 to-pink-500' },
         ].map(option => (
           <Card 
@@ -389,7 +449,10 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
             }`}
             onClick={() => {
               handleAnswer('location', option.value);
-              setTimeout(() => setStep('question6'), 300);
+              // Se academia e nível moderado/avançado, mostrar divisão de treino
+              const shouldShowSplit = option.value === 'academia' && 
+                ['moderado', 'avancado'].includes(answers.level);
+              setTimeout(() => setStep(shouldShowSplit ? 'question5b' : 'question6'), 300);
             }}
           >
             <CardContent className="p-4">
@@ -405,6 +468,33 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
           </Card>
         ))}
       </div>
+    </div>
+  );
+
+  // PERGUNTA 5B: Divisão de treino para Academia (moderado/avançado)
+  const renderQuestion5b = () => (
+    <div className="space-y-6 py-4">
+      <div className="text-center space-y-3">
+        <div className="flex justify-center mb-4">
+          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg">
+            <Dumbbell className="w-8 h-8 text-white" />
+          </div>
+        </div>
+        <h3 className="text-2xl font-bold bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent">
+          Como quer dividir seu treino?
+        </h3>
+        <p className="text-muted-foreground">Escolha a divisão muscular que prefere</p>
+      </div>
+
+      <TrainingSplitSelector
+        value={answers.trainingSplit as TrainingSplit | ''}
+        onChange={(split) => {
+          setAnswers(prev => ({ ...prev, trainingSplit: split }));
+          setTimeout(() => setStep('question6'), 300);
+        }}
+        frequency={answers.frequency}
+        level={answers.level}
+      />
     </div>
   );
 
@@ -809,12 +899,13 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
           {step === 'question2' && renderQuestion2()}
           {step === 'question3' && renderQuestion3()}
           {step === 'question4' && renderQuestion4()}
+          {step === 'question4b' && renderQuestion4b()}
           {step === 'question5' && renderQuestion5()}
+          {step === 'question5b' && renderQuestion5b()}
           {step === 'question6' && renderQuestion6()}
           {step === 'question7' && renderQuestion7()}
           {step === 'question8' && renderQuestion8()}
           {step === 'question9' && renderQuestion9()}
-          {step === 'result' && renderResult()}
           {step === 'result' && renderResult()}
         </div>
       </DialogContent>

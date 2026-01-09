@@ -38,12 +38,14 @@ import {
   X,
   Youtube,
 } from 'lucide-react';
+import { Volume2, VolumeX } from 'lucide-react';
 import { Exercise, WeeklyPlan } from '@/hooks/useExercisesLibrary';
 import { RestTimer } from './RestTimer';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import confetti from 'canvas-confetti';
 import { supabase } from '@/integrations/supabase/client';
+import { useWorkoutSound } from '@/hooks/useWorkoutSound';
 
 interface ActiveWorkoutModalProps {
   isOpen: boolean;
@@ -72,6 +74,16 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
   onComplete
 }) => {
   const { toast } = useToast();
+  const { 
+    soundEnabled, 
+    setSoundEnabled, 
+    playStartBeep, 
+    playPauseBeep, 
+    playCountdownBeep, 
+    playSetCompleteBeep,
+    playFinishBeep,
+    vibrateMedium 
+  } = useWorkoutSound({ enabled: true });
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [progress, setProgress] = useState<ExerciseProgress[]>([]);
@@ -263,7 +275,16 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const toggleExerciseTimer = () => setIsExerciseTimerRunning((prev) => !prev);
+  const toggleExerciseTimer = () => {
+    setIsExerciseTimerRunning((prev) => {
+      if (prev) {
+        playPauseBeep();
+      } else {
+        playStartBeep();
+      }
+      return !prev;
+    });
+  };
 
   const resetExerciseTimer = () => {
     setExerciseSeconds(0);
@@ -280,6 +301,8 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
     setExerciseSeconds(0);
     setIsExerciseTimerRunning(true);
     setCurrentSet(Math.max(1, (progress[currentIndex]?.setsCompleted ?? 0) + 1));
+    playStartBeep();
+    vibrateMedium();
   };
 
   const handleConcludeSetOrExercise = () => {
@@ -294,6 +317,9 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
       )
     );
 
+    playSetCompleteBeep();
+    vibrateMedium();
+
     if (currentSet < totalSetsForExercise) {
       toast({
         title: `Série ${currentSet} concluída!`,
@@ -303,6 +329,7 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
       return;
     }
 
+    playFinishBeep();
     toast({ title: '✅ Exercício concluído!', description: 'Boa! Vamos para o próximo.' });
     handleCompleteExercise();
   };
@@ -366,12 +393,25 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
                   exit={{ opacity: 0, x: -20 }}
                   className="space-y-4"
                 >
-                  {/* Header: Título + Badge Local + Timer */}
+                  {/* Header: Título + Badge Local + Timer + Som */}
                   <div className="flex items-start justify-between">
                     <div>
                       <h2 className="text-xl font-bold">{currentExercise.name}</h2>
                     </div>
                     <div className="flex items-center gap-2">
+                      {/* Botão de som */}
+                      <button
+                        type="button"
+                        onClick={() => setSoundEnabled(!soundEnabled)}
+                        className="p-1.5 rounded-full hover:bg-muted transition-colors"
+                        title={soundEnabled ? 'Desativar som' : 'Ativar som'}
+                      >
+                        {soundEnabled ? (
+                          <Volume2 className="w-4 h-4 text-green-500" />
+                        ) : (
+                          <VolumeX className="w-4 h-4 text-muted-foreground" />
+                        )}
+                      </button>
                       <Badge variant="outline" className="text-xs">
                         🏠 {currentExercise.location === 'gym' ? 'Academia' : 'Em Casa'}
                       </Badge>
