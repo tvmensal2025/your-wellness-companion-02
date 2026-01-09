@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import { 
   Send, 
   RefreshCw, 
@@ -10,9 +12,13 @@ import {
   Clock,
   TrendingUp,
   Users,
-  AlertTriangle
+  AlertTriangle,
+  Copy,
+  Link,
+  Check
 } from 'lucide-react';
 import { useWebhookManagement } from '@/hooks/useWebhookManagement';
+import { useToast } from '@/hooks/use-toast';
 import {
   Table,
   TableBody,
@@ -22,7 +28,12 @@ import {
   TableRow,
 } from '@/components/ui/table';
 
+const DEFAULT_WEBHOOK_URL = 'https://financeiromaxnutrition.lovable.app/functions/v1/receive-leads';
+
 export default function WebhookManagement() {
+  const { toast } = useToast();
+  const [copied, setCopied] = useState(false);
+  
   const {
     webhooks,
     stats,
@@ -33,6 +44,13 @@ export default function WebhookManagement() {
     retryWebhook,
     exportToCSV,
   } = useWebhookManagement();
+
+  const copyUrl = async () => {
+    await navigator.clipboard.writeText(DEFAULT_WEBHOOK_URL);
+    setCopied(true);
+    toast({ title: 'URL copiada!', description: 'URL do webhook copiada para a área de transferência' });
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -66,7 +84,32 @@ export default function WebhookManagement() {
           <p className="text-muted-foreground">
             Sincronização automática com financeiromaxnutrition.lovable.app
           </p>
-        </div>
+      </div>
+
+      {/* URL do Webhook */}
+      <Card className="border-primary/30">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm font-medium flex items-center gap-2">
+            <Link className="h-4 w-4 text-primary" />
+            URL de Destino do Webhook
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex gap-2">
+            <Input
+              value={DEFAULT_WEBHOOK_URL}
+              readOnly
+              className="font-mono text-sm bg-muted"
+            />
+            <Button variant="outline" onClick={copyUrl}>
+              {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground mt-2">
+            Todos os leads serão enviados para esta URL automaticamente
+          </p>
+        </CardContent>
+      </Card>
         <div className="flex gap-2">
           <Button variant="outline" onClick={fetchWebhooks}>
             <RefreshCw className="h-4 w-4 mr-2" />
