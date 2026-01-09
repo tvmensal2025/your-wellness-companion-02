@@ -1575,7 +1575,7 @@ function generateDidacticHTML(data: any, profile: any, documentId: string) {
         </div>
         <div class="contact-item">
           <span class="contact-icon">🌐</span>
-          <span>www.institutodossonhos.com.br</span>
+          <span>www.maxnutrition.com.br</span>
         </div>
       </div>
       
@@ -4067,11 +4067,11 @@ Por favor, analise as imagens dos exames médicos e extraia todos os valores enc
         </div>
         <div class="contact-item">
           <span class="contact-icon">🌐</span>
-          <span>www.institutodossonhos.com.br</span>
+          <span>www.maxnutrition.com.br</span>
         </div>
         <div class="contact-item">
           <span class="contact-icon">✉️</span>
-          <span>contato@institutodossonhos.com.br</span>
+          <span>contato@maxnutrition.com.br</span>
         </div>
       </div>
       
