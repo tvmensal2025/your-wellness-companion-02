@@ -142,7 +142,7 @@ serve(async (req) => {
       const referer = req.headers.get('referer') || '';
       let returnUrl = referer.includes('lovableproject.com') 
         ? referer.split('?')[0].replace(/\/$/, '')
-        : 'https://plataforma.institutodossonhos.com.br'
+        : 'https://app.maxnutrition.com.br'
 
       if (state) {
         try {
