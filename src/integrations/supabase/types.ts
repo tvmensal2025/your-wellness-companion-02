@@ -11865,15 +11865,62 @@ export type Database = {
         }
         Relationships: []
       }
+      webhook_destinations: {
+        Row: {
+          created_at: string | null
+          events: string[] | null
+          headers: Json | null
+          id: string
+          is_active: boolean | null
+          name: string
+          retry_count: number | null
+          secret_key: string | null
+          timeout_seconds: number | null
+          updated_at: string | null
+          url: string
+        }
+        Insert: {
+          created_at?: string | null
+          events?: string[] | null
+          headers?: Json | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          retry_count?: number | null
+          secret_key?: string | null
+          timeout_seconds?: number | null
+          updated_at?: string | null
+          url: string
+        }
+        Update: {
+          created_at?: string | null
+          events?: string[] | null
+          headers?: Json | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          retry_count?: number | null
+          secret_key?: string | null
+          timeout_seconds?: number | null
+          updated_at?: string | null
+          url?: string
+        }
+        Relationships: []
+      }
       webhook_queue: {
         Row: {
           attempts: number | null
           created_at: string | null
+          destination_id: string | null
           destination_url: string
           event_type: string
+          execution_time_ms: number | null
+          headers_sent: Json | null
           id: string
           last_error: string | null
           payload: Json
+          response_body: string | null
+          response_code: number | null
           sent_at: string | null
           status: string | null
           user_id: string | null
@@ -11881,11 +11928,16 @@ export type Database = {
         Insert: {
           attempts?: number | null
           created_at?: string | null
+          destination_id?: string | null
           destination_url: string
           event_type: string
+          execution_time_ms?: number | null
+          headers_sent?: Json | null
           id?: string
           last_error?: string | null
           payload: Json
+          response_body?: string | null
+          response_code?: number | null
           sent_at?: string | null
           status?: string | null
           user_id?: string | null
@@ -11893,16 +11945,29 @@ export type Database = {
         Update: {
           attempts?: number | null
           created_at?: string | null
+          destination_id?: string | null
           destination_url?: string
           event_type?: string
+          execution_time_ms?: number | null
+          headers_sent?: Json | null
           id?: string
           last_error?: string | null
           payload?: Json
+          response_body?: string | null
+          response_code?: number | null
           sent_at?: string | null
           status?: string | null
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "webhook_queue_destination_id_fkey"
+            columns: ["destination_id"]
+            isOneToOne: false
+            referencedRelation: "webhook_destinations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       weekly_analyses: {
         Row: {
