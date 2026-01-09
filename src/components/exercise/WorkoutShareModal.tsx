@@ -133,36 +133,37 @@ export const WorkoutShareModal: React.FC<WorkoutShareModalProps> = ({
         
         <div className="space-y-4">
           {/* Card para Screenshot */}
-          <div ref={cardRef} className="p-4 rounded-xl bg-gradient-to-br from-orange-500 via-red-500 to-pink-600 text-white shadow-xl">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
-                <Dumbbell className="w-4 h-4" />
+          <div ref={cardRef} className="p-5 rounded-xl bg-gradient-to-br from-orange-500 via-red-500 to-pink-600 text-white shadow-xl">
+            {/* Logo e nome centralizados */}
+            <div className="flex flex-col items-center mb-4">
+              <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mb-2">
+                <Dumbbell className="w-6 h-6" />
               </div>
-              <span className="font-bold text-sm">MaxNutrition</span>
+              <span className="font-bold text-lg">MaxNutrition</span>
             </div>
             
-            <h2 className="text-xl font-bold mb-3">🏆 Treino Concluído!</h2>
+            <h2 className="text-xl font-bold mb-4 text-center">🏆 Treino Concluído!</h2>
             
-            <div className="grid grid-cols-3 gap-2 mb-3">
-              <div className="text-center bg-white/10 rounded-lg p-2">
-                <Clock className="w-4 h-4 mx-auto mb-1 opacity-80" />
-                <p className="text-lg font-bold">{stats.duration}</p>
-                <p className="text-[10px] opacity-80">min</p>
+            <div className="grid grid-cols-3 gap-2 mb-4">
+              <div className="text-center bg-white/10 rounded-lg p-3">
+                <Clock className="w-5 h-5 mx-auto mb-1 opacity-80" />
+                <p className="text-xl font-bold">{stats.duration}</p>
+                <p className="text-xs opacity-80">min</p>
               </div>
-              <div className="text-center bg-white/10 rounded-lg p-2">
-                <Dumbbell className="w-4 h-4 mx-auto mb-1 opacity-80" />
-                <p className="text-lg font-bold">{stats.exercises}</p>
-                <p className="text-[10px] opacity-80">exercícios</p>
+              <div className="text-center bg-white/10 rounded-lg p-3">
+                <Dumbbell className="w-5 h-5 mx-auto mb-1 opacity-80" />
+                <p className="text-xl font-bold">{stats.exercises}</p>
+                <p className="text-xs opacity-80">exercícios</p>
               </div>
-              <div className="text-center bg-white/10 rounded-lg p-2">
-                <Flame className="w-4 h-4 mx-auto mb-1 opacity-80" />
-                <p className="text-lg font-bold">{stats.sets}</p>
-                <p className="text-[10px] opacity-80">séries</p>
+              <div className="text-center bg-white/10 rounded-lg p-3">
+                <Flame className="w-5 h-5 mx-auto mb-1 opacity-80" />
+                <p className="text-xl font-bold">{stats.sets}</p>
+                <p className="text-xs opacity-80">séries</p>
               </div>
             </div>
             
-            <p className="text-center text-xs opacity-80">
-              Baixe: maxnutrition.app
+            <p className="text-center text-sm opacity-90 mt-3">
+              Baixe: <span className="font-semibold">app.oficialmaxnutrition.com.br</span>
             </p>
           </div>
 

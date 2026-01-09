@@ -131,12 +131,17 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
   const completedCount = progress.filter((p) => p.completed).length;
   const progressPercentage = (completedCount / totalExercises) * 100;
 
-  // Timer atualizado a cada segundo
+  // Timer atualizado com precisão absoluta usando requestAnimationFrame
   useEffect(() => {
-    const interval = setInterval(() => {
+    let animationFrame: number;
+    
+    const tick = () => {
       setElapsedTime(Math.floor((Date.now() - workoutStartTime) / 1000));
-    }, 1000);
-    return () => clearInterval(interval);
+      animationFrame = requestAnimationFrame(tick);
+    };
+    
+    animationFrame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(animationFrame);
   }, [workoutStartTime]);
 
   // YouTube ID para embed
@@ -181,14 +186,45 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
     setExerciseFeedback(null);
   }, [currentIndex]);
 
-  // Cronômetro do exercício (conta para cima)
+  // Ref para armazenar timestamp de início do exercício
+  const exerciseStartTimeRef = React.useRef<number | null>(null);
+  const exerciseBaseSecondsRef = React.useRef<number>(0);
+
+  // Cronômetro do exercício com precisão absoluta (conta para cima)
   useEffect(() => {
-    if (!isOpen || !isExerciseStarted || !isExerciseTimerRunning) return;
-    const interval = setInterval(() => {
-      setExerciseSeconds((prev) => prev + 1);
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [isOpen, isExerciseStarted, isExerciseTimerRunning, currentIndex]);
+    if (!isOpen || !isExerciseStarted || !isExerciseTimerRunning) {
+      // Salvar segundos atuais quando pausa
+      if (exerciseStartTimeRef.current) {
+        exerciseBaseSecondsRef.current = exerciseSeconds;
+        exerciseStartTimeRef.current = null;
+      }
+      return;
+    }
+    
+    // Iniciar/continuar contagem
+    if (!exerciseStartTimeRef.current) {
+      exerciseStartTimeRef.current = Date.now();
+    }
+    
+    let animationFrame: number;
+    
+    const tick = () => {
+      if (!exerciseStartTimeRef.current) return;
+      
+      const elapsed = Math.floor((Date.now() - exerciseStartTimeRef.current) / 1000);
+      setExerciseSeconds(exerciseBaseSecondsRef.current + elapsed);
+      animationFrame = requestAnimationFrame(tick);
+    };
+    
+    animationFrame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(animationFrame);
+  }, [isOpen, isExerciseStarted, isExerciseTimerRunning]);
+
+  // Reset refs quando muda de exercício
+  useEffect(() => {
+    exerciseStartTimeRef.current = null;
+    exerciseBaseSecondsRef.current = 0;
+  }, [currentIndex]);
 
   const handleFinishWorkout = (progressOverride?: ExerciseProgress[]) => {
     const base = progressOverride ?? progress;

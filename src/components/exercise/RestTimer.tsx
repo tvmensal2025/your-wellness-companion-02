@@ -38,8 +38,13 @@ export const RestTimer: React.FC<RestTimerProps> = ({
   const [seconds, setSeconds] = useState(defaultSeconds);
   const [isRunning, setIsRunning] = useState(autoStart);
   const [localSoundEnabled, setLocalSoundEnabled] = useState(true);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  
+  // Para precisão absoluta: armazenar timestamp de início
+  const startTimestampRef = useRef<number | null>(null);
+  const pausedSecondsRef = useRef<number>(defaultSeconds);
+  const animationFrameRef = useRef<number | null>(null);
+  const lastBeepSecondRef = useRef<number | null>(null);
+  const hasCompletedRef = useRef<boolean>(false);
 
   // Usar som externo se disponível, senão usar local
   const soundEnabled = externalSoundEnabled !== undefined ? externalSoundEnabled : localSoundEnabled;
@@ -70,53 +75,101 @@ export const RestTimer: React.FC<RestTimerProps> = ({
     }
   }, [soundEnabled]);
 
-  // Timer logic
+  // Timer com precisão absoluta usando requestAnimationFrame + Date.now()
   useEffect(() => {
-    if (isRunning && seconds > 0) {
-      intervalRef.current = setInterval(() => {
-        setSeconds((prev) => {
-          if (prev <= 1) {
-            setIsRunning(false);
-            // Usar callback externo se disponível
-            if (onFinishBeep) {
-              onFinishBeep();
-            } else {
-              playLocalBeep();
-              playLocalBeep();
-            }
-            onComplete?.();
-            return 0;
-          }
-          // Beep nos últimos 3 segundos
-          if (prev <= 4) {
-            if (onCountdownBeep) {
-              onCountdownBeep();
-            } else {
-              playLocalBeep();
-            }
-          }
-          return prev - 1;
-        });
-      }, 1000);
+    if (!isRunning) {
+      // Cancelar animação quando parado
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+        animationFrameRef.current = null;
+      }
+      return;
     }
 
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
+    // Iniciar timestamp se não existir
+    if (!startTimestampRef.current) {
+      startTimestampRef.current = Date.now();
+      hasCompletedRef.current = false;
+    }
+
+    const tick = () => {
+      if (!startTimestampRef.current || hasCompletedRef.current) return;
+
+      const elapsed = (Date.now() - startTimestampRef.current) / 1000;
+      const remaining = Math.max(0, Math.ceil(pausedSecondsRef.current - elapsed));
+      
+      setSeconds(remaining);
+
+      // Timer completou
+      if (remaining <= 0 && !hasCompletedRef.current) {
+        hasCompletedRef.current = true;
+        setIsRunning(false);
+        startTimestampRef.current = null;
+        
+        // Som de finalização
+        if (onFinishBeep) {
+          onFinishBeep();
+        } else {
+          playLocalBeep();
+          setTimeout(playLocalBeep, 200);
+        }
+        onComplete?.();
+        return;
+      }
+
+      // Beep nos últimos 3 segundos (apenas uma vez por segundo)
+      if (remaining <= 3 && remaining > 0 && remaining !== lastBeepSecondRef.current) {
+        lastBeepSecondRef.current = remaining;
+        if (onCountdownBeep) {
+          onCountdownBeep();
+        } else {
+          playLocalBeep();
+        }
+      }
+
+      // Continuar loop
+      if (remaining > 0) {
+        animationFrameRef.current = requestAnimationFrame(tick);
       }
     };
-  }, [isRunning, seconds, playLocalBeep, onComplete, onCountdownBeep, onFinishBeep]);
+
+    animationFrameRef.current = requestAnimationFrame(tick);
+
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, [isRunning, playLocalBeep, onComplete, onCountdownBeep, onFinishBeep]);
 
   const toggleTimer = () => {
     if (seconds === 0) {
+      // Reset completo
+      pausedSecondsRef.current = defaultSeconds;
       setSeconds(defaultSeconds);
+      lastBeepSecondRef.current = null;
+      hasCompletedRef.current = false;
     }
+    
+    if (isRunning) {
+      // Pausar: salvar segundos restantes
+      pausedSecondsRef.current = seconds;
+      startTimestampRef.current = null;
+    } else {
+      // Iniciar: criar novo timestamp
+      startTimestampRef.current = Date.now();
+    }
+    
     setIsRunning(!isRunning);
   };
 
   const resetTimer = () => {
     setIsRunning(false);
     setSeconds(defaultSeconds);
+    pausedSecondsRef.current = defaultSeconds;
+    startTimestampRef.current = null;
+    lastBeepSecondRef.current = null;
+    hasCompletedRef.current = false;
   };
 
   const adjustTime = (delta: number) => {
