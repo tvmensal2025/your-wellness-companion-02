@@ -214,21 +214,33 @@ async function processTextForFood(
   text: string
 ): Promise<boolean> {
   try {
-    // Call AI to analyze text for food
-    const { data: analysis, error } = await supabase.functions.invoke(
-      "sofia-text-analysis",
-      {
-        body: {
-          text,
-          userId: user.id,
-          contextType: "meal_log",
-        },
+    let analysis: any = null;
+    
+    // Tentar sofia-text-analysis primeiro
+    try {
+      const { data, error } = await supabase.functions.invoke(
+        "sofia-text-analysis",
+        {
+          body: {
+            text,
+            userId: user.id,
+            contextType: "meal_log",
+          },
+        }
+      );
+      
+      if (!error && data) {
+        analysis = data;
+        console.log("[TextHandler] sofia-text-analysis OK:", data.detected_foods?.length || 0, "alimentos");
       }
-    );
+    } catch (sofiaError) {
+      console.log("[TextHandler] sofia-text-analysis falhou, tentando fallback...");
+    }
 
-    if (error || !analysis) {
-      console.log("[TextHandler] Análise falhou, usando resposta inteligente");
-      return false;
+    // Fallback: usar whatsapp-ai-assistant se sofia falhar
+    if (!analysis || !analysis.detected_foods?.length) {
+      console.log("[TextHandler] Usando fallback whatsapp-ai-assistant");
+      return false; // Deixa o handleSmartResponse cuidar
     }
 
     const foods = analysis.detected_foods || analysis.foods || [];
