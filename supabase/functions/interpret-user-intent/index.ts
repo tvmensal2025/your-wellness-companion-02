@@ -55,24 +55,38 @@ serve(async (req) => {
         ).join('\n')}`
       : "";
 
+    // Determinar contexto específico para o prompt
+    const contextDescription = context === "medical_collecting" 
+      ? "COLETANDO FOTOS DE EXAMES MÉDICOS - usuário está enviando fotos de exames e preciso saber se quer processar"
+      : context === "awaiting_confirmation"
+      ? "AGUARDANDO CONFIRMAÇÃO DE ALIMENTOS - lista de alimentos detectada aguardando confirmação"
+      : context || "chat livre";
+
     const systemPrompt = `Você é um interpretador de intenções para um app de nutrição brasileiro.
 Analise a mensagem do usuário e identifique a intenção.
 
-CONTEXTO ATUAL: ${context || "chat livre"}${pendingFoodsContext}
+CONTEXTO ATUAL: ${contextDescription}${pendingFoodsContext}
 
 INTENÇÕES POSSÍVEIS:
-- confirm: usuário quer confirmar (sim, ok, beleza, pode, manda, tá certo, confirmo, isso aí, perfeito, exato, certo, fechou, bora, vamos, pode salvar, salva, registra, correto, isso mesmo, é isso, esse mesmo, tá ótimo, tá bom, show, massa, legal, pode ser, tudo certo)
-- cancel: usuário quer cancelar (não, cancela, errado, esquece, deixa pra lá, não quero, para, anula, não era isso)
+- confirm: usuário quer confirmar/processar (sim, ok, beleza, pode, manda, tá certo, confirmo, isso aí, perfeito, exato, certo, fechou, bora, vamos, pode salvar, salva, registra, correto, isso mesmo, é isso, pronto, terminei, já foi, pode analisar, finalizado, vai lá, segue, manda ver)
+- cancel: usuário quer cancelar (não, cancela, errado, esquece, deixa pra lá, não quero, para, anula, não era isso, desisto)
+- add_more: usuário quer adicionar mais (mais, vou enviar mais, tem mais, falta, espera, aguarda)
 - edit: usuário quer entrar no modo edição genérico (editar, corrigir, mudar, ajustar, quero mudar)
 - add_food: adicionar alimento específico (adiciona X, faltou Y, coloca mais Z, também comi W, esqueceu de colocar, põe também)
 - remove_food: remover alimento específico (tira o X, remove o Y, sem o Z, não comi X, não tinha, remove isso)
 - replace_food: substituir alimento (troca X por Y, não era X era Y, na verdade era Z, era X não Y, muda de X para Y)
 - describe_meal: usuário está descrevendo uma refeição nova (comi arroz e feijão, almocei frango com salada)
-- question: usuário está fazendo uma pergunta sobre nutrição/saúde
+- question: usuário está fazendo uma pergunta sobre nutrição/saúde (quanto tempo, como funciona, etc)
 - greeting: saudação simples (oi, olá, bom dia, boa tarde, boa noite, e aí)
 - unknown: não foi possível identificar
 
-REGRAS:
+REGRAS ESPECIAIS PARA CONTEXTO "medical_collecting":
+1. "já foi", "já foi finalizado", "pode analisar", "analisa aí" = confirm (processar exames)
+2. "vou enviar mais", "tem mais", "espera" = add_more
+3. "cancelar", "não quero mais" = cancel
+4. Seja FLEXÍVEL com variações da língua portuguesa!
+
+REGRAS GERAIS:
 1. Para add_food: extraia nome do alimento e gramas se mencionado
 2. Para remove_food: identifique qual alimento (por nome ou número) remover
 3. Para replace_food: identifique qual alimento substituir e qual é o novo

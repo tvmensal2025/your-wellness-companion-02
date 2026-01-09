@@ -2,7 +2,13 @@ import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { UserInfo } from "../services/user-service.ts";
 import { PendingMedical, cleanupStuckMedicalBatches } from "../services/pending-service.ts";
 import { sendWhatsApp } from "../utils/whatsapp-sender.ts";
-import { isConfirmationPositive, isConfirmationNegative } from "../utils/message-utils.ts";
+import { 
+  isConfirmationPositive, 
+  isConfirmationNegative,
+  isMedicalReady,
+  isMedicalCancel,
+  isMedicalAddMore,
+} from "../utils/message-utils.ts";
 
 const MAX_RETRIES = 5;
 
@@ -212,15 +218,56 @@ export async function handleMedicalResponse(
 
     console.log(`[Medical] handleMedicalResponse: status=${status}, msg="${lower}", images=${imagesCount}`);
 
-    // PRONTO - start analysis directly
-    if (["pronto", "terminei", "finalizar", "fim", "acabou", "done"].includes(lower)) {
-      if (status === "collecting") {
-        console.log("[Medical] ✅ PRONTO recebido - iniciando análise DIRETO");
+    // 🔥 FLEXIBLE PATTERN MATCHING - Usar funções inteligentes
+    
+    // CANCELAR - prioridade alta
+    if (isMedicalCancel(lower)) {
+      console.log("[Medical] ❌ CANCELAR detectado:", lower);
+      await supabase
+        .from("whatsapp_pending_medical")
+        .update({ status: "cancelled", is_processed: true })
+        .eq("id", pending.id);
+
+      await sendWhatsApp(phone, `❌ Análise cancelada.\n\nSe precisar, envie novas fotos!\n\n_Dr. Vital 🩺_`);
+      return;
+    }
+
+    // MAIS FOTOS
+    if (isMedicalAddMore(lower)) {
+      console.log("[Medical] 📸 MAIS detectado:", lower);
+      if (status === "processing" || status === "awaiting_confirm" || status === "collecting") {
+        await supabase
+          .from("whatsapp_pending_medical")
+          .update({
+            status: "collecting",
+            waiting_confirmation: false,
+            confirmed: false,
+          })
+          .eq("id", pending.id);
+
+        await sendWhatsApp(
+          phone,
+          `📸 Ok! Continue enviando as fotos do exame.\n\n` +
+            `Você já tem *${imagesCount} ${imagesCount === 1 ? "foto" : "fotos"}*.\n\n` +
+            `Quando terminar, me avise ou digite *PRONTO*!\n\n` +
+            `_Dr. Vital 🩺_`
+        );
+        return;
+      }
+    }
+
+    // PRONTO / FINALIZAR - usar função flexível
+    if (isMedicalReady(lower)) {
+      if (status === "collecting" || status === "awaiting_confirm") {
+        console.log("[Medical] ✅ PRONTO detectado (flexível):", lower);
+
+        const estimatedMinutes = Math.max(1, Math.ceil(imagesCount * 0.3));
+        const timeText = estimatedMinutes <= 1 ? "menos de 1 minuto" : `até ${estimatedMinutes} minutos`;
 
         await sendWhatsApp(
           phone,
           `🩺 *Analisando ${imagesCount} ${imagesCount === 1 ? "imagem" : "imagens"}...*\n\n` +
-            `⏳ Isso pode levar alguns segundos.\n\n` +
+            `⏳ *Tempo estimado: ${timeText}*\n\n` +
             `💡 Se quiser enviar mais fotos depois, digite *MAIS*.\n\n` +
             `_Dr. Vital 🩺_`
         );
@@ -239,95 +286,7 @@ export async function handleMedicalResponse(
       }
     }
 
-    // MAIS - add more photos
-    if (["mais", "add", "adicionar", "enviar mais", "more"].includes(lower)) {
-      if (status === "processing" || status === "awaiting_confirm") {
-        await supabase
-          .from("whatsapp_pending_medical")
-          .update({
-            status: "collecting",
-            waiting_confirmation: false,
-            confirmed: false,
-          })
-          .eq("id", pending.id);
-
-        await sendWhatsApp(
-          phone,
-          `📸 Ok! Continue enviando as fotos do exame.\n\n` +
-            `Você já tem *${imagesCount} ${imagesCount === 1 ? "foto" : "fotos"}*.\n\n` +
-            `Quando terminar, digite *PRONTO* novamente.\n\n` +
-            `_Dr. Vital 🩺_`
-        );
-        return;
-      }
-    }
-
-    // Confirm from awaiting_confirm status
-    if (
-      status === "awaiting_confirm" &&
-      (lower === "1" || lower === "sim" || lower === "s" || lower === "yes")
-    ) {
-      // Estimate time based on image count
-      const estimatedMinutes = Math.max(1, Math.ceil(imagesCount * 0.3));
-      const timeText = estimatedMinutes <= 1 ? "menos de 1 minuto" : `até ${estimatedMinutes} minutos`;
-      const coffeeHint = imagesCount > 10 ? "São várias páginas! Pode aproveitar para tomar um café enquanto analiso. " : "";
-      
-      await sendWhatsApp(
-        phone,
-        `🩺 *Iniciando análise de ${imagesCount} ${imagesCount === 1 ? "imagem" : "imagens"}...*\n\n` +
-          `⏳ *Tempo estimado: ${timeText}*\n\n` +
-          `☕ ${coffeeHint}Aguarde, eu aviso quando terminar!\n\n` +
-          `_Dr. Vital 🩺_`
-      );
-
-      await supabase
-        .from("whatsapp_pending_medical")
-        .update({
-          status: "processing",
-          waiting_confirmation: false,
-          confirmed: true,
-        })
-        .eq("id", pending.id);
-
-      await analyzeExamBatch(supabase, user, phone, pending);
-      return;
-    }
-
-    // Cancel from awaiting_confirm
-    if (
-      status === "awaiting_confirm" &&
-      (lower === "2" || lower === "nao" || lower === "não" || lower === "n" || lower === "no")
-    ) {
-      await supabase
-        .from("whatsapp_pending_medical")
-        .update({
-          status: "collecting",
-          waiting_confirmation: false,
-        })
-        .eq("id", pending.id);
-
-      await sendWhatsApp(
-        phone,
-        `📸 Ok! Continue enviando as fotos.\n\n` +
-          `Quando terminar, digite *PRONTO*.\n\n` +
-          `_Dr. Vital 🩺_`
-      );
-      return;
-    }
-
-    // Cancel completely
-    if (
-      status === "awaiting_confirm" &&
-      (lower === "3" || lower === "cancelar" || lower === "cancel")
-    ) {
-      await supabase
-        .from("whatsapp_pending_medical")
-        .update({ status: "cancelled", is_processed: true })
-        .eq("id", pending.id);
-
-      await sendWhatsApp(phone, `❌ Análise cancelada.\n\n_Dr. Vital 🩺_`);
-      return;
-    }
+    // NOTE: As verificações de awaiting_confirm foram movidas para cima usando isMedicalReady/isMedicalCancel/isMedicalAddMore
 
     // If collecting and not PRONTO, remind user with gentle message
     if (status === "collecting") {
