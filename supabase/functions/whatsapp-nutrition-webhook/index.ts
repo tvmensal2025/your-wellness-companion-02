@@ -90,7 +90,49 @@ serve(async (req) => {
       }
     }
 
-    const pendingMedical = await getPendingMedical(supabase, user.id);
+    let pendingMedical = await getPendingMedical(supabase, user.id);
+    
+    // 🔥 AUTO-DETECT: Check for stale batches (inactive for 30+ seconds)
+    const INACTIVITY_TIMEOUT_MS = 30 * 1000; // 30 seconds
+    const nowTime = new Date();
+    
+    if (!hasImage(message) && !pendingMedical) {
+      const { data: staleBatch } = await supabase
+        .from("whatsapp_pending_medical")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("status", "collecting")
+        .eq("is_processed", false)
+        .lt("last_image_at", new Date(nowTime.getTime() - INACTIVITY_TIMEOUT_MS).toISOString())
+        .gt("expires_at", nowTime.toISOString())
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      
+      if (staleBatch && staleBatch.images_count > 0) {
+        const imagesCount = staleBatch.images_count || 1;
+        
+        // Update to awaiting_confirm status
+        await supabase
+          .from("whatsapp_pending_medical")
+          .update({
+            status: "awaiting_confirm",
+            waiting_confirmation: true,
+          })
+          .eq("id", staleBatch.id);
+        
+        await sendWhatsApp(phone,
+          `📋 *${imagesCount} ${imagesCount === 1 ? "imagem recebida" : "imagens recebidas"}*\n\n` +
+          `*Posso analisar agora?*\n\n` +
+          `1️⃣ *SIM*, pode analisar\n` +
+          `2️⃣ *NÃO*, vou enviar mais\n` +
+          `3️⃣ *CANCELAR*\n\n` +
+          `_Dr. Vital 🩺_`
+        );
+        
+        return new Response(JSON.stringify({ ok: true }), { headers: corsHeaders });
+      }
+    }
 
     // ROTEAMENTO DE MENSAGENS
 

@@ -60,6 +60,7 @@ export async function processMedicalImage(
             last_image_at: now,
             status: "collecting",
             waiting_confirmation: false,
+            expires_at: new Date(Date.now() + 60 * 60 * 1000).toISOString(), // Renew +1 hour
           })
           .eq("id", existingBatch.id)
           .eq("images_count", existingBatch.images_count)
@@ -84,6 +85,17 @@ export async function processMedicalImage(
         }
 
         console.log(`[Medical] ✅ Imagem ${newCount} adicionada ao lote ${existingBatch.id}`);
+        
+        // Feedback every 5 images
+        if (newCount % 5 === 0) {
+          await sendWhatsApp(
+            phone,
+            `📸 *${newCount} fotos recebidas!*\n\n` +
+            `Continue enviando ou aguarde que perguntarei quando analisar.\n\n` +
+            `_Dr. Vital 🩺_`
+          );
+        }
+        
         console.log("[Medical] ========================================");
         return;
       } else {
@@ -103,7 +115,7 @@ export async function processMedicalImage(
             waiting_confirmation: false,
             confirmed: null,
             is_processed: false,
-            expires_at: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
+            expires_at: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(), // 2 hours
             created_at: now,
           })
           .select();
@@ -124,8 +136,8 @@ export async function processMedicalImage(
         await sendWhatsApp(
           phone,
           `🩺 *Recebi sua foto de exame!*\n\n` +
-          `📸 Continue enviando mais fotos se precisar.\n` +
-          `✅ Quando terminar, digite *PRONTO* para eu analisar.\n\n` +
+          `📸 Continue enviando mais fotos se tiver.\n` +
+          `⏳ Assim que você parar de enviar, perguntarei se posso analisar.\n\n` +
           `_Dr. Vital 🩺_`
         );
         
