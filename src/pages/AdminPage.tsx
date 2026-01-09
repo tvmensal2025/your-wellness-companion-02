@@ -33,7 +33,8 @@ import {
   Play,
   Dumbbell,
   Plus,
-  MessageSquare
+  MessageSquare,
+  Send
 } from "lucide-react";
 import { AdminDashboard } from "@/components/admin/AdminDashboard";
 import UserManagement from "@/components/admin/UserManagement";
@@ -60,6 +61,7 @@ import MedicalDocumentsSection from "@/components/dashboard/MedicalDocumentsSect
 import { TutorialDeviceConfig } from "@/components/admin/TutorialDeviceConfig";
 import SofiaDataTestPanel from "@/components/admin/SofiaDataTestPanel";
 import WhatsAppManagement from "@/components/admin/WhatsAppManagement";
+import WebhookManagement from "@/components/admin/WebhookManagement";
 
 import { repairAuthSessionIfTooLarge } from "@/lib/auth-token-repair";
 
@@ -224,6 +226,7 @@ const AdminPage = () => {
     { id: 'mealie', icon: Utensils, label: 'Mealie (Cardápio)', color: 'text-emerald-600', description: 'Curadoria de receitas e token' },
     { id: 'sessions', icon: FileText, label: 'Gestão de Sessões', color: 'text-cyan-500', description: 'Criar e enviar sessões personalizadas' },
     { id: 'whatsapp', icon: MessageSquare, label: 'WhatsApp Evolution', color: 'text-green-500', description: 'Mensagens, templates e automações' },
+    { id: 'webhooks', icon: Send, label: 'Leads e Webhooks', color: 'text-emerald-500', description: 'Sincronização com financeiromaxnutrition' },
     { id: 'n8n', icon: Activity, label: 'Automação n8n', color: 'text-violet-500', description: 'Webhooks para WhatsApp e automações' },
     { id: 'devices', icon: Monitor, label: 'Gestão de Dispositivos', color: 'text-indigo-500', description: 'Dispositivos conectados' },
     { id: 'documents', icon: FileText, label: 'Documentos Médicos', color: 'text-rose-500', description: 'Examinar, subir e analisar exames' },
@@ -289,6 +292,8 @@ const AdminPage = () => {
         return <CompanyConfiguration />;
       case 'whatsapp':
         return <WhatsAppManagement />;
+      case 'webhooks':
+        return <WebhookManagement />;
       case 'ai-control':
         return (
           <div className="space-y-6">
