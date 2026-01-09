@@ -52,9 +52,15 @@ export function useFollow() {
       .from('profiles')
       .select('user_id')
       .eq('user_id', userId)
-      .single();
+      .maybeSingle();
 
-    if (profileError || !targetProfile) {
+    if (profileError) {
+      console.error('Erro ao verificar perfil:', profileError);
+      toast.error('Erro ao verificar usuário');
+      return false;
+    }
+
+    if (!targetProfile) {
       toast.error('Usuário não encontrado');
       return false;
     }

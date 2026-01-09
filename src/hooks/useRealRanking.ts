@@ -21,7 +21,7 @@ export const useRealRanking = () => {
       // Buscar todos os usuários com seus pontos
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('id, full_name, avatar_url');
+        .select('id, user_id, full_name, avatar_url');
 
       if (profilesError) {
         console.error('Erro ao buscar perfis:', profilesError);
@@ -30,11 +30,13 @@ export const useRealRanking = () => {
 
       // Para cada usuário, calcular XP total
       const rankingPromises = profiles.map(async (profile) => {
+        const userId = profile.user_id;
+        
         // Buscar pontos de metas concluídas
         const { data: goals } = await supabase
           .from('user_goals')
           .select('estimated_points')
-          .eq('user_id', profile.id)
+          .eq('user_id', userId)
           .eq('status', 'concluida');
 
         const totalXP = goals?.reduce((sum, g) => sum + (g.estimated_points || 0), 0) || 0;
@@ -43,14 +45,14 @@ export const useRealRanking = () => {
         const { data: achievements } = await supabase
           .from('achievement_tracking')
           .select('id')
-          .eq('user_id', profile.id)
+          .eq('user_id', userId)
           .not('unlocked_at', 'is', null);
 
         // Calcular streak
         const { data: activities } = await supabase
           .from('goal_updates')
           .select('created_at')
-          .eq('user_id', profile.id)
+          .eq('user_id', userId)
           .order('created_at', { ascending: false })
           .limit(30);
 
@@ -73,14 +75,14 @@ export const useRealRanking = () => {
         }
 
         return {
-          id: profile.id,
+          id: userId, // Use user_id for following
           name: profile.full_name || 'Usuário',
           avatar: profile.avatar_url,
           totalXP,
           level: Math.floor(totalXP / 1000) + 1,
           achievements: achievements?.length || 0,
           streak,
-          isCurrentUser: profile.id === user?.id,
+          isCurrentUser: userId === user?.id,
         };
       });
 
