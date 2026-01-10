@@ -1,7 +1,8 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { BodyMetricsCalculator } from '@/services/BodyMetricsCalculator';
+import type { User } from '@supabase/supabase-js';
 
 export interface WeightMeasurement {
   id: string;
@@ -57,8 +58,13 @@ export const useWeightMeasurement = () => {
   const [weeklyAnalyses, setWeeklyAnalyses] = useState<WeeklyAnalysis[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [dataFreshness, setDataFreshness] = useState<Date>(new Date());
   const { toast } = useToast();
+
+  // REFS para evitar loops infinitos - não causam re-render
+  const hasInitializedRef = useRef(false);
+  const dataFreshnessRef = useRef<Date>(new Date());
+  const userRef = useRef<User | null>(null);
+  const isFetchingRef = useRef(false);
 
   // Tipos auxiliares e utilitários
   type DerivedMetrics = {
@@ -123,10 +129,18 @@ export const useWeightMeasurement = () => {
     };
   };
 
+  // Helper para obter usuário com cache
+  const getUser = useCallback(async (): Promise<User | null> => {
+    if (userRef.current) return userRef.current;
+    const { data: { user } } = await supabase.auth.getUser();
+    userRef.current = user;
+    return user;
+  }, []);
+
   // Buscar dados físicos do usuário com cache
   const fetchPhysicalData = useCallback(async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const user = await getUser();
       if (!user) {
         console.log('Usuário não autenticado');
         return;
@@ -150,7 +164,7 @@ export const useWeightMeasurement = () => {
     } catch (err: any) {
       setError(err.message);
     }
-  }, []);
+  }, [getUser]);
 
   // Salvar dados físicos do usuário
   const savePhysicalData = async (data: Omit<UserPhysicalData, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
@@ -243,7 +257,7 @@ export const useWeightMeasurement = () => {
       if (error) throw error;
 
       setMeasurements(prev => [data, ...prev].slice(0, 30));
-      setDataFreshness(new Date());
+      dataFreshnessRef.current = new Date();
       fetchWeeklyAnalysis().catch(console.error);
 
       const riskMessages = {
@@ -272,18 +286,29 @@ export const useWeightMeasurement = () => {
   };
 
   // Buscar histórico de pesagens com cache inteligente
+  // CORRIGIDO: Removidas dependências que causavam loop infinito
   const fetchMeasurements = useCallback(async (limit = 30, forceRefresh = false) => {
     try {
-      if (!forceRefresh && measurements.length > 0) {
-        const lastFetch = dataFreshness.getTime();
-        const now = new Date().getTime();
+      // Evitar chamadas paralelas
+      if (isFetchingRef.current) return;
+      
+      // Verificar cache usando refs (não causa re-render)
+      if (!forceRefresh) {
+        const lastFetch = dataFreshnessRef.current.getTime();
+        const now = Date.now();
         const fiveMinutes = 5 * 60 * 1000;
         if (now - lastFetch < fiveMinutes) return;
       }
 
+      isFetchingRef.current = true;
       setLoading(true);
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      
+      const user = await getUser();
+      if (!user) {
+        isFetchingRef.current = false;
+        setLoading(false);
+        return;
+      }
 
       const { data, error } = await supabase
         .from('weight_measurements')
@@ -293,19 +318,21 @@ export const useWeightMeasurement = () => {
         .limit(limit);
 
       if (error) throw error;
+      
       setMeasurements(data || []);
-      setDataFreshness(new Date());
+      dataFreshnessRef.current = new Date();
     } catch (err: any) {
       setError(err.message);
     } finally {
+      isFetchingRef.current = false;
       setLoading(false);
     }
-  }, [measurements.length, dataFreshness]);
+  }, [getUser]); // Apenas getUser como dependência estável
 
   // Buscar análise semanal (simplificado)
   const fetchWeeklyAnalysis = useCallback(async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const user = await getUser();
       if (!user) return [];
 
       const { data, error } = await supabase
@@ -334,7 +361,7 @@ export const useWeightMeasurement = () => {
       setError(err.message);
       return [];
     }
-  }, []);
+  }, [getUser]);
 
   // Estatísticas para UI
   const stats = useMemo(() => {
@@ -474,15 +501,19 @@ export const useWeightMeasurement = () => {
     }
   }, [measurements, physicalData]);
 
-  // Carregar dados iniciais
+  // Carregar dados iniciais - CORRIGIDO: usa ref para garantir execução única
   useEffect(() => {
+    // Evitar execução múltipla
+    if (hasInitializedRef.current) return;
+    hasInitializedRef.current = true;
+
     let isMounted = true;
     const loadData = async () => {
       if (!isMounted) return;
       try {
         await Promise.all([
           fetchPhysicalData(),
-          fetchMeasurements(),
+          fetchMeasurements(30, true), // forceRefresh na primeira carga
           fetchWeeklyAnalysis()
         ]);
       } catch (e) {
@@ -491,12 +522,10 @@ export const useWeightMeasurement = () => {
     };
     loadData();
     return () => { isMounted = false; };
-  }, [fetchPhysicalData, fetchMeasurements, fetchWeeklyAnalysis]);
+  }, []); // CORRIGIDO: sem dependências para executar apenas uma vez
 
-  // Rodar reconciliação quando tivermos dados físicos + última medição
-  useEffect(() => {
-    reconcileLatestMeasurement();
-  }, [reconcileLatestMeasurement]);
+  // REMOVIDO: useEffect de reconciliação automática que causava loop
+  // A reconciliação agora é chamada apenas após saveMeasurement
 
   return {
     measurements,
