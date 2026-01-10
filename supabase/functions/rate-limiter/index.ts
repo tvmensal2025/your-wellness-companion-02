@@ -1,10 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { getCorsHeaders, handleCorsPreflightRequest, jsonResponse, errorResponse } from "../_shared/cors.ts";
 
 interface RateLimitRequest {
   action: 'check' | 'reset' | 'block' | 'stats';
@@ -26,9 +22,11 @@ const RATE_LIMITS: Record<string, { max_requests: number; window_hours: number }
 };
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
+  // Handle CORS preflight
+  const preflightResponse = handleCorsPreflightRequest(req);
+  if (preflightResponse) return preflightResponse;
+
+  const origin = req.headers.get('origin');
 
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
@@ -41,10 +39,7 @@ serve(async (req) => {
     switch (action) {
       case 'check': {
         if (!body.user_id || !body.endpoint) {
-          return new Response(
-            JSON.stringify({ error: 'user_id and endpoint are required' }),
-            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
+          return errorResponse('user_id and endpoint are required', 400, origin);
         }
 
         const config = RATE_LIMITS[body.endpoint] || RATE_LIMITS['default'];
@@ -62,17 +57,15 @@ serve(async (req) => {
         if (error) {
           console.error('Rate limit check error:', error);
           // Fail open - allow request if rate limit check fails
-          return new Response(
-            JSON.stringify({ 
-              allowed: true, 
-              remaining: maxRequests,
-              limit: maxRequests,
-              warning: 'Rate limit check failed, allowing request'
-            }),
-            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
+          return jsonResponse({ 
+            allowed: true, 
+            remaining: maxRequests,
+            limit: maxRequests,
+            warning: 'Rate limit check failed, allowing request'
+          }, 200, origin);
         }
 
+        const corsHeaders = getCorsHeaders(origin);
         const headers = {
           ...corsHeaders,
           'Content-Type': 'application/json',
@@ -93,18 +86,12 @@ serve(async (req) => {
           );
         }
 
-        return new Response(
-          JSON.stringify(data),
-          { headers }
-        );
+        return new Response(JSON.stringify(data), { headers });
       }
 
       case 'reset': {
         if (!body.user_id) {
-          return new Response(
-            JSON.stringify({ error: 'user_id is required' }),
-            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
+          return errorResponse('user_id is required', 400, origin);
         }
 
         let query = supabase
@@ -124,24 +111,15 @@ serve(async (req) => {
         const { error } = await query;
 
         if (error) {
-          return new Response(
-            JSON.stringify({ error: 'Failed to reset rate limit' }),
-            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
+          return errorResponse('Failed to reset rate limit', 500, origin);
         }
 
-        return new Response(
-          JSON.stringify({ success: true, message: 'Rate limit reset successfully' }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+        return jsonResponse({ success: true, message: 'Rate limit reset successfully' }, 200, origin);
       }
 
       case 'block': {
         if (!body.user_id || !body.endpoint) {
-          return new Response(
-            JSON.stringify({ error: 'user_id and endpoint are required' }),
-            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
+          return errorResponse('user_id and endpoint are required', 400, origin);
         }
 
         const blockUntil = new Date();
@@ -157,19 +135,13 @@ serve(async (req) => {
           }, { onConflict: 'user_id,endpoint' });
 
         if (error) {
-          return new Response(
-            JSON.stringify({ error: 'Failed to block user' }),
-            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
+          return errorResponse('Failed to block user', 500, origin);
         }
 
-        return new Response(
-          JSON.stringify({ 
-            success: true, 
-            message: `User blocked until ${blockUntil.toISOString()}` 
-          }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+        return jsonResponse({ 
+          success: true, 
+          message: `User blocked until ${blockUntil.toISOString()}` 
+        }, 200, origin);
       }
 
       case 'stats': {
@@ -202,30 +174,21 @@ serve(async (req) => {
             remaining: u.max_requests - u.request_count
           }));
 
-        return new Response(
-          JSON.stringify({
-            total_tracked_users: new Set(totalLimits?.map(l => l.user_id)).size,
-            total_endpoints: Object.keys(endpointStats).length,
-            blocked_users: blockedUsers?.length || 0,
-            endpoint_stats: endpointStats,
-            top_users: topUsers,
-            rate_limit_configs: RATE_LIMITS
-          }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+        return jsonResponse({
+          total_tracked_users: new Set(totalLimits?.map(l => l.user_id)).size,
+          total_endpoints: Object.keys(endpointStats).length,
+          blocked_users: blockedUsers?.length || 0,
+          endpoint_stats: endpointStats,
+          top_users: topUsers,
+          rate_limit_configs: RATE_LIMITS
+        }, 200, origin);
       }
 
       default:
-        return new Response(
-          JSON.stringify({ error: 'Invalid action' }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+        return errorResponse('Invalid action', 400, origin);
     }
   } catch (error) {
     console.error('Rate limiter error:', error);
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return errorResponse(error.message, 500, req.headers.get('origin'));
   }
 });

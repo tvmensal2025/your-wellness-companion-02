@@ -89,7 +89,7 @@ export const WeightInputPopup: React.FC<WeightInputPopupProps> = ({
       <DialogContent className="w-[calc(100vw-32px)] max-w-xs p-4">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-base">
-            <Dumbbell className="w-5 h-5 text-orange-500" />
+            <Dumbbell className="w-5 h-5 text-emerald-500" />
             Registrar Peso (Opcional)
           </DialogTitle>
         </DialogHeader>
@@ -178,7 +178,7 @@ export const WeightInputPopup: React.FC<WeightInputPopupProps> = ({
               Pular
             </Button>
             <Button 
-              className="flex-1 bg-orange-500 hover:bg-orange-600"
+              className="flex-1 bg-emerald-500 hover:bg-emerald-600"
               onClick={handleSave}
               disabled={!weight}
             >

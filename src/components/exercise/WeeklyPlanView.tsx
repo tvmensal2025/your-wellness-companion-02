@@ -48,12 +48,12 @@ export const WeeklyPlanView: React.FC<WeeklyPlanViewProps> = ({
               onClick={() => setSelectedDay(day)}
               className={cn(
                 "flex-shrink-0 px-4 sm:px-5 py-3 sm:py-4 rounded-xl sm:rounded-2xl border-2 transition-all duration-300 min-w-[80px] sm:min-w-[90px]",
-                day.isToday && "ring-2 ring-orange-500 ring-offset-2",
+                day.isToday && "ring-2 ring-emerald-500 ring-offset-2",
                 selectedDay?.dayNumber === day.dayNumber
-                  ? "bg-gradient-to-br from-orange-500 to-red-600 border-transparent text-white shadow-lg"
+                  ? "bg-gradient-to-br from-emerald-500 to-teal-600 border-transparent text-white shadow-lg"
                   : day.isRestDay
                     ? "bg-muted/50 border-border/50 text-muted-foreground"
-                    : "bg-card border-border hover:border-orange-300 hover:bg-orange-50 dark:hover:bg-orange-950/20"
+                    : "bg-card border-border hover:border-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/20"
               )}
             >
               <div className="text-center">
@@ -67,7 +67,7 @@ export const WeeklyPlanView: React.FC<WeeklyPlanViewProps> = ({
                   {day.isRestDay ? (
                     <Moon className="w-5 h-5 sm:w-6 sm:h-6" />
                   ) : day.isToday ? (
-                    <Flame className="w-5 h-5 sm:w-6 sm:h-6 text-orange-300" />
+                    <Flame className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-300" />
                   ) : (
                     <Dumbbell className="w-5 h-5 sm:w-6 sm:h-6" />
                   )}
@@ -147,7 +147,7 @@ const WorkoutDayCard: React.FC<{
 }> = ({ day, onStartWorkout, onExerciseClick }) => (
   <div className="space-y-4 sm:space-y-5">
     {/* Header do Treino */}
-    <Card className="border-0 bg-gradient-to-br from-orange-500 via-red-500 to-pink-600 text-white overflow-hidden relative">
+    <Card className="border-0 bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-700 text-white overflow-hidden relative">
       <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMiIvPjwvZz48L2c+PC9zdmc+')] opacity-50" />
       <CardContent className="p-5 sm:p-6 md:p-8 relative">
         <div className="flex items-start justify-between gap-4">
@@ -184,7 +184,7 @@ const WorkoutDayCard: React.FC<{
         <Button
           size="lg"
           onClick={() => onStartWorkout(day)}
-          className="w-full mt-4 sm:mt-5 h-12 sm:h-14 bg-white text-orange-600 hover:bg-white/90 font-bold text-base sm:text-lg"
+          className="w-full mt-4 sm:mt-5 h-12 sm:h-14 bg-white text-emerald-600 hover:bg-white/90 font-bold text-base sm:text-lg"
         >
           <Play className="w-5 h-5 sm:w-6 sm:h-6 mr-2" fill="currentColor" />
           Começar Treino
@@ -195,7 +195,7 @@ const WorkoutDayCard: React.FC<{
     {/* Lista de Exercícios */}
     <div className="space-y-3 sm:space-y-4">
       <h3 className="text-sm sm:text-base font-bold text-muted-foreground uppercase tracking-wide flex items-center gap-2">
-        <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
+        <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-500" />
         Exercícios do Dia
       </h3>
 
@@ -207,18 +207,18 @@ const WorkoutDayCard: React.FC<{
           transition={{ delay: index * 0.05 }}
         >
           <Card
-            className="group cursor-pointer border hover:border-orange-300 hover:shadow-md transition-all duration-300"
+            className="group cursor-pointer border hover:border-emerald-300 hover:shadow-md transition-all duration-300"
             onClick={() => onExerciseClick(exercise)}
           >
             <CardContent className="p-4 sm:p-5 md:p-6 flex items-center gap-3 sm:gap-4">
               {/* Número */}
-              <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center text-white font-bold text-sm sm:text-base shadow">
+              <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-bold text-sm sm:text-base shadow">
                 {index + 1}
               </div>
 
               {/* Info */}
               <div className="flex-1 min-w-0">
-                <h4 className="font-bold text-sm sm:text-base md:text-lg text-foreground group-hover:text-orange-600 transition-colors truncate">
+                <h4 className="font-bold text-sm sm:text-base md:text-lg text-foreground group-hover:text-emerald-600 transition-colors truncate">
                   {exercise.name}
                 </h4>
                 <div className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm text-muted-foreground mt-1 sm:mt-1.5">
@@ -252,7 +252,7 @@ const WorkoutDayCard: React.FC<{
                 );
               })()}
 
-              <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 text-muted-foreground group-hover:text-orange-500 transition-colors flex-shrink-0" />
+              <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 text-muted-foreground group-hover:text-emerald-500 transition-colors flex-shrink-0" />
             </CardContent>
           </Card>
         </motion.div>

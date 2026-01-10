@@ -1,25 +1,69 @@
 /**
- * Sistema de logging condicional
- * Apenas exibe logs em ambiente de desenvolvimento
+ * Logger centralizado para controle de logs em produção
+ * Em produção, logs são desabilitados para melhor performance
  */
 
-const isDev = import.meta.env.DEV;
+const IS_PRODUCTION = import.meta.env.PROD;
+const IS_DEBUG = import.meta.env.VITE_DEBUG === 'true';
 
-export const logger = {
-  log: isDev ? console.log.bind(console) : () => {},
-  info: isDev ? console.info.bind(console) : () => {},
-  warn: isDev ? console.warn.bind(console) : () => {},
-  error: console.error.bind(console), // Sempre mostrar erros
-  debug: isDev ? console.debug.bind(console) : () => {},
-  table: isDev ? console.table.bind(console) : () => {},
-  group: isDev ? console.group.bind(console) : () => {},
-  groupEnd: isDev ? console.groupEnd.bind(console) : () => {},
-  time: isDev ? console.time.bind(console) : () => {},
-  timeEnd: isDev ? console.timeEnd.bind(console) : () => {},
+type LogLevel = 'debug' | 'info' | 'warn' | 'error';
+
+interface LoggerConfig {
+  enabled: boolean;
+  level: LogLevel;
+  prefix: string;
+}
+
+const config: LoggerConfig = {
+  enabled: !IS_PRODUCTION || IS_DEBUG,
+  level: IS_PRODUCTION ? 'error' : 'debug',
+  prefix: '[MaxNutrition]',
 };
 
-// Atalho para uso mais simples
-export const log = logger.log;
-export const logError = logger.error;
-export const logWarn = logger.warn;
-export const logDebug = logger.debug;
+const levels: Record<LogLevel, number> = {
+  debug: 0,
+  info: 1,
+  warn: 2,
+  error: 3,
+};
+
+const shouldLog = (level: LogLevel): boolean => {
+  if (!config.enabled) return false;
+  return levels[level] >= levels[config.level];
+};
+
+export const logger = {
+  debug: (...args: unknown[]) => {
+    if (shouldLog('debug')) {
+      console.log(config.prefix, '[DEBUG]', ...args);
+    }
+  },
+  
+  info: (...args: unknown[]) => {
+    if (shouldLog('info')) {
+      console.info(config.prefix, '[INFO]', ...args);
+    }
+  },
+  
+  warn: (...args: unknown[]) => {
+    if (shouldLog('warn')) {
+      console.warn(config.prefix, '[WARN]', ...args);
+    }
+  },
+  
+  error: (...args: unknown[]) => {
+    if (shouldLog('error')) {
+      console.error(config.prefix, '[ERROR]', ...args);
+    }
+  },
+  
+  // Para métricas de performance (sempre logado em dev)
+  perf: (label: string, startTime: number) => {
+    if (!IS_PRODUCTION) {
+      const duration = performance.now() - startTime;
+      console.log(config.prefix, `[PERF] ${label}: ${duration.toFixed(2)}ms`);
+    }
+  },
+};
+
+export default logger;

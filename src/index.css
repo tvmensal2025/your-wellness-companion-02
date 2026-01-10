@@ -15,50 +15,50 @@
 @layer base {
   :root {
     /* MaxNutrition Color Scheme - Verde Saúde */
-    --background: 209 40% 96%; /* Branco puro */
-    --foreground: 222 47% 11%; /* Cinza escuro para texto */
+    --background: 209 40% 96%;
+    --foreground: 222 47% 11%;
 
-    /* Card system - Instituto style */
-    --card: 210 40% 98%; /* Branco puro para cards */
+    /* Card system */
+    --card: 210 40% 98%;
     --card-foreground: 222 47% 11%;
 
     /* Popover system */
     --popover: 214 31% 91%;
     --popover-foreground: 222 47% 11%;
 
-    /* Verde saúde como primary - MaxNutrition */
-    --primary: 200 98% 39%; /* Verde saúde #2E7D32 */
+    /* Verde saúde como primary */
+    --primary: 160 84% 39%;
     --primary-foreground: 204 100% 97%;
 
-    /* Verde mais claro para secondary */
-    --secondary: 215 24% 26%; /* Verde claro */
+    /* Secondary */
+    --secondary: 215 24% 26%;
     --secondary-foreground: 210 40% 98%;
 
-    /* UI colors Instituto style */
-    --muted: 215 20% 65%; /* Azul muito claro */
+    /* UI colors */
+    --muted: 215 20% 65%;
     --muted-foreground: 222 47% 11%;
 
-    /* Azul suave para accent */
-    --accent: 210 40% 98%; /* Azul claro */
+    /* Accent */
+    --accent: 210 40% 98%;
     --accent-foreground: 215 19% 34%;
 
-    /* Status colors Instituto theme */
+    /* Status colors */
     --destructive: 0 72% 50%;
     --destructive-foreground: 0 85% 97%;
 
-    --success: 140 60% 35%; /* Verde saúde */
+    --success: 140 60% 35%;
     --success-foreground: 0 0% 100%;
 
     --warning: 32 95% 44%;
     --warning-foreground: 0 0% 100%;
 
     /* MaxNutrition cores específicas */
-    --instituto-blue: 200 60% 50%; /* Azul instituto */
-    --instituto-green: 140 60% 35%; /* Verde saúde */
-    --instituto-red: 0 84% 60%; /* Vermelho suave */
-    --instituto-gray: 215 16% 47%; /* Cinza neutro */
+    --instituto-blue: 200 60% 50%;
+    --instituto-green: 140 60% 35%;
+    --instituto-red: 0 84% 60%;
+    --instituto-gray: 215 16% 47%;
 
-    /* Cores customizadas para o MaxNutrition */
+    /* Cores wellness */
     --wellness-green: 140 60% 35%;
     --wellness-light: 140 45% 90%;
     --wellness-dark: 140 70% 25%;
@@ -66,23 +66,23 @@
     --nature-bg: 120 20% 97%;
 
     /* Interactive elements */
-    --border: 212 26% 83%; /* Bordas azul claro */
-    --input: 212 26% 83%; /* Inputs brancos */
-    --ring: 200 98% 39%; /* Focus ring verde */
+    --border: 212 26% 83%;
+    --input: 212 26% 83%;
+    --ring: 160 84% 39%;
 
-    /* Health colors com Health theme */
-    --health-heart: 0 84% 60%; /* Vermelho coração */
-    --health-steps: 142 76% 36%; /* Verde atividade */
-    --health-calories: 32 95% 44%; /* Laranja energia */
-    --health-hydration: 199 89% 48%; /* Azul hidratação */
+    /* Health colors */
+    --health-heart: 0 84% 60%;
+    --health-steps: 142 76% 36%;
+    --health-calories: 32 95% 44%;
+    --health-hydration: 199 89% 48%;
 
-    /* MaxNutrition Gradients */
+    /* Gradients */
     --gradient-primary: linear-gradient(135deg, hsl(140 60% 35%), hsl(200 60% 50%));
     --gradient-hero: linear-gradient(135deg, hsl(140 60% 35%) 0%, hsl(140 70% 25%) 50%, hsl(200 60% 50%) 100%);
     --gradient-card: linear-gradient(145deg, hsl(0 0% 100%) 0%, hsl(140 45% 98%) 100%);
     --gradient-accent: linear-gradient(135deg, hsl(200 60% 50%), hsl(200 60% 40%));
 
-    /* MaxNutrition Shadows */
+    /* Shadows */
     --shadow-elegant: 0 10px 40px -10px hsl(140 60% 35% / 0.2);
     --shadow-glow: 0 0 40px hsl(140 60% 35% / 0.3);
     --shadow-card: 0 4px 20px -4px hsl(140 30% 50% / 0.15);
@@ -111,7 +111,7 @@
     --card-foreground: 210 40% 98%;
     --popover: 215 24% 26%;
     --popover-foreground: 210 40% 98%;
-    --primary: 198 93% 59%;
+    --primary: 160 84% 39%;
     --primary-foreground: 204 80% 15%;
     --secondary: 212 26% 83%;
     --secondary-foreground: 228 84% 4%;
@@ -123,7 +123,7 @@
     --destructive-foreground: 0 85% 97%;
     --border: 215 19% 34%;
     --input: 215 19% 34%;
-    --ring: 198 93% 59%;
+    --ring: 160 84% 39%;
     --chart-1: 199 95% 73%;
     --chart-2: 211 96% 78%;
     --chart-3: 215 20% 65%;
@@ -187,11 +187,11 @@
     box-shadow: var(--shadow-hero);
   }
 
-  /* Animações modernas e micro-interações */
+  /* 🎉 Animações modernas e micro-interações */
   @keyframes fadeInUp {
     from {
       opacity: 0;
-      transform: translateY(30px);
+      transform: translateY(20px);
     }
     to {
       opacity: 1;
@@ -202,7 +202,7 @@
   @keyframes fadeIn {
     from {
       opacity: 0;
-      transform: translateY(8px);
+      transform: translateY(6px);
     }
     to {
       opacity: 1;
@@ -213,7 +213,7 @@
   @keyframes scaleIn {
     from {
       opacity: 0;
-      transform: scale(0.96);
+      transform: scale(0.97);
     }
     to {
       opacity: 1;
@@ -221,37 +221,58 @@
     }
   }
 
-  /* Animação de pulse suave */
+  /* Animação de pulse suave - mais sutil */
   @keyframes gentlePulse {
     0%, 100% {
       transform: scale(1);
     }
     50% {
-      transform: scale(1.02);
+      transform: scale(1.015);
     }
   }
 
-  /* Animação de float */
+  /* Animação de float - mais suave */
   @keyframes float {
     0%, 100% {
       transform: translateY(0px);
     }
     50% {
-      transform: translateY(-10px);
+      transform: translateY(-6px);
     }
   }
 
-  /* Animação de glow */
+  /* Animação de glow - mais sutil */
   @keyframes glow {
     0%, 100% {
-      box-shadow: 0 0 20px hsl(140 60% 35% / 0.3);
+      box-shadow: 0 0 15px hsl(158 55% 45% / 0.2);
     }
     50% {
-      box-shadow: 0 0 30px hsl(140 60% 35% / 0.5);
+      box-shadow: 0 0 25px hsl(158 55% 45% / 0.35);
     }
   }
 
-  /* Animação de gradient shift */
+  /* 🎊 Animação de celebração */
+  @keyframes celebrate {
+    0% { transform: scale(1); }
+    25% { transform: scale(1.1) rotate(-3deg); }
+    50% { transform: scale(1.15) rotate(3deg); }
+    75% { transform: scale(1.1) rotate(-2deg); }
+    100% { transform: scale(1) rotate(0); }
+  }
+
+  @keyframes bounceIn {
+    0% { transform: scale(0.3); opacity: 0; }
+    50% { transform: scale(1.05); }
+    70% { transform: scale(0.9); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+
+  @keyframes confettiDrop {
+    0% { transform: translateY(-100%) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+  }
+
+  /* Animação de gradient shift - mais suave */
   @keyframes gradientShift {
     0% {
       background-position: 0% 50%;
@@ -266,62 +287,70 @@
 
   /* Classes de animação */
   .animate-fade-in-up {
-    animation: fadeInUp 0.6s ease-out;
+    animation: fadeInUp 0.5s ease-out;
   }
 
   .animate-fade-in {
-    animation: fadeIn 0.45s ease-out;
+    animation: fadeIn 0.4s ease-out;
   }
 
   .animate-scale-in {
-    animation: scaleIn 0.35s ease-out;
+    animation: scaleIn 0.3s ease-out;
   }
 
   .animate-gentle-pulse {
-    animation: gentlePulse 3s ease-in-out infinite;
+    animation: gentlePulse 4s ease-in-out infinite;
   }
 
   .animate-float {
-    animation: float 6s ease-in-out infinite;
+    animation: float 5s ease-in-out infinite;
   }
 
   .animate-glow {
-    animation: glow 2s ease-in-out infinite;
+    animation: glow 3s ease-in-out infinite;
+  }
+
+  .animate-celebrate {
+    animation: celebrate 0.6s ease-in-out;
+  }
+
+  .animate-bounce-in {
+    animation: bounceIn 0.5s ease-out;
   }
 
   .animate-gradient {
     background-size: 200% 200%;
-    animation: gradientShift 4s ease infinite;
+    animation: gradientShift 6s ease infinite;
   }
 
-  /* Efeitos de hover modernos */
+  /* 🌿 Efeitos de hover modernos - mais suaves */
   .hover-lift {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .hover-lift:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 20px 40px -10px hsl(140 60% 35% / 0.3);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px -8px hsl(158 50% 40% / 0.18);
   }
 
   .hover-glow {
-    transition: all 0.3s ease;
+    transition: all 0.25s ease;
   }
 
   .hover-glow:hover {
-    box-shadow: 0 0 30px hsl(140 60% 35% / 0.4);
+    box-shadow: 0 0 20px hsl(158 55% 45% / 0.25);
   }
 
-  /* Efeito de shimmer */
+  /* Efeito de shimmer - mais sutil */
   .shimmer {
     background: linear-gradient(
       90deg,
       transparent,
-      hsl(140 60% 35% / 0.1),
+      hsl(158 50% 50% / 0.08),
       transparent
     );
     background-size: 200% 100%;
-    animation: shimmer 2s infinite;
+    animation: shimmer 2.5s infinite;
   }
 
   @keyframes shimmer {
@@ -565,6 +594,22 @@
   .hover-lift:hover {
     transform: translateY(-4px);
     box-shadow: var(--shadow-elegant);
+  }
+
+  /* 🎊 Animação de confetti para celebrações */
+  @keyframes confetti-drop {
+    0% { 
+      transform: translateY(-10vh) rotate(0deg); 
+      opacity: 1; 
+    }
+    100% { 
+      transform: translateY(100vh) rotate(720deg); 
+      opacity: 0; 
+    }
+  }
+
+  .animate-confetti-drop {
+    animation: confetti-drop 2.5s ease-out forwards;
   }
 
   /* Focus AA padrão clínico */

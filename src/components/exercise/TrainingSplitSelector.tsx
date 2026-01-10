@@ -44,7 +44,7 @@ const SPLITS = [
     emoji: '📊',
     title: 'ABCD (4 divisões)',
     desc: 'Peito / Costas / Pernas / Ombros+Braços',
-    color: 'from-orange-500 to-red-500',
+    color: 'from-amber-500 to-yellow-500',
     recommended: ['4-5x', '6x'],
     levels: ['moderado', 'avancado']
   },

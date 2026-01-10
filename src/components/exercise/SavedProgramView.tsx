@@ -155,8 +155,8 @@ export const SavedProgramView: React.FC<SavedProgramProps> = ({
   const currentWeekData = weeks.find((w: WeekActivity) => w.week === program.current_week);
   const limitation = programData.limitation;
   const rawLocation = programData.location || 'casa';
-  // Normalizar location: casa_sem, casa_com -> 'casa'; academia -> 'academia'
-  const location = rawLocation.startsWith('casa') ? 'casa' : rawLocation === 'academia' ? 'academia' : 'casa';
+  // Normalizar location: todos os valores agora são 'casa' (sistema apenas para treino em casa)
+  const location = 'casa' as const;
   
   const weekDays = useMemo<DayPlan[]>(() => {
     const dayNames = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
@@ -339,12 +339,12 @@ export const SavedProgramView: React.FC<SavedProgramProps> = ({
               onClick={() => setSelectedDay(day)}
               className={cn(
                 "flex-shrink-0 px-2.5 sm:px-4 py-2 sm:py-3 rounded-lg sm:rounded-xl border-2 transition-all duration-300 min-w-[52px] sm:min-w-[80px]",
-                day.isToday && "ring-2 ring-orange-500 ring-offset-1 sm:ring-offset-2",
+                day.isToday && "ring-2 ring-emerald-500 ring-offset-1 sm:ring-offset-2",
                 selectedDay?.dayNumber === day.dayNumber
-                  ? "bg-gradient-to-br from-orange-500 to-red-600 border-transparent text-white shadow-lg"
+                  ? "bg-gradient-to-br from-emerald-500 to-teal-600 border-transparent text-white shadow-lg"
                   : day.isRestDay
                     ? "bg-muted/50 border-border/50 text-muted-foreground"
-                    : "bg-card border-border hover:border-orange-300 hover:bg-orange-50 dark:hover:bg-orange-950/20"
+                    : "bg-card border-border hover:border-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/20"
               )}
             >
               <div className="text-center">
@@ -358,7 +358,7 @@ export const SavedProgramView: React.FC<SavedProgramProps> = ({
                   {day.isRestDay ? (
                     <Moon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   ) : day.isToday ? (
-                    <Flame className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-orange-300" />
+                    <Flame className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-300" />
                   ) : (
                     <Dumbbell className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   )}
@@ -449,7 +449,7 @@ const WorkoutDayCard: React.FC<{
   return (
     <div className="space-y-3 sm:space-y-4 overflow-hidden">
       {/* Header do Treino */}
-      <Card className="border-0 bg-gradient-to-br from-orange-500 via-red-500 to-pink-600 text-white overflow-hidden relative">
+      <Card className="border-0 bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-700 text-white overflow-hidden relative">
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMiIvPjwvZz48L2c+PC9zdmc+')] opacity-50" />
         <CardContent className="p-2.5 sm:p-3 md:p-4 relative">
           <div className="flex items-start justify-between gap-4">
@@ -480,7 +480,7 @@ const WorkoutDayCard: React.FC<{
 
           <Button
             onClick={() => onStartWorkout(weekNumber, day.activities, exercises)}
-            className="w-full mt-3 sm:mt-4 bg-white text-orange-600 hover:bg-white/90 font-semibold h-9 sm:h-10 text-sm shadow-md"
+            className="w-full mt-3 sm:mt-4 bg-white text-emerald-600 hover:bg-white/90 font-semibold h-9 sm:h-10 text-sm shadow-md"
           >
             <Play className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5" fill="currentColor" />
             Começar Treino
@@ -491,7 +491,7 @@ const WorkoutDayCard: React.FC<{
       {/* Lista de Exercícios */}
       <div className="space-y-2.5 sm:space-y-3">
         <h3 className="text-sm sm:text-base font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-2">
-          <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-orange-500" />
+          <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-500" />
           Exercícios do Dia
         </h3>
 
@@ -517,16 +517,16 @@ const WorkoutDayCard: React.FC<{
                 transition={{ delay: index * 0.05 }}
               >
               <Card
-                  className="group cursor-pointer border hover:border-orange-300 hover:shadow-md transition-all duration-200"
+                  className="group cursor-pointer border hover:border-emerald-300 hover:shadow-md transition-all duration-200"
                   onClick={() => onExerciseClick?.(exercise)}
                 >
                   <CardContent className="p-2.5 sm:p-3 flex items-center gap-2 sm:gap-2.5">
-                    <div className="flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center text-white font-bold text-[11px] sm:text-xs shadow-sm">
+                    <div className="flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-bold text-[11px] sm:text-xs shadow-sm">
                       {index + 1}
                     </div>
 
                     <div className="flex-1 min-w-0 overflow-hidden">
-                      <h4 className="font-medium text-sm sm:text-base text-foreground group-hover:text-orange-600 transition-colors truncate">
+                      <h4 className="font-medium text-sm sm:text-base text-foreground group-hover:text-emerald-600 transition-colors truncate">
                         {exercise.name}
                       </h4>
                       <div className="flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs text-muted-foreground mt-0.5">
@@ -548,7 +548,7 @@ const WorkoutDayCard: React.FC<{
                       {diff.label || exercise.difficulty}
                     </Badge>
 
-                    <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground group-hover:text-orange-500 transition-colors flex-shrink-0" />
+                    <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground group-hover:text-emerald-500 transition-colors flex-shrink-0" />
                   </CardContent>
                 </Card>
               </motion.div>

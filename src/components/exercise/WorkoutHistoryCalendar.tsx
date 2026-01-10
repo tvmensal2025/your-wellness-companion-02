@@ -51,7 +51,7 @@ export const WorkoutHistoryCalendar: React.FC<WorkoutHistoryCalendarProps> = ({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold flex items-center gap-2">
-          <Calendar className="w-5 h-5 text-orange-600" />
+          <Calendar className="w-5 h-5 text-emerald-600" />
           {monthName.charAt(0).toUpperCase() + monthName.slice(1)}
         </h3>
       </div>
@@ -82,7 +82,7 @@ export const WorkoutHistoryCalendar: React.FC<WorkoutHistoryCalendarProps> = ({
               key={day}
               className={`
                 relative aspect-square rounded-lg p-2 text-center
-                ${isToday ? 'ring-2 ring-orange-400' : ''}
+                ${isToday ? 'ring-2 ring-emerald-400' : ''}
                 ${hasWorkout ? 'bg-green-100 dark:bg-green-950/30' : 'bg-muted/30'}
                 transition-colors
               `}
@@ -110,7 +110,7 @@ export const WorkoutHistoryCalendar: React.FC<WorkoutHistoryCalendarProps> = ({
           Treino realizado
         </div>
         <div className="flex items-center gap-1">
-          <div className="w-3 h-3 rounded ring-2 ring-orange-400" />
+          <div className="w-3 h-3 rounded ring-2 ring-emerald-400" />
           Hoje
         </div>
       </div>

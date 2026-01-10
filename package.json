@@ -55,6 +55,7 @@
     "@radix-ui/react-visually-hidden": "^1.2.3",
     "@react-three/drei": "^9.114.0",
     "@react-three/fiber": "^8.15.0",
+    "@sentry/react": "^10.32.1",
     "@supabase/supabase-js": "^2.89.0",
     "@tanstack/react-query": "^5.56.2",
     "@types/three": "^0.178.1",

@@ -52,12 +52,10 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
     );
   }, [activeProgram]);
 
-  const location = useMemo<"casa" | "academia">(() => {
-    const loc = programData?.location || "";
-    const locStr = String(loc).toLowerCase();
-    if (locStr.includes("academia")) return "academia";
+  // Sistema agora é apenas para treino em casa
+  const location = useMemo<"casa">(() => {
     return "casa";
-  }, [programData]);
+  }, []);
 
   const goal = useMemo(() => {
     const rawGoal = (activeProgram as any)?.goal ?? programData?.goal;
@@ -244,7 +242,7 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="relative overflow-hidden rounded-xl sm:rounded-2xl bg-gradient-to-br from-orange-500 via-red-500 to-pink-600 px-3 py-4 sm:px-5 sm:py-6 md:px-6 md:py-8"
+        className="relative overflow-hidden rounded-xl sm:rounded-2xl bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-700 px-3 py-4 sm:px-5 sm:py-6 md:px-6 md:py-8"
       >
         <div className="absolute top-0 right-0 w-40 sm:w-64 h-40 sm:h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
         <div className="absolute bottom-0 left-0 w-32 sm:w-48 h-32 sm:h-48 bg-black/10 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2" />
@@ -327,7 +325,7 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
       >
         {/* Badges de contexto - mais compactos */}
         <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap">
-          <Badge className="bg-gradient-to-r from-orange-100 to-red-100 dark:from-orange-950/50 dark:to-red-950/50 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-800 h-6 sm:h-7 px-2 sm:px-2.5 text-[10px] sm:text-xs font-medium">
+          <Badge className="bg-gradient-to-r from-emerald-100 to-teal-100 dark:from-emerald-950/50 dark:to-teal-950/50 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800 h-6 sm:h-7 px-2 sm:px-2.5 text-[10px] sm:text-xs font-medium">
             {location === "casa" ? "🏠 Casa" : "🏋️ Acad"}
           </Badge>
           <Badge variant="outline" className="h-6 sm:h-7 px-1.5 sm:px-2 text-[10px] sm:text-xs capitalize">

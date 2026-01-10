@@ -3,6 +3,7 @@ import { AlertTriangle, RefreshCw, Home, Bug } from 'lucide-react';
 import { Button } from './button';
 import { Card, CardContent, CardHeader, CardTitle } from './card';
 import { Alert, AlertDescription } from './alert';
+import { captureException } from '@/lib/sentry';
 
 interface ErrorFallbackProps {
   error: Error;
@@ -116,10 +117,11 @@ export class ErrorBoundary extends React.Component<
     
     console.error('Error caught by boundary:', error, errorInfo);
     
-    // Em produção, enviar erro para serviço de monitoramento
-    if (import.meta.env.PROD) {
-      // Exemplo: Sentry.captureException(error);
-    }
+    // Enviar erro para Sentry em produção
+    captureException(error, {
+      componentStack: errorInfo.componentStack,
+      errorBoundary: true,
+    });
   }
 
   render() {

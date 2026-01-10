@@ -1,0 +1,28 @@
+# 🦾 YOLO11/YOLO26 Food Detection Service
+# Versão 2.0 - Atualizado Janeiro 2026
+
+# Framework web (FastAPI é mais rápido que Flask)
+fastapi==0.115.0
+uvicorn[standard]==0.32.0
+python-multipart==0.0.9
+
+# YOLO - Ultralytics (última versão estável)
+# Suporta YOLO11 e YOLO26
+ultralytics>=8.3.0
+
+# Visão computacional
+opencv-python-headless==4.10.0.84
+Pillow>=10.0.0
+numpy>=1.24.0
+
+# Requisições HTTP
+requests>=2.31.0
+httpx>=0.27.0
+
+# Utilitários
+python-dotenv>=1.0.0
+pydantic>=2.0.0
+
+# Para GPU (opcional - descomente se tiver CUDA)
+# torch>=2.0.0
+# torchvision>=0.15.0

@@ -858,19 +858,13 @@ export const generateRecommendation = (answers: UserAnswers): ProgramRecommendat
     return generateCasaSemEquipamentosProgram(answers);
   }
 
-  // PRIORIDADE 5: LOCAL - Academia
-  if (answers.location === 'academia') {
-    console.log('📋 Programa: Academia');
-    return generateAcademiaProgram(answers);
-  }
-
-  // PRIORIDADE 6: Casa com equipamentos
-  if (answers.location === 'casa_com') {
+  // PRIORIDADE 5: Casa com equipamentos (elástico, mochila, etc)
+  if (answers.location === 'casa_completo' || answers.location === 'casa_elastico') {
     console.log('📋 Programa: Casa com Equipamentos');
     return generateCasaComEquipamentosProgram(answers);
   }
 
-  // FALLBACK
-  console.log('📋 Programa: Default');
+  // FALLBACK - Sempre treino em casa
+  console.log('📋 Programa: Default (Casa)');
   return generateDefaultProgram(answers);
 };

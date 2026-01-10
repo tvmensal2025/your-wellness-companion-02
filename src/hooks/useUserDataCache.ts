@@ -46,7 +46,7 @@ interface UseUserDataCacheReturn {
 // Cache global em memória - singleton
 let globalCache: UserDataCache | null = null;
 let globalCacheTimestamp = 0;
-const CACHE_TTL = 300000; // 5 minutos (aumentado de 1min para reduzir re-fetches)
+const CACHE_TTL = 600000; // 10 minutos - dados de perfil mudam raramente
 const fetchPromise: { current: Promise<void> | null } = { current: null };
 
 // Default values

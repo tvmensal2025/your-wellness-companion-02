@@ -127,7 +127,7 @@ export const ExerciseDetailView: React.FC<ExerciseDetailViewProps> = ({
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h2 className="text-3xl font-bold flex items-center gap-2">
-            <Dumbbell className="w-8 h-8 text-orange-600" />
+            <Dumbbell className="w-8 h-8 text-emerald-600" />
             {data.title}
           </h2>
           <p className="text-muted-foreground">{data.description}</p>
@@ -186,7 +186,7 @@ export const ExerciseDetailView: React.FC<ExerciseDetailViewProps> = ({
                 <div
                   className={`p-4 flex items-center justify-between cursor-pointer ${
                     dayIndex === todayIndex
-                      ? 'bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-950 dark:to-red-950'
+                      ? 'bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950 dark:to-teal-950'
                       : ''
                   }`}
                   onClick={() => toggleDayExpansion(dayIndex)}
@@ -195,7 +195,7 @@ export const ExerciseDetailView: React.FC<ExerciseDetailViewProps> = ({
                     <div
                       className={`w-10 h-10 rounded-full flex items-center justify-center ${
                         dayIndex === todayIndex
-                          ? 'bg-gradient-to-br from-orange-400 to-red-500 text-white'
+                          ? 'bg-gradient-to-br from-emerald-400 to-teal-500 text-white'
                           : 'bg-muted'
                       }`}
                     >
@@ -234,7 +234,7 @@ export const ExerciseDetailView: React.FC<ExerciseDetailViewProps> = ({
                       >
                         <div className="flex items-start justify-between">
                           <div className="flex items-start gap-3">
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center text-white">
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white">
                               <Dumbbell className="w-5 h-5" />
                             </div>
                             <div>

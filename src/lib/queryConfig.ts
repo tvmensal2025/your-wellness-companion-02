@@ -3,16 +3,18 @@ import { QueryClient } from '@tanstack/react-query';
 /**
  * Optimized React Query configuration for mobile performance
  * Implements stale-while-revalidate pattern
+ * 
+ * OTIMIZADO: Cache mais agressivo para reduzir requests
  */
 export const createQueryClient = () => {
   return new QueryClient({
     defaultOptions: {
       queries: {
-        // Stale time: 2 minutes - data considered fresh
-        staleTime: 2 * 60 * 1000,
+        // Stale time: 5 minutes - data considered fresh (aumentado de 2min)
+        staleTime: 5 * 60 * 1000,
 
-        // Cache time: 30 minutes - keep in memory
-        gcTime: 30 * 60 * 1000,
+        // Cache time: 60 minutes - keep in memory (aumentado de 30min)
+        gcTime: 60 * 60 * 1000,
 
         // Retry configuration for mobile networks
         retry: (failureCount, error: any) => {
@@ -20,17 +22,17 @@ export const createQueryClient = () => {
           if (error?.status >= 400 && error?.status < 500) {
             return false;
           }
-          // Retry up to 3 times for network errors
-          return failureCount < 3;
+          // Retry up to 2 times for network errors (reduzido de 3)
+          return failureCount < 2;
         },
 
         // Retry delay with exponential backoff
         retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
 
-        // Refetch on window focus (good for mobile app switching)
-        refetchOnWindowFocus: true,
+        // Refetch on window focus DESABILITADO para reduzir requests
+        refetchOnWindowFocus: false,
 
-        // Don't refetch on reconnect automatically (we handle this manually)
+        // Refetch on reconnect - mantido para sincronização
         refetchOnReconnect: true,
 
         // Keep previous data while fetching new
@@ -38,6 +40,12 @@ export const createQueryClient = () => {
 
         // Network mode for offline support
         networkMode: 'offlineFirst',
+        
+        // Refetch interval desabilitado por padrão
+        refetchInterval: false,
+        
+        // Não refetch em mount se dados estão no cache
+        refetchOnMount: false,
       },
       mutations: {
         // Retry mutations once on network errors

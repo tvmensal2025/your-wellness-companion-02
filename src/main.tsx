@@ -2,6 +2,10 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
+import { initSentry } from './lib/sentry'
+
+// Inicializa Sentry para monitoramento de erros em produção
+initSentry();
 
 // Handler global para erros não tratados - evita mensagens de erro na UI
 const ignoredErrors = [

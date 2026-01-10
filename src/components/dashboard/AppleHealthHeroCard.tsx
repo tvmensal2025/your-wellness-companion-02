@@ -47,9 +47,8 @@ export const AppleHealthHeroCard: React.FC<AppleHealthHeroCardProps> = memo(({
   age = 30,
   gender = 'F'
 }) => {
-  const { shouldAnimate, animationDuration } = useSafeAnimation();
+  const { shouldAnimate } = useSafeAnimation();
 
-  // Memoizar cálculos
   const weightToGo = useMemo(() => 
     targetWeight ? Math.abs(currentWeight - targetWeight).toFixed(1) : null,
     [currentWeight, targetWeight]
@@ -101,18 +100,11 @@ export const AppleHealthHeroCard: React.FC<AppleHealthHeroCardProps> = memo(({
   const circumference = 2 * Math.PI * 42;
   const strokeDashoffset = circumference - (ringPercentage / 100) * circumference;
 
-  // Animação inline styles para CSS transitions (fallback para dispositivos fracos)
-  const animatedStyles = shouldAnimate ? {} : {
-    opacity: 1,
-    transform: 'scale(1) translateY(0)'
-  };
-
   return (
     <div 
       className={`relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-4 sm:p-6 md:p-8 shadow-2xl ${
         shouldAnimate ? 'animate-scale-in' : ''
       }`}
-      style={animatedStyles}
     >
       {/* Subtle gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 via-transparent to-violet-500/5" />
@@ -122,22 +114,20 @@ export const AppleHealthHeroCard: React.FC<AppleHealthHeroCardProps> = memo(({
         {/* Elegant Greeting */}
         <div className="mb-4 sm:mb-5">
           <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">
-            <span className="text-slate-400 sm:text-base font-light tracking-wide text-2xl">{greeting},</span>
-            <span className="sm:text-xl bg-gradient-to-r from-white via-slate-100 to-slate-300 bg-clip-text text-transparent truncate max-w-[140px] sm:max-w-none font-bold font-serif text-center text-3xl">
-              {userName.split(' ')[0]}
-            </span>
+            <span className="text-slate-400 sm:text-base font-light tracking-wide text-2xl">✨{greeting}! Como está sendo seu dia?</span>
           </div>
+          <span className="sm:text-xl bg-gradient-to-r from-white via-slate-100 to-slate-300 bg-clip-text text-transparent truncate max-w-[200px] sm:max-w-none font-bold font-serif text-3xl">
+            {userName.split(' ')[0]} 👋
+          </span>
         </div>
 
         {/* Main content grid - Score and Weight side by side */}
         <div className="flex items-stretch gap-3 sm:gap-5">
           
-          {/* Apple Health Ring - Responsive sizing */}
+          {/* Apple Health Ring */}
           <div className="relative flex-shrink-0 flex items-center justify-center">
             <svg className="w-24 h-24 sm:w-32 md:w-36 sm:h-32 md:h-36 -rotate-90" viewBox="0 0 100 100">
-              {/* Background ring */}
               <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="8" />
-              {/* Progress ring - usando CSS transition em vez de motion */}
               <circle 
                 cx="50" 
                 cy="50" 
@@ -147,12 +137,8 @@ export const AppleHealthHeroCard: React.FC<AppleHealthHeroCardProps> = memo(({
                 strokeWidth="8" 
                 strokeLinecap="round"
                 strokeDasharray={circumference}
-                strokeDashoffset={shouldAnimate ? strokeDashoffset : strokeDashoffset}
-                className={shouldAnimate ? 'transition-all duration-1000 ease-out' : ''}
-                style={{ 
-                  strokeDashoffset: strokeDashoffset,
-                  transition: shouldAnimate ? 'stroke-dashoffset 1s ease-out' : 'none'
-                }}
+                strokeDashoffset={strokeDashoffset}
+                className="transition-all duration-1000 ease-out"
               />
               <defs>
                 <linearGradient id="healthGradient" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -163,20 +149,18 @@ export const AppleHealthHeroCard: React.FC<AppleHealthHeroCardProps> = memo(({
               </defs>
             </svg>
             
-            {/* Center content - Responsive */}
             <div className="absolute inset-0 flex flex-col items-center justify-center">
               <span className="text-3xl sm:text-4xl md:text-5xl font-bold text-white">
                 {currentWeight === 0 ? '?' : healthScore}
               </span>
               <span className="text-[10px] sm:text-xs text-slate-400 uppercase tracking-widest font-medium">
-                {currentWeight === 0 ? 'START' : 'Score'}
+                {currentWeight === 0 ? 'START' : 'Pontuação'}
               </span>
             </div>
           </div>
 
-          {/* Weight info - Responsive typography */}
+          {/* Weight info */}
           <div className="flex-1 flex-col space-y-2 sm:space-y-3 min-w-0 flex items-center justify-center">
-            {/* Current weight */}
             <div>
               <p className="text-xs sm:text-sm text-slate-400 mb-1 sm:mb-1.5 tracking-wide">
                 {currentWeight === 0 ? 'Comece agora' : 'Peso atual'}
@@ -217,7 +201,7 @@ export const AppleHealthHeroCard: React.FC<AppleHealthHeroCardProps> = memo(({
           </div>
         </div>
 
-        {/* Bottom stats row - Responsive */}
+        {/* Bottom stats row */}
         <div className="grid grid-cols-3 gap-3 sm:gap-4 mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-white/10">
           <StatItem icon={Flame} label="Sequência" value={currentStreak} suffix="dias" color="text-orange-400" />
           <StatItem icon={TrendingDown} label="Total perdido" value={weightChange < 0 ? Math.abs(weightChange).toFixed(1) : '0'} suffix="kg" color="text-emerald-400" />

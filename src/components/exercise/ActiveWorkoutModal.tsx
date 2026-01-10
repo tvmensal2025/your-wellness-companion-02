@@ -44,6 +44,7 @@ import {
 import { Volume2, VolumeX } from 'lucide-react';
 import { Exercise, WeeklyPlan } from '@/hooks/useExercisesLibrary';
 import { RestTimer } from './RestTimer';
+import { InlineRestTimer } from './InlineRestTimer';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import confetti from 'canvas-confetti';
@@ -112,6 +113,7 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
   const [isExerciseTimerRunning, setIsExerciseTimerRunning] = useState(false);
   const [currentSet, setCurrentSet] = useState(1);
   const [exerciseFeedback, setExerciseFeedback] = useState<'facil' | 'ok' | 'dificil' | null>(null);
+  const [showInlineRest, setShowInlineRest] = useState(false);
 
   const [elapsedTime, setElapsedTime] = useState(0);
 
@@ -184,6 +186,7 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
     setShowVideo(false);
     setCurrentSet(1);
     setExerciseFeedback(null);
+    setShowInlineRest(false);
   }, [currentIndex]);
 
   // Ref para armazenar timestamp de início do exercício
@@ -484,17 +487,24 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
     vibrateMedium();
 
     if (currentSet < totalSetsForExercise) {
-      toast({
-        title: `Série ${currentSet} concluída!`,
-        description: `Descanse ${parseRestTime(currentExercise?.rest_time)}s e siga para a próxima.`,
-      });
-      setCurrentSet((prev) => Math.min(totalSetsForExercise, prev + 1));
+      // Mostrar timer de descanso inline (entre séries)
+      setIsExerciseTimerRunning(false);
+      setShowInlineRest(true);
       return;
     }
 
     playFinishBeep();
     toast({ title: '✅ Exercício concluído!', description: 'Boa! Vamos para o próximo.' });
     handleCompleteExercise();
+  };
+
+  // Quando o descanso inline termina
+  const handleInlineRestComplete = () => {
+    setShowInlineRest(false);
+    setCurrentSet((prev) => Math.min(totalSetsForExercise, prev + 1));
+    setIsExerciseTimerRunning(true);
+    playStartBeep();
+    vibrateMedium();
   };
 
   const parseRestTime = (restTime: string | number | null | undefined): number => {
@@ -701,7 +711,7 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
                   />
                   
                   <Button
-                    className="w-full bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white gap-2"
+                    className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white gap-2"
                     onClick={handleTimerComplete}
                   >
                     <SkipForward className="w-4 h-4" />
@@ -727,7 +737,7 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
                           setEvolutionExercise(currentExercise.name);
                           setShowEvolutionPopup(true);
                         }}
-                        className="flex items-center gap-1 text-xs text-orange-600 hover:text-orange-700 mt-1"
+                        className="flex items-center gap-1 text-xs text-emerald-600 hover:text-emerald-700 mt-1"
                       >
                         <BarChart3 className="w-3.5 h-3.5" />
                         Ver evolução
@@ -818,8 +828,8 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
                       <div className="grid grid-cols-3 gap-2">
                         <Card className="border border-border/50">
                           <CardContent className="p-2 text-center">
-                            <div className="w-6 h-6 mx-auto mb-1 rounded-full bg-orange-100 dark:bg-orange-950 flex items-center justify-center">
-                              <svg className="w-3 h-3 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <div className="w-6 h-6 mx-auto mb-1 rounded-full bg-emerald-100 dark:bg-emerald-950 flex items-center justify-center">
+                              <svg className="w-3 h-3 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                               </svg>
                             </div>
@@ -829,8 +839,8 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
                         </Card>
                         <Card className="border border-border/50">
                           <CardContent className="p-2 text-center">
-                            <div className="w-6 h-6 mx-auto mb-1 rounded-full bg-orange-100 dark:bg-orange-950 flex items-center justify-center">
-                              <Dumbbell className="w-3 h-3 text-orange-500" />
+                            <div className="w-6 h-6 mx-auto mb-1 rounded-full bg-emerald-100 dark:bg-emerald-950 flex items-center justify-center">
+                              <Dumbbell className="w-3 h-3 text-emerald-500" />
                             </div>
                             <p className="text-lg font-bold">{currentExercise.reps || '12'}</p>
                             <p className="text-[10px] text-muted-foreground">Repetições</p>
@@ -838,8 +848,8 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
                         </Card>
                         <Card className="border border-border/50">
                           <CardContent className="p-2 text-center">
-                            <div className="w-6 h-6 mx-auto mb-1 rounded-full bg-orange-100 dark:bg-orange-950 flex items-center justify-center">
-                              <Clock className="w-3 h-3 text-orange-500" />
+                            <div className="w-6 h-6 mx-auto mb-1 rounded-full bg-emerald-100 dark:bg-emerald-950 flex items-center justify-center">
+                              <Clock className="w-3 h-3 text-emerald-500" />
                             </div>
                             <p className="text-lg font-bold">{parseRestTime(currentExercise.rest_time)}s</p>
                             <p className="text-[10px] text-muted-foreground">Descanso</p>
@@ -854,14 +864,14 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
                           variant="outline" 
                           className={cn(
                             "capitalize",
-                            currentExercise.difficulty === 'easy' && "bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-400",
-                            currentExercise.difficulty === 'intermediate' && "bg-yellow-100 text-yellow-700 dark:bg-yellow-950 dark:text-yellow-400",
-                            currentExercise.difficulty === 'hard' && "bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-400"
+                            (currentExercise.difficulty === 'easy' || currentExercise.difficulty === 'facil') && "bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-400",
+                            (currentExercise.difficulty === 'intermediate' || currentExercise.difficulty === 'medio') && "bg-yellow-100 text-yellow-700 dark:bg-yellow-950 dark:text-yellow-400",
+                            (currentExercise.difficulty === 'hard' || currentExercise.difficulty === 'dificil') && "bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-400"
                           )}
                         >
-                          {currentExercise.difficulty === 'easy' ? 'Fácil' : 
-                           currentExercise.difficulty === 'intermediate' ? 'Intermediário' : 
-                           currentExercise.difficulty === 'hard' ? 'Difícil' : 'Normal'}
+                          {(currentExercise.difficulty === 'easy' || currentExercise.difficulty === 'facil') ? 'Fácil' : 
+                           (currentExercise.difficulty === 'intermediate' || currentExercise.difficulty === 'medio') ? 'Intermediário' : 
+                           (currentExercise.difficulty === 'hard' || currentExercise.difficulty === 'dificil') ? 'Difícil' : 'Normal'}
                         </Badge>
                       </div>
 
@@ -877,7 +887,7 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
                         </Button>
                         
                         <Button
-                          className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white gap-2"
+                          className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white gap-2"
                           onClick={handleStartExercise}
                         >
                           <Play className="w-4 h-4" />
@@ -896,7 +906,7 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
                             <Card className="border border-border/50 bg-muted/30">
                               <CardContent className="p-4 space-y-3">
                                 <div className="flex items-center gap-2 mb-2">
-                                  <Info className="w-4 h-4 text-orange-500" />
+                                  <Info className="w-4 h-4 text-emerald-500" />
                                   <span className="font-medium">Como fazer</span>
                                 </div>
                                 <ol className="text-sm text-muted-foreground space-y-2 list-decimal list-inside">
@@ -1038,27 +1048,46 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
                         <Progress value={(currentSet / Math.max(1, totalSetsForExercise)) * 100} className="h-2" />
                       </div>
 
+                      {/* Timer de descanso inline (entre séries) */}
+                      <AnimatePresence>
+                        {showInlineRest && (
+                          <InlineRestTimer
+                            seconds={parseRestTime(currentExercise?.rest_time)}
+                            onComplete={handleInlineRestComplete}
+                            onSkip={handleInlineRestComplete}
+                            autoStart={true}
+                            soundEnabled={soundEnabled}
+                            onCountdownBeep={playCountdownBeep}
+                            onFinishBeep={playStartBeep}
+                            nextSetNumber={currentSet + 1}
+                            totalSets={totalSetsForExercise}
+                          />
+                        )}
+                      </AnimatePresence>
+
                       {/* Controles */}
-                      <div className="grid grid-cols-3 gap-2">
-                        <Button
-                          variant="outline"
-                          disabled={currentSet <= 1}
-                          onClick={() => setCurrentSet((prev) => Math.max(1, prev - 1))}
-                        >
-                          <ArrowLeft className="w-4 h-4" />
-                        </Button>
-                        <Button onClick={handleConcludeSetOrExercise} className="gap-2">
-                          <Check className="w-4 h-4" />
-                          Concluir
-                        </Button>
-                        <Button
-                          variant="outline"
-                          disabled={currentSet >= totalSetsForExercise}
-                          onClick={() => setCurrentSet((prev) => Math.min(totalSetsForExercise, prev + 1))}
-                        >
-                          <ArrowRight className="w-4 h-4" />
-                        </Button>
-                      </div>
+                      {!showInlineRest && (
+                        <div className="grid grid-cols-3 gap-2">
+                          <Button
+                            variant="outline"
+                            disabled={currentSet <= 1}
+                            onClick={() => setCurrentSet((prev) => Math.max(1, prev - 1))}
+                          >
+                            <ArrowLeft className="w-4 h-4" />
+                          </Button>
+                          <Button onClick={handleConcludeSetOrExercise} className="gap-2">
+                            <Check className="w-4 h-4" />
+                            Concluir
+                          </Button>
+                          <Button
+                            variant="outline"
+                            disabled={currentSet >= totalSetsForExercise}
+                            onClick={() => setCurrentSet((prev) => Math.min(totalSetsForExercise, prev + 1))}
+                          >
+                            <ArrowRight className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   )}
                 </motion.div>
@@ -1068,7 +1097,7 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
             {/* Lista de Exercícios do Dia */}
             <div className="pt-4 border-t border-border/50">
               <div className="flex items-center gap-2 mb-3">
-                <Dumbbell className="w-4 h-4 text-orange-500" />
+                <Dumbbell className="w-4 h-4 text-emerald-500" />
                 <span className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
                   Exercícios do Dia
                 </span>
@@ -1091,7 +1120,7 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
                         className={cn(
                           "w-full flex items-center gap-2 p-2 rounded-lg transition-all text-left",
                           isCurrent 
-                            ? "bg-orange-100 dark:bg-orange-950 border border-orange-300 dark:border-orange-700" 
+                            ? "bg-emerald-100 dark:bg-emerald-950 border border-emerald-300 dark:border-emerald-700" 
                             : isCompleted 
                               ? "bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800"
                               : "bg-muted/30 border border-border/50 hover:bg-muted/50"
@@ -1101,7 +1130,7 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
                         <div className={cn(
                           "w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs shrink-0",
                           isCurrent 
-                            ? "bg-orange-500 text-white" 
+                            ? "bg-emerald-500 text-white" 
                             : isCompleted 
                               ? "bg-green-500 text-white"
                               : "bg-muted text-muted-foreground"
@@ -1127,7 +1156,7 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
                           {isCompleted ? (
                             <Badge className="bg-green-500 text-white text-[10px] px-1.5 py-0.5">✓</Badge>
                           ) : isCurrent ? (
-                            <ChevronRight className="w-4 h-4 text-orange-500" />
+                            <ChevronRight className="w-4 h-4 text-emerald-500" />
                           ) : (
                             <ChevronRight className="w-4 h-4 text-muted-foreground/50" />
                           )}

@@ -78,13 +78,13 @@ export const TrainingDetailModal: React.FC<TrainingDetailModalProps> = ({
             <div className="grid grid-cols-2 gap-4">
               {workout.duration_minutes && (
                 <div className="flex items-center gap-2 text-sm">
-                  <Clock className="w-4 h-4 text-orange-600" />
+                  <Clock className="w-4 h-4 text-emerald-600" />
                   <span className="font-semibold">{workout.duration_minutes} minutos</span>
                 </div>
               )}
               {workout.intensity && (
                 <div className="flex items-center gap-2 text-sm">
-                  <Target className="w-4 h-4 text-orange-600" />
+                  <Target className="w-4 h-4 text-emerald-600" />
                   <span className="font-semibold">Intensidade: {workout.intensity}</span>
                 </div>
               )}
@@ -107,7 +107,7 @@ export const TrainingDetailModal: React.FC<TrainingDetailModalProps> = ({
             {exercises.length > 0 && (
               <div className="space-y-3">
                 <h3 className="font-semibold flex items-center gap-2">
-                  <Dumbbell className="w-5 h-5 text-orange-600" />
+                  <Dumbbell className="w-5 h-5 text-emerald-600" />
                   Exercícios ({exercises.length})
                 </h3>
                 
@@ -119,7 +119,7 @@ export const TrainingDetailModal: React.FC<TrainingDetailModalProps> = ({
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex items-start gap-2 flex-1">
-                          <div className="w-8 h-8 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold text-sm flex-shrink-0">
+                          <div className="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold text-sm flex-shrink-0">
                             {idx + 1}
                           </div>
                           <div className="flex-1">
@@ -137,25 +137,25 @@ export const TrainingDetailModal: React.FC<TrainingDetailModalProps> = ({
                         {exercise.sets && (
                           <div className="bg-background rounded p-2 text-center">
                             <div className="text-xs text-muted-foreground mb-1">Séries</div>
-                            <div className="font-bold text-orange-600">{exercise.sets}</div>
+                            <div className="font-bold text-emerald-600">{exercise.sets}</div>
                           </div>
                         )}
                         {exercise.reps && (
                           <div className="bg-background rounded p-2 text-center">
                             <div className="text-xs text-muted-foreground mb-1">Repetições</div>
-                            <div className="font-bold text-orange-600">{exercise.reps}</div>
+                            <div className="font-bold text-emerald-600">{exercise.reps}</div>
                           </div>
                         )}
                         {exercise.rest && (
                           <div className="bg-background rounded p-2 text-center">
                             <div className="text-xs text-muted-foreground mb-1">Descanso</div>
-                            <div className="font-bold text-orange-600">{exercise.rest}</div>
+                            <div className="font-bold text-emerald-600">{exercise.rest}</div>
                           </div>
                         )}
                         {exercise.weight && (
                           <div className="bg-background rounded p-2 text-center">
                             <div className="text-xs text-muted-foreground mb-1">Carga</div>
-                            <div className="font-bold text-orange-600">{exercise.weight}</div>
+                            <div className="font-bold text-emerald-600">{exercise.weight}</div>
                           </div>
                         )}
                       </div>
@@ -169,7 +169,7 @@ export const TrainingDetailModal: React.FC<TrainingDetailModalProps> = ({
             {exercises.length === 0 && workout.structure && (
               <div className="space-y-2">
                 <h3 className="font-semibold flex items-center gap-2">
-                  <Dumbbell className="w-5 h-5 text-orange-600" />
+                  <Dumbbell className="w-5 h-5 text-emerald-600" />
                   Estrutura do Treino
                 </h3>
                 <div className="bg-muted/30 rounded-lg p-4">
@@ -254,7 +254,7 @@ export const TrainingDetailModal: React.FC<TrainingDetailModalProps> = ({
                 onStartWorkout();
                 onClose();
               }}
-              className="flex-1 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
+              className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600"
             >
               <Play className="w-4 h-4 mr-2" />
               Iniciar Treino

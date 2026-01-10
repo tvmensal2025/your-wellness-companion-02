@@ -261,8 +261,8 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
           />
         </div>
       ) : (
-        <div className="flex items-center justify-center h-40 bg-gradient-to-br from-orange-100 to-red-100 dark:from-orange-950/50 dark:to-red-950/50">
-          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-orange-400 to-red-500 flex items-center justify-center shadow-lg">
+        <div className="flex items-center justify-center h-40 bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-950/50 dark:to-teal-950/50">
+          <div className="w-20 h-20 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center shadow-lg">
             <Dumbbell className="w-10 h-10 text-white" />
           </div>
         </div>
@@ -344,21 +344,21 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
       <div className="grid grid-cols-3 gap-3">
         <Card className="border bg-background">
           <CardContent className="p-3 text-center">
-            <Repeat className="w-5 h-5 mx-auto mb-1 text-orange-500" />
+            <Repeat className="w-5 h-5 mx-auto mb-1 text-emerald-500" />
             <div className="text-lg font-bold">{sets}</div>
             <div className="text-[10px] text-muted-foreground font-medium">Séries</div>
           </CardContent>
         </Card>
         <Card className="border bg-background">
           <CardContent className="p-3 text-center">
-            <Target className="w-5 h-5 mx-auto mb-1 text-orange-500" />
+            <Target className="w-5 h-5 mx-auto mb-1 text-emerald-500" />
             <div className="text-lg font-bold">{reps}</div>
             <div className="text-[10px] text-muted-foreground font-medium">Repetições</div>
           </CardContent>
         </Card>
         <Card className="border bg-background">
           <CardContent className="p-3 text-center">
-            <Clock className="w-5 h-5 mx-auto mb-1 text-orange-500" />
+            <Clock className="w-5 h-5 mx-auto mb-1 text-emerald-500" />
             <div className="text-lg font-bold">{rest}</div>
             <div className="text-[10px] text-muted-foreground font-medium">Descanso</div>
           </CardContent>
@@ -382,7 +382,7 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
           Instruções
         </Button>
         <Button
-          className="flex-1 h-12 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
+          className="flex-1 h-12 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600"
           onClick={startExecution}
         >
           <Play className="w-4 h-4 mr-2" />
@@ -561,7 +561,7 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
 
       {/* Botão Começar */}
       <Button
-        className="w-full h-12 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 shadow-lg hover:shadow-xl transition-all duration-200"
+        className="w-full h-12 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 shadow-lg hover:shadow-xl transition-all duration-200"
         onClick={startExecution}
       >
         <Play className="w-4 h-4 mr-2" />
@@ -583,15 +583,15 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
       {renderVideoBlock()}
 
       {/* Timer elegante */}
-      <Card className="border-0 bg-gradient-to-br from-orange-100 to-red-100 dark:from-orange-950/50 dark:to-red-950/50">
+      <Card className="border-0 bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-950/50 dark:to-teal-950/50">
         <CardContent className="p-4 text-center space-y-3">
-          <Timer className="w-8 h-8 mx-auto text-orange-600" />
-          <div className="text-4xl font-bold text-orange-600">{formatTime(timerSeconds)}</div>
+          <Timer className="w-8 h-8 mx-auto text-emerald-600" />
+          <div className="text-4xl font-bold text-emerald-600">{formatTime(timerSeconds)}</div>
           <div className="flex gap-2 justify-center">
             <Button
               size="sm"
               onClick={toggleTimer}
-              className="px-6 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600"
+              className="px-6 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600"
             >
               {isTimerRunning ? <><Pause className="w-4 h-4 mr-1" />Pausar</> : <><Play className="w-4 h-4 mr-1" />Iniciar</>}
             </Button>
@@ -599,7 +599,7 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
               <RefreshCw className="w-4 h-4" />
             </Button>
           </div>
-          <div className="pt-2 border-t border-orange-200 dark:border-orange-800">
+          <div className="pt-2 border-t border-emerald-200 dark:border-emerald-800">
             <p className="text-xs text-muted-foreground mb-2">Como foi?</p>
             <FeedbackButtons size="md" />
           </div>
@@ -678,7 +678,7 @@ export const ExerciseDetailModal: React.FC<ExerciseDetailModalProps> = ({
       <DialogContent className="w-full max-w-md p-0 gap-0 max-h-[90vh] overflow-hidden">
         <DialogHeader className="px-4 pt-4 pb-2 border-b">
           <DialogTitle className="flex items-center gap-2 text-base">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center">
               <Dumbbell className="w-4 h-4 text-white" />
             </div>
             Detalhes do Exercício

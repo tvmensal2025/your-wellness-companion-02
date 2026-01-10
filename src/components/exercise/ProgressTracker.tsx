@@ -140,11 +140,11 @@ export const ProgressTracker: React.FC<ProgressTrackerProps> = ({
   const progress = (completedSets / sets.length) * 100;
 
   return (
-    <Card className="border-2 border-orange-100 dark:border-orange-900/50">
+    <Card className="border-2 border-emerald-100 dark:border-emerald-900/50">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg flex items-center gap-2">
-            <Dumbbell className="w-5 h-5 text-orange-500" />
+            <Dumbbell className="w-5 h-5 text-emerald-500" />
             Registrar Progresso
           </CardTitle>
           <Badge variant="outline" className="text-xs">
@@ -155,7 +155,7 @@ export const ProgressTracker: React.FC<ProgressTrackerProps> = ({
         {/* Progress bar */}
         <div className="h-2 bg-muted rounded-full overflow-hidden mt-2">
           <motion.div
-            className="h-full bg-gradient-to-r from-orange-500 to-red-500"
+            className="h-full bg-gradient-to-r from-emerald-500 to-teal-500"
             initial={{ width: 0 }}
             animate={{ width: `${progress}%` }}
             transition={{ duration: 0.3 }}
@@ -195,7 +195,7 @@ export const ProgressTracker: React.FC<ProgressTrackerProps> = ({
                 set.completed 
                   ? "bg-green-50 dark:bg-green-950/30 border-green-200 dark:border-green-800" 
                   : currentSet === set.setNumber
-                    ? "bg-orange-50 dark:bg-orange-950/30 border-orange-200 dark:border-orange-800"
+                    ? "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800"
                     : "bg-muted/30 border-border"
               )}
             >
@@ -206,7 +206,7 @@ export const ProgressTracker: React.FC<ProgressTrackerProps> = ({
                   set.completed 
                     ? "bg-green-500 text-white" 
                     : currentSet === set.setNumber
-                      ? "bg-orange-500 text-white"
+                      ? "bg-emerald-500 text-white"
                       : "bg-muted text-muted-foreground"
                 )}>
                   {set.completed ? <Check className="w-4 h-4" /> : set.setNumber}
@@ -297,7 +297,7 @@ export const ProgressTracker: React.FC<ProgressTrackerProps> = ({
         {currentSet === sets.length && !sets[sets.length - 1]?.completed && (
           <div className="space-y-2 pt-2 border-t">
             <Label className="text-sm flex items-center gap-2">
-              <Target className="w-4 h-4 text-orange-500" />
+              <Target className="w-4 h-4 text-emerald-500" />
               Dificuldade percebida
             </Label>
             <div className="flex items-center gap-3">
@@ -313,7 +313,7 @@ export const ProgressTracker: React.FC<ProgressTrackerProps> = ({
                 "font-bold text-lg w-8 text-center",
                 perceivedDifficulty <= 3 && "text-green-500",
                 perceivedDifficulty > 3 && perceivedDifficulty <= 6 && "text-yellow-500",
-                perceivedDifficulty > 6 && perceivedDifficulty <= 8 && "text-orange-500",
+                perceivedDifficulty > 6 && perceivedDifficulty <= 8 && "text-amber-500",
                 perceivedDifficulty > 8 && "text-red-500"
               )}>
                 {perceivedDifficulty}

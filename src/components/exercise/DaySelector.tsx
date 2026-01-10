@@ -48,7 +48,7 @@ export const DaySelector: React.FC<DaySelectorProps> = ({
         </span>
         <span className={cn(
           "font-medium",
-          remainingDays === 0 ? "text-green-600" : "text-orange-500"
+          remainingDays === 0 ? "text-green-600" : "text-emerald-500"
         )}>
           {remainingDays === 0 ? '✓ Completo!' : `Faltam ${remainingDays}`}
         </span>
@@ -69,10 +69,10 @@ export const DaySelector: React.FC<DaySelectorProps> = ({
                 "relative flex flex-col items-center justify-center p-2 rounded-lg transition-all duration-200",
                 "border-2 min-h-[60px]",
                 isSelected 
-                  ? "bg-gradient-to-br from-orange-500 to-red-500 text-white border-orange-500 shadow-lg scale-105" 
+                  ? "bg-gradient-to-br from-emerald-500 to-teal-500 text-white border-emerald-500 shadow-lg scale-105" 
                   : isDisabled 
                     ? "bg-muted/30 border-border/50 text-muted-foreground/50 cursor-not-allowed"
-                    : "bg-background border-border hover:border-orange-300 hover:bg-orange-50 dark:hover:bg-orange-950/30 cursor-pointer"
+                    : "bg-background border-border hover:border-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 cursor-pointer"
               )}
             >
               {isSelected && (
@@ -95,7 +95,7 @@ export const DaySelector: React.FC<DaySelectorProps> = ({
       {/* Legenda visual */}
       <div className="flex justify-center gap-4 text-xs text-muted-foreground">
         <div className="flex items-center gap-1">
-          <div className="w-3 h-3 rounded bg-gradient-to-br from-orange-500 to-red-500" />
+          <div className="w-3 h-3 rounded bg-gradient-to-br from-emerald-500 to-teal-500" />
           <span>Dia de treino</span>
         </div>
         <div className="flex items-center gap-1">

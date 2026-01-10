@@ -191,7 +191,7 @@ const DashboardOverview: React.FC = () => {
 
       if (error) throw error;
 
-      toast.success('Peso registrado com sucesso!');
+      toast.success('Peso registrado com sucesso! 🎉');
       setIsWeightModalOpen(false);
       fetchMeasurements(30, true);
     } catch (error: any) {
