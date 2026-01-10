@@ -21,6 +21,134 @@ let AI_CONFIG = {
   system_prompt: ''
 };
 
+// 🦾 YOLOE microserviço para detecção de documentos médicos
+// YOLOE usa vocabulário aberto - pode detectar QUALQUER coisa via prompts de texto
+const yoloEnabled = (Deno.env.get('YOLO_ENABLED') || 'true').toLowerCase() === 'true';
+const yoloServiceUrl = (Deno.env.get('YOLO_SERVICE_URL') || 'http://45.67.221.216:8002').replace(/\/$/, '');
+
+// Prompts para detecção de documentos médicos
+const MEDICAL_DOCUMENT_PROMPTS = [
+  'documento',
+  'tabela', 
+  'texto',
+  'laudo médico',
+  'exame de sangue',
+  'resultado laboratorial',
+  'gráfico',
+  'código de barras'
+];
+
+// Função para detectar documento médico com YOLOE (vocabulário aberto)
+async function tryYoloeDocumentDetect(imageUrl: string): Promise<{
+  isDocument: boolean;
+  documentConfidence: number;
+  detections: Array<{prompt: string; confidence: number}>;
+  processingTime: number;
+} | null> {
+  if (!yoloEnabled) {
+    console.log('⚠️ YOLOE desabilitado');
+    return null;
+  }
+  
+  console.log(`🦾 YOLOE: Detectando documento médico...`);
+  const startTime = Date.now();
+  
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+    
+    // Usar endpoint /detect/prompt para YOLOE com vocabulário aberto
+    const resp = await fetch(`${yoloServiceUrl}/detect/prompt`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      signal: controller.signal,
+      body: JSON.stringify({ 
+        image_url: imageUrl,
+        prompts: MEDICAL_DOCUMENT_PROMPTS,
+        confidence: 0.25,
+        max_detections: 20
+      })
+    });
+    
+    clearTimeout(timeoutId);
+    
+    if (!resp.ok) {
+      console.log(`⚠️ YOLOE /detect/prompt não disponível, usando /detect`);
+      return await tryYoloStandardDetect(imageUrl);
+    }
+    
+    const data = await resp.json();
+    const processingTime = Date.now() - startTime;
+    
+    const detections = (data.detections || []).map((d: any) => ({
+      prompt: d.prompt,
+      confidence: d.confidence
+    }));
+    
+    console.log(`✅ YOLOE: documento=${data.is_document}, conf=${(data.document_confidence * 100).toFixed(0)}%, ${processingTime}ms`);
+    
+    return {
+      isDocument: data.is_document || false,
+      documentConfidence: data.document_confidence || 0,
+      detections,
+      processingTime
+    };
+    
+  } catch (error) {
+    const err = error as Error;
+    console.log(`⚠️ YOLOE: ${err.name === 'AbortError' ? 'Timeout' : err.message}`);
+    return null;
+  }
+}
+
+// Fallback para YOLO padrão (sem prompts)
+async function tryYoloStandardDetect(imageUrl: string): Promise<{
+  isDocument: boolean;
+  documentConfidence: number;
+  detections: Array<{prompt: string; confidence: number}>;
+  processingTime: number;
+} | null> {
+  const startTime = Date.now();
+  
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
+    
+    const resp = await fetch(`${yoloServiceUrl}/detect`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      signal: controller.signal,
+      body: JSON.stringify({ 
+        image_url: imageUrl, 
+        confidence: 0.25
+      })
+    });
+    
+    clearTimeout(timeoutId);
+    
+    if (!resp.ok) return null;
+    
+    const data = await resp.json();
+    const objects = data.objects || [];
+    const processingTime = Date.now() - startTime;
+    
+    const hasContent = objects.length > 0;
+    const maxConf = objects.reduce((max: number, o: any) => Math.max(max, o.confidence || 0), 0);
+    
+    return {
+      isDocument: hasContent,
+      documentConfidence: maxConf,
+      detections: objects.map((o: any) => ({ prompt: o.class_name, confidence: o.confidence })),
+      processingTime
+    };
+  } catch {
+    return null;
+  }
+}
+
 // 🔧 FUNÇÃO UTILITÁRIA: Normalizar URL de imagem para evitar duplicação de prefixo
 function normalizeImageUrl(imgData: string, mime: string): string {
   // Se já começa com 'data:', usar como está
