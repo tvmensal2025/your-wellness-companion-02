@@ -1,0 +1,129 @@
+# Cursor AI Rules - Instituto dos Sonhos
+
+## CRITICAL FILES - NEVER EDIT
+- `src/integrations/supabase/client.ts` (auto-generated)
+- `src/integrations/supabase/types.ts` (auto-generated, 13k+ lines)
+- `.env` (auto-configured)
+- `supabase/config.toml` (auto-configured)
+- `package.json` (use dependency tools)
+
+## IMPORTS - ALWAYS USE
+```typescript
+// Supabase - ONLY from here
+import { supabase } from '@/integrations/supabase/client';
+
+// Components
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+
+// Always use @/ alias, never relative paths like ../../../
+```
+
+## COMPONENTS - PATTERNS
+```typescript
+// Export interfaces
+export interface MyComponentProps {
+  variant?: 'default' | 'compact'; // Use variants, NOT boolean props
+  className?: string;
+}
+
+// Use cn() for conditional classes
+<div className={cn("base-class", isActive && "active-class", className)}>
+
+// Use semantic colors
+<div className="bg-background text-foreground"> // NOT bg-white text-black
+```
+
+## HOOKS - PATTERNS
+```typescript
+// Always validate params
+const enabled = !!userId;
+
+// Always use enabled in useQuery
+const { data } = useQuery({
+  queryKey: ['key', userId],
+  queryFn: async () => { ... },
+  enabled, // IMPORTANT
+});
+
+// Supabase returns arrays - access with [0]
+const altura = data?.[0]?.altura_cm; // NOT data.altura_cm
+```
+
+## DATABASE - COMMON MISTAKES
+
+### Columns that DO NOT exist:
+- `profiles.role` → Use `supabase.rpc('is_admin_user')`
+- `profiles.height_cm` → It's `height`
+- `profiles.date_of_birth` → It's `birth_date`
+- `challenges.category` → It's `challenge_type`
+- `user_physical_data.peso_kg` → It's `peso_atual_kg`
+
+### Admin check - ONLY safe method:
+```typescript
+const { data: isAdmin } = await supabase.rpc('is_admin_user');
+// OR
+import { useAdminMode } from '@/hooks/useAdminMode';
+```
+
+### Daily tracking table:
+- Table name: `advanced_daily_tracking` (NOT daily_health_tracking)
+- Columns: `tracking_date`, `energy_level`, `sleep_quality`, `stress_level`, `water_ml`
+
+## EDGE FUNCTIONS - STRUCTURE
+```typescript
+// Always in supabase/functions/[name]/index.ts
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.55.0';
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+  // ... logic
+  return new Response(JSON.stringify(data), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+});
+```
+
+### NEVER in Edge Functions:
+- Import from `@/` paths
+- Use `VITE_*` env vars (use `Deno.env.get('SUPABASE_URL')`)
+- Forget CORS headers
+
+## FOLDER STRUCTURE
+```
+src/components/ui/       → Base components (Button, Card, Input)
+src/components/[feature] → Feature components (sofia/, exercise/, nutrition/)
+src/hooks/use[Feature].ts → Feature hooks
+src/pages/[Name]Page.tsx → Page components
+src/data/                → Static data, constants
+supabase/functions/      → Edge functions (each in own folder with index.ts)
+```
+
+## BEFORE COMMITTING
+- [ ] All imports use @/ alias
+- [ ] Supabase client from @/integrations/supabase/client
+- [ ] No hardcoded colors (use semantic tokens)
+- [ ] Arrays accessed with [0] or .map()
+- [ ] Admin verified via RPC
+- [ ] Edge functions have CORS headers
+- [ ] Interfaces are exported
+
+## MAIN TABLES REFERENCE
+| Table | Key Columns |
+|-------|-------------|
+| profiles | id, full_name, email, avatar_url, height, birth_date |
+| user_physical_data | user_id, altura_cm, peso_atual_kg, imc |
+| weight_measurements | user_id, weight_kg, measurement_date |
+| food_analysis | user_id, meal_type, analysis_text, health_score |
+| challenges | id, title, challenge_type, points_reward |
+| advanced_daily_tracking | user_id, tracking_date, energy_level, sleep_quality |
+| user_roles | user_id, role (admin, moderator, user) |
+
+## DOCUMENTATION
+See `docs/AI_CODING_GUIDELINES.md` for complete documentation.
