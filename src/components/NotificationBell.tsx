@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -21,12 +21,27 @@ interface Notification {
   action_url?: string;
 }
 
-export const NotificationBell: React.FC = () => {
+interface NotificationBellProps {
+  userId?: string;
+}
+
+export const NotificationBell: React.FC<NotificationBellProps> = ({ userId: propUserId }) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [userId, setUserId] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(propUserId || null);
+  const hasInitializedRef = useRef(false);
+  const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
+  // Get userId only if not provided via props
   useEffect(() => {
+    if (propUserId) {
+      setUserId(propUserId);
+      return;
+    }
+
+    if (hasInitializedRef.current) return;
+    hasInitializedRef.current = true;
+
     const getUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
@@ -34,7 +49,7 @@ export const NotificationBell: React.FC = () => {
       }
     };
     getUser();
-  }, []);
+  }, [propUserId]);
 
   useEffect(() => {
     if (!userId) return;
@@ -55,9 +70,14 @@ export const NotificationBell: React.FC = () => {
 
     fetchNotifications();
 
+    // Cleanup previous channel if exists
+    if (channelRef.current) {
+      supabase.removeChannel(channelRef.current);
+    }
+
     // Subscribe to realtime updates
-    const channel = supabase
-      .channel('notifications-changes')
+    channelRef.current = supabase
+      .channel(`notifications-${userId}`)
       .on(
         'postgres_changes',
         {
@@ -73,7 +93,10 @@ export const NotificationBell: React.FC = () => {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      if (channelRef.current) {
+        supabase.removeChannel(channelRef.current);
+        channelRef.current = null;
+      }
     };
   }, [userId]);
 

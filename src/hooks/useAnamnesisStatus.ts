@@ -1,25 +1,31 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
-export const useAnamnesisStatus = () => {
+interface UseAnamnesisStatusProps {
+  userId?: string;
+}
+
+export const useAnamnesisStatus = (props?: UseAnamnesisStatusProps) => {
   const [hasCompletedAnamnesis, setHasCompletedAnamnesis] = useState<boolean | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const hasCheckedRef = useRef(false);
+  const currentUserIdRef = useRef<string | null>(null);
 
   useEffect(() => {
-    const checkAnamnesisStatus = async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-          setHasCompletedAnamnesis(false);
-          setIsLoading(false);
-          return;
-        }
+    const checkAnamnesisStatus = async (userId: string) => {
+      // Avoid duplicate checks for the same user
+      if (currentUserIdRef.current === userId && hasCheckedRef.current) {
+        return;
+      }
 
-        // Verificar se existe anamnese no banco
+      try {
+        currentUserIdRef.current = userId;
+        hasCheckedRef.current = true;
+
         const { data: anamnesis, error } = await supabase
           .from('user_anamnesis')
           .select('id')
-          .eq('user_id', user.id)
+          .eq('user_id', userId)
           .maybeSingle();
 
         if (error) {
@@ -37,15 +43,65 @@ export const useAnamnesisStatus = () => {
       }
     };
 
-    checkAnamnesisStatus();
+    // If userId is provided via props, use it directly
+    if (props?.userId) {
+      checkAnamnesisStatus(props.userId);
+      return;
+    }
 
-    // Escutar mudanças de auth
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
-      checkAnamnesisStatus();
-    });
+    // Only fetch user if not provided via props
+    const fetchUserAndCheck = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          checkAnamnesisStatus(user.id);
+        } else {
+          setHasCompletedAnamnesis(false);
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.error('Erro ao obter usuário:', error);
+        setHasCompletedAnamnesis(false);
+        setIsLoading(false);
+      }
+    };
 
-    return () => subscription.unsubscribe();
-  }, []);
+    fetchUserAndCheck();
+  }, [props?.userId]);
 
-  return { hasCompletedAnamnesis, isLoading };
+  const refetch = async () => {
+    hasCheckedRef.current = false;
+    currentUserIdRef.current = null;
+    setIsLoading(true);
+
+    const userId = props?.userId;
+    if (userId) {
+      const { data: anamnesis, error } = await supabase
+        .from('user_anamnesis')
+        .select('id')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (!error) {
+        setHasCompletedAnamnesis(!!anamnesis);
+      }
+      setIsLoading(false);
+    } else {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: anamnesis, error } = await supabase
+          .from('user_anamnesis')
+          .select('id')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (!error) {
+          setHasCompletedAnamnesis(!!anamnesis);
+        }
+      }
+      setIsLoading(false);
+    }
+  };
+
+  return { hasCompletedAnamnesis, isLoading, refetch };
 };
