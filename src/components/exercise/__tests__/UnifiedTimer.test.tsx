@@ -102,7 +102,7 @@ describe('Compatibilidade com componentes antigos', () => {
   });
 
   it('RestTimer compact funciona', () => {
-    render(<RestTimer defaultSeconds={45} compact={true} />);
+    render(<RestTimer defaultSeconds={45} variant="compact" />);
     expect(screen.getByText('0:45')).toBeInTheDocument();
   });
 

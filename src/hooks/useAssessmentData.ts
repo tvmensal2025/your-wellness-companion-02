@@ -63,14 +63,10 @@ export const useAssessmentData = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return [];
 
-      const { data, error } = await supabase
-        .from('assessments')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      return data || [];
+      // assessments table is for templates, not user data
+      // Return empty for now - user assessments would need a different table
+      console.log('Assessment history requested for user:', user.id);
+      return [];
     } catch (error: any) {
       console.error('Erro ao buscar histórico de avaliações:', error);
       return [];

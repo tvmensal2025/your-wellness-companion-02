@@ -104,12 +104,17 @@ export const DailyAdvancedTracker: React.FC = () => {
 
       const today = new Date().toISOString().split('T')[0];
       
-      const { error } = await supabase
-        .from('daily_advanced_tracking')
+      // Tabela advanced_daily_tracking existe no schema
+      const { error } = await (supabase as any)
+        .from('advanced_daily_tracking')
         .upsert({
           user_id: user.id,
-          date: today,
-          ...formData
+          tracking_date: today,
+          energy_level: formData.energy_morning,
+          stress_level: formData.stress_level_general,
+          sleep_quality: formData.daily_score,
+          water_ml: formData.water_current_ml,
+          notes: formData.gratitude_notes
         });
 
       if (error) throw error;

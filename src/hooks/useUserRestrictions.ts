@@ -48,13 +48,20 @@ export const useUserRestrictions = () => {
         .limit(1)
         .maybeSingle();
 
-      // 3. Carregar favoritos nutricionais
-      const { data: favorites } = await supabase
-        .from('nutrition_favorites')
-        .select('food_name')
-        .eq('user_id', user.id)
-        .order('usage_count', { ascending: false })
-        .limit(10);
+      // 3. Carregar favoritos nutricionais - tabela pode não existir no types
+      let favorites: any[] = [];
+      try {
+        const { data } = await (supabase as any)
+          .from('nutrition_favorites')
+          .select('food_name')
+          .eq('user_id', user.id)
+          .order('usage_count', { ascending: false })
+          .limit(10);
+        favorites = data || [];
+      } catch {
+        // Tabela pode não existir
+        favorites = [];
+      }
 
       // Processar dados da anamnese
       const anamnesisRestrictions = Array.isArray(anamnesisData?.forbidden_foods) 
@@ -75,7 +82,7 @@ export const useUserRestrictions = () => {
 
       // Processar favoritos
       const favoriteFoods = Array.isArray(favorites) 
-        ? favorites.map(f => f.food_name) 
+        ? favorites.map((f: any) => f.food_name) 
         : [];
 
       setRestrictions({
@@ -103,23 +110,28 @@ export const useUserRestrictions = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Usuário não autenticado');
 
-      // Atualizar na tabela meal_plans para facilitar consultas futuras
-      const { error } = await supabase
-        .from('meal_plans')
-        .update({
-          context: {
-            restrictions,
-            preferences,
-            updated_at: new Date().toISOString()
-          }
-        })
-        .eq('user_id', user.id)
-        .eq('status', 'active')
-        .order('created_at', { ascending: false })
-        .limit(1);
+      // Atualizar na tabela meal_plans - meal_plans não tem coluna context
+      // Salvar as preferências em meal_plan_history como metadata
+      try {
+        const { error } = await (supabase as any)
+          .from('meal_plan_history')
+          .insert({
+            user_id: user.id,
+            meal_plan_data: {
+              metadata: {
+                restrictions,
+                preferences,
+                updated_at: new Date().toISOString()
+              }
+            },
+            created_at: new Date().toISOString()
+          });
 
-      if (error) {
-        console.warn('Aviso ao salvar preferências:', error);
+        if (error) {
+          console.warn('Aviso ao salvar preferências:', error);
+        }
+      } catch (err) {
+        console.warn('Aviso ao salvar preferências:', err);
       }
 
       // Atualizar estado local

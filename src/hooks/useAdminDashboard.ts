@@ -198,9 +198,15 @@ export const useAdminDashboard = () => {
       session_data: any;
       is_active: boolean;
     }) => {
+      // sessions table has: title, description, content (not session_data)
       const { data, error } = await supabase
         .from('sessions')
-        .insert(sessionData)
+        .insert([{
+          title: sessionData.title,
+          description: sessionData.description,
+          content: sessionData.session_data,
+          is_active: sessionData.is_active
+        }])
         .select()
         .single();
 

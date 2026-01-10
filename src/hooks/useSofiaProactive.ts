@@ -52,12 +52,12 @@ export const useSofiaProactive = () => {
         });
       }
 
-      // 2. Verificar sono da noite anterior
+      // 2. Verificar sono da noite anterior - usar daily_health_snapshot que tem dados de sono
       const { data: sleepData } = await supabase
-        .from('sleep_tracking')
-        .select('hours_slept, sleep_quality')
+        .from('daily_health_snapshot')
+        .select('sleep_hours, sleep_quality')
         .eq('user_id', user.id)
-        .eq('date', today)
+        .eq('snapshot_date', today)
         .maybeSingle();
 
       if (!sleepData && hour >= 10) {
@@ -72,13 +72,13 @@ export const useSofiaProactive = () => {
         });
       }
 
-      // 3. Correlações inteligentes
+      // 3. Correlações inteligentes - usar daily_health_snapshot que tem mood e stress
       const { data: moodData } = await supabase
-        .from('mood_tracking')
+        .from('daily_health_snapshot')
         .select('*')
         .eq('user_id', user.id)
-        .gte('date', yesterday)
-        .order('date', { ascending: false })
+        .gte('snapshot_date', yesterday)
+        .order('snapshot_date', { ascending: false })
         .limit(7);
 
       if (moodData && moodData.length >= 3) {
@@ -134,16 +134,16 @@ export const useSofiaProactive = () => {
         .from('user_goals')
         .select('*')
         .eq('user_id', user.id)
-        .eq('status', 'em_progresso')
+        .eq('status', 'aprovada')
         .gte('current_value', 80); // Progresso >= 80%
 
       if (goalsNearCompletion && goalsNearCompletion.length > 0) {
-        const goal = goalsNearCompletion[0];
+        const goal = goalsNearCompletion[0] as any;
         newInsights.push({
           id: 'goal-near-completion',
           type: 'encouragement',
           title: 'Você está quase lá! 🎯',
-          message: `A meta "${goal.goal_title}" está ${goal.current_value}% completa. Falta pouco!`,
+          message: `A meta "${goal.title || goal.description}" está ${goal.current_value}% completa. Falta pouco!`,
           icon: '🏆',
           priority: 'high',
           actionable: { label: 'Ver meta', route: '/goals' }
@@ -153,7 +153,7 @@ export const useSofiaProactive = () => {
       // 6. Dica do dia baseada em dados
       const tips = [
         { condition: todayWater >= 2000, tip: 'Excelente hidratação hoje! Isso ajuda na concentração e energia. 💪' },
-        { condition: sleepData?.hours_slept >= 7, tip: 'Ótimo sono! Descanso adequado melhora o metabolismo. 😊' },
+        { condition: (sleepData as any)?.sleep_hours >= 7, tip: 'Ótimo sono! Descanso adequado melhora o metabolismo. 😊' },
         { condition: todayExercise >= 30, tip: 'Parabéns pelo exercício! Você está cuidando bem do corpo. 🌟' },
       ];
 

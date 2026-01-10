@@ -47,13 +47,10 @@ export const useSubscription = () => {
       // Buscar assinatura ativa do usuário
       const { data: subscriptionData, error: subscriptionError } = await supabase
         .from('user_subscriptions')
-        .select(`
-          *,
-          subscription_plans (*)
-        `)
+        .select('*')
         .eq('user_id', user.id)
         .eq('status', 'active')
-        .single();
+        .maybeSingle();
 
       if (subscriptionError && subscriptionError.code !== 'PGRST116') {
         console.error('Erro ao buscar assinatura:', subscriptionError);
@@ -61,17 +58,37 @@ export const useSubscription = () => {
       }
 
       if (subscriptionData) {
+        // Map to our interface
         setSubscription({
-          ...subscriptionData,
-          status: subscriptionData.status as 'active' | 'pending' | 'cancelled' | 'expired'
+          id: subscriptionData.id,
+          user_id: subscriptionData.user_id,
+          plan_id: subscriptionData.subscription_type || 'basic',
+          status: subscriptionData.status as 'active' | 'pending' | 'cancelled' | 'expired',
+          current_period_start: subscriptionData.started_at,
+          current_period_end: subscriptionData.expires_at,
+          created_at: subscriptionData.created_at,
+          updated_at: subscriptionData.updated_at
         });
-        const features = subscriptionData.subscription_plans?.features;
-        setPlan({
-          ...subscriptionData.subscription_plans,
-          features: Array.isArray(features) 
-            ? features.map((f: any) => typeof f === 'string' ? f : String(f))
-            : []
-        });
+        
+        // Buscar plano separadamente - subscription_plans has plan_name not name
+        const { data: planData } = await (supabase as any)
+          .from('subscription_plans')
+          .select('*')
+          .eq('plan_name', subscriptionData.subscription_type)
+          .maybeSingle();
+        
+        if (planData) {
+          const features = planData.features;
+          setPlan({
+            id: planData.id,
+            name: planData.plan_name,
+            description: planData.description || '',
+            price: planData.price || 0,
+            features: Array.isArray(features) 
+              ? features.map((f: any) => typeof f === 'string' ? f : String(f))
+              : []
+          });
+        }
       } else {
         setSubscription(null);
         setPlan(null);

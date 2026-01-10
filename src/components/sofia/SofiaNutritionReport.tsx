@@ -60,18 +60,22 @@ export const SofiaNutritionReport: React.FC<SofiaNutritionReportProps> = ({ open
     const totals = data.totals as { kcal: number; protein_g: number; fat_g: number; carbs_g: number };
 
     // Salvar em food_analysis como uma análise simples
-    await supabase.from('food_analysis').insert({
+    await supabase.from('food_analysis').insert([{
       user_id: userId,
       meal_type: newItem.meal,
-      food_items: [{ name: newItem.name, quantity: Number(newItem.grams), calories: totals.kcal, protein: totals.protein_g, fat: totals.fat_g, carbs: totals.carbs_g }],
+      food_items: [newItem.name],
+      total_calories: totals.kcal,
+      total_proteins: totals.protein_g,
+      total_fats: totals.fat_g,
+      total_carbs: totals.carbs_g,
       nutrition_analysis: {
         totalCalories: totals.kcal,
         totalProtein: totals.protein_g,
         totalCarbs: totals.carbs_g,
         totalFat: totals.fat_g,
       },
-      sofia_analysis: { analysis: 'Item adicionado manualmente' },
-    });
+      recommendations: 'Item adicionado manualmente',
+    }]);
 
     setAddOpen(false);
     // Forçar recarregar hook alterando a data (toggle dia +1 e volta)

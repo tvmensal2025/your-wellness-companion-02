@@ -27,10 +27,11 @@ interface AnalysisResult {
 interface AnalysisHistory {
   id: string;
   created_at: string;
-  analysis_data: any;
   recommendations: any;
   risk_factors: any;
   risk_score: number;
+  // Derived from recommendations/risk_factors
+  analysis_data?: any;
 }
 
 export const useSofiaAnalysis = () => {
@@ -106,8 +107,13 @@ export const useSofiaAnalysis = () => {
         throw error;
       }
 
-      setAnalysisHistory(data || []);
-      return data;
+      // Map to include analysis_data from existing fields
+      const mappedData = (data || []).map((item: any) => ({
+        ...item,
+        analysis_data: item.recommendations || item.risk_factors
+      }));
+      setAnalysisHistory(mappedData);
+      return mappedData;
       
     } catch (error) {
       console.error('Erro ao carregar histórico:', error);
@@ -158,27 +164,27 @@ export const useSofiaAnalysis = () => {
   // Detectar anomalias em tempo real
   const detectAnomalies = useCallback(async (userId: string, newData: any) => {
     try {
-      // Buscar dados recentes para comparação
-      const { data: recentData } = await supabase
-        .from('daily_advanced_tracking')
+      // Buscar dados recentes para comparação - usar advanced_daily_tracking
+      const { data: recentData } = await (supabase as any)
+        .from('advanced_daily_tracking')
         .select('*')
         .eq('user_id', userId)
-        .gte('date', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0])
-        .order('date', { ascending: false });
+        .gte('tracking_date', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0])
+        .order('tracking_date', { ascending: false });
 
       if (!recentData || recentData.length < 3) {
         return []; // Poucos dados para detectar anomalias
       }
 
-      const anomalies = [];
+      const anomalies: string[] = [];
 
-      // Detectar anomalias simples baseadas em desvios
-      const avgScore = recentData.reduce((sum, item) => sum + (item.daily_score || 0), 0) / recentData.length;
+      // Detectar anomalias simples baseadas em desvios - usar campos corretos
+      const avgScore = recentData.reduce((sum: number, item: any) => sum + (item.sleep_quality || 0), 0) / recentData.length;
       if (newData.daily_score && Math.abs(newData.daily_score - avgScore) > 30) {
         anomalies.push(`Score diário ${newData.daily_score < avgScore ? 'muito baixo' : 'muito alto'} comparado à média`);
       }
 
-      const avgWater = recentData.reduce((sum, item) => sum + (item.water_current_ml || 0), 0) / recentData.length;
+      const avgWater = recentData.reduce((sum: number, item: any) => sum + (item.water_ml || 0), 0) / recentData.length;
       if (newData.water_current_ml && Math.abs(newData.water_current_ml - avgWater) > 500) {
         anomalies.push(`Consumo de água ${newData.water_current_ml < avgWater ? 'muito baixo' : 'muito alto'}`);
       }
