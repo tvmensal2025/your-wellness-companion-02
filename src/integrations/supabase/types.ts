@@ -13026,6 +13026,14 @@ export type Database = {
         Args: { p_date?: string; p_user_id: string }
         Returns: string
       }
+      find_and_sync_orphan_user_by_phone: {
+        Args: { p_phone: string }
+        Returns: {
+          email: string
+          full_name: string
+          user_id: string
+        }[]
+      }
       has_role: { Args: { _role: string; _user_id: string }; Returns: boolean }
       has_role_text: {
         Args: { _role: string; _user_id: string }
