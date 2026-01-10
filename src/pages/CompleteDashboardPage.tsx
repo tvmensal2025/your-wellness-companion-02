@@ -586,6 +586,7 @@ const CompleteDashboardPage = () => {
             onAvatarClick={() => setProfileModalOpen(true)}
             avatarUrl={profileData?.avatarUrl}
             userName={profileData?.fullName}
+            userId={user?.id}
           />
 
           {/* Content - Otimizado para mobile com overflow controlado */}

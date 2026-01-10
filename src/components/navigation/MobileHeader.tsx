@@ -12,6 +12,7 @@ interface MobileHeaderProps {
   userName?: string;
   unreadMessages?: number;
   onMessageClick?: () => void;
+  userId?: string;
 }
 
 export const MobileHeader: React.FC<MobileHeaderProps> = ({
@@ -21,6 +22,7 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
   userName,
   unreadMessages = 0,
   onMessageClick,
+  userId,
 }) => {
   const getInitials = (name?: string) => {
     if (!name) return '?';
@@ -55,7 +57,7 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
               className="h-8 w-8"
             />
           )}
-          <NotificationBell />
+          <NotificationBell userId={userId} />
           
           {/* Avatar */}
           <button

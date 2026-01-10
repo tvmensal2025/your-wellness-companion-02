@@ -156,9 +156,9 @@ export const useNutritionTracking = () => {
         .eq('user_id', user.id)
         .single();
 
-      // Carregar objetivo nutricional salvo
+      // Carregar objetivo nutricional salvo (tabela correta: nutritional_goals)
       const { data: goalsResponse } = await (supabase as any)
-        .from('nutrition_goals')
+        .from('nutritional_goals')
         .select('*')
         .eq('user_id', user.id)
         .maybeSingle();
@@ -219,14 +219,14 @@ export const useNutritionTracking = () => {
     }
   }, []);
 
-  // Função auxiliar para salvar metas no banco
+  // Função auxiliar para salvar metas no banco (tabela correta: nutritional_goals)
   const updateGoalsInDB = useCallback(async (newGoals: NutritionGoals, newObjective?: NutritionObjective) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
       const { error } = await (supabase as any)
-        .from('nutrition_goals')
+        .from('nutritional_goals')
         .upsert({
           user_id: user.id,
           calories: newGoals.calories,
@@ -304,14 +304,14 @@ export const useNutritionTracking = () => {
     }
   }, []);
 
-  // Atualizar metas
+  // Atualizar metas (tabela correta: nutritional_goals)
   const updateGoals = useCallback(async (newGoals: NutritionGoals) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Usuário não autenticado');
 
       const { error } = await (supabase as any)
-        .from('nutrition_goals')
+        .from('nutritional_goals')
         .upsert({
           user_id: user.id,
           calories: newGoals.calories,
