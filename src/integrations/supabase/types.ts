@@ -7740,6 +7740,7 @@ export type Database = {
           interests: string[] | null
           phone: string | null
           points: number | null
+          preferences: Json | null
           provider: string | null
           role: string | null
           show_points: boolean | null
@@ -7771,6 +7772,7 @@ export type Database = {
           interests?: string[] | null
           phone?: string | null
           points?: number | null
+          preferences?: Json | null
           provider?: string | null
           role?: string | null
           show_points?: boolean | null
@@ -7802,6 +7804,7 @@ export type Database = {
           interests?: string[] | null
           phone?: string | null
           points?: number | null
+          preferences?: Json | null
           provider?: string | null
           role?: string | null
           show_points?: boolean | null
