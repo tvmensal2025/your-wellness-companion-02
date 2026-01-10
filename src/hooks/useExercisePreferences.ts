@@ -43,8 +43,10 @@ export const useExercisePreferences = (userId: string | undefined) => {
           return;
         }
 
-        if (data?.preferences?.exercise) {
-          setPreferences(data.preferences.exercise as ExercisePreferences);
+        // Verificar se preferences é um objeto e tem a propriedade exercise
+        const prefs = data?.preferences as Record<string, unknown> | null;
+        if (prefs && typeof prefs === 'object' && 'exercise' in prefs) {
+          setPreferences(prefs.exercise as ExercisePreferences);
         }
       } catch (err) {
         console.error('Erro inesperado:', err);

@@ -93,7 +93,6 @@ describe('Compatibilidade com componentes antigos', () => {
       <RestTimer 
         defaultSeconds={30} 
         onComplete={onComplete}
-        compact={false}
         showSkip={true}
       />
     );

@@ -4,26 +4,26 @@ import { supabase } from '@/integrations/supabase/client';
 interface Challenge {
   id: string;
   title: string;
-  description: string;
-  category: string;
-  difficulty: string;
-  duration_days: number;
-  points_reward: number;
-  badge_icon: string;
-  is_active: boolean;
-  is_group_challenge: boolean;
+  description: string | null;
+  challenge_type: string | null; // Coluna real do banco (não category)
+  difficulty: string | null;
+  duration_days: number | null;
+  points_reward: number | null;
+  badge_icon: string | null;
+  is_active: boolean | null;
+  is_group_challenge: boolean | null;
 }
 
 interface UserChallenge {
   id: string;
   challenge_id: string;
   user_id: string;
-  progress: number;
-  target_value: number;
-  is_completed: boolean;
-  started_at: string;
-  completed_at?: string;
-  challenge?: Challenge;
+  progress: number | null;
+  target_value: number | null;
+  is_completed: boolean | null;
+  started_at: string | null;
+  completed_at?: string | null;
+  challenge?: Challenge | null;
 }
 
 export const useChallenges = () => {

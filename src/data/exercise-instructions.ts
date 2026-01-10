@@ -1,7 +1,7 @@
 // Guia de Execução dos Exercícios
 // Atualizado com base ABCDE completa
 
-import { ALL_EXERCISES, CATEGORY_NAMES, LEVEL_DESCRIPTIONS } from './exercise-database';
+import { ALL_EXERCISES, CATEGORY_NAMES, LEVEL_NAMES } from './exercises-database';
 
 export interface ExerciseInstruction {
   descricao: string;
@@ -443,4 +443,4 @@ export const getExerciseInstruction = (exerciseName: string, location: 'casa' | 
 };
 
 // Exportar categorias e níveis
-export { ALL_EXERCISES, CATEGORY_NAMES, LEVEL_DESCRIPTIONS };
+export { ALL_EXERCISES, CATEGORY_NAMES, LEVEL_NAMES };

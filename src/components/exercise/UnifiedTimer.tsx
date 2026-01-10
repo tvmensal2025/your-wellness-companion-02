@@ -30,7 +30,7 @@ const motivationalMessages = [
   { emoji: "💥", text: "Energia total!" },
 ];
 
-interface UnifiedTimerProps {
+export interface UnifiedTimerProps {
   // Timer básico
   seconds?: number;
   defaultSeconds?: number;
