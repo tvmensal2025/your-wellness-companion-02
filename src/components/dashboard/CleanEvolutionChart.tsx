@@ -130,39 +130,22 @@ export const CleanEvolutionChart: React.FC<CleanEvolutionChartProps> = memo(({
   const [isVisible, setIsVisible] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Intersection Observer para lazy load do gráfico
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.1, rootMargin: '50px' }
-    );
-
-    if (containerRef.current) {
-      observer.observe(containerRef.current);
-    }
-
-    return () => observer.disconnect();
-  }, []);
-
-  // Fast early returns - no computation needed
-  if (loading) {
-    return <LoadingSkeleton />;
-  }
-
-  if (!measurements || measurements.length === 0) {
-    return <EmptyState onRegisterClick={onRegisterClick} />;
-  }
-
-  // Memoize all expensive computations
   // Em dispositivos fracos, limita a 10 pontos
   const maxDataPoints = isLowEndDevice ? 10 : 14;
-  
+
+  // ALL HOOKS MUST BE CALLED BEFORE ANY EARLY RETURNS
+  // Memoize all expensive computations
   const { chartData, minWeight, maxWeight, lastWeight, change } = useMemo(() => {
+    if (!measurements || measurements.length === 0) {
+      return {
+        chartData: [],
+        minWeight: 0,
+        maxWeight: 0,
+        lastWeight: 0,
+        change: 0
+      };
+    }
+
     // Prepare chart data - últimos N entries
     const data = measurements
       .slice(0, maxDataPoints)
@@ -187,8 +170,36 @@ export const CleanEvolutionChart: React.FC<CleanEvolutionChartProps> = memo(({
     };
   }, [measurements, maxDataPoints]);
 
+  // Intersection Observer para lazy load do gráfico
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.1, rootMargin: '50px' }
+    );
+
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
   // Altura responsiva - menor em mobile e dispositivos fracos
   const chartHeight = isLowEndDevice ? 'h-28' : 'h-36 sm:h-44';
+
+  // Early returns AFTER all hooks
+  if (loading) {
+    return <LoadingSkeleton />;
+  }
+
+  if (!measurements || measurements.length === 0) {
+    return <EmptyState onRegisterClick={onRegisterClick} />;
+  }
 
   return (
     <div
