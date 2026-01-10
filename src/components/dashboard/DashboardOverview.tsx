@@ -1,5 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect, useRef, memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useWeightMeasurement } from '@/hooks/useWeightMeasurement';
 import { supabase } from '@/integrations/supabase/client';
