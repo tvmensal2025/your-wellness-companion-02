@@ -22,7 +22,7 @@ export default defineConfig(({ mode }) => ({
     minify: 'esbuild',
     cssMinify: true,
     cssCodeSplit: true,
-    chunkSizeWarningLimit: 500,
+    chunkSizeWarningLimit: 300, // Reduzido para alertar bundles grandes
     rollupOptions: {
       output: {
         manualChunks: {

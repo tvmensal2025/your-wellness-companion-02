@@ -1,11 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { useLocation } from 'react-router-dom';
-import HealthChatBot from './HealthChatBot';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
-import { MessageCircle } from 'lucide-react';
+import { MessageCircle, Loader2 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useActiveSection } from '@/contexts/ActiveSectionContext';
+
+// Lazy load do HealthChatBot - só carrega quando usuário abre o chat
+// Economiza ~800 linhas de código no bundle inicial
+const HealthChatBot = lazy(() => import('./HealthChatBot'));
+
+// Loading indicator minimalista
+const ChatLoadingIndicator = () => (
+  <div className="fixed bottom-20 right-4 z-50 bg-card rounded-2xl shadow-xl p-4 flex items-center gap-2 lg:bottom-4">
+    <Loader2 className="w-5 h-5 animate-spin text-primary" />
+    <span className="text-sm text-muted-foreground">Carregando Sofia...</span>
+  </div>
+);
 
 const HIDDEN_ROUTES = [
   '/sofia',
@@ -89,7 +100,12 @@ const SofiaFloatingButton: React.FC = () => {
     );
   }
 
-  return <HealthChatBot user={user} onHide={handleHide} />;
+  // Lazy load com Suspense - só monta o chat quando visível
+  return (
+    <Suspense fallback={<ChatLoadingIndicator />}>
+      <HealthChatBot user={user} onHide={handleHide} />
+    </Suspense>
+  );
 };
 
 export default SofiaFloatingButton;
