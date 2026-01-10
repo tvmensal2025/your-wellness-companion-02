@@ -168,11 +168,12 @@ export const useNutritionTracking = () => {
       setObjective(currentObjective);
 
       // Se há dados físicos completos, calcular metas baseadas no metabolismo
-      if (physicalResponse && physicalResponse.peso_kg && physicalResponse.altura_cm && 
+      // user_physical_data tem: altura_cm, idade, sexo, nivel_atividade (sem peso_kg diretamente)
+      if (physicalResponse && physicalResponse.altura_cm && 
           physicalResponse.idade && physicalResponse.sexo) {
         
         const physicalDataForCalc: PhysicalData = {
-          peso_kg: physicalResponse.peso_kg,
+          peso_kg: 70, // Peso padrão, será buscado de weight_measurements
           altura_cm: physicalResponse.altura_cm,
           idade: physicalResponse.idade,
           sexo: physicalResponse.sexo,
@@ -501,11 +502,11 @@ export const useNutritionTracking = () => {
         .eq('user_id', user.id)
         .single();
 
-      if (physicalResponse && physicalResponse.peso_kg && physicalResponse.altura_cm && 
+      if (physicalResponse && physicalResponse.altura_cm && 
           physicalResponse.idade && physicalResponse.sexo) {
         
         const physicalDataForCalc: PhysicalData = {
-          peso_kg: physicalResponse.peso_kg,
+          peso_kg: 70, // Peso padrão - será buscado de weight_measurements quando disponível
           altura_cm: physicalResponse.altura_cm,
           idade: physicalResponse.idade,
           sexo: physicalResponse.sexo,

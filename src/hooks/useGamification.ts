@@ -146,19 +146,20 @@ export const useGamification = () => {
       // Converter desafios do banco para o formato esperado
       const dailyChallenges: DailyChallenge[] = challenges?.map(challenge => {
         const participation = participations?.find(p => p.challenge_id === challenge.id);
+        const difficultyValue = challenge.difficulty as 'easy' | 'medium' | 'hard';
         return {
           id: challenge.id,
           title: challenge.title,
           description: challenge.description || '',
           type: challenge.is_group_challenge ? 'community' : 'individual',
-          difficulty: challenge.difficulty,
-          category: challenge.category || 'Geral',
+          difficulty: ['easy', 'medium', 'hard'].includes(difficultyValue) ? difficultyValue : 'medium',
+          category: challenge.challenge_type || 'Geral',
           target_value: 100,
           current: participation?.progress || 0,
           unit: 'progresso',
           xp_reward: challenge.points_reward || 50,
           expiresAt: challenge.end_date ? new Date(challenge.end_date) : new Date(Date.now() + 24 * 60 * 60 * 1000),
-          completed: participation?.status === 'completed'
+          completed: participation?.is_completed || participation?.completed || false
         };
       }) || [];
 

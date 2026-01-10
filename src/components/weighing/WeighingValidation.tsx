@@ -103,16 +103,17 @@ const WeighingValidation: React.FC = () => {
         }
       }
 
-      // Verificar função de relatório
+      // Verificar função de relatório - usar consulta direta em vez de RPC
       try {
-        const { data: functionTest, error: functionError } = await supabase
+        // A função pode não existir no types, testar existência
+        const { error: functionError } = await (supabase as any)
           .rpc('generate_weighing_report', { measurement_id: '00000000-0000-0000-0000-000000000000' });
 
         // Se chegou até aqui, a função existe (mesmo que retorne erro por ID inválido)
         results.push({
-          isValid: true,
-          message: 'Função de relatório disponível',
-          type: 'success'
+          isValid: !functionError || functionError.code === 'PGRST116',
+          message: functionError?.code === 'PGRST116' ? 'Função de relatório disponível' : (functionError?.message || 'Função de relatório verificada'),
+          type: functionError && functionError.code !== 'PGRST116' ? 'warning' : 'success'
         });
       } catch (error) {
         results.push({

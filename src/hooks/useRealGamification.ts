@@ -38,6 +38,7 @@ export const useRealGamification = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return [];
 
+      // sessions table has: title, description, content (not session_data)
       const { data, error } = await supabase
         .from('user_sessions')
         .select(`
@@ -46,7 +47,7 @@ export const useRealGamification = () => {
             id,
             title,
             description,
-            session_data
+            content
           )
         `)
         .eq('user_id', user.id)
@@ -57,14 +58,14 @@ export const useRealGamification = () => {
         return [];
       }
 
-      return data?.map(userSession => ({
+      return data?.map((userSession: any) => ({
         id: userSession.session_id,
         title: userSession.sessions?.title || 'Sessão',
         description: userSession.sessions?.description || '',
         status: userSession.status as 'pending' | 'in_progress' | 'completed',
         progress: userSession.progress || 0,
         assigned_at: userSession.assigned_at,
-        session_data: userSession.sessions?.session_data
+        session_data: userSession.sessions?.content
       })) || [];
     }
   });
@@ -87,7 +88,13 @@ export const useRealGamification = () => {
         return [];
       }
 
-      return data || [];
+      // Map data to ensure status is properly typed
+      return (data || []).map((goal: any) => ({
+        ...goal,
+        status: ['pendente', 'aprovada', 'rejeitada', 'concluida'].includes(goal.status) 
+          ? goal.status 
+          : 'pendente'
+      })) as UserGoal[];
     }
   });
 

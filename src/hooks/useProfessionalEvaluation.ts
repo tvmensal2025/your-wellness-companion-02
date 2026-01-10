@@ -94,9 +94,9 @@ export const useProfessionalEvaluation = () => {
 
       // Mapeia os dados dos profiles
       const combinedUsers = profiles?.map(profile => {
-        // Tenta extrair altura e outros dados do profile
-        const height = profile.height_cm || 170;
-        const birthDate = profile.birth_date || profile.date_of_birth || '1990-01-01';
+        // Tenta extrair altura e outros dados do profile (profiles tem: height, birth_date, gender)
+        const height = profile.height || 170;
+        const birthDate = profile.birth_date || '1990-01-01';
         const gender = profile.gender || 'M';
         
         return {
