@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect, memo, useMemo, useCallback } from 'react';
 import { Lightbulb, AlertTriangle, ChevronRight, RefreshCw, Heart, Scale, Apple, Droplets, Moon, Activity } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -132,7 +131,36 @@ const weightAlertTips: HealthTip[] = [
   },
 ];
 
-export const SofiaTipsCard: React.FC = () => {
+// Memoized tip content component
+const TipContent = memo<{ tip: HealthTip }>(({ tip }) => {
+  const IconComponent = categoryIcons[tip.category];
+  const gradientColor = categoryColors[tip.category];
+
+  return (
+    <div className="flex gap-3 sm:gap-4">
+      <div className={`flex-shrink-0 p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-gradient-to-br ${gradientColor} shadow-sm`}>
+        <IconComponent className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <h4 className="font-bold text-sm sm:text-base text-foreground mb-1 sm:mb-1.5 leading-tight">
+          {tip.title}
+        </h4>
+        <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed mb-2 sm:mb-3 line-clamp-3">
+          {tip.content}
+        </p>
+        {tip.source && (
+          <p className="text-[10px] sm:text-xs text-muted-foreground/70 italic truncate">
+            📚 {tip.source}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+});
+
+TipContent.displayName = 'TipContent';
+
+export const SofiaTipsCard: React.FC = memo(() => {
   const { data: userData } = useUserDataCache();
   const [currentTipIndex, setCurrentTipIndex] = useState(0);
   const [tips, setTips] = useState<HealthTip[]>([]);
@@ -152,7 +180,6 @@ export const SofiaTipsCard: React.FC = () => {
       }
 
       try {
-        // Buscar última medição de peso
         const { data: weightData } = await supabase
           .from('weight_measurements')
           .select('imc, risco_metabolico')
@@ -167,17 +194,14 @@ export const SofiaTipsCard: React.FC = () => {
           const bmi = weightData.imc;
           setUserBmi(bmi);
           
-          // Verificar se está acima do peso (IMC >= 25)
           if (bmi && bmi >= 25) {
             setIsOverweight(true);
-            // Adicionar alertas específicos para sobrepeso
             personalized = [...weightAlertTips, ...baseTips];
           } else {
             setIsOverweight(false);
           }
         }
         
-        // Embaralhar dicas mantendo alertas no topo
         const alerts = personalized.filter(t => t.priority === 'alert');
         const normal = personalized.filter(t => t.priority === 'normal');
         const shuffledNormal = normal.sort(() => Math.random() - 0.5);
@@ -194,16 +218,19 @@ export const SofiaTipsCard: React.FC = () => {
     loadUserHealthData();
   }, [userData.user]);
 
-  const nextTip = () => {
+  const nextTip = useCallback(() => {
     setCurrentTipIndex((prev) => (prev + 1) % tips.length);
-  };
+  }, [tips.length]);
 
-  const refreshTips = () => {
+  const refreshTips = useCallback(() => {
     const alerts = tips.filter(t => t.priority === 'alert');
     const normal = tips.filter(t => t.priority === 'normal').sort(() => Math.random() - 0.5);
     setTips([...alerts, ...normal]);
     setCurrentTipIndex(0);
-  };
+  }, [tips]);
+
+  const currentTip = tips[currentTipIndex];
+  const gradientColor = currentTip ? categoryColors[currentTip.category] : 'from-purple-500 to-pink-500';
 
   if (isLoading || tips.length === 0) {
     return (
@@ -217,16 +244,8 @@ export const SofiaTipsCard: React.FC = () => {
     );
   }
 
-  const currentTip = tips[currentTipIndex];
-  const IconComponent = categoryIcons[currentTip.category];
-  const gradientColor = categoryColors[currentTip.category];
-
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-    >
+    <div className="animate-fade-in">
       <Card className={`relative overflow-hidden ${
         currentTip.priority === 'alert' 
           ? 'border-orange-300 dark:border-orange-700 bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30' 
@@ -267,36 +286,10 @@ export const SofiaTipsCard: React.FC = () => {
           )}
         </div>
 
-        {/* Tip Content */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentTip.id}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.3 }}
-            className="px-4 sm:px-5 pb-4 sm:pb-5"
-          >
-            <div className="flex gap-3 sm:gap-4">
-              <div className={`flex-shrink-0 p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-gradient-to-br ${gradientColor} shadow-sm`}>
-                <IconComponent className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h4 className="font-bold text-sm sm:text-base text-foreground mb-1 sm:mb-1.5 leading-tight">
-                  {currentTip.title}
-                </h4>
-                <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed mb-2 sm:mb-3 line-clamp-3">
-                  {currentTip.content}
-                </p>
-                {currentTip.source && (
-                  <p className="text-[10px] sm:text-xs text-muted-foreground/70 italic truncate">
-                    📚 {currentTip.source}
-                  </p>
-                )}
-              </div>
-            </div>
-          </motion.div>
-        </AnimatePresence>
+        {/* Tip Content - CSS transition em vez de AnimatePresence */}
+        <div className="px-4 sm:px-5 pb-4 sm:pb-5 transition-opacity duration-200">
+          <TipContent tip={currentTip} />
+        </div>
 
         {/* Navigation */}
         <div className="px-4 sm:px-5 pb-4 sm:pb-5 flex items-center justify-between">
@@ -350,8 +343,10 @@ export const SofiaTipsCard: React.FC = () => {
           </div>
         )}
       </Card>
-    </motion.div>
+    </div>
   );
-};
+});
+
+SofiaTipsCard.displayName = 'SofiaTipsCard';
 
 export default SofiaTipsCard;

@@ -1,22 +1,17 @@
-import React from 'react';
-import { motion } from 'framer-motion';
+import React, { memo } from 'react';
 import { Scale, ChevronRight } from 'lucide-react';
 
 interface QuickActionsGridProps {
   onWeightClick: () => void;
 }
 
-export const QuickActionsGrid: React.FC<QuickActionsGridProps> = ({ onWeightClick }) => {
+export const QuickActionsGrid: React.FC<QuickActionsGridProps> = memo(({ onWeightClick }) => {
   return (
-    <div className="space-y-3 sm:space-y-4">
-      {/* Primary CTA - Registrar Peso */}
-      <motion.button
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.15 }}
-        whileTap={{ scale: 0.98 }}
+    <div className="space-y-3 sm:space-y-4 animate-fade-in">
+      {/* Primary CTA - Registrar Peso - CSS transitions em vez de framer-motion */}
+      <button
         onClick={onWeightClick}
-        className="w-full flex items-center justify-between p-4 sm:p-5 md:p-6 rounded-xl sm:rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 shadow-emerald-500/20 shadow-lg text-white"
+        className="w-full flex items-center justify-between p-4 sm:p-5 md:p-6 rounded-xl sm:rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 shadow-emerald-500/20 shadow-lg text-white transition-transform duration-150 active:scale-[0.98] hover:shadow-xl"
       >
         <div className="flex items-center gap-3 sm:gap-4 min-w-0">
           <div className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-xl sm:rounded-2xl bg-white/20 flex-shrink-0">
@@ -28,7 +23,9 @@ export const QuickActionsGrid: React.FC<QuickActionsGridProps> = ({ onWeightClic
           </div>
         </div>
         <ChevronRight className="h-5 w-5 sm:h-6 sm:w-6 text-white/80 flex-shrink-0" />
-      </motion.button>
+      </button>
     </div>
   );
-};
+});
+
+QuickActionsGrid.displayName = 'QuickActionsGrid';

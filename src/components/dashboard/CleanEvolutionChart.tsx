@@ -1,9 +1,8 @@
-import React, { useMemo, memo } from 'react';
-import { motion } from 'framer-motion';
+import React, { useMemo, memo, useState, useEffect, useRef } from 'react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
-import { TrendingUp } from 'lucide-react';
+import { useSafeAnimation } from '@/hooks/useSafeAnimation';
 
 interface WeightRecord {
   id: string;
@@ -47,46 +46,31 @@ const CustomTooltip = memo(({ active, payload }: any) => {
 
 CustomTooltip.displayName = 'CustomTooltip';
 
-// Empty state component - motivational and actionable
+// Empty state component - sem animações pesadas
 const EmptyState = memo(({ onRegisterClick }: { onRegisterClick?: () => void }) => (
-  <motion.div
-    initial={{ opacity: 0, y: 10 }}
-    animate={{ opacity: 1, y: 0 }}
-    className="rounded-2xl bg-card border border-border/50 p-5 sm:p-6"
-  >
+  <div className="rounded-2xl bg-card border border-border/50 p-5 sm:p-6 animate-fade-in">
     <h3 className="text-sm font-medium text-foreground mb-4">Evolução</h3>
     <div className="flex flex-col items-center justify-center gap-4 py-4">
-      {/* Ilustração de gráfico vazio */}
+      {/* Ilustração de gráfico vazio - SVG estático */}
       <svg 
         className="w-32 h-20 text-muted-foreground/30" 
         viewBox="0 0 120 60" 
         fill="none"
       >
-        {/* Grid lines */}
         <line x1="10" y1="10" x2="10" y2="50" stroke="currentColor" strokeWidth="1" strokeDasharray="2 2" />
         <line x1="10" y1="50" x2="110" y2="50" stroke="currentColor" strokeWidth="1" strokeDasharray="2 2" />
-        
-        {/* Dotted line representing potential chart */}
-        <motion.path
+        <path
           d="M 15 40 Q 30 35, 45 38 T 75 30 T 105 25"
           stroke="hsl(var(--primary))"
           strokeWidth="2"
           strokeDasharray="4 4"
           fill="none"
-          initial={{ pathLength: 0, opacity: 0 }}
-          animate={{ pathLength: 1, opacity: 0.5 }}
-          transition={{ duration: 1.5, ease: "easeOut" }}
+          opacity="0.5"
         />
-        
-        {/* Dots on the line */}
-        <motion.circle cx="15" cy="40" r="3" fill="hsl(var(--primary))" opacity="0.3" 
-          initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.3 }} />
-        <motion.circle cx="45" cy="38" r="3" fill="hsl(var(--primary))" opacity="0.3"
-          initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.5 }} />
-        <motion.circle cx="75" cy="30" r="3" fill="hsl(var(--primary))" opacity="0.3"
-          initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.7 }} />
-        <motion.circle cx="105" cy="25" r="3" fill="hsl(var(--primary))" opacity="0.5"
-          initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.9 }} />
+        <circle cx="15" cy="40" r="3" fill="hsl(var(--primary))" opacity="0.3" />
+        <circle cx="45" cy="38" r="3" fill="hsl(var(--primary))" opacity="0.3" />
+        <circle cx="75" cy="30" r="3" fill="hsl(var(--primary))" opacity="0.3" />
+        <circle cx="105" cy="25" r="3" fill="hsl(var(--primary))" opacity="0.5" />
       </svg>
 
       {/* Title */}
@@ -99,67 +83,28 @@ const EmptyState = memo(({ onRegisterClick }: { onRegisterClick?: () => void }) 
         </p>
       </div>
 
-      {/* CTA Button */}
+      {/* CTA Button - sem whileHover/whileTap */}
       {onRegisterClick && (
-        <motion.button
+        <button
           onClick={onRegisterClick}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          className="mt-2 px-5 py-2.5 bg-primary text-primary-foreground rounded-full font-medium text-sm flex items-center gap-2 shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-shadow"
+          className="mt-2 px-5 py-2.5 bg-primary text-primary-foreground rounded-full font-medium text-sm flex items-center gap-2 shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all hover:scale-[1.02] active:scale-[0.98]"
         >
           <span>⚖️</span> Registrar Primeiro Peso
-        </motion.button>
+        </button>
       )}
     </div>
-  </motion.div>
+  </div>
 ));
 
 EmptyState.displayName = 'EmptyState';
 
-// Loading skeleton - elegant animated state
+// Loading skeleton - sem animações motion
 const LoadingSkeleton = memo(() => (
-  <motion.div
-    initial={{ opacity: 0 }}
-    animate={{ opacity: 1 }}
-    className="rounded-2xl bg-card border border-border/50 p-5"
-  >
+  <div className="rounded-2xl bg-card border border-border/50 p-5 animate-fade-in">
     <h3 className="text-sm font-medium text-foreground mb-4">Evolução</h3>
     
     <div className="flex flex-col items-center justify-center h-32 gap-3">
-      {/* Animated chart line */}
-      <svg className="w-28 h-16" viewBox="0 0 100 50">
-        <motion.path
-          d="M 5 40 Q 25 25, 50 32 T 95 15"
-          stroke="hsl(var(--primary))"
-          strokeWidth="2.5"
-          fill="none"
-          strokeLinecap="round"
-          initial={{ pathLength: 0, opacity: 0.3 }}
-          animate={{ 
-            pathLength: [0, 1, 0],
-            opacity: [0.3, 0.7, 0.3]
-          }}
-          transition={{ 
-            duration: 2,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-        />
-        {/* Animated dots */}
-        <motion.circle 
-          cx="50" cy="32" r="3" 
-          fill="hsl(var(--primary))"
-          animate={{ opacity: [0.3, 0.7, 0.3] }}
-          transition={{ duration: 1.5, repeat: Infinity }}
-        />
-        <motion.circle 
-          cx="95" cy="15" r="3" 
-          fill="hsl(var(--primary))"
-          animate={{ opacity: [0.4, 0.8, 0.4] }}
-          transition={{ duration: 1.5, repeat: Infinity, delay: 0.3 }}
-        />
-      </svg>
-      
+      <div className="w-28 h-16 bg-muted/20 rounded-lg animate-pulse" />
       <p className="text-sm text-muted-foreground">
         Carregando seus dados...
       </p>
@@ -171,7 +116,7 @@ const LoadingSkeleton = memo(() => (
         <div key={i} className="h-10 bg-muted/20 rounded-lg animate-pulse" />
       ))}
     </div>
-  </motion.div>
+  </div>
 ));
 
 LoadingSkeleton.displayName = 'LoadingSkeleton';
@@ -181,6 +126,29 @@ export const CleanEvolutionChart: React.FC<CleanEvolutionChartProps> = memo(({
   loading = false,
   onRegisterClick
 }) => {
+  const { shouldAnimate, isLowEndDevice } = useSafeAnimation();
+  const [isVisible, setIsVisible] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Intersection Observer para lazy load do gráfico
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.1, rootMargin: '50px' }
+    );
+
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
   // Fast early returns - no computation needed
   if (loading) {
     return <LoadingSkeleton />;
@@ -191,10 +159,13 @@ export const CleanEvolutionChart: React.FC<CleanEvolutionChartProps> = memo(({
   }
 
   // Memoize all expensive computations
+  // Em dispositivos fracos, limita a 10 pontos
+  const maxDataPoints = isLowEndDevice ? 10 : 14;
+  
   const { chartData, minWeight, maxWeight, lastWeight, change } = useMemo(() => {
-    // Prepare chart data - last 14 entries
+    // Prepare chart data - últimos N entries
     const data = measurements
-      .slice(0, 14)
+      .slice(0, maxDataPoints)
       .reverse()
       .map(m => ({
         date: format(new Date(m.measurement_date || m.created_at), 'dd/MM', { locale: ptBR }),
@@ -214,14 +185,15 @@ export const CleanEvolutionChart: React.FC<CleanEvolutionChartProps> = memo(({
       lastWeight: last,
       change: last - first
     };
-  }, [measurements]);
+  }, [measurements, maxDataPoints]);
+
+  // Altura responsiva - menor em mobile e dispositivos fracos
+  const chartHeight = isLowEndDevice ? 'h-28' : 'h-36 sm:h-44';
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.1 }}
-      className="rounded-xl sm:rounded-2xl bg-card border border-border/50 overflow-hidden"
+    <div
+      ref={containerRef}
+      className="rounded-xl sm:rounded-2xl bg-card border border-border/50 overflow-hidden animate-fade-in"
     >
       {/* Header */}
       <div className="px-4 sm:px-5 pt-4 sm:pt-5 pb-2 sm:pb-3 flex items-center justify-between">
@@ -239,49 +211,55 @@ export const CleanEvolutionChart: React.FC<CleanEvolutionChartProps> = memo(({
         </div>
       </div>
 
-      {/* Chart - altura responsiva */}
-      <div className="h-36 sm:h-44 px-2 sm:px-3">
-        <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={chartData} margin={{ top: 5, right: 5, left: -30, bottom: 0 }}>
-            <defs>
-              <linearGradient id="cleanGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
-                <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0} />
-              </linearGradient>
-            </defs>
-            <XAxis 
-              dataKey="date" 
-              axisLine={false}
-              tickLine={false}
-              tick={{ fontSize: 9, fill: 'hsl(var(--muted-foreground))' }}
-              dy={5}
-              interval="preserveStartEnd"
-            />
-            <YAxis 
-              domain={[minWeight - 0.5, maxWeight + 0.5]}
-              axisLine={false}
-              tickLine={false}
-              tick={{ fontSize: 9, fill: 'hsl(var(--muted-foreground))' }}
-              width={30}
-            />
-            <Tooltip content={<CustomTooltip />} />
-            <Area
-              type="monotone"
-              dataKey="weight"
-              stroke="hsl(var(--primary))"
-              strokeWidth={2}
-              fill="url(#cleanGradient)"
-              dot={false}
-              activeDot={{
-                r: 3,
-                stroke: 'hsl(var(--primary))',
-                strokeWidth: 2,
-                fill: 'hsl(var(--background))'
-              }}
-              isAnimationActive={false}
-            />
-          </AreaChart>
-        </ResponsiveContainer>
+      {/* Chart - lazy loaded e altura responsiva */}
+      <div className={`${chartHeight} px-2 sm:px-3`}>
+        {isVisible ? (
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={chartData} margin={{ top: 5, right: 5, left: -30, bottom: 0 }}>
+              <defs>
+                <linearGradient id="cleanGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                  <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <XAxis 
+                dataKey="date" 
+                axisLine={false}
+                tickLine={false}
+                tick={{ fontSize: 9, fill: 'hsl(var(--muted-foreground))' }}
+                dy={5}
+                interval="preserveStartEnd"
+              />
+              <YAxis 
+                domain={[minWeight - 0.5, maxWeight + 0.5]}
+                axisLine={false}
+                tickLine={false}
+                tick={{ fontSize: 9, fill: 'hsl(var(--muted-foreground))' }}
+                width={30}
+              />
+              <Tooltip content={<CustomTooltip />} />
+              <Area
+                type="monotone"
+                dataKey="weight"
+                stroke="hsl(var(--primary))"
+                strokeWidth={2}
+                fill="url(#cleanGradient)"
+                dot={false}
+                activeDot={{
+                  r: 3,
+                  stroke: 'hsl(var(--primary))',
+                  strokeWidth: 2,
+                  fill: 'hsl(var(--background))'
+                }}
+                // Desabilita animações em dispositivos fracos
+                isAnimationActive={shouldAnimate}
+                animationDuration={shouldAnimate ? 500 : 0}
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        ) : (
+          <div className="w-full h-full bg-muted/10 rounded-lg animate-pulse" />
+        )}
       </div>
 
       {/* Footer stats - mais compacto */}
@@ -290,7 +268,7 @@ export const CleanEvolutionChart: React.FC<CleanEvolutionChartProps> = memo(({
         <MiniStat label="Atual" value={`${lastWeight.toFixed(1)}kg`} highlight />
         <MiniStat label="Máximo" value={`${maxWeight.toFixed(1)}kg`} />
       </div>
-    </motion.div>
+    </div>
   );
 });
 
