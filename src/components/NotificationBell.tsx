@@ -29,32 +29,25 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ userId: prop
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [userId, setUserId] = useState<string | null>(propUserId || null);
-  const hasInitializedRef = useRef(false);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const lastFetchRef = useRef<number>(0);
 
-  // Get userId only if not provided via props
+  // Sync userId from props (avoid calling getUser if prop is provided)
   useEffect(() => {
     if (propUserId) {
       setUserId(propUserId);
-      return;
     }
-
-    if (hasInitializedRef.current) return;
-    hasInitializedRef.current = true;
-
-    const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        setUserId(user.id);
-      }
-    };
-    getUser();
   }, [propUserId]);
 
   useEffect(() => {
     if (!userId) return;
 
     const fetchNotifications = async () => {
+      // Throttle: skip if fetched less than 1s ago
+      const now = Date.now();
+      if (now - lastFetchRef.current < 1000) return;
+      lastFetchRef.current = now;
+
       const { data, error } = await supabase
         .from('notifications')
         .select('*')
@@ -75,13 +68,25 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ userId: prop
       supabase.removeChannel(channelRef.current);
     }
 
-    // Subscribe to realtime updates
+    // Subscribe to realtime updates - only INSERT and UPDATE (not DELETE or *)
     channelRef.current = supabase
       .channel(`notifications-${userId}`)
       .on(
         'postgres_changes',
         {
-          event: '*',
+          event: 'INSERT',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${userId}`,
+        },
+        () => {
+          fetchNotifications();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
           schema: 'public',
           table: 'notifications',
           filter: `user_id=eq.${userId}`,
