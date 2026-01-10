@@ -8,6 +8,7 @@ export interface UserInfo {
 
 /**
  * Find user by phone number
+ * Busca primeiro em profiles, depois tenta criar profile se usuário existir em auth.users
  */
 export async function findUserByPhone(
   supabase: SupabaseClient,
@@ -18,6 +19,7 @@ export async function findUserByPhone(
     cleanPhone = cleanPhone.substring(2);
   }
 
+  // 1. Buscar em profiles
   const { data, error } = await supabase
     .from("profiles")
     .select("user_id, email, phone, full_name")
@@ -31,6 +33,7 @@ export async function findUserByPhone(
   }
 
   if (data) {
+    console.log(`[UserService] Usuário encontrado: ${data.full_name || data.email}`);
     return { 
       id: data.user_id, 
       email: data.email,
@@ -38,7 +41,52 @@ export async function findUserByPhone(
     };
   }
 
+  // 2. Se não encontrou em profiles, tentar criar profile a partir de auth.users
+  console.log(`[UserService] Usuário não encontrado em profiles, tentando sincronizar...`);
+  
+  const syncedUser = await syncOrphanUser(supabase, cleanPhone, phone);
+  if (syncedUser) {
+    console.log(`[UserService] Usuário sincronizado com sucesso: ${syncedUser.full_name || syncedUser.email}`);
+    return syncedUser;
+  }
+
+  console.log(`[UserService] Usuário não encontrado em nenhuma fonte: ${phone}`);
   return null;
+}
+
+/**
+ * Tenta sincronizar um usuário que existe em auth.users mas não em profiles
+ */
+async function syncOrphanUser(
+  supabase: SupabaseClient,
+  cleanPhone: string,
+  originalPhone: string
+): Promise<UserInfo | null> {
+  try {
+    // Buscar usuário órfão usando RPC (função no banco que pode acessar auth.users)
+    const { data: orphanData, error: orphanError } = await supabase.rpc(
+      'find_and_sync_orphan_user_by_phone',
+      { p_phone: cleanPhone }
+    );
+
+    if (orphanError) {
+      console.error("[UserService] Erro ao buscar usuário órfão:", orphanError);
+      return null;
+    }
+
+    if (orphanData && orphanData.user_id) {
+      return {
+        id: orphanData.user_id,
+        email: orphanData.email,
+        full_name: orphanData.full_name || undefined,
+      };
+    }
+
+    return null;
+  } catch (err) {
+    console.error("[UserService] Exceção ao sincronizar usuário órfão:", err);
+    return null;
+  }
 }
 
 /**
