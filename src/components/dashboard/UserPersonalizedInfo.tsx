@@ -1,8 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { 
   User, 
   Target, 
@@ -12,7 +10,6 @@ import {
   TrendingUp, 
   TrendingDown,
   CheckCircle,
-  Clock,
   Award
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -90,18 +87,9 @@ export const UserPersonalizedInfo: React.FC<UserPersonalizedInfoProps> = ({ user
         .order('created_at', { ascending: false })
         .limit(3);
 
-      // Missões diárias
-      const { data: dailyMissions } = await supabase
-        .from('daily_missions')
-        .select('*')
-        .eq('user_id', userId)
-        .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
-        .order('created_at', { ascending: false })
-        .limit(10);
-
-      // Histórico de conversas recentes
+      // Conversas recentes (usando chat_conversations que existe no types)
       const { data: recentConversations } = await supabase
-        .from('sofia_conversations')
+        .from('chat_conversations')
         .select('*')
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
@@ -112,11 +100,11 @@ export const UserPersonalizedInfo: React.FC<UserPersonalizedInfoProps> = ({ user
         email: userProfile?.email || '',
         city: userProfile?.city || '',
         currentWeight: healthData?.[0]?.peso_kg || null,
-        weightTrend: healthData?.length >= 2 ? 
-          (healthData[0].peso_kg - healthData[1].peso_kg) : 0,
+        weightTrend: healthData?.length && healthData.length >= 2 ? 
+          ((healthData[0]?.peso_kg || 0) - (healthData[1]?.peso_kg || 0)) : 0,
         activeChallenges: activeChallenges?.map(c => ({
           title: c.title,
-          description: c.description,
+          description: c.description || '',
           progress: c.challenge_participations?.[0]?.progress || 0,
           isCompleted: c.challenge_participations?.[0]?.is_completed || false
         })) || [],
@@ -127,10 +115,9 @@ export const UserPersonalizedInfo: React.FC<UserPersonalizedInfoProps> = ({ user
           current_value: g.current_value || 0,
           deadline: g.target_date || 'Sem prazo'
         })) || [],
-        recentMissions: dailyMissions?.filter(m => m.is_completed).length || 0,
-        totalMissions: dailyMissions?.length || 0,
-        lastConversation: recentConversations?.[0]?.sofia_response ? 
-          recentConversations[0].sofia_response.slice(0, 100) : ''
+        recentMissions: 0, // Removido daily_missions que não existe
+        totalMissions: 0,
+        lastConversation: recentConversations?.[0]?.title || ''
       };
 
       setUserData(data);
@@ -274,7 +261,7 @@ export const UserPersonalizedInfo: React.FC<UserPersonalizedInfoProps> = ({ user
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div 
                     className="bg-gradient-to-r from-green-500 to-emerald-500 h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${(goal.current_value / goal.target_value) * 100}%` }}
+                    style={{ width: `${goal.target_value > 0 ? (goal.current_value / goal.target_value) * 100 : 0}%` }}
                   ></div>
                 </div>
               </div>
@@ -288,7 +275,7 @@ export const UserPersonalizedInfo: React.FC<UserPersonalizedInfoProps> = ({ user
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Calendar className="h-5 w-5" />
-            Missões Esta Semana
+            Atividade Recente
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -296,23 +283,13 @@ export const UserPersonalizedInfo: React.FC<UserPersonalizedInfoProps> = ({ user
             <div className="flex items-center gap-2">
               <CheckCircle className="h-5 w-5 text-green-500" />
               <span className="text-sm font-medium">
-                {userData.recentMissions} de {userData.totalMissions} completadas
+                {userData.activeChallenges.filter(c => c.isCompleted).length} desafios concluídos
               </span>
             </div>
             <Badge variant="outline" className="bg-green-100 text-green-700">
-              {userData.totalMissions > 0 ? 
-                Math.round((userData.recentMissions / userData.totalMissions) * 100) : 0}%
+              Ativo
             </Badge>
           </div>
-          
-          {userData.totalMissions > 0 && (
-            <div className="mt-3 w-full bg-gray-200 rounded-full h-2">
-              <div 
-                className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full transition-all duration-300"
-                style={{ width: `${(userData.recentMissions / userData.totalMissions) * 100}%` }}
-              ></div>
-            </div>
-          )}
         </CardContent>
       </Card>
 
@@ -336,4 +313,4 @@ export const UserPersonalizedInfo: React.FC<UserPersonalizedInfoProps> = ({ user
       )}
     </div>
   );
-}; 
+};

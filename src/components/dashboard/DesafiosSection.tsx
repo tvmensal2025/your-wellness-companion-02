@@ -20,7 +20,7 @@ interface Desafio {
   id: string;
   title: string;
   description: string;
-  category: string;
+  challenge_type?: string; // Coluna real do banco
   difficulty: string;
   duration_days: number;
   points_reward: number;
@@ -111,7 +111,7 @@ const DesafiosSection: React.FC<DesafiosSectionProps> = ({
     const insertPayload = {
       title: desafio.title,
       description: desafio.description,
-      challenge_type: mapCategoryToDb(desafio.category), // Usar challenge_type em vez de category
+      challenge_type: mapCategoryToDb(desafio.challenge_type), // Usar challenge_type em vez de category
       difficulty: desafio.difficulty,
       duration_days: desafio.duration_days,
       points_reward: desafio.points_reward,
@@ -281,7 +281,7 @@ const DesafiosSection: React.FC<DesafiosSectionProps> = ({
           id: desafio.id,
           title: desafio.title,
           description: desafio.description,
-          category: desafio.category,
+          challenge_type: desafio.challenge_type, // Usar coluna real
           difficulty: desafio.difficulty,
           duration_days: desafio.duration_days,
           points_reward: desafio.points_reward,
@@ -310,7 +310,7 @@ const DesafiosSection: React.FC<DesafiosSectionProps> = ({
           id: desafio.id,
           title: desafio.title,
           description: desafio.description,
-          category: desafio.category,
+          challenge_type: desafio.challenge_type, // Usar coluna real
           difficulty: desafio.difficulty,
           duration_days: desafio.duration_days,
           points_reward: desafio.points_reward,

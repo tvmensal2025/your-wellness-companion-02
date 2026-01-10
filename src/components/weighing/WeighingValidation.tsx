@@ -49,16 +49,17 @@ const WeighingValidation: React.FC = () => {
           message: `Erro ao verificar dados físicos: ${physicalError.message}`,
           type: 'warning'
         });
-      } else if (!physicalData) {
+      } else if (!physicalData || physicalData.length === 0) {
         results.push({
           isValid: true,
           message: 'Dados físicos serão criados automaticamente na primeira pesagem',
           type: 'info'
         });
       } else {
+        const firstRecord = physicalData[0];
         results.push({
           isValid: true,
-          message: `Dados físicos válidos: ${physicalData.altura_cm}cm, ${physicalData.idade} anos, ${physicalData.sexo}`,
+          message: `Dados físicos válidos: ${firstRecord?.altura_cm ?? 'N/A'}cm, ${firstRecord?.idade ?? 'N/A'} anos, ${firstRecord?.sexo ?? 'N/A'}`,
           type: 'success'
         });
       }

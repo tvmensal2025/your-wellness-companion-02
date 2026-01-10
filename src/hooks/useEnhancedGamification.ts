@@ -69,13 +69,13 @@ export const useEnhancedGamification = () => {
           id: challenge.id,
           title: challenge.title,
           description: challenge.description || '',
-          challenge_type: challenge.category || 'general',
-          difficulty: challenge.difficulty,
+          challenge_type: challenge.challenge_type || 'general',
+          difficulty: challenge.difficulty || 'medium',
           target_value: 100,
           xp_reward: challenge.points_reward || 50,
-          category: challenge.category || 'general',
+          category: challenge.challenge_type || 'general',
           progress: participation?.progress || 0,
-          is_completed: participation?.status === 'completed',
+          is_completed: participation?.is_completed || false,
           expires_at: challenge.end_date ? new Date(challenge.end_date) : new Date(Date.now() + (24 * 60 * 60 * 1000))
         };
       }) || [];

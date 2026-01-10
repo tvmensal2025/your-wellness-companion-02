@@ -9,6 +9,23 @@ interface FoodItem {
   state?: string;
 }
 
+// Interface que mapeia para o schema real da tabela food_analysis
+interface FoodAnalysisRecord {
+  id: string;
+  created_at: string;
+  user_id: string;
+  meal_type: string | null;
+  food_items: string[] | null;
+  image_url: string | null;
+  total_calories: number | null;
+  total_proteins: number | null;
+  total_carbs: number | null;
+  total_fats: number | null;
+  nutrition_analysis: any;
+  recommendations: string | null;
+  health_rating: number | null;
+}
+
 interface NutritionAnalysis {
   id: string;
   analysis_date: string;
@@ -44,7 +61,29 @@ export const useNutritionHistory = () => {
 
       if (error) throw error;
 
-      setAnalyses(data || []);
+      // Mapear dados do banco para a interface NutritionAnalysis
+      const mappedData: NutritionAnalysis[] = (data || []).map((record: FoodAnalysisRecord) => ({
+        id: record.id,
+        analysis_date: record.created_at?.split('T')[0] || '',
+        analysis_time: record.created_at?.split('T')[1]?.substring(0, 5) || '',
+        meal_type: record.meal_type || '',
+        food_items: Array.isArray(record.food_items) 
+          ? record.food_items.map(item => typeof item === 'string' 
+              ? { name: item, quantity: 0, unit: 'g' } 
+              : item)
+          : [],
+        total_calories: record.total_calories || 0,
+        total_protein: record.total_proteins || 0,
+        total_carbs: record.total_carbs || 0,
+        total_fat: record.total_fats || 0,
+        total_fiber: 0,
+        total_sodium: 0,
+        nutrition_summary: record.nutrition_analysis,
+        sofia_analysis: record.recommendations || '',
+        created_at: record.created_at
+      }));
+
+      setAnalyses(mappedData);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -60,12 +99,35 @@ export const useNutritionHistory = () => {
       const { data, error } = await supabase
         .from('food_analysis')
         .select('*')
-        .eq('analysis_date', date)
-        .order('analysis_time', { ascending: false });
+        .gte('created_at', `${date}T00:00:00`)
+        .lt('created_at', `${date}T23:59:59`)
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
 
-      return data || [];
+      // Mapear dados do banco para a interface NutritionAnalysis
+      const mappedData: NutritionAnalysis[] = (data || []).map((record: FoodAnalysisRecord) => ({
+        id: record.id,
+        analysis_date: record.created_at?.split('T')[0] || '',
+        analysis_time: record.created_at?.split('T')[1]?.substring(0, 5) || '',
+        meal_type: record.meal_type || '',
+        food_items: Array.isArray(record.food_items) 
+          ? record.food_items.map(item => typeof item === 'string' 
+              ? { name: item, quantity: 0, unit: 'g' } 
+              : item)
+          : [],
+        total_calories: record.total_calories || 0,
+        total_protein: record.total_proteins || 0,
+        total_carbs: record.total_carbs || 0,
+        total_fat: record.total_fats || 0,
+        total_fiber: 0,
+        total_sodium: 0,
+        nutrition_summary: record.nutrition_analysis,
+        sofia_analysis: record.recommendations || '',
+        created_at: record.created_at
+      }));
+
+      return mappedData;
     } catch (err: any) {
       setError(err.message);
       return [];

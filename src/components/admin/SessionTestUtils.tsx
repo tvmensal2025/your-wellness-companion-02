@@ -76,9 +76,14 @@ export const SessionTestUtils: React.FC = () => {
         return;
       }
 
-      const result = assignResult as { success: boolean; message?: string; error?: string };
+      // Type guard para o resultado
+      const result = assignResult as unknown as { success: boolean; message?: string; error?: string } | boolean | null;
       
-      if (result?.success) {
+      // Verificar se é boolean ou objeto
+      const isSuccess = typeof result === 'boolean' ? result : result?.success;
+      const errorMessage = typeof result === 'object' && result ? result?.error : undefined;
+      
+      if (isSuccess) {
         toast({
           title: "✅ Teste Bem-sucedido!",
           description: `Sessão "${session.title}" atribuída com sucesso!`,
@@ -86,7 +91,7 @@ export const SessionTestUtils: React.FC = () => {
       } else {
         toast({
           title: "⚠️ Teste com Aviso",
-          description: result?.error || "Resultado inesperado",
+          description: errorMessage || "Resultado inesperado",
           variant: "destructive"
         });
       }

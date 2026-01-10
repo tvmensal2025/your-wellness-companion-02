@@ -93,15 +93,10 @@ export const useAdminDashboard = () => {
   const { data: pendingGoals, isLoading: goalsLoading } = useQuery({
     queryKey: ['pending-goals'],
     queryFn: async (): Promise<PendingGoal[]> => {
+      // Buscar metas pendentes (sem join que não existe)
       const { data, error } = await supabase
         .from('user_goals')
-        .select(`
-          *,
-          profiles (
-            full_name,
-            email
-          )
-        `)
+        .select('*')
         .eq('status', 'pendente')
         .order('created_at', { ascending: false });
 
@@ -110,17 +105,33 @@ export const useAdminDashboard = () => {
         return [];
       }
 
-      return data?.map(goal => ({
-        id: goal.id,
-        title: goal.title,
-        description: goal.description,
-        category: goal.category,
-        user_name: goal.profiles?.full_name || 'Usuário',
-        user_email: goal.profiles?.email || '',
-        created_at: goal.created_at,
-        difficulty: goal.difficulty,
-        estimated_points: goal.estimated_points || 0
-      })) || [];
+      // Buscar perfis separadamente para os user_ids encontrados
+      const userIds = [...new Set(data?.map(g => g.user_id).filter(Boolean) || [])];
+      let profilesMap = new Map<string, { full_name: string | null; email: string | null }>();
+      
+      if (userIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('user_id, full_name, email')
+          .in('user_id', userIds);
+        
+        profiles?.forEach(p => profilesMap.set(p.user_id, p));
+      }
+
+      return data?.map(goal => {
+        const profile = profilesMap.get(goal.user_id);
+        return {
+          id: goal.id,
+          title: goal.title,
+          description: goal.description,
+          category: goal.category,
+          user_name: profile?.full_name || 'Usuário',
+          user_email: profile?.email || '',
+          created_at: goal.created_at,
+          difficulty: goal.difficulty,
+          estimated_points: goal.estimated_points || 0
+        };
+      }) || [];
     }
   });
 

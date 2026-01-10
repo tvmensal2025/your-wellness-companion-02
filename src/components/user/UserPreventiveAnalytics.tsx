@@ -87,17 +87,18 @@ const UserPreventiveAnalytics: React.FC = () => {
       if (error) throw error;
       
       // Mapear os dados do banco para o tipo correto
+      // Usar colunas existentes: risk_factors, recommendations em vez de analysis_data
       const mappedData: PreventiveAnalysis[] = (data || []).map(item => ({
         id: item.id,
         analysis_type: item.analysis_type as 'quinzenal' | 'mensal',
         analysis_date: item.created_at,
         dr_vital_analysis: 'Análise automática gerada',
-        risk_score: item.risk_score,
+        risk_score: item.risk_score ?? 0,
         risk_level: 'BAIXO' as const,
         health_risks: Array.isArray(item.risk_factors) ? item.risk_factors as string[] : [],
         positive_points: Array.isArray(item.recommendations) ? item.recommendations as string[] : [],
         urgent_warnings: [],
-        metrics: typeof item.analysis_data === 'object' && item.analysis_data ? item.analysis_data as any : {
+        metrics: {
           weight_trend: null,
           mission_compliance: '0',
           exercise_days: 0,
