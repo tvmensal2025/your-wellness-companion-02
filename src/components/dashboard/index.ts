@@ -4,8 +4,8 @@
  */
 
 // Core
-export { DashboardOverview } from './DashboardOverview';
-export { DailyMissions } from './DailyMissions';
+export { default as DashboardOverview } from './DashboardOverview';
+export { default as DailyMissions } from './DailyMissions';
 
 // Hero Cards
 export { AppleHealthHeroCard } from './AppleHealthHeroCard';
@@ -18,16 +18,16 @@ export { BodyEvolutionChart } from './BodyEvolutionChart';
 export { CleanEvolutionChart } from './CleanEvolutionChart';
 
 // Sections
-export { DesafiosSection } from './DesafiosSection';
-export { MedicalDocumentsSection } from './MedicalDocumentsSection';
+export { default as DesafiosSection } from './DesafiosSection';
+export { default as MedicalDocumentsSection } from './MedicalDocumentsSection';
 export { UserPersonalizedInfo } from './UserPersonalizedInfo';
 
 // Gamification
 export { CompactGamificationBar } from './CompactGamificationBar';
 
 // Course
-export { CoursePlatformNetflix } from './CoursePlatformNetflix';
+export { default as CoursePlatformNetflix } from './CoursePlatformNetflix';
 
 // Reports
-export { DidacticReportButton } from './DidacticReportButton';
-export { DrVitalAnalysis } from './DrVitalAnalysis';
+export { default as DidacticReportButton } from './DidacticReportButton';
+export { default as DrVitalAnalysis } from './DrVitalAnalysis';

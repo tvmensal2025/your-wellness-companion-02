@@ -8,27 +8,27 @@ export { AdminDashboard } from './AdminDashboard';
 export { AdminEditControls } from './AdminEditControls';
 
 // AI Control
-export { AIControlPanel } from './AIControlPanel';
-export { AIControlPanelUnified } from './AIControlPanelUnified';
+export { default as AIControlPanel } from './AIControlPanel';
+export { default as AIControlPanelUnified } from './AIControlPanelUnified';
 export { AIConfigTemplate } from './AIConfigTemplate';
 export { AIFunctionalityCard } from './AIFunctionalityCard';
-export { AITestPanel } from './AITestPanel';
+export { default as AITestPanel } from './AITestPanel';
 
 // Management
-export { AnamnesisManagement } from './AnamnesisManagement';
-export { ChallengeManagement } from './ChallengeManagement';
+export { default as AnamnesisManagement } from './AnamnesisManagement';
+export { default as ChallengeManagement } from './ChallengeManagement';
 export { CourseManagement } from './CourseManagement';
 export { CourseManagementNew } from './CourseManagementNew';
-export { SessionTemplates } from './SessionTemplates';
+export { default as SessionTemplates } from './SessionTemplates';
 
 // Configuration
-export { CompanyConfiguration } from './CompanyConfiguration';
+export { default as CompanyConfiguration } from './CompanyConfiguration';
 
 // Reports
-export { AdvancedReports } from './AdvancedReports';
+export { default as AdvancedReports } from './AdvancedReports';
 
 // Modals
-export { AnamnesisDetailModal } from './AnamnesisDetailModal';
+export { default as AnamnesisDetailModal } from './AnamnesisDetailModal';
 
 // Pages
-export { AcompanhamentoPage } from './AcompanhamentoPage';
+export { default as AcompanhamentoPage } from './AcompanhamentoPage';

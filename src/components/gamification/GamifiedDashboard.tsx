@@ -322,7 +322,7 @@ export const GamifiedDashboard = () => {
           <div>
             <h2 className="text-2xl font-bold mb-6">Sistema de Conquistas</h2>
             <BadgeSystem
-              badges={badges}
+              badges={badges as any}
               showProgress={true}
               layout="grid"
               animated={true}

@@ -53,6 +53,7 @@ interface CompactMealPlanModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   dayPlan: DayPlan;
+  title?: string;
 }
 
 const MEAL_CONFIG = {

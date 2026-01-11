@@ -319,3 +319,8 @@ export const SlotMachineLayout: React.FC = () => {
     </div>
   );
 };
+
+// Export para UltraCreativeLayoutsPreview
+export const UltraCreativeLayoutsPreview: React.FC = () => {
+  return <ChefKitchenLayout />;
+};
