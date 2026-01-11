@@ -4,12 +4,12 @@
  */
 
 // Core Chat
-export { SofiaChat } from './SofiaChat';
-export { SofiaConfirmationModal } from './SofiaConfirmationModal';
+export { default as SofiaChat } from './SofiaChat';
+export { default as SofiaConfirmationModal } from './SofiaConfirmationModal';
 
 // Missions & Challenges
-export { SofiaDailyMission } from './SofiaDailyMission';
-export { SofiaChallenges } from './SofiaChallenges';
+export { default as SofiaDailyMission } from './SofiaDailyMission';
+export { default as SofiaChallenges } from './SofiaChallenges';
 
 // Cards & Banners
 export { SofiaEmotionalBanner } from './SofiaEmotionalBanner';

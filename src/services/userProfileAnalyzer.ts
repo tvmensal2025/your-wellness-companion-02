@@ -304,9 +304,9 @@ export const analyzeUserProfile = async (userId: string): Promise<UserHealthProf
 
     // 8. Determinar objetivo principal
     const primaryGoal = mapGoalToType(
-      nutritionalGoals?.goal_type || 
+      String(nutritionalGoals?.goal_type || 
       anamnesis?.main_treatment_goals || 
-      anamnesis?.ideal_weight_goal
+      anamnesis?.ideal_weight_goal || '')
     );
 
     // 9. Extrair desafios principais
@@ -333,8 +333,8 @@ export const analyzeUserProfile = async (userId: string): Promise<UserHealthProf
       currentMedications,
       allergies,
       activityLevel: physicalData?.nivel_atividade || anamnesis?.physical_activity_frequency || 'moderado',
-      sleepHours: (anamnesis as any)?.sleep_hours || anamnesis?.sleep_quality_score || 7,
-      waterIntake: anamnesis?.water_intake || 2000,
+      sleepHours: Number((anamnesis as any)?.sleep_hours || anamnesis?.sleep_quality_score || 7),
+      waterIntake: Number(anamnesis?.water_intake || 2000),
       mainChallenges
     };
 

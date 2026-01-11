@@ -2796,6 +2796,7 @@ export type Database = {
           created_at: string
           key: string
           updated_at: string
+          view_mode: string | null
         }
         Insert: {
           banner_image_url?: string | null
@@ -2805,6 +2806,7 @@ export type Database = {
           created_at?: string
           key: string
           updated_at?: string
+          view_mode?: string | null
         }
         Update: {
           banner_image_url?: string | null
@@ -2814,6 +2816,7 @@ export type Database = {
           created_at?: string
           key?: string
           updated_at?: string
+          view_mode?: string | null
         }
         Relationships: []
       }

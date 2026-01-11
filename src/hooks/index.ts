@@ -36,7 +36,6 @@ export { useRealRanking } from './useRealRanking';
 
 // Exercise
 export { useExerciseProgram } from './useExerciseProgram';
-export { useExerciseRecommendation } from './useExerciseRecommendation';
 export { useExercisePreferences } from './useExercisePreferences';
 export { useWorkoutSound } from './useWorkoutSound';
 
@@ -49,7 +48,6 @@ export { useUserRestrictions } from './useUserRestrictions';
 export { useTrackingData } from './useTrackingData';
 
 // Sofia
-export { useSofiaChat } from './useSofiaChat';
 export { useSofiaAnalysis } from './useSofiaAnalysis';
 export { useSofiaProactive } from './useSofiaProactive';
 
@@ -64,5 +62,5 @@ export { usePointsConfig } from './usePointsConfig';
 
 // UI
 export { useToast } from './use-toast';
-export { useMobile } from './use-mobile';
+export { useIsMobile as useMobile } from './use-mobile';
 export { useSafeAnimation } from './useSafeAnimation';

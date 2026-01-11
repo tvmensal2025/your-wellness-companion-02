@@ -12,7 +12,7 @@ export { NutritionHistory } from './NutritionHistory';
 export { DailyFoodDiary } from './DailyFoodDiary';
 export { DailyMealsPanel } from './DailyMealsPanel';
 export { QuickMealEntry } from './QuickMealEntry';
-export { QuickPhotoCapture } from './QuickPhotoCapture';
+export { default as QuickPhotoCapture } from './QuickPhotoCapture';
 
 // Alerts
 export { FoodRestrictionAlert } from './FoodRestrictionAlert';
