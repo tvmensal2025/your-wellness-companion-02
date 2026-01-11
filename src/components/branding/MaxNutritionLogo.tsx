@@ -1,4 +1,5 @@
 import React from 'react';
+import { Logo } from '@/components/ui/logo';
 
 interface MaxNutritionLogoProps {
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
@@ -37,13 +38,7 @@ const MaxNutritionLogo: React.FC<MaxNutritionLogoProps> = ({
 
   return (
     <div className={`flex items-center gap-3 ${className}`}>
-      <div className="relative">
-        <img 
-          src="/images/maxnutrition-logo.png" 
-          alt="MaxNutrition" 
-          className={`${sizeClasses[size]} object-contain`}
-        />
-      </div>
+      <Logo className={`${sizeClasses[size]} object-contain`} />
       {showText && (
         <div>
           <h1 className={`font-bold ${textSizeClasses[size]} ${textColorClasses[variant]}`}>

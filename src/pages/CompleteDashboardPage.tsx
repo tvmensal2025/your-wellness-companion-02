@@ -23,7 +23,7 @@ import { MoreMenuSheet, MenuSection } from '@/components/navigation/MoreMenuShee
 
 // Lazy load heavy components for better performance
 const DashboardOverview = lazy(() => import('@/components/dashboard/DashboardOverview'));
-const DailyMissions = lazy(() => import('@/components/daily-missions/DailyMissionsFinal').then(m => ({ default: m.DailyMissionsFinal })));
+const DailyMissions = lazy(() => import('@/components/daily-missions/DailyMissionsLight').then(m => ({ default: m.DailyMissionsLight })));
 const CoursePlatformNetflix = lazy(() => import('@/components/dashboard/CoursePlatformNetflix'));
 const SessionsPage = lazy(() => import('@/components/SessionsPage'));
 const UserSessions = lazy(() => import('@/components/UserSessions'));
@@ -47,12 +47,11 @@ const WelcomeOnboardingModal = lazy(() => import('@/components/onboarding/Welcom
 import { SidebarProfile } from '@/components/sidebar/SidebarProfile';
 import { ProfileModal } from '@/components/sidebar/ProfileModal';
 
-// Lightweight loader component
-const SectionLoader = () => (
-  <div className="flex items-center justify-center min-h-[200px]">
-    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-  </div>
-);
+// Importar loader animado
+import { SectionLoader as AnimatedSectionLoader, AnimatedLoader } from '@/components/ui/animated-loader';
+
+// Lightweight loader component com animação
+const SectionLoader = () => <AnimatedSectionLoader text="Carregando..." />;
 
 // Core dashboard components
 import LockedMenuItem from '@/components/LockedMenuItem';
@@ -540,10 +539,7 @@ const CompleteDashboardPage = () => {
   };
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Carregando...</p>
-        </div>
+        <AnimatedSectionLoader text="Carregando dashboard..." />
       </div>;
   }
   if (!user) {

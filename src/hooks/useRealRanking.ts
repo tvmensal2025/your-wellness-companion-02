@@ -104,6 +104,7 @@ export const useRealRanking = () => {
     },
     staleTime: 60000, // 1 minuto
     refetchInterval: 120000, // 2 minutos
+    refetchOnWindowFocus: false,
   });
 };
 

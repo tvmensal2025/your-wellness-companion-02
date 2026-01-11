@@ -127,3 +127,36 @@ supabase/functions/      → Edge functions (each in own folder with index.ts)
 
 ## DOCUMENTATION
 See `docs/AI_CODING_GUIDELINES.md` for complete documentation.
+
+## 🦾 YOLO INTEGRATION - CRITICAL
+
+### NEVER disconnect YOLO service!
+```bash
+YOLO_SERVICE_URL=http://45.67.221.216:8002
+YOLO_ENABLED=true
+```
+
+### Mandatory flow for image analysis:
+```typescript
+// 1. ALWAYS try YOLO first
+const yoloResult = await tryYoloDetect(imageUrl);
+
+// 2. Use YOLO context in Gemini/GPT
+if (yoloResult && yoloResult.foods.length > 0) {
+  const prompt = `YOLO detected: ${yoloResult.foods.join(', ')}...`;
+}
+
+// 3. Fallback to Gemini if YOLO fails
+```
+
+### Edge functions using YOLO:
+- `sofia-image-analysis` - Food analysis
+- `analyze-medical-exam` - Medical exams (planned)
+- `vision-api` - General vision
+
+### Benefits:
+- 90% cost reduction (YOLO is local, free)
+- 10x faster (0.8s vs 3-8s)
+- Better accuracy (dual detection)
+
+See `docs/YOLO_INTEGRACAO_COMPLETA.md` for full documentation.

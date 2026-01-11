@@ -1,8 +1,10 @@
-import React, { useMemo, memo, useState, useEffect, useRef } from 'react';
+import React, { useMemo, memo, useState } from 'react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { useSafeAnimation } from '@/hooks/useSafeAnimation';
+import { cn } from '@/lib/utils';
+import { Scale, ArrowDown, ArrowUp, Sparkles } from 'lucide-react';
 
 interface WeightRecord {
   id: string;
@@ -17,11 +19,35 @@ interface CleanEvolutionChartProps {
   onRegisterClick?: () => void;
 }
 
-// Memoized mini stat component
-const MiniStat = memo(({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) => (
-  <div className="py-3 sm:py-4 text-center">
-    <p className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide truncate">{label}</p>
-    <p className={`text-sm sm:text-base font-bold mt-1 truncate ${highlight ? 'text-primary' : 'text-foreground'}`}>
+// Memoized mini stat component - GRANDE para público mais velho
+const MiniStat = memo(({ 
+  label, 
+  value, 
+  highlight,
+  icon: Icon,
+  iconColor 
+}: { 
+  label: string; 
+  value: string; 
+  highlight?: boolean;
+  icon?: React.ElementType;
+  iconColor?: string;
+}) => (
+  <div className="py-2.5 sm:py-3 text-center group hover:bg-muted/30 transition-colors rounded-lg">
+    {Icon && (
+      <div className={cn(
+        "flex items-center justify-center mx-auto mb-1.5 w-11 h-11 sm:w-12 sm:h-12 rounded-full",
+        iconColor || "bg-muted"
+      )}>
+        <Icon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+      </div>
+    )}
+    <p className="text-xs sm:text-sm text-muted-foreground uppercase tracking-wide truncate">{label}</p>
+    <p className={cn(
+      "text-lg sm:text-xl font-bold mt-0.5 truncate transition-colors",
+      highlight ? 'text-primary' : 'text-foreground',
+      "group-hover:text-primary"
+    )}>
       {value}
     </p>
   </div>
@@ -46,55 +72,121 @@ const CustomTooltip = memo(({ active, payload }: any) => {
 
 CustomTooltip.displayName = 'CustomTooltip';
 
-// Empty state component - sem animações pesadas
-const EmptyState = memo(({ onRegisterClick }: { onRegisterClick?: () => void }) => (
-  <div className="rounded-2xl bg-card border border-border/50 p-5 sm:p-6 animate-fade-in">
-    <h3 className="text-sm font-medium text-foreground mb-4">Evolução</h3>
-    <div className="flex flex-col items-center justify-center gap-4 py-4">
-      {/* Ilustração de gráfico vazio - SVG estático */}
-      <svg 
-        className="w-32 h-20 text-muted-foreground/30" 
-        viewBox="0 0 120 60" 
-        fill="none"
-      >
-        <line x1="10" y1="10" x2="10" y2="50" stroke="currentColor" strokeWidth="1" strokeDasharray="2 2" />
-        <line x1="10" y1="50" x2="110" y2="50" stroke="currentColor" strokeWidth="1" strokeDasharray="2 2" />
-        <path
-          d="M 15 40 Q 30 35, 45 38 T 75 30 T 105 25"
-          stroke="hsl(var(--primary))"
-          strokeWidth="2"
-          strokeDasharray="4 4"
-          fill="none"
-          opacity="0.5"
-        />
-        <circle cx="15" cy="40" r="3" fill="hsl(var(--primary))" opacity="0.3" />
-        <circle cx="45" cy="38" r="3" fill="hsl(var(--primary))" opacity="0.3" />
-        <circle cx="75" cy="30" r="3" fill="hsl(var(--primary))" opacity="0.3" />
-        <circle cx="105" cy="25" r="3" fill="hsl(var(--primary))" opacity="0.5" />
-      </svg>
+// Empty state component - elegante e motivacional
+const EmptyState = memo(({ onRegisterClick }: { onRegisterClick?: () => void }) => {
+  const [isHovered, setIsHovered] = useState(false);
+  
+  return (
+    <div className="rounded-2xl bg-card border border-border/50 p-5 sm:p-6 animate-fade-in overflow-hidden relative">
+      {/* Background decoration */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-emerald-500/5 pointer-events-none" />
+      
+      <h3 className="text-sm font-medium text-foreground mb-4 relative">Evolução</h3>
+      
+      <div className="flex flex-col items-center justify-center gap-4 py-6 relative">
+        {/* Animated chart illustration */}
+        <div className="relative">
+          {/* Glow effect */}
+          <div className="absolute inset-0 bg-primary/20 rounded-full blur-2xl scale-150 animate-pulse" />
+          
+          <svg 
+            className="w-40 h-24 relative z-10" 
+            viewBox="0 0 160 80" 
+            fill="none"
+          >
+            {/* Grid lines */}
+            <line x1="20" y1="15" x2="20" y2="65" stroke="currentColor" strokeWidth="1" strokeDasharray="2 2" className="text-muted-foreground/20" />
+            <line x1="20" y1="65" x2="145" y2="65" stroke="currentColor" strokeWidth="1" strokeDasharray="2 2" className="text-muted-foreground/20" />
+            
+            {/* Animated path */}
+            <path
+              d="M 25 55 Q 45 50, 65 48 T 105 35 T 140 25"
+              stroke="url(#emptyGradient)"
+              strokeWidth="3"
+              strokeLinecap="round"
+              fill="none"
+              className="animate-pulse"
+              style={{
+                strokeDasharray: '200',
+                strokeDashoffset: '0',
+                animation: 'dash 3s ease-in-out infinite'
+              }}
+            />
+            
+            {/* Animated dots */}
+            <circle cx="25" cy="55" r="4" fill="hsl(var(--primary))" className="animate-pulse" style={{ animationDelay: '0ms' }} />
+            <circle cx="65" cy="48" r="4" fill="hsl(var(--primary))" className="animate-pulse" style={{ animationDelay: '200ms' }} />
+            <circle cx="105" cy="35" r="4" fill="hsl(var(--primary))" className="animate-pulse" style={{ animationDelay: '400ms' }} />
+            <circle cx="140" cy="25" r="5" fill="hsl(var(--primary))" className="animate-bounce" />
+            
+            {/* Star at the end */}
+            <g transform="translate(140, 15)">
+              <Sparkles className="w-4 h-4 text-amber-400 animate-pulse" />
+            </g>
+            
+            <defs>
+              <linearGradient id="emptyGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.3" />
+                <stop offset="50%" stopColor="hsl(var(--primary))" stopOpacity="0.7" />
+                <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="1" />
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
 
-      {/* Title */}
-      <div className="text-center space-y-1">
-        <h4 className="text-base font-semibold text-foreground flex items-center justify-center gap-2">
-          <span>📈</span> Sua Evolução Começa Aqui!
-        </h4>
-        <p className="text-sm text-muted-foreground max-w-[250px]">
-          Registre seu primeiro peso para acompanhar seu progresso com gráficos detalhados
+        {/* Motivational text */}
+        <div className="text-center space-y-2">
+          <h4 className="text-lg font-semibold text-foreground flex items-center justify-center gap-2">
+            <span className="text-2xl">🚀</span> 
+            Sua Jornada Começa Aqui!
+          </h4>
+          <p className="text-sm text-muted-foreground max-w-[280px] leading-relaxed">
+            Registre seu primeiro peso e acompanhe sua evolução com gráficos detalhados e insights personalizados
+          </p>
+        </div>
+
+        {/* CTA Button with shimmer */}
+        {onRegisterClick && (
+          <button
+            onClick={onRegisterClick}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+            className={cn(
+              "relative mt-2 px-6 py-3 rounded-full font-semibold text-sm",
+              "bg-gradient-to-r from-primary via-primary to-emerald-500",
+              "text-primary-foreground",
+              "shadow-lg shadow-primary/25",
+              "overflow-hidden",
+              "transition-all duration-300",
+              "hover:shadow-xl hover:shadow-primary/30 hover:scale-105",
+              "active:scale-95"
+            )}
+          >
+            {/* Shimmer effect */}
+            <div 
+              className={cn(
+                "absolute inset-0 -translate-x-full",
+                "bg-gradient-to-r from-transparent via-white/30 to-transparent",
+                isHovered && "translate-x-full transition-transform duration-700"
+              )}
+            />
+            
+            <span className="relative flex items-center gap-2">
+              <Scale className="w-4 h-4" />
+              Registrar Primeiro Peso
+              <Sparkles className="w-4 h-4 animate-pulse" />
+            </span>
+          </button>
+        )}
+        
+        {/* Hint text */}
+        <p className="text-xs text-muted-foreground/60 flex items-center gap-1">
+          <span>💡</span> Dica: Pese-se sempre no mesmo horário
         </p>
       </div>
-
-      {/* CTA Button - sem whileHover/whileTap */}
-      {onRegisterClick && (
-        <button
-          onClick={onRegisterClick}
-          className="mt-2 px-5 py-2.5 bg-primary text-primary-foreground rounded-full font-medium text-sm flex items-center gap-2 shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all hover:scale-[1.02] active:scale-[0.98]"
-        >
-          <span>⚖️</span> Registrar Primeiro Peso
-        </button>
-      )}
     </div>
-  </div>
-));
+  );
+});
 
 EmptyState.displayName = 'EmptyState';
 
@@ -127,8 +219,6 @@ export const CleanEvolutionChart: React.FC<CleanEvolutionChartProps> = memo(({
   onRegisterClick
 }) => {
   const { shouldAnimate, isLowEndDevice } = useSafeAnimation();
-  const [isVisible, setIsVisible] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
 
   // Em dispositivos fracos, limita a 10 pontos
   const maxDataPoints = isLowEndDevice ? 10 : 14;
@@ -170,27 +260,8 @@ export const CleanEvolutionChart: React.FC<CleanEvolutionChartProps> = memo(({
     };
   }, [measurements, maxDataPoints]);
 
-  // Intersection Observer para lazy load do gráfico
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.1, rootMargin: '50px' }
-    );
-
-    if (containerRef.current) {
-      observer.observe(containerRef.current);
-    }
-
-    return () => observer.disconnect();
-  }, []);
-
-  // Altura responsiva - menor em mobile e dispositivos fracos
-  const chartHeight = isLowEndDevice ? 'h-28' : 'h-36 sm:h-44';
+  // Altura responsiva - mantém legível em mobile
+  const chartHeight = isLowEndDevice ? 'h-32' : 'h-36 sm:h-44';
 
   // Early returns AFTER all hooks
   if (loading) {
@@ -203,81 +274,95 @@ export const CleanEvolutionChart: React.FC<CleanEvolutionChartProps> = memo(({
 
   return (
     <div
-      ref={containerRef}
       className="rounded-xl sm:rounded-2xl bg-card border border-border/50 overflow-hidden animate-fade-in"
     >
-      {/* Header */}
-      <div className="px-4 sm:px-5 pt-4 sm:pt-5 pb-2 sm:pb-3 flex items-center justify-between">
+      {/* Header - legível */}
+      <div className="px-4 sm:px-5 pt-3 sm:pt-4 pb-2 flex items-center justify-between">
         <div className="min-w-0">
-          <h3 className="text-sm sm:text-base font-semibold text-foreground truncate">Evolução</h3>
-          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 truncate">
+          <h3 className="text-lg sm:text-xl font-semibold text-foreground truncate">Evolução</h3>
+          <p className="text-sm sm:text-base text-muted-foreground mt-0.5 truncate">
             Últimos {chartData.length} registros
           </p>
         </div>
-        <div className={`text-right flex-shrink-0 ${change <= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
-          <span className="text-lg sm:text-xl font-bold">
+        <div className={cn(
+          "text-right flex-shrink-0",
+          change <= 0 ? 'text-emerald-500' : 'text-rose-500'
+        )}>
+          <span className="text-xl sm:text-2xl font-bold tabular-nums">
             {change > 0 ? '+' : ''}{change.toFixed(1)}
           </span>
-          <span className="text-xs sm:text-sm ml-0.5">kg</span>
+          <span className="text-sm sm:text-base ml-0.5">kg</span>
         </div>
       </div>
 
-      {/* Chart - lazy loaded e altura responsiva */}
-      <div className={`${chartHeight} px-2 sm:px-3`}>
-        {isVisible ? (
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={chartData} margin={{ top: 5, right: 5, left: -30, bottom: 0 }}>
-              <defs>
-                <linearGradient id="cleanGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
-                  <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <XAxis 
-                dataKey="date" 
-                axisLine={false}
-                tickLine={false}
-                tick={{ fontSize: 9, fill: 'hsl(var(--muted-foreground))' }}
-                dy={5}
-                interval="preserveStartEnd"
-              />
-              <YAxis 
-                domain={[minWeight - 0.5, maxWeight + 0.5]}
-                axisLine={false}
-                tickLine={false}
-                tick={{ fontSize: 9, fill: 'hsl(var(--muted-foreground))' }}
-                width={30}
-              />
-              <Tooltip content={<CustomTooltip />} />
-              <Area
-                type="monotone"
-                dataKey="weight"
-                stroke="hsl(var(--primary))"
-                strokeWidth={2}
-                fill="url(#cleanGradient)"
-                dot={false}
-                activeDot={{
-                  r: 3,
-                  stroke: 'hsl(var(--primary))',
-                  strokeWidth: 2,
-                  fill: 'hsl(var(--background))'
-                }}
-                // Desabilita animações em dispositivos fracos
-                isAnimationActive={shouldAnimate}
-                animationDuration={shouldAnimate ? 500 : 0}
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        ) : (
-          <div className="w-full h-full bg-muted/10 rounded-lg animate-pulse" />
-        )}
+      {/* Chart - sempre renderizado */}
+      <div className={cn(chartHeight, "px-2 sm:px-3")}>
+        <ResponsiveContainer width="100%" height="100%">
+          <AreaChart data={chartData} margin={{ top: 5, right: 5, left: -30, bottom: 0 }}>
+            <defs>
+              <linearGradient id="cleanGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0} />
+              </linearGradient>
+            </defs>
+            <XAxis 
+              dataKey="date" 
+              axisLine={false}
+              tickLine={false}
+              tick={{ fontSize: 9, fill: 'hsl(var(--muted-foreground))' }}
+              dy={5}
+              interval="preserveStartEnd"
+            />
+            <YAxis 
+              domain={[minWeight - 0.5, maxWeight + 0.5]}
+              axisLine={false}
+              tickLine={false}
+              tick={{ fontSize: 9, fill: 'hsl(var(--muted-foreground))' }}
+              width={30}
+            />
+            <Tooltip content={<CustomTooltip />} />
+            <Area
+              type="monotone"
+              dataKey="weight"
+              stroke="hsl(var(--primary))"
+              strokeWidth={2}
+              fill="url(#cleanGradient)"
+              dot={false}
+              activeDot={{
+                r: 3,
+                stroke: 'hsl(var(--primary))',
+                strokeWidth: 2,
+                fill: 'hsl(var(--background))'
+              }}
+              // Desabilita animações em dispositivos fracos
+              isAnimationActive={shouldAnimate}
+              animationDuration={shouldAnimate ? 500 : 0}
+            />
+          </AreaChart>
+        </ResponsiveContainer>
       </div>
 
-      {/* Footer stats - mais compacto */}
+      {/* Footer stats - com ícones e cores */}
       <div className="grid grid-cols-3 divide-x divide-border/50 border-t border-border/50">
-        <MiniStat label="Mínimo" value={`${minWeight.toFixed(1)}kg`} />
-        <MiniStat label="Atual" value={`${lastWeight.toFixed(1)}kg`} highlight />
-        <MiniStat label="Máximo" value={`${maxWeight.toFixed(1)}kg`} />
+        <MiniStat 
+          label="Mínimo" 
+          value={`${minWeight.toFixed(1)}kg`} 
+          icon={ArrowDown}
+          iconColor="bg-blue-500"
+        />
+        <MiniStat 
+          label="Atual" 
+          value={`${lastWeight.toFixed(1)}kg`} 
+          highlight 
+          icon={Scale}
+          iconColor="bg-primary"
+        />
+        <MiniStat 
+          label="Máximo" 
+          value={`${maxWeight.toFixed(1)}kg`}
+          icon={ArrowUp}
+          iconColor="bg-amber-500"
+        />
       </div>
     </div>
   );

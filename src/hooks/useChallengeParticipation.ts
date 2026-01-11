@@ -25,7 +25,9 @@ export const useChallengeParticipation = () => {
 
       if (error) throw error;
       return data || [];
-    }
+    },
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 
   // Participar de um desafio

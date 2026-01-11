@@ -207,7 +207,7 @@ const DashboardOverview: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
-      <div className="mx-auto max-w-3xl space-y-1.5 sm:space-y-2 px-1 sm:px-2 pb-20 sm:pb-28 pt-2 sm:pt-3">
+      <div className="mx-auto w-full max-w-3xl space-y-2 sm:space-y-3 px-3 sm:px-4 pb-24 sm:pb-28 pt-2 sm:pt-3">
         {/* 1. Apple Health Style Hero Card */}
         <AppleHealthHeroCard
           currentWeight={typeof currentWeight === 'number' ? currentWeight : parseFloat(String(currentWeight)) || 0}
@@ -221,28 +221,26 @@ const DashboardOverview: React.FC = () => {
           gender={gender || 'F'}
         />
 
-        {/* 3. Clean Evolution Chart */}
+        {/* 2. Clean Evolution Chart */}
         <CleanEvolutionChart
           measurements={measurements || []}
           loading={loading}
           onRegisterClick={() => setIsWeightModalOpen(true)}
         />
 
-
-        {/* Quick Actions */}
+        {/* 3. Quick Actions */}
         <QuickActionsGrid onWeightClick={() => setIsWeightModalOpen(true)} />
 
-        {/* Sofia Tips - Dicas personalizadas */}
+        {/* 4. Sofia Tips - Dicas personalizadas */}
         <SofiaTipsCard />
 
-        {/* Motivational Mascot */}
+        {/* 5. Motivational Mascot */}
         <MotivationalMascot />
-
       </div>
 
       {/* Weight Modal */}
       <Dialog open={isWeightModalOpen} onOpenChange={setIsWeightModalOpen}>
-        <DialogContent className="max-w-sm mx-auto rounded-2xl">
+        <DialogContent className="w-[calc(100%-2rem)] max-w-sm mx-auto rounded-2xl">
           <DialogHeader>
             <DialogTitle>Registrar Peso</DialogTitle>
             <DialogDescription>

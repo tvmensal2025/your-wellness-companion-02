@@ -41,7 +41,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNutritionTracking } from '@/hooks/useNutritionTracking';
-import { DailyMissionsFinal } from '@/components/daily-missions/DailyMissionsFinal';
+import { DailyMissionsLight } from '@/components/daily-missions/DailyMissionsLight';
 import { NutritionTracker } from '@/components/nutrition-tracking/NutritionTracker';
 import SofiaConfirmationModal from './SofiaConfirmationModal';
 import sofiaAvatar from '@/assets/sofia-avatar.png';
@@ -867,19 +867,8 @@ O que você gostaria de conversar hoje? Pode me enviar uma foto da sua refeiçã
 
       case 'missao':
         return (
-          <div className="p-4">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">Missão do Dia</h2>
-            <Card className="bg-white/90 backdrop-blur-sm border border-border/30 shadow-lg">
-              <CardHeader className="p-3 sm:p-4">
-                <CardTitle className="text-sm sm:text-lg flex items-center gap-2">
-                  <Flame className="w-5 h-5 text-primary" />
-                  Missão do Dia
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                <DailyMissionsFinal user={user} />
-              </CardContent>
-            </Card>
+          <div className="p-0">
+            <DailyMissionsLight user={user} />
           </div>
         );
 

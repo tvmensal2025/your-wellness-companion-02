@@ -228,8 +228,8 @@ export const DailyMissionsFinal: React.FC<DailyMissionsFinalProps> = ({ user }) 
             <span className="font-medium text-xs">Missão do Dia</span>
           </div>
           
-          <h1 className="text-xl sm:text-2xl font-bold mb-1 text-foreground">
-            Continue sua Jornada 🌟
+          <h1 className="text-xl sm:text-2xl font-bold mb-1 text-foreground px-2">
+            Continue sua Jornada! 🌟
           </h1>
           
           <p className="text-sm text-muted-foreground mb-2">
@@ -237,7 +237,7 @@ export const DailyMissionsFinal: React.FC<DailyMissionsFinalProps> = ({ user }) 
           </p>
           
           {/* Barra de Progresso Suave */}
-          <div className="relative max-w-md mx-auto">
+          <div className="relative max-w-md mx-auto px-2">
             <div className="h-2 bg-muted/50 rounded-full overflow-hidden">
               <div 
                 className="h-full bg-gradient-to-r from-primary to-teal-400 rounded-full transition-all duration-500 ease-out"

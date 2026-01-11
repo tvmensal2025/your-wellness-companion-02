@@ -1,15 +1,14 @@
 import React from 'react';
 import { User } from '@supabase/supabase-js';
-import { DailyMissionsNew } from '@/components/daily-missions/DailyMissionsNew';
-import { DailyMissionsFinal } from '@/components/daily-missions/DailyMissionsFinal';
+import { DailyMissionsLight } from '@/components/daily-missions/DailyMissionsLight';
 
 interface DailyMissionsProps {
   user: User | null;
 }
 
 const DailyMissions = ({ user }: DailyMissionsProps) => {
-  // Usar a versão final como principal
-  return <DailyMissionsFinal user={user} />;
+  // Nova versão Light - mais leve e acolhedora (7 perguntas vs 17)
+  return <DailyMissionsLight user={user} />;
 };
 
 export default DailyMissions;

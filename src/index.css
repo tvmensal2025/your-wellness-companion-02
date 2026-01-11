@@ -1634,12 +1634,59 @@ html {
   animation: fade-in 0.5s ease-out forwards;
 }
 
+/* Dashboard chart animations */
+@keyframes dash {
+  0% {
+    stroke-dashoffset: 200;
+    opacity: 0.3;
+  }
+  50% {
+    stroke-dashoffset: 100;
+    opacity: 0.7;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-scale-in {
+  animation: scale-in 0.4s ease-out forwards;
+}
+
+/* Shimmer effect for buttons */
+@keyframes shimmer-slide {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer-slide 2s infinite;
+}
+
 /* Reduce motion for users who prefer it */
 @media (prefers-reduced-motion: reduce) {
   .animate-fade-in,
   .animate-ping,
   .animate-pulse,
-  .animate-spin {
+  .animate-spin,
+  .animate-scale-in,
+  .animate-shimmer {
     animation: none;
   }
 }

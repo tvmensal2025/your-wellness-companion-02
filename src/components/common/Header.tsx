@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Logo } from '@/components/ui/logo';
 import { Heart, User, BarChart3 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -26,13 +27,7 @@ const Header: React.FC<HeaderProps> = ({ variant = 'default', className = '' }) 
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
         {/* Logo e Branding */}
         <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-          <div className="relative">
-            <img 
-              src="/images/maxnutrition-logo.png" 
-              alt="MaxNutrition" 
-              className="h-10 w-10 object-contain"
-            />
-          </div>
+          <Logo className="h-10 w-10 object-contain" />
           <div>
             <h1 className="text-xl font-bold text-foreground">MaxNutrition</h1>
             <p className="text-xs text-muted-foreground">Nutrição Inteligente</p>

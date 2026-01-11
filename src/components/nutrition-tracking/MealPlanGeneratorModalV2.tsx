@@ -13,6 +13,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useWeightMeasurement } from '@/hooks/useWeightMeasurement';
 import { useMealPlanGeneratorV2 } from '@/hooks/useMealPlanGeneratorV2';
+import { MealPlanLoadingExperience } from '@/components/meal-plan/creative/MealPlanLoadingExperience';
+import { RandomizedMealPlanLoading } from '@/components/meal-plan/creative/RandomizedMealPlanLoading';
 
 interface MealPlanGeneratorParams {
   calorias: number;
@@ -325,6 +327,7 @@ export const MealPlanGeneratorModalV2: React.FC<MealPlanGeneratorModalV2Props> =
 
       console.log('🎯 Chamando generateMealPlan com:', mealPlanParams);
       
+      // NÃO fecha o modal aqui - deixa o loading aparecer
       const result = await generateMealPlan(mealPlanParams);
       
       if (result && Array.isArray(result) && result.length > 0) {
@@ -335,19 +338,23 @@ export const MealPlanGeneratorModalV2: React.FC<MealPlanGeneratorModalV2Props> =
           days: result,
           title: `Cardápio ${numberOfDays} dias - ${new Date().toLocaleDateString('pt-BR')}`
         });
+        
+        // Fecha o modal APENAS após sucesso
+        onOpenChange(false);
         setIsWeeklyModalOpen(true);
         
       } else {
         console.error('❌ Falha na geração do cardápio');
         toast.error('Falha na geração do cardápio');
+        // Não fecha o modal em caso de erro para o usuário tentar novamente
       }
       
     } catch (error) {
       console.error('❌ Erro ao gerar cardápio:', error);
       toast.error('Erro inesperado ao gerar cardápio');
-    } finally {
-      onOpenChange(false);
+      // Não fecha o modal em caso de erro
     }
+    // Removido o finally que fechava o modal
   };
 
   return (
@@ -528,6 +535,14 @@ export const MealPlanGeneratorModalV2: React.FC<MealPlanGeneratorModalV2Props> =
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Loading Experience Premium - Sorteio Aleatório */}
+      <RandomizedMealPlanLoading
+        isLoading={isGenerating}
+        objective={OBJECTIVES[objective]?.label}
+        days={parseInt(numberOfDays)}
+        calories={dailyGoals.calories}
+      />
 
       {/* Modal para exibir o cardápio gerado */}
       {mealPlanForModal && (

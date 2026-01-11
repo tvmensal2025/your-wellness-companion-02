@@ -4,6 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Logo } from '@/components/ui/logo';
 import { Heart, MessageCircle, Share2, ArrowLeft, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { formatDistanceToNow } from 'date-fns';
@@ -121,11 +122,7 @@ export default function PublicPostPage() {
       <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-lg border-b">
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img 
-              src="/images/maxnutrition-logo.png" 
-              alt="MaxNutrition" 
-              className="h-8 w-auto"
-            />
+            <Logo className="h-8 w-auto" />
             <span className="font-semibold text-primary">MaxNutrition</span>
           </div>
           <Link to="/auth">

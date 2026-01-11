@@ -1,4 +1,5 @@
 import React from 'react';
+import { Logo } from '@/components/ui/logo';
 import { Heart, Mail, Phone, MapPin } from 'lucide-react';
 
 interface FooterProps {
@@ -12,11 +13,7 @@ const Footer: React.FC<FooterProps> = ({ variant = 'default', className = '' }) 
       <footer className={`border-t border-border/20 py-8 px-4 bg-card/20 ${className}`}>
         <div className="container mx-auto text-center">
           <div className="flex items-center justify-center gap-3 mb-4">
-            <img 
-              src="/images/maxnutrition-logo.png" 
-              alt="MaxNutrition" 
-              className="h-8 w-8 object-contain"
-            />
+            <Logo className="h-8 w-8 object-contain" />
             <span className="text-lg font-semibold text-foreground">MaxNutrition</span>
           </div>
           <p className="text-muted-foreground text-sm">
@@ -34,11 +31,7 @@ const Footer: React.FC<FooterProps> = ({ variant = 'default', className = '' }) 
           {/* Logo e Descrição */}
           <div className="md:col-span-2">
             <div className="flex items-center gap-3 mb-4">
-              <img 
-                src="/images/maxnutrition-logo.png" 
-                alt="MaxNutrition" 
-                className="h-12 w-12 object-contain"
-              />
+              <Logo className="h-12 w-12 object-contain" />
               <div>
                 <h3 className="text-xl font-bold text-foreground">MaxNutrition</h3>
                 <p className="text-sm text-muted-foreground">Nutrição Inteligente</p>

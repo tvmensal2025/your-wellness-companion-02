@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """
-🦾 Serviço YOLO11/YOLO26 para Detecção de Alimentos
-Versão 2.0 - Atualizado para melhor performance
-Integração com Sofia IA
+🦾 Serviço YOLO para Detecção de Alimentos e Documentos
+Versão 2.2 - Janeiro 2026
+Suporta: YOLO11, YOLOE (vocabulário aberto), YOLOv8
+Integração com Sofia IA e Dr. Vital
+GitHub: https://github.com/ultralytics/ultralytics
 """
 
 from fastapi import FastAPI, HTTPException, UploadFile, File
@@ -29,12 +31,14 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Configurações via variáveis de ambiente
-YOLO_MODEL = os.getenv('YOLO_MODEL', 'yolo11n.pt')  # Modelo padrão
+YOLO_MODEL = os.getenv('YOLO_MODEL', 'yolo11s-seg.pt')  # Modelo padrão para alimentos
+YOLOE_MODEL = os.getenv('YOLOE_MODEL', 'yoloe-11s-seg.pt')  # Modelo YOLOE para documentos
 YOLO_CONF = float(os.getenv('YOLO_CONF', '0.35'))
 YOLO_TASK = os.getenv('YOLO_TASK', 'detect')
 
-# Modelo global
+# Modelos globais
 model = None
+model_yoloe = None
 
 # Classes COCO para alimentos (índices relevantes)
 FOOD_CLASS_IDS = {
@@ -56,27 +60,47 @@ FOOD_TRANSLATIONS = {
 
 
 def load_yolo_model():
-    """Carrega o modelo YOLO11/YOLO26"""
-    global model
+    """Carrega os modelos YOLO11 e YOLOE"""
+    global model, model_yoloe
     try:
         from ultralytics import YOLO
         
+        # Carregar modelo YOLO11 para alimentos
         model_path = YOLO_MODEL
-        logger.info(f"🔄 Carregando modelo: {model_path}")
-        
-        # Carregar modelo
+        logger.info(f"🔄 Carregando modelo YOLO11: {model_path}")
         model = YOLO(model_path)
         
-        # Warmup - primeira inferência é mais lenta
-        logger.info("🔥 Fazendo warmup do modelo...")
+        # Warmup YOLO11
+        logger.info("🔥 Fazendo warmup do YOLO11...")
         dummy_img = np.zeros((640, 640, 3), dtype=np.uint8)
         model(dummy_img, verbose=False)
+        logger.info(f"✅ YOLO11 {model_path} carregado!")
         
-        logger.info(f"✅ Modelo {model_path} carregado com sucesso!")
+        # Carregar modelo YOLOE para documentos (vocabulário aberto)
+        try:
+            from ultralytics import YOLOE
+            yoloe_path = YOLOE_MODEL
+            if os.path.exists(yoloe_path):
+                logger.info(f"🔄 Carregando modelo YOLOE: {yoloe_path}")
+                model_yoloe = YOLOE(yoloe_path)
+                # Warmup YOLOE
+                logger.info("🔥 Fazendo warmup do YOLOE...")
+                model_yoloe.predict(dummy_img, prompts=["test"], verbose=False)
+                logger.info(f"✅ YOLOE {yoloe_path} carregado!")
+            else:
+                logger.warning(f"⚠️ Modelo YOLOE não encontrado: {yoloe_path}")
+                model_yoloe = None
+        except ImportError:
+            logger.warning("⚠️ YOLOE não disponível - atualize ultralytics: pip install -U ultralytics")
+            model_yoloe = None
+        except Exception as e:
+            logger.warning(f"⚠️ YOLOE erro: {e}")
+            model_yoloe = None
+        
         return model
         
     except Exception as e:
-        logger.error(f"❌ Erro ao carregar modelo YOLO: {e}")
+        logger.error(f"❌ Erro ao carregar modelos: {e}")
         return None
 
 
@@ -91,9 +115,9 @@ async def lifespan(app: FastAPI):
 
 # Criar app FastAPI
 app = FastAPI(
-    title="YOLO Food Detection Service",
-    description="Serviço de detecção de alimentos usando YOLO11/YOLO26",
-    version="2.0.0",
+    title="YOLO Detection Service",
+    description="Serviço de detecção usando YOLO11 (alimentos) e YOLOE (documentos)",
+    version="2.2.0",
     lifespan=lifespan
 )
 
@@ -242,12 +266,20 @@ async def root():
 @app.get("/health")
 async def health_check():
     """Health check do serviço"""
+    ultralytics_version = "unknown"
+    try:
+        import ultralytics
+        ultralytics_version = ultralytics.__version__
+    except:
+        pass
+    
     return {
         "status": "healthy" if model else "degraded",
         "service": "yolo-food-detection",
-        "version": "2.0.0",
+        "version": "2.1.0",
         "model_loaded": model is not None,
         "model_name": YOLO_MODEL,
+        "ultralytics_version": ultralytics_version,
         "confidence_threshold": YOLO_CONF
     }
 
@@ -380,8 +412,143 @@ async def model_info():
         "task": model.task,
         "names": model.names,
         "num_classes": len(model.names),
-        "input_size": 640
+        "input_size": 640,
+        "yoloe_available": model_yoloe is not None,
+        "yoloe_model": YOLOE_MODEL if model_yoloe else None
     }
+
+
+# ==================== YOLOE - VOCABULÁRIO ABERTO ====================
+
+class PromptDetectionRequest(BaseModel):
+    """Request para detecção com prompts de texto (YOLOE)"""
+    image_url: Optional[str] = None
+    image_base64: Optional[str] = None
+    prompts: List[str] = ["documento", "tabela", "texto", "laudo médico"]
+    confidence: float = 0.25
+    max_detections: int = 50
+
+
+class PromptDetectionResult(BaseModel):
+    """Resultado de detecção com prompt"""
+    prompt: str
+    confidence: float
+    bbox: List[float]
+    area: float
+
+
+class PromptDetectionResponse(BaseModel):
+    """Resposta da detecção com prompts"""
+    success: bool
+    detections: List[PromptDetectionResult]
+    prompts_used: List[str]
+    total_detections: int
+    inference_time_ms: float
+    model_version: str
+    is_document: bool
+    document_confidence: float
+    message: str = ""
+
+
+@app.post("/detect/prompt", response_model=PromptDetectionResponse)
+async def detect_with_prompt(request: PromptDetectionRequest):
+    """
+    🆕 Detecção com vocabulário aberto usando YOLOE
+    
+    Permite detectar QUALQUER objeto usando prompts de texto.
+    Ideal para detectar documentos, tabelas, laudos médicos.
+    
+    Exemplo de prompts:
+    - ["documento", "tabela", "texto"] para exames médicos
+    - ["pizza", "hambúrguer", "salada"] para alimentos específicos
+    """
+    global model_yoloe
+    
+    if model_yoloe is None:
+        raise HTTPException(
+            status_code=503,
+            detail="YOLOE não está disponível. Use /detect para detecção padrão."
+        )
+    
+    # Obter imagem
+    image = None
+    if request.image_url:
+        image = download_image(request.image_url)
+    elif request.image_base64:
+        image = decode_base64_image(request.image_base64)
+    
+    if image is None:
+        raise HTTPException(
+            status_code=400,
+            detail="Não foi possível obter a imagem."
+        )
+    
+    start_time = time.time()
+    
+    try:
+        # Executar detecção com prompts
+        logger.info(f"🦾 YOLOE detectando com prompts: {request.prompts}")
+        
+        results = model_yoloe.predict(
+            source=image,
+            prompts=request.prompts,
+            conf=request.confidence,
+            verbose=False
+        )
+        
+        detections = []
+        is_document = False
+        document_confidence = 0.0
+        
+        for result in results:
+            if result.boxes is not None:
+                for i, box in enumerate(result.boxes):
+                    x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
+                    conf = float(box.conf[0].cpu().numpy())
+                    class_id = int(box.cls[0].cpu().numpy())
+                    
+                    # Obter o prompt correspondente
+                    prompt_name = request.prompts[class_id] if class_id < len(request.prompts) else f"class_{class_id}"
+                    
+                    width = float(x2 - x1)
+                    height = float(y2 - y1)
+                    area = width * height
+                    
+                    detections.append(PromptDetectionResult(
+                        prompt=prompt_name,
+                        confidence=round(conf, 4),
+                        bbox=[float(x1), float(y1), width, height],
+                        area=round(area, 2)
+                    ))
+                    
+                    # Verificar se é documento
+                    doc_keywords = ['documento', 'document', 'tabela', 'table', 'texto', 'text', 'laudo', 'report']
+                    if any(kw in prompt_name.lower() for kw in doc_keywords):
+                        is_document = True
+                        document_confidence = max(document_confidence, conf)
+        
+        inference_time = (time.time() - start_time) * 1000
+        
+        # Limitar resultados
+        detections = detections[:request.max_detections]
+        
+        logger.info(f"✅ YOLOE: {len(detections)} detecções em {inference_time:.1f}ms (documento: {is_document})")
+        
+        return PromptDetectionResponse(
+            success=True,
+            detections=detections,
+            prompts_used=request.prompts,
+            total_detections=len(detections),
+            inference_time_ms=round(inference_time, 2),
+            model_version=YOLOE_MODEL,
+            is_document=is_document,
+            document_confidence=round(document_confidence, 4),
+            message=f"YOLOE detectou {len(detections)} objetos" + (f" - É documento ({document_confidence*100:.0f}%)" if is_document else "")
+        )
+        
+    except Exception as e:
+        logger.error(f"❌ Erro no YOLOE: {e}")
+        raise HTTPException(status_code=500, detail=f"Erro na detecção: {str(e)}")
 
 
 # ==================== MAIN ====================

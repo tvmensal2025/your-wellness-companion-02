@@ -11,6 +11,7 @@ import SofiaFloatingButton from "@/components/SofiaFloatingButton";
 import { createQueryClient } from "@/lib/queryConfig";
 import { InstallPrompt } from "@/components/pwa/InstallPrompt";
 import { ActiveSectionProvider } from "@/contexts/ActiveSectionContext";
+import { PageLoader as AnimatedPageLoader } from "@/components/ui/animated-loader";
 
 import { SplashScreen, useSplashScreen } from "@/components/pwa/SplashScreen";
 
@@ -42,15 +43,12 @@ const InstallPage = lazy(() => import("./pages/Install"));
 const PublicPostPage = lazy(() => import("./pages/PublicPostPage"));
 const PublicReport = lazy(() => import("./pages/PublicReport"));
 const SystemHealth = lazy(() => import("./pages/admin/SystemHealth"));
+const CreativeMealPlanDemo = lazy(() => import("./components/meal-plan/creative/CreativeMealPlanDemo").then(module => ({ default: module.CreativeMealPlanDemo })));
+const UltraCreativeLayoutsPreview = lazy(() => import("./components/meal-plan/UltraCreativeLayouts").then(module => ({ default: module.UltraCreativeLayoutsPreview })));
+const UltraCreativeLayoutsPreviewV2 = lazy(() => import("./components/meal-plan/UltraCreativeLayoutsV2").then(module => ({ default: module.UltraCreativeLayoutsPreviewV2 })));
 
-const PageLoader = () => (
-  <div className="flex items-center justify-center min-h-screen bg-background">
-    <div className="text-center space-y-4">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-      <p className="text-muted-foreground text-sm">Carregando...</p>
-    </div>
-  </div>
-);
+// Loader animado global com branding
+const PageLoader = () => <AnimatedPageLoader />;
 
 // Optimized query client for mobile performance
 const queryClient = createQueryClient();
@@ -98,6 +96,9 @@ const App: React.FC = () => {
                 <Route path="/community/post/:postId" element={<Suspense fallback={<PageLoader />}><PublicPostPage /></Suspense>} />
                 <Route path="/relatorio/:token" element={<Suspense fallback={<PageLoader />}><PublicReport /></Suspense>} />
                 <Route path="/admin/system-health" element={<Suspense fallback={<PageLoader />}><SystemHealth /></Suspense>} />
+                <Route path="/cardapio-criativo" element={<Suspense fallback={<PageLoader />}><CreativeMealPlanDemo /></Suspense>} />
+                <Route path="/preview-estilos-cardapio" element={<Suspense fallback={<PageLoader />}><UltraCreativeLayoutsPreview /></Suspense>} />
+                <Route path="/preview-estilos-cardapio-v2" element={<Suspense fallback={<PageLoader />}><UltraCreativeLayoutsPreviewV2 /></Suspense>} />
                 <Route path="*" element={<NotFound />} />
                 </Routes>
                 <SofiaFloatingButton />

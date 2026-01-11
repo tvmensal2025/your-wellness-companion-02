@@ -3,124 +3,25 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
-import { Target, TrendingUp, ChefHat, Zap, Clock, Utensils, Apple, Plus, Droplets, Coffee, UtensilsCrossed, Cookie, Moon } from 'lucide-react';
+import { Target, TrendingUp, ChefHat, Zap, Clock, Utensils, Apple } from 'lucide-react';
 import { MealPlanGeneratorModalV2 } from '@/components/nutrition-tracking/MealPlanGeneratorModalV2';
 import { useNutritionTracking } from '@/hooks/useNutritionTracking';
 
 import { MealPlanHistoryModal } from '@/components/meal-plan/MealPlanHistoryModal';
 import { MealPlanSuccessEffect } from '@/components/meal-plan/MealPlanSuccessEffect';
+import { ChefKitchenMealPlan } from '@/components/meal-plan/ChefKitchenMealPlan';
 
 import { useMealPlanGeneratorV2 } from '@/hooks/useMealPlanGeneratorV2';
 import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
-import { PersonalizedSupplementsCard } from '@/components/sofia/PersonalizedSupplementsCard';
-import { useDailyNutritionTracking } from '@/hooks/useDailyNutritionTracking';
+import { SmartSupplementsSection } from '@/components/sofia/SmartSupplementsSection';
+import { SofiaNutricionalRedesigned } from '@/components/sofia/SofiaNutricionalRedesigned';
+import { SectionLoader } from '@/components/ui/animated-loader';
 
 interface SofiaNutricionalSectionProps {
   /** Se true, não renderiza o header (para uso dentro do dashboard) */
   embedded?: boolean;
 }
-
-// Componente Meu Dia - Diário alimentar compacto
-const MeuDiaContent: React.FC<{ goals: { calories: number; protein: number; carbs: number; fat: number } }> = ({ goals }) => {
-  const { dailySummary, loading, addWater, goals: nutritionGoals } = useDailyNutritionTracking();
-
-  const mealTypes = [
-    { key: 'cafe_da_manha', label: 'Café da Manhã', icon: Coffee, time: '07:00' },
-    { key: 'almoco', label: 'Almoço', icon: UtensilsCrossed, time: '12:00' },
-    { key: 'lanche', label: 'Lanche', icon: Cookie, time: '16:00' },
-    { key: 'jantar', label: 'Jantar', icon: Moon, time: '19:00' },
-  ];
-
-  const caloriesConsumed = dailySummary?.calories || 0;
-  const proteinConsumed = dailySummary?.protein || 0;
-  const carbsConsumed = dailySummary?.carbs || 0;
-  const fatConsumed = dailySummary?.fat || 0;
-  const waterMl = dailySummary?.water_ml || 0;
-
-  const targetCalories = nutritionGoals?.target_calories || goals.calories;
-  const calorieProgress = Math.min((caloriesConsumed / targetCalories) * 100, 100);
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-8">
-        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-emerald-600"></div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-4">
-      {/* Progresso de Calorias */}
-      <Card className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30 border-emerald-200 dark:border-emerald-800">
-        <CardContent className="p-4">
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-sm font-medium text-emerald-700 dark:text-emerald-300">Calorias Hoje</span>
-            <span className="text-lg font-bold text-emerald-600">
-              {caloriesConsumed.toFixed(0)} / {targetCalories}
-            </span>
-          </div>
-          <Progress value={calorieProgress} className="h-3 bg-emerald-100 dark:bg-emerald-900" />
-          
-          {/* Macros */}
-          <div className="grid grid-cols-3 gap-3 mt-4">
-            <div className="text-center p-2 bg-white/60 dark:bg-black/20 rounded-lg">
-              <div className="text-sm font-bold text-orange-600">{proteinConsumed.toFixed(0)}g</div>
-              <div className="text-xs text-muted-foreground">Proteína</div>
-            </div>
-            <div className="text-center p-2 bg-white/60 dark:bg-black/20 rounded-lg">
-              <div className="text-sm font-bold text-blue-600">{carbsConsumed.toFixed(0)}g</div>
-              <div className="text-xs text-muted-foreground">Carbos</div>
-            </div>
-            <div className="text-center p-2 bg-white/60 dark:bg-black/20 rounded-lg">
-              <div className="text-sm font-bold text-yellow-600">{fatConsumed.toFixed(0)}g</div>
-              <div className="text-xs text-muted-foreground">Gordura</div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Refeições do Dia */}
-      <Card className="bg-card border">
-        <CardHeader className="pb-2 px-3 pt-3">
-          <CardTitle className="text-sm font-medium flex items-center gap-2">
-            <Apple className="w-4 h-4 text-emerald-600" />
-            Refeições de Hoje
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="px-3 pb-3">
-          <div className="space-y-2">
-            {mealTypes.map((meal) => {
-              const Icon = meal.icon;
-              return (
-                <div
-                  key={meal.key}
-                  className="flex items-center justify-between p-2.5 bg-muted/50 rounded-lg hover:bg-muted/70 transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900 flex items-center justify-center">
-                      <Icon className="w-4 h-4 text-emerald-600" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">{meal.label}</p>
-                      <p className="text-xs text-muted-foreground">{meal.time}</p>
-                    </div>
-                  </div>
-                  <span className="text-xs text-muted-foreground italic">
-                    Converse com Sofia para registrar
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-          <p className="text-xs text-center text-muted-foreground mt-3">
-            💬 Diga à Sofia o que você comeu e ela registra automaticamente!
-          </p>
-        </CardContent>
-      </Card>
-    </div>
-  );
-};
 
 export const SofiaNutricionalSection: React.FC<SofiaNutricionalSectionProps> = ({ embedded = false }) => {
   const {
@@ -134,6 +35,7 @@ export const SofiaNutricionalSection: React.FC<SofiaNutricionalSectionProps> = (
   } = useNutritionTracking();
   
   const [user, setUser] = useState<User | null>(null);
+  const [userLoading, setUserLoading] = useState(true);
   const {
     showSuccessEffect,
     setShowSuccessEffect,
@@ -161,8 +63,11 @@ export const SofiaNutricionalSection: React.FC<SofiaNutricionalSectionProps> = (
 
   useEffect(() => {
     const getUser = async () => {
+      setUserLoading(true);
       const { data: { user } } = await supabase.auth.getUser();
+      console.log('[SofiaNutricionalSection] User loaded:', user?.id);
       setUser(user);
+      setUserLoading(false);
     };
     getUser();
   }, []);
@@ -179,15 +84,8 @@ export const SofiaNutricionalSection: React.FC<SofiaNutricionalSectionProps> = (
   const currentNutrition = getDailyNutrition(selectedDate);
   const stats = getNutritionStats();
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[200px]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-3"></div>
-          <p className="text-sm text-muted-foreground">Carregando...</p>
-        </div>
-      </div>
-    );
+  if (loading || userLoading) {
+    return <SectionLoader text="Carregando nutrição..." />;
   }
 
   return (
@@ -233,14 +131,14 @@ export const SofiaNutricionalSection: React.FC<SofiaNutricionalSectionProps> = (
           </TabsTrigger>
         </TabsList>
 
-        {/* Tab Meu Dia - Diário Alimentar */}
+        {/* Tab Meu Dia - Novo Design com Metabolismo Personalizado */}
         <TabsContent value="meudia" className="space-y-4 mt-4">
-          <MeuDiaContent goals={goals} />
+          <SofiaNutricionalRedesigned userId={user?.id} />
         </TabsContent>
 
         {/* Tab Nutrição */}
         <TabsContent value="tracker" className="space-y-4 mt-4">
-          <PersonalizedSupplementsCard />
+          <SmartSupplementsSection maxProducts={4} showTitle={true} />
 
           <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
             {/* Resumo diário */}
@@ -309,76 +207,14 @@ export const SofiaNutricionalSection: React.FC<SofiaNutricionalSectionProps> = (
           </div>
         </TabsContent>
 
-        {/* Tab Cardápios */}
-        <TabsContent value="generator" className="space-y-4 mt-4">
-          <Card className="bg-card shadow-sm border">
-            <CardHeader className="pb-2 px-3 pt-3 sm:px-4 sm:pt-4">
-              <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
-                <ChefHat className="w-4 h-4 text-emerald-600" />
-                Gerador de Cardápios IA
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="px-3 pb-3 sm:px-4 sm:pb-4">
-              <div className="space-y-4">
-                <p className="text-xs sm:text-sm text-muted-foreground">
-                  Crie cardápios personalizados baseados nas suas metas.
-                </p>
-                
-                {/* Seleção de Refeições - grid responsivo */}
-                <div className="space-y-2">
-                  <h3 className="text-xs font-medium text-muted-foreground">Refeições:</h3>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                    {Object.entries(selectedMeals).map(([meal, selected]) => (
-                      <div
-                        key={meal}
-                        className={`flex items-center gap-2 p-2 rounded-md cursor-pointer transition-all text-xs ${
-                          selected 
-                            ? 'bg-emerald-50 border border-emerald-200' 
-                            : 'bg-muted/50 border border-transparent hover:bg-muted'
-                        }`}
-                        onClick={() => toggleMealSelection(meal)}
-                      >
-                        <div className={`w-3 h-3 rounded-full ${selected ? 'bg-emerald-500' : 'bg-muted-foreground/30'}`}>
-                          {selected && <div className="w-full h-full flex items-center justify-center">
-                            <div className="w-1.5 h-1.5 bg-white rounded-full" />
-                          </div>}
-                        </div>
-                        <span className={`capitalize truncate ${selected ? 'text-emerald-700 font-medium' : 'text-muted-foreground'}`}>
-                          {meal}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                
-                <Button 
-                  onClick={handleGenerateMealPlan} 
-                  className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-xs sm:text-sm"
-                >
-                  <Zap className="w-4 h-4 mr-2" />
-                  Gerar Cardápio
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Histórico de Cardápios */}
-          <Card className="bg-card shadow-sm border">
-            <CardHeader className="pb-2 px-3 pt-3 sm:px-4 sm:pt-4">
-              <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
-                <Clock className="w-4 h-4 text-emerald-600" />
-                Cardápios Salvos
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="px-3 pb-3 sm:px-4 sm:pb-4">
-              <MealPlanHistoryModal />
-            </CardContent>
-          </Card>
+        {/* Tab Cardápios - PREMIUM */}
+        <TabsContent value="generator" className="mt-4">
+          <ChefKitchenMealPlan />
         </TabsContent>
 
       </Tabs>
 
-      {/* Modal do Gerador */}
+      {/* Modal do Gerador (mantido para compatibilidade) */}
       <MealPlanGeneratorModalV2 
         open={showMealPlanGenerator} 
         onOpenChange={setShowMealPlanGenerator} 

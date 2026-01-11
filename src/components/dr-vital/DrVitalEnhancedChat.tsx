@@ -198,6 +198,16 @@ export const DrVitalEnhancedChat: React.FC = () => {
 
   const handlePrint = () => {
     if (!response?.response) return;
+    // Logo em base64 para garantir que apareça no PDF (imagens externas não carregam em window.open)
+    const logoBase64 = 'data:image/jpeg;base64,/9j/4gJASUNDX1BST0ZJTEUAAQEAAAIwQURCRQIQAABtbnRyUkdCIFhZWiAHzwAGAAMAAAAAAABhY3NwQVBQTAAAAABub25lAAAAAAAAAAAAAAAAAAAAAAAA9tYAAQAAAADTLUFEQkUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAApjcHJ0AAAA/AAAADJkZXNjAAABMAAAAGt3dHB0AAABnAAAABRia3B0AAABsAAAABRyVFJDAAABxAAAAA5nVFJDAAAB1AAAAA5iVFJDAAAB5AAAAA5yWFlaAAAB9AAAABRnWFlaAAACCAAAABRiWFlaAAACHAAAABR0ZXh0AAAAAENvcHlyaWdodCAxOTk5IEFkb2JlIFN5c3RlbXMgSW5jb3Jwb3JhdGVkAAAAZGVzYwAAAAAAAAARQWRvYmUgUkdCICgxOTk4KQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWFlaIAAAAAAAAPNRAAEAAAABFsxYWVogAAAAAAAAAAAAAAAAAAAAAGN1cnYAAAAAAAAAAQIzAABjdXJ2AAAAAAAAAAECMwAAY3VydgAAAAAAAAABAjMAAFhZWiAAAAAAAACcGAAAT6UAAAT8WFlaIAAAAAAAADSNAACgLAAAD5VYWVogAAAAAAAAJjEAABAvAAC+nP/bAIQACgcHBwgHCggICg8KCAoPEg0KCg0SFBAQEhAQFBQPEREREQ8UFBcYGhgXFB8fISEfHy0sLCwtMjIyMjIyMjIyMgELCgoLDAsODAwOEg4ODhIUDg4ODhQZERESEREZIBcUFBQUFyAcHhoaGh4cIyMgICMjKyspKysyMjIyMjIyMjIy/90ABAAL/+4ADkFkb2JlAGTAAAAAAf/AABEIALEAowMAIgABEQECEQH/xAGiAAEAAwACAQUAAAAAAAAAAAAABgcIBAUCAQMJCgsBAQAABAcAAAAAAAAAAAAAAAABAgMEBQYHCAkKCxAAAAQCAgQFCihfAAAAAAAAAAECAwQFBhEHNnSyEiE1QbMTFiIxQkNRc3WBCAkKFBUXGBkaIyQlJicoKSoyMzQ3ODk6REVGR0hJSlJVYWJykZOx0VNUVldYWVpjZGVmZ2hpanF2d3h5eoKDhIWGh4iJipKUlZaXmJmaoaKjpKWmp6ipqrS1tre4ubrBwsPExcbHyMnK0tPU1dbX2Nna4eLj5OXm5+jp6vDx8vP09fb3+Pn6EQABAAAAAB6DAAAAAAAAAAAAAQIDBAUGBwgJChESExQVFhcYGRohIiMkJSYnKCkqMTIzNDU2Nzg5OkFCQ0RFRkdISUpRUlNUVVZXWFlaYWJjZGVmZ2hpanFyc3R1dnd4eXqBgoOEhYaHiImKkZKTlJWWl5iZmqGio6SlpqeoqaqxsrO0tba3uLm6wcLDxMXGx8jJytHS09TV1tfY2drh4uPk5ebn6Onq8PHy8/T19vf4+fr/2gAMAwAAARECEQA/ALmAAAAAAAAAAAAAAAAHXxs9lUE7lKIfInMdKSNRlhV5lgSOoQQUMgIVAVUMgoCBSSCCgoCA0oKCqUk7ABF36bwqXKmIZbiMOtSlEg68aoiwQ6uJpjNXVmbGAYRVUkiSSjLDLDrXXh6YUUMjpEkCGqtIQCmgouiaBDVWkExiJnBQ0SzCvOkl586m0+MKvQVnhEOWKofdfdeU6+pS3V4alKzZ6AWbLYtMZAMRKc04gjMqzOpRYSirPQGQgiCLrIhkMgKioqNKBSAiSKq9BQUBUVFR8HKAAFwVQAAAAAAAAAAD/0LmAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAf/9G5gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH//Z';
+    const drVitalUrl = `${window.location.origin}/images/dr-vital.png`;
+    const currentDate = new Date().toLocaleDateString('pt-BR', { 
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+    
     const printable = `<!doctype html>
 <html lang="pt-BR">
 <head>
@@ -205,26 +215,46 @@ export const DrVitalEnhancedChat: React.FC = () => {
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Dr. Vital IA - MaxNutrition - Análise</title>
   <style>
+    @page { size: A4; margin: 12mm; }
     :root { --primary:#6366f1; --secondary:#06b6d4; --accent:#f59e0b; --success:#10b981; }
-    * { box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; margin: 0; color:#1e293b; background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); }
-    .container { max-width: 900px; margin: 0 auto; padding: 24px; }
-    .header { background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 50%, var(--accent) 100%); color: white; padding: 24px; border-radius: 16px; display:flex; align-items:center; gap:16px; box-shadow: 0 10px 25px rgba(99,102,241,0.3); }
-    .header img { width:50px; height:50px; border-radius:50%; background: rgba(255,255,255,.15); padding:6px; border: 2px solid rgba(255,255,255,0.3); }
-    .logo { width:40px; height:40px; margin-left: auto; }
-    h1 { font-size: 22px; margin:0; font-weight: 700; }
-    .subtitle { opacity:.95; font-size:13px; margin-top:4px; font-weight: 500; }
-    .content { margin-top: 24px; background:#ffffff; border:1px solid #e2e8f0; border-radius:16px; padding:32px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, sans-serif; color:#1e293b; background: white; font-size: 11px; }
+    .container { max-width: 100%; padding: 15px; }
+    
+    /* Header Premium */
+    .header { 
+      background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 50%, var(--accent) 100%); 
+      color: white; 
+      padding: 16px 20px; 
+      border-radius: 12px; 
+      display: flex; 
+      align-items: center; 
+      gap: 14px; 
+      margin-bottom: 15px;
+    }
+    .header .dr-img { 
+      width: 50px; 
+      height: 50px; 
+      border-radius: 50%; 
+      background: rgba(255,255,255,.2); 
+      padding: 4px; 
+      border: 2px solid rgba(255,255,255,0.4); 
+    }
+    .header-text { flex: 1; }
+    .header h1 { font-size: 20px; font-weight: 800; margin-bottom: 4px; }
+    .header .subtitle { opacity: .95; font-size: 11px; font-weight: 500; }
+    .header .logo { height: 32px; width: auto; }
+    
+    .content { margin-top: 15px; background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; padding:20px; }
     
     /* Estilos dos blocos de conteúdo */
     .content-block {
       position: relative;
-      margin-bottom: 24px;
-      padding: 14px 14px 14px 42px;
-      border-radius: 10px;
+      margin-bottom: 16px;
+      padding: 12px 12px 12px 38px;
+      border-radius: 8px;
       background: white;
       border: 1px solid #e2e8f0;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.03);
       page-break-inside: avoid;
     }
                       
@@ -234,18 +264,18 @@ export const DrVitalEnhancedChat: React.FC = () => {
       left: 0;
       top: 0;
       height: 100%;
-      width: 5px;
-      border-radius: 10px 0 0 10px;
+      width: 4px;
+      border-radius: 8px 0 0 8px;
     }
                       
     .block-icon {
       position: absolute;
-      left: 12px;
-      top: 14px;
-      font-size: 18px;
-      width: 22px;
-      height: 22px;
-      line-height: 22px;
+      left: 10px;
+      top: 12px;
+      font-size: 16px;
+      width: 20px;
+      height: 20px;
+      line-height: 20px;
       text-align: center;
     }
                       
@@ -370,33 +400,57 @@ export const DrVitalEnhancedChat: React.FC = () => {
       font-weight: 600;
     }
     
-    .footer { margin-top:24px; color:#64748b; font-size:12px; text-align: center; padding: 16px; background: rgba(255,255,255,0.7); border-radius: 12px; }
-    @page { margin: 16mm; }
+    .footer { 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      margin-top: 15px; 
+      padding: 12px 15px; 
+      background: linear-gradient(135deg, #eef2ff, #e0e7ff); 
+      border-radius: 10px; 
+      border: 2px solid #a5b4fc; 
+    }
+    .footer-left { display: flex; align-items: center; gap: 10px; }
+    .footer-logo { height: 20px; width: auto; }
+    .footer-brand { font-size: 14px; font-weight: 800; color: #4f46e5; }
+    .footer-right { text-align: right; }
+    .footer-dr { font-size: 10px; color: #6366f1; font-weight: 600; }
+    .footer-warning { font-size: 9px; color: #64748b; margin-top: 2px; }
+    .footer-slogan { font-size: 8px; color: #94a3b8; font-style: italic; margin-top: 2px; }
+    
+    @page { margin: 12mm; }
     @media print {
       body { background: white; }
       .container { max-width: none; }
-      .content { break-inside: avoid; box-shadow: none; }
-      .header { box-shadow: none; }
+      .content { break-inside: avoid; }
     }
   </style>
   </head>
   <body>
     <div class="container">
+      <!-- Header Premium -->
       <div class="header">
-        <img src="/images/dr-vital.png" alt="Dr. Vital" />
-        <div style="flex: 1;">
-          <h1>Dr. Vital IA - MaxNutrition</h1>
-          <div class="subtitle">Análise para ${userName || 'Paciente'} • ${generateTitle(currentQuestion)} • ${new Date().toLocaleString('pt-BR')}</div>
+        <img src="${drVitalUrl}" alt="Dr. Vital" class="dr-img" onerror="this.style.display='none'" />
+        <div class="header-text">
+          <h1>Dr. Vital IA - Análise Personalizada</h1>
+          <div class="subtitle">👤 ${userName || 'Paciente'} • 📋 ${generateTitle(currentQuestion)} • 📅 ${currentDate}</div>
         </div>
-        <img src="/images/maxnutrition-logo.png" alt="MaxNutrition" class="logo" />
+        <img src="${logoBase64}" alt="MaxNutrition" class="logo" />
       </div>
       <div class="content">
         ${formatResponse(response.response)}
       </div>
+      
+      <!-- Footer Premium -->
       <div class="footer">
-        <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
-          <img src="/images/maxnutrition-logo.png" alt="MaxNutrition" style="width: 20px; height: 20px;" />
-          <span>⚠️ Este material é educativo e não substitui consulta médica presencial.</span>
+        <div class="footer-left">
+          <img src="${logoBase64}" alt="MaxNutrition" class="footer-logo" />
+          <div class="footer-brand">MaxNutrition</div>
+        </div>
+        <div class="footer-right">
+          <div class="footer-dr">🤖 Dr. Vital IA</div>
+          <div class="footer-warning">⚠️ Material educativo - não substitui consulta médica</div>
+          <div class="footer-slogan">Sua jornada para uma vida mais saudável</div>
         </div>
       </div>
     </div>

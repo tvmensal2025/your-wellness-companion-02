@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Bot, LogIn } from 'lucide-react';
 import sofiaAvatar from '@/assets/sofia-avatar.png';
+import { AnimatedLoader } from '@/components/ui/animated-loader';
 
 const SofiaPage: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<any>(null);
@@ -42,10 +43,7 @@ const SofiaPage: React.FC = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Carregando Sofia...</p>
-        </div>
+        <AnimatedLoader text="Carregando Sofia..." size="lg" />
       </div>
     );
   }

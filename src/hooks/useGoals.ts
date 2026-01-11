@@ -16,7 +16,7 @@ export const useGoals = () => {
     queryFn: async () => {
       // Buscar apenas metas do usuário logado
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Usuário não autenticado");
+      if (!user) return [];
 
       const { data, error } = await supabase
         .from("user_goals")
@@ -27,6 +27,8 @@ export const useGoals = () => {
       if (error) throw error;
       return data;
     },
+    staleTime: 5 * 60 * 1000, // 5 minutos
+    refetchOnWindowFocus: false,
   });
 
   // Categorias fixas (não há tabela goal_categories)
@@ -144,6 +146,8 @@ export const useGoals = () => {
 
       return { total, pending, approved, completed, totalPoints };
     },
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 
   return {

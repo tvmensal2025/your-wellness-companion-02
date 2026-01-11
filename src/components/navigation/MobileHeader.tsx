@@ -31,10 +31,10 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
 
   return (
     <header 
-      className="lg:hidden sticky top-0 z-40 bg-card/95 backdrop-blur-lg border-b border-border/50"
+      className="lg:hidden sticky top-0 z-40 bg-card/95 backdrop-blur-lg border-b border-border/50 overflow-visible"
       style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}
     >
-      <div className="flex items-center justify-between h-12 px-3 relative">
+      <div className="flex items-center justify-between h-12 px-4 relative overflow-visible">
         {/* Left side - Offline Indicator + Theme Toggle */}
         <div className="flex items-center gap-2 shrink-0 z-10">
           <OfflineIndicatorCompact />
@@ -49,7 +49,7 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
         </div>
         
         {/* Right side - Messages + Notifications + Avatar */}
-        <div className="flex items-center gap-1 shrink-0 justify-end z-10 overflow-visible">
+        <div className="flex items-center gap-2 shrink-0 justify-end z-10 overflow-visible">
           {onMessageClick && (
             <MessageButton 
               unreadCount={unreadMessages} 
@@ -59,17 +59,17 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
           )}
           <NotificationBell userId={userId} />
           
-          {/* Avatar */}
+          {/* Avatar - Maior */}
           <button
             onClick={onAvatarClick}
-            className="h-10 w-10 rounded-full transition-all touch-manipulation active:scale-95"
+            className="h-12 w-12 rounded-full transition-all touch-manipulation active:scale-95 flex-shrink-0"
             aria-label="Abrir perfil"
           >
-            <Avatar className="h-10 w-10 bg-muted ring-2 ring-primary/20">
+            <Avatar className="h-12 w-12 bg-muted ring-2 ring-primary/30 shadow-lg">
               {avatarUrl && avatarUrl.trim() ? (
                 <AvatarImage src={avatarUrl} alt={userName} className="object-cover" />
               ) : null}
-              <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
+              <AvatarFallback className="bg-primary/10 text-primary text-sm font-semibold">
                 {getInitials(userName)}
               </AvatarFallback>
             </Avatar>

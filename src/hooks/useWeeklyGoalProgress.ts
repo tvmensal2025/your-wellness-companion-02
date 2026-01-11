@@ -7,7 +7,7 @@ export const useWeeklyGoalProgress = () => {
     queryKey: ['weekly-goal-progress'],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Usuário não autenticado');
+      if (!user) return null;
 
       const now = new Date();
       const weekStart = startOfWeek(now, { weekStartsOn: 1 });
@@ -118,5 +118,7 @@ export const useWeeklyGoalProgress = () => {
       };
     },
     refetchInterval: 1000 * 60 * 15, // Atualizar a cada 15 minutos
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 };
