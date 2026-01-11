@@ -2691,6 +2691,7 @@ export type Database = {
           response_type: string | null
           score: number | null
           section: string | null
+          session_attempt_id: string | null
           text_response: string | null
           user_id: string | null
         }
@@ -2705,6 +2706,7 @@ export type Database = {
           response_type?: string | null
           score?: number | null
           section?: string | null
+          session_attempt_id?: string | null
           text_response?: string | null
           user_id?: string | null
         }
@@ -2719,6 +2721,7 @@ export type Database = {
           response_type?: string | null
           score?: number | null
           section?: string | null
+          session_attempt_id?: string | null
           text_response?: string | null
           user_id?: string | null
         }
@@ -11697,13 +11700,18 @@ export type Database = {
       user_sessions: {
         Row: {
           assigned_at: string | null
+          auto_save_data: Json | null
           completed_at: string | null
           created_at: string | null
+          cycle_number: number | null
           due_date: string | null
           feedback: Json | null
           id: string
+          is_locked: boolean | null
+          next_available_date: string | null
           notes: string | null
           progress: number | null
+          review_count: number | null
           session_id: string | null
           started_at: string | null
           status: string | null
@@ -11713,13 +11721,18 @@ export type Database = {
         }
         Insert: {
           assigned_at?: string | null
+          auto_save_data?: Json | null
           completed_at?: string | null
           created_at?: string | null
+          cycle_number?: number | null
           due_date?: string | null
           feedback?: Json | null
           id?: string
+          is_locked?: boolean | null
+          next_available_date?: string | null
           notes?: string | null
           progress?: number | null
+          review_count?: number | null
           session_id?: string | null
           started_at?: string | null
           status?: string | null
@@ -11729,13 +11742,18 @@ export type Database = {
         }
         Update: {
           assigned_at?: string | null
+          auto_save_data?: Json | null
           completed_at?: string | null
           created_at?: string | null
+          cycle_number?: number | null
           due_date?: string | null
           feedback?: Json | null
           id?: string
+          is_locked?: boolean | null
+          next_available_date?: string | null
           notes?: string | null
           progress?: number | null
+          review_count?: number | null
           session_id?: string | null
           started_at?: string | null
           status?: string | null
@@ -13016,6 +13034,10 @@ export type Database = {
         Args: { session_id_param: string; user_ids_param: string[] }
         Returns: boolean
       }
+      auto_save_session_progress: {
+        Args: { p_progress_data: Json; p_session_id: string; p_user_id: string }
+        Returns: boolean
+      }
       calculate_level: { Args: { xp: number }; Returns: number }
       check_rate_limit: {
         Args: {
@@ -13028,6 +13050,10 @@ export type Database = {
       }
       cleanup_expired_cache: { Args: never; Returns: number }
       cleanup_old_chat_history: { Args: never; Returns: undefined }
+      complete_session_cycle: {
+        Args: { p_session_id: string; p_user_id: string }
+        Returns: Json
+      }
       consolidate_daily_health_snapshot: {
         Args: { p_date?: string; p_user_id: string }
         Returns: string
@@ -13046,6 +13072,7 @@ export type Database = {
         Returns: boolean
       }
       is_admin_user: { Args: never; Returns: boolean }
+      unlock_available_sessions: { Args: never; Returns: number }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
