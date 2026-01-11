@@ -13072,6 +13072,8 @@ export type Database = {
         Returns: boolean
       }
       is_admin_user: { Args: never; Returns: boolean }
+      recalculate_user_streak: { Args: { p_user_id: string }; Returns: number }
+      sync_all_user_streaks: { Args: never; Returns: undefined }
       unlock_available_sessions: { Args: never; Returns: number }
     }
     Enums: {
