@@ -106,7 +106,7 @@ async function getMediaFromWhapi(message: any, webhook: any): Promise<{ url?: st
     webhook?.image ||
     webhook?.document;
 
-  console.log("[ImageUpload] Whapi mediaData:", JSON.stringify(mediaData).slice(0, 300));
+  console.log("[ImageUpload] Whapi mediaData:", JSON.stringify(mediaData || {}).slice(0, 300));
 
   // 1. Direct link (if auto_download is enabled in Whapi)
   if (mediaData?.link) {
@@ -242,9 +242,24 @@ export async function processAndUploadImage(
   message: any,
   webhook: any
 ): Promise<string | null> {
-  const isWhapi = Deno.env.get("WHATSAPP_ACTIVE_PROVIDER") === "whapi";
+  // Detectar formato baseado no conteúdo, não apenas no provider configurado
+  const hasEvolutionImage = !!(
+    webhook?.data?.message?.imageMessage || 
+    message?.imageMessage ||
+    webhook?.data?.message?.documentMessage ||
+    message?.documentMessage
+  );
+  const hasWhapiImage = !!(
+    webhook?.messages?.[0]?.image || 
+    message?.image ||
+    webhook?.messages?.[0]?.document ||
+    message?.document
+  );
   
-  console.log("[ImageUpload] Provider ativo:", isWhapi ? "whapi" : "evolution");
+  const configuredProvider = Deno.env.get("WHATSAPP_ACTIVE_PROVIDER") || "evolution";
+  
+  console.log("[ImageUpload] Formato detectado - Evolution:", hasEvolutionImage, "Whapi:", hasWhapiImage);
+  console.log("[ImageUpload] Provider configurado:", configuredProvider);
   console.log("[ImageUpload] Message keys:", Object.keys(message || {}));
 
   // Detect content type from various formats
@@ -268,9 +283,19 @@ export async function processAndUploadImage(
     if (url) return url;
   }
 
-  // 2) Whapi - usar link direto ou baixar via media ID
-  if (isWhapi) {
-    console.log("[ImageUpload] Tentando obter mídia via Whapi...");
+  // 2) Se detectou formato Evolution, tentar Evolution API primeiro
+  if (hasEvolutionImage) {
+    console.log("[ImageUpload] Tentando Evolution API (formato detectado)...");
+    const evoBase64 = await getBase64FromEvolution(webhook);
+    if (evoBase64) {
+      console.log("[ImageUpload] Evolution API retornou base64");
+      return uploadBase64ToStorage(supabase, userId, evoBase64, contentTypeHint);
+    }
+  }
+
+  // 3) Se detectou formato Whapi, tentar Whapi API
+  if (hasWhapiImage) {
+    console.log("[ImageUpload] Tentando Whapi API (formato detectado)...");
     const whapiMedia = await getMediaFromWhapi(message, webhook);
     
     if (whapiMedia?.url) {
@@ -285,11 +310,24 @@ export async function processAndUploadImage(
     }
   }
 
-  // 3) Fallback: Evolution API
-  console.log("[ImageUpload] Tentando Evolution API como fallback...");
-  const evoBase64 = await getBase64FromEvolution(webhook);
-  if (evoBase64) {
-    return uploadBase64ToStorage(supabase, userId, evoBase64, contentTypeHint);
+  // 4) Fallback: tentar ambos os métodos se nenhum formato específico foi detectado
+  if (!hasEvolutionImage && !hasWhapiImage) {
+    console.log("[ImageUpload] Formato não detectado, tentando fallbacks...");
+    
+    // Tentar Evolution
+    const evoBase64 = await getBase64FromEvolution(webhook);
+    if (evoBase64) {
+      return uploadBase64ToStorage(supabase, userId, evoBase64, contentTypeHint);
+    }
+    
+    // Tentar Whapi
+    const whapiMedia = await getMediaFromWhapi(message, webhook);
+    if (whapiMedia?.url) {
+      return downloadAndUpload(supabase, userId, whapiMedia.url, contentTypeHint);
+    }
+    if (whapiMedia?.base64) {
+      return uploadBase64ToStorage(supabase, userId, whapiMedia.base64, contentTypeHint);
+    }
   }
 
   console.log("[ImageUpload] Nenhum método conseguiu obter a imagem");
