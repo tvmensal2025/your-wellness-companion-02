@@ -191,7 +191,6 @@ export async function handleDirectEdit(
       `_Sofia 🥗_`
   );
 }
-}
 
 /**
  * Handle direct clear pending (4, finalizar, etc)
