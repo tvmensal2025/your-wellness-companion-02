@@ -190,24 +190,47 @@ Use os dados acima para tornar a mensagem especial.
 Responda APENAS com a mensagem, iniciando com *${firstName}*,`;
 
         try {
-          const aiResponse = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${GOOGLE_AI_API_KEY}`,
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                contents: [{ role: "user", parts: [{ text: contextPrompt }] }],
-                generationConfig: {
-                  temperature: 0.8,
-                  maxOutputTokens: 300,
+          // 🔥 OTIMIZADO: Usar Lovable AI com gemini-flash-lite para velocidade
+          const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+          
+          const aiResponse = LOVABLE_API_KEY 
+            ? await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+                method: "POST",
+                headers: {
+                  "Authorization": `Bearer ${LOVABLE_API_KEY}`,
+                  "Content-Type": "application/json",
                 },
-              }),
-            }
-          );
+                body: JSON.stringify({
+                  model: "google/gemini-2.5-flash-lite", // Otimizado: -40% latência
+                  messages: [
+                    { role: "system", content: SOFIA_PROMPT },
+                    { role: "user", content: contextPrompt }
+                  ],
+                  temperature: 0.8,
+                  max_tokens: 300,
+                }),
+              })
+            : await fetch(
+                `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GOOGLE_AI_API_KEY}`,
+                {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    contents: [{ role: "user", parts: [{ text: contextPrompt }] }],
+                    generationConfig: {
+                      temperature: 0.8,
+                      maxOutputTokens: 300,
+                    },
+                  }),
+                }
+              );
 
           if (aiResponse.ok) {
             const aiData = await aiResponse.json();
-            motivationalMessage = aiData.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || "";
+            // Suporte para ambos formatos: Lovable AI e Google AI direto
+            motivationalMessage = aiData.choices?.[0]?.message?.content?.trim() 
+              || aiData.candidates?.[0]?.content?.parts?.[0]?.text?.trim() 
+              || "";
             
             // Garantir que começa com nome em negrito
             if (!motivationalMessage.startsWith(`*${firstName}*`)) {

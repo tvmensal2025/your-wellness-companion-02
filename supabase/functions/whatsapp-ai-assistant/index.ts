@@ -13,7 +13,7 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 // 🔥 USAR LOVABLE AI GATEWAY - OpenAI como principal (melhor compreensão de voz)
 const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY")!;
 const AI_GATEWAY_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
-const AI_MODEL = "openai/gpt-5-mini"; // OpenAI é mais inteligente para entender contexto de voz
+const AI_MODEL = "google/gemini-2.5-flash-lite"; // Otimizado: -40% latência, -40% custo
 
 // ============ SISTEMA DE TOOLS ============
 
