@@ -13,9 +13,14 @@ import { handleEdit } from "./handlers/edit-handler.ts";
 import { handleMedicalResponse, processMedicalImage } from "./handlers/medical-handler.ts";
 import { processAndUploadImage } from "./handlers/image-upload.ts";
 
+// Button handler
+import { handleButtonClick } from "./handlers/button-handler.ts";
+
 // Utils
 import {
   extractText,
+  extractButtonId,
+  hasButtonReply,
   hasImage,
   hasDocument,
   isConfirmationPositive,
@@ -182,7 +187,17 @@ serve(async (req) => {
       }
     }
 
-    // ROTEAMENTO DE MENSAGENS
+    // 🔘 ROTEAMENTO DE BOTÕES - ANTES DO TEXTO
+    const buttonId = extractButtonId(message);
+    if (buttonId) {
+      console.log(`[WhatsApp] 🔘 Botão clicado: ${buttonId}`);
+      const handled = await handleButtonClick(supabase, user, phone, buttonId, pending, pendingMedical);
+      if (handled) {
+        return new Response(JSON.stringify({ ok: true, buttonHandled: buttonId }), { headers: corsHeaders });
+      }
+    }
+
+    // ROTEAMENTO DE MENSAGENS DE TEXTO
 
     // 1. Modo edição ativo
     if (pending?.waiting_edit && messageText) {
