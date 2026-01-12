@@ -25,7 +25,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useRanking } from '@/hooks/useRanking';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { ConnectionProfileModal } from './ConnectionProfileModal';
 
 interface ConnectionsTabProps {
   currentUserId: string | undefined;
@@ -51,11 +51,11 @@ interface UserProfile {
 
 // Dados mockados
 const MOCK_PROFILES: Partial<UserProfile>[] = [
-  { age: 28, city: 'São Paulo', objective: 'Ganhar massa', status: 'Solteiro(a)', bio: 'Apaixonado por treinos 💪', interests: ['Musculação', 'Corrida'], looking_for: ['Parceiro de treino'] },
-  { age: 25, city: 'Rio de Janeiro', objective: 'Perder peso', status: 'Solteiro(a)', bio: 'Nutricionista em formação 🥗', interests: ['Nutrição', 'Yoga'], looking_for: ['Amizade', 'Relacionamento'] },
-  { age: 32, city: 'Curitiba', objective: 'Condicionamento', status: 'Namorando', bio: 'Corredor amador 🏃', interests: ['Corrida', 'Ciclismo'], looking_for: ['Parceiro de treino'] },
-  { age: 27, city: 'Belo Horizonte', objective: 'Definição', status: 'Solteiro(a)', bio: 'Fitness lifestyle 👙', interests: ['Musculação', 'Dieta'], looking_for: ['Parceiro de treino', 'Relacionamento'] },
-  { age: 30, city: 'Porto Alegre', objective: 'Saúde', status: 'Casado(a)', bio: 'Buscando qualidade de vida 🏠', interests: ['Funcional', 'Caminhada'], looking_for: ['Amizade'] },
+  { age: 28, city: 'São Paulo', objective: 'Ganhar massa', status: 'Solteiro(a)', bio: 'Apaixonado por treinos e vida saudável. Buscando pessoas para treinar junto! 💪', interests: ['Musculação', 'Corrida', 'Alimentação'], looking_for: ['Parceiro de treino', 'Amizade'] },
+  { age: 25, city: 'Rio de Janeiro', objective: 'Perder peso', status: 'Solteiro(a)', bio: 'Nutricionista em formação, amo yoga e meditação 🥗🧘', interests: ['Nutrição', 'Yoga', 'Natação'], looking_for: ['Amizade', 'Relacionamento'] },
+  { age: 32, city: 'Curitiba', objective: 'Condicionamento', status: 'Namorando', bio: 'Corredor amador, já fiz 3 maratonas! 🏃‍♂️', interests: ['Corrida', 'Ciclismo', 'Funcional'], looking_for: ['Parceiro de treino'] },
+  { age: 27, city: 'Belo Horizonte', objective: 'Definição', status: 'Solteiro(a)', bio: 'Fitness lifestyle! Competidora bikini 👙💪', interests: ['Musculação', 'Dieta', 'Crossfit'], looking_for: ['Parceiro de treino', 'Relacionamento'] },
+  { age: 30, city: 'Porto Alegre', objective: 'Saúde', status: 'Casado(a)', bio: 'Buscando qualidade de vida e bem-estar para a família 🏠❤️', interests: ['Funcional', 'Caminhada', 'Yoga'], looking_for: ['Amizade'] },
 ];
 
 const OBJECTIVES = [
@@ -247,136 +247,14 @@ export function ConnectionsTab({ currentUserId, onProfileClick, onMessageClick }
         </div>
       )}
 
-      {/* Profile Detail Modal */}
-      <Dialog open={!!selectedProfile} onOpenChange={() => setSelectedProfile(null)}>
-        <DialogContent className="max-w-sm p-0 overflow-hidden">
-          {selectedProfile && (
-            <div>
-              {/* Header com foto */}
-              <div className="relative h-64 bg-gradient-to-br from-primary/20 to-accent/20">
-                {selectedProfile.avatar_url ? (
-                  <img 
-                    src={selectedProfile.avatar_url} 
-                    alt={selectedProfile.user_name}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <span className="text-6xl font-bold text-primary/30">
-                      {selectedProfile.user_name.charAt(0)}
-                    </span>
-                  </div>
-                )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-                
-                {/* Close button */}
-                <button 
-                  onClick={() => setSelectedProfile(null)}
-                  className="absolute top-3 right-3 bg-black/30 backdrop-blur-sm text-white p-1.5 rounded-full"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-
-                {/* Info */}
-                <div className="absolute bottom-4 left-4 right-4 text-white">
-                  <div className="flex items-center gap-2">
-                    <h2 className="text-2xl font-bold">{selectedProfile.user_name.split(' ')[0]}</h2>
-                    {selectedProfile.age && <span className="text-xl">{selectedProfile.age}</span>}
-                    {selectedProfile.is_online && (
-                      <span className="w-3 h-3 bg-green-500 rounded-full ring-2 ring-white" />
-                    )}
-                  </div>
-                  {selectedProfile.city && (
-                    <div className="flex items-center gap-1 text-sm text-white/80 mt-1">
-                      <MapPin className="w-4 h-4" />
-                      {selectedProfile.city}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Content */}
-              <div className="p-4 space-y-4">
-                {/* Stats */}
-                <div className="flex justify-around text-center">
-                  <div>
-                    <div className="text-lg font-bold text-primary">{selectedProfile.total_points}</div>
-                    <div className="text-xs text-muted-foreground">Pontos</div>
-                  </div>
-                  <div>
-                    <div className="text-lg font-bold text-orange-500">{selectedProfile.streak_days}</div>
-                    <div className="text-xs text-muted-foreground">Sequência</div>
-                  </div>
-                  <div>
-                    <div className="text-lg font-bold">{selectedProfile.is_online ? '🟢' : '⚪'}</div>
-                    <div className="text-xs text-muted-foreground">{selectedProfile.is_online ? 'Online' : 'Offline'}</div>
-                  </div>
-                </div>
-
-                {/* Tags */}
-                <div className="flex flex-wrap gap-2">
-                  {selectedProfile.objective && (
-                    <Badge variant="secondary" className="gap-1">
-                      <Target className="w-3 h-3" />
-                      {selectedProfile.objective}
-                    </Badge>
-                  )}
-                  {selectedProfile.status && (
-                    <Badge className={getStatusColor(selectedProfile.status)}>
-                      {selectedProfile.status}
-                    </Badge>
-                  )}
-                </div>
-
-                {/* Bio */}
-                {selectedProfile.bio && (
-                  <p className="text-sm text-muted-foreground bg-muted/50 rounded-lg p-3">
-                    "{selectedProfile.bio}"
-                  </p>
-                )}
-
-                {/* Interests */}
-                {selectedProfile.interests && selectedProfile.interests.length > 0 && (
-                  <div>
-                    <p className="text-xs font-medium text-muted-foreground mb-2">Interesses</p>
-                    <div className="flex flex-wrap gap-1">
-                      {selectedProfile.interests.map(interest => (
-                        <span key={interest} className="text-xs bg-muted px-2 py-1 rounded-full">
-                          {interest}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Actions */}
-                <div className="flex gap-2 pt-2">
-                  <Button 
-                    className="flex-1"
-                    onClick={() => {
-                      onMessageClick(selectedProfile.user_id);
-                      setSelectedProfile(null);
-                    }}
-                  >
-                    <MessageCircle className="w-4 h-4 mr-2" />
-                    Mensagem
-                  </Button>
-                  <Button 
-                    variant="outline"
-                    className="px-4"
-                    onClick={() => {
-                      onProfileClick(selectedProfile.user_id);
-                      setSelectedProfile(null);
-                    }}
-                  >
-                    Ver Perfil
-                  </Button>
-                </div>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+      {/* Profile Detail Modal - Novo componente completo */}
+      <ConnectionProfileModal
+        profile={selectedProfile}
+        open={!!selectedProfile}
+        onClose={() => setSelectedProfile(null)}
+        onMessageClick={onMessageClick}
+        onViewFullProfile={onProfileClick}
+      />
     </div>
   );
 }
