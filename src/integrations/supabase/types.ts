@@ -13465,38 +13465,116 @@ export type Database = {
       whatsapp_message_logs: {
         Row: {
           created_at: string | null
+          delivered_at: string | null
+          error_code: string | null
           error_message: string | null
+          failed_at: string | null
           id: string
+          interactive_type: string | null
           message_content: string | null
           message_type: string
-          metadata: Json | null
-          phone_number: string | null
+          phone: string
+          provider: string
+          provider_message_id: string | null
+          provider_response: Json | null
+          queued_at: string | null
+          read_at: string | null
+          retry_count: number | null
           sent_at: string | null
-          status: string | null
+          status: string
+          template_key: string | null
           user_id: string | null
         }
         Insert: {
           created_at?: string | null
+          delivered_at?: string | null
+          error_code?: string | null
           error_message?: string | null
+          failed_at?: string | null
           id?: string
+          interactive_type?: string | null
           message_content?: string | null
           message_type: string
-          metadata?: Json | null
-          phone_number?: string | null
+          phone: string
+          provider: string
+          provider_message_id?: string | null
+          provider_response?: Json | null
+          queued_at?: string | null
+          read_at?: string | null
+          retry_count?: number | null
           sent_at?: string | null
-          status?: string | null
+          status?: string
+          template_key?: string | null
           user_id?: string | null
         }
         Update: {
           created_at?: string | null
+          delivered_at?: string | null
+          error_code?: string | null
           error_message?: string | null
+          failed_at?: string | null
           id?: string
+          interactive_type?: string | null
           message_content?: string | null
           message_type?: string
-          metadata?: Json | null
-          phone_number?: string | null
+          phone?: string
+          provider?: string
+          provider_message_id?: string | null
+          provider_response?: Json | null
+          queued_at?: string | null
+          read_at?: string | null
+          retry_count?: number | null
           sent_at?: string | null
-          status?: string | null
+          status?: string
+          template_key?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      whatsapp_message_queue: {
+        Row: {
+          attempts: number | null
+          created_at: string | null
+          error_message: string | null
+          id: string
+          last_attempt_at: string | null
+          max_attempts: number | null
+          payload: Json
+          phone: string
+          priority: number | null
+          processed_at: string | null
+          scheduled_for: string | null
+          status: string
+          user_id: string | null
+        }
+        Insert: {
+          attempts?: number | null
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          last_attempt_at?: string | null
+          max_attempts?: number | null
+          payload: Json
+          phone: string
+          priority?: number | null
+          processed_at?: string | null
+          scheduled_for?: string | null
+          status?: string
+          user_id?: string | null
+        }
+        Update: {
+          attempts?: number | null
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          last_attempt_at?: string | null
+          max_attempts?: number | null
+          payload?: Json
+          phone?: string
+          priority?: number | null
+          processed_at?: string | null
+          scheduled_for?: string | null
+          status?: string
           user_id?: string | null
         }
         Relationships: []
@@ -13698,6 +13776,108 @@ export type Database = {
         }
         Relationships: []
       }
+      whatsapp_provider_config: {
+        Row: {
+          active_provider: string
+          evolution_api_url: string | null
+          evolution_enabled: boolean | null
+          evolution_failure_count_24h: number | null
+          evolution_health_status: string | null
+          evolution_instance: string | null
+          evolution_last_health_check: string | null
+          evolution_last_message_at: string | null
+          evolution_success_count_24h: number | null
+          id: string
+          updated_at: string | null
+          updated_by: string | null
+          whapi_api_url: string | null
+          whapi_enabled: boolean | null
+          whapi_failure_count_24h: number | null
+          whapi_health_status: string | null
+          whapi_last_health_check: string | null
+          whapi_last_message_at: string | null
+          whapi_success_count_24h: number | null
+        }
+        Insert: {
+          active_provider: string
+          evolution_api_url?: string | null
+          evolution_enabled?: boolean | null
+          evolution_failure_count_24h?: number | null
+          evolution_health_status?: string | null
+          evolution_instance?: string | null
+          evolution_last_health_check?: string | null
+          evolution_last_message_at?: string | null
+          evolution_success_count_24h?: number | null
+          id?: string
+          updated_at?: string | null
+          updated_by?: string | null
+          whapi_api_url?: string | null
+          whapi_enabled?: boolean | null
+          whapi_failure_count_24h?: number | null
+          whapi_health_status?: string | null
+          whapi_last_health_check?: string | null
+          whapi_last_message_at?: string | null
+          whapi_success_count_24h?: number | null
+        }
+        Update: {
+          active_provider?: string
+          evolution_api_url?: string | null
+          evolution_enabled?: boolean | null
+          evolution_failure_count_24h?: number | null
+          evolution_health_status?: string | null
+          evolution_instance?: string | null
+          evolution_last_health_check?: string | null
+          evolution_last_message_at?: string | null
+          evolution_success_count_24h?: number | null
+          id?: string
+          updated_at?: string | null
+          updated_by?: string | null
+          whapi_api_url?: string | null
+          whapi_enabled?: boolean | null
+          whapi_failure_count_24h?: number | null
+          whapi_health_status?: string | null
+          whapi_last_health_check?: string | null
+          whapi_last_message_at?: string | null
+          whapi_success_count_24h?: number | null
+        }
+        Relationships: []
+      }
+      whatsapp_rate_limit_tracking: {
+        Row: {
+          id: string
+          last_message_at: string | null
+          messages_last_hour: number | null
+          messages_last_minute: number | null
+          messages_today: number | null
+          phone: string
+          tracking_date: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          id?: string
+          last_message_at?: string | null
+          messages_last_hour?: number | null
+          messages_last_minute?: number | null
+          messages_today?: number | null
+          phone: string
+          tracking_date?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          id?: string
+          last_message_at?: string | null
+          messages_last_hour?: number | null
+          messages_last_minute?: number | null
+          messages_today?: number | null
+          phone?: string
+          tracking_date?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       whatsapp_scheduled_messages: {
         Row: {
           created_at: string | null
@@ -13724,6 +13904,66 @@ export type Database = {
           scheduled_date?: string
           sent_at?: string | null
           status?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      whatsapp_webhook_responses: {
+        Row: {
+          action_error: string | null
+          action_result: Json | null
+          action_triggered: string | null
+          button_id: string | null
+          button_title: string | null
+          id: string
+          is_processed: boolean | null
+          list_row_id: string | null
+          list_row_title: string | null
+          original_message_id: string | null
+          phone: string
+          processed_at: string | null
+          provider: string
+          raw_payload: Json | null
+          received_at: string | null
+          response_type: string
+          user_id: string | null
+        }
+        Insert: {
+          action_error?: string | null
+          action_result?: Json | null
+          action_triggered?: string | null
+          button_id?: string | null
+          button_title?: string | null
+          id?: string
+          is_processed?: boolean | null
+          list_row_id?: string | null
+          list_row_title?: string | null
+          original_message_id?: string | null
+          phone: string
+          processed_at?: string | null
+          provider: string
+          raw_payload?: Json | null
+          received_at?: string | null
+          response_type: string
+          user_id?: string | null
+        }
+        Update: {
+          action_error?: string | null
+          action_result?: Json | null
+          action_triggered?: string | null
+          button_id?: string | null
+          button_title?: string | null
+          id?: string
+          is_processed?: boolean | null
+          list_row_id?: string | null
+          list_row_title?: string | null
+          original_message_id?: string | null
+          phone?: string
+          processed_at?: string | null
+          provider?: string
+          raw_payload?: Json | null
+          received_at?: string | null
+          response_type?: string
           user_id?: string | null
         }
         Relationships: []
@@ -13922,6 +14162,7 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_active_whatsapp_provider: { Args: never; Returns: string }
       has_role: { Args: { _role: string; _user_id: string }; Returns: boolean }
       has_role_text: {
         Args: { _role: string; _user_id: string }
@@ -13930,7 +14171,21 @@ export type Database = {
       is_admin_user: { Args: never; Returns: boolean }
       process_league_promotions: { Args: never; Returns: undefined }
       recalculate_user_streak: { Args: { p_user_id: string }; Returns: number }
+      record_whatsapp_message_sent: {
+        Args: {
+          p_phone: string
+          p_provider: string
+          p_success: boolean
+          p_user_id: string
+        }
+        Returns: undefined
+      }
+      reset_whatsapp_daily_counters: { Args: never; Returns: undefined }
       sync_all_user_streaks: { Args: never; Returns: undefined }
+      toggle_whatsapp_provider: {
+        Args: { new_provider: string }
+        Returns: Json
+      }
       unlock_available_sessions: { Args: never; Returns: number }
       update_league_weekly_xp: {
         Args: { p_user_id: string; p_xp_amount: number }
@@ -13941,6 +14196,15 @@ export type Database = {
           p_battle_id: string
           p_progress_increment: number
           p_team_id: string
+        }
+        Returns: undefined
+      }
+      update_whatsapp_provider_health: {
+        Args: {
+          p_failure_count?: number
+          p_provider: string
+          p_status: string
+          p_success_count?: number
         }
         Returns: undefined
       }
