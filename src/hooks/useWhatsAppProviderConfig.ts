@@ -74,10 +74,10 @@ export function useWhatsAppProviderConfig() {
         whapiEnabled: data.whapi_enabled,
         evolutionApiUrl: data.evolution_api_url,
         evolutionInstance: data.evolution_instance,
-        evolutionHealthStatus: data.evolution_health_status,
+        evolutionHealthStatus: (data.evolution_health_status as 'healthy' | 'unhealthy' | 'unknown') || 'unknown',
         evolutionLastHealthCheck: data.evolution_last_health_check,
         whapiApiUrl: data.whapi_api_url,
-        whapiHealthStatus: data.whapi_health_status,
+        whapiHealthStatus: (data.whapi_health_status as 'healthy' | 'unhealthy' | 'unknown') || 'unknown',
         whapiLastHealthCheck: data.whapi_last_health_check,
         updatedAt: data.updated_at,
         updatedBy: data.updated_by,
@@ -91,7 +91,7 @@ export function useWhatsAppProviderConfig() {
     mutationFn: async (newProvider: WhatsAppProvider) => {
       // Use RPC function for atomic toggle
       const { data, error } = await supabase.rpc('toggle_whatsapp_provider', {
-        p_new_provider: newProvider,
+        new_provider: newProvider,
       });
       
       if (error) throw error;

@@ -93,44 +93,11 @@ export { useDailyMissions } from './useDailyMissions';
 export { useRanking } from './useRanking';
 export { useRealRanking } from './useRealRanking';
 
-// Exercise
-export { useExerciseProgram } from './useExerciseProgram';
-export { useExercisePreferences } from './useExercisePreferences';
-export { useWorkoutSound } from './useWorkoutSound';
-
-// Nutrition
-export { useNutritionTracking } from './useNutritionTracking';
-export { useNutritionHistory } from './useNutritionHistory';
-export { useUserRestrictions } from './useUserRestrictions';
-
-// Tracking
-export { useTrackingData } from './useTrackingData';
-
-// Sofia
-export { useSofiaAnalysis } from './useSofiaAnalysis';
-export { useSofiaProactive } from './useSofiaProactive';
-
-// Subscription
-export { useSubscription } from './useSubscription';
-
-// Admin
-export { useAdminDashboard } from './useAdminDashboard';
-
-// Points
-export { usePointsConfig } from './usePointsConfig';
-
-// UI
-export { useToast } from './use-toast';
-export { useIsMobile as useMobile } from './use-mobile';
-export { useSafeAnimation } from './useSafeAnimation';
-
-
 // ═══════════════════════════════════════════════════════════════════════════
 // 🏋️ EXERCISE
 // ═══════════════════════════════════════════════════════════════════════════
 
 export { useExerciseProgram } from './useExerciseProgram';
-export { useExerciseRecommendation } from './useExerciseRecommendation';
 export { useExercisePreferences } from './useExercisePreferences';
 export { useWorkoutSound } from './useWorkoutSound';
 
@@ -178,5 +145,5 @@ export { usePointsConfig } from './usePointsConfig';
 // ═══════════════════════════════════════════════════════════════════════════
 
 export { useToast } from './use-toast';
-export { useMobile } from './use-mobile';
+export { useIsMobile } from './use-mobile';
 export { useSafeAnimation } from './useSafeAnimation';

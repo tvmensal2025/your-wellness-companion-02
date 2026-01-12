@@ -136,7 +136,7 @@ export function useMyDuels(userId: string | undefined) {
           console.warn('Duels table may not exist:', error.message);
           return [];
         }
-        return data as ChallengeDuel[];
+        return (data || []) as unknown as ChallengeDuel[];
       } catch (e) {
         console.warn('Error fetching duels:', e);
         return [];
@@ -344,7 +344,7 @@ export function useLeagueRanking(league: string) {
           *,
           profiles:user_id (full_name, avatar_url)
         `)
-        .eq('current_league', league)
+        .eq('current_league', league as any)
         .eq('week_start', weekStart)
         .order('weekly_xp', { ascending: false })
         .limit(100);
@@ -474,7 +474,7 @@ export function useActiveEvents() {
           console.warn('Events table may not exist:', error.message);
           return [];
         }
-        return data as SeasonalEvent[];
+        return (data || []) as unknown as SeasonalEvent[];
       } catch (e) {
         console.warn('Error fetching events:', e);
         return [];
@@ -528,27 +528,38 @@ export function useUsePowerup() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Não autenticado');
       
-      // Decrementar quantidade
+      // Decrementar quantidade usando update simples
+      const { data: currentPowerup, error: fetchError } = await supabase
+        .from('user_powerups')
+        .select('quantity')
+        .eq('user_id', user.id)
+        .eq('powerup_type', params.powerup_type as any)
+        .gt('quantity', 0)
+        .single();
+      
+      if (fetchError || !currentPowerup) throw new Error('Power-up não disponível');
+      
       const { error: updateError } = await supabase
         .from('user_powerups')
-        .update({ quantity: supabase.rpc('decrement_powerup') })
+        .update({ quantity: currentPowerup.quantity - 1 })
         .eq('user_id', user.id)
-        .eq('powerup_type', params.powerup_type)
-        .gt('quantity', 0);
+        .eq('powerup_type', params.powerup_type as any);
       
       if (updateError) throw updateError;
       
-      // Registrar uso
-      const { error: logError } = await supabase
-        .from('powerup_usage_log')
-        .insert({
-          user_id: user.id,
-          powerup_type: params.powerup_type,
-          used_on_challenge_id: params.challenge_id,
-          used_on_duel_id: params.duel_id,
-        });
-      
-      if (logError) console.error('Erro ao registrar uso:', logError);
+      // Registrar uso (ignorar erros pois a tabela pode não existir)
+      try {
+        await (supabase as any)
+          .from('powerup_usage_log')
+          .insert({
+            user_id: user.id,
+            powerup_type: params.powerup_type,
+            used_on_challenge_id: params.challenge_id,
+            used_on_duel_id: params.duel_id,
+          });
+      } catch (e) {
+        console.warn('Erro ao registrar uso:', e);
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: CHALLENGE_KEYS.powerups('') });

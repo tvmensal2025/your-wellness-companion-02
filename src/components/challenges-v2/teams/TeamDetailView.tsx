@@ -56,7 +56,7 @@ export const TeamDetailView: React.FC<TeamDetailViewProps> = ({
         console.warn('Error fetching members:', error);
         return [];
       }
-      return data as (TeamMember & { profile: { full_name: string; avatar_url?: string } })[];
+      return (data || []) as unknown as (TeamMember & { profile: { full_name: string; avatar_url?: string } })[];
     },
   });
 

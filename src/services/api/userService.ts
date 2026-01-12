@@ -172,7 +172,7 @@ export async function updateUserPhysicalData(
   userId: string,
   updates: Partial<Omit<UserPhysicalData, 'id' | 'user_id' | 'created_at' | 'updated_at'>>
 ): Promise<UserPhysicalData | null> {
-  const { data, error } = await supabase
+  const { data, error } = await (supabase as any)
     .from('user_physical_data')
     .upsert({
       user_id: userId,

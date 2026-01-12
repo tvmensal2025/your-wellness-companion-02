@@ -151,7 +151,10 @@ export const CreateTeamModal: React.FC<CreateTeamModalProps> = ({
                     "w-8 h-8 rounded-full transition-all",
                     color === c && "ring-2 ring-offset-2 ring-offset-background"
                   )}
-                  style={{ backgroundColor: c, ringColor: c }}
+                  style={{ 
+                    backgroundColor: c, 
+                    ['--tw-ring-color' as string]: c 
+                  }}
                 />
               ))}
             </div>

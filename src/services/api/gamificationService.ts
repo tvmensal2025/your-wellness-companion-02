@@ -241,7 +241,7 @@ export async function addPoints(userId: string, points: number, reason?: string)
  * Incrementa contador de missões completadas
  */
 export async function incrementMissionsCompleted(userId: string): Promise<void> {
-  const { error } = await supabase.rpc('increment_missions_completed', {
+  const { error } = await (supabase as any).rpc('increment_missions_completed', {
     p_user_id: userId,
   });
 

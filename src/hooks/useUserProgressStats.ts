@@ -111,9 +111,9 @@ export function useUserProgressStats(userId: string | null) {
           .select('*', { count: 'exact', head: true })
           .eq('user_id', userId);
 
-        // Fetch total workouts
+        // Fetch total workouts - simplified query
         const { count: totalWorkouts } = await supabase
-          .from('workout_sessions')
+          .from('activity_sessions')
           .select('*', { count: 'exact', head: true })
           .eq('user_id', userId);
 
