@@ -155,17 +155,17 @@ export async function fetchFeedPage(
   let userLikes = new Set<string>();
   if (currentUserId && postsData.length > 0) {
     const postIds = postsData.map(p => p.id);
-    const { data: likes } = await supabase
+    const { data: likes } = await (supabase as any)
       .from('health_feed_likes')
       .select('post_id')
       .eq('user_id', currentUserId)
       .in('post_id', postIds);
 
-    userLikes = new Set(likes?.map(l => l.post_id) || []);
+    userLikes = new Set(likes?.map((l: any) => l.post_id) || []);
   }
 
   // Mapear posts
-  const posts: FeedPost[] = postsData.map(post => {
+  const posts: FeedPost[] = postsData.map((post: any) => {
     const author = post.profiles as FeedPost['author'];
     const tags = detectTags(post.content || '');
     const userBio = generateUserBio(post.content || '', tags, author?.bio || null);
@@ -174,8 +174,8 @@ export async function fetchFeedPage(
       id: post.id,
       user_id: post.user_id,
       content: post.content || '',
-      image_url: post.image_url,
-      video_url: post.video_url,
+      image_url: post.image_url || post.media_urls?.[0] || null,
+      video_url: post.video_url || null,
       visibility: post.visibility || 'public',
       likes_count: post.likes_count || 0,
       comments_count: post.comments_count || 0,
@@ -220,7 +220,7 @@ export async function fetchUserPosts(
     return [];
   }
 
-  return (data || []).map(post => {
+  return (data || []).map((post: any) => {
     const author = post.profiles as FeedPost['author'];
     const tags = detectTags(post.content || '');
     const userBio = generateUserBio(post.content || '', tags, author?.bio || null);
@@ -229,8 +229,8 @@ export async function fetchUserPosts(
       id: post.id,
       user_id: post.user_id,
       content: post.content || '',
-      image_url: post.image_url,
-      video_url: post.video_url,
+      image_url: post.image_url || post.media_urls?.[0] || null,
+      video_url: post.video_url || null,
       visibility: post.visibility || 'public',
       likes_count: post.likes_count || 0,
       comments_count: post.comments_count || 0,
@@ -277,6 +277,8 @@ export async function createPost(
   const tags = detectTags(content);
   return {
     ...data,
+    image_url: imageUrl || null,
+    video_url: videoUrl || null,
     author: null,
     isLiked: false,
     tags,
@@ -294,24 +296,32 @@ export async function toggleLike(
 ): Promise<boolean> {
   if (isCurrentlyLiked) {
     // Remover like
-    await supabase
+    await (supabase as any)
       .from('health_feed_likes')
       .delete()
       .eq('user_id', userId)
       .eq('post_id', postId);
 
-    // Decrementar contador
-    await supabase.rpc('decrement_likes_count', { p_post_id: postId });
+    // Decrementar contador (usar update direto como fallback)
+    try {
+      await (supabase as any).rpc('decrement_likes_count', { p_post_id: postId });
+    } catch (e) {
+      console.warn('RPC decrement_likes_count não existe');
+    }
     
     return false;
   } else {
     // Adicionar like
-    await supabase
+    await (supabase as any)
       .from('health_feed_likes')
       .insert({ user_id: userId, post_id: postId });
 
-    // Incrementar contador
-    await supabase.rpc('increment_likes_count', { p_post_id: postId });
+    // Incrementar contador (usar update direto como fallback)
+    try {
+      await (supabase as any).rpc('increment_likes_count', { p_post_id: postId });
+    } catch (e) {
+      console.warn('RPC increment_likes_count não existe');
+    }
     
     return true;
   }

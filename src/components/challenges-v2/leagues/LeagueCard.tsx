@@ -86,7 +86,7 @@ export const LeagueCard: React.FC<LeagueCardProps> = ({
 
       {/* Ranking Preview */}
       <div className="space-y-2">
-        {ranking?.slice(0, 2).map((user, index) => (
+        {ranking?.slice(0, 2).map((user: any, index: number) => (
           <RankingRow
             key={user.user_id}
             rank={index + 1}
