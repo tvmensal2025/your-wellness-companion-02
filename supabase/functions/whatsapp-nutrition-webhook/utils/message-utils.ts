@@ -335,3 +335,51 @@ export function isMedicalRetry(text: string): boolean {
   ];
   return patterns.some(p => p.test(lower));
 }
+
+/**
+ * Extract button ID from interactive button response
+ * Supports Evolution and Whapi formats
+ */
+export function extractButtonId(message: any): string | null {
+  // Evolution: templateButtonReplyMessage
+  if (message.templateButtonReplyMessage?.selectedId) {
+    const rawId = message.templateButtonReplyMessage.selectedId;
+    // Remove prefixo "ButtonsV3:" se existir
+    return rawId.replace(/^ButtonsV3:/i, '').trim();
+  }
+  
+  // Evolution: buttonsResponseMessage
+  if (message.buttonsResponseMessage?.selectedButtonId) {
+    const rawId = message.buttonsResponseMessage.selectedButtonId;
+    return rawId.replace(/^ButtonsV3:/i, '').trim();
+  }
+  
+  // Whapi: buttonReply
+  if (message.buttonReply?.id) {
+    return message.buttonReply.id.trim();
+  }
+  
+  // Whapi: interactiveResponseMessage (native flow)
+  if (message.interactiveResponseMessage?.nativeFlowResponseMessage?.paramsJson) {
+    try {
+      const params = JSON.parse(message.interactiveResponseMessage.nativeFlowResponseMessage.paramsJson);
+      return params.id?.trim() || null;
+    } catch {
+      return null;
+    }
+  }
+  
+  // Whapi: listResponseMessage
+  if (message.listResponseMessage?.singleSelectReply?.selectedRowId) {
+    return message.listResponseMessage.singleSelectReply.selectedRowId.trim();
+  }
+  
+  return null;
+}
+
+/**
+ * Check if message contains a button reply
+ */
+export function hasButtonReply(message: any): boolean {
+  return !!extractButtonId(message);
+}
