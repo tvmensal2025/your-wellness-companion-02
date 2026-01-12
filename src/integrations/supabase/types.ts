@@ -1538,11 +1538,14 @@ export type Database = {
           daily_log_unit: string | null
           description: string | null
           difficulty: string | null
+          display_mode: string | null
+          display_priority: number | null
           duration_days: number | null
           end_date: string | null
           entry_fee: number | null
           event_id: string | null
           featured: boolean | null
+          featured_until: string | null
           frequency: string | null
           icon: string | null
           id: string
@@ -1589,11 +1592,14 @@ export type Database = {
           daily_log_unit?: string | null
           description?: string | null
           difficulty?: string | null
+          display_mode?: string | null
+          display_priority?: number | null
           duration_days?: number | null
           end_date?: string | null
           entry_fee?: number | null
           event_id?: string | null
           featured?: boolean | null
+          featured_until?: string | null
           frequency?: string | null
           icon?: string | null
           id?: string
@@ -1640,11 +1646,14 @@ export type Database = {
           daily_log_unit?: string | null
           description?: string | null
           difficulty?: string | null
+          display_mode?: string | null
+          display_priority?: number | null
           duration_days?: number | null
           end_date?: string | null
           entry_fee?: number | null
           event_id?: string | null
           featured?: boolean | null
+          featured_until?: string | null
           frequency?: string | null
           icon?: string | null
           id?: string
