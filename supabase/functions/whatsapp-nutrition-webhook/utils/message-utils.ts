@@ -1,24 +1,50 @@
 /**
  * Message extraction and validation utilities
+ * Supports both Evolution API and Whapi formats
  */
 
 /**
  * Extract text content from WhatsApp message
+ * Supports Evolution and Whapi formats
  */
 export function extractText(message: any): string {
   return (
+    // Evolution format
     message.conversation ||
     message.extendedTextMessage?.text ||
     message.imageMessage?.caption ||
+    // Whapi format
+    message.text?.body ||
+    message.image?.caption ||
+    message.document?.caption ||
+    message.body ||
+    message.caption ||
     ""
   ).trim();
 }
 
 /**
  * Check if message contains an image
+ * Supports Evolution and Whapi formats
  */
 export function hasImage(message: any): boolean {
-  return !!message.imageMessage;
+  // Evolution format
+  if (message.imageMessage) return true;
+  // Whapi format
+  if (message.image) return true;
+  return false;
+}
+
+/**
+ * Check if message contains a document
+ * Supports Evolution and Whapi formats
+ */
+export function hasDocument(message: any): boolean {
+  // Evolution format
+  if (message.documentMessage) return true;
+  // Whapi format
+  if (message.document) return true;
+  return false;
 }
 
 /**
