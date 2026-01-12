@@ -174,7 +174,7 @@ async function sendEvolutionText(
 }
 
 /**
- * Send text message via WhatsApp - uses active provider
+ * Send text message via WhatsApp - uses active provider with auto-fallback
  */
 export async function sendWhatsApp(
   phone: string, 
@@ -185,7 +185,19 @@ export async function sendWhatsApp(
   console.log(`[WhatsApp] Provider ativo: ${useWhapi ? 'whapi' : 'evolution'}`);
   
   if (useWhapi) {
-    return await sendWhapiText(phone, message);
+    const whapiSuccess = await sendWhapiText(phone, message);
+    if (whapiSuccess) return true;
+    
+    // Fallback automático para Evolution se Whapi falhar
+    console.log('[WhatsApp] ⚠️ Whapi falhou, tentando fallback Evolution...');
+    const evolutionSuccess = await sendEvolutionText(phone, message, maxRetries);
+    if (evolutionSuccess) {
+      console.log('[WhatsApp] ✅ Fallback Evolution funcionou!');
+      return true;
+    }
+    
+    console.error('[WhatsApp] ❌ Ambos providers falharam');
+    return false;
   }
   
   return await sendEvolutionText(phone, message, maxRetries);

@@ -228,6 +228,7 @@ function convertToTextFallback(message: InteractiveMessage): string {
 
 /**
  * Send interactive message - uses Whapi if active, otherwise text fallback
+ * Includes auto-fallback to Evolution if Whapi fails
  */
 export async function sendInteractiveMessage(
   phone: string,
@@ -241,10 +242,22 @@ export async function sendInteractiveMessage(
     const success = await sendWhapiInteractive(phone, message);
     if (success) return true;
     
-    // Fallback to text if Whapi fails
-    console.log('[WhatsApp] Whapi falhou, usando fallback texto via Whapi');
+    // Fallback 1: texto via Whapi
+    console.log('[WhatsApp] Whapi interativo falhou, tentando texto via Whapi...');
     const textFallback = convertToTextFallback(message);
-    return await sendWhapiText(phone, textFallback);
+    const whapiTextSuccess = await sendWhapiText(phone, textFallback);
+    if (whapiTextSuccess) return true;
+    
+    // Fallback 2: texto via Evolution (fallback final)
+    console.log('[WhatsApp] ⚠️ Whapi texto também falhou, usando Evolution...');
+    const evolutionSuccess = await sendEvolutionText(phone, textFallback);
+    if (evolutionSuccess) {
+      console.log('[WhatsApp] ✅ Fallback Evolution funcionou!');
+      return true;
+    }
+    
+    console.error('[WhatsApp] ❌ Todos os métodos de envio falharam');
+    return false;
   }
   
   // Evolution: send as text (no native buttons)
@@ -253,13 +266,25 @@ export async function sendInteractiveMessage(
 }
 
 /**
- * Send simple text message via active provider
+ * Send simple text message via active provider with auto-fallback
  */
 export async function sendTextMessage(phone: string, text: string): Promise<boolean> {
   const useWhapi = isWhapiActive();
   
   if (useWhapi) {
-    return await sendWhapiText(phone, text);
+    const whapiSuccess = await sendWhapiText(phone, text);
+    if (whapiSuccess) return true;
+    
+    // Fallback automático para Evolution
+    console.log('[WhatsApp] ⚠️ Whapi falhou, tentando fallback Evolution...');
+    const evolutionSuccess = await sendEvolutionText(phone, text);
+    if (evolutionSuccess) {
+      console.log('[WhatsApp] ✅ Fallback Evolution funcionou!');
+      return true;
+    }
+    
+    console.error('[WhatsApp] ❌ Ambos providers falharam');
+    return false;
   }
   
   return await sendEvolutionText(phone, text);
