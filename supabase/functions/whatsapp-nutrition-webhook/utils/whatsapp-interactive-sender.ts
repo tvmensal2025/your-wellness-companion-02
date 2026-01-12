@@ -6,6 +6,7 @@
 // Whapi config
 const WHAPI_API_URL = Deno.env.get('WHAPI_API_URL') || 'https://gate.whapi.cloud';
 const WHAPI_TOKEN = Deno.env.get('WHAPI_TOKEN') || '';
+const WHAPI_CHANNEL_ID = Deno.env.get('WHAPI_CHANNEL_ID') || '';
 
 // Evolution config (fallback for text)
 const EVOLUTION_API_URL = Deno.env.get('EVOLUTION_API_URL');
@@ -59,6 +60,24 @@ function isWhapiActive(): boolean {
  * Send interactive message with buttons via Whapi
  */
 /**
+ * Build Whapi headers with optional Channel ID
+ */
+function getWhapiHeaders(): Record<string, string> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    'Authorization': `Bearer ${WHAPI_TOKEN}`,
+  };
+  
+  // Adicionar Channel ID se configurado (resolve "Channel not found")
+  if (WHAPI_CHANNEL_ID) {
+    headers['X-Channel-Id'] = WHAPI_CHANNEL_ID;
+  }
+  
+  return headers;
+}
+
+/**
  * Send interactive message with buttons via Whapi
  * Uses quick_reply format as per Whapi documentation:
  * https://support.whapi.cloud/help-desk/sending/send-message-with-buttons
@@ -77,6 +96,14 @@ async function sendWhapiInteractive(
   if (!formattedPhone.startsWith('55')) {
     formattedPhone = '55' + formattedPhone;
   }
+  
+  // Log de diagnóstico
+  console.log('[Whapi] Config:', {
+    url: WHAPI_API_URL,
+    channelId: WHAPI_CHANNEL_ID ? `configurado (${WHAPI_CHANNEL_ID.substring(0, 8)}...)` : 'NÃO configurado',
+    tokenLength: WHAPI_TOKEN?.length || 0,
+    phone: formattedPhone,
+  });
   
   try {
     // Formato correto do Whapi para quick_reply buttons
@@ -104,11 +131,7 @@ async function sendWhapiInteractive(
 
     const response = await fetch(`${WHAPI_API_URL}/messages/interactive`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'Authorization': `Bearer ${WHAPI_TOKEN}`,
-      },
+      headers: getWhapiHeaders(),
       body: JSON.stringify(payload),
     });
 
@@ -125,6 +148,10 @@ async function sendWhapiInteractive(
 
     if (!response.ok) {
       console.error('[Whapi] Erro HTTP:', response.status, data);
+      // Se for 404 "Channel not found", sugerir configurar WHAPI_CHANNEL_ID
+      if (response.status === 404 && !WHAPI_CHANNEL_ID) {
+        console.error('[Whapi] ⚠️ DICA: Configure o secret WHAPI_CHANNEL_ID com o ID do seu canal!');
+      }
       return false;
     }
 
@@ -201,11 +228,7 @@ async function sendWhapiText(phone: string, text: string): Promise<boolean> {
   try {
     const response = await fetch(`${WHAPI_API_URL}/messages/text`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'Authorization': `Bearer ${WHAPI_TOKEN}`,
-      },
+      headers: getWhapiHeaders(),
       body: JSON.stringify({
         to: formattedPhone,
         body: text,
