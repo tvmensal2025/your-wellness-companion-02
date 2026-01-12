@@ -48,36 +48,79 @@ serve(async (req) => {
 
   try {
     const webhook = await req.json();
-    console.log("[WhatsApp] Webhook recebido:", JSON.stringify(webhook).slice(0, 500));
+    console.log("[WhatsApp] Webhook recebido:", JSON.stringify(webhook).slice(0, 800));
 
-    // Validar evento
-    const event = String(webhook.event || "").toLowerCase();
-    const isUpsert = event === "messages.upsert" || event === "messages_upsert";
-    if (!isUpsert) {
-      return new Response(JSON.stringify({ ok: true }), { headers: corsHeaders });
+    // Detect webhook format: Evolution vs Whapi
+    const isWhapiFormat = !!(webhook.messages || webhook.event?.type === "messages");
+    const isEvolutionFormat = !!(webhook.data?.key || webhook.event === "messages.upsert");
+    
+    console.log("[WhatsApp] Formato detectado:", isWhapiFormat ? "WHAPI" : "EVOLUTION");
+
+    let message: any;
+    let phone: string;
+    let pushName: string;
+    let isFromMe: boolean;
+    let isGroup: boolean;
+
+    if (isWhapiFormat) {
+      // ========== WHAPI FORMAT ==========
+      // Whapi: { messages: [...], event: {...} }
+      const msg = webhook.messages?.[0] || webhook;
+      
+      // Ignore status updates (ack, read, etc)
+      if (webhook.event?.type === "statuses" || !msg) {
+        return new Response(JSON.stringify({ ok: true }), { headers: corsHeaders });
+      }
+      
+      message = msg;
+      isFromMe = msg.from_me === true;
+      
+      // Extract phone from chat_id or from
+      const chatId = msg.chat_id || msg.from || "";
+      phone = chatId.replace("@s.whatsapp.net", "").replace("@c.us", "").replace(/\D/g, "");
+      pushName = msg.from_name || msg.pushName || "Usuário";
+      isGroup = chatId.includes("@g.us");
+      
+      console.log("[WhatsApp] Whapi - phone:", phone, "pushName:", pushName, "isFromMe:", isFromMe);
+    } else {
+      // ========== EVOLUTION FORMAT ==========
+      // Validar evento
+      const event = String(webhook.event || "").toLowerCase();
+      const isUpsert = event === "messages.upsert" || event === "messages_upsert";
+      if (!isUpsert) {
+        return new Response(JSON.stringify({ ok: true }), { headers: corsHeaders });
+      }
+
+      const key = webhook.data?.key || {};
+      isFromMe = key.fromMe === true;
+      
+      const jid = key.remoteJidAlt || key.remoteJid || "";
+      phone = String(jid).replace("@s.whatsapp.net", "").replace("@lid", "").replace(/\D/g, "");
+      
+      message = webhook.data?.message || {};
+      pushName = webhook.data?.pushName || "Usuário";
+      isGroup = jid.includes("@g.us");
+      
+      console.log("[WhatsApp] Evolution - phone:", phone, "pushName:", pushName);
     }
 
     // Ignorar mensagem própria
-    if (webhook.data?.key?.fromMe) {
+    if (isFromMe) {
+      console.log("[WhatsApp] Ignorando mensagem própria");
       return new Response(JSON.stringify({ ok: true }), { headers: corsHeaders });
     }
-
-    // Extrair dados
-    const key = webhook.data?.key || {};
-    const jid = key.remoteJidAlt || key.remoteJid || "";
 
     // Ignorar grupos
-    if (jid.includes("@g.us")) {
+    if (isGroup) {
+      console.log("[WhatsApp] Ignorando grupo");
       return new Response(JSON.stringify({ ok: true }), { headers: corsHeaders });
     }
 
-    const phone = String(jid)
-      .replace("@s.whatsapp.net", "")
-      .replace("@lid", "")
-      .replace(/\D/g, "");
-
-    const message = webhook.data?.message || {};
-    const pushName = webhook.data?.pushName || "Usuário";
+    // Validar phone
+    if (!phone || phone.length < 8) {
+      console.log("[WhatsApp] Phone inválido:", phone);
+      return new Response(JSON.stringify({ ok: true }), { headers: corsHeaders });
+    }
 
     console.log(`[WhatsApp] Mensagem de ${phone} (${pushName})`);
 
