@@ -1,17 +1,28 @@
 /**
  * WhatsApp message sending utility com retry e fallback
+ * Suporta Evolution e Whapi
  */
 
 const EVOLUTION_API_URL = Deno.env.get("EVOLUTION_API_URL");
 const EVOLUTION_API_KEY = Deno.env.get("EVOLUTION_API_KEY");
 const EVOLUTION_INSTANCE = Deno.env.get("EVOLUTION_INSTANCE");
+const WHAPI_API_URL = Deno.env.get('WHAPI_API_URL') || 'https://gate.whapi.cloud';
+const WHAPI_TOKEN = Deno.env.get('WHAPI_TOKEN') || '';
 
 function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 /**
- * Format phone number for WhatsApp
+ * Check if Whapi is the active provider
+ */
+function isWhapiActive(): boolean {
+  const activeProvider = Deno.env.get('WHATSAPP_ACTIVE_PROVIDER') || 'evolution';
+  return activeProvider === 'whapi' && !!WHAPI_TOKEN;
+}
+
+/**
+ * Format phone number for WhatsApp (Evolution)
  */
 function formatPhone(phone: string): string {
   let formatted = phone.replace(/\D/g, "");
@@ -19,6 +30,17 @@ function formatPhone(phone: string): string {
     formatted = "55" + formatted;
   }
   return formatted;
+}
+
+/**
+ * Format phone for Whapi
+ */
+function formatPhoneWhapi(phone: string): string {
+  let formatted = phone.replace(/\D/g, '');
+  if (!formatted.startsWith('55')) {
+    formatted = '55' + formatted;
+  }
+  return `${formatted}@s.whatsapp.net`;
 }
 
 /**
@@ -42,9 +64,44 @@ function sanitizeMessage(text: string): string {
 }
 
 /**
- * Send text message via WhatsApp com retry automático
+ * Send text message via Whapi
  */
-export async function sendWhatsApp(
+async function sendWhapiText(phone: string, text: string): Promise<boolean> {
+  const formattedPhone = formatPhoneWhapi(phone);
+  const sanitizedMessage = sanitizeMessage(text);
+  
+  try {
+    const response = await fetch(`${WHAPI_API_URL}/messages/text`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${WHAPI_TOKEN}`,
+      },
+      body: JSON.stringify({
+        to: formattedPhone,
+        body: sanitizedMessage,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error('[Whapi] Erro ao enviar texto:', data);
+      return false;
+    }
+
+    console.log('[Whapi] ✅ Texto enviado:', data?.message?.id || data?.id);
+    return true;
+  } catch (error) {
+    console.error('[Whapi] Exceção:', error);
+    return false;
+  }
+}
+
+/**
+ * Send text message via Evolution
+ */
+async function sendEvolutionText(
   phone: string, 
   message: string,
   maxRetries: number = 3
@@ -84,13 +141,13 @@ export async function sendWhatsApp(
       clearTimeout(timeoutId);
 
       if (response.ok) {
-        console.log(`[WhatsApp] ✅ Mensagem enviada para ${formattedPhone}`);
+        console.log(`[Evolution] ✅ Mensagem enviada para ${formattedPhone}`);
         return true;
       }
       
       const errorData = await response.text();
       lastError = `HTTP ${response.status}: ${errorData}`;
-      console.warn(`[WhatsApp] Erro ${response.status} (tentativa ${attempt}/${maxRetries}): ${errorData}`);
+      console.warn(`[Evolution] Erro ${response.status} (tentativa ${attempt}/${maxRetries}): ${errorData}`);
       
       // Não fazer retry para erros definitivos
       if (response.status === 401 || response.status === 403 || response.status === 404) {
@@ -104,7 +161,7 @@ export async function sendWhatsApp(
     } catch (error) {
       const err = error as Error;
       lastError = err.name === 'AbortError' ? 'Timeout' : err.message;
-      console.warn(`[WhatsApp] Exceção (tentativa ${attempt}/${maxRetries}): ${lastError}`);
+      console.warn(`[Evolution] Exceção (tentativa ${attempt}/${maxRetries}): ${lastError}`);
       
       if (attempt < maxRetries) {
         await sleep(1000 * attempt);
@@ -112,8 +169,26 @@ export async function sendWhatsApp(
     }
   }
   
-  console.error(`[WhatsApp] ❌ Falha após ${maxRetries} tentativas: ${lastError}`);
+  console.error(`[Evolution] ❌ Falha após ${maxRetries} tentativas: ${lastError}`);
   return false;
+}
+
+/**
+ * Send text message via WhatsApp - uses active provider
+ */
+export async function sendWhatsApp(
+  phone: string, 
+  message: string,
+  maxRetries: number = 3
+): Promise<boolean> {
+  const useWhapi = isWhapiActive();
+  console.log(`[WhatsApp] Provider ativo: ${useWhapi ? 'whapi' : 'evolution'}`);
+  
+  if (useWhapi) {
+    return await sendWhapiText(phone, message);
+  }
+  
+  return await sendEvolutionText(phone, message, maxRetries);
 }
 
 /**

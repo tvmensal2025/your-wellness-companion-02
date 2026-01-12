@@ -76,9 +76,11 @@ async function sendWhapiInteractive(
       body: { text: message.bodyText },
       action: {
         buttons: message.buttons.slice(0, 3).map(btn => ({
-          type: 'quick_reply',
-          title: btn.title.substring(0, 20), // Max 20 chars
-          id: btn.id,
+          type: 'reply',
+          reply: {
+            id: btn.id,
+            title: btn.title.substring(0, 20), // Max 20 chars
+          },
         })),
       },
     };
