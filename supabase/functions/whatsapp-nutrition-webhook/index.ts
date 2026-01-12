@@ -17,6 +17,7 @@ import { processAndUploadImage } from "./handlers/image-upload.ts";
 import {
   extractText,
   hasImage,
+  hasDocument,
   isConfirmationPositive,
   detectMealType,
   isMedicalCancel,
@@ -321,9 +322,11 @@ serve(async (req) => {
         await handleMedicalResponse(supabase, user, pendingMedical, messageText, phone);
       }
     }
-    // 4. Imagem recebida
-    else if (hasImage(message)) {
-      await processImage(user, phone, message, webhook);
+    // 4. Imagem ou documento recebido
+    else if (hasImage(message) || hasDocument(message)) {
+      const isDocument = hasDocument(message);
+      console.log(`[WhatsApp] ${isDocument ? 'Documento' : 'Imagem'} recebido, processando...`);
+      await processImage(user, phone, message, webhook, isDocument);
     }
     // 5. Texto sem pendência
     else if (messageText) {
@@ -357,12 +360,19 @@ serve(async (req) => {
 
 // Funções auxiliares
 
-async function processImage(user: UserInfo, phone: string, message: any, webhook: any): Promise<void> {
+async function processImage(user: UserInfo, phone: string, message: any, webhook: any, isDocument: boolean = false): Promise<void> {
   try {
     const imageUrl = await processAndUploadImage(supabase, user.id, message, webhook);
 
     if (!imageUrl) {
-      await sendWhatsApp(phone, "❌ Não consegui processar sua foto. Tente enviar novamente!");
+      await sendWhatsApp(phone, `❌ Não consegui processar ${isDocument ? 'seu documento' : 'sua foto'}. Tente enviar novamente!`);
+      return;
+    }
+
+    // Se é um documento (PDF), encaminhar diretamente para análise médica
+    if (isDocument) {
+      console.log('[WhatsApp] Documento detectado, encaminhando para análise médica...');
+      await processMedicalImage(supabase, user, phone, imageUrl);
       return;
     }
 
@@ -405,7 +415,7 @@ async function processImage(user: UserInfo, phone: string, message: any, webhook
     }
   } catch (error) {
     console.error("[WhatsApp] Erro ao processar imagem:", error);
-    await sendWhatsApp(phone, "❌ Erro ao processar sua foto. Tente novamente!");
+    await sendWhatsApp(phone, `❌ Erro ao processar ${isDocument ? 'seu documento' : 'sua foto'}. Tente novamente!`);
   }
 }
 
