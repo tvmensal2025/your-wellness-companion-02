@@ -1,6 +1,11 @@
 import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { UserInfo } from "../services/user-service.ts";
 import { sendWhatsApp, sendWhatsAppWithFallback } from "../utils/whatsapp-sender.ts";
+import { 
+  sendInteractiveMessage, 
+  sendTextMessage,
+  sendFoodAnalysisConfirmation,
+} from "../utils/whatsapp-interactive-sender.ts";
 import { detectMealType, formatMealType } from "../utils/message-utils.ts";
 import {
   saveToFoodHistory,
@@ -80,9 +85,18 @@ export async function handleSmartResponse(
       // Detectar tipo de erro para fallback apropriado
       const errorMsg = error.message || '';
       if (errorMsg.includes('429') || errorMsg.includes('rate')) {
-        await sendWhatsApp(phone, FALLBACK_RESPONSES.rate_limited(userName));
+        await sendTextMessage(phone, FALLBACK_RESPONSES.rate_limited(userName));
       } else {
-        await sendWhatsApp(phone, FALLBACK_RESPONSES.technical_error(userName));
+        await sendInteractiveMessage(phone, {
+          headerText: '👋 Oi!',
+          bodyText: `${userName}, tive um probleminha técnico, mas estou aqui!\n\nComo posso te ajudar?`,
+          footerText: 'Sofia 💚',
+          buttons: [
+            { id: 'sofia_new_photo', title: '📸 Analisar Foto' },
+            { id: 'sofia_meal_plan', title: '🍽️ Cardápio' },
+            { id: 'help', title: '❓ Ajuda' },
+          ],
+        });
       }
       return;
     }
@@ -99,15 +113,24 @@ export async function handleSmartResponse(
       ? "\n\n_Dr. Vital 🩺_"
       : "\n\n_Sofia 🥗_";
 
-    await sendWhatsApp(phone, responseText + signature);
+    await sendTextMessage(phone, responseText + signature);
 
     console.log("[SmartResponse] Resposta IA enviada:", responseText.slice(0, 100));
   } catch (error) {
     const err = error as Error;
     console.error("[SmartResponse] Erro na resposta inteligente:", err.message);
     
-    // Fallback determinístico
-    await sendWhatsApp(phone, FALLBACK_RESPONSES.generic_help());
+    // Fallback determinístico com botões
+    await sendInteractiveMessage(phone, {
+      headerText: '👋 Oi!',
+      bodyText: 'Estou aqui para ajudar com sua nutrição!',
+      footerText: 'Sofia 🥗',
+      buttons: [
+        { id: 'sofia_new_photo', title: '📸 Enviar Foto' },
+        { id: 'sofia_meal_plan', title: '🍽️ Cardápio' },
+        { id: 'help', title: '❓ Ajuda' },
+      ],
+    });
   }
 }
 
@@ -152,25 +175,29 @@ export async function handleSmartResponseWithPending(
       .replace(/\n*_Sofia 🥗_\s*$/g, "")
       .replace(/\n*_Dr\. Vital 🩺_\s*$/g, "");
 
-    // Create pending reminder
     const foodsList = pendingFoods
       .slice(0, 4)
       .map((f: any) => f.nome || f.name)
       .join(", ");
-    const pendingReminder =
-      pendingFoods.length > 0
-        ? `\n\n───────────────\n\n` +
-          `⚠️ *Pendência ativa*\n\n` +
-          `📋 ${foodsList}${pendingFoods.length > 4 ? "..." : ""}\n\n` +
-          `Escolha uma opção:\n\n` +
-          `*1* ✅ Confirmar\n` +
-          `*2* ❌ Cancelar\n` +
-          `*3* ✏️ Editar\n` +
-          `*4* 🔄 Limpar pendência\n\n` +
-          `_Sofia 🥗_`
-        : "\n\n_Sofia 🥗_";
-
-    await sendWhatsApp(phone, responseText + pendingReminder);
+    
+    if (pendingFoods.length > 0) {
+      // Send AI response first
+      await sendTextMessage(phone, responseText);
+      
+      // Then send interactive buttons for pending
+      await sendInteractiveMessage(phone, {
+        headerText: '⚠️ Pendência ativa',
+        bodyText: `📋 ${foodsList}${pendingFoods.length > 4 ? '...' : ''}\n\n*O que deseja fazer?*`,
+        footerText: 'Sofia 🥗',
+        buttons: [
+          { id: 'sofia_confirm', title: '✅ Confirmar' },
+          { id: 'sofia_edit', title: '✏️ Corrigir' },
+          { id: 'sofia_cancel', title: '❌ Cancelar' },
+        ],
+      });
+    } else {
+      await sendTextMessage(phone, responseText + "\n\n_Sofia 🥗_");
+    }
 
     console.log("[SmartResponse] Resposta IA com pendência enviada");
   } catch (error) {
@@ -267,22 +294,8 @@ async function processTextForFood(
 
     console.log("[TextHandler] Refeição (texto) salva IMEDIATAMENTE:", foodHistoryId);
 
-    const foodsList = foods
-      .map((f: any) => `• ${f.name || f.nome} (${f.grams || f.quantidade || "?"}g)`)
-      .join("\n");
-
-    const confirmMessage =
-      `🍽️ *Entendi! Você comeu:*\n\n` +
-      `${foodsList}\n\n` +
-      `📊 *Total estimado: ~${Math.round(totalCalories)} kcal*\n\n` +
-      `───────────────\n\n` +
-      `*Está correto?* Escolha:\n\n` +
-      `*1* ✅ Confirmar\n` +
-      `*2* ❌ Cancelar\n` +
-      `*3* ✏️ Editar\n\n` +
-      `_Sofia 🥗_`;
-
-    await sendWhatsApp(phone, confirmMessage);
+    // Send interactive buttons for food confirmation
+    await sendFoodAnalysisConfirmation(phone, foods, totalCalories);
 
     // Clear old pendings
     await supabase

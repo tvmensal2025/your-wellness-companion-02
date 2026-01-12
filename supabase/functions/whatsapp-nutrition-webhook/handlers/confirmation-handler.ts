@@ -2,6 +2,11 @@ import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { UserInfo } from "../services/user-service.ts";
 import { PendingNutrition, updateFoodHistoryConfirmation } from "../services/pending-service.ts";
 import { sendWhatsApp } from "../utils/whatsapp-sender.ts";
+import { 
+  sendInteractiveMessage, 
+  sendPostConfirmation,
+  sendTextMessage,
+} from "../utils/whatsapp-interactive-sender.ts";
 import {
   detectMealType,
   formatMealType,
@@ -94,14 +99,17 @@ export async function handleDirectConfirm(
 
   const dailyTotal = await getDailyTotal(supabase, user.id);
 
-  await sendWhatsApp(
+  // Send confirmation with interactive buttons for next actions
+  await sendTextMessage(
     phone,
     `✅ *Refeição registrada!*\n\n` +
       `🍽️ ${formatMealType(pending.meal_type || detectMealType())}: *${Math.round(nutritionData.total_kcal)} kcal*\n\n` +
       `📊 Total do dia: *${Math.round(dailyTotal)} kcal*\n\n` +
-      `Continue assim! 💪\n\n` +
-      `_Sofia 🥗_`
+      `Continue assim! 💪`
   );
+  
+  // Send post-confirmation buttons
+  await sendPostConfirmation(phone);
 }
 
 /**
@@ -133,12 +141,15 @@ export async function handleDirectCancel(
     })
     .eq("id", pending.id);
 
-  await sendWhatsApp(
-    phone,
-    `❌ *Registro cancelado!*\n\n` +
-      `📸 Envie uma nova foto quando quiser!\n\n` +
-      `_Sofia 🥗_`
-  );
+  await sendInteractiveMessage(phone, {
+    headerText: '❌ Registro cancelado!',
+    bodyText: 'Envie uma nova foto quando quiser!',
+    footerText: 'Sofia 🥗',
+    buttons: [
+      { id: 'sofia_new_photo', title: '📸 Nova Foto' },
+      { id: 'help', title: '❓ Ajuda' },
+    ],
+  });
 }
 
 /**
@@ -167,7 +178,7 @@ export async function handleDirectEdit(
     })
     .join("\n");
 
-  await sendWhatsApp(
+  await sendTextMessage(
     phone,
     `✏️ *Modo edição*\n\n` +
       `Itens detectados:\n\n${numberedList}\n\n` +
@@ -179,6 +190,7 @@ export async function handleDirectEdit(
       `Responda *PRONTO* quando terminar\n\n` +
       `_Sofia 🥗_`
   );
+}
 }
 
 /**
@@ -212,29 +224,31 @@ export async function handleDirectClear(
     })
     .eq("id", pending.id);
 
-  await sendWhatsApp(
-    phone,
-    `✅ *Pendência finalizada!*\n\n` +
-      `Agora você pode continuar normalmente. 💚\n\n` +
-      `📸 Envie uma foto ou me conte o que comeu!\n\n` +
-      `_Sofia 🥗_`
-  );
+  await sendInteractiveMessage(phone, {
+    headerText: '✅ Pendência finalizada!',
+    bodyText: 'Agora você pode continuar normalmente. 💚',
+    footerText: 'Sofia 🥗',
+    buttons: [
+      { id: 'sofia_new_photo', title: '📸 Nova Foto' },
+      { id: 'sofia_meal_plan', title: '🍽️ Cardápio' },
+    ],
+  });
 }
 
 /**
  * Handle ambiguous confirmation attempt
  */
 export async function handleAmbiguousConfirmation(phone: string): Promise<void> {
-  await sendWhatsApp(
-    phone,
-    `🤔 *Não entendi...*\n\n` +
-      `Escolha uma opção:\n\n` +
-      `*1* ✅ Confirmar\n` +
-      `*2* ❌ Cancelar\n` +
-      `*3* ✏️ Editar\n` +
-      `*4* 🔄 Limpar pendência\n\n` +
-      `_Sofia 🥗_`
-  );
+  await sendInteractiveMessage(phone, {
+    headerText: '🤔 Não entendi...',
+    bodyText: 'Escolha uma opção:',
+    footerText: 'Sofia 🥗',
+    buttons: [
+      { id: 'sofia_confirm', title: '✅ Confirmar' },
+      { id: 'sofia_edit', title: '✏️ Corrigir' },
+      { id: 'sofia_cancel', title: '❌ Cancelar' },
+    ],
+  });
 }
 
 /**
@@ -339,17 +353,17 @@ async function handleAddFood(
     .map((f: any) => `• ${f.nome || f.name} (${f.quantidade ?? f.grams ?? "?"}g)`)
     .join("\n");
   
-  await sendWhatsApp(
-    phone,
-    `✅ *Adicionado!*\n\n` +
-    `Lista atualizada:\n\n${foodsList}\n\n` +
-    `───────────────\n\n` +
-    `*Está correto?* Escolha:\n\n` +
-    `*1* ✅ Confirmar\n` +
-    `*2* ❌ Cancelar\n` +
-    `*3* ✏️ Editar mais\n\n` +
-    `_Sofia 🥗_`
-  );
+  await sendTextMessage(phone, `✅ *Adicionado!*\n\nLista atualizada:\n\n${foodsList}`);
+  
+  await sendInteractiveMessage(phone, {
+    bodyText: '*Está correto?*',
+    footerText: 'Sofia 🥗',
+    buttons: [
+      { id: 'sofia_confirm', title: '✅ Confirmar' },
+      { id: 'sofia_edit', title: '✏️ Editar mais' },
+      { id: 'sofia_cancel', title: '❌ Cancelar' },
+    ],
+  });
 }
 
 /**
@@ -394,17 +408,17 @@ async function handleRemoveFood(
     .map((f: any) => `• ${f.nome || f.name} (${f.quantidade ?? f.grams ?? "?"}g)`)
     .join("\n");
   
-  await sendWhatsApp(
-    phone,
-    `🗑️ *Removido!*\n\n` +
-    `Lista atualizada:\n\n${foodsList || "_lista vazia_"}\n\n` +
-    `───────────────\n\n` +
-    `*Está correto?* Escolha:\n\n` +
-    `*1* ✅ Confirmar\n` +
-    `*2* ❌ Cancelar\n` +
-    `*3* ✏️ Editar mais\n\n` +
-    `_Sofia 🥗_`
-  );
+  await sendTextMessage(phone, `🗑️ *Removido!*\n\nLista atualizada:\n\n${foodsList || "_lista vazia_"}`);
+  
+  await sendInteractiveMessage(phone, {
+    bodyText: '*Está correto?*',
+    footerText: 'Sofia 🥗',
+    buttons: [
+      { id: 'sofia_confirm', title: '✅ Confirmar' },
+      { id: 'sofia_edit', title: '✏️ Editar mais' },
+      { id: 'sofia_cancel', title: '❌ Cancelar' },
+    ],
+  });
 }
 
 /**
@@ -449,15 +463,15 @@ async function handleReplaceFood(
     .map((f: any) => `• ${f.nome || f.name} (${f.quantidade ?? f.grams ?? "?"}g)`)
     .join("\n");
   
-  await sendWhatsApp(
-    phone,
-    `🔄 *Substituído!*\n\n` +
-    `Lista atualizada:\n\n${foodsList}\n\n` +
-    `───────────────\n\n` +
-    `*Está correto?* Escolha:\n\n` +
-    `*1* ✅ Confirmar\n` +
-    `*2* ❌ Cancelar\n` +
-    `*3* ✏️ Editar mais\n\n` +
-    `_Sofia 🥗_`
-  );
+  await sendTextMessage(phone, `🔄 *Substituído!*\n\nLista atualizada:\n\n${foodsList}`);
+  
+  await sendInteractiveMessage(phone, {
+    bodyText: '*Está correto?*',
+    footerText: 'Sofia 🥗',
+    buttons: [
+      { id: 'sofia_confirm', title: '✅ Confirmar' },
+      { id: 'sofia_edit', title: '✏️ Editar mais' },
+      { id: 'sofia_cancel', title: '❌ Cancelar' },
+    ],
+  });
 }

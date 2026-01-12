@@ -3,6 +3,11 @@ import { UserInfo } from "../services/user-service.ts";
 import { PendingMedical, cleanupStuckMedicalBatches } from "../services/pending-service.ts";
 import { sendWhatsApp } from "../utils/whatsapp-sender.ts";
 import { 
+  sendInteractiveMessage, 
+  sendMedicalAnalysisPrompt,
+  sendTextMessage,
+} from "../utils/whatsapp-interactive-sender.ts";
+import { 
   isConfirmationPositive, 
   isConfirmationNegative,
   isMedicalReady,
@@ -94,7 +99,7 @@ export async function processMedicalImage(
         
         // Feedback every 5 images
         if (newCount % 5 === 0) {
-          await sendWhatsApp(
+          await sendTextMessage(
             phone,
             `📸 *${newCount} fotos recebidas!*\n\n` +
             `Continue enviando ou aguarde...\n\n` +
@@ -125,15 +130,8 @@ export async function processMedicalImage(
             })
             .eq("id", existingBatch.id);
           
-          await sendWhatsApp(
-            phone,
-            `📋 *${newCount} ${newCount === 1 ? "imagem recebida" : "imagens recebidas"}*\n\n` +
-            `*Posso analisar agora?*\n\n` +
-            `1️⃣ *SIM*, pode analisar\n` +
-            `2️⃣ *NÃO*, vou enviar mais\n` +
-            `3️⃣ *CANCELAR*\n\n` +
-            `_Dr. Vital 🩺_`
-          );
+          // Send interactive buttons for medical confirmation
+          await sendMedicalAnalysisPrompt(phone, newCount);
         } else {
           console.log(`[Medical] 📸 Mais imagens chegaram ou status mudou, continuando...`);
         }
@@ -175,13 +173,15 @@ export async function processMedicalImage(
         console.log("[Medical] ========================================");
         
         // 🔥 ENVIAR ACK IMEDIATO NA PRIMEIRA FOTO
-        await sendWhatsApp(
-          phone,
-          `🩺 *Recebi sua foto de exame!*\n\n` +
-          `📸 Continue enviando mais fotos se tiver.\n` +
-          `⏳ Assim que você parar de enviar, perguntarei se posso analisar.\n\n` +
-          `_Dr. Vital 🩺_`
-        );
+        await sendInteractiveMessage(phone, {
+          headerText: '🩺 Recebi sua foto de exame!',
+          bodyText: '📸 Continue enviando mais fotos se tiver.\n⏳ Assim que você parar de enviar, perguntarei se posso analisar.',
+          footerText: 'Dr. Vital 🩺',
+          buttons: [
+            { id: 'vital_analyze', title: '✅ Analisar agora' },
+            { id: 'vital_more', title: '📸 Enviar mais' },
+          ],
+        });
         
         return;
       }
@@ -191,12 +191,15 @@ export async function processMedicalImage(
     throw new Error("Falha ao processar imagem após múltiplas tentativas");
   } catch (error) {
     console.error("[Medical] 💥 ERRO CRÍTICO:", error);
-    await sendWhatsApp(
-      phone,
-      "❌ Ocorreu um erro ao receber seu exame.\n\n" +
-        "Por favor, tente novamente.\n\n" +
-        "_Dr. Vital 🩺_"
-    );
+    await sendInteractiveMessage(phone, {
+      headerText: '❌ Erro ao receber exame',
+      bodyText: 'Por favor, tente novamente.',
+      footerText: 'Dr. Vital 🩺',
+      buttons: [
+        { id: 'sofia_new_photo', title: '📸 Tentar novamente' },
+        { id: 'help', title: '❓ Ajuda' },
+      ],
+    });
   }
 }
 
@@ -228,7 +231,15 @@ export async function handleMedicalResponse(
         .update({ status: "cancelled", is_processed: true })
         .eq("id", pending.id);
 
-      await sendWhatsApp(phone, `❌ Análise cancelada.\n\nSe precisar, envie novas fotos!\n\n_Dr. Vital 🩺_`);
+      await sendInteractiveMessage(phone, {
+        headerText: '❌ Análise cancelada',
+        bodyText: 'Se precisar, envie novas fotos!',
+        footerText: 'Dr. Vital 🩺',
+        buttons: [
+          { id: 'sofia_new_photo', title: '📸 Nova Foto' },
+          { id: 'help', title: '❓ Ajuda' },
+        ],
+      });
       return;
     }
 
@@ -245,7 +256,7 @@ export async function handleMedicalResponse(
           })
           .eq("id", pending.id);
 
-        await sendWhatsApp(
+        await sendTextMessage(
           phone,
           `📸 Ok! Continue enviando as fotos do exame.\n\n` +
             `Você já tem *${imagesCount} ${imagesCount === 1 ? "foto" : "fotos"}*.\n\n` +
@@ -264,7 +275,7 @@ export async function handleMedicalResponse(
         const estimatedMinutes = Math.max(1, Math.ceil(imagesCount * 0.3));
         const timeText = estimatedMinutes <= 1 ? "menos de 1 minuto" : `até ${estimatedMinutes} minutos`;
 
-        await sendWhatsApp(
+        await sendTextMessage(
           phone,
           `🩺 *Analisando ${imagesCount} ${imagesCount === 1 ? "imagem" : "imagens"}...*\n\n` +
             `⏳ *Tempo estimado: ${timeText}*\n\n` +
@@ -290,25 +301,21 @@ export async function handleMedicalResponse(
 
     // If collecting and not PRONTO, remind user with gentle message
     if (status === "collecting") {
-      await sendWhatsApp(
-        phone,
-        `📋 *Oi! Ainda tenho ${imagesCount} ${imagesCount === 1 ? "foto" : "fotos"} do seu exame aguardando análise.*\n\n` +
-        `Quando estiver pronto, é só me avisar ou digitar *PRONTO*! 😊\n\n` +
-        `_Dr. Vital 🩺_`
-      );
+      await sendInteractiveMessage(phone, {
+        bodyText: `📋 Ainda tenho ${imagesCount} ${imagesCount === 1 ? "foto" : "fotos"} do seu exame aguardando análise.\n\nQuando estiver pronto, é só me avisar! 😊`,
+        footerText: 'Dr. Vital 🩺',
+        buttons: [
+          { id: 'vital_analyze', title: '✅ Analisar agora' },
+          { id: 'vital_more', title: '📸 Enviar mais' },
+          { id: 'vital_cancel', title: '❌ Cancelar' },
+        ],
+      });
       return;
     }
 
     // If awaiting_confirm but didn't understand
     if (status === "awaiting_confirm") {
-      await sendWhatsApp(
-        phone,
-        `🤔 Não entendi. Responda:\n\n` +
-          `*1* - ✅ SIM, analisar agora\n` +
-          `*2* - 📸 NÃO, vou enviar mais\n` +
-          `*3* - ❌ CANCELAR\n\n` +
-          `_Dr. Vital 🩺_`
-      );
+      await sendMedicalAnalysisPrompt(phone, imagesCount);
       return;
     }
 
@@ -318,13 +325,13 @@ export async function handleMedicalResponse(
         .from("whatsapp_pending_medical")
         .update({ is_processed: true, confirmed: true })
         .eq("id", pending.id);
-      await sendWhatsApp(phone, "✅ Exame registrado!\n\n_Dr. Vital 🩺_");
+      await sendTextMessage(phone, "✅ Exame registrado!\n\n_Dr. Vital 🩺_");
     } else if (isConfirmationNegative(messageText)) {
       await supabase
         .from("whatsapp_pending_medical")
         .update({ is_processed: true, confirmed: false })
         .eq("id", pending.id);
-      await sendWhatsApp(phone, "❌ Exame não registrado.\n\n_Dr. Vital 🩺_");
+      await sendTextMessage(phone, "❌ Exame não registrado.\n\n_Dr. Vital 🩺_");
     }
   } catch (error) {
     console.error("[Medical] Erro no exame médico:", error);
@@ -349,7 +356,7 @@ async function analyzeExamBatch(
 
     if (imagesCount === 0) {
       console.error("[Medical] ❌ Nenhuma imagem no lote");
-      await sendWhatsApp(phone, "❌ Nenhuma imagem encontrada para análise.\n\n_Dr. Vital 🩺_");
+      await sendTextMessage(phone, "❌ Nenhuma imagem encontrada para análise.\n\n_Dr. Vital 🩺_");
       await supabase
         .from("whatsapp_pending_medical")
         .update({ status: "error", is_processed: true })
@@ -368,7 +375,7 @@ async function analyzeExamBatch(
 
     if (tmpPaths.length === 0) {
       console.error("[Medical] ❌ Nenhum path válido extraído das URLs");
-      await sendWhatsApp(phone, "❌ Erro ao processar imagens.\n\nTente enviar novamente.\n\n_Dr. Vital 🩺_");
+      await sendTextMessage(phone, "❌ Erro ao processar imagens.\n\nTente enviar novamente.\n\n_Dr. Vital 🩺_");
       await supabase
         .from("whatsapp_pending_medical")
         .update({ status: "error", is_processed: true })
@@ -392,10 +399,15 @@ async function analyzeExamBatch(
 
     if (analysisError || !analysisResult || analysisResult.error) {
       console.error("[Medical] 💥 ERRO na análise:", analysisError || analysisResult?.error);
-      await sendWhatsApp(
-        phone,
-        `❌ Não consegui analisar seu exame.\n\nTente enviar fotos mais claras.\n\n_Dr. Vital 🩺_`
-      );
+      await sendInteractiveMessage(phone, {
+        headerText: '❌ Erro na análise',
+        bodyText: 'Não consegui analisar seu exame.\n\nTente enviar fotos mais claras.',
+        footerText: 'Dr. Vital 🩺',
+        buttons: [
+          { id: 'sofia_new_photo', title: '📸 Tentar novamente' },
+          { id: 'help', title: '❓ Ajuda' },
+        ],
+      });
       await supabase
         .from("whatsapp_pending_medical")
         .update({ status: "error", is_processed: true })
@@ -450,15 +462,23 @@ async function analyzeExamBatch(
       }
     }
 
-    // Send result
-    await sendWhatsApp(
+    // Send result with text first
+    await sendTextMessage(
       phone,
       `🩺 *Análise Concluída!*\n` +
         `📷 _${imagesCount} ${imagesCount === 1 ? "imagem analisada" : "imagens analisadas"}_\n\n` +
-        `${summary}${findingsText}${reportLink}\n\n` +
-        `Qualquer dúvida, estou aqui!\n\n` +
-        `_Dr. Vital 🩺_`
+        `${summary}${findingsText}${reportLink}`
     );
+    
+    // Then send interactive buttons for next actions
+    await sendInteractiveMessage(phone, {
+      bodyText: 'Qualquer dúvida, estou aqui!',
+      footerText: 'Dr. Vital 🩺',
+      buttons: [
+        { id: 'vital_question', title: '❓ Perguntar' },
+        { id: 'sofia_new_photo', title: '📸 Novo Exame' },
+      ],
+    });
 
     // Mark as completed - update à prova de falhas
     const updateData: any = {
@@ -503,9 +523,14 @@ async function analyzeExamBatch(
       .update({ status: "error", is_processed: true })
       .eq("id", pending.id);
 
-    await sendWhatsApp(
-      phone,
-      `❌ Erro ao analisar exames.\n\nPor favor, envie as fotos novamente.\n\n_Dr. Vital 🩺_`
-    );
+    await sendInteractiveMessage(phone, {
+      headerText: '❌ Erro ao analisar',
+      bodyText: 'Por favor, envie as fotos novamente.',
+      footerText: 'Dr. Vital 🩺',
+      buttons: [
+        { id: 'sofia_new_photo', title: '📸 Tentar novamente' },
+        { id: 'help', title: '❓ Ajuda' },
+      ],
+    });
   }
 }

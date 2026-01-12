@@ -24,6 +24,13 @@ import {
   isMedicalRetry,
 } from "./utils/message-utils.ts";
 import { sendWhatsApp } from "./utils/whatsapp-sender.ts";
+import { 
+  sendInteractiveMessage, 
+  sendFoodAnalysisConfirmation, 
+  sendMedicalAnalysisPrompt,
+  sendPostConfirmation,
+  sendTextMessage,
+} from "./utils/whatsapp-interactive-sender.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -124,14 +131,8 @@ serve(async (req) => {
           })
           .eq("id", staleBatch.id);
         
-        await sendWhatsApp(phone,
-          `📋 *${imagesCount} ${imagesCount === 1 ? "imagem recebida" : "imagens recebidas"}*\n\n` +
-          `*Posso analisar agora?*\n\n` +
-          `1️⃣ *SIM*, pode analisar\n` +
-          `2️⃣ *NÃO*, vou enviar mais\n` +
-          `3️⃣ *CANCELAR*\n\n` +
-          `_Dr. Vital 🩺_`
-        );
+        // Send interactive buttons for medical confirmation
+        await sendMedicalAnalysisPrompt(phone, imagesCount);
         
         return new Response(JSON.stringify({ ok: true }), { headers: corsHeaders });
       }
@@ -244,15 +245,16 @@ serve(async (req) => {
         
         // Se está demorando muito (>10 min), oferecer opções
         if (elapsedMinutes > 10) {
-          await sendWhatsApp(phone,
-            `⏳ *A análise está demorando mais que o esperado*\n\n` +
-            `Já se passaram ${elapsedMinutes} minutos.\n\n` +
-            `*O que deseja fazer?*\n\n` +
-            `1️⃣ *AGUARDAR* - Continuo esperando\n` +
-            `2️⃣ *RETENTAR* - Tentar analisar novamente\n` +
-            `3️⃣ *CANCELAR* - Desistir desta análise\n\n` +
-            `_Dr. Vital 🩺_`
-          );
+          await sendInteractiveMessage(phone, {
+            headerText: '⏳ Análise demorando',
+            bodyText: `Já se passaram ${elapsedMinutes} minutos.\n\n*O que deseja fazer?*`,
+            footerText: 'Dr. Vital 🩺',
+            buttons: [
+              { id: 'vital_wait', title: '⏳ Aguardar' },
+              { id: 'vital_retry', title: '🔄 Retentar' },
+              { id: 'vital_cancel', title: '❌ Cancelar' },
+            ],
+          });
           return new Response(JSON.stringify({ ok: true }), { headers: corsHeaders });
         }
         
@@ -286,11 +288,15 @@ serve(async (req) => {
       const isConfirmResponse = ["1", "2", "3", "4", "sim", "não", "nao", "s", "n", "ok", "pronto", "confirmo", "cancela"].includes(lower);
 
       if (isConfirmResponse) {
-        await sendWhatsApp(phone,
-          "✅ *Entendi!*\n\n" +
-          "📸 Envie uma foto de refeição ou exame para eu analisar.\n\n" +
-          "_Sofia 🥗 | Dr. Vital 🩺_"
-        );
+        await sendInteractiveMessage(phone, {
+          headerText: '✅ Entendi!',
+          bodyText: 'Envie uma foto para eu analisar:',
+          footerText: 'Sofia 🥗 | Dr. Vital 🩺',
+          buttons: [
+            { id: 'sofia_new_photo', title: '📸 Enviar Foto' },
+            { id: 'help', title: '❓ Ajuda' },
+          ],
+        });
       } else {
         await handleTextMessage(supabase, user, phone, messageText);
       }
@@ -343,12 +349,15 @@ async function processImage(user: UserInfo, phone: string, message: any, webhook
       if (activeMedicalBatch) {
         await processMedicalImage(supabase, user, phone, imageUrl);
       } else {
-        await sendWhatsApp(phone,
-          "📸 Recebi sua foto!\n\n" +
-          "Para análise *nutricional*, envie fotos de refeições 🍽️\n" +
-          "Para análise de *exames*, envie fotos de resultados 🩺\n\n" +
-          "_Sofia 🥗_"
-        );
+        await sendInteractiveMessage(phone, {
+          headerText: '📸 Recebi sua foto!',
+          bodyText: 'Para análise *nutricional*, envie fotos de refeições 🍽️\nPara análise de *exames*, envie fotos de resultados 🩺',
+          footerText: 'Sofia 🥗',
+          buttons: [
+            { id: 'sofia_new_photo', title: '📸 Nova Foto' },
+            { id: 'help', title: '❓ Ajuda' },
+          ],
+        });
       }
     }
   } catch (error) {
@@ -416,21 +425,11 @@ async function processFoodImage(user: UserInfo, phone: string, imageUrl: string)
       .join("\n");
 
     const kcalLine = totalCalories && Number(totalCalories) > 0
-      ? `📊 *Total estimado: ~${Math.round(Number(totalCalories))} kcal*\n\n`
+      ? `\n📊 *Total: ~${Math.round(Number(totalCalories))} kcal*`
       : "";
 
-    const confirmMessage =
-      `🍽️ *Analisei sua refeição!*\n\n` +
-      `${foodsList}\n\n` +
-      kcalLine +
-      `───────────────\n\n` +
-      `*Está correto?* Escolha:\n\n` +
-      `*1* ✅ Confirmar\n` +
-      `*2* ❌ Cancelar\n` +
-      `*3* ✏️ Editar\n\n` +
-      `_Sofia 🥗_`;
-
-    await sendWhatsApp(phone, confirmMessage);
+    // Send interactive buttons for food confirmation
+    await sendFoodAnalysisConfirmation(phone, detectedFoods, Number(totalCalories) || 0);
 
     // Limpar pendentes antigos e criar novo
     await supabase
@@ -598,19 +597,25 @@ async function handleSmartResponseWithPending(
     responseText = responseText.replace(/\n*_Sofia 🥗_\s*$/g, '').replace(/\n*_Dr\. Vital 🩺_\s*$/g, '');
 
     const foodsList = pendingFoods.slice(0, 4).map((f: any) => f.nome || f.name).join(", ");
-    const pendingReminder = pendingFoods.length > 0
-      ? `\n\n───────────────\n\n` +
-        `⚠️ *Pendência ativa*\n\n` +
-        `📋 ${foodsList}${pendingFoods.length > 4 ? '...' : ''}\n\n` +
-        `Escolha uma opção:\n\n` +
-        `*1* ✅ Confirmar\n` +
-        `*2* ❌ Cancelar\n` +
-        `*3* ✏️ Editar\n` +
-        `*4* 🔄 Limpar pendência\n\n` +
-        `_Sofia 🥗_`
-      : "\n\n_Sofia 🥗_";
-
-    await sendWhatsApp(phone, responseText + pendingReminder);
+    
+    if (pendingFoods.length > 0) {
+      // Send AI response first
+      await sendTextMessage(phone, responseText);
+      
+      // Then send interactive buttons for pending
+      await sendInteractiveMessage(phone, {
+        headerText: '⚠️ Pendência ativa',
+        bodyText: `📋 ${foodsList}${pendingFoods.length > 4 ? '...' : ''}\n\n*O que deseja fazer?*`,
+        footerText: 'Sofia 🥗',
+        buttons: [
+          { id: 'sofia_confirm', title: '✅ Confirmar' },
+          { id: 'sofia_edit', title: '✏️ Corrigir' },
+          { id: 'sofia_cancel', title: '❌ Cancelar' },
+        ],
+      });
+    } else {
+      await sendTextMessage(phone, responseText + "\n\n_Sofia 🥗_");
+    }
 
   } catch (error) {
     console.error("[WhatsApp] Erro na resposta com pendência:", error);
