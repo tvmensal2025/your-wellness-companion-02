@@ -33,14 +33,15 @@ function formatPhone(phone: string): string {
 }
 
 /**
- * Format phone for Whapi
+ * Format phone for Whapi (só números, sem @s.whatsapp.net)
+ * Doc: https://support.whapi.cloud/help-desk/sending/send-message-with-buttons
  */
 function formatPhoneWhapi(phone: string): string {
   let formatted = phone.replace(/\D/g, '');
   if (!formatted.startsWith('55')) {
     formatted = '55' + formatted;
   }
-  return `${formatted}@s.whatsapp.net`;
+  return formatted; // Whapi aceita só números
 }
 
 /**
@@ -71,10 +72,13 @@ async function sendWhapiText(phone: string, text: string): Promise<boolean> {
   const sanitizedMessage = sanitizeMessage(text);
   
   try {
+    console.log(`[Whapi] Enviando texto para ${formattedPhone}`);
+    
     const response = await fetch(`${WHAPI_API_URL}/messages/text`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
         'Authorization': `Bearer ${WHAPI_TOKEN}`,
       },
       body: JSON.stringify({
@@ -83,17 +87,31 @@ async function sendWhapiText(phone: string, text: string): Promise<boolean> {
       }),
     });
 
-    const data = await response.json();
+    const responseText = await response.text();
+    console.log(`[Whapi] Response status: ${response.status}`);
+
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch {
+      console.error('[Whapi] Resposta não é JSON:', responseText.substring(0, 200));
+      return false;
+    }
 
     if (!response.ok) {
       console.error('[Whapi] Erro ao enviar texto:', data);
       return false;
     }
 
-    console.log('[Whapi] ✅ Texto enviado:', data?.message?.id || data?.id);
+    if (data.sent === false) {
+      console.error('[Whapi] Mensagem não foi enviada:', data);
+      return false;
+    }
+
+    console.log('[Whapi] ✅ Texto enviado:', data?.message?.id || data?.id || 'ok');
     return true;
   } catch (error) {
-    console.error('[Whapi] Exceção:', error);
+    console.error('[Whapi] Exceção ao enviar texto:', error);
     return false;
   }
 }

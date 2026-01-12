@@ -58,6 +58,11 @@ function isWhapiActive(): boolean {
 /**
  * Send interactive message with buttons via Whapi
  */
+/**
+ * Send interactive message with buttons via Whapi
+ * Uses quick_reply format as per Whapi documentation:
+ * https://support.whapi.cloud/help-desk/sending/send-message-with-buttons
+ */
 async function sendWhapiInteractive(
   phone: string,
   message: InteractiveMessage
@@ -67,20 +72,23 @@ async function sendWhapiInteractive(
     return false;
   }
 
-  const formattedPhone = formatPhoneWhapi(phone);
+  // Whapi usa só o número, sem @s.whatsapp.net
+  let formattedPhone = phone.replace(/\D/g, '');
+  if (!formattedPhone.startsWith('55')) {
+    formattedPhone = '55' + formattedPhone;
+  }
   
   try {
+    // Formato correto do Whapi para quick_reply buttons
     const payload: Record<string, any> = {
       to: formattedPhone,
       type: 'button',
       body: { text: message.bodyText },
       action: {
         buttons: message.buttons.slice(0, 3).map(btn => ({
-          type: 'reply',
-          reply: {
-            id: btn.id,
-            title: btn.title.substring(0, 20), // Max 20 chars
-          },
+          type: 'quick_reply',
+          title: btn.title.substring(0, 25), // Max 25 chars para Whapi
+          id: btn.id
         })),
       },
     };
@@ -92,28 +100,43 @@ async function sendWhapiInteractive(
       payload.footer = { text: message.footerText };
     }
 
-    console.log('[Whapi] Enviando interativo:', JSON.stringify(payload).substring(0, 500));
+    console.log('[Whapi] Enviando interativo (quick_reply):', JSON.stringify(payload).substring(0, 600));
 
     const response = await fetch(`${WHAPI_API_URL}/messages/interactive`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
         'Authorization': `Bearer ${WHAPI_TOKEN}`,
       },
       body: JSON.stringify(payload),
     });
 
-    const data = await response.json();
+    const responseText = await response.text();
+    console.log(`[Whapi] Response status: ${response.status}, body: ${responseText.substring(0, 500)}`);
 
-    if (!response.ok) {
-      console.error('[Whapi] Erro:', data);
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch {
+      console.error('[Whapi] Resposta não é JSON válido:', responseText);
       return false;
     }
 
-    console.log('[Whapi] ✅ Mensagem interativa enviada:', data?.message?.id || data?.id);
+    if (!response.ok) {
+      console.error('[Whapi] Erro HTTP:', response.status, data);
+      return false;
+    }
+
+    if (data.sent === false) {
+      console.error('[Whapi] Mensagem não enviada:', data);
+      return false;
+    }
+
+    console.log('[Whapi] ✅ Mensagem interativa enviada:', data?.message?.id || data?.id || 'ok');
     return true;
   } catch (error) {
-    console.error('[Whapi] Exceção:', error);
+    console.error('[Whapi] Exceção ao enviar interativo:', error);
     return false;
   }
 }
@@ -169,13 +192,18 @@ async function sendWhapiText(phone: string, text: string): Promise<boolean> {
     return false;
   }
 
-  const formattedPhone = formatPhoneWhapi(phone);
+  // Whapi usa só o número, sem @s.whatsapp.net
+  let formattedPhone = phone.replace(/\D/g, '');
+  if (!formattedPhone.startsWith('55')) {
+    formattedPhone = '55' + formattedPhone;
+  }
 
   try {
     const response = await fetch(`${WHAPI_API_URL}/messages/text`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
         'Authorization': `Bearer ${WHAPI_TOKEN}`,
       },
       body: JSON.stringify({
@@ -184,17 +212,26 @@ async function sendWhapiText(phone: string, text: string): Promise<boolean> {
       }),
     });
 
-    const data = await response.json();
+    const responseText = await response.text();
+    console.log(`[Whapi] Text response status: ${response.status}`);
+
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch {
+      console.error('[Whapi] Resposta não é JSON:', responseText.substring(0, 200));
+      return false;
+    }
 
     if (!response.ok) {
       console.error('[Whapi] Erro ao enviar texto:', data);
       return false;
     }
 
-    console.log('[Whapi] ✅ Texto enviado:', data?.message?.id || data?.id);
+    console.log('[Whapi] ✅ Texto enviado:', data?.message?.id || data?.id || 'ok');
     return true;
   } catch (error) {
-    console.error('[Whapi] Exceção:', error);
+    console.error('[Whapi] Exceção ao enviar texto:', error);
     return false;
   }
 }
