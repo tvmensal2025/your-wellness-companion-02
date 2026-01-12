@@ -15,7 +15,29 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Send, Loader2, CheckCircle, XCircle, User, MessageSquare } from "lucide-react";
+import { 
+  Send, 
+  Loader2, 
+  CheckCircle, 
+  XCircle, 
+  User, 
+  MessageSquare, 
+  Zap, 
+  List, 
+  Link, 
+  Phone as PhoneIcon, 
+  Copy,
+  Webhook
+} from "lucide-react";
+
+interface ButtonType {
+  id: string;
+  name: string;
+  description: string;
+  icon: React.ReactNode;
+  hasWebhook: boolean;
+  preview: React.ReactNode;
+}
 
 const WhatsAppTestSend = () => {
   const [phone, setPhone] = useState("");
@@ -23,10 +45,111 @@ const WhatsAppTestSend = () => {
   const [selectedTemplate, setSelectedTemplate] = useState("");
   const [selectedUser, setSelectedUser] = useState("");
   const [isSending, setIsSending] = useState(false);
-  const [isSendingButtons, setIsSendingButtons] = useState(false);
+  const [loadingType, setLoadingType] = useState<string | null>(null);
   const [lastResult, setLastResult] = useState<{ success: boolean; message: string } | null>(null);
-  const [buttonResult, setButtonResult] = useState<{ success: boolean; message: string; details?: any } | null>(null);
+  const [testResults, setTestResults] = useState<Record<string, { success: boolean; message: string; details?: any }>>({});
   const { toast } = useToast();
+
+  // Button types configuration
+  const buttonTypes: ButtonType[] = [
+    {
+      id: "quick_reply",
+      name: "Quick Reply",
+      description: "Até 3 botões de resposta rápida",
+      icon: <Zap className="h-5 w-5" />,
+      hasWebhook: true,
+      preview: (
+        <div className="bg-[#1f2c34] rounded-lg p-3 text-white text-sm space-y-2">
+          <p className="font-medium">⚡ Resposta Rápida</p>
+          <p className="text-xs text-gray-300">Escolha uma das opções:</p>
+          <div className="space-y-1.5 pt-1">
+            <div className="w-full py-1.5 text-center text-xs border border-[#00a884] text-[#00a884] rounded">
+              ✅ Confirmar
+            </div>
+            <div className="w-full py-1.5 text-center text-xs border border-[#00a884] text-[#00a884] rounded">
+              ✏️ Corrigir
+            </div>
+            <div className="w-full py-1.5 text-center text-xs border border-[#00a884] text-[#00a884] rounded">
+              ❌ Cancelar
+            </div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: "list",
+      name: "Lista Menu",
+      description: "Menu expansível com seções",
+      icon: <List className="h-5 w-5" />,
+      hasWebhook: true,
+      preview: (
+        <div className="bg-[#1f2c34] rounded-lg p-3 text-white text-sm space-y-2">
+          <p className="font-medium">📋 Menu de Opções</p>
+          <p className="text-xs text-gray-300">Clique para ver as opções:</p>
+          <div className="pt-1">
+            <div className="w-full py-2 text-center text-xs bg-[#00a884] text-white rounded flex items-center justify-center gap-2">
+              <List className="h-3 w-3" />
+              Ver Opções
+            </div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: "url",
+      name: "Botão URL",
+      description: "Abre link externo no navegador",
+      icon: <Link className="h-5 w-5" />,
+      hasWebhook: false,
+      preview: (
+        <div className="bg-[#1f2c34] rounded-lg p-3 text-white text-sm space-y-2">
+          <p className="font-medium">🔗 Link Externo</p>
+          <p className="text-xs text-gray-300">Acesse nosso site:</p>
+          <div className="pt-1">
+            <div className="w-full py-1.5 text-center text-xs border border-[#00a884] text-[#00a884] rounded flex items-center justify-center gap-1">
+              🌐 Acessar Site
+            </div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: "call",
+      name: "Botão Ligação",
+      description: "Inicia chamada telefônica",
+      icon: <PhoneIcon className="h-5 w-5" />,
+      hasWebhook: false,
+      preview: (
+        <div className="bg-[#1f2c34] rounded-lg p-3 text-white text-sm space-y-2">
+          <p className="font-medium">📞 Ligação</p>
+          <p className="text-xs text-gray-300">Precisa de ajuda?</p>
+          <div className="pt-1">
+            <div className="w-full py-1.5 text-center text-xs border border-[#00a884] text-[#00a884] rounded flex items-center justify-center gap-1">
+              📞 Ligar Agora
+            </div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: "copy",
+      name: "Botão Copiar",
+      description: "Copia código para clipboard",
+      icon: <Copy className="h-5 w-5" />,
+      hasWebhook: false,
+      preview: (
+        <div className="bg-[#1f2c34] rounded-lg p-3 text-white text-sm space-y-2">
+          <p className="font-medium">📋 Copiar Código</p>
+          <p className="text-xs text-gray-300">Código: <span className="font-mono">MAX2024</span></p>
+          <div className="pt-1">
+            <div className="w-full py-1.5 text-center text-xs border border-[#00a884] text-[#00a884] rounded flex items-center justify-center gap-1">
+              📋 Copiar Código
+            </div>
+          </div>
+        </div>
+      ),
+    },
+  ];
 
   // Fetch templates for selection
   const { data: templates } = useQuery({
@@ -71,6 +194,55 @@ const WhatsAppTestSend = () => {
     }
   };
 
+  const handleSendInteractiveTest = async (type: string) => {
+    if (!phone) {
+      toast({ title: "Informe o telefone", variant: "destructive" });
+      return;
+    }
+
+    setLoadingType(type);
+    setTestResults(prev => ({ ...prev, [type]: undefined as any }));
+
+    try {
+      const { data, error } = await supabase.functions.invoke("whatsapp-test-interactive", {
+        body: { phone, type }
+      });
+
+      if (error) throw error;
+
+      if (data?.success) {
+        setTestResults(prev => ({ 
+          ...prev, 
+          [type]: { 
+            success: true, 
+            message: data.message || "✅ Enviado!",
+            details: data.whapi_response 
+          } 
+        }));
+        toast({ title: `Teste ${type} enviado!` });
+      } else {
+        throw new Error(data?.error || data?.tip || "Erro no envio");
+      }
+    } catch (error: any) {
+      console.error(`Erro ao enviar ${type}:`, error);
+      setTestResults(prev => ({ 
+        ...prev, 
+        [type]: { 
+          success: false, 
+          message: error.message || "Falha no envio",
+          details: error 
+        } 
+      }));
+      toast({ 
+        title: `Erro no teste ${type}`, 
+        description: error.message,
+        variant: "destructive" 
+      });
+    } finally {
+      setLoadingType(null);
+    }
+  };
+
   const handleSendTest = async () => {
     if (!phone || !message) {
       toast({ title: "Preencha telefone e mensagem", variant: "destructive" });
@@ -110,49 +282,6 @@ const WhatsAppTestSend = () => {
     }
   };
 
-  const handleTestButtons = async () => {
-    if (!phone) {
-      toast({ title: "Informe o telefone", variant: "destructive" });
-      return;
-    }
-
-    setIsSendingButtons(true);
-    setButtonResult(null);
-
-    try {
-      const { data, error } = await supabase.functions.invoke("whatsapp-test-buttons", {
-        body: { phone }
-      });
-
-      if (error) throw error;
-
-      if (data?.success) {
-        setButtonResult({ 
-          success: true, 
-          message: "✅ Botões enviados via Whapi!",
-          details: data.whapi_response 
-        });
-        toast({ title: "Mensagem com botões enviada!" });
-      } else {
-        throw new Error(data?.error || data?.tip || "Erro no Whapi");
-      }
-    } catch (error: any) {
-      console.error("Erro ao enviar botões:", error);
-      setButtonResult({ 
-        success: false, 
-        message: error.message || "Falha no envio",
-        details: error 
-      });
-      toast({ 
-        title: "Erro ao enviar botões", 
-        description: error.message,
-        variant: "destructive" 
-      });
-    } finally {
-      setIsSendingButtons(false);
-    }
-  };
-
   const handleTriggerFunction = async (functionName: string) => {
     if (!selectedUser) {
       toast({ title: "Selecione um usuário primeiro", variant: "destructive" });
@@ -185,93 +314,126 @@ const WhatsAppTestSend = () => {
 
   return (
     <div className="space-y-6">
-      {/* Interactive Buttons Test - Whapi */}
+      {/* Interactive Buttons Test Section */}
       <Card className="border-green-200 bg-gradient-to-br from-green-50/50 to-background">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <MessageSquare className="h-5 w-5 text-green-600" />
-            Teste de Botões Interativos
+            Teste de Mensagens Interativas
             <Badge variant="outline" className="bg-green-100 text-green-700 border-green-300">
               Whapi
             </Badge>
           </CardTitle>
           <CardDescription>
-            Envie uma mensagem com 3 botões clicáveis via Whapi para testar a integração
+            Teste os 5 tipos de botões interativos disponíveis no WhatsApp Business API
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Preview do template */}
-          <div className="bg-background border rounded-lg p-4 space-y-3">
-            <div className="flex items-center gap-2 text-sm font-medium">
-              <span className="text-lg">🔬</span>
-              Teste Whapi
-            </div>
-            <div className="bg-muted/50 rounded-lg p-3 space-y-2">
-              <p className="text-sm font-semibold">🧪 *TESTE DE BOTÕES WHAPI*</p>
-              <p className="text-xs text-muted-foreground">
-                Esta mensagem testa se os botões interativos estão funcionando.
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Clique em um botão abaixo:
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <Badge variant="secondary" className="bg-primary/10 text-primary hover:bg-primary/20">
-                ✅ Funciona!
-              </Badge>
-              <Badge variant="secondary" className="bg-primary/10 text-primary hover:bg-primary/20">
-                🔄 Teste 2
-              </Badge>
-              <Badge variant="secondary" className="bg-primary/10 text-primary hover:bg-primary/20">
-                ❌ Cancelar
-              </Badge>
-            </div>
-            <p className="text-[10px] text-muted-foreground">MaxNutrition - Teste</p>
-          </div>
-
-          {/* Campo telefone */}
+        <CardContent className="space-y-6">
+          {/* Shared Phone Input */}
           <div className="space-y-2">
-            <Label htmlFor="phone-buttons">Telefone para Teste</Label>
-            <Input
-              id="phone-buttons"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="5511999999999"
-            />
+            <Label htmlFor="phone-interactive" className="flex items-center gap-2">
+              <PhoneIcon className="h-4 w-4" />
+              Telefone para Teste
+            </Label>
+            <div className="flex gap-2">
+              <Input
+                id="phone-interactive"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="5511999999999"
+                className="flex-1"
+              />
+              <Select value={selectedUser} onValueChange={handleUserChange}>
+                <SelectTrigger className="w-[200px]">
+                  <SelectValue placeholder="Ou selecione usuário..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {users?.map((user) => (
+                    <SelectItem key={user.user_id} value={user.user_id}>
+                      <div className="flex items-center gap-2">
+                        <User className="h-4 w-4" />
+                        {user.full_name}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
-          <Button 
-            onClick={handleTestButtons} 
-            disabled={isSendingButtons || !phone}
-            className="w-full bg-green-600 hover:bg-green-700"
-          >
-            {isSendingButtons ? (
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            ) : (
-              <Send className="h-4 w-4 mr-2" />
-            )}
-            Enviar Teste com Botões
-          </Button>
+          {/* Button Types Grid */}
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {buttonTypes.map((buttonType) => (
+              <Card key={buttonType.id} className="relative overflow-hidden">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="p-2 rounded-lg bg-green-100 text-green-700">
+                        {buttonType.icon}
+                      </div>
+                      <div>
+                        <CardTitle className="text-base">{buttonType.name}</CardTitle>
+                        <CardDescription className="text-xs">
+                          {buttonType.description}
+                        </CardDescription>
+                      </div>
+                    </div>
+                    {buttonType.hasWebhook ? (
+                      <Badge className="bg-blue-100 text-blue-700 border-blue-300 text-[10px]">
+                        <Webhook className="h-3 w-3 mr-1" />
+                        Webhook
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" className="text-[10px] text-muted-foreground">
+                        Sem Callback
+                      </Badge>
+                    )}
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {/* Preview */}
+                  <div className="rounded-lg overflow-hidden">
+                    {buttonType.preview}
+                  </div>
 
-          {buttonResult && (
-            <div className={`p-3 rounded-lg space-y-2 ${
-              buttonResult.success ? "bg-green-50 text-green-800 border border-green-200" : "bg-red-50 text-red-800 border border-red-200"
-            }`}>
-              <div className="flex items-center gap-2">
-                {buttonResult.success ? (
-                  <CheckCircle className="h-5 w-5 flex-shrink-0" />
-                ) : (
-                  <XCircle className="h-5 w-5 flex-shrink-0" />
-                )}
-                <span className="font-medium">{buttonResult.message}</span>
-              </div>
-              {buttonResult.details && (
-                <pre className="text-xs bg-background/50 p-2 rounded overflow-x-auto">
-                  {JSON.stringify(buttonResult.details, null, 2)}
-                </pre>
-              )}
-            </div>
-          )}
+                  {/* Send Button */}
+                  <Button
+                    onClick={() => handleSendInteractiveTest(buttonType.id)}
+                    disabled={loadingType !== null || !phone}
+                    className="w-full bg-green-600 hover:bg-green-700"
+                    size="sm"
+                  >
+                    {loadingType === buttonType.id ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <Send className="h-4 w-4 mr-2" />
+                    )}
+                    Enviar Teste
+                  </Button>
+
+                  {/* Result */}
+                  {testResults[buttonType.id] && (
+                    <div className={`p-2 rounded-lg text-xs ${
+                      testResults[buttonType.id].success 
+                        ? "bg-green-50 text-green-800 border border-green-200" 
+                        : "bg-red-50 text-red-800 border border-red-200"
+                    }`}>
+                      <div className="flex items-center gap-1.5">
+                        {testResults[buttonType.id].success ? (
+                          <CheckCircle className="h-3.5 w-3.5 flex-shrink-0" />
+                        ) : (
+                          <XCircle className="h-3.5 w-3.5 flex-shrink-0" />
+                        )}
+                        <span className="font-medium truncate">
+                          {testResults[buttonType.id].message}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </CardContent>
       </Card>
 
@@ -279,44 +441,12 @@ const WhatsAppTestSend = () => {
         {/* Manual Test */}
         <Card>
           <CardHeader>
-            <CardTitle>Teste Manual</CardTitle>
+            <CardTitle>Teste Manual de Texto</CardTitle>
             <CardDescription>
               Envie uma mensagem de texto simples para qualquer número
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label>Selecionar Usuário (opcional)</Label>
-              <Select value={selectedUser} onValueChange={handleUserChange}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Escolha um usuário..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {users?.map((user) => (
-                    <SelectItem key={user.user_id} value={user.user_id}>
-                      <div className="flex items-center gap-2">
-                        <User className="h-4 w-4" />
-                        {user.full_name} - {user.phone}
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="phone">Telefone</Label>
-              <Input
-                id="phone"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="5511999999999"
-              />
-              <p className="text-xs text-muted-foreground">
-                Formato: código do país + DDD + número (ex: 5511999999999)
-              </p>
-            </div>
-
             <div className="space-y-2">
               <Label>Usar Template</Label>
               <Select value={selectedTemplate} onValueChange={handleTemplateChange}>
@@ -341,7 +471,7 @@ const WhatsAppTestSend = () => {
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 placeholder="Digite a mensagem de teste..."
-                rows={6}
+                rows={4}
               />
             </div>
 
@@ -355,7 +485,7 @@ const WhatsAppTestSend = () => {
               ) : (
                 <Send className="h-4 w-4 mr-2" />
               )}
-              Enviar Teste
+              Enviar Texto
             </Button>
 
             {lastResult && (
@@ -384,7 +514,7 @@ const WhatsAppTestSend = () => {
           <CardContent className="space-y-4">
             {!selectedUser && (
               <div className="p-4 bg-muted rounded-lg text-center text-sm text-muted-foreground">
-                Selecione um usuário na seção ao lado para testar as funções
+                Selecione um usuário no campo acima para testar as funções
               </div>
             )}
 
@@ -438,15 +568,6 @@ const WhatsAppTestSend = () => {
                 </div>
               </>
             )}
-
-            <div className="pt-4 border-t">
-              <h4 className="font-medium mb-2">Variáveis de Teste</h4>
-              <div className="space-y-1 text-xs text-muted-foreground">
-                <p>• As funções usam dados reais do usuário selecionado</p>
-                <p>• A IA personaliza as mensagens com o contexto atual</p>
-                <p>• Verifique os logs após o envio para ver o resultado</p>
-              </div>
-            </div>
           </CardContent>
         </Card>
       </div>
