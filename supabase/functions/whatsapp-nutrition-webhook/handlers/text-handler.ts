@@ -12,6 +12,65 @@ import {
   updateFoodHistoryConfirmation,
 } from "../services/pending-service.ts";
 import { getDailyTotal } from "../services/user-service.ts";
+import { withCache, generateTextHash, getCachedResponse, setCachedResponse } from "../services/cache-service.ts";
+
+// 🚀 RESPOSTAS FAQ INSTANTÂNEAS - Resposta em <100ms para mensagens comuns
+const INSTANT_FAQ_RESPONSES: Record<string, string> = {
+  // Saudações
+  'oi': '👋 Olá! Como posso ajudar?\n\n📸 Envie foto de refeição ou exame\n✍️ Ou me conta o que comeu\n\n_Sofia 💚_',
+  'olá': '👋 Olá! Como posso ajudar?\n\n📸 Envie foto de refeição ou exame\n✍️ Ou me conta o que comeu\n\n_Sofia 💚_',
+  'ola': '👋 Olá! Como posso ajudar?\n\n📸 Envie foto de refeição ou exame\n✍️ Ou me conta o que comeu\n\n_Sofia 💚_',
+  'bom dia': '☀️ Bom dia! Pronta para te ajudar hoje!\n\n📸 Foto de refeição\n🩺 Foto de exame\n✍️ Ou me conta o que comeu\n\n_Sofia 💚_',
+  'boa tarde': '🌤️ Boa tarde! Como posso ajudar?\n\n📸 Foto de refeição\n🩺 Foto de exame\n✍️ Ou me conta o que comeu\n\n_Sofia 💚_',
+  'boa noite': '🌙 Boa noite! Estou aqui para ajudar!\n\n📸 Foto de refeição\n🩺 Foto de exame\n✍️ Ou me conta o que comeu\n\n_Sofia 💚_',
+  'e aí': '👋 E aí! Tudo certo? Como posso ajudar?\n\n📸 Foto de refeição ou exame\n✍️ Ou descreva o que comeu\n\n_Sofia 💚_',
+  'eae': '👋 E aí! Tudo certo? Como posso ajudar?\n\n📸 Foto de refeição ou exame\n✍️ Ou descreva o que comeu\n\n_Sofia 💚_',
+  'hey': '👋 Hey! Como posso ajudar?\n\n📸 Foto de refeição ou exame\n✍️ Ou descreva o que comeu\n\n_Sofia 💚_',
+  
+  // Ajuda
+  'ajuda': '📋 *O que posso fazer por você:*\n\n📸 *Foto de comida* → Analiso calorias e nutrientes\n🩺 *Foto de exame* → Interpreto resultados\n💧 *"Bebi 500ml de água"* → Registro hidratação\n⚖️ *"Peso 75kg"* → Registro peso\n✍️ *"Comi arroz e frango"* → Registro refeição\n\n_Sofia 💚_',
+  'help': '📋 *O que posso fazer por você:*\n\n📸 *Foto de comida* → Analiso calorias e nutrientes\n🩺 *Foto de exame* → Interpreto resultados\n💧 *"Bebi 500ml de água"* → Registro hidratação\n⚖️ *"Peso 75kg"* → Registro peso\n✍️ *"Comi arroz e frango"* → Registro refeição\n\n_Sofia 💚_',
+  '?': '📋 *O que posso fazer por você:*\n\n📸 *Foto de comida* → Analiso calorias e nutrientes\n🩺 *Foto de exame* → Interpreto resultados\n💧 *"Bebi água"* → Registro hidratação\n⚖️ *"Peso Xkg"* → Registro peso\n\n_Sofia 💚_',
+  'como funciona': '📋 *Como funciona:*\n\n1️⃣ Envie foto da sua refeição\n2️⃣ Eu identifico os alimentos\n3️⃣ Você confirma ou corrige\n4️⃣ Registro automaticamente!\n\nTambém analiso exames médicos! 🩺\n\n_Sofia 💚_',
+  
+  // Agradecimentos
+  'obrigado': '😊 De nada! Estou sempre aqui para ajudar!\n\n_Sofia 💚_',
+  'obrigada': '😊 De nada! Estou sempre aqui para ajudar!\n\n_Sofia 💚_',
+  'valeu': '😊 Por nada! Qualquer coisa é só chamar!\n\n_Sofia 💚_',
+  'brigado': '😊 De nada! Estou sempre aqui!\n\n_Sofia 💚_',
+  'brigada': '😊 De nada! Estou sempre aqui!\n\n_Sofia 💚_',
+  'thanks': '😊 You\'re welcome! I\'m always here to help!\n\n_Sofia 💚_',
+  
+  // Confirmações órfãs
+  'ok': '👍 Ok! Envie uma foto ou me conte o que comeu!\n\n_Sofia 💚_',
+  'tá': '👍 Ok! Envie uma foto ou me conte o que comeu!\n\n_Sofia 💚_',
+  'beleza': '👍 Beleza! O que você quer fazer agora?\n\n📸 Foto de refeição\n✍️ Descrever o que comeu\n\n_Sofia 💚_',
+};
+
+/**
+ * 🚀 Verifica se é uma mensagem FAQ e retorna resposta instantânea
+ * Retorna null se não for FAQ
+ */
+export function getInstantFAQResponse(text: string): string | null {
+  const normalized = text.toLowerCase().trim()
+    .replace(/[!.,?]/g, '') // Remove pontuação
+    .replace(/\s+/g, ' '); // Normaliza espaços
+  
+  // Check exact match first
+  if (INSTANT_FAQ_RESPONSES[normalized]) {
+    return INSTANT_FAQ_RESPONSES[normalized];
+  }
+  
+  // Check if starts with greeting
+  const greetingPrefixes = ['oi ', 'olá ', 'ola ', 'bom dia', 'boa tarde', 'boa noite', 'e aí', 'eae', 'hey '];
+  for (const prefix of greetingPrefixes) {
+    if (normalized.startsWith(prefix) || normalized === prefix.trim()) {
+      return INSTANT_FAQ_RESPONSES[prefix.trim()] || INSTANT_FAQ_RESPONSES['oi'];
+    }
+  }
+  
+  return null;
+}
 
 // Fallback responses para quando IA falha
 const FALLBACK_RESPONSES = {
@@ -219,6 +278,14 @@ export async function handleTextMessage(
   text: string
 ): Promise<void> {
   try {
+    // 🚀 OTIMIZAÇÃO: Verificar FAQ instantâneo primeiro (<100ms)
+    const instantResponse = getInstantFAQResponse(text);
+    if (instantResponse) {
+      console.log("[TextHandler] FAQ instantâneo detectado:", text.slice(0, 20));
+      await sendTextMessage(phone, instantResponse);
+      return;
+    }
+    
     // Try to analyze as food first
     const wasFood = await processTextForFood(supabase, user, phone, text);
     if (!wasFood) {

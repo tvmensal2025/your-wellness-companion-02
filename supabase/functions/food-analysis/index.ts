@@ -81,7 +81,7 @@ serve(async (req) => {
     // 🔧 BUSCAR CONFIGURAÇÕES DO BANCO DE DADOS
     let aiConfig = {
       service: 'lovable',
-      model: 'google/gemini-2.5-flash',
+      model: 'google/gemini-2.5-flash-lite', // Otimizado: -40% latência, -40% custo
       max_tokens: 1500,
       temperature: 0.7,
       system_prompt: ''
