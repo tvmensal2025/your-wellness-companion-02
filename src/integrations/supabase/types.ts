@@ -10768,6 +10768,82 @@ export type Database = {
         }
         Relationships: []
       }
+      team_battles: {
+        Row: {
+          challenge_type: string
+          created_at: string
+          ends_at: string
+          id: string
+          starts_at: string
+          status: string
+          target_value: number
+          team_a_id: string
+          team_a_progress: number
+          team_b_id: string
+          team_b_progress: number
+          unit: string
+          updated_at: string
+          winner_team_id: string | null
+          xp_reward: number
+        }
+        Insert: {
+          challenge_type?: string
+          created_at?: string
+          ends_at: string
+          id?: string
+          starts_at?: string
+          status?: string
+          target_value?: number
+          team_a_id: string
+          team_a_progress?: number
+          team_b_id: string
+          team_b_progress?: number
+          unit?: string
+          updated_at?: string
+          winner_team_id?: string | null
+          xp_reward?: number
+        }
+        Update: {
+          challenge_type?: string
+          created_at?: string
+          ends_at?: string
+          id?: string
+          starts_at?: string
+          status?: string
+          target_value?: number
+          team_a_id?: string
+          team_a_progress?: number
+          team_b_id?: string
+          team_b_progress?: number
+          unit?: string
+          updated_at?: string
+          winner_team_id?: string | null
+          xp_reward?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_battles_team_a_id_fkey"
+            columns: ["team_a_id"]
+            isOneToOne: false
+            referencedRelation: "challenge_teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_battles_team_b_id_fkey"
+            columns: ["team_b_id"]
+            isOneToOne: false
+            referencedRelation: "challenge_teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_battles_winner_team_id_fkey"
+            columns: ["winner_team_id"]
+            isOneToOne: false
+            referencedRelation: "challenge_teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       team_challenge_contributions: {
         Row: {
           contribution_value: number | null
@@ -10852,6 +10928,41 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "team_challenges_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "challenge_teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      team_chat_messages: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          message_type: string
+          team_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          message_type?: string
+          team_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          message_type?: string
+          team_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_chat_messages_team_id_fkey"
             columns: ["team_id"]
             isOneToOne: false
             referencedRelation: "challenge_teams"
@@ -13802,6 +13913,7 @@ export type Database = {
         Returns: string
       }
       finalize_duel: { Args: { p_duel_id: string }; Returns: Json }
+      finalize_team_battle: { Args: { p_battle_id: string }; Returns: Json }
       find_and_sync_orphan_user_by_phone: {
         Args: { p_phone: string }
         Returns: {
@@ -13822,6 +13934,14 @@ export type Database = {
       unlock_available_sessions: { Args: never; Returns: number }
       update_league_weekly_xp: {
         Args: { p_user_id: string; p_xp_amount: number }
+        Returns: undefined
+      }
+      update_team_battle_progress: {
+        Args: {
+          p_battle_id: string
+          p_progress_increment: number
+          p_team_id: string
+        }
         Returns: undefined
       }
     }
