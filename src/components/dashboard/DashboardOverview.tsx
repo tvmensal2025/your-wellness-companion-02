@@ -205,37 +205,41 @@ const DashboardOverview: React.FC = () => {
 
   const currentWeight = stats?.currentWeight || (measurements?.[0]?.peso_kg ? Number(measurements[0].peso_kg) : 0);
 
+  // Layout: Hero + Evolução + Botão preenchem exatamente a viewport, Dr. Vital só no scroll
   return (
-    <div className="min-h-screen bg-background overflow-x-hidden">
-      <div className="mx-auto w-full max-w-3xl space-y-2 sm:space-y-3 px-3 sm:px-4 pb-24 sm:pb-28 pt-2 sm:pt-3">
-        {/* 1. Apple Health Style Hero Card */}
-        <AppleHealthHeroCard
-          currentWeight={typeof currentWeight === 'number' ? currentWeight : parseFloat(String(currentWeight)) || 0}
-          targetWeight={targetWeight}
-          weightChange={weightChange()}
-          healthScore={healthScore}
-          currentStreak={currentStreak}
-          userName={userName}
-          height={heightCm}
-          age={age}
-          gender={gender || 'F'}
-        />
+    <div className="min-h-[calc(100dvh-112px)] bg-background overflow-auto">
+      <div className="mx-auto w-full max-w-3xl px-2 py-1.5">
+        {/* === SEÇÃO PRINCIPAL === */}
+        <div className="flex flex-col gap-2">
+          {/* 1. Hero Card */}
+          <AppleHealthHeroCard
+            currentWeight={typeof currentWeight === 'number' ? currentWeight : parseFloat(String(currentWeight)) || 0}
+            targetWeight={targetWeight}
+            weightChange={weightChange()}
+            healthScore={healthScore}
+            currentStreak={currentStreak}
+            userName={userName}
+            height={heightCm}
+            age={age}
+            gender={gender || 'F'}
+          />
 
-        {/* 2. Clean Evolution Chart */}
-        <CleanEvolutionChart
-          measurements={measurements || []}
-          loading={loading}
-          onRegisterClick={() => setIsWeightModalOpen(true)}
-        />
+          {/* 2. Evolution Chart */}
+          <CleanEvolutionChart
+            measurements={measurements || []}
+            loading={loading}
+            onRegisterClick={() => setIsWeightModalOpen(true)}
+          />
 
-        {/* 3. Quick Actions */}
-        <QuickActionsGrid onWeightClick={() => setIsWeightModalOpen(true)} />
+          {/* 3. Quick Actions */}
+          <QuickActionsGrid onWeightClick={() => setIsWeightModalOpen(true)} />
+        </div>
 
-        {/* 4. Sofia Tips - Dicas personalizadas */}
-        <SofiaTipsCard />
-
-        {/* 5. Motivational Mascot */}
-        <MotivationalMascot />
+        {/* === CONTEÚDO EXTRA (só aparece ao arrastar) === */}
+        <div className="space-y-3 pt-3 pb-4">
+          <SofiaTipsCard />
+          <MotivationalMascot />
+        </div>
       </div>
 
       {/* Weight Modal */}

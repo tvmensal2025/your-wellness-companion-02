@@ -20,6 +20,7 @@ export interface FeedPost {
   user_name?: string;
   user_avatar?: string;
   user_level?: string;
+  user_bio?: string; // Bio/foco do usuário
   is_liked?: boolean;
   is_saved?: boolean;
   comments?: FeedComment[];
@@ -76,7 +77,7 @@ export function useFeedPosts() {
       // Get profiles for users
       const { data: profilesData } = await supabase
         .from('profiles')
-        .select('user_id, full_name, avatar_url')
+        .select('user_id, full_name, avatar_url, bio')
         .in('user_id', userIds);
 
       const profilesMap = new Map(
@@ -153,6 +154,7 @@ export function useFeedPosts() {
           user_name: profile?.full_name || 'Usuário',
           user_avatar: profile?.avatar_url || undefined,
           user_level: 'Membro',
+          user_bio: profile?.bio || undefined,
           is_liked: userReactions.has(post.id),
           is_saved: false,
           comments: commentsMap.get(post.id) || []

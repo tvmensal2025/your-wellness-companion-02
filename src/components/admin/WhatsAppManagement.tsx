@@ -12,7 +12,8 @@ import {
   RefreshCw,
   CheckCircle,
   XCircle,
-  Eye
+  Eye,
+  Zap
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -22,9 +23,10 @@ import WhatsAppTemplates from "./whatsapp/WhatsAppTemplates";
 import WhatsAppLogs from "./whatsapp/WhatsAppLogs";
 import WhatsAppTestSend from "./whatsapp/WhatsAppTestSend";
 import WhatsAppConfig from "./whatsapp/WhatsAppConfig";
+import { WhatsAppProviderPanel } from "./WhatsAppProviderPanel";
 
 const WhatsAppManagement = () => {
-  const [activeTab, setActiveTab] = useState("dashboard");
+  const [activeTab, setActiveTab] = useState("provider");
   const [connectionStatus, setConnectionStatus] = useState<"checking" | "connected" | "disconnected">("checking");
   const { toast } = useToast();
 
@@ -177,7 +179,11 @@ const WhatsAppManagement = () => {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
+          <TabsTrigger value="provider" className="flex items-center gap-1">
+            <Zap className="h-4 w-4" />
+            Provider
+          </TabsTrigger>
           <TabsTrigger value="dashboard" className="flex items-center gap-1">
             <BarChart3 className="h-4 w-4" />
             Dashboard
@@ -199,6 +205,10 @@ const WhatsAppManagement = () => {
             Config
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="provider" className="mt-4">
+          <WhatsAppProviderPanel />
+        </TabsContent>
 
         <TabsContent value="dashboard" className="mt-4">
           <WhatsAppDashboard />

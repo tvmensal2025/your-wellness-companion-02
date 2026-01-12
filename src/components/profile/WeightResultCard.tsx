@@ -1,8 +1,9 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { TrendingDown, TrendingUp, Minus, Trophy, Flame, Star, Target, Lock } from 'lucide-react';
+import { TrendingDown, TrendingUp, Minus, Trophy, Flame, Star, Target, Lock, Scale, Plus } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
+import { Button } from '@/components/ui/button';
 
 interface WeightResultCardProps {
   initialWeight: number | null;
@@ -10,6 +11,7 @@ interface WeightResultCardProps {
   targetWeight: number | null;
   isHidden?: boolean;
   isOwnProfile?: boolean;
+  onAddWeight?: () => void;
 }
 
 export const WeightResultCard: React.FC<WeightResultCardProps> = ({
@@ -18,9 +20,47 @@ export const WeightResultCard: React.FC<WeightResultCardProps> = ({
   targetWeight,
   isHidden = false,
   isOwnProfile = false,
+  onAddWeight,
 }) => {
+  // Se não tem dados de peso, mostrar card de incentivo
   if (!initialWeight || !currentWeight) {
-    return null;
+    // Só mostrar card de incentivo para o próprio perfil
+    if (!isOwnProfile) {
+      return null;
+    }
+    
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+      >
+        <Card className="border-dashed border-2 border-muted-foreground/30 bg-muted/10">
+          <CardContent className="p-4 text-center space-y-3">
+            <div className="w-12 h-12 mx-auto rounded-full bg-primary/10 flex items-center justify-center">
+              <Scale className="w-6 h-6 text-primary" />
+            </div>
+            <div>
+              <h4 className="font-semibold text-sm">Acompanhe seu Peso</h4>
+              <p className="text-xs text-muted-foreground mt-1">
+                Registre seu peso para ver sua evolução aqui
+              </p>
+            </div>
+            {onAddWeight && (
+              <Button 
+                size="sm" 
+                variant="outline" 
+                className="gap-1.5"
+                onClick={onAddWeight}
+              >
+                <Plus className="w-3.5 h-3.5" />
+                Registrar Peso
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+      </motion.div>
+    );
   }
 
   const weightChange = currentWeight - initialWeight;

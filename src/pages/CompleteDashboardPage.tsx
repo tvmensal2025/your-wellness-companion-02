@@ -26,9 +26,10 @@ const DashboardOverview = lazy(() => import('@/components/dashboard/DashboardOve
 const DailyMissions = lazy(() => import('@/components/daily-missions/DailyMissionsLight').then(m => ({ default: m.DailyMissionsLight })));
 const CoursePlatformNetflix = lazy(() => import('@/components/dashboard/CoursePlatformNetflix'));
 const SessionsPage = lazy(() => import('@/components/SessionsPage'));
-const UserSessions = lazy(() => import('@/components/UserSessions'));
+const UserSessionsCompact = lazy(() => import('@/components/sessions/UserSessionsCompact'));
 const GoalsPage = lazy(() => import('@/pages/GoalsPage'));
 const DesafiosSection = lazy(() => import('@/components/dashboard/DesafiosSection'));
+const ChallengesV2Dashboard = lazy(() => import('@/components/challenges-v2/ChallengesDashboard'));
 const RankingCommunity = lazy(() => import('@/components/RankingCommunity'));
 const ExerciseOnboardingModal = lazy(() => import('@/components/exercise/ExerciseOnboardingModal').then(m => ({ default: m.ExerciseOnboardingModal })));
 const ExerciseDashboard = lazy(() => import('@/components/exercise/ExerciseDashboard').then(m => ({ default: m.ExerciseDashboard })));
@@ -46,6 +47,8 @@ const WelcomeOnboardingModal = lazy(() => import('@/components/onboarding/Welcom
 // Sidebar components
 import { SidebarProfile } from '@/components/sidebar/SidebarProfile';
 import { ProfileModal } from '@/components/sidebar/ProfileModal';
+import { useDirectMessages } from '@/hooks/useDirectMessages';
+import { DirectMessagesModal } from '@/components/community/DirectMessagesModal';
 
 // Importar loader animado
 import { SectionLoader as AnimatedSectionLoader, AnimatedLoader } from '@/components/ui/animated-loader';
@@ -70,8 +73,10 @@ const CompleteDashboardPage = () => {
   const [layoutPrefsModalOpen, setLayoutPrefsModalOpen] = useState(false);
   const [whatsappSettingsOpen, setWhatsappSettingsOpen] = useState(false);
   const [welcomeModalOpen, setWelcomeModalOpen] = useState(false);
+  const [dmModalOpen, setDmModalOpen] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { totalUnread } = useDirectMessages();
 
   // Sincroniza estado local com contexto global para ocultar Sofia na comunidade
   const activeSection = activeSectionState;
@@ -341,14 +346,14 @@ const CompleteDashboardPage = () => {
       case 'courses':
         return <Suspense fallback={<SectionLoader />}><CoursePlatformNetflix key="courses" user={user} /></Suspense>;
       case 'sessions':
-        return <Suspense fallback={<SectionLoader />}><div key="sessions" className="p-6">
-            <UserSessions user={user} />
+        return <Suspense fallback={<SectionLoader />}><div key="sessions" className="px-4 pt-2">
+            <UserSessionsCompact user={user} />
           </div></Suspense>;
       case 'comunidade':
         return <Suspense fallback={<SectionLoader />}><HealthFeedPage key="comunidade" /></Suspense>;
       case 'challenges':
-        return <Suspense fallback={<SectionLoader />}><div key="challenges" className="p-6">
-            <DesafiosSection user={user} />
+        return <Suspense fallback={<SectionLoader />}><div key="challenges" className="px-4 pt-2 pb-20">
+            <ChallengesV2Dashboard />
           </div></Suspense>;
       case 'sofia-nutricional':
         return <Suspense fallback={<SectionLoader />}>
@@ -583,6 +588,8 @@ const CompleteDashboardPage = () => {
             avatarUrl={profileData?.avatarUrl}
             userName={profileData?.fullName}
             userId={user?.id}
+            unreadMessages={totalUnread}
+            onMessageClick={() => setDmModalOpen(true)}
           />
 
           {/* Content - Otimizado para mobile com overflow controlado */}
@@ -671,6 +678,12 @@ const CompleteDashboardPage = () => {
           onOpenChange={setWhatsappSettingsOpen}
         />
       </Suspense>
+
+      {/* Modal de Mensagens Diretas */}
+      <DirectMessagesModal
+        open={dmModalOpen}
+        onOpenChange={setDmModalOpen}
+      />
 
       {/* Modal de Boas-vindas / Onboarding */}
       <Suspense fallback={null}>

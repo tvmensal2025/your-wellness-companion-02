@@ -47,6 +47,7 @@ import { RankingUserCard } from '@/components/ranking/RankingUserCard';
 import { RankingStats } from '@/components/ranking/RankingStats';
 import { RankingHeader } from '@/components/ranking/RankingHeader';
 import { RankingSocialHeader } from '@/components/ranking/RankingSocialHeader';
+import { ConnectionsTab } from '@/components/community/ConnectionsTab';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 
@@ -124,22 +125,32 @@ export default function HealthFeedPage() {
     // Buscar pelo user_id ao invés de email para garantir correspondência exata
     const userRank = ranking.find(r => r.user_id === user.id);
     
-    // Se não encontrar no ranking, usar dados do userProgressStats como fallback
-    if (!userRank) {
+    // Se encontrou no ranking, usar esses dados
+    if (userRank) {
       return {
-        position: 0,
-        points: userProgressStats?.totalPoints || 0,
-        streak: userProgressStats?.currentStreak || 0,
-        missions: userProgressStats?.challengesCompleted || 0
+        position: userRank.position || 0,
+        points: userRank.total_points || 0,
+        streak: userRank.streak_days || 0,
+        missions: userRank.missions_completed || 0
       };
     }
     
-    // Retornar valores estáveis do ranking
+    // Se não encontrar no ranking, usar dados do userProgressStats como fallback
+    // E calcular posição estimada baseada nos pontos
+    const userPoints = userProgressStats?.totalPoints || 0;
+    let estimatedPosition = ranking.length + 1; // Assume última posição
+    
+    // Calcular posição real baseada nos pontos
+    if (userPoints > 0 && ranking.length > 0) {
+      const usersWithMorePoints = ranking.filter(r => r.total_points > userPoints).length;
+      estimatedPosition = usersWithMorePoints + 1;
+    }
+    
     return {
-      position: userRank.position || 0,
-      points: userRank.total_points || 0,
-      streak: userRank.streak_days || 0,
-      missions: userRank.missions_completed || 0
+      position: estimatedPosition,
+      points: userPoints,
+      streak: userProgressStats?.currentStreak || 0,
+      missions: userProgressStats?.challengesCompleted || 0
     };
   }, [ranking, user?.id, userProgressStats?.totalPoints, userProgressStats?.currentStreak, userProgressStats?.challengesCompleted]);
 
@@ -246,33 +257,105 @@ export default function HealthFeedPage() {
     { id: '2', title: 'Corrida Virtual 5K', date: '15 Jan', participants: 89 },
   ];
 
+  // Mock data para novas seções
+  const recentAchievements = useMemo(() => {
+    return ranking.slice(0, 4).map((user, index) => ({
+      id: `achievement-${user.user_id}`,
+      userId: user.user_id,
+      userName: user.user_name,
+      userAvatar: user.avatar_url,
+      type: (['weight_loss', 'streak', 'challenge', 'workout', 'nutrition'] as const)[index % 5],
+      title: [
+        'Perdeu 2kg esta semana!',
+        `${user.streak_days} dias de sequência!`,
+        'Completou desafio de água',
+        'Treinou 5x esta semana',
+        'Bateu meta de proteína'
+      ][index % 5],
+      value: ['-2kg', `🔥${user.streak_days}`, '✅ 100%', '5 treinos', '150g'][index % 5],
+      timeAgo: ['2h', '5h', 'Ontem', '2 dias'][index % 4]
+    }));
+  }, [ranking]);
+
+  const newMembers = useMemo(() => {
+    return ranking.slice(-3).map(user => ({
+      id: user.user_id,
+      name: user.user_name,
+      avatar: user.avatar_url,
+      joinedAgo: 'Hoje'
+    }));
+  }, [ranking]);
+
+  const handleMotivateUser = (userId: string, userName: string) => {
+    // Criar notificação de motivação
+    createNotification(userId, 'like', '💪 Te motivou!', 'Continue assim, você está arrasando!', 'motivation');
+  };
+
+  // Função para gerar bio/foco baseado no nível ou conteúdo (fallback)
+  const generateUserBio = (userLevel: string, tags: string[], content: string): string => {
+    // Prioridade 1: Tags do post
+    if (tags.includes('treino') || content.toLowerCase().includes('treino')) {
+      return 'Focado em treinos 💪';
+    }
+    if (tags.includes('nutrição') || tags.includes('dieta') || content.toLowerCase().includes('dieta')) {
+      return 'Focado em nutrição 🥗';
+    }
+    if (tags.includes('emagrecimento') || content.toLowerCase().includes('emagrec')) {
+      return 'Em busca do shape 🔥';
+    }
+    if (tags.includes('hipertrofia') || content.toLowerCase().includes('hipertrofia')) {
+      return 'Focado em hipertrofia 💪';
+    }
+    if (tags.includes('corrida') || content.toLowerCase().includes('corrida')) {
+      return 'Amante de corrida 🏃';
+    }
+    
+    // Prioridade 2: Nível do usuário
+    if (userLevel === 'Expert' || userLevel === 'Avançado') {
+      return 'Atleta dedicado 🏆';
+    }
+    if (userLevel === 'Intermediário') {
+      return 'Evoluindo sempre 📈';
+    }
+    
+    // Default
+    return 'Buscando saúde ✨';
+  };
+
   // Map posts to card format
-  const mappedPosts = filteredSmartPosts.map(post => ({
-    id: post.id,
-    visibleUserId: post.user_id,
-    userName: post.user_name || 'Usuário',
-    userAvatar: post.user_avatar || '',
-    userLevel: post.user_level || 'Membro',
-    content: post.content,
-    imageUrl: post.media_urls?.[0] || undefined,
-    location: undefined,
-    tags: post.tags || [],
-    likes: post.likes_count,
-    comments: post.comments_count,
-    shares: post.shares_count,
-    isLiked: post.is_liked || false,
-    isSaved: post.is_saved || false,
-    createdAt: post.created_at,
-    achievementData: undefined,
-    progressData: undefined,
-    commentsList: (post.comments || []).map(c => ({
-      id: c.id,
-      userName: c.user_name || 'Usuário',
-      userAvatar: c.user_avatar,
-      content: c.content,
-      createdAt: c.created_at
-    }))
-  }));
+  const mappedPosts = filteredSmartPosts.map(post => {
+    const userLevel = post.user_level || 'Membro';
+    // Usa bio real do perfil, senão gera um automático
+    const userBio = post.user_bio || generateUserBio(userLevel, post.tags || [], post.content);
+    
+    return {
+      id: post.id,
+      visibleUserId: post.user_id,
+      userName: post.user_name || 'Usuário',
+      userAvatar: post.user_avatar || '',
+      userLevel,
+      userBio,
+      content: post.content,
+      imageUrl: post.media_urls?.[0] || undefined,
+      location: undefined,
+      tags: post.tags || [],
+      likes: post.likes_count,
+      comments: post.comments_count,
+      shares: post.shares_count,
+      isLiked: post.is_liked || false,
+      isSaved: post.is_saved || false,
+      createdAt: post.created_at,
+      achievementData: undefined,
+      progressData: undefined,
+      commentsList: (post.comments || []).map(c => ({
+        id: c.id,
+        userName: c.user_name || 'Usuário',
+        userAvatar: c.user_avatar,
+        content: c.content,
+        createdAt: c.created_at
+      }))
+    };
+  });
 
   // Prioridade correta: perfil real > ranking > metadata > email
   const userName = realProfile?.fullName || rankingProfile?.user_name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Usuário';
@@ -284,25 +367,20 @@ export default function HealthFeedPage() {
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <div className="flex items-center justify-between mb-4 gap-2">
-            <TabsList className="w-full max-w-md bg-primary/10 border border-primary/20">
-              <TabsTrigger value="feed" className="flex-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+            <TabsList className="w-full max-w-xl bg-primary/10 border border-primary/20">
+              <TabsTrigger value="feed" className="flex-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-xs sm:text-sm">
                 Feed
               </TabsTrigger>
-              <TabsTrigger value="following" className="flex-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <TabsTrigger value="following" className="flex-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-xs sm:text-sm">
                 Seguindo
               </TabsTrigger>
-              <TabsTrigger value="ranking" className="flex-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <TabsTrigger value="ranking" className="flex-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-xs sm:text-sm">
                 Ranking
               </TabsTrigger>
+              <TabsTrigger value="conexoes" className="flex-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-xs sm:text-sm">
+                Conexões
+              </TabsTrigger>
             </TabsList>
-            
-            {/* Header Actions - only DM button, notification bell is in main navbar */}
-            <div className="flex items-center gap-2">
-              <MessageButton 
-                unreadCount={totalUnread} 
-                onClick={() => setDmModalOpen(true)} 
-              />
-            </div>
           </div>
 
           {/* Feed Tab */}
@@ -386,6 +464,13 @@ export default function HealthFeedPage() {
                   allPosts={posts}
                   userPosts={userPosts}
                   showWeeklySummary={userPosts.length > 0}
+                  recentAchievements={recentAchievements}
+                  newMembers={newMembers}
+                  onMotivate={handleMotivateUser}
+                  onViewProfile={(userId) => {
+                    setSelectedProfileId(userId);
+                    setProfileModalOpen(true);
+                  }}
                 />
               </div>
             </div>
@@ -417,6 +502,21 @@ export default function HealthFeedPage() {
                 }}
               />
             </div>
+          </TabsContent>
+
+          {/* Conexões Tab */}
+          <TabsContent value="conexoes" className="mt-4">
+            <ConnectionsTab
+              currentUserId={user?.id}
+              onProfileClick={(userId) => {
+                setSelectedProfileId(userId);
+                setProfileModalOpen(true);
+              }}
+              onMessageClick={(userId) => {
+                setInitialDmUser(userId);
+                setDmModalOpen(true);
+              }}
+            />
           </TabsContent>
 
           {/* Ranking Tab */}
@@ -512,10 +612,10 @@ export default function HealthFeedPage() {
                 </div>
               )}
 
-              {/* Ranking List - Positions 4-10 */}
+              {/* Ranking List - Positions 4+ */}
               {!rankingLoading && filteredRanking.length > 3 && (
                 <div className="space-y-3">
-                  {filteredRanking.slice(3, 10).map((rankingUser, index) => (
+                  {filteredRanking.slice(3).map((rankingUser, index) => (
                     <RankingUserCard
                       key={rankingUser.user_id}
                       position={rankingUser.position}
@@ -528,6 +628,7 @@ export default function HealthFeedPage() {
                       isCurrentUser={rankingUser.user_id === user?.id}
                       index={index}
                       challengesCompleted={rankingUser.completed_challenges || 0}
+                      lastActivity={rankingUser.last_activity}
                       onProfileClick={(userId) => {
                         setSelectedProfileId(userId);
                         setProfileModalOpen(true);

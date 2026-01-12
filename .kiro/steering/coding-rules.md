@@ -64,6 +64,43 @@ import { Button } from '../../../components/ui/button';
 | `user_goals.profiles` | Fazer query separada (não tem FK) |
 | `daily_health_tracking` | `advanced_daily_tracking` |
 | `user_physical_data.peso_kg` | `user_physical_data.peso_atual_kg` |
+| `user_sessions.status = 'assigned'` | `user_sessions.status = 'pending'` |
+
+---
+
+## 📋 SESSÕES - REGRAS IMPORTANTES
+
+### Status válidos para `user_sessions`:
+```typescript
+type SessionStatus = 'pending' | 'in_progress' | 'completed' | 'cancelled';
+// ❌ NUNCA usar 'assigned' - foi deprecado
+```
+
+### Atribuir sessão (evitar duplicatas):
+```typescript
+// ✅ CORRETO - Usar upsert com onConflict
+const { error } = await supabase
+  .from('user_sessions')
+  .upsert([{
+    user_id: userId,
+    session_id: sessionId,
+    status: 'pending',
+    progress: 0
+  }], { 
+    onConflict: 'user_id,session_id',
+    ignoreDuplicates: true 
+  });
+```
+
+### Completar ciclo de sessão:
+```typescript
+// ✅ CORRETO - Usar RPC
+const { data } = await supabase.rpc('complete_session_cycle', {
+  p_user_id: userId,
+  p_session_id: sessionId
+});
+// Retorna: { status, cycle_completed, next_cycle, next_available_date }
+```
 
 ---
 
@@ -112,6 +149,24 @@ user_id, role ('admin', 'moderator', 'user')
 ### `user_goals`
 ```
 user_id, title, description, target_date, status, progress
+```
+
+### `sessions` (templates de sessão)
+```
+id, title, description, type, content (jsonb), target_saboteurs, difficulty, estimated_time, is_active
+```
+
+### `user_sessions` (atribuições de sessão)
+```
+id, user_id, session_id, status, progress, assigned_at, started_at, completed_at,
+auto_save_data (jsonb), cycle_number, next_available_date, is_locked, review_count, tools_data (jsonb)
+```
+⚠️ **Status válidos:** `'pending'`, `'in_progress'`, `'completed'`, `'cancelled'`
+⚠️ **UNIQUE constraint:** `(user_id, session_id)` - usar `upsert` com `onConflict`
+
+### `daily_responses` (respostas de sessões)
+```
+id, user_id, question_id, answer, section, date, points_earned, session_attempt_id
 ```
 
 ---

@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ChefHat, Sparkles, Calendar, History } from 'lucide-react';
+import { ChefHat, Sparkles, Calendar } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useMealPlanGeneratorV2 } from '@/hooks/useMealPlanGeneratorV2';
 import { WeeklyMealPlanModal } from '@/components/meal-plan/WeeklyMealPlanModal';
 import { MealPlanSuccessEffect } from '@/components/meal-plan/MealPlanSuccessEffect';
 import { MealPlanLoadingExperience } from '@/components/meal-plan/creative/MealPlanLoadingExperience';
+import { MealPlanHistoryDrawer } from '@/components/meal-plan/MealPlanHistoryDrawer';
 
 // ============================================
 // DADOS
@@ -19,11 +20,7 @@ const MEALS_DATA = [
   { key: 'ceia', label: 'Ceia', emoji: '🌟', shortLabel: 'Ceia' },
 ];
 
-const MOCK_HISTORY = [
-  { id: '1', date: 'Hoje', calories: 2150, meals: 4 },
-  { id: '2', date: 'Ontem', calories: 1850, meals: 3 },
-  { id: '3', date: '09/01', calories: 2000, meals: 5 },
-];
+// MOCK_HISTORY removido - agora usa dados reais via MealPlanHistoryDrawer
 
 // ============================================
 // TIPO PARA REFEIÇÕES
@@ -99,7 +96,6 @@ export const ChefKitchenMealPlan: React.FC = () => {
     'ceia': false
   });
   const [selectedDays, setSelectedDays] = useState(7);
-  const [showHistory, setShowHistory] = useState(false);
   const [showResultModal, setShowResultModal] = useState(false);
 
   const { 
@@ -182,34 +178,8 @@ export const ChefKitchenMealPlan: React.FC = () => {
           </div>
         </div>
         
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setShowHistory(!showHistory)}
-          className="text-muted-foreground"
-        >
-          <History className="w-4 h-4 mr-1" />
-          Histórico
-        </Button>
+        <MealPlanHistoryDrawer />
       </div>
-
-      {/* Histórico Colapsável */}
-      {showHistory && (
-        <div className="overflow-hidden">
-          <div className="flex gap-2 pb-2 overflow-x-auto">
-            {MOCK_HISTORY.map((item) => (
-              <div 
-                key={item.id}
-                className="flex-shrink-0 px-3 py-2 bg-muted rounded-xl text-center min-w-[80px]"
-              >
-                <p className="text-xs text-muted-foreground">{item.date}</p>
-                <p className="font-bold text-sm">{item.calories}</p>
-                <p className="text-[10px] text-muted-foreground">{item.meals} refeições</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* Área do Fogão com Panela */}
       <motion.div 

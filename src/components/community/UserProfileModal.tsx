@@ -35,6 +35,10 @@ import {
   Brain,
   Ban,
   ShieldOff,
+  Utensils,
+  Activity,
+  Zap,
+  Award,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCommunityProfile, CommunityUserPost } from '@/hooks/useCommunityProfile';
@@ -469,6 +473,61 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                       isHidden={!progressStats.showWeightResults}
                       isOwnProfile={isOwnProfile}
                     />
+                  </div>
+                )}
+
+                {/* Activity Stats Card - NEW */}
+                {progressStats && (
+                  <div className="px-4">
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: 0.05 }}
+                    >
+                      <Card className="border-primary/20 overflow-hidden">
+                        <div className="p-4 space-y-3">
+                          <div className="flex items-center gap-2">
+                            <Activity className="w-4 h-4 text-primary" />
+                            <span className="font-semibold text-sm">Atividade</span>
+                          </div>
+                          
+                          <div className="grid grid-cols-3 gap-2">
+                            <div className="text-center p-2.5 rounded-xl bg-green-500/10 border border-green-500/20">
+                              <Utensils className="w-4 h-4 mx-auto mb-1 text-green-500" />
+                              <span className="font-bold text-lg block">{progressStats.totalMealsLogged}</span>
+                              <span className="text-[9px] text-muted-foreground">Refeições</span>
+                            </div>
+                            <div className="text-center p-2.5 rounded-xl bg-blue-500/10 border border-blue-500/20">
+                              <Dumbbell className="w-4 h-4 mx-auto mb-1 text-blue-500" />
+                              <span className="font-bold text-lg block">{progressStats.totalWorkouts}</span>
+                              <span className="text-[9px] text-muted-foreground">Treinos</span>
+                            </div>
+                            <div className="text-center p-2.5 rounded-xl bg-purple-500/10 border border-purple-500/20">
+                              <Calendar className="w-4 h-4 mx-auto mb-1 text-purple-500" />
+                              <span className="font-bold text-lg block">{progressStats.daysActive}</span>
+                              <span className="text-[9px] text-muted-foreground">Dias Ativos</span>
+                            </div>
+                          </div>
+
+                          {/* Points and Level */}
+                          <div className="flex items-center justify-between p-2.5 rounded-xl bg-gradient-to-r from-primary/10 to-accent/10 border border-primary/20">
+                            <div className="flex items-center gap-2">
+                              <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
+                                <Zap className="w-4 h-4 text-primary" />
+                              </div>
+                              <div>
+                                <span className="text-xs text-muted-foreground">Nível</span>
+                                <span className="font-bold text-sm block">{progressStats.level}</span>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <span className="text-xs text-muted-foreground">Pontos</span>
+                              <span className="font-bold text-sm block text-primary">{progressStats.totalPoints.toLocaleString()}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </Card>
+                    </motion.div>
                   </div>
                 )}
 

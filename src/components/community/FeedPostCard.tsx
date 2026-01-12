@@ -44,6 +44,7 @@ interface Post {
   userName: string;
   userAvatar?: string;
   userLevel: string;
+  userBio?: string; // Foco/bio do usuário - ex: "Focado em hipertrofia 💪"
   content: string;
   imageUrl?: string;
   location?: string;
@@ -180,13 +181,47 @@ export const FeedPostCard: React.FC<FeedPostCardProps> = ({
   const formatTimeAgo = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
-    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+    const diffInMinutes = Math.floor(diffInSeconds / 60);
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    const diffInDays = Math.floor(diffInHours / 24);
     
-    if (diffInHours < 1) return 'Agora mesmo';
+    if (diffInSeconds < 60) return 'Agora';
+    if (diffInMinutes < 60) return `${diffInMinutes}min`;
     if (diffInHours < 24) return `${diffInHours}h`;
-    if (diffInHours < 48) return 'Ontem';
-    return date.toLocaleDateString('pt-BR');
+    if (diffInDays === 1) return 'Ontem';
+    if (diffInDays < 7) return `${diffInDays} dias`;
+    if (diffInDays < 30) return `${Math.floor(diffInDays / 7)} sem`;
+    return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
   };
+
+  // Detectar categoria do post baseado no conteúdo e tags
+  const getPostCategory = () => {
+    const content = post.content.toLowerCase();
+    const tags = post.tags.map(t => t.toLowerCase());
+    
+    if (tags.includes('treino') || content.includes('treino') || content.includes('exercício') || content.includes('academia')) {
+      return { label: 'Treino', color: 'bg-orange-500/20 text-orange-400', icon: '💪' };
+    }
+    if (tags.includes('receita') || content.includes('receita') || content.includes('cozinhei')) {
+      return { label: 'Receita', color: 'bg-green-500/20 text-green-400', icon: '🍳' };
+    }
+    if (tags.includes('dica') || content.includes('dica') || content.includes('conselho')) {
+      return { label: 'Dica', color: 'bg-blue-500/20 text-blue-400', icon: '💡' };
+    }
+    if (tags.includes('motivação') || content.includes('motivação') || content.includes('consegui') || content.includes('meta')) {
+      return { label: 'Motivação', color: 'bg-purple-500/20 text-purple-400', icon: '🚀' };
+    }
+    if (tags.includes('progresso') || content.includes('progresso') || content.includes('evolução')) {
+      return { label: 'Progresso', color: 'bg-cyan-500/20 text-cyan-400', icon: '📈' };
+    }
+    if (post.achievementData) {
+      return { label: 'Conquista', color: 'bg-yellow-500/20 text-yellow-400', icon: '🏆' };
+    }
+    return null;
+  };
+
+  const postCategory = getPostCategory();
 
   // Truncate content for collapsed view
   const maxLength = 80;
@@ -274,6 +309,14 @@ export const FeedPostCard: React.FC<FeedPostCardProps> = ({
           </div>
         )}
 
+        {/* Category Tag */}
+        {postCategory && !post.isPinned && (
+          <div className={`px-4 py-1.5 flex items-center gap-2 text-xs font-medium ${postCategory.color}`}>
+            <span>{postCategory.icon}</span>
+            <span>{postCategory.label}</span>
+          </div>
+        )}
+
         {/* Header */}
         <CardHeader className="pb-2 px-3 sm:px-6 pt-3 sm:pt-6">
           <div className="flex items-start justify-between">
@@ -308,39 +351,22 @@ export const FeedPostCard: React.FC<FeedPostCardProps> = ({
                       {post.userLevel}
                     </Badge>
                   )}
-                  {/* Follow Button */}
-                  {!isOwnPost && post.visibleUserId && onFollowUser && (
-                    <Button
-                      variant={isFollowing ? "outline" : "ghost"}
-                      size="sm"
-                      className="h-6 px-2 text-[10px] sm:text-xs gap-1"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onFollowUser(post.visibleUserId!);
-                      }}
-                    >
-                      {isFollowing ? (
-                        <>
-                          <UserMinus className="w-3 h-3" />
-                          <span className="hidden sm:inline">Seguindo</span>
-                        </>
-                      ) : (
-                        <>
-                          <UserPlus className="w-3 h-3" />
-                          <span className="hidden sm:inline">Seguir</span>
-                        </>
-                      )}
-                    </Button>
-                  )}
                 </div>
-                <div className="flex items-center gap-1 sm:gap-2 text-[10px] sm:text-xs text-muted-foreground">
+                {/* Bio/Foco do usuário + tempo */}
+                <div className="flex items-center gap-1 sm:gap-2 text-[10px] sm:text-xs text-muted-foreground mt-0.5">
+                  {post.userBio ? (
+                    <>
+                      <span className="truncate max-w-[150px] sm:max-w-[200px]">{post.userBio}</span>
+                      <span>•</span>
+                    </>
+                  ) : null}
                   <span>{formatTimeAgo(post.createdAt)}</span>
                   {post.location && (
                     <>
                       <span>•</span>
                       <span className="flex items-center gap-0.5 sm:gap-1">
                         <MapPin className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                        <span className="truncate max-w-[100px] sm:max-w-none">{post.location}</span>
+                        <span className="truncate max-w-[80px] sm:max-w-none">{post.location}</span>
                       </span>
                     </>
                   )}
@@ -356,6 +382,27 @@ export const FeedPostCard: React.FC<FeedPostCardProps> = ({
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
+                  {/* Follow/Unfollow option */}
+                  {!isOwnPost && post.visibleUserId && onFollowUser && (
+                    <DropdownMenuItem 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onFollowUser(post.visibleUserId!);
+                      }}
+                    >
+                      {isFollowing ? (
+                        <>
+                          <UserMinus className="w-4 h-4 mr-2" />
+                          Deixar de seguir
+                        </>
+                      ) : (
+                        <>
+                          <UserPlus className="w-4 h-4 mr-2" />
+                          Seguir {post.userName}
+                        </>
+                      )}
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem onClick={(e) => { e.stopPropagation(); setIsExpanded(false); }}>
                     <ChevronUp className="w-4 h-4 mr-2" />
                     Recolher

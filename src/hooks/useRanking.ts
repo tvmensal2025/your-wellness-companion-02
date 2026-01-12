@@ -1,4 +1,3 @@
-import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 
@@ -16,47 +15,68 @@ interface RankingUser {
 }
 
 const fetchRankingData = async (): Promise<RankingUser[]> => {
-  // Buscar dados unificados de user_points com profiles
-  const { data, error } = await supabase
+  // Query robusta: buscar pontos primeiro, depois perfis separadamente
+  // Isso evita problemas com FK e RLS
+  const { data: pointsData, error: pointsError } = await supabase
     .from('user_points')
-    .select(`
-      user_id,
-      total_points,
-      current_streak,
-      best_streak,
-      missions_completed,
-      completed_challenges,
-      level,
-      last_activity_date,
-      profiles!inner(full_name, avatar_url)
-    `)
+    .select('*')
     .order('total_points', { ascending: false })
     .limit(100);
 
-  if (error) {
-    console.error('Erro ao buscar ranking:', error);
-    throw error;
+  if (pointsError) {
+    console.error('Erro ao buscar pontos:', pointsError);
+    throw pointsError;
   }
 
-  if (!data || data.length === 0) {
+  if (!pointsData || pointsData.length === 0) {
+    console.warn('Nenhum registro em user_points encontrado');
     return [];
   }
 
-  // Mapear para formato do ranking
-  const rankingUsers: RankingUser[] = data
-    .filter((item: any) => item.profiles?.full_name)
-    .map((item: any, index: number) => ({
-      user_id: item.user_id,
-      user_name: item.profiles?.full_name || 'Usuário',
-      avatar_url: item.profiles?.avatar_url,
-      total_points: item.total_points || 0,
-      streak_days: item.current_streak || 0,
-      missions_completed: item.missions_completed || 0,
-      completed_challenges: item.completed_challenges || 0,
-      level: item.level || 1,
-      last_activity: item.last_activity_date,
-      position: index + 1
-    }));
+  // Buscar perfis separadamente para evitar problemas de FK
+  const userIds = pointsData.map(p => p.user_id).filter(Boolean);
+  
+  const { data: profilesData, error: profilesError } = await supabase
+    .from('profiles')
+    .select('user_id, full_name, avatar_url')
+    .in('user_id', userIds);
+
+  if (profilesError) {
+    console.warn('Erro ao buscar perfis (continuando sem nomes):', profilesError);
+  }
+
+  // Criar mapa de perfis para lookup rápido
+  const profilesMap = new Map(
+    profilesData?.map(p => [p.user_id, p]) || []
+  );
+
+  // Mapear para formato do ranking com fallbacks
+  // FILTRAR usuários com 0 pontos ANTES de atribuir posições
+  const usersWithPoints = pointsData
+    .filter(item => (item.total_points || 0) > 0)
+    .map((item) => {
+      const profile = profilesMap.get(item.user_id);
+      return {
+        user_id: item.user_id,
+        user_name: profile?.full_name || 'Membro',
+        avatar_url: profile?.avatar_url || undefined,
+        total_points: item.total_points || 0,
+        streak_days: item.current_streak || 0,
+        missions_completed: item.missions_completed || 0,
+        completed_challenges: item.completed_challenges || 0,
+        level: item.level || 1,
+        last_activity: item.last_activity_date,
+        position: 0 // Será atribuído abaixo
+      };
+    })
+    // Filtrar usuários sem nome válido
+    .filter(u => u.user_name !== 'Membro' || u.total_points > 10);
+
+  // Atribuir posições APÓS filtrar
+  const rankingUsers: RankingUser[] = usersWithPoints.map((user, index) => ({
+    ...user,
+    position: index + 1
+  }));
 
   return rankingUsers;
 };

@@ -55,9 +55,9 @@ export function RankingPodium({ topThree, currentUserId, onUserClick }: RankingP
     };
 
     const avatarSizes = {
-      1: 'w-16 h-16 sm:w-20 sm:h-20',
-      2: 'w-12 h-12 sm:w-14 sm:h-14',
-      3: 'w-12 h-12 sm:w-14 sm:h-14',
+      1: 'w-24 h-24 sm:w-28 sm:h-28',
+      2: 'w-16 h-16 sm:w-20 sm:h-20',
+      3: 'w-16 h-16 sm:w-20 sm:h-20',
     };
 
     const borderColors = {
@@ -86,17 +86,17 @@ export function RankingPodium({ topThree, currentUserId, onUserClick }: RankingP
               initial={{ rotate: -10, scale: 0 }}
               animate={{ rotate: 0, scale: 1 }}
               transition={{ duration: 0.5, delay: 0.3 }}
-              className="absolute -top-6 left-1/2 -translate-x-1/2 z-10"
+              className="absolute -top-8 left-1/2 -translate-x-1/2 z-10"
             >
               <div className="relative">
                 <motion.div
                   animate={{ rotate: [0, -5, 5, 0] }}
                   transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
                 >
-                  <Crown className="w-8 h-8 text-yellow-500 fill-yellow-400 drop-shadow-lg" />
+                  <Crown className="w-10 h-10 sm:w-12 sm:h-12 text-yellow-500 fill-yellow-400 drop-shadow-lg" />
                 </motion.div>
                 <div className="absolute inset-0 animate-pulse">
-                  <Crown className="w-8 h-8 text-yellow-300 opacity-50" />
+                  <Crown className="w-10 h-10 sm:w-12 sm:h-12 text-yellow-300 opacity-50" />
                 </div>
               </div>
             </motion.div>
@@ -110,8 +110,8 @@ export function RankingPodium({ topThree, currentUserId, onUserClick }: RankingP
           </Avatar>
 
           {!isFirst && (
-            <div className={`absolute -top-2 -right-2 w-6 h-6 rounded-full bg-gradient-to-br ${gradients[position as 1|2|3]} flex items-center justify-center ${glows[position as 1|2|3]}`}>
-              <Medal className="w-3 h-3 text-white" />
+            <div className={`absolute -top-2 -right-2 w-8 h-8 rounded-full bg-gradient-to-br ${gradients[position as 1|2|3]} flex items-center justify-center ${glows[position as 1|2|3]}`}>
+              <Medal className="w-4 h-4 text-white" />
             </div>
           )}
         </div>

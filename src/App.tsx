@@ -46,6 +46,7 @@ const SystemHealth = lazy(() => import("./pages/admin/SystemHealth"));
 const CreativeMealPlanDemo = lazy(() => import("./components/meal-plan/creative/CreativeMealPlanDemo").then(module => ({ default: module.CreativeMealPlanDemo })));
 const UltraCreativeLayoutsPreview = lazy(() => import("./components/meal-plan/UltraCreativeLayouts").then(module => ({ default: module.UltraCreativeLayoutsPreview })));
 const UltraCreativeLayoutsPreviewV2 = lazy(() => import("./components/meal-plan/UltraCreativeLayoutsV2").then(module => ({ default: module.UltraCreativeLayoutsPreviewV2 })));
+const ChallengesV2Page = lazy(() => import("./pages/ChallengesV2Page"));
 
 // Loader animado global com branding
 const PageLoader = () => <AnimatedPageLoader />;
@@ -84,6 +85,8 @@ const App: React.FC = () => {
                 <Route path="/app/progress" element={<Suspense fallback={<PageLoader />}><ProgressPage /></Suspense>} />
                 <Route path="/nutricao" element={<Suspense fallback={<PageLoader />}><NutritionTrackingPage /></Suspense>} />
                 <Route path="/challenges/:id" element={<Suspense fallback={<PageLoader />}><ChallengeDetailPage /></Suspense>} />
+                <Route path="/desafios" element={<Suspense fallback={<PageLoader />}><ChallengesV2Page /></Suspense>} />
+                <Route path="/challenges" element={<Suspense fallback={<PageLoader />}><ChallengesV2Page /></Suspense>} />
                 <Route path="/google-fit-oauth" element={<Suspense fallback={<PageLoader />}><GoogleFitPage /></Suspense>} />
                 <Route path="/google-fit-callback" element={<Suspense fallback={<PageLoader />}><GoogleFitCallbackPage /></Suspense>} />
                 <Route path="/google-fit-test" element={<Suspense fallback={<PageLoader />}><GoogleFitTestPage /></Suspense>} />

@@ -10,6 +10,25 @@ export interface BottomNavItem {
   label: string;
 }
 
+// Mapeamento de labels curtos para o bottom nav
+const shortLabels: Record<string, string> = {
+  'dashboard': 'Painel',
+  'missions': 'Missões',
+  'progress': 'Progresso',
+  'goals': 'Metas',
+  'courses': 'Cursos',
+  'sessions': 'Sessões',
+  'comunidade': 'Social',
+  'challenges': 'Desafios',
+  'saboteur-test': 'Teste',
+  'sofia-nutricional': 'Sofia',
+  'dr-vital': 'Dr.Vital',
+  'exercise': 'Treino',
+  'meal-plan': 'Cardápio',
+  'weighing': 'Peso',
+  'health-tracking': 'Saúde',
+};
+
 interface BottomNavigationProps {
   activeSection: string;
   onSectionChange: (section: string) => void;
@@ -34,22 +53,28 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
     }
   };
 
+  // Função para obter label curto
+  const getShortLabel = (id: string, originalLabel: string): string => {
+    return shortLabels[id] || (originalLabel.length > 8 ? originalLabel.slice(0, 7) + '…' : originalLabel);
+  };
+
   return (
     <nav 
       className="fixed bottom-0 left-0 right-0 z-50 lg:hidden bg-card/95 backdrop-blur-lg border-t border-border/50"
       style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
     >
-      <div className="flex items-center justify-around h-14 px-2">
+      <div className="flex items-center justify-around h-14 px-1">
         {displayItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeSection === item.id;
+          const shortLabel = getShortLabel(item.id, item.label);
           
           return (
             <button
               key={item.id}
               onClick={() => handleItemClick(item.id)}
               className={cn(
-                'flex flex-col items-center justify-center gap-0.5 flex-1 h-full min-w-0 transition-all duration-200 rounded-lg mx-0.5',
+                'flex flex-col items-center justify-center gap-0.5 flex-1 h-full min-w-0 max-w-[72px] transition-all duration-200 rounded-lg',
                 'active:scale-95 touch-manipulation',
                 isActive
                   ? 'text-primary' 
@@ -68,7 +93,7 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
               >
                 <Icon 
                   className={cn(
-                    'w-4 h-4 transition-all duration-300',
+                    'w-5 h-5 transition-all duration-300',
                     isActive && 'text-primary'
                   )} 
                 />
@@ -78,11 +103,11 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
               </div>
               <span 
                 className={cn(
-                  'text-[9px] font-medium truncate max-w-full transition-all duration-200',
+                  'text-[9px] font-medium transition-all duration-200 truncate max-w-full px-0.5',
                   isActive ? 'opacity-100' : 'opacity-70'
                 )}
               >
-                {item.label}
+                {shortLabel}
               </span>
             </button>
           );
@@ -92,16 +117,16 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
         <button
           onClick={() => onMoreClick?.()}
           className={cn(
-            'flex flex-col items-center justify-center gap-0.5 flex-1 h-full min-w-0 transition-all duration-200 rounded-lg mx-0.5',
+            'flex flex-col items-center justify-center gap-0.5 flex-1 h-full min-w-0 max-w-[72px] transition-all duration-200 rounded-lg',
             'active:scale-95 touch-manipulation',
             'text-muted-foreground hover:text-foreground'
           )}
           aria-label="Mais"
         >
           <div className="relative flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-300 bg-transparent">
-            <MoreHorizontal className="w-4 h-4 transition-all duration-300" />
+            <MoreHorizontal className="w-5 h-5 transition-all duration-300" />
           </div>
-          <span className="text-[9px] font-medium truncate max-w-full transition-all duration-200 opacity-70">
+          <span className="text-[9px] font-medium transition-all duration-200 opacity-70">
             Mais
           </span>
         </button>

@@ -34,7 +34,8 @@ import {
   Dumbbell,
   Plus,
   MessageSquare,
-  Send
+  Send,
+  Image as ImageIcon
 } from "lucide-react";
 import { AdminDashboard } from "@/components/admin/AdminDashboard";
 import UserManagement from "@/components/admin/UserManagement";
@@ -62,6 +63,7 @@ import { TutorialDeviceConfig } from "@/components/admin/TutorialDeviceConfig";
 import SofiaDataTestPanel from "@/components/admin/SofiaDataTestPanel";
 import WhatsAppManagement from "@/components/admin/WhatsAppManagement";
 import WebhookManagement from "@/components/admin/WebhookManagement";
+import { PlatformSettingsPanel } from "@/components/admin/PlatformSettingsPanel";
 
 import { repairAuthSessionIfTooLarge } from "@/lib/auth-token-repair";
 
@@ -217,6 +219,7 @@ const AdminPage = () => {
     { id: 'anamneses', icon: FileText, label: 'Gestão de Anamneses', color: 'text-indigo-500', description: 'Visualizar todas as anamneses para entender como ajudar cada usuário' },
     { id: 'reports', icon: TrendingUp, label: 'Análises e Relatórios', color: 'text-green-500', description: 'Relatórios avançados e insights' },
     { id: 'courses', icon: BookOpen, label: 'Gestão de Cursos', color: 'text-orange-500', description: 'Gerenciar cursos e conteúdo' },
+    { id: 'platform-settings', icon: ImageIcon, label: 'Capa da Plataforma', color: 'text-violet-500', description: 'Banner, título e imagem de fundo' },
     { id: 'exercises', icon: Dumbbell, label: 'Gestão de Exercícios', color: 'text-cyan-600', description: 'Gerenciar biblioteca de exercícios com vídeos' },
     { id: 'products', icon: Utensils, label: 'Gestão de Produtos', color: 'text-teal-500', description: 'Gerenciar suplementos e produtos' },
     { id: 'challenges', icon: Award, label: 'Gestão de Metas e Desafios', color: 'text-pink-500', description: 'Criar e gerenciar metas e desafios' },
@@ -284,6 +287,8 @@ const AdminPage = () => {
         return <AdvancedReports />;
       case 'courses':
         return <CourseManagementNew />;
+      case 'platform-settings':
+        return <PlatformSettingsPanel />;
       case 'exercises':
         return <ExerciseLibraryManagement />;
       case 'challenges':

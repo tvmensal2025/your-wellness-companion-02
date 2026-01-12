@@ -25,6 +25,13 @@ export interface UserProgressStats {
   // Points
   totalPoints: number;
   rankingPosition: number;
+  level: number;
+  
+  // Activity
+  totalMealsLogged: number;
+  totalWorkouts: number;
+  daysActive: number;
+  lastActivityDate: string | null;
 }
 
 export function useUserProgressStats(userId: string | null) {
@@ -40,7 +47,7 @@ export function useUserProgressStats(userId: string | null) {
     const fetchStats = async () => {
       setLoading(true);
       try {
-        // Fetch profile data including privacy setting
+        // Fetch profile data including privacy setting and current weight
         const { data: profile } = await supabase
           .from('profiles')
           .select('current_weight, target_weight, show_weight_results')
@@ -68,7 +75,7 @@ export function useUserProgressStats(userId: string | null) {
         // Fetch user points
         const { data: userPoints } = await supabase
           .from('user_points')
-          .select('total_points, current_streak, best_streak, completed_challenges')
+          .select('total_points, current_streak, best_streak, completed_challenges, level, last_activity_date, missions_completed')
           .eq('user_id', userId)
           .maybeSingle();
 
@@ -98,8 +105,26 @@ export function useUserProgressStats(userId: string | null) {
           .eq('user_id', userId)
           .eq('is_completed', true);
 
+        // Fetch total meals logged (food_analysis)
+        const { count: totalMealsLogged } = await supabase
+          .from('food_analysis')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', userId);
+
+        // Fetch total workouts
+        const { count: totalWorkouts } = await supabase
+          .from('workout_sessions')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', userId);
+
+        // Fetch days active (unique days with activity)
+        const { count: daysActive } = await supabase
+          .from('advanced_daily_tracking')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', userId);
+
         // Calculate weights - prefer measurements, fallback to profile
-        const initialWeight = initialWeightData?.peso_kg || null;
+        const initialWeight = initialWeightData?.peso_kg || profile?.current_weight || null;
         const currentWeight = currentWeightData?.peso_kg || profile?.current_weight || null;
         const targetWeight = profile?.target_weight || null;
         
@@ -132,6 +157,11 @@ export function useUserProgressStats(userId: string | null) {
           followingCount: followingCount || 0,
           totalPoints: userPoints?.total_points || 0,
           rankingPosition: 0,
+          level: userPoints?.level || 1,
+          totalMealsLogged: totalMealsLogged || 0,
+          totalWorkouts: totalWorkouts || 0,
+          daysActive: daysActive || 0,
+          lastActivityDate: userPoints?.last_activity_date || null,
         });
       } catch (error) {
         console.error('Error fetching user progress stats:', error);

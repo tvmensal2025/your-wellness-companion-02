@@ -62,6 +62,13 @@ export function useCommunityProfile() {
         .select('*', { count: 'exact', head: true })
         .eq('follower_id', userId);
 
+      // Fetch user points and streak
+      const { data: userPoints } = await supabase
+        .from('user_points')
+        .select('total_points, current_streak, level')
+        .eq('user_id', userId)
+        .maybeSingle();
+
       // Fetch user posts
       const { data: postsData } = await supabase
         .from('health_feed_posts')
@@ -74,13 +81,13 @@ export function useCommunityProfile() {
                           profileData?.email?.split('@')[0] || 
                           'Usuário';
 
-      // Determine level based on posts count
-      const postCount = postsCount || 0;
-      const level = postCount > 50 
+      // Determine level based on user_points level or posts count
+      const userLevel = userPoints?.level || 1;
+      const level = userLevel >= 10 
         ? 'Expert' 
-        : postCount > 20 
+        : userLevel >= 5 
           ? 'Avançado' 
-          : postCount > 5 
+          : userLevel >= 2 
             ? 'Intermediário' 
             : 'Iniciante';
 
@@ -97,8 +104,8 @@ export function useCommunityProfile() {
         postsCount: postsCount || 0,
         followersCount: followersCount || 0,
         followingCount: followingCount || 0,
-        points: 0,
-        streak: 0,
+        points: userPoints?.total_points || 0,
+        streak: userPoints?.current_streak || 0,
         position: 0,
       });
 

@@ -12,12 +12,12 @@ import {
   Star,
   UserPlus,
   Calendar,
-  Sparkles
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { TrendingTopics } from './TrendingTopics';
 import { SuggestedPosts } from './SuggestedPosts';
 import { WeeklySummaryCard } from './WeeklySummaryCard';
+import { RecentAchievements, NewMembersWelcome } from './CommunityHighlights';
 import { FeedPost } from '@/hooks/useFeedPosts';
 
 interface RankingUser {
@@ -53,12 +53,29 @@ interface TrendingTopic {
   trendScore: number;
 }
 
+interface Achievement {
+  id: string;
+  userId: string;
+  userName: string;
+  userAvatar?: string;
+  type: 'weight_loss' | 'streak' | 'challenge' | 'workout' | 'nutrition';
+  title: string;
+  value: string;
+  timeAgo: string;
+}
+
+interface NewMember {
+  id: string;
+  name: string;
+  avatar?: string;
+  joinedAgo: string;
+}
+
 interface RightSidebarProps {
   topUsers: RankingUser[];
   suggestedUsers: SuggestedUser[];
   upcomingEvents: Event[];
   onFollowUser: (userId: string) => void;
-  // New Phase 4 props
   trendingTopics?: TrendingTopic[];
   onTopicClick?: (tag: string) => void;
   suggestedPosts?: FeedPost[];
@@ -66,6 +83,10 @@ interface RightSidebarProps {
   allPosts?: FeedPost[];
   userPosts?: FeedPost[];
   showWeeklySummary?: boolean;
+  recentAchievements?: Achievement[];
+  newMembers?: NewMember[];
+  onMotivate?: (userId: string, userName: string) => void;
+  onViewProfile?: (userId: string) => void;
 }
 
 export const RightSidebar: React.FC<RightSidebarProps> = ({
@@ -80,6 +101,10 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
   allPosts = [],
   userPosts = [],
   showWeeklySummary = true,
+  recentAchievements = [],
+  newMembers = [],
+  onMotivate,
+  onViewProfile,
 }) => {
   const getPositionIcon = (position: number) => {
     if (position === 1) return <Crown className="w-4 h-4 text-yellow-500" />;
@@ -90,12 +115,27 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
 
   return (
     <div className="w-80 space-y-4 sticky top-4">
+      {/* Recent Achievements - Conquistas Recentes */}
+      {recentAchievements.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
+          <RecentAchievements 
+            achievements={recentAchievements}
+            onMotivate={onMotivate ? (userId) => onMotivate(userId, '') : undefined}
+            onViewProfile={onViewProfile}
+          />
+        </motion.div>
+      )}
+
       {/* Weekly Summary Card */}
       {showWeeklySummary && userPosts.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
+          transition={{ delay: 0.15 }}
         >
           <WeeklySummaryCard 
             posts={allPosts} 
@@ -283,6 +323,20 @@ export const RightSidebar: React.FC<RightSidebarProps> = ({
           </div>
         </CardContent>
       </Card>
+
+      {/* New Members Welcome */}
+      {newMembers.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+        >
+          <NewMembersWelcome 
+            members={newMembers}
+            onViewProfile={onViewProfile}
+          />
+        </motion.div>
+      )}
     </div>
   );
 };

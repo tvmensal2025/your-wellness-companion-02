@@ -583,7 +583,7 @@ export const WeeklyMealPlanModal: React.FC<WeeklyMealPlanModalProps> = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="w-[95vw] max-w-3xl h-[90vh] flex flex-col p-0 gap-0 bg-background/95 backdrop-blur-xl">
         {/* Header */}
-        <div className="flex-shrink-0 p-4 border-b bg-gradient-to-r from-primary/5 via-transparent to-secondary/5">
+        <div className="flex-shrink-0 p-4 pr-12 border-b bg-gradient-to-r from-primary/5 via-transparent to-secondary/5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <motion.div 
