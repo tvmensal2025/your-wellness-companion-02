@@ -4723,6 +4723,51 @@ export type Database = {
         }
         Relationships: []
       }
+      goal_achievements: {
+        Row: {
+          achievement_description: string | null
+          achievement_name: string
+          achievement_type: string
+          created_at: string | null
+          icon: string | null
+          id: string
+          metadata: Json | null
+          progress: number | null
+          rarity: string | null
+          total_required: number | null
+          unlocked_at: string | null
+          user_id: string
+        }
+        Insert: {
+          achievement_description?: string | null
+          achievement_name: string
+          achievement_type: string
+          created_at?: string | null
+          icon?: string | null
+          id?: string
+          metadata?: Json | null
+          progress?: number | null
+          rarity?: string | null
+          total_required?: number | null
+          unlocked_at?: string | null
+          user_id: string
+        }
+        Update: {
+          achievement_description?: string | null
+          achievement_name?: string
+          achievement_type?: string
+          created_at?: string | null
+          icon?: string | null
+          id?: string
+          metadata?: Json | null
+          progress?: number | null
+          rarity?: string | null
+          total_required?: number | null
+          unlocked_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       goal_benefits: {
         Row: {
           benefit_description: string | null
@@ -4808,6 +4853,56 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "goal_reminders_goal_id_fkey"
+            columns: ["goal_id"]
+            isOneToOne: false
+            referencedRelation: "user_goals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      goal_streaks: {
+        Row: {
+          created_at: string | null
+          current_streak: number | null
+          goal_id: string | null
+          id: string
+          last_update_date: string | null
+          longest_streak: number | null
+          protection_used_at: string | null
+          streak_protected: boolean | null
+          streak_type: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          current_streak?: number | null
+          goal_id?: string | null
+          id?: string
+          last_update_date?: string | null
+          longest_streak?: number | null
+          protection_used_at?: string | null
+          streak_protected?: boolean | null
+          streak_type?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          current_streak?: number | null
+          goal_id?: string | null
+          id?: string
+          last_update_date?: string | null
+          longest_streak?: number | null
+          protection_used_at?: string | null
+          streak_protected?: boolean | null
+          streak_type?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "goal_streaks_goal_id_fkey"
             columns: ["goal_id"]
             isOneToOne: false
             referencedRelation: "user_goals"
@@ -11836,6 +11931,42 @@ export type Database = {
           },
         ]
       }
+      user_goal_levels: {
+        Row: {
+          created_at: string | null
+          current_level: number | null
+          current_xp: number | null
+          id: string
+          level_title: string | null
+          total_xp: number | null
+          updated_at: string | null
+          user_id: string
+          xp_to_next_level: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          current_level?: number | null
+          current_xp?: number | null
+          id?: string
+          level_title?: string | null
+          total_xp?: number | null
+          updated_at?: string | null
+          user_id: string
+          xp_to_next_level?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          current_level?: number | null
+          current_xp?: number | null
+          id?: string
+          level_title?: string | null
+          total_xp?: number | null
+          updated_at?: string | null
+          user_id?: string
+          xp_to_next_level?: number | null
+        }
+        Relationships: []
+      }
       user_goal_participants: {
         Row: {
           goal_id: string | null
@@ -11883,21 +12014,27 @@ export type Database = {
           difficulty: string | null
           estimated_points: number | null
           evidence_required: boolean | null
+          evidence_urls: string[] | null
           final_points: number | null
           goal_type: string | null
           gordura_corporal_meta_percent: number | null
           id: string
           imc_meta: number | null
           is_group_goal: boolean | null
+          last_update_date: string | null
+          level: number | null
+          participant_ids: string[] | null
           peso_meta_kg: number | null
           rejection_reason: string | null
           status: string | null
+          streak_days: number | null
           target_date: string | null
           target_value: number | null
           title: string | null
           unit: string | null
           updated_at: string | null
           user_id: string | null
+          xp_earned: number | null
         }
         Insert: {
           admin_notes?: string | null
@@ -11913,21 +12050,27 @@ export type Database = {
           difficulty?: string | null
           estimated_points?: number | null
           evidence_required?: boolean | null
+          evidence_urls?: string[] | null
           final_points?: number | null
           goal_type?: string | null
           gordura_corporal_meta_percent?: number | null
           id?: string
           imc_meta?: number | null
           is_group_goal?: boolean | null
+          last_update_date?: string | null
+          level?: number | null
+          participant_ids?: string[] | null
           peso_meta_kg?: number | null
           rejection_reason?: string | null
           status?: string | null
+          streak_days?: number | null
           target_date?: string | null
           target_value?: number | null
           title?: string | null
           unit?: string | null
           updated_at?: string | null
           user_id?: string | null
+          xp_earned?: number | null
         }
         Update: {
           admin_notes?: string | null
@@ -11943,21 +12086,27 @@ export type Database = {
           difficulty?: string | null
           estimated_points?: number | null
           evidence_required?: boolean | null
+          evidence_urls?: string[] | null
           final_points?: number | null
           goal_type?: string | null
           gordura_corporal_meta_percent?: number | null
           id?: string
           imc_meta?: number | null
           is_group_goal?: boolean | null
+          last_update_date?: string | null
+          level?: number | null
+          participant_ids?: string[] | null
           peso_meta_kg?: number | null
           rejection_reason?: string | null
           status?: string | null
+          streak_days?: number | null
           target_date?: string | null
           target_value?: number | null
           title?: string | null
           unit?: string | null
           updated_at?: string | null
           user_id?: string | null
+          xp_earned?: number | null
         }
         Relationships: []
       }
@@ -14133,6 +14282,10 @@ export type Database = {
         Returns: number
       }
       calculate_level: { Args: { xp: number }; Returns: number }
+      calculate_xp_to_next_level: {
+        Args: { current_level: number }
+        Returns: number
+      }
       check_rate_limit: {
         Args: {
           p_endpoint: string
@@ -14170,6 +14323,15 @@ export type Database = {
       }
       is_admin_user: { Args: never; Returns: boolean }
       process_league_promotions: { Args: never; Returns: undefined }
+      process_level_up: {
+        Args: { p_user_id: string; p_xp_gained: number }
+        Returns: {
+          leveled_up: boolean
+          new_level: number
+          new_title: string
+          new_xp: number
+        }[]
+      }
       recalculate_user_streak: { Args: { p_user_id: string }; Returns: number }
       record_whatsapp_message_sent: {
         Args: {
