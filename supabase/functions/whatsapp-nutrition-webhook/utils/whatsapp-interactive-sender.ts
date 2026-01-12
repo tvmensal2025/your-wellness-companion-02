@@ -1,17 +1,11 @@
 /**
- * WhatsApp Interactive Message Sender
- * Uses Whapi for interactive buttons with text fallback
+ * WhatsApp Interactive Message Sender - APENAS WHAPI
+ * Evolution desativado
  */
 
-// Whapi config
 const WHAPI_API_URL = Deno.env.get('WHAPI_API_URL') || 'https://gate.whapi.cloud';
 const WHAPI_TOKEN = Deno.env.get('WHAPI_TOKEN') || '';
 const WHAPI_CHANNEL_ID = Deno.env.get('WHAPI_CHANNEL_ID') || '';
-
-// Evolution config (fallback for text)
-const EVOLUTION_API_URL = Deno.env.get('EVOLUTION_API_URL');
-const EVOLUTION_API_KEY = Deno.env.get('EVOLUTION_API_KEY');
-const EVOLUTION_INSTANCE = Deno.env.get('EVOLUTION_INSTANCE');
 
 interface InteractiveButton {
   id: string;
@@ -26,41 +20,7 @@ interface InteractiveMessage {
 }
 
 /**
- * Format phone for WhatsApp (Whapi format)
- */
-function formatPhoneWhapi(phone: string): string {
-  let formatted = phone.replace(/\D/g, '');
-  if (!formatted.startsWith('55')) {
-    formatted = '55' + formatted;
-  }
-  return `${formatted}@s.whatsapp.net`;
-}
-
-/**
- * Format phone for Evolution
- */
-function formatPhoneEvolution(phone: string): string {
-  let formatted = phone.replace(/\D/g, '');
-  if (!formatted.startsWith('55')) {
-    formatted = '55' + formatted;
-  }
-  return formatted;
-}
-
-/**
- * Check if Whapi is configured and active
- */
-function isWhapiActive(): boolean {
-  const activeProvider = Deno.env.get('WHATSAPP_ACTIVE_PROVIDER') || 'evolution';
-  return activeProvider === 'whapi' && !!WHAPI_TOKEN;
-}
-
-
-/**
- * Send interactive message with buttons via Whapi
- */
-/**
- * Build Whapi headers with optional Channel ID
+ * Build Whapi headers with Channel ID
  */
 function getWhapiHeaders(): Record<string, string> {
   const headers: Record<string, string> = {
@@ -69,7 +29,6 @@ function getWhapiHeaders(): Record<string, string> {
     'Authorization': `Bearer ${WHAPI_TOKEN}`,
   };
   
-  // Adicionar Channel ID se configurado (resolve "Channel not found")
   if (WHAPI_CHANNEL_ID) {
     headers['X-Channel-Id'] = WHAPI_CHANNEL_ID;
   }
@@ -79,34 +38,31 @@ function getWhapiHeaders(): Record<string, string> {
 
 /**
  * Send interactive message with buttons via Whapi
- * Uses quick_reply format as per Whapi documentation:
- * https://support.whapi.cloud/help-desk/sending/send-message-with-buttons
  */
 async function sendWhapiInteractive(
   phone: string,
   message: InteractiveMessage
 ): Promise<boolean> {
   if (!WHAPI_TOKEN) {
-    console.error('[Whapi] Token não configurado');
+    console.error('[Whapi] ❌ Token não configurado');
     return false;
   }
 
-  // Whapi usa só o número, sem @s.whatsapp.net
+  // Whapi usa só o número
   let formattedPhone = phone.replace(/\D/g, '');
   if (!formattedPhone.startsWith('55')) {
     formattedPhone = '55' + formattedPhone;
   }
   
-  // Log de diagnóstico
-  console.log('[Whapi] Config:', {
+  console.log('[Whapi Interactive] Config:', {
     url: WHAPI_API_URL,
-    channelId: WHAPI_CHANNEL_ID ? `configurado (${WHAPI_CHANNEL_ID.substring(0, 8)}...)` : 'NÃO configurado',
+    channelId: WHAPI_CHANNEL_ID ? `configurado (${WHAPI_CHANNEL_ID.substring(0, 10)}...)` : 'NÃO configurado',
     tokenLength: WHAPI_TOKEN?.length || 0,
     phone: formattedPhone,
   });
   
   try {
-    // Formato correto do Whapi para quick_reply buttons
+    // Formato Whapi para botões interativos
     const payload: Record<string, any> = {
       to: formattedPhone,
       type: 'button',
@@ -114,7 +70,7 @@ async function sendWhapiInteractive(
       action: {
         buttons: message.buttons.slice(0, 3).map(btn => ({
           type: 'quick_reply',
-          title: btn.title.substring(0, 25), // Max 25 chars para Whapi
+          title: btn.title.substring(0, 25),
           id: btn.id
         })),
       },
@@ -127,7 +83,7 @@ async function sendWhapiInteractive(
       payload.footer = { text: message.footerText };
     }
 
-    console.log('[Whapi] Enviando interativo (quick_reply):', JSON.stringify(payload).substring(0, 600));
+    console.log('[Whapi Interactive] Payload:', JSON.stringify(payload).substring(0, 500));
 
     const response = await fetch(`${WHAPI_API_URL}/messages/interactive`, {
       method: 'POST',
@@ -136,90 +92,46 @@ async function sendWhapiInteractive(
     });
 
     const responseText = await response.text();
-    console.log(`[Whapi] Response status: ${response.status}, body: ${responseText.substring(0, 500)}`);
+    console.log(`[Whapi Interactive] Status: ${response.status}, Body: ${responseText.substring(0, 400)}`);
 
     let data;
     try {
       data = JSON.parse(responseText);
     } catch {
-      console.error('[Whapi] Resposta não é JSON válido:', responseText);
+      console.error('[Whapi Interactive] Resposta não é JSON:', responseText);
       return false;
     }
 
     if (!response.ok) {
-      console.error('[Whapi] Erro HTTP:', response.status, data);
-      // Se for 404 "Channel not found", sugerir configurar WHAPI_CHANNEL_ID
+      console.error('[Whapi Interactive] Erro HTTP:', response.status, data);
       if (response.status === 404 && !WHAPI_CHANNEL_ID) {
-        console.error('[Whapi] ⚠️ DICA: Configure o secret WHAPI_CHANNEL_ID com o ID do seu canal!');
+        console.error('[Whapi] ⚠️ DICA: Configure WHAPI_CHANNEL_ID!');
       }
       return false;
     }
 
     if (data.sent === false) {
-      console.error('[Whapi] Mensagem não enviada:', data);
+      console.error('[Whapi Interactive] Não enviado:', data);
       return false;
     }
 
-    console.log('[Whapi] ✅ Mensagem interativa enviada:', data?.message?.id || data?.id || 'ok');
+    console.log('[Whapi Interactive] ✅ Enviado:', data?.message?.id || data?.id || 'ok');
     return true;
   } catch (error) {
-    console.error('[Whapi] Exceção ao enviar interativo:', error);
+    console.error('[Whapi Interactive] Exceção:', error);
     return false;
   }
 }
 
 /**
- * Send text message via Evolution (fallback)
- */
-async function sendEvolutionText(phone: string, text: string): Promise<boolean> {
-  if (!EVOLUTION_API_URL || !EVOLUTION_API_KEY || !EVOLUTION_INSTANCE) {
-    console.error('[Evolution] API não configurada');
-    return false;
-  }
-
-  const formattedPhone = formatPhoneEvolution(phone);
-
-  try {
-    const response = await fetch(
-      `${EVOLUTION_API_URL}/message/sendText/${EVOLUTION_INSTANCE}`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          apikey: EVOLUTION_API_KEY,
-        },
-        body: JSON.stringify({
-          number: formattedPhone,
-          text: text,
-          delay: 1200,
-        }),
-      }
-    );
-
-    if (response.ok) {
-      console.log('[Evolution] ✅ Mensagem enviada');
-      return true;
-    }
-
-    const errorData = await response.text();
-    console.error('[Evolution] Erro:', errorData);
-    return false;
-  } catch (error) {
-    console.error('[Evolution] Exceção:', error);
-    return false;
-  }
-}
-
-/**
- * Send text message via Whapi
+ * Send text via Whapi
  */
 async function sendWhapiText(phone: string, text: string): Promise<boolean> {
   if (!WHAPI_TOKEN) {
-    console.error('[Whapi] Token não configurado');
+    console.error('[Whapi] ❌ Token não configurado');
     return false;
   }
 
-  // Whapi usa só o número, sem @s.whatsapp.net
   let formattedPhone = phone.replace(/\D/g, '');
   if (!formattedPhone.startsWith('55')) {
     formattedPhone = '55' + formattedPhone;
@@ -236,25 +148,25 @@ async function sendWhapiText(phone: string, text: string): Promise<boolean> {
     });
 
     const responseText = await response.text();
-    console.log(`[Whapi] Text response status: ${response.status}`);
+    console.log(`[Whapi Text] Status: ${response.status}`);
 
     let data;
     try {
       data = JSON.parse(responseText);
     } catch {
-      console.error('[Whapi] Resposta não é JSON:', responseText.substring(0, 200));
+      console.error('[Whapi Text] Resposta não é JSON:', responseText.substring(0, 200));
       return false;
     }
 
     if (!response.ok) {
-      console.error('[Whapi] Erro ao enviar texto:', data);
+      console.error('[Whapi Text] Erro:', data);
       return false;
     }
 
-    console.log('[Whapi] ✅ Texto enviado:', data?.message?.id || data?.id || 'ok');
+    console.log('[Whapi Text] ✅ Enviado:', data?.message?.id || data?.id || 'ok');
     return true;
   } catch (error) {
-    console.error('[Whapi] Exceção ao enviar texto:', error);
+    console.error('[Whapi Text] Exceção:', error);
     return false;
   }
 }
@@ -285,78 +197,35 @@ function convertToTextFallback(message: InteractiveMessage): string {
   return text;
 }
 
-
 /**
- * Send interactive message - uses Whapi if active, otherwise text fallback
- * Includes auto-fallback to Evolution if Whapi fails
+ * Send interactive message - tenta botões, fallback para texto
  */
 export async function sendInteractiveMessage(
   phone: string,
   message: InteractiveMessage
 ): Promise<boolean> {
-  const useWhapi = isWhapiActive();
+  console.log('[WhatsApp] Enviando mensagem interativa via Whapi');
   
-  console.log(`[WhatsApp] Provider ativo: ${useWhapi ? 'whapi' : 'evolution'}`);
+  const success = await sendWhapiInteractive(phone, message);
+  if (success) return true;
   
-  if (useWhapi) {
-    const success = await sendWhapiInteractive(phone, message);
-    if (success) return true;
-    
-    // Fallback 1: texto via Whapi
-    console.log('[WhatsApp] Whapi interativo falhou, tentando texto via Whapi...');
-    const textFallback = convertToTextFallback(message);
-    const whapiTextSuccess = await sendWhapiText(phone, textFallback);
-    if (whapiTextSuccess) return true;
-    
-    // Fallback 2: texto via Evolution (fallback final)
-    console.log('[WhatsApp] ⚠️ Whapi texto também falhou, usando Evolution...');
-    const evolutionSuccess = await sendEvolutionText(phone, textFallback);
-    if (evolutionSuccess) {
-      console.log('[WhatsApp] ✅ Fallback Evolution funcionou!');
-      return true;
-    }
-    
-    console.error('[WhatsApp] ❌ Todos os métodos de envio falharam');
-    return false;
-  }
-  
-  // Evolution: send as text (no native buttons)
+  // Fallback para texto
+  console.log('[WhatsApp] Botões falharam, enviando como texto...');
   const textFallback = convertToTextFallback(message);
-  return await sendEvolutionText(phone, textFallback);
+  return await sendWhapiText(phone, textFallback);
 }
 
 /**
- * Send simple text message via active provider with auto-fallback
+ * Send simple text message
  */
 export async function sendTextMessage(phone: string, text: string): Promise<boolean> {
-  const useWhapi = isWhapiActive();
-  
-  if (useWhapi) {
-    const whapiSuccess = await sendWhapiText(phone, text);
-    if (whapiSuccess) return true;
-    
-    // Fallback automático para Evolution
-    console.log('[WhatsApp] ⚠️ Whapi falhou, tentando fallback Evolution...');
-    const evolutionSuccess = await sendEvolutionText(phone, text);
-    if (evolutionSuccess) {
-      console.log('[WhatsApp] ✅ Fallback Evolution funcionou!');
-      return true;
-    }
-    
-    console.error('[WhatsApp] ❌ Ambos providers falharam');
-    return false;
-  }
-  
-  return await sendEvolutionText(phone, text);
+  return await sendWhapiText(phone, text);
 }
 
 // ============================================
 // Pre-built Interactive Messages
 // ============================================
 
-/**
- * Send food analysis confirmation with buttons
- */
 export async function sendFoodAnalysisConfirmation(
   phone: string,
   foods: Array<{ nome?: string; name?: string; quantidade?: number; grams?: number }>,
@@ -386,9 +255,6 @@ export async function sendFoodAnalysisConfirmation(
   });
 }
 
-/**
- * Send medical analysis prompt with buttons
- */
 export async function sendMedicalAnalysisPrompt(
   phone: string,
   imagesCount: number
@@ -405,9 +271,6 @@ export async function sendMedicalAnalysisPrompt(
   });
 }
 
-/**
- * Send post-confirmation options
- */
 export async function sendPostConfirmation(phone: string): Promise<boolean> {
   return await sendInteractiveMessage(phone, {
     bodyText: '✅ *Análise salva!*\n\nOs dados foram registrados no seu histórico.\n\nO que deseja fazer agora?',
@@ -420,9 +283,6 @@ export async function sendPostConfirmation(phone: string): Promise<boolean> {
   });
 }
 
-/**
- * Send daily check-in
- */
 export async function sendDailyCheckin(phone: string, userName?: string): Promise<boolean> {
   const greeting = userName ? `Bom dia, ${userName}!` : 'Bom dia!';
   
@@ -438,9 +298,6 @@ export async function sendDailyCheckin(phone: string, userName?: string): Promis
   });
 }
 
-/**
- * Send welcome message
- */
 export async function sendWelcomeMessage(phone: string, userName?: string): Promise<boolean> {
   const name = userName || 'você';
   
@@ -452,6 +309,22 @@ export async function sendWelcomeMessage(phone: string, userName?: string): Prom
       { id: 'sofia_new_photo', title: '📸 Analisar Refeição' },
       { id: 'sofia_meal_plan', title: '🍽️ Ver Cardápio' },
       { id: 'help', title: '❓ Ajuda' },
+    ],
+  });
+}
+
+/**
+ * TEMPLATE DE TESTE - Use para verificar se botões funcionam
+ */
+export async function sendTestButtons(phone: string): Promise<boolean> {
+  return await sendInteractiveMessage(phone, {
+    headerText: '🧪 TESTE DE BOTÕES',
+    bodyText: 'Esta é uma mensagem de teste para verificar se os botões interativos estão funcionando corretamente.\n\nClique em um botão abaixo:',
+    footerText: 'Teste Whapi',
+    buttons: [
+      { id: 'test_btn_1', title: '✅ Botão 1' },
+      { id: 'test_btn_2', title: '🔄 Botão 2' },
+      { id: 'test_btn_3', title: '❌ Botão 3' },
     ],
   });
 }
