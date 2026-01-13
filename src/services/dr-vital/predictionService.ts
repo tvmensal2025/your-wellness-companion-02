@@ -2,10 +2,10 @@
 // PREDICTION SERVICE - Health Oracle
 // =====================================================
 // Sistema de previsões preditivas de saúde
-// Properties 9, 10, 11
 // =====================================================
 
 import { supabase } from '@/integrations/supabase/client';
+import { fromTable } from '@/lib/supabase-helpers';
 import type {
   HealthPrediction,
   RiskFactor,

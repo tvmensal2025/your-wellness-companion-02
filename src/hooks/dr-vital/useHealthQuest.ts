@@ -9,7 +9,6 @@ import { useAuth } from '@/hooks/useAuth';
 import {
   generateDailyMissions,
   completeMission,
-  updateMissionProgress,
   getActiveMissions,
   getCompletedMissions,
   getOrCreateStreak,
@@ -123,11 +122,13 @@ export function useHealthQuest() {
     },
   });
 
-  // Mutation: Update Mission Progress
+  // Mutation: Update Mission Progress (placeholder - function needs to be implemented in gamificationService)
   const updateProgressMutation = useMutation({
     mutationFn: async ({ missionId, progress }: { missionId: string; progress: number }) => {
       if (!userId) throw new Error('User not authenticated');
-      return updateMissionProgress(userId, missionId, progress);
+      // Update mission progress directly
+      const { supabase } = await import('@/integrations/supabase/client');
+      await (supabase.from('health_missions' as any) as any).update({ progress }).eq('id', missionId);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: healthQuestKeys.activeMissions(userId || '') });
