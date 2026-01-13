@@ -60,14 +60,42 @@ const isSpeechSynthesisSupported = () => {
 // GET SPEECH RECOGNITION
 // =====================================================
 
-const getSpeechRecognition = (): typeof SpeechRecognition | null => {
+interface SpeechRecognitionInstance {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  onstart: (() => void) | null;
+  onend: (() => void) | null;
+  onerror: ((event: { error: string }) => void) | null;
+  onresult: ((event: SpeechRecognitionEvent) => void) | null;
+  start: () => void;
+  stop: () => void;
+}
+
+interface SpeechRecognitionEvent {
+  resultIndex: number;
+  results: SpeechRecognitionResultList;
+}
+
+interface SpeechRecognitionResultList {
+  length: number;
+  [index: number]: SpeechRecognitionResult;
+}
+
+interface SpeechRecognitionResult {
+  isFinal: boolean;
+  [index: number]: { transcript: string; confidence: number };
+}
+
+const getSpeechRecognition = (): (new () => SpeechRecognitionInstance) | null => {
   if (typeof window === 'undefined') return null;
   
-  const SpeechRecognitionAPI = 
-    (window as unknown as { SpeechRecognition?: typeof SpeechRecognition }).SpeechRecognition ||
-    (window as unknown as { webkitSpeechRecognition?: typeof SpeechRecognition }).webkitSpeechRecognition;
+  const win = window as unknown as {
+    SpeechRecognition?: new () => SpeechRecognitionInstance;
+    webkitSpeechRecognition?: new () => SpeechRecognitionInstance;
+  };
   
-  return SpeechRecognitionAPI || null;
+  return win.SpeechRecognition || win.webkitSpeechRecognition || null;
 };
 
 // =====================================================
@@ -94,7 +122,7 @@ export function useVoiceAssistant(options: UseVoiceAssistantOptions = {}): UseVo
   });
 
   // Refs
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
   const synthRef = useRef<SpeechSynthesisUtterance | null>(null);
 
   // Check support

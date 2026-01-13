@@ -102,10 +102,12 @@ export const useGoalsGamification = (userId?: string) => {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['user-goal-level', userId] });
       
-      if (data && data.leveled_up) {
+      // data pode ser um array ou objeto único, tratamos ambos os casos
+      const result = Array.isArray(data) ? data[0] : data;
+      if (result && result.leveled_up) {
         toast({
           title: "🎉 Level Up!",
-          description: `Você alcançou o nível ${data.new_level}! Título: ${data.new_title}`,
+          description: `Você alcançou o nível ${result.new_level}! Título: ${result.new_title}`,
           duration: 5000,
         });
       }
