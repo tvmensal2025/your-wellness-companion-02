@@ -353,8 +353,7 @@ export async function calculateRiskPredictions(
   
   // Save predictions to database
   for (const prediction of predictions) {
-    await supabase
-      .from('health_predictions')
+    await fromTable('health_predictions')
       .upsert({
         user_id: prediction.userId,
         risk_type: prediction.riskType,
@@ -582,16 +581,15 @@ export async function generateHealthyTwin(userId: string): Promise<HealthyTwin |
  * Busca previsões ativas do usuário
  */
 export async function getActivePredictions(userId: string): Promise<HealthPrediction[]> {
-  const { data, error } = await supabase
-    .from('health_predictions')
+  const { data, error } = await fromTable('health_predictions')
     .select('*')
     .eq('user_id', userId)
     .eq('is_active', true)
-    .order('probability', { ascending: false });
+    .order('probability', { ascending: false }) as any;
   
   if (error) throw error;
   
-  return (data as HealthPredictionRow[]).map(rowToPrediction);
+  return (data || []).map(rowToPrediction);
 }
 
 // =====================================================
@@ -600,27 +598,20 @@ export async function getActivePredictions(userId: string): Promise<HealthPredic
 
 async function fetchUserHealthData(userId: string): Promise<UserHealthData | null> {
   // Fetch from multiple tables
-  const [profileData, physicalData, trackingData, examsData] = await Promise.all([
-    supabase.from('profiles').select('*').eq('id', userId).single(),
-    supabase.from('user_physical_data').select('*').eq('user_id', userId).single(),
+  const [profileData, physicalData, trackingData] = await Promise.all([
+    supabase.from('profiles').select('*').eq('id', userId).maybeSingle(),
+    supabase.from('user_physical_data').select('*').eq('user_id', userId).maybeSingle(),
     supabase.from('advanced_daily_tracking').select('*').eq('user_id', userId).order('tracking_date', { ascending: false }).limit(7),
-    supabase.from('medical_exams').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(5),
   ]);
   
   const profile = profileData.data;
-  const physical = physicalData.data;
+  const physical = physicalData.data as any;
   const tracking = trackingData.data || [];
   
   if (!physical) return null;
   
-  // Calculate age from birth date
-  const birthDate = physical.data_nascimento || profile?.birth_date;
-  let age = 30; // Default
-  if (birthDate) {
-    const birth = new Date(birthDate);
-    const today = new Date();
-    age = today.getFullYear() - birth.getFullYear();
-  }
+  // Calculate age from birth date or use idade field
+  let age = physical.idade || 30;
   
   // Calculate averages from tracking
   const avgSleep = tracking.length > 0
@@ -628,22 +619,26 @@ async function fetchUserHealthData(userId: string): Promise<UserHealthData | nul
     : 7;
   
   // Estimate exercise from workout sessions
-  const { data: workouts } = await supabase
-    .from('workout_sessions')
+  const { data: workouts } = await fromTable('workout_sessions')
     .select('duration_minutes')
     .eq('user_id', userId)
-    .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString());
+    .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()) as any;
   
   const exerciseMinutes = workouts
-    ? workouts.reduce((sum, w) => sum + (w.duration_minutes || 30), 0)
+    ? workouts.reduce((sum: number, w: any) => sum + (w.duration_minutes || 30), 0)
     : 0;
+  
+  // Calculate weight and BMI with defaults
+  const weight = physical.peso_atual_kg || 70;
+  const height = physical.altura_cm || 170;
+  const bmi = physical.imc || (weight / Math.pow(height / 100, 2));
   
   return {
     age,
     gender: (physical.sexo === 'F' ? 'female' : 'male') as 'male' | 'female',
-    weight: physical.peso_atual_kg || 70,
-    height: physical.altura_cm || 170,
-    bmi: physical.imc || (physical.peso_atual_kg / Math.pow((physical.altura_cm || 170) / 100, 2)),
+    weight,
+    height,
+    bmi,
     exerciseMinutesPerWeek: exerciseMinutes,
     sleepHoursAvg: avgSleep,
     smokingStatus: 'never',

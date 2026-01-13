@@ -4,6 +4,7 @@
 // ============================================
 
 import { supabase } from '@/integrations/supabase/client';
+import { fromTable } from '@/lib/supabase-helpers';
 import type {
   ContextData,
   UserAnalysis,
@@ -278,8 +279,7 @@ export class AIEngineService {
     effectivenessRating?: number
   ): Promise<void> {
     // Atualizar adaptação com feedback
-    await supabase
-      .from('ai_workout_adaptations')
+    await fromTable('ai_workout_adaptations')
       .update({
         user_accepted: accepted,
         user_feedback: feedback,
@@ -297,11 +297,10 @@ export class AIEngineService {
     effectivenessRating?: number
   ): Promise<void> {
     // Buscar modelo atual
-    const { data: model } = await supabase
-      .from('ai_user_learning_model')
+    const { data: model } = await fromTable('ai_user_learning_model')
       .select('*')
       .eq('user_id', this.userId)
-      .single();
+      .maybeSingle() as any;
 
     const newFeedbackCount = (model?.total_feedback_count || 0) + 1;
     
@@ -311,8 +310,7 @@ export class AIEngineService {
     const newAccuracy = (currentAccuracy * (newFeedbackCount - 1) + feedbackScore) / newFeedbackCount;
 
     // Upsert modelo
-    await supabase
-      .from('ai_user_learning_model')
+    await fromTable('ai_user_learning_model')
       .upsert({
         user_id: this.userId,
         total_feedback_count: newFeedbackCount,
@@ -328,35 +326,32 @@ export class AIEngineService {
   // ============================================
 
   private async getRecentPerformance(days: number): Promise<PerformanceMetric[]> {
-    const { data } = await supabase
-      .from('exercise_performance_metrics')
+    const { data } = await fromTable('exercise_performance_metrics')
       .select('*')
       .eq('user_id', this.userId)
       .gte('created_at', new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString())
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false }) as any;
 
     return (data || []) as unknown as PerformanceMetric[];
   }
 
   private async getUserLearningModel(): Promise<UserLearningModel | null> {
-    const { data } = await supabase
-      .from('ai_user_learning_model')
+    const { data } = await fromTable('ai_user_learning_model')
       .select('*')
       .eq('user_id', this.userId)
-      .single();
+      .maybeSingle() as any;
 
     return data as unknown as UserLearningModel | null;
   }
 
   private async getRecentHolisticData(): Promise<Record<string, unknown> | null> {
-    const { data } = await supabase
-      .from('holistic_health_data')
+    const { data } = await fromTable('holistic_health_data')
       .select('*')
       .eq('user_id', this.userId)
       .order('tracking_date', { ascending: false })
-      .limit(7);
+      .limit(7) as any;
 
-    return data?.[0] || null;
+    return data?.[0] as Record<string, unknown> || null;
   }
 
   private calculateEnergyLevel(
@@ -607,7 +602,7 @@ export class AIEngineService {
   }
 
   private async saveAnalysis(analysis: UserAnalysis): Promise<void> {
-    await supabase.from('ai_user_state_analysis').insert({
+    await fromTable('ai_user_state_analysis').insert({
       user_id: this.userId,
       energy_level: analysis.energyLevel,
       readiness_score: analysis.readiness,
@@ -623,23 +618,23 @@ export class AIEngineService {
   }
 
   private async getUserAge(): Promise<number | null> {
-    // Tentar buscar de user_physical_data primeiro
+    // Tentar buscar de user_physical_data primeiro (use idade field)
     const { data: physicalData } = await supabase
       .from('user_physical_data')
-      .select('data_nascimento')
+      .select('idade')
       .eq('user_id', this.userId)
-      .single();
+      .maybeSingle();
 
-    if (physicalData?.data_nascimento) {
-      const birthDate = new Date(physicalData.data_nascimento);
-      const today = new Date();
-      let age = today.getFullYear() - birthDate.getFullYear();
-      const monthDiff = today.getMonth() - birthDate.getMonth();
-      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-        age--;
-      }
-      return age;
+    if (physicalData?.idade) {
+      return physicalData.idade;
     }
+
+    // Fallback: buscar de profiles.birth_date
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('birth_date')
+      .eq('id', this.userId)
+      .maybeSingle();
 
     // Fallback: buscar de profiles.birth_date
     const { data: profile } = await supabase

@@ -4,6 +4,7 @@
 // ============================================
 
 import { supabase } from '@/integrations/supabase/client';
+import { fromTable, callRpc } from '@/lib/supabase-helpers';
 import type {
   GamificationPoints,
   PointsAwarded,
@@ -123,7 +124,7 @@ export class GamificationService {
     sourceId?: string
   ): Promise<void> {
     // Inserir histórico
-    await supabase.from('exercise_points_history').insert({
+    await fromTable('exercise_points_history').insert({
       user_id: this.userId,
       points_earned: points,
       xp_earned: xp,
@@ -134,11 +135,10 @@ export class GamificationService {
     });
 
     // Atualizar totais
-    const { data: current } = await supabase
-      .from('exercise_gamification_points')
+    const { data: current } = await fromTable('exercise_gamification_points')
       .select('*')
       .eq('user_id', this.userId)
-      .single();
+      .maybeSingle() as any;
 
     const newTotalPoints = (current?.total_points || 0) + points;
     const newWeeklyPoints = (current?.weekly_points || 0) + points;
@@ -151,7 +151,7 @@ export class GamificationService {
       newXp
     );
 
-    await supabase.from('exercise_gamification_points').upsert({
+    await fromTable('exercise_gamification_points').upsert({
       user_id: this.userId,
       total_points: newTotalPoints,
       weekly_points: newWeeklyPoints,
@@ -204,11 +204,10 @@ export class GamificationService {
   // ============================================
 
   async getStreak(): Promise<Streak | null> {
-    const { data } = await supabase
-      .from('exercise_streaks')
+    const { data } = await fromTable('exercise_streaks')
       .select('*')
       .eq('user_id', this.userId)
-      .single();
+      .maybeSingle() as any;
 
     if (!data) return null;
 
@@ -225,7 +224,7 @@ export class GamificationService {
 
   async updateStreak(): Promise<Streak> {
     // Usar função do banco de dados
-    await supabase.rpc('update_exercise_streak', { p_user_id: this.userId });
+    await callRpc('update_exercise_streak', { p_user_id: this.userId });
     
     const streak = await this.getStreak();
     return streak!;
@@ -238,8 +237,7 @@ export class GamificationService {
       return false;
     }
 
-    await supabase
-      .from('exercise_streaks')
+    await fromTable('exercise_streaks')
       .update({
         freeze_available: false,
         freeze_used_at: new Date().toISOString(),
@@ -254,15 +252,14 @@ export class GamificationService {
   // ============================================
 
   async getAchievements(): Promise<UserAchievement[]> {
-    const { data } = await supabase
-      .from('exercise_user_achievements')
+    const { data } = await fromTable('exercise_user_achievements')
       .select(`
         *,
         achievement:exercise_achievements(*)
       `)
-      .eq('user_id', this.userId);
+      .eq('user_id', this.userId) as any;
 
-    return (data || []).map(ua => ({
+    return (data || []).map((ua: any) => ({
       id: ua.id,
       achievementId: ua.achievement_id,
       achievement: ua.achievement ? {
@@ -289,7 +286,7 @@ export class GamificationService {
 
   async checkAchievements(): Promise<Achievement[]> {
     // Usar função do banco de dados
-    const { data } = await supabase.rpc('check_exercise_achievements', {
+    const { data } = await callRpc('check_exercise_achievements', {
       p_user_id: this.userId,
     });
 
@@ -297,14 +294,13 @@ export class GamificationService {
   }
 
   async getAllAchievements(): Promise<Achievement[]> {
-    const { data } = await supabase
-      .from('exercise_achievements')
+    const { data } = await fromTable('exercise_achievements')
       .select('*')
       .eq('is_active', true)
       .order('category')
-      .order('rarity');
+      .order('rarity') as any;
 
-    return (data || []).map(a => ({
+    return (data || []).map((a: any) => ({
       id: a.id,
       code: a.code,
       name: a.name,
@@ -325,14 +321,13 @@ export class GamificationService {
   // ============================================
 
   async getActiveChallenges(): Promise<Challenge[]> {
-    const { data } = await supabase
-      .from('exercise_challenges')
+    const { data } = await fromTable('exercise_challenges')
       .select('*')
       .eq('is_active', true)
       .gte('end_date', new Date().toISOString())
-      .order('end_date');
+      .order('end_date') as any;
 
-    return (data || []).map(c => ({
+    return (data || []).map((c: any) => ({
       id: c.id,
       title: c.title,
       description: c.description,
@@ -351,8 +346,7 @@ export class GamificationService {
   }
 
   async joinChallenge(challengeId: string): Promise<ChallengeParticipation> {
-    const { data, error } = await supabase
-      .from('exercise_challenge_participants')
+    const { data, error } = await fromTable('exercise_challenge_participants')
       .insert({
         challenge_id: challengeId,
         user_id: this.userId,
@@ -360,7 +354,7 @@ export class GamificationService {
         is_completed: false,
       })
       .select()
-      .single();
+      .single() as any;
 
     if (error) throw error;
 
@@ -377,22 +371,18 @@ export class GamificationService {
     challengeId: string,
     progressIncrement: number
   ): Promise<ChallengeParticipation | null> {
-    // Buscar participação atual
-    const { data: participation } = await supabase
-      .from('exercise_challenge_participants')
+    const { data: participation } = await fromTable('exercise_challenge_participants')
       .select('*, challenge:exercise_challenges(*)')
       .eq('challenge_id', challengeId)
       .eq('user_id', this.userId)
-      .single();
+      .maybeSingle() as any;
 
     if (!participation) return null;
 
     const newProgress = participation.current_progress + progressIncrement;
-    const isCompleted = newProgress >= participation.challenge.goal_value;
+    const isCompleted = newProgress >= participation.challenge?.goal_value;
 
-    // Atualizar progresso
-    await supabase
-      .from('exercise_challenge_participants')
+    await fromTable('exercise_challenge_participants')
       .update({
         current_progress: newProgress,
         is_completed: isCompleted,
@@ -400,11 +390,10 @@ export class GamificationService {
       })
       .eq('id', participation.id);
 
-    // Se completou, dar recompensa
     if (isCompleted && !participation.is_completed) {
       await this.savePoints(
-        participation.challenge.points_reward,
-        participation.challenge.xp_reward,
+        participation.challenge?.points_reward || 0,
+        participation.challenge?.xp_reward || 0,
         'challenge',
         challengeId
       );
@@ -421,16 +410,12 @@ export class GamificationService {
   }
 
   async getMyChallenges(): Promise<ChallengeParticipation[]> {
-    const { data } = await supabase
-      .from('exercise_challenge_participants')
-      .select(`
-        *,
-        challenge:exercise_challenges(*)
-      `)
+    const { data } = await fromTable('exercise_challenge_participants')
+      .select(`*, challenge:exercise_challenges(*)`)
       .eq('user_id', this.userId)
-      .order('joined_at', { ascending: false });
+      .order('joined_at', { ascending: false }) as any;
 
-    return (data || []).map(p => ({
+    return (data || []).map((p: any) => ({
       id: p.id,
       challengeId: p.challenge_id,
       challenge: p.challenge ? {
