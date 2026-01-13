@@ -157,7 +157,7 @@ export function useNotifications(userId: string | undefined) {
 
   // Update preferences
   const updatePreferencesMutation = useMutation({
-    mutationFn: async (prefs: Partial<NotificationPreferences>) => {
+    mutationFn: async (prefs: any) => {
       if (!service) throw new Error('Service not initialized');
       return service.updatePreferences(prefs);
     },

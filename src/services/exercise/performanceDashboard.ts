@@ -4,13 +4,30 @@
 // ============================================
 
 import { supabase } from '@/integrations/supabase/client';
+import { fromTable } from '@/lib/supabase-helpers';
 import type {
   PerformanceMetric,
-  WorkoutStats,
-  ProgressInsight,
   GoalPrediction,
-  BenchmarkComparison,
+  UserBenchmarkComparison,
 } from '@/types/advanced-exercise-system';
+
+// Local types
+interface WorkoutStats {
+  totalWorkouts: number;
+  totalDuration: number;
+  totalVolume: number;
+  avgDifficulty: number;
+  personalRecords: any[];
+  weeklyData: any[];
+}
+
+interface ProgressInsight {
+  type: string;
+  title: string;
+  description: string;
+  priority: string;
+  actionItems?: string[];
+}
 
 // ============================================
 // CONSTANTS

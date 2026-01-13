@@ -630,21 +630,14 @@ export class AIEngineService {
     }
 
     // Fallback: buscar de profiles.birth_date
-    const { data: profile } = await supabase
+    const { data: profileData } = await supabase
       .from('profiles')
       .select('birth_date')
       .eq('id', this.userId)
       .maybeSingle();
 
-    // Fallback: buscar de profiles.birth_date
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('birth_date')
-      .eq('id', this.userId)
-      .single();
-
-    if (profile?.birth_date) {
-      const birthDate = new Date(profile.birth_date);
+    if (profileData?.birth_date) {
+      const birthDate = new Date(profileData.birth_date);
       const today = new Date();
       let age = today.getFullYear() - birthDate.getFullYear();
       const monthDiff = today.getMonth() - birthDate.getMonth();
