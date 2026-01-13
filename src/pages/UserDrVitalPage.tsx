@@ -21,8 +21,8 @@ import { HealthTimeline } from '@/components/dr-vital/HealthTimeline';
 import { HealthOraclePanel } from '@/components/dr-vital/HealthOraclePanel';
 import { ReportGenerator } from '@/components/dr-vital/ReportGenerator';
 
-// Import direto da imagem para garantir que Vite processe
-import drVitalImage from '/images/dr-vital-full.png';
+// Usa imagem existente como placeholder até ter a imagem real
+const drVitalImage = '/images/instituto-logo.png';
 
 type ViewType = 'home' | 'exams' | 'timeline' | 'oracle' | 'reports';
 
