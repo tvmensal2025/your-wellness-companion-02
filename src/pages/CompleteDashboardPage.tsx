@@ -9,6 +9,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useUserDataCache, invalidateUserDataCache } from '@/hooks/useUserDataCache';
 import { useActiveSection } from '@/contexts/ActiveSectionContext';
+import { useMenuStyleContext } from '@/contexts/MenuStyleContext';
 import { Home, Activity, GraduationCap, FileText, Users, Target, Award, Settings, TrendingUp, Stethoscope, CreditCard, Utensils, Menu, LogOut, ChevronLeft, ChevronRight, User as UserIcon, Scale, MessageCircle, Lock, Play, Dumbbell, SlidersHorizontal } from 'lucide-react';
 import { NotificationBell } from '@/components/NotificationBell';
 import { Button } from '@/components/ui/button';
@@ -27,7 +28,7 @@ const DailyMissions = lazy(() => import('@/components/daily-missions/DailyMissio
 const CoursePlatformNetflix = lazy(() => import('@/components/dashboard/CoursePlatformNetflix'));
 const SessionsPage = lazy(() => import('@/components/SessionsPage'));
 const UserSessionsCompact = lazy(() => import('@/components/sessions/UserSessionsCompact'));
-const GoalsPage = lazy(() => import('@/pages/GoalsPage'));
+const GoalsPageV2 = lazy(() => import('@/pages/GoalsPageV2'));
 const DesafiosSection = lazy(() => import('@/components/dashboard/DesafiosSection'));
 const ChallengesV2Dashboard = lazy(() => import('@/components/challenges-v2/ChallengesDashboard'));
 const RankingCommunity = lazy(() => import('@/components/RankingCommunity'));
@@ -42,7 +43,6 @@ const MyProgress = lazy(() => import('@/components/MyProgress'));
 const SaboteurTest = lazy(() => import('@/components/SaboteurTest'));
 const LayoutPreferencesModal = lazy(() => import('@/components/settings/LayoutPreferencesModal').then(m => ({ default: m.LayoutPreferencesModal })));
 const WhatsAppSettingsModal = lazy(() => import('@/components/settings/WhatsAppSettingsModal').then(m => ({ default: m.WhatsAppSettingsModal })));
-const WelcomeOnboardingModal = lazy(() => import('@/components/onboarding/WelcomeOnboardingModal').then(m => ({ default: m.WelcomeOnboardingModal })));
 
 // Sidebar components
 import { SidebarProfile } from '@/components/sidebar/SidebarProfile';
@@ -65,6 +65,7 @@ const CompleteDashboardPage = () => {
   const [loading, setLoading] = useState(true);
   const [activeSectionState, setActiveSectionState] = useState<DashboardSection>('dashboard');
   const { setActiveSection: setActiveSectionContext } = useActiveSection();
+  const { isMenuEnabled, selectedCharacter } = useMenuStyleContext();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
@@ -72,7 +73,6 @@ const CompleteDashboardPage = () => {
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [layoutPrefsModalOpen, setLayoutPrefsModalOpen] = useState(false);
   const [whatsappSettingsOpen, setWhatsappSettingsOpen] = useState(false);
-  const [welcomeModalOpen, setWelcomeModalOpen] = useState(false);
   const [dmModalOpen, setDmModalOpen] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -185,15 +185,23 @@ const CompleteDashboardPage = () => {
     hiddenDashboardCards: [],
   }), [userData.layoutPreferences]);
 
-  // Calcular itens visíveis para bottom navigation baseado nas preferências
+  // Filtrar menuItems baseado no personagem selecionado
+  const filteredMenuItems = useMemo(() => {
+    return menuItems.filter(item => isMenuEnabled(item.id));
+  }, [isMenuEnabled, selectedCharacter]);
+
+  // Calcular itens visíveis para bottom navigation baseado nas preferências E personagem
   const bottomNavItems: BottomNavItem[] = useMemo(() => {
+    // Primeiro filtrar pelos menus habilitados do personagem
+    const enabledMenuIds = filteredMenuItems.map(m => m.id);
+    
     const visibleIds = preferences.sidebarOrder.filter(
-      id => !preferences.hiddenSidebarItems.includes(id)
+      id => !preferences.hiddenSidebarItems.includes(id) && enabledMenuIds.includes(id)
     );
     
-    // Se não há preferências, usar ordem padrão dos primeiros 4 itens
+    // Se não há preferências, usar ordem padrão dos primeiros 4 itens habilitados
     if (visibleIds.length === 0) {
-      return menuItems.slice(0, 4).map(item => ({
+      return filteredMenuItems.slice(0, 4).map(item => ({
         id: item.id,
         icon: item.icon,
         label: item.label,
@@ -204,7 +212,7 @@ const CompleteDashboardPage = () => {
     const items: BottomNavItem[] = [];
     for (const id of preferences.sidebarOrder) {
       if (visibleIds.includes(id)) {
-        const menuItem = menuItems.find(m => m.id === id);
+        const menuItem = filteredMenuItems.find(m => m.id === id);
         if (menuItem) {
           items.push({
             id: menuItem.id,
@@ -217,7 +225,7 @@ const CompleteDashboardPage = () => {
     }
     
     return items;
-  }, [preferences.sidebarOrder, preferences.hiddenSidebarItems]);
+  }, [preferences.sidebarOrder, preferences.hiddenSidebarItems, filteredMenuItems]);
 
   // Lazy load exercise program apenas quando necessário
   const [programs, setPrograms] = useState<any[]>([]);
@@ -262,17 +270,6 @@ const CompleteDashboardPage = () => {
     });
     return () => subscription.unsubscribe();
   }, [navigate]);
-
-  // Welcome modal - mostrar apenas na primeira vez
-  useEffect(() => {
-    if (!loading && user && !userDataLoading) {
-      const hasSeenWelcome = localStorage.getItem('hasSeenWelcomeModal');
-      if (!hasSeenWelcome) {
-        const timer = setTimeout(() => setWelcomeModalOpen(true), 500);
-        return () => clearTimeout(timer);
-      }
-    }
-  }, [loading, user, userDataLoading]);
 
   // Auto-análise removida - agora executa de 15 em 15 dias via scheduler
   // useEffect(() => {
@@ -340,7 +337,7 @@ const CompleteDashboardPage = () => {
       case 'saboteur-test':
         return <Suspense fallback={<SectionLoader />}><SaboteurTest key="saboteur-test" /></Suspense>;
       case 'goals':
-        return <Suspense fallback={<SectionLoader />}><GoalsPage key="goals" /></Suspense>;
+        return <Suspense fallback={<SectionLoader />}><GoalsPageV2 key="goals" /></Suspense>;
       case 'subscriptions':
         return <Suspense fallback={<SectionLoader />}><PaymentPlans key="subscriptions" /></Suspense>;
       case 'courses':
@@ -558,9 +555,15 @@ const CompleteDashboardPage = () => {
   };
 
   // Handler para menu "Mais"
+  const { setShowSelector } = useMenuStyleContext();
+  
   const handleMoreMenuNavigate = (section: MenuSection) => {
     if (section === 'whatsapp-settings') {
       setWhatsappSettingsOpen(true);
+      return;
+    }
+    if (section === 'change-character') {
+      setShowSelector(true);
       return;
     }
     setActiveSection(section as DashboardSection);
@@ -684,43 +687,6 @@ const CompleteDashboardPage = () => {
         open={dmModalOpen}
         onOpenChange={setDmModalOpen}
       />
-
-      {/* Modal de Boas-vindas / Onboarding */}
-      <Suspense fallback={null}>
-        <WelcomeOnboardingModal
-          open={welcomeModalOpen}
-          onOpenChange={setWelcomeModalOpen}
-          userName={profileData?.fullName?.split(' ')[0] || user?.email?.split('@')[0] || 'Usuário'}
-          preferences={preferences}
-          menuItems={menuItems}
-          onSave={async (prefs) => {
-            if (!user) return false;
-            try {
-              const { error } = await supabase
-                .from('user_layout_preferences')
-                .upsert({
-                  user_id: user.id,
-                  sidebar_order: prefs.sidebarOrder || preferences.sidebarOrder,
-                  hidden_sidebar_items: prefs.hiddenSidebarItems || preferences.hiddenSidebarItems,
-                  default_section: prefs.defaultSection || preferences.defaultSection,
-                  updated_at: new Date().toISOString(),
-                }, { onConflict: 'user_id' });
-              
-              if (error) throw error;
-              invalidateUserDataCache();
-              refreshUserData();
-              return true;
-            } catch (err) {
-              console.error('Erro ao salvar preferências:', err);
-              return false;
-            }
-          }}
-          whatsappNumbers={{
-            sofia: '+5535988322535',
-            drVital: '+5535988322535'
-          }}
-        />
-      </Suspense>
     </div>;
 };
 export default CompleteDashboardPage;

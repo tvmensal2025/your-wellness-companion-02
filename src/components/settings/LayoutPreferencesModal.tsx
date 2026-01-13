@@ -2,9 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { GripVertical, Check, Eye, EyeOff, ArrowUp, ArrowDown } from 'lucide-react';
+import { GripVertical, Check, Eye, EyeOff, ArrowUp, ArrowDown, Lock } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { LayoutPreferences } from '@/hooks/useLayoutPreferences';
+import { useMenuStyleContextSafe } from '@/contexts/MenuStyleContext';
 import { cn } from '@/lib/utils';
 
 interface MenuItem {
@@ -30,12 +31,19 @@ export const LayoutPreferencesModal: React.FC<LayoutPreferencesModalProps> = ({
   onSave
 }) => {
   const { toast } = useToast();
+  const menuStyle = useMenuStyleContextSafe();
   const [localOrder, setLocalOrder] = useState<string[]>(preferences.sidebarOrder);
   const [hiddenItems, setHiddenItems] = useState<string[]>(preferences.hiddenSidebarItems);
   const [defaultSection, setDefaultSection] = useState<string>(preferences.defaultSection);
   const [draggedItem, setDraggedItem] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const dragOverItemRef = useRef<string | null>(null);
+
+  // Verificar se um menu está desabilitado pelo personagem
+  const isDisabledByCharacter = (menuId: string): boolean => {
+    if (!menuStyle) return false;
+    return !menuStyle.isMenuEnabled(menuId);
+  };
 
   useEffect(() => {
     setLocalOrder(preferences.sidebarOrder);
@@ -151,85 +159,124 @@ export const LayoutPreferencesModal: React.FC<LayoutPreferencesModalProps> = ({
                 const isDashboard = itemId === 'dashboard';
                 const isFirst = index === 0;
                 const isLast = index === allItems.length - 1;
+                const isCharacterDisabled = isDisabledByCharacter(itemId);
 
                 return (
                   <div
                     key={itemId}
-                    draggable={!isDashboard}
+                    draggable={!isDashboard && !isCharacterDisabled}
                     onDragStart={(e) => handleDragStart(e, itemId)}
                     onDragOver={(e) => handleDragOver(e, itemId)}
                     onDragEnd={handleDragEnd}
                     className={cn(
                       "flex items-center gap-2 p-2 rounded-lg border transition-all",
-                      isHidden ? "bg-muted/50 opacity-60" : "bg-card",
+                      isCharacterDisabled 
+                        ? "bg-destructive/5 border-destructive/20 opacity-60" 
+                        : isHidden 
+                          ? "bg-muted/50 opacity-60" 
+                          : "bg-card",
                       draggedItem === itemId && "opacity-50 scale-95 border-primary",
-                      !isDashboard && "cursor-grab active:cursor-grabbing"
+                      !isDashboard && !isCharacterDisabled && "cursor-grab active:cursor-grabbing"
                     )}
                   >
                     <GripVertical className={cn(
                       "w-3.5 h-3.5 text-muted-foreground shrink-0",
-                      isDashboard && "opacity-30"
+                      (isDashboard || isCharacterDisabled) && "opacity-30"
                     )} />
                     
-                    <Icon className={cn("w-4 h-4 shrink-0", item.color)} />
+                    <Icon className={cn(
+                      "w-4 h-4 shrink-0", 
+                      isCharacterDisabled ? "text-muted-foreground" : item.color
+                    )} />
                     
                     <span className={cn(
                       "flex-1 text-xs font-medium truncate",
-                      isHidden && "line-through text-muted-foreground"
+                      isCharacterDisabled 
+                        ? "text-muted-foreground" 
+                        : isHidden && "line-through text-muted-foreground"
                     )}>
                       {item.label}
                     </span>
 
-                    {/* Botões de ordenação */}
-                    <div className="flex items-center gap-0.5">
-                      <button
-                        onClick={() => moveItem(itemId, 'up')}
-                        disabled={isFirst || isDashboard}
-                        className={cn(
-                          "p-1 rounded hover:bg-muted transition-colors",
-                          (isFirst || isDashboard) && "opacity-30 cursor-not-allowed"
-                        )}
-                        title="Mover para cima"
-                      >
-                        <ArrowUp className="w-3.5 h-3.5 text-muted-foreground" />
-                      </button>
-                      <button
-                        onClick={() => moveItem(itemId, 'down')}
-                        disabled={isLast || isDashboard}
-                        className={cn(
-                          "p-1 rounded hover:bg-muted transition-colors",
-                          (isLast || isDashboard) && "opacity-30 cursor-not-allowed"
-                        )}
-                        title="Mover para baixo"
-                      >
-                        <ArrowDown className="w-3.5 h-3.5 text-muted-foreground" />
-                      </button>
-                    </div>
+                    {/* Indicador de bloqueado pelo personagem */}
+                    {isCharacterDisabled ? (
+                      <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-destructive/10">
+                        <EyeOff className="w-3 h-3 text-destructive" />
+                        <span className="text-[9px] text-destructive font-medium">Bloqueado</span>
+                      </div>
+                    ) : (
+                      <>
+                        {/* Botões de ordenação */}
+                        <div className="flex items-center gap-0.5">
+                          <button
+                            onClick={() => moveItem(itemId, 'up')}
+                            disabled={isFirst || isDashboard}
+                            className={cn(
+                              "p-1 rounded hover:bg-muted transition-colors",
+                              (isFirst || isDashboard) && "opacity-30 cursor-not-allowed"
+                            )}
+                            title="Mover para cima"
+                          >
+                            <ArrowUp className="w-3.5 h-3.5 text-muted-foreground" />
+                          </button>
+                          <button
+                            onClick={() => moveItem(itemId, 'down')}
+                            disabled={isLast || isDashboard}
+                            className={cn(
+                              "p-1 rounded hover:bg-muted transition-colors",
+                              (isLast || isDashboard) && "opacity-30 cursor-not-allowed"
+                            )}
+                            title="Mover para baixo"
+                          >
+                            <ArrowDown className="w-3.5 h-3.5 text-muted-foreground" />
+                          </button>
+                        </div>
 
-                    {/* Botão de visibilidade */}
-                    <button
-                      onClick={() => toggleVisibility(itemId)}
-                      disabled={isDashboard}
-                      className={cn(
-                        "p-1.5 rounded transition-colors",
-                        isDashboard 
-                          ? "opacity-30 cursor-not-allowed" 
-                          : isHidden 
-                            ? "bg-red-500/10 hover:bg-red-500/20 text-red-500" 
-                            : "bg-green-500/10 hover:bg-green-500/20 text-green-500"
-                      )}
-                      title={isDashboard ? "Dashboard não pode ser oculto" : isHidden ? "Mostrar" : "Ocultar"}
-                    >
-                      {isHidden ? (
-                        <EyeOff className="w-3.5 h-3.5" />
-                      ) : (
-                        <Eye className="w-3.5 h-3.5" />
-                      )}
-                    </button>
+                        {/* Botão de visibilidade */}
+                        <button
+                          onClick={() => toggleVisibility(itemId)}
+                          disabled={isDashboard}
+                          className={cn(
+                            "p-1.5 rounded transition-colors",
+                            isDashboard 
+                              ? "opacity-30 cursor-not-allowed" 
+                              : isHidden 
+                                ? "bg-red-500/10 hover:bg-red-500/20 text-red-500" 
+                                : "bg-green-500/10 hover:bg-green-500/20 text-green-500"
+                          )}
+                          title={isDashboard ? "Dashboard não pode ser oculto" : isHidden ? "Mostrar" : "Ocultar"}
+                        >
+                          {isHidden ? (
+                            <EyeOff className="w-3.5 h-3.5" />
+                          ) : (
+                            <Eye className="w-3.5 h-3.5" />
+                          )}
+                        </button>
+                      </>
+                    )}
                   </div>
                 );
               })}
             </div>
+            
+            {/* Legenda */}
+            {menuStyle?.selectedCharacter && menuStyle.selectedCharacter !== 'complete' && (
+              <div className="mt-3 p-2 rounded-lg bg-muted/50 border border-dashed">
+                <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+                  <EyeOff className="w-3 h-3 text-destructive" />
+                  Itens bloqueados não estão disponíveis na experiência atual. 
+                  <button 
+                    onClick={() => {
+                      onOpenChange(false);
+                      // Trigger character change
+                    }}
+                    className="text-primary underline"
+                  >
+                    Trocar experiência
+                  </button>
+                </p>
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="default" className="flex-1 overflow-y-auto mt-3">
@@ -238,7 +285,9 @@ export const LayoutPreferencesModal: React.FC<LayoutPreferencesModalProps> = ({
             </p>
             
             <div className="space-y-1.5">
-              {allItems.filter(id => !hiddenItems.includes(id)).map((itemId) => {
+              {allItems
+                .filter(id => !hiddenItems.includes(id) && !isDisabledByCharacter(id))
+                .map((itemId) => {
                 const item = getMenuItem(itemId);
                 if (!item) return null;
                 

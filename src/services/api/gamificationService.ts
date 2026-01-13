@@ -54,7 +54,7 @@ export interface Achievement {
 // 🎯 CONSTANTES DE NÍVEIS
 // ═══════════════════════════════════════════════════════════
 
-export const LEVEL_THRESHOLDS = [
+export const LEVEL_THRESHOLDS_MASC = [
   { level: 1, minPoints: 0, name: 'Novato', icon: '🌱' },
   { level: 2, minPoints: 100, name: 'Iniciante', icon: '🌿' },
   { level: 3, minPoints: 300, name: 'Aprendiz', icon: '🌳' },
@@ -67,17 +67,34 @@ export const LEVEL_THRESHOLDS = [
   { level: 10, minPoints: 5500, name: 'Diamante', icon: '💠' },
 ] as const;
 
+export const LEVEL_THRESHOLDS_FEM = [
+  { level: 1, minPoints: 0, name: 'Novata', icon: '🌱' },
+  { level: 2, minPoints: 100, name: 'Iniciante', icon: '🌿' },
+  { level: 3, minPoints: 300, name: 'Aprendiz', icon: '🌳' },
+  { level: 4, minPoints: 600, name: 'Praticante', icon: '⭐' },
+  { level: 5, minPoints: 1000, name: 'Dedicada', icon: '🌟' },
+  { level: 6, minPoints: 1500, name: 'Avançada', icon: '💫' },
+  { level: 7, minPoints: 2200, name: 'Expert', icon: '🔥' },
+  { level: 8, minPoints: 3000, name: 'Mestra', icon: '👑' },
+  { level: 9, minPoints: 4000, name: 'Lenda', icon: '💎' },
+  { level: 10, minPoints: 5500, name: 'Diamante', icon: '💠' },
+] as const;
+
+// Backward compatibility
+export const LEVEL_THRESHOLDS = LEVEL_THRESHOLDS_MASC;
+
 // ═══════════════════════════════════════════════════════════
 // 🔧 FUNÇÕES AUXILIARES
 // ═══════════════════════════════════════════════════════════
 
 /**
- * Calcula o nível baseado nos pontos
+ * Calcula o nível baseado nos pontos (com suporte a gênero)
  */
-export function calculateLevel(points: number): { level: number; name: string; icon: string } {
-  for (let i = LEVEL_THRESHOLDS.length - 1; i >= 0; i--) {
-    if (points >= LEVEL_THRESHOLDS[i].minPoints) {
-      return LEVEL_THRESHOLDS[i];
+export function calculateLevel(points: number, isFeminine?: boolean): { level: number; name: string; icon: string } {
+  const thresholds = isFeminine ? LEVEL_THRESHOLDS_FEM : LEVEL_THRESHOLDS_MASC;
+  for (let i = thresholds.length - 1; i >= 0; i--) {
+    if (points >= thresholds[i].minPoints) {
+      return thresholds[i];
     }
   }
   return LEVEL_THRESHOLDS[0];
@@ -227,11 +244,6 @@ export async function addPoints(userId: string, points: number, reason?: string)
   if (error) {
     console.error('Erro ao adicionar pontos:', error);
     throw error;
-  }
-
-  // Log opcional
-  if (reason) {
-    console.log(`[Gamification] +${points} pontos para ${userId}: ${reason}`);
   }
 
   return data.total_points;

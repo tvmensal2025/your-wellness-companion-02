@@ -49,6 +49,19 @@
     <meta name="twitter:title" content="MaxNutrition - Nutrição Inteligente" />
     <meta name="twitter:description" content="Nutrição inteligente e personalizada para transformar sua saúde" />
     <meta name="twitter:image" content="https://app.oficialmaxnutrition.com.br/images/maxnutrition-og.jpg" />
+    
+    <!-- Polyfill para compatibilidade com navegadores antigos -->
+    <script>
+      // Polyfill para globalThis (Safari < 12.1, IE)
+      if (typeof globalThis === 'undefined') {
+        (function() {
+          if (typeof self !== 'undefined') { self.globalThis = self; }
+          else if (typeof window !== 'undefined') { window.globalThis = window; }
+          else if (typeof global !== 'undefined') { global.globalThis = global; }
+          else { this.globalThis = this; }
+        })();
+      }
+    </script>
 </head>
 
   <body>

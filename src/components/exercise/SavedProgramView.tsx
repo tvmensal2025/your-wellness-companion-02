@@ -12,13 +12,17 @@ import {
   Zap,
   Moon,
   AlertTriangle,
-  ChevronRight
+  ChevronRight,
+  Camera
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import type { Exercise } from '@/hooks/useExercisesLibrary';
 import { formatDifficulty } from '@/lib/exercise-format';
 import { matchExercisesFromActivities } from '@/lib/exercise-matching';
+import { getCameraInfo } from '@/lib/exercise-camera-mapping';
+import { CameraWorkoutModal } from './CameraWorkoutModal';
+import type { ExerciseType } from '@/types/camera-workout';
 
 interface WeekActivity {
   week: number;
@@ -445,6 +449,35 @@ const WorkoutDayCard: React.FC<{
   onExerciseClick?: (exercise: Exercise) => void;
 }> = ({ day, weekNumber, onStartWorkout, exercises, isLibraryLoading, onExerciseClick }) => {
   const exerciseCount = exercises.length || day.activities.length;
+  
+  // Estado para o modal de câmera
+  const [cameraModalOpen, setCameraModalOpen] = useState(false);
+  const [selectedCameraExercise, setSelectedCameraExercise] = useState<{
+    name: string;
+    type: ExerciseType;
+    reps: number;
+    sets: number;
+  } | null>(null);
+
+  const handleCameraClick = (exercise: Exercise, e: React.MouseEvent) => {
+    e.stopPropagation(); // Não abre o modal de detalhes
+    const cameraInfo = getCameraInfo(exercise.name);
+    if (cameraInfo.supported && cameraInfo.type) {
+      const reps = parseInt(exercise.reps?.split('-')[0] || '12', 10);
+      setSelectedCameraExercise({
+        name: exercise.name,
+        type: cameraInfo.type,
+        reps,
+        sets: exercise.sets || 3
+      });
+      setCameraModalOpen(true);
+    }
+  };
+
+  const handleCameraComplete = (reps: number, formScore: number) => {
+    console.log(`Exercício completado: ${reps} reps, ${formScore}% forma`);
+    // Aqui pode salvar no banco, atualizar progresso, etc.
+  };
 
   return (
     <div className="space-y-3 sm:space-y-4 overflow-hidden">
@@ -509,6 +542,8 @@ const WorkoutDayCard: React.FC<{
         ) : (
           exercises.map((exercise, index) => {
             const diff = formatDifficulty(exercise.difficulty);
+            const cameraInfo = getCameraInfo(exercise.name);
+            
             return (
               <motion.div
                 key={exercise.id}
@@ -535,6 +570,19 @@ const WorkoutDayCard: React.FC<{
                         <span className="font-medium">{exercise.sets || '3'}x{exercise.reps || '12'}</span>
                       </div>
                     </div>
+
+                    {/* Botão de Câmera - só aparece se exercício suporta */}
+                    {cameraInfo.supported && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 sm:h-9 sm:w-9 flex-shrink-0 bg-cyan-50 hover:bg-cyan-100 dark:bg-cyan-950/30 dark:hover:bg-cyan-900/50 text-cyan-600 hover:text-cyan-700 rounded-full"
+                        onClick={(e) => handleCameraClick(exercise, e)}
+                        title={`Treinar ${cameraInfo.label} com câmera`}
+                      >
+                        <Camera className="w-4 h-4 sm:w-5 sm:h-5" />
+                      </Button>
+                    )}
 
                     <Badge
                       variant="outline"
@@ -572,6 +620,19 @@ const WorkoutDayCard: React.FC<{
           </Card>
         )}
       </div>
+      
+      {/* Modal de Câmera */}
+      {selectedCameraExercise && (
+        <CameraWorkoutModal
+          open={cameraModalOpen}
+          onOpenChange={setCameraModalOpen}
+          exerciseName={selectedCameraExercise.name}
+          exerciseType={selectedCameraExercise.type}
+          targetReps={selectedCameraExercise.reps}
+          targetSets={selectedCameraExercise.sets}
+          onComplete={handleCameraComplete}
+        />
+      )}
     </div>
   );
 };

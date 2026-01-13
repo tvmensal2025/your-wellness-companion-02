@@ -87,12 +87,12 @@ export const SmartSupplementCard: React.FC<SmartSupplementCardProps> = ({
   return (
     <motion.div 
       className={cn(
-        "relative w-[300px] h-[480px] flex-shrink-0 rounded-[32px] overflow-hidden",
-        "snap-center",
+        "relative w-full max-w-[380px] min-h-[560px] flex-shrink-0 rounded-[32px] overflow-hidden",
+        "snap-center mx-auto",
         "transition-all duration-500",
-        isActive ? "scale-100" : "scale-[0.95] opacity-80"
+        isActive ? "scale-100" : "scale-[0.98] opacity-90"
       )}
-      whileHover={{ scale: isActive ? 1.02 : 0.97 }}
+      whileHover={{ scale: isActive ? 1.02 : 0.99 }}
     >
       {/* Background com gradiente vibrante */}
       <div className={cn(
@@ -115,7 +115,7 @@ export const SmartSupplementCard: React.FC<SmartSupplementCardProps> = ({
       </div>
 
       {/* Conteúdo */}
-      <div className="relative h-full flex flex-col p-5">
+      <div className="relative h-full flex flex-col p-6">
         
         {/* Header: Ranking + Match */}
         <div className="flex items-center justify-between mb-2">
@@ -160,7 +160,7 @@ export const SmartSupplementCard: React.FC<SmartSupplementCardProps> = ({
         </div>
 
         {/* PRODUTO EM DESTAQUE - Grande e vibrante */}
-        <div className="flex-1 flex items-center justify-center py-4">
+        <div className="flex-1 flex items-center justify-center py-6">
           <motion.div
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -169,7 +169,7 @@ export const SmartSupplementCard: React.FC<SmartSupplementCardProps> = ({
           >
             {/* Glow atrás do produto */}
             <div className={cn(
-              "absolute inset-0 blur-2xl opacity-60 scale-90",
+              "absolute inset-0 blur-3xl opacity-60 scale-90",
               isIdeal && "bg-emerald-500",
               isRecommended && "bg-blue-500",
               !isIdeal && !isRecommended && "bg-violet-500"
@@ -178,7 +178,7 @@ export const SmartSupplementCard: React.FC<SmartSupplementCardProps> = ({
             {/* Imagem do produto */}
             <motion.div
               animate={isActive ? { 
-                y: [0, -8, 0],
+                y: [0, -10, 0],
                 rotateY: [0, 5, 0, -5, 0]
               } : {}}
               transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
@@ -189,16 +189,16 @@ export const SmartSupplementCard: React.FC<SmartSupplementCardProps> = ({
                   src={productImage} 
                   alt={product.name}
                   className={cn(
-                    "w-44 h-44 object-contain drop-shadow-2xl",
-                    `drop-shadow-[0_20px_40px_rgba(0,0,0,0.5)]`
+                    "w-56 h-56 object-contain drop-shadow-2xl",
+                    `drop-shadow-[0_25px_50px_rgba(0,0,0,0.5)]`
                   )}
                 />
               ) : (
                 <div className={cn(
-                  "w-44 h-44 rounded-3xl flex items-center justify-center",
+                  "w-56 h-56 rounded-3xl flex items-center justify-center",
                   "bg-gradient-to-br from-white/20 to-white/5"
                 )}>
-                  <Zap className="w-16 h-16 text-white/50" />
+                  <Zap className="w-20 h-20 text-white/50" />
                 </div>
               )}
             </motion.div>
@@ -238,12 +238,12 @@ export const SmartSupplementCard: React.FC<SmartSupplementCardProps> = ({
           </div>
 
           {/* Nome do produto */}
-          <h3 className="text-xl font-bold text-white leading-tight">
+          <h3 className="text-2xl font-bold text-white leading-tight">
             {product.name}
           </h3>
 
           {/* Argumento personalizado */}
-          <p className="text-sm text-white/60 leading-relaxed line-clamp-2">
+          <p className="text-base text-white/60 leading-relaxed line-clamp-2">
             {personalizedArgument.mainText}
           </p>
 
@@ -264,14 +264,14 @@ export const SmartSupplementCard: React.FC<SmartSupplementCardProps> = ({
           )}
 
           {/* Preço e CTA */}
-          <div className="flex items-center justify-between pt-2">
+          <div className="flex items-center justify-between pt-3">
             <div>
               {hasDiscount && (
-                <span className="text-sm text-white/30 line-through block">
+                <span className="text-base text-white/30 line-through block">
                   R$ {product.original_price?.toFixed(2)}
                 </span>
               )}
-              <span className="text-2xl font-black text-white">
+              <span className="text-3xl font-black text-white">
                 R$ {(product.discount_price || product.original_price || 0).toFixed(2)}
               </span>
             </div>
@@ -283,7 +283,7 @@ export const SmartSupplementCard: React.FC<SmartSupplementCardProps> = ({
                   onPurchase?.();
                 }}
                 className={cn(
-                  "rounded-full px-6 py-5 font-bold shadow-xl",
+                  "rounded-full px-8 py-6 font-bold text-base shadow-xl",
                   isIdeal && "bg-emerald-500 hover:bg-emerald-400 shadow-emerald-500/30",
                   isRecommended && "bg-blue-500 hover:bg-blue-400 shadow-blue-500/30",
                   !isIdeal && !isRecommended && "bg-violet-500 hover:bg-violet-400 shadow-violet-500/30"

@@ -1,52 +1,51 @@
-import { useState } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 
 export const useCelebrationEffects = () => {
   const [activeCelebration, setActiveCelebration] = useState(false);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const celebrateDesafioCompletion = () => {
+  // Limpar timeout ao desmontar
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
+
+  const triggerCelebrationWithDuration = useCallback((duration: number) => {
+    // Limpar timeout anterior se existir
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    
     setActiveCelebration(true);
     
-    // Reset após 3 segundos
-    setTimeout(() => {
+    timeoutRef.current = setTimeout(() => {
       setActiveCelebration(false);
-    }, 3000);
-  };
+      timeoutRef.current = null;
+    }, duration);
+  }, []);
 
-  const celebrateProgressUpdate = () => {
-    setActiveCelebration(true);
-    
-    // Reset após 2 segundos
-    setTimeout(() => {
-      setActiveCelebration(false);
-    }, 2000);
-  };
+  const celebrateDesafioCompletion = useCallback(() => {
+    triggerCelebrationWithDuration(3000);
+  }, [triggerCelebrationWithDuration]);
 
-  const celebrateParticipation = () => {
-    setActiveCelebration(true);
-    
-    // Reset após 1.5 segundos
-    setTimeout(() => {
-      setActiveCelebration(false);
-    }, 1500);
-  };
+  const celebrateProgressUpdate = useCallback(() => {
+    triggerCelebrationWithDuration(2000);
+  }, [triggerCelebrationWithDuration]);
 
-  const celebrateGoalCompletion = () => {
-    setActiveCelebration(true);
-    
-    // Reset após 3 segundos
-    setTimeout(() => {
-      setActiveCelebration(false);
-    }, 3000);
-  };
+  const celebrateParticipation = useCallback(() => {
+    triggerCelebrationWithDuration(1500);
+  }, [triggerCelebrationWithDuration]);
 
-  const triggerCelebration = (message?: string) => {
-    setActiveCelebration(true);
-    
-    // Reset após 2 segundos
-    setTimeout(() => {
-      setActiveCelebration(false);
-    }, 2000);
-  };
+  const celebrateGoalCompletion = useCallback(() => {
+    triggerCelebrationWithDuration(3000);
+  }, [triggerCelebrationWithDuration]);
+
+  const triggerCelebration = useCallback((_message?: string) => {
+    triggerCelebrationWithDuration(2000);
+  }, [triggerCelebrationWithDuration]);
 
   return {
     activeCelebration,

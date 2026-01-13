@@ -16,19 +16,22 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-// Mensagens motivacionais para o timer
-const motivationalMessages = [
+// Mensagens motivacionais para o timer (neutras por padrão)
+const getMotivationalMessages = (isFeminine?: boolean) => [
   { emoji: "💪", text: "Você está arrasando!" },
   { emoji: "🔥", text: "Cada série conta!" },
   { emoji: "⚡", text: "Força! Próxima série vem aí!" },
   { emoji: "🎯", text: "Foco no objetivo!" },
   { emoji: "💚", text: "Seu corpo agradece!" },
-  { emoji: "🏆", text: "Campeão em construção!" },
+  { emoji: "🏆", text: isFeminine ? "Campeã em construção!" : "Campeão em construção!" },
   { emoji: "✨", text: "Mais forte a cada dia!" },
   { emoji: "🚀", text: "Não pare agora!" },
   { emoji: "🌟", text: "Você consegue!" },
   { emoji: "💥", text: "Energia total!" },
 ];
+
+// Fallback para compatibilidade
+const motivationalMessages = getMotivationalMessages();
 
 export interface UnifiedTimerProps {
   // Timer básico

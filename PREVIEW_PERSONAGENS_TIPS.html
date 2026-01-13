@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Preview - Cards de Dicas por Personagem</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%);
+      min-height: 100vh;
+      padding: 20px;
+      color: white;
+    }
+    
+    .container {
+      max-width: 420px;
+      margin: 0 auto;
+    }
+    
+    h1 {
+      text-align: center;
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+      background: linear-gradient(90deg, #22c55e, #3b82f6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    /* Tabs de seleção */
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    
+    .tab {
+      padding: 10px 16px;
+      border-radius: 20px;
+      border: none;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .tab.dr-vital { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+    .tab.dr-vital.active { background: #3b82f6; color: white; }
+    .tab.sofia { background: rgba(34, 197, 94, 0.2); color: #4ade80; }
+    .tab.sofia.active { background: #22c55e; color: white; }
+    .tab.alex { background: rgba(249, 115, 22, 0.2); color: #fb923c; }
+    .tab.alex.active { background: #f97316; color: white; }
+    .tab.completo { background: rgba(168, 85, 247, 0.2); color: #c084fc; }
+    .tab.completo.active { background: #a855f7; color: white; }
+    
+    /* Container dos cards */
+    .card-container {
+      position: relative;
+      min-height: 400px;
+    }
+    
+    .character-card {
+      display: none;
+      animation: fadeIn 0.5s ease;
+    }
+    
+    .character-card.active {
+      display: block;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* ==================== DR. VITAL - ESTILO PRONTUÁRIO ==================== */
+    .dr-vital-card {
+      background: linear-gradient(180deg, #1e3a5f 0%, #0f2744 100%);
+      border-radius: 16px;
+      padding: 20px;
+      border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+    
+    .dr-vital-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    
+    .dr-vital-avatar {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      border: 2px solid rgba(255,255,255,0.2);
+    }
+    
+    .dr-vital-info h3 {
+      font-size: 1.1rem;
+      color: white;
+    }
+    
+    .dr-vital-info p {
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.6);
+    }
+    
+    /* ECG Animation */
+    .ecg-line {
+      height: 30px;
+      background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.1), transparent);
+      border-radius: 4px;
+      margin-bottom: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .ecg-wave {
+      position: absolute;
+      width: 200%;
+      height: 100%;
+      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 30'%3E%3Cpath d='M0,15 L20,15 L25,15 L30,5 L35,25 L40,15 L45,15 L50,15 L55,15 L60,10 L65,20 L70,15 L200,15' stroke='%233b82f6' fill='none' stroke-width='2'/%3E%3C/svg%3E") repeat-x;
+      animation: ecgMove 2s linear infinite;
+    }
+    
+    @keyframes ecgMove {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+    
+    /* Prontuário */
+    .prontuario {
+      background: linear-gradient(180deg, #fefefe 0%, #f5f5f0 100%);
+      border-radius: 12px;
+      padding: 16px;
+      color: #1a1a2e;
+      position: relative;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+    
+    .prontuario::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #3b82f6, #60a5fa);
+      border-radius: 12px 12px 0 0;
+    }
+    
+    .prontuario-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding-bottom: 12px;
+      border-bottom: 1px dashed #ccc;
+      margin-bottom: 12px;
+    }
+    
+    .prontuario-header span {
+      font-weight: 700;
+      color: #1e3a5f;
+      font-size: 0.9rem;
+    }
+    
+    .prontuario-section {
+      margin-bottom: 12px;
+    }
+    
+    .prontuario-section label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      color: #666;
+      letter-spacing: 0.5px;
+      display: block;
+      margin-bottom: 4px;
+    }
+    
+    .prontuario-section p {
+      font-size: 0.9rem;
+      color: #333;
+      line-height: 1.4;
+    }
+    
+    .prontuario-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 12px;
+      border-top: 1px dashed #ccc;
+      font-size: 0.75rem;
+      color: #666;
+    }
+    
+    .selo-verificado {
+      background: rgba(34, 197, 94, 0.1);
+      color: #16a34a;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    
+    .selo-alerta {
+      background: rgba(239, 68, 68, 0.1);
+      color: #dc2626;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+    
+    .fonte-cientifica {
+      font-size: 0.7rem;
+      color: #3b82f6;
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    
+    /* ==================== SOFIA - ESTILO WHATSAPP ==================== */
+    .sofia-card {
+      background: linear-gradient(180deg, #0d4f3c 0%, #064e3b 100%);
+      border-radius: 16px;
+      padding: 20px;
+      border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+    
+    .sofia-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    
+    .sofia-avatar {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      border: 2px solid rgba(255,255,255,0.2);
+    }
+    
+    .sofia-info h3 {
+      font-size: 1.1rem;
+      color: white;
+    }
+    
+    .sofia-info p {
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.6);
+    }
+    
+    /* Chat bubbles */
+    .chat-container {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .typing-indicator {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 12px 16px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 18px 18px 18px 4px;
+      width: fit-content;
+      margin-bottom: 8px;
+    }
+    
+    .typing-dot {
+      width: 8px;
+      height: 8px;
+      background: rgba(255,255,255,0.5);
+      border-radius: 50%;
+      animation: typingBounce 1.4s infinite;
+    }
+    
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+    
+    @keyframes typingBounce {
+      0%, 60%, 100% { transform: translateY(0); }
+      30% { transform: translateY(-4px); }
+    }
+    
+    .chat-bubble {
+      background: #25d366;
+      color: white;
+      padding: 12px 16px;
+      border-radius: 18px 18px 18px 4px;
+      max-width: 85%;
+      position: relative;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      animation: bubbleIn 0.3s ease;
+    }
+    
+    @keyframes bubbleIn {
+      from { transform: scale(0.8); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    
+    .chat-bubble p {
+      font-size: 0.95rem;
+      line-height: 1.5;
+      margin-bottom: 8px;
+    }
+    
+    .chat-bubble .time {
+      font-size: 0.7rem;
+      opacity: 0.7;
+      text-align: right;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 4px;
+    }
+    
+    .chat-bubble .checkmarks {
+      color: #34d399;
+    }
+    
+    .chat-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 16px;
+    }
+    
+    .chat-action {
+      flex: 1;
+      padding: 10px;
+      border-radius: 12px;
+      border: none;
+      background: rgba(255,255,255,0.1);
+      color: white;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    
+    .chat-action:hover {
+      background: rgba(255,255,255,0.2);
+    }
+    
+    /* ==================== ALEX - ESTILO ACADEMIA ==================== */
+    .alex-card {
+      background: linear-gradient(180deg, #7c2d12 0%, #431407 100%);
+      border-radius: 16px;
+      padding: 20px;
+      border: 1px solid rgba(249, 115, 22, 0.3);
+    }
+    
+    .alex-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    
+    .alex-avatar {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, #f97316, #ea580c);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      border: 2px solid rgba(255,255,255,0.2);
+      animation: avatarPulse 2s infinite;
+    }
+    
+    @keyframes avatarPulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.4); }
+      50% { box-shadow: 0 0 0 10px rgba(249, 115, 22, 0); }
+    }
+    
+    .alex-info h3 {
+      font-size: 1.1rem;
+      color: white;
+    }
+    
+    .alex-info p {
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.6);
+    }
+    
+    /* Challenge card */
+    .challenge-board {
+      background: linear-gradient(180deg, #1c1c1c 0%, #0a0a0a 100%);
+      border-radius: 12px;
+      padding: 20px;
+      border: 3px solid #f97316;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .challenge-board::before {
+      content: '🔥';
+      position: absolute;
+      top: -10px;
+      right: -10px;
+      font-size: 60px;
+      opacity: 0.1;
+    }
+    
+    .challenge-title {
+      text-align: center;
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: #f97316;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 16px;
+      text-shadow: 0 0 20px rgba(249, 115, 22, 0.5);
+    }
+    
+    .challenge-quote {
+      text-align: center;
+      font-size: 1.1rem;
+      color: white;
+      margin-bottom: 20px;
+      font-style: italic;
+    }
+    
+    .challenge-timer {
+      background: rgba(249, 115, 22, 0.2);
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+      margin-bottom: 16px;
+    }
+    
+    .timer-display {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: #f97316;
+      font-family: 'Courier New', monospace;
+      letter-spacing: 4px;
+    }
+    
+    .timer-label {
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.6);
+      margin-top: 4px;
+    }
+    
+    .challenge-reward {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      color: #fbbf24;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+    
+    .start-button {
+      width: 100%;
+      padding: 16px;
+      border-radius: 12px;
+      border: none;
+      background: linear-gradient(135deg, #f97316, #ea580c);
+      color: white;
+      font-size: 1.1rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      cursor: pointer;
+      transition: all 0.3s;
+      animation: buttonGlow 2s infinite;
+    }
+    
+    @keyframes buttonGlow {
+      0%, 100% { box-shadow: 0 0 20px rgba(249, 115, 22, 0.5); }
+      50% { box-shadow: 0 0 40px rgba(249, 115, 22, 0.8); }
+    }
+    
+    .start-button:hover {
+      transform: scale(1.02);
+    }
+    
+    /* ==================== COMPLETO - HUB INTELIGENTE ==================== */
+    .completo-card {
+      background: linear-gradient(180deg, #2e1065 0%, #1e1b4b 100%);
+      border-radius: 16px;
+      padding: 20px;
+      border: 1px solid rgba(168, 85, 247, 0.3);
+    }
+    
+    .completo-header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    
+    .completo-header h3 {
+      font-size: 1.2rem;
+      background: linear-gradient(90deg, #a855f7, #ec4899);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 4px;
+    }
+    
+    .completo-header p {
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.6);
+    }
+    
+    .mini-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .mini-card {
+      background: rgba(255,255,255,0.05);
+      border-radius: 12px;
+      padding: 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: all 0.3s;
+      border: 1px solid transparent;
+    }
+    
+    .mini-card:hover {
+      background: rgba(255,255,255,0.1);
+      transform: translateX(4px);
+    }
+    
+    .mini-card.dr-vital-mini {
+      border-left: 3px solid #3b82f6;
+    }
+    
+    .mini-card.sofia-mini {
+      border-left: 3px solid #22c55e;
+    }
+    
+    .mini-card.alex-mini {
+      border-left: 3px solid #f97316;
+    }
+    
+    .mini-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+    
+    .mini-avatar.dr { background: rgba(59, 130, 246, 0.2); }
+    .mini-avatar.sofia { background: rgba(34, 197, 94, 0.2); }
+    .mini-avatar.alex { background: rgba(249, 115, 22, 0.2); }
+    
+    .mini-content {
+      flex: 1;
+    }
+    
+    .mini-content .name {
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 2px;
+    }
+    
+    .mini-content .message {
+      font-size: 0.9rem;
+      color: white;
+    }
+    
+    .mini-arrow {
+      color: rgba(255,255,255,0.3);
+      font-size: 1.2rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎭 Cards de Dicas por Personagem</h1>
+    
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab dr-vital active" onclick="showCard('dr-vital')">
+        🩺 Dr. Vital
+      </button>
+      <button class="tab sofia" onclick="showCard('sofia')">
+        🍽️ Sofia
+      </button>
+      <button class="tab alex" onclick="showCard('alex')">
+        💪 Alex
+      </button>
+      <button class="tab completo" onclick="showCard('completo')">
+        🌟 Completo
+      </button>
+    </div>
+    
+    <!-- Card Container -->
+    <div class="card-container">
+      
+      <!-- DR. VITAL CARD -->
+      <div id="dr-vital-card" class="character-card active">
+        <div class="dr-vital-card">
+          <div class="dr-vital-header">
+            <div class="dr-vital-avatar">👨‍⚕️</div>
+            <div class="dr-vital-info">
+              <h3>Dr. Vital</h3>
+              <p>Seu médico virtual</p>
+            </div>
+          </div>
+          
+          <!-- ECG Animation -->
+          <div class="ecg-line">
+            <div class="ecg-wave"></div>
+          </div>
+          
+          <!-- Prontuário -->
+          <div class="prontuario">
+            <div class="prontuario-header">
+              <span>📋 PRONTUÁRIO DO PACIENTE</span>
+              <div class="selo-alerta">⚠️ Atenção</div>
+            </div>
+            
+            <div class="prontuario-section">
+              <label>📊 Diagnóstico</label>
+              <p>Gordura visceral elevada detectada nos últimos exames.</p>
+            </div>
+            
+            <div class="prontuario-section">
+              <label>💊 Recomendação</label>
+              <p>A circunferência abdominal elevada está associada a maior risco de doenças cardíacas e diabetes tipo 2. Reduzir 5-10% do peso pode melhorar significativamente os indicadores.</p>
+            </div>
+            
+            <div class="fonte-cientifica">
+              📚 American Heart Association, 2021
+            </div>
+            
+            <div class="prontuario-footer">
+              <span>🩺 CRM 12345</span>
+              <span>✍️ Dr. Vital</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- SOFIA CARD -->
+      <div id="sofia-card" class="character-card">
+        <div class="sofia-card">
+          <div class="sofia-header">
+            <div class="sofia-avatar">👩‍🍳</div>
+            <div class="sofia-info">
+              <h3>Sofia</h3>
+              <p>Sua nutri favorita</p>
+            </div>
+          </div>
+          
+          <div class="chat-container">
+            <!-- Typing indicator (hidden by default, shown on load) -->
+            <div class="typing-indicator" id="typing">
+              <div class="typing-dot"></div>
+              <div class="typing-dot"></div>
+              <div class="typing-dot"></div>
+            </div>
+            
+            <div class="chat-bubble" id="bubble1" style="display: none;">
+              <p>Oi! 😊 Vi que você comeu bem ontem!</p>
+              <div class="time">
+                14:32 <span class="checkmarks">✓✓</span>
+              </div>
+            </div>
+            
+            <div class="chat-bubble" id="bubble2" style="display: none;">
+              <p>Que tal manter esse ritmo hoje? 🥗</p>
+              <p><strong>Sugestão:</strong> Salada com proteína no almoço vai te dar energia pro resto do dia!</p>
+              <div class="time">
+                14:32 <span class="checkmarks">✓✓</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="chat-actions">
+            <button class="chat-action">🎤 Áudio</button>
+            <button class="chat-action">📸 Foto</button>
+            <button class="chat-action">👍 Curtir</button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- ALEX CARD -->
+      <div id="alex-card" class="character-card">
+        <div class="alex-card">
+          <div class="alex-header">
+            <div class="alex-avatar">🏋️</div>
+            <div class="alex-info">
+              <h3>Alex</h3>
+              <p>Seu personal trainer</p>
+            </div>
+          </div>
+          
+          <div class="challenge-board">
+            <div class="challenge-title">🔥 DESAFIO DO DIA 🔥</div>
+            
+            <div class="challenge-quote">
+              "BORA! Hoje é dia de superar seus limites! 💪"
+            </div>
+            
+            <div class="challenge-timer">
+              <div class="timer-display" id="timer">00:30:00</div>
+              <div class="timer-label">Meta: 30 minutos de cardio</div>
+            </div>
+            
+            <div class="challenge-reward">
+              🏆 Recompensa: +50 XP
+            </div>
+            
+            <button class="start-button" onclick="startChallenge()">
+              🚀 COMEÇAR AGORA
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- COMPLETO CARD -->
+      <div id="completo-card" class="character-card">
+        <div class="completo-card">
+          <div class="completo-header">
+            <h3>✨ MaxNutrition</h3>
+            <p>Suas dicas personalizadas</p>
+          </div>
+          
+          <div class="mini-cards">
+            <div class="mini-card dr-vital-mini" onclick="showCard('dr-vital')">
+              <div class="mini-avatar dr">👨‍⚕️</div>
+              <div class="mini-content">
+                <div class="name">Dr. Vital diz:</div>
+                <div class="message">"Seus exames estão ótimos!"</div>
+              </div>
+              <div class="mini-arrow">→</div>
+            </div>
+            
+            <div class="mini-card sofia-mini" onclick="showCard('sofia')">
+              <div class="mini-avatar sofia">👩‍🍳</div>
+              <div class="mini-content">
+                <div class="name">Sofia sugere:</div>
+                <div class="message">"Que tal um smoothie hoje?"</div>
+              </div>
+              <div class="mini-arrow">→</div>
+            </div>
+            
+            <div class="mini-card alex-mini" onclick="showCard('alex')">
+              <div class="mini-avatar alex">🏋️</div>
+              <div class="mini-content">
+                <div class="name">Alex desafia:</div>
+                <div class="message">"10 flexões agora! Bora!"</div>
+              </div>
+              <div class="mini-arrow">→</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+    </div>
+    
+    <!-- Info -->
+    <div style="text-align: center; margin-top: 24px; padding: 16px; background: rgba(255,255,255,0.05); border-radius: 12px;">
+      <p style="font-size: 0.85rem; color: rgba(255,255,255,0.6);">
+        👆 Clique nas abas para ver cada estilo de personagem
+      </p>
+      <p style="font-size: 0.75rem; color: rgba(255,255,255,0.4); margin-top: 8px;">
+        Cada personagem tem visual e linguagem únicos!
+      </p>
+    </div>
+  </div>
+  
+  <script>
+    // Tab switching
+    function showCard(cardId) {
+      // Hide all cards
+      document.querySelectorAll('.character-card').forEach(card => {
+        card.classList.remove('active');
+      });
+      
+      // Remove active from all tabs
+      document.querySelectorAll('.tab').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      
+      // Show selected card
+      document.getElementById(cardId + '-card').classList.add('active');
+      
+      // Activate tab
+      document.querySelector('.tab.' + cardId).classList.add('active');
+      
+      // Special animations for Sofia
+      if (cardId === 'sofia') {
+        animateSofiaChat();
+      }
+    }
+    
+    // Sofia chat animation
+    function animateSofiaChat() {
+      const typing = document.getElementById('typing');
+      const bubble1 = document.getElementById('bubble1');
+      const bubble2 = document.getElementById('bubble2');
+      
+      // Reset
+      typing.style.display = 'flex';
+      bubble1.style.display = 'none';
+      bubble2.style.display = 'none';
+      
+      // Show first bubble after typing
+      setTimeout(() => {
+        typing.style.display = 'none';
+        bubble1.style.display = 'block';
+      }, 1500);
+      
+      // Show second bubble
+      setTimeout(() => {
+        bubble2.style.display = 'block';
+      }, 2500);
+    }
+    
+    // Alex timer animation
+    let timerInterval;
+    function startChallenge() {
+      const timerEl = document.getElementById('timer');
+      const btn = document.querySelector('.start-button');
+      
+      if (btn.textContent.includes('COMEÇAR')) {
+        btn.textContent = '⏸️ PAUSAR';
+        btn.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+        
+        let seconds = 30 * 60; // 30 minutes
+        timerInterval = setInterval(() => {
+          seconds--;
+          if (seconds <= 0) {
+            clearInterval(timerInterval);
+            btn.textContent = '🎉 CONCLUÍDO!';
+            btn.style.background = 'linear-gradient(135deg, #22c55e, #16a34a)';
+            return;
+          }
+          
+          const mins = Math.floor(seconds / 60);
+          const secs = seconds % 60;
+          timerEl.textContent = `00:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }, 1000);
+      } else if (btn.textContent.includes('PAUSAR')) {
+        clearInterval(timerInterval);
+        btn.textContent = '🚀 CONTINUAR';
+        btn.style.background = 'linear-gradient(135deg, #f97316, #ea580c)';
+      } else if (btn.textContent.includes('CONTINUAR')) {
+        btn.textContent = '⏸️ PAUSAR';
+        btn.style.background = 'linear-gradient(135deg, #ef4444, #dc2626)';
+        // Resume timer logic would go here
+      }
+    }
+    
+    // Initial animation for Sofia if it's the first view
+    document.addEventListener('DOMContentLoaded', () => {
+      // Start with Dr. Vital
+    });
+  </script>
+</body>
+</html>

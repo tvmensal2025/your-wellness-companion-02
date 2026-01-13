@@ -64,6 +64,27 @@ interface WeekDayData {
 // CONSTANTES
 // ============================================
 
+// Função para normalizar meal_type (compatibilidade com dados antigos)
+const normalizeMealType = (mealType: string): string => {
+  const normalized = mealType?.toLowerCase().trim() || '';
+  const mealTypeMap: Record<string, string> = {
+    'breakfast': 'cafe_da_manha',
+    'lunch': 'almoco',
+    'dinner': 'jantar',
+    'snack': 'lanche',
+    'supper': 'ceia',
+    'café da manhã': 'cafe_da_manha',
+    'cafe da manha': 'cafe_da_manha',
+    'café': 'cafe_da_manha',
+    'cafe': 'cafe_da_manha',
+    'almoço': 'almoco',
+    'janta': 'jantar',
+    'refeicao': 'almoco',
+    'refeição': 'almoco',
+  };
+  return mealTypeMap[normalized] || normalized;
+};
+
 const MEAL_CONFIG = [
   { 
     key: 'cafe_da_manha', 
@@ -320,7 +341,7 @@ interface MealTimelineProps {
 }
 
 const MealTimeline: React.FC<MealTimelineProps> = ({ meals, onMealClick }) => {
-  const getMealByType = (type: string) => meals.find(m => m.meal_type === type);
+  const getMealByType = (type: string) => meals.find(m => normalizeMealType(m.meal_type) === type);
 
   return (
     <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
@@ -412,11 +433,21 @@ const MealDetailCard: React.FC<MealDetailCardProps> = ({ meal, config, onClose }
 
   return (
     <AnimatePresence>
+      {/* Overlay que cobre a tela */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: 20 }}
-        className="mt-4"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        onClick={onClose}
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
+      />
+      
+      {/* Card centralizado no topo da tela */}
+      <motion.div
+        initial={{ opacity: 0, y: -50, scale: 0.95 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: -50, scale: 0.95 }}
+        className="fixed top-4 left-4 right-4 z-50 max-w-md mx-auto"
       >
         <Card className={cn(
           "overflow-hidden border-0 shadow-xl",
@@ -833,7 +864,7 @@ export const SofiaNutricionalRedesigned: React.FC<SofiaNutricionalRedesignedProp
   }, [meals]);
 
   const selectedMealConfig = selectedMeal 
-    ? MEAL_CONFIG.find(c => c.key === selectedMeal.meal_type) 
+    ? MEAL_CONFIG.find(c => c.key === normalizeMealType(selectedMeal.meal_type)) 
     : null;
 
   // Loading state
@@ -900,16 +931,16 @@ export const SofiaNutricionalRedesigned: React.FC<SofiaNutricionalRedesignedProp
           meals={meals} 
           onMealClick={(meal) => setSelectedMeal(selectedMeal?.id === meal.id ? null : meal)} 
         />
+        
+        {/* Card de Detalhe da Refeição Selecionada - Logo abaixo da timeline */}
+        {selectedMeal && (
+          <MealDetailCard
+            meal={selectedMeal}
+            config={selectedMealConfig}
+            onClose={() => setSelectedMeal(null)}
+          />
+        )}
       </div>
-
-      {/* Card de Detalhe da Refeição Selecionada */}
-      {selectedMeal && (
-        <MealDetailCard
-          meal={selectedMeal}
-          config={selectedMealConfig}
-          onClose={() => setSelectedMeal(null)}
-        />
-      )}
 
       {/* Histórico Semanal */}
       <WeekHistory weekData={weekData} />

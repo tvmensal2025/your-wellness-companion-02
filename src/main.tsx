@@ -56,9 +56,19 @@ if (!rootElement) {
   throw new Error("Root element not found");
 }
 
-const root = createRoot(rootElement);
-root.render(
-  <StrictMode>
-    <App />
-  </StrictMode>
-);
+// Limpar qualquer conteúdo existente para evitar conflitos
+rootElement.innerHTML = '';
+
+try {
+  const root = createRoot(rootElement);
+  root.render(
+    <StrictMode>
+      <App />
+    </StrictMode>
+  );
+} catch (error) {
+  console.error('Erro ao renderizar aplicação:', error);
+  // Fallback: tentar renderizar sem StrictMode
+  const root = createRoot(rootElement);
+  root.render(<App />);
+}

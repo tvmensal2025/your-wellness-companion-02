@@ -1,0 +1,76 @@
+🎯 COMO EXECUTAR A MIGRAÇÃO - Sistema de Metas Gamificado
+================================================================
+
+📋 OPÇÃO 1: Interface Visual (MAIS FÁCIL)
+------------------------------------------
+1. Abra no navegador: EXECUTAR_MIGRACAO_VISUAL.html
+2. Siga os 5 passos visuais
+3. Clique nos botões para copiar
+4. Pronto!
+
+
+📋 OPÇÃO 2: Manual (5 minutos)
+-------------------------------
+1. Acesse: https://supabase.com/dashboard
+
+2. Selecione seu projeto
+
+3. Menu lateral → SQL Editor → + New Query
+
+4. Abra o arquivo:
+   supabase/migrations/20260112400000_add_goals_gamification_safe.sql
+
+5. Copie TODO o conteúdo (Ctrl+A, Ctrl+C)
+
+6. Cole no SQL Editor (Ctrl+V)
+
+7. Clique em "Run" (ou Ctrl+Enter)
+
+8. Aguarde 5-10 segundos
+
+9. Valide com esta query:
+
+SELECT 
+  (SELECT COUNT(*) FROM information_schema.tables 
+   WHERE table_name IN ('goal_achievements', 'goal_streaks', 'user_goal_levels')) as tabelas,
+  (SELECT COUNT(*) FROM information_schema.columns 
+   WHERE table_name = 'user_goals' 
+   AND column_name IN ('streak_days', 'xp_earned', 'level')) as campos,
+  (SELECT COUNT(*) FROM information_schema.routines 
+   WHERE routine_name IN ('update_goal_streak', 'process_level_up')) as funcoes;
+
+10. Resultado esperado:
+    tabelas: 3
+    campos: 3
+    funcoes: 2
+
+
+✅ SUCESSO!
+-----------
+Se viu os números corretos (3, 3, 2), está PRONTO!
+
+
+📚 DOCUMENTAÇÃO COMPLETA
+-------------------------
+- RESUMO_1_PAGINA_METAS.md - Resumo executivo
+- GUIA_VISUAL_SUPABASE.md - Passo a passo visual
+- RESUMO_IMPLEMENTACAO_METAS.md - Resumo completo
+- INDICE_MESTRE_METAS.md - Índice de todos os arquivos
+
+
+🆘 PROBLEMAS?
+-------------
+Consulte: GUIA_VISUAL_SUPABASE.md (seção Troubleshooting)
+
+
+🎉 PRÓXIMOS PASSOS
+------------------
+1. Integrar ModernGoalCard.tsx
+2. Criar GoalsHeroStats.tsx
+3. Testar em staging
+4. Validar responsividade
+
+
+================================================================
+Criado por Kiro AI - Janeiro 2026
+Transforme objetivos em conquistas! 🎯

@@ -11,6 +11,100 @@ interface RankingUser {
   streak?: number;
 }
 
+// Calcular streak real baseado em dias consecutivos de atividade
+async function calculateUserStreak(userId: string): Promise<number> {
+  // Buscar datas de atividade do usuário (últimos 30 dias)
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+  
+  // Buscar de múltiplas fontes de atividade
+  const [trackingData, participationsData, pointsData] = await Promise.all([
+    // advanced_daily_tracking
+    supabase
+      .from('advanced_daily_tracking')
+      .select('tracking_date')
+      .eq('user_id', userId)
+      .gte('tracking_date', thirtyDaysAgo)
+      .order('tracking_date', { ascending: false }),
+    // challenge_participations (dias com atividade)
+    supabase
+      .from('challenge_participations')
+      .select('started_at, completed_at')
+      .eq('user_id', userId)
+      .gte('started_at', thirtyDaysAgo),
+    // user_points (dias com pontos ganhos)
+    supabase
+      .from('user_points')
+      .select('created_at')
+      .eq('user_id', userId)
+      .gte('created_at', thirtyDaysAgo)
+  ]);
+
+  // Coletar todas as datas únicas de atividade
+  const activityDates = new Set<string>();
+  
+  trackingData.data?.forEach(t => {
+    if (t.tracking_date) activityDates.add(t.tracking_date);
+  });
+  
+  participationsData.data?.forEach(p => {
+    if (p.started_at) activityDates.add(p.started_at.split('T')[0]);
+    if (p.completed_at) activityDates.add(p.completed_at.split('T')[0]);
+  });
+  
+  pointsData.data?.forEach(p => {
+    if (p.created_at) activityDates.add(p.created_at.split('T')[0]);
+  });
+
+  if (activityDates.size === 0) return 0;
+
+  // Ordenar datas do mais recente para o mais antigo
+  const sortedDates = Array.from(activityDates).sort((a, b) => b.localeCompare(a));
+  
+  // Calcular streak (dias consecutivos a partir de hoje ou ontem)
+  const today = new Date().toISOString().split('T')[0];
+  const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+  
+  // Verificar se há atividade hoje ou ontem para iniciar contagem
+  if (sortedDates[0] !== today && sortedDates[0] !== yesterday) {
+    return 0; // Streak quebrado
+  }
+
+  let streak = 1;
+  let currentDate = new Date(sortedDates[0]);
+  
+  for (let i = 1; i < sortedDates.length; i++) {
+    const prevDate = new Date(currentDate);
+    prevDate.setDate(prevDate.getDate() - 1);
+    const expectedDate = prevDate.toISOString().split('T')[0];
+    
+    if (sortedDates[i] === expectedDate) {
+      streak++;
+      currentDate = prevDate;
+    } else {
+      break; // Streak quebrado
+    }
+  }
+
+  return streak;
+}
+
+// Buscar streaks para múltiplos usuários de forma otimizada
+async function fetchUserStreaks(userIds: string[]): Promise<Record<string, number>> {
+  const streaks: Record<string, number> = {};
+  
+  // Buscar em paralelo (máximo 10 para não sobrecarregar)
+  const batchSize = 10;
+  for (let i = 0; i < userIds.length; i += batchSize) {
+    const batch = userIds.slice(i, i + batchSize);
+    const results = await Promise.all(batch.map(id => calculateUserStreak(id)));
+    batch.forEach((id, index) => {
+      streaks[id] = results[index];
+    });
+  }
+  
+  return streaks;
+}
+
 export const useSocialRanking = (userId?: string, period: 'week' | 'month' = 'week') => {
   const enabled = !!userId;
 
@@ -36,7 +130,6 @@ export const useSocialRanking = (userId?: string, period: 'week' | 'month' = 'we
         .gte('started_at', startDate);
 
       if (partError) {
-        console.error('Erro ao buscar participações:', partError);
         return [];
       }
 
@@ -61,26 +154,30 @@ export const useSocialRanking = (userId?: string, period: 'week' | 'month' = 'we
         .in('id', userIds);
 
       if (profilesError) {
-        console.error('Erro ao buscar perfis:', profilesError);
         return generateDemoRanking(userId);
       }
 
-      // Montar ranking
+      // Buscar streaks reais para todos os usuários
+      const allUserIds = profiles?.map(p => p.id) || [];
+      if (!allUserIds.includes(userId)) allUserIds.push(userId);
+      const userStreaks = await fetchUserStreaks(allUserIds);
+
+      // Montar ranking com streaks reais
       const ranking: RankingUser[] = profiles?.map(profile => ({
         id: profile.id,
         name: profile.full_name || 'Usuário',
         avatar: profile.avatar_url || undefined,
         points: userPoints[profile.id] || 0,
         position: 0,
-        streak: Math.floor(Math.random() * 10) // TODO: calcular streak real
+        streak: userStreaks[profile.id] || 0
       })) || [];
 
       // Ordenar por pontos e atribuir posições
       ranking.sort((a, b) => b.points - a.points);
       ranking.forEach((user, index) => {
         user.position = index + 1;
-        // Simular posição anterior (para demonstração)
-        user.previousPosition = user.position + Math.floor(Math.random() * 3) - 1;
+        // Posição anterior baseada em variação de pontos (simplificado)
+        user.previousPosition = user.position;
       });
 
       // Se o usuário atual não está no ranking, adicionar
@@ -99,8 +196,8 @@ export const useSocialRanking = (userId?: string, period: 'week' | 'month' = 'we
             avatar: currentProfile.avatar_url || undefined,
             points: 0,
             position: ranking.length + 1,
-            previousPosition: ranking.length + 2,
-            streak: 0
+            previousPosition: ranking.length + 1,
+            streak: userStreaks[userId] || 0
           });
         }
       }
@@ -122,34 +219,41 @@ export const useSocialRanking = (userId?: string, period: 'week' | 'month' = 'we
 
 // Gerar ranking de demonstração quando não há dados reais
 function generateDemoRanking(currentUserId: string): RankingUser[] {
-  const demoNames = [
-    'Maria Silva', 'João Santos', 'Ana Costa', 'Pedro Lima',
-    'Carla Souza', 'Lucas Oliveira', 'Julia Ferreira', 'Bruno Alves'
+  // Dados de demonstração com valores fixos (não aleatórios)
+  const demoUsers = [
+    { name: 'Maria Silva', points: 4850, streak: 12 },
+    { name: 'João Santos', points: 4200, streak: 8 },
+    { name: 'Ana Costa', points: 3900, streak: 15 },
+    { name: 'Pedro Lima', points: 3500, streak: 5 },
+    { name: 'Carla Souza', points: 3100, streak: 7 },
+    { name: 'Lucas Oliveira', points: 2800, streak: 3 },
+    { name: 'Julia Ferreira', points: 2400, streak: 10 },
+    { name: 'Bruno Alves', points: 2000, streak: 2 },
   ];
 
-  const ranking: RankingUser[] = demoNames.map((name, index) => ({
+  const ranking: RankingUser[] = demoUsers.map((user, index) => ({
     id: `demo-${index}`,
-    name,
-    points: Math.floor(Math.random() * 5000) + 1000,
-    position: 0,
-    previousPosition: 0,
-    streak: Math.floor(Math.random() * 14)
+    name: user.name,
+    points: user.points,
+    position: index + 1,
+    previousPosition: index + 1,
+    streak: user.streak
   }));
 
-  // Adicionar usuário atual
+  // Adicionar usuário atual na posição 5 (meio do ranking)
   ranking.push({
     id: currentUserId,
     name: 'VOCÊ',
-    points: Math.floor(Math.random() * 3000) + 500,
-    position: 0,
-    streak: Math.floor(Math.random() * 7)
+    points: 3200,
+    position: 5,
+    previousPosition: 5,
+    streak: 4
   });
 
-  // Ordenar e atribuir posições
+  // Reordenar por pontos
   ranking.sort((a, b) => b.points - a.points);
   ranking.forEach((user, index) => {
     user.position = index + 1;
-    user.previousPosition = user.position + Math.floor(Math.random() * 3) - 1;
   });
 
   return ranking.slice(0, 10);

@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Preview - 5 Dashboards Personalizados | MaxNutrition</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --dr-primary: #3b82f6; --dr-bg: linear-gradient(180deg, #0c1929 0%, #1e3a5f 100%);
+      --sofia-primary: #22c55e; --sofia-bg: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+      --alex-primary: #10b981; --alex-bg: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+      --rafael-primary: #38bdf8; --rafael-bg: linear-gradient(180deg, #0c4a6e 0%, #164e63 100%);
+      --complete-primary: #a855f7; --complete-bg: linear-gradient(180deg, #2e1065 0%, #4c1d95 100%);
+    }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0a0a0a; min-height: 100vh; color: white; }
+    .character-selector { position: fixed; top: 0; left: 0; right: 0; z-index: 1000; background: rgba(0,0,0,0.95); backdrop-filter: blur(10px); padding: 10px 12px; display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    .char-btn { padding: 6px 12px; border-radius: 16px; border: 2px solid transparent; cursor: pointer; font-size: 11px; font-weight: 600; transition: all 0.3s; background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.7); }
+    .char-btn:hover { background: rgba(255,255,255,0.15); }
+    .char-btn.active { color: white; }
+    .char-btn.dr-vital.active { background: var(--dr-primary); border-color: var(--dr-primary); }
+    .char-btn.sofia.active { background: var(--sofia-primary); border-color: var(--sofia-primary); }
+    .char-btn.alex.active { background: var(--alex-primary); border-color: var(--alex-primary); }
+    .char-btn.rafael.active { background: var(--rafael-primary); border-color: var(--rafael-primary); }
+    .char-btn.complete.active { background: var(--complete-primary); border-color: var(--complete-primary); }
+    .phone-frame { max-width: 390px; margin: 65px auto 20px; background: #1a1a1a; border-radius: 40px; padding: 12px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); }
+    .phone-screen { border-radius: 32px; overflow: hidden; position: relative; height: 780px; }
+    .dashboard { display: none; height: 100%; flex-direction: column; }
+    .dashboard.active { display: flex; }
+    .app-header { padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; }
+    .header-title { font-size: 1rem; font-weight: 600; }
+    .header-icons { display: flex; gap: 12px; align-items: center; }
+    .header-icon { font-size: 18px; opacity: 0.8; }
+    .header-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #f97316, #ea580c); }
+    .content { flex: 1; overflow-y: auto; padding: 0 16px 90px; }
+    .bottom-nav { position: absolute; bottom: 0; left: 0; right: 0; height: 75px; display: flex; justify-content: space-around; align-items: center; background: rgba(15,23,42,0.98); border-top: 1px solid rgba(255,255,255,0.1); }
+    .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; opacity: 0.5; transition: all 0.2s; padding: 8px 16px; }
+    .nav-item.active { opacity: 1; }
+    .nav-item span { font-size: 22px; }
+    .nav-item small { font-size: 10px; font-weight: 500; }
+  </style>
+</head>
+<body>
+  <div class="character-selector">
+    <button class="char-btn dr-vital" onclick="switchDashboard('dr-vital')">🩺 Dr. Vital</button>
+    <button class="char-btn sofia active" onclick="switchDashboard('sofia')">🍽️ Sofia</button>
+    <button class="char-btn alex" onclick="switchDashboard('alex')">💪 Alex</button>
+    <button class="char-btn rafael" onclick="switchDashboard('rafael')">🧘 Rafael</button>
+    <button class="char-btn complete" onclick="switchDashboard('complete')">🌟 Completo</button>
+  </div>
+  <div class="phone-frame"><div class="phone-screen" id="screen"></div></div>
+  <div style="max-width: 390px; margin: 20px auto; padding: 16px; background: rgba(255,255,255,0.05); border-radius: 16px; text-align: center;">
+    <p style="font-size: 0.85rem; color: rgba(255,255,255,0.7);">👆 Clique nos botões para ver cada experiência</p>
+  </div>
+</body>
+</html>
+<style>
+  /* SOFIA - Nutricional */
+  .sofia-dashboard { background: var(--sofia-bg); }
+  .sofia-dashboard .nav-item.active { color: #22c55e; }
+  .tabs-container { display: flex; gap: 8px; margin-bottom: 16px; }
+  .tab { padding: 10px 20px; border-radius: 20px; border: none; font-size: 0.85rem; font-weight: 500; cursor: pointer; background: transparent; color: rgba(255,255,255,0.6); }
+  .tab.active { background: white; color: #0f172a; }
+  .sofia-tip { background: rgba(34,197,94,0.1); border-radius: 12px; padding: 12px 16px; display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+  .sofia-tip-avatar { width: 36px; height: 36px; background: linear-gradient(135deg, #22c55e, #16a34a); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+  .sofia-tip-text { flex: 1; font-size: 0.85rem; }
+  .sofia-tip-text strong { color: #4ade80; }
+  .calorie-ring-container { display: flex; justify-content: center; align-items: center; gap: 30px; margin-bottom: 24px; }
+  .calorie-ring { width: 140px; height: 140px; border-radius: 50%; background: conic-gradient(#22c55e 0deg 0deg, rgba(255,255,255,0.1) 0deg 360deg); display: flex; align-items: center; justify-content: center; position: relative; }
+  .calorie-ring::before { content: ''; position: absolute; width: 110px; height: 110px; background: #1e293b; border-radius: 50%; }
+  .calorie-inner { position: relative; z-index: 1; text-align: center; }
+  .calorie-value { font-size: 2.5rem; font-weight: 700; }
+  .calorie-label { font-size: 0.75rem; color: rgba(255,255,255,0.6); }
+  .calorie-remaining { background: #22c55e; color: white; padding: 4px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; margin-top: 8px; }
+  .calorie-stats { display: flex; flex-direction: column; gap: 8px; }
+  .calorie-stat { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; }
+  .calorie-stat-icon { width: 8px; height: 8px; border-radius: 50%; }
+  .macros-row { display: flex; gap: 8px; margin-bottom: 20px; }
+  .macro-card { flex: 1; background: rgba(255,255,255,0.05); border-radius: 12px; padding: 12px; text-align: center; }
+  .macro-card .label { font-size: 0.7rem; color: rgba(255,255,255,0.5); margin-bottom: 4px; }
+  .macro-card .value { font-size: 0.9rem; font-weight: 600; }
+  .macro-card .detail { font-size: 0.75rem; color: rgba(255,255,255,0.4); margin-top: 4px; }
+  .meals-section { margin-bottom: 20px; }
+  .meals-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .meals-header h4 { font-size: 0.9rem; display: flex; align-items: center; gap: 8px; }
+  .meals-header span { font-size: 0.75rem; color: rgba(255,255,255,0.5); }
+  .meals-grid { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 8px; }
+  .meal-item { min-width: 70px; text-align: center; }
+  .meal-icon { width: 56px; height: 56px; background: rgba(255,255,255,0.05); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 24px; margin: 0 auto 8px; border: 2px solid transparent; }
+  .meal-icon.active { border-color: #22c55e; background: rgba(34,197,94,0.1); }
+  .meal-name { font-size: 0.75rem; font-weight: 500; }
+  .meal-time { font-size: 0.65rem; color: rgba(255,255,255,0.4); }
+  .week-progress { background: rgba(255,255,255,0.05); border-radius: 12px; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; }
+  .week-progress h4 { font-size: 0.85rem; display: flex; align-items: center; gap: 8px; }
+  .week-progress span { font-size: 0.8rem; color: rgba(255,255,255,0.6); }
+</style>
+<style>
+  /* ALEX - Performance/Exercícios */
+  .alex-dashboard { background: var(--alex-bg); }
+  .alex-dashboard .nav-item.active { color: #10b981; }
+  .alex-tabs { display: flex; gap: 4px; margin-bottom: 16px; background: rgba(255,255,255,0.05); border-radius: 12px; padding: 4px; }
+  .alex-tab { flex: 1; padding: 10px; border-radius: 10px; border: none; font-size: 0.8rem; cursor: pointer; background: transparent; color: rgba(255,255,255,0.6); }
+  .alex-tab.active { background: #3b82f6; color: white; }
+  .performance-card { background: rgba(255,255,255,0.05); border-radius: 16px; padding: 16px; margin-bottom: 16px; }
+  .performance-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+  .performance-header h4 { font-size: 0.95rem; display: flex; align-items: center; gap: 8px; }
+  .performance-header a { font-size: 0.8rem; color: rgba(255,255,255,0.5); }
+  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 20px; }
+  .stat-box { background: rgba(255,255,255,0.05); border-radius: 12px; padding: 12px 8px; text-align: center; }
+  .stat-box .icon { font-size: 1.2rem; margin-bottom: 6px; }
+  .stat-box .value { font-size: 1.1rem; font-weight: 700; }
+  .stat-box .label { font-size: 0.65rem; color: rgba(255,255,255,0.5); }
+  .stat-box .change { font-size: 0.65rem; color: #10b981; }
+  .rings-row { display: flex; justify-content: space-around; margin-bottom: 16px; }
+  .ring-item { text-align: center; }
+  .ring { width: 70px; height: 70px; border-radius: 50%; display: flex; align-items: center; justify-content: center; position: relative; margin-bottom: 8px; }
+  .ring::before { content: ''; position: absolute; width: 54px; height: 54px; background: #1e293b; border-radius: 50%; }
+  .ring .value { position: relative; z-index: 1; font-size: 1.1rem; font-weight: 700; }
+  .ring.green { background: conic-gradient(#22c55e 0deg 259deg, rgba(255,255,255,0.1) 259deg 360deg); }
+  .ring.blue { background: conic-gradient(#3b82f6 0deg 245deg, rgba(255,255,255,0.1) 245deg 360deg); }
+  .ring.orange { background: conic-gradient(#f97316 0deg 306deg, rgba(255,255,255,0.1) 306deg 360deg); }
+  .ring-label { font-size: 0.7rem; color: rgba(255,255,255,0.6); }
+  .records-section h4 { font-size: 0.9rem; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .record-item { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.03); border-radius: 10px; padding: 12px; margin-bottom: 8px; }
+  .record-item .name { font-size: 0.85rem; }
+  .record-item .weight { background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 8px; font-size: 0.8rem; font-weight: 600; }
+  .record-item .date { font-size: 0.75rem; color: rgba(255,255,255,0.4); }
+  .insights-section h4 { font-size: 0.9rem; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .insight-card { background: rgba(16,185,129,0.1); border-left: 3px solid #10b981; border-radius: 8px; padding: 12px; margin-bottom: 10px; }
+  .insight-card h5 { font-size: 0.85rem; color: #10b981; margin-bottom: 4px; }
+  .insight-card p { font-size: 0.75rem; color: rgba(255,255,255,0.7); }
+  .insight-card.warning { background: rgba(251,191,36,0.1); border-color: #fbbf24; }
+  .insight-card.warning h5 { color: #fbbf24; }
+  .fab { position: absolute; bottom: 90px; right: 20px; width: 50px; height: 50px; background: linear-gradient(135deg, #a855f7, #ec4899); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; box-shadow: 0 4px 15px rgba(168,85,247,0.4); }
+</style>
+<style>
+  /* DR. VITAL */
+  .dr-vital-dashboard { background: var(--dr-bg); }
+  .dr-vital-dashboard .nav-item.active { color: #60a5fa; }
+  .health-score-card { background: linear-gradient(135deg, rgba(59,130,246,0.2), rgba(59,130,246,0.05)); border: 1px solid rgba(59,130,246,0.3); border-radius: 20px; padding: 20px; margin-bottom: 16px; }
+  .score-circle { width: 100px; height: 100px; border-radius: 50%; background: conic-gradient(#3b82f6 0deg 280deg, rgba(255,255,255,0.1) 280deg 360deg); display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; position: relative; }
+  .score-circle::before { content: ''; position: absolute; width: 80px; height: 80px; background: #0c1929; border-radius: 50%; }
+  .score-number { position: relative; z-index: 1; font-size: 1.8rem; font-weight: 700; color: #60a5fa; }
+  .ecg-card { background: rgba(255,255,255,0.05); border-radius: 16px; padding: 16px; margin-bottom: 16px; }
+  .ecg-line { height: 50px; background: linear-gradient(90deg, transparent, rgba(59,130,246,0.1), transparent); border-radius: 8px; position: relative; overflow: hidden; }
+  .ecg-wave { position: absolute; width: 200%; height: 100%; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 50'%3E%3Cpath d='M0,25 L30,25 L35,25 L40,8 L45,42 L50,25 L55,25 L60,25 L65,25 L70,20 L75,30 L80,25 L200,25' stroke='%233b82f6' fill='none' stroke-width='2'/%3E%3C/svg%3E") repeat-x; animation: ecgMove 2s linear infinite; }
+  @keyframes ecgMove { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+  .prontuario-card { background: linear-gradient(180deg, #fefefe 0%, #f5f5f0 100%); border-radius: 16px; padding: 16px; color: #1a1a2e; position: relative; margin-bottom: 16px; }
+  .prontuario-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #3b82f6, #60a5fa); border-radius: 16px 16px 0 0; }
+  .metrics-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .metric-card { background: rgba(255,255,255,0.05); border-radius: 12px; padding: 14px; }
+  .metric-card .icon { font-size: 1.5rem; margin-bottom: 8px; }
+  .metric-card .value { font-size: 1.3rem; font-weight: 700; color: #60a5fa; }
+  .metric-card .label { font-size: 0.7rem; color: rgba(255,255,255,0.6); }
+  /* RAFAEL - Azul Claro */
+  .rafael-dashboard { background: var(--rafael-bg); }
+  .rafael-dashboard .nav-item.active { color: #38bdf8; }
+  .mission-card { background: linear-gradient(135deg, rgba(56,189,248,0.2), rgba(56,189,248,0.05)); border: 1px solid rgba(56,189,248,0.3); border-radius: 16px; padding: 16px; margin-bottom: 12px; }
+  .mission-progress { height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; overflow: hidden; margin-top: 12px; }
+  .mission-progress .fill { height: 100%; background: #38bdf8; border-radius: 4px; }
+  .session-card { background: rgba(255,255,255,0.05); border-radius: 16px; padding: 16px; margin-bottom: 12px; border-left: 4px solid #38bdf8; }
+  .session-card h4 { font-size: 0.9rem; margin-bottom: 8px; }
+  .session-card p { font-size: 0.75rem; color: rgba(255,255,255,0.6); }
+  .session-tags { display: flex; gap: 8px; margin-top: 12px; }
+  .session-tag { background: rgba(56,189,248,0.2); padding: 4px 10px; border-radius: 8px; font-size: 0.7rem; color: #7dd3fc; }
+  .reflection-card { background: linear-gradient(135deg, rgba(14,165,233,0.15), rgba(14,165,233,0.05)); border-radius: 16px; padding: 16px; }
+  .reflection-card textarea { width: 100%; background: rgba(0,0,0,0.2); border: 1px solid rgba(56,189,248,0.3); border-radius: 8px; padding: 12px; color: white; font-size: 0.85rem; resize: none; }
+  .reflection-btn { width: 100%; margin-top: 12px; padding: 12px; border-radius: 12px; border: none; background: linear-gradient(135deg, #0ea5e9, #0284c7); color: white; font-weight: 600; cursor: pointer; }
+</style>
+<style>
+  /* COMPLETE */
+  .complete-dashboard { background: var(--complete-bg); }
+  .complete-dashboard .nav-item.active { color: #c084fc; }
+  .hub-header { text-align: center; margin-bottom: 16px; }
+  .hub-header h3 { font-size: 1.1rem; background: linear-gradient(90deg, #a855f7, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .mini-cards { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+  .mini-card { background: rgba(255,255,255,0.05); border-radius: 12px; padding: 14px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: all 0.3s; }
+  .mini-card:hover { background: rgba(255,255,255,0.1); transform: translateX(4px); }
+  .mini-card.dr-mini { border-left: 3px solid #3b82f6; }
+  .mini-card.sofia-mini { border-left: 3px solid #22c55e; }
+  .mini-card.alex-mini { border-left: 3px solid #10b981; }
+  .mini-card.rafael-mini { border-left: 3px solid #38bdf8; }
+  .mini-avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+  .mini-avatar.dr { background: rgba(59, 130, 246, 0.2); }
+  .mini-avatar.sofia { background: rgba(34, 197, 94, 0.2); }
+  .mini-avatar.alex { background: rgba(16, 185, 129, 0.2); }
+  .mini-avatar.rafael { background: rgba(56, 189, 248, 0.2); }
+  .mini-content { flex: 1; }
+  .mini-content .name { font-size: 0.7rem; color: rgba(255,255,255,0.5); }
+  .mini-content .message { font-size: 0.85rem; }
+  .quick-actions { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 16px; }
+  .quick-action { background: rgba(255,255,255,0.05); border-radius: 12px; padding: 14px; text-align: center; cursor: pointer; }
+  .quick-action .icon { font-size: 1.5rem; margin-bottom: 6px; }
+  .quick-action .label { font-size: 0.75rem; }
+  .overall-stats { background: linear-gradient(135deg, rgba(168,85,247,0.2), rgba(168,85,247,0.05)); border: 1px solid rgba(168,85,247,0.3); border-radius: 16px; padding: 16px; }
+  .stats-row { display: flex; justify-content: space-around; margin-top: 12px; }
+  .stat-item { text-align: center; }
+  .stat-item .value { font-size: 1.2rem; font-weight: 700; color: #c084fc; }
+  .stat-item .label { font-size: 0.6rem; color: rgba(255,255,255,0.6); }
+</style>
+<script>
+const dashboards = {
+  'sofia': `
+    <div class="dashboard sofia-dashboard active">
+      <div class="app-header">
+        <div class="header-icon">☀️</div>
+        <div class="header-title" style="color: #22c55e;">Sofia Nutricional</div>
+        <div class="header-icons">
+          <span class="header-icon">💬</span>
+          <span class="header-icon">🔔</span>
+          <div class="header-avatar"></div>
+        </div>
+      </div>
+      <div class="content">
+        <div class="tabs-container">
+          <button class="tab active">🗓️ Dia</button>
+          <button class="tab">📊 Stats</button>
+          <button class="tab">📋 Menu</button>
+        </div>
+        <div class="sofia-tip">
+          <div class="sofia-tip-avatar">😊</div>
+          <div class="sofia-tip-text"><strong>Hora do almoço! Registra pra mim?</strong> 📸<br><span style="font-size: 0.75rem; opacity: 0.7;">Envie fotos pelo WhatsApp • Sofia analisa automaticamente</span></div>
+        </div>
+        <div class="calorie-ring-container">
+          <div>
+            <div class="calorie-ring">
+              <div class="calorie-inner">
+                <div class="calorie-value">0</div>
+                <div class="calorie-label">de 2450 kcal</div>
+                <div class="calorie-remaining">2450 restam</div>
+              </div>
+            </div>
+          </div>
+          <div class="calorie-stats">
+            <div class="calorie-stat"><div class="calorie-stat-icon" style="background: #22c55e;"></div> Mantendo</div>
+            <div class="calorie-stat"><div class="calorie-stat-icon" style="background: #f97316;"></div> 🔥 1 dias</div>
+            <div class="calorie-stat"><div class="calorie-stat-icon" style="background: #3b82f6;"></div> ✓ 0/4 refeições</div>
+          </div>
+        </div>
+        <div class="macros-row">
+          <div class="macro-card"><div class="label">PROTEÍNA</div><div class="value">0%</div><div class="detail">0/126g</div></div>
+          <div class="macro-card"><div class="label">CARBOS</div><div class="value">0%</div><div class="detail">0/365g</div></div>
+          <div class="macro-card"><div class="label">GORDURAS</div><div class="value">0%</div><div class="detail">0/55g</div></div>
+        </div>
+        <div class="meals-section">
+          <div class="meals-header"><h4>🍽️ Refeições de Hoje</h4><span>Toque para ver detalhes</span></div>
+          <div class="meals-grid">
+            <div class="meal-item"><div class="meal-icon">☕</div><div class="meal-name">Café</div><div class="meal-time">6h-10h</div></div>
+            <div class="meal-item"><div class="meal-icon active">🍴</div><div class="meal-name">Almoço</div><div class="meal-time">11h-14h</div></div>
+            <div class="meal-item"><div class="meal-icon">🍎</div><div class="meal-name">Lanche</div><div class="meal-time">15h-17h</div></div>
+            <div class="meal-item"><div class="meal-icon">🌙</div><div class="meal-name">Jantar</div><div class="meal-time">18h-21h</div></div>
+          </div>
+        </div>
+        <div class="week-progress"><h4>📅 Esta Semana</h4><span>1/7 completos</span></div>
+      </div>
+      <div class="bottom-nav">
+        <div class="nav-item"><span>🏠</span><small>Painel</small></div>
+        <div class="nav-item"><span>🎯</span><small>Missões</small></div>
+        <div class="nav-item active"><span>🍴</span><small>Sofia</small></div>
+        <div class="nav-item"><span>👥</span><small>Social</small></div>
+        <div class="nav-item"><span>•••</span><small>Mais</small></div>
+      </div>
+    </div>`,
+  'alex': `
+    <div class="dashboard alex-dashboard active">
+      <div class="app-header">
+        <div class="header-icon">☀️</div>
+        <div class="header-title" style="color: #10b981;">Exercícios Recomendados</div>
+        <div class="header-icons">
+          <span class="header-icon">🔔</span>
+          <div class="header-avatar"></div>
+        </div>
+      </div>
+      <div class="content">
+        <div class="alex-tabs">
+          <button class="alex-tab">🔄</button>
+          <button class="alex-tab active">📊</button>
+          <button class="alex-tab">👥</button>
+          <button class="alex-tab">🔔</button>
+          <button class="alex-tab">📈</button>
+        </div>
+        <div class="performance-card">
+          <div class="performance-header"><h4>🏆 Performance</h4><a>Ver tudo ></a></div>
+          <div class="stats-grid">
+            <div class="stat-box"><div class="icon">💪</div><div class="value">12</div><div class="label">Treinos</div><div class="change">↗ +15%</div></div>
+            <div class="stat-box"><div class="icon">⏱️</div><div class="value">480</div><div class="label">Minutos</div><div class="change">↗ +10%</div></div>
+            <div class="stat-box"><div class="icon">🔥</div><div class="value">5</div><div class="label">Streak</div></div>
+            <div class="stat-box"><div class="icon">🎯</div><div class="value">75%</div><div class="label">Meta</div></div>
+          </div>
+          <div class="rings-row">
+            <div class="ring-item"><div class="ring green"><span class="value">72</span></div><div class="ring-label">Força</div></div>
+            <div class="ring-item"><div class="ring blue"><span class="value">68</span></div><div class="ring-label">Resistência</div></div>
+            <div class="ring-item"><div class="ring orange"><span class="value">85</span></div><div class="ring-label">Consistência</div></div>
+          </div>
+        </div>
+        <div class="records-section">
+          <h4>⚡ Recordes Recentes</h4>
+          <div class="record-item"><span class="name">Supino</span><span class="weight">80kg</span><span class="date">Hoje</span></div>
+          <div class="record-item"><span class="name">Agachamento</span><span class="weight">100kg</span><span class="date">Ontem</span></div>
+        </div>
+        <div class="insights-section">
+          <h4>✨ Insights da IA</h4>
+          <div class="insight-card"><h5>Ótima consistência!</h5><p>Você treinou 5 dias seguidos. Continue assim!</p></div>
+          <div class="insight-card warning"><h5>Dica de recuperação</h5><p>Considere um dia de descanso ativo amanhã.</p></div>
+        </div>
+      </div>
+      <div class="fab">💬</div>
+      <div class="bottom-nav">
+        <div class="nav-item active"><span>💪</span><small>Exercí...</small></div>
+        <div class="nav-item"><span>🏠</span><small>Painel</small></div>
+        <div class="nav-item"><span>🎯</span><small>Missões</small></div>
+        <div class="nav-item"><span>📈</span><small>Progr...</small></div>
+        <div class="nav-item"><span>•••</span><small>Mais</small></div>
+      </div>
+    </div>`,
+  'dr-vital': `
+    <div class="dashboard dr-vital-dashboard active">
+      <div class="app-header">
+        <div class="header-icon">☀️</div>
+        <div class="header-title" style="color: #60a5fa;">Dr. Vital</div>
+        <div class="header-icons">
+          <span class="header-icon">🔔</span>
+          <div class="header-avatar" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8);"></div>
+        </div>
+      </div>
+      <div class="content">
+        <div class="health-score-card">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 16px;">
+            <h3 style="font-size: 0.9rem; color: rgba(255,255,255,0.7);">📊 Seu Score de Saúde</h3>
+            <span style="font-size: 0.7rem; color: #60a5fa;">Atualizado hoje</span>
+          </div>
+          <div style="text-align: center;"><div class="score-circle"><span class="score-number">78</span></div><p style="font-size: 0.75rem; color: rgba(255,255,255,0.6);">Bom - Continue assim!</p></div>
+        </div>
+        <div class="ecg-card">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 12px;"><h4 style="font-size: 0.85rem;">❤️ Monitoramento Cardíaco</h4><span style="font-size: 0.7rem; color: #60a5fa;">72 bpm</span></div>
+          <div class="ecg-line"><div class="ecg-wave"></div></div>
+        </div>
+        <div class="prontuario-card">
+          <div style="font-weight: 700; color: #1e3a5f; font-size: 0.85rem; padding-bottom: 10px; border-bottom: 1px dashed #ccc; margin-bottom: 10px;">📋 PRONTUÁRIO DO DIA</div>
+          <div style="margin-bottom: 10px;"><label style="font-size: 0.65rem; color: #666;">📊 Observação</label><p style="font-size: 0.85rem; color: #333;">Pressão arterial estável. Manter hidratação.</p></div>
+          <div style="margin-bottom: 10px;"><label style="font-size: 0.65rem; color: #666;">💊 Recomendação</label><p style="font-size: 0.85rem; color: #333;">Reduzir sódio pode melhorar indicadores em 15%.</p></div>
+          <div style="font-size: 0.65rem; color: #3b82f6;">📚 American Heart Association</div>
+        </div>
+        <div class="metrics-grid">
+          <div class="metric-card"><div class="icon">🩸</div><div class="value">120/80</div><div class="label">Pressão</div></div>
+          <div class="metric-card"><div class="icon">💧</div><div class="value">98mg</div><div class="label">Glicose</div></div>
+          <div class="metric-card"><div class="icon">⚖️</div><div class="value">72kg</div><div class="label">Peso</div></div>
+          <div class="metric-card"><div class="icon">📏</div><div class="value">23.4</div><div class="label">IMC</div></div>
+        </div>
+      </div>
+      <div class="bottom-nav">
+        <div class="nav-item"><span>🏠</span><small>Painel</small></div>
+        <div class="nav-item"><span>🎯</span><small>Metas</small></div>
+        <div class="nav-item active"><span>🩺</span><small>Dr.Vital</small></div>
+        <div class="nav-item"><span>👥</span><small>Social</small></div>
+        <div class="nav-item"><span>•••</span><small>Mais</small></div>
+      </div>
+    </div>`,
+  'rafael': `
+    <div class="dashboard rafael-dashboard active">
+      <div class="app-header">
+        <div class="header-icon">☀️</div>
+        <div class="header-title" style="color: #38bdf8;">Rafael - Seu Treinador</div>
+        <div class="header-icons">
+          <span class="header-icon">🔔</span>
+          <div class="header-avatar" style="background: linear-gradient(135deg, #0ea5e9, #0284c7);"></div>
+        </div>
+      </div>
+      <div class="content">
+        <div class="mission-card">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h4 style="font-size: 0.9rem;">🎯 Missão do Dia</h4>
+            <span style="font-size: 0.75rem; color: #7dd3fc;">2/3 completas</span>
+          </div>
+          <p style="font-size: 0.85rem; margin: 12px 0;">Complete 3 reflexões diárias para desbloquear insights</p>
+          <div class="mission-progress"><div class="fill" style="width: 66%;"></div></div>
+          <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 0.7rem; opacity: 0.6;"><span>+30 XP ao completar</span><span>🔥 Streak: 5 dias</span></div>
+        </div>
+        <div class="session-card">
+          <h4>📖 Sessão Recomendada</h4>
+          <p>Roda da Vida - Avalie suas áreas de desenvolvimento</p>
+          <div class="session-tags"><span class="session-tag">⏱️ 15 min</span><span class="session-tag">🧠 Autoconhecimento</span></div>
+        </div>
+        <div class="session-card">
+          <h4>🧠 Teste de Sabotadores</h4>
+          <p>Descubra seus padrões mentais limitantes</p>
+          <div class="session-tags"><span class="session-tag">⏱️ 20 min</span><span class="session-tag">💡 Inteligência Emocional</span></div>
+        </div>
+        <div class="session-card">
+          <h4>🌟 Anamnese Completa</h4>
+          <p>Conte sua história para personalizar sua jornada</p>
+          <div class="session-tags"><span class="session-tag">⏱️ 30 min</span><span class="session-tag">📋 Perfil Completo</span></div>
+        </div>
+        <div class="reflection-card">
+          <h4 style="font-size: 0.9rem; margin-bottom: 12px;">✨ Reflexão do Dia</h4>
+          <textarea rows="3" placeholder="O que você aprendeu hoje sobre si mesmo?"></textarea>
+          <button class="reflection-btn">💾 Salvar Reflexão</button>
+        </div>
+      </div>
+      <div class="bottom-nav">
+        <div class="nav-item"><span>🏠</span><small>Painel</small></div>
+        <div class="nav-item active"><span>🎯</span><small>Missões</small></div>
+        <div class="nav-item"><span>📖</span><small>Sessões</small></div>
+        <div class="nav-item"><span>👥</span><small>Social</small></div>
+        <div class="nav-item"><span>•••</span><small>Mais</small></div>
+      </div>
+    </div>`,
+  'complete': `
+    <div class="dashboard complete-dashboard active">
+      <div class="app-header">
+        <div class="header-icon">☀️</div>
+        <div class="header-title" style="color: #c084fc;">MaxNutrition</div>
+        <div class="header-icons">
+          <span class="header-icon">🔔</span>
+          <div class="header-avatar" style="background: linear-gradient(135deg, #a855f7, #7c3aed);"></div>
+        </div>
+      </div>
+      <div class="content">
+        <div class="hub-header"><h3>✨ Seu Hub Personalizado</h3><p style="font-size: 0.75rem; opacity: 0.6;">Todas as funcionalidades em um só lugar</p></div>
+        <div class="mini-cards">
+          <div class="mini-card dr-mini" onclick="switchDashboard('dr-vital')">
+            <div class="mini-avatar dr">👨‍⚕️</div>
+            <div class="mini-content"><div class="name">Dr. Vital diz:</div><div class="message">"Seus exames estão ótimos! 📊"</div></div>
+            <div style="opacity: 0.3;">→</div>
+          </div>
+          <div class="mini-card sofia-mini" onclick="switchDashboard('sofia')">
+            <div class="mini-avatar sofia">👩‍🍳</div>
+            <div class="mini-content"><div class="name">Sofia sugere:</div><div class="message">"Hora do almoço! Registra pra mim? 📸"</div></div>
+            <div style="opacity: 0.3;">→</div>
+          </div>
+          <div class="mini-card alex-mini" onclick="switchDashboard('alex')">
+            <div class="mini-avatar alex">🏋️</div>
+            <div class="mini-content"><div class="name">Alex mostra:</div><div class="message">"Você bateu recorde no supino! 💪"</div></div>
+            <div style="opacity: 0.3;">→</div>
+          </div>
+          <div class="mini-card rafael-mini" onclick="switchDashboard('rafael')">
+            <div class="mini-avatar rafael">🧘</div>
+            <div class="mini-content"><div class="name">Rafael convida:</div><div class="message">"Hora da reflexão diária! 🌟"</div></div>
+            <div style="opacity: 0.3;">→</div>
+          </div>
+        </div>
+        <div class="quick-actions">
+          <div class="quick-action"><div class="icon">📸</div><div class="label">Analisar Foto</div></div>
+          <div class="quick-action"><div class="icon">🩺</div><div class="label">Ver Exames</div></div>
+          <div class="quick-action"><div class="icon">💪</div><div class="label">Treinar</div></div>
+          <div class="quick-action"><div class="icon">🎯</div><div class="label">Missões</div></div>
+        </div>
+        <div class="overall-stats">
+          <h4 style="font-size: 0.85rem;">📊 Resumo Geral</h4>
+          <div class="stats-row">
+            <div class="stat-item"><div class="value">78</div><div class="label">Saúde</div></div>
+            <div class="stat-item"><div class="value">1,850</div><div class="label">Calorias</div></div>
+            <div class="stat-item"><div class="value">480m</div><div class="label">Treino</div></div>
+            <div class="stat-item"><div class="value">5🔥</div><div class="label">Streak</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="bottom-nav">
+        <div class="nav-item active"><span>🏠</span><small>Painel</small></div>
+        <div class="nav-item"><span>🎯</span><small>Missões</small></div>
+        <div class="nav-item"><span>📊</span><small>Progresso</small></div>
+        <div class="nav-item"><span>👥</span><small>Social</small></div>
+        <div class="nav-item"><span>•••</span><small>Mais</small></div>
+      </div>
+    </div>`
+};
+
+// Initialize with Sofia
+document.getElementById('screen').innerHTML = dashboards['sofia'];
+
+function switchDashboard(dashId) {
+  document.querySelectorAll('.char-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('.char-btn.' + dashId).classList.add('active');
+  document.getElementById('screen').innerHTML = dashboards[dashId];
+}
+</script>

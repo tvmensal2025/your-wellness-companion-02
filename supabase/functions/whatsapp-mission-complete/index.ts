@@ -44,7 +44,7 @@ serve(async (req) => {
       );
     }
 
-    const userName = profile.full_name?.split(' ')[0] || 'Guerreiro';
+    const userName = profile.full_name?.split(' ')[0] || 'Campeão(ã)';
     
     console.log(`🎉 Enviando celebração de missão completa para ${userName}`);
 

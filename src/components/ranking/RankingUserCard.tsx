@@ -21,13 +21,13 @@ interface RankingUserCardProps {
   onProfileClick?: (userId: string) => void;
 }
 
-// Função para calcular nome do nível baseado em pontos
-const getLevelInfo = (points: number): { name: string; icon: typeof Zap; color: string } => {
+// Função para calcular nome do nível baseado em pontos (com suporte a gênero)
+const getLevelInfo = (points: number, isFeminine?: boolean): { name: string; icon: typeof Zap; color: string } => {
   if (points >= 5000) return { name: 'Lenda', icon: Award, color: 'text-yellow-500' };
-  if (points >= 2500) return { name: 'Mestre', icon: Trophy, color: 'text-purple-500' };
+  if (points >= 2500) return { name: isFeminine ? 'Mestra' : 'Mestre', icon: Trophy, color: 'text-purple-500' };
   if (points >= 1000) return { name: 'Expert', icon: Star, color: 'text-blue-500' };
-  if (points >= 500) return { name: 'Avançado', icon: Zap, color: 'text-green-500' };
-  if (points >= 200) return { name: 'Intermediário', icon: Target, color: 'text-orange-500' };
+  if (points >= 500) return { name: isFeminine ? 'Avançada' : 'Avançado', icon: Zap, color: 'text-green-500' };
+  if (points >= 200) return { name: isFeminine ? 'Intermediária' : 'Intermediário', icon: Target, color: 'text-orange-500' };
   return { name: 'Iniciante', icon: CheckCircle2, color: 'text-muted-foreground' };
 };
 

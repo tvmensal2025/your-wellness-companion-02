@@ -234,7 +234,7 @@ export default function HealthFeedPage() {
       .map(user => ({
         id: user.user_id,
         name: user.user_name,
-        mutualFriends: Math.floor(Math.random() * 10),
+        mutualFriends: 0, // Será implementado com sistema de conexões
         level: user.total_points > 500 ? 'Expert' : user.total_points > 200 ? 'Avançado' : 'Intermediário'
       }));
   }, [ranking, user?.id, isFollowing]);
@@ -248,7 +248,7 @@ export default function HealthFeedPage() {
       points: user.total_points,
       position: user.position,
       streak: user.streak_days,
-      isOnline: Math.random() > 0.5
+      isOnline: false // Status online requer sistema de presença
     }));
   }, [ranking]);
 
@@ -257,32 +257,52 @@ export default function HealthFeedPage() {
     { id: '2', title: 'Corrida Virtual 5K', date: '15 Jan', participants: 89 },
   ];
 
-  // Mock data para novas seções
+  // Conquistas recentes baseadas em dados reais do ranking
   const recentAchievements = useMemo(() => {
-    return ranking.slice(0, 4).map((user, index) => ({
-      id: `achievement-${user.user_id}`,
-      userId: user.user_id,
-      userName: user.user_name,
-      userAvatar: user.avatar_url,
-      type: (['weight_loss', 'streak', 'challenge', 'workout', 'nutrition'] as const)[index % 5],
-      title: [
-        'Perdeu 2kg esta semana!',
-        `${user.streak_days} dias de sequência!`,
-        'Completou desafio de água',
-        'Treinou 5x esta semana',
-        'Bateu meta de proteína'
-      ][index % 5],
-      value: ['-2kg', `🔥${user.streak_days}`, '✅ 100%', '5 treinos', '150g'][index % 5],
-      timeAgo: ['2h', '5h', 'Ontem', '2 dias'][index % 4]
-    }));
+    return ranking.slice(0, 4).map((user) => {
+      // Determinar tipo de conquista baseado nos dados reais
+      let type: 'weight_loss' | 'streak' | 'challenge' | 'workout' | 'nutrition' = 'streak';
+      let title = '';
+      let value = '';
+      
+      if (user.streak_days >= 7) {
+        type = 'streak';
+        title = `${user.streak_days} dias de sequência!`;
+        value = `🔥${user.streak_days}`;
+      } else if (user.missions_completed >= 5) {
+        type = 'challenge';
+        title = `Completou ${user.missions_completed} missões!`;
+        value = `✅ ${user.missions_completed}`;
+      } else if (user.total_points >= 100) {
+        type = 'workout';
+        title = `Alcançou ${user.total_points} pontos!`;
+        value = `⭐ ${user.total_points}`;
+      } else {
+        type = 'nutrition';
+        title = 'Ativo na comunidade!';
+        value = '💪';
+      }
+      
+      return {
+        id: `achievement-${user.user_id}`,
+        userId: user.user_id,
+        userName: user.user_name,
+        userAvatar: user.avatar_url,
+        type,
+        title,
+        value,
+        timeAgo: 'Recente'
+      };
+    });
   }, [ranking]);
 
   const newMembers = useMemo(() => {
+    // Ordenar por data de criação se disponível, senão pegar os últimos do ranking
     return ranking.slice(-3).map(user => ({
       id: user.user_id,
       name: user.user_name,
       avatar: user.avatar_url,
-      joinedAgo: 'Hoje'
+      joinedAgo: 'Recente'
     }));
   }, [ranking]);
 

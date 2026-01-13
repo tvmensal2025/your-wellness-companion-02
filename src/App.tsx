@@ -12,6 +12,8 @@ import { createQueryClient } from "@/lib/queryConfig";
 import { InstallPrompt } from "@/components/pwa/InstallPrompt";
 import { ActiveSectionProvider } from "@/contexts/ActiveSectionContext";
 import { PageLoader as AnimatedPageLoader } from "@/components/ui/animated-loader";
+import { MenuStyleProvider } from "@/contexts/MenuStyleContext";
+import { CharacterGate } from "@/components/character-selector";
 
 import { SplashScreen, useSplashScreen } from "@/components/pwa/SplashScreen";
 
@@ -26,6 +28,7 @@ const CompleteDashboardPage = lazy(() => import("./pages/CompleteDashboardPage")
 const AdminPage = lazy(() => import("./pages/AdminPage"));
 const SofiaPage = lazy(() => import("./pages/SofiaPage"));
 const GoalsPage = lazy(() => import("./pages/GoalsPage"));
+const GoalsPageV2 = lazy(() => import("./pages/GoalsPageV2"));
 const NutritionTrackingPage = lazy(() => import("./pages/NutritionTrackingPage").then(module => ({ default: module.NutritionTrackingPage })));
 const ChallengeDetailPage = lazy(() => import("./pages/ChallengeDetailPage"));
 const CoursePlatform = lazy(() => import("./components/CoursePlatform"));
@@ -61,16 +64,18 @@ const App: React.FC = () => {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
         <TooltipProvider>
-          <ActiveSectionProvider>
-            <Toaster />
-            <Sonner />
-            <OfflineIndicator />
-            
-            <InstallPrompt delay={60000} />
-            {showSplash && <SplashScreen onComplete={hideSplash} />}
-            <BrowserRouter>
-              <Suspense fallback={<PageLoader />}>
-                <Routes>
+          <MenuStyleProvider>
+            <ActiveSectionProvider>
+              <Toaster />
+              <Sonner />
+              <OfflineIndicator />
+              
+              <InstallPrompt delay={60000} />
+              {showSplash && <SplashScreen onComplete={hideSplash} />}
+              <CharacterGate>
+                <BrowserRouter>
+                  <Suspense fallback={<PageLoader />}>
+                    <Routes>
                 <Route path="/" element={<AutoRedirect />} />
                 <Route path="/auth" element={<AuthPage />} />
                 <Route path="/terms" element={<TermsPage />} />
@@ -80,7 +85,7 @@ const App: React.FC = () => {
                 <Route path="/admin" element={<Suspense fallback={<PageLoader />}><AdminPage /></Suspense>} />
                 <Route path="/sofia" element={<Suspense fallback={<PageLoader />}><SofiaPage /></Suspense>} />
                 <Route path="/anamnesis" element={<Suspense fallback={<PageLoader />}><AnamnesisPage /></Suspense>} />
-                <Route path="/app/goals" element={<Suspense fallback={<PageLoader />}><GoalsPage /></Suspense>} />
+                <Route path="/app/goals" element={<Suspense fallback={<PageLoader />}><GoalsPageV2 /></Suspense>} />
                 <Route path="/app/courses" element={<Suspense fallback={<PageLoader />}><CoursePlatform /></Suspense>} />
                 <Route path="/app/progress" element={<Suspense fallback={<PageLoader />}><ProgressPage /></Suspense>} />
                 <Route path="/nutricao" element={<Suspense fallback={<PageLoader />}><NutritionTrackingPage /></Suspense>} />
@@ -107,7 +112,9 @@ const App: React.FC = () => {
                 <SofiaFloatingButton />
               </Suspense>
             </BrowserRouter>
-          </ActiveSectionProvider>
+          </CharacterGate>
+        </ActiveSectionProvider>
+      </MenuStyleProvider>
         </TooltipProvider>
       </ThemeProvider>
     </QueryClientProvider>

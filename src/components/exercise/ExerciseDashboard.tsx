@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Flame, Target, Zap, Clock, Calendar, RefreshCw, AlertTriangle } from "lucide-react";
+import { Flame, Target, Zap, Clock, Calendar, RefreshCw, AlertTriangle, Users, Bell, BarChart3 } from "lucide-react";
 import { motion } from "framer-motion";
 
 import { ExerciseDetailModal } from "./ExerciseDetailModal";
@@ -13,6 +13,11 @@ import { ActiveWorkoutModal } from "./ActiveWorkoutModal";
 import { ProgressShareButton } from "./ProgressShareButton";
 import { Library } from "lucide-react";
 import { SavedProgramView } from "./SavedProgramView";
+
+// Novos componentes avançados
+import { PerformanceDashboardCard } from "./PerformanceDashboardCard";
+import { SocialHubCard } from "./SocialHubCard";
+import { NotificationCenter } from "./NotificationCenter";
 
 import { useExerciseProgram } from "@/hooks/useExerciseProgram";
 import { useExercisesLibrary, Exercise, WeeklyPlan } from "@/hooks/useExercisesLibrary";
@@ -33,6 +38,7 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
   const [activeWorkout, setActiveWorkout] = useState<WeeklyPlan | null>(null);
   const [isWorkoutModalOpen, setIsWorkoutModalOpen] = useState(false);
   const [showLibraryPlan, setShowLibraryPlan] = useState(false);
+  const [activeTab, setActiveTab] = useState<'treino' | 'stats' | 'social'>('treino');
   const { toast } = useToast();
 
   // Verificar se o programa salvo tem plano semanal detalhado
@@ -323,18 +329,42 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
         transition={{ delay: 0.3 }}
         className="flex items-center justify-between gap-2"
       >
-        {/* Badges de contexto - mais compactos */}
-        <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap">
-          <Badge className="bg-gradient-to-r from-emerald-100 to-teal-100 dark:from-emerald-950/50 dark:to-teal-950/50 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800 h-6 sm:h-7 px-2 sm:px-2.5 text-[10px] sm:text-xs font-medium">
-            {location === "casa" ? "🏠 Casa" : "🏋️ Acad"}
-          </Badge>
-          <Badge variant="outline" className="h-6 sm:h-7 px-1.5 sm:px-2 text-[10px] sm:text-xs capitalize">
-            {goalLabels[goal] || `🎯 ${goal}`}
-          </Badge>
+        {/* Tabs de navegação */}
+        <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-0.5">
+          <Button
+            variant={activeTab === 'treino' ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => setActiveTab('treino')}
+            className="h-7 px-2.5 text-[10px] sm:text-xs gap-1"
+          >
+            <Flame className="w-3 h-3" />
+            <span className="hidden sm:inline">Treino</span>
+          </Button>
+          <Button
+            variant={activeTab === 'stats' ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => setActiveTab('stats')}
+            className="h-7 px-2.5 text-[10px] sm:text-xs gap-1"
+          >
+            <BarChart3 className="w-3 h-3" />
+            <span className="hidden sm:inline">Stats</span>
+          </Button>
+          <Button
+            variant={activeTab === 'social' ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => setActiveTab('social')}
+            className="h-7 px-2.5 text-[10px] sm:text-xs gap-1"
+          >
+            <Users className="w-3 h-3" />
+            <span className="hidden sm:inline">Social</span>
+          </Button>
         </div>
         
         {/* Ações compactas no topo */}
         <div className="flex items-center gap-1 sm:gap-1.5">
+          {/* Notificações */}
+          <NotificationCenter userId={user?.id || ''} variant="compact" />
+
           {/* Botão Progresso Compartilhável */}
           <ProgressShareButton 
             stats={{
@@ -346,7 +376,7 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
           />
 
           {/* Botão Biblioteca */}
-          {hasSavedWeekPlan && (
+          {hasSavedWeekPlan && activeTab === 'treino' && (
             <Button
               variant="ghost"
               size="sm"
@@ -359,54 +389,82 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
           )}
           
           {/* Botão Atualizar */}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={refreshPlan}
-            disabled={loading}
-            className="h-7 w-7 sm:h-8 sm:w-8 rounded-lg bg-muted/50 hover:bg-muted border border-border/40"
-          >
-            <RefreshCw className={`w-3 h-3 sm:w-3.5 sm:h-3.5 ${loading ? "animate-spin" : ""}`} />
-          </Button>
+          {activeTab === 'treino' && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={refreshPlan}
+              disabled={loading}
+              className="h-7 w-7 sm:h-8 sm:w-8 rounded-lg bg-muted/50 hover:bg-muted border border-border/40"
+            >
+              <RefreshCw className={`w-3 h-3 sm:w-3.5 sm:h-3.5 ${loading ? "animate-spin" : ""}`} />
+            </Button>
+          )}
         </div>
       </motion.section>
 
       {/* Conteúdo principal */}
-      {loading ? (
-        <div className="space-y-3">
-          <Skeleton variant="shimmer" className="h-16 w-full rounded-xl" />
-          <div className="grid grid-cols-7 gap-1.5">
-            {[...Array(7)].map((_, i) => (
-              <Skeleton variant="shimmer" key={i} className="h-12 rounded-lg" />
-            ))}
-          </div>
-          <Skeleton variant="shimmer" className="h-40 w-full rounded-xl" />
-        </div>
-      ) : error && shouldUseLibrary ? (
-        <Card className="border-red-200 bg-red-50 dark:bg-red-950/20">
-          <CardContent className="p-6 text-center">
-            <p className="text-red-600 dark:text-red-400">{error}</p>
-            <Button onClick={refreshPlan} variant="outline" className="mt-4">
-              Tentar Novamente
-            </Button>
-          </CardContent>
-        </Card>
-      ) : hasSavedWeekPlan && !showLibraryPlan ? (
-        // MOSTRAR PROGRAMA SALVO
-        <SavedProgramView
-          program={activeProgram as any}
-          onStartWorkout={handleStartSavedWorkout}
-          onCompleteWorkout={() => {}}
-          onExerciseClick={handleExerciseClick}
-        />
-      ) : (
-        // MOSTRAR BIBLIOTECA DE EXERCÍCIOS
-        <WeeklyPlanView
-          weeklyPlan={weeklyPlan}
-          todayWorkout={todayWorkout}
-          onStartWorkout={handleStartWorkout}
-          onExerciseClick={handleExerciseClick}
-        />
+      {activeTab === 'treino' && (
+        <>
+          {loading ? (
+            <div className="space-y-3">
+              <Skeleton variant="shimmer" className="h-16 w-full rounded-xl" />
+              <div className="grid grid-cols-7 gap-1.5">
+                {[...Array(7)].map((_, i) => (
+                  <Skeleton variant="shimmer" key={i} className="h-12 rounded-lg" />
+                ))}
+              </div>
+              <Skeleton variant="shimmer" className="h-40 w-full rounded-xl" />
+            </div>
+          ) : error && shouldUseLibrary ? (
+            <Card className="border-red-200 bg-red-50 dark:bg-red-950/20">
+              <CardContent className="p-6 text-center">
+                <p className="text-red-600 dark:text-red-400">{error}</p>
+                <Button onClick={refreshPlan} variant="outline" className="mt-4">
+                  Tentar Novamente
+                </Button>
+              </CardContent>
+            </Card>
+          ) : hasSavedWeekPlan && !showLibraryPlan ? (
+            // MOSTRAR PROGRAMA SALVO
+            <SavedProgramView
+              program={activeProgram as any}
+              onStartWorkout={handleStartSavedWorkout}
+              onCompleteWorkout={() => {}}
+              onExerciseClick={handleExerciseClick}
+            />
+          ) : (
+            // MOSTRAR BIBLIOTECA DE EXERCÍCIOS
+            <WeeklyPlanView
+              weeklyPlan={weeklyPlan}
+              todayWorkout={todayWorkout}
+              onStartWorkout={handleStartWorkout}
+              onExerciseClick={handleExerciseClick}
+            />
+          )}
+        </>
+      )}
+
+      {/* Tab de Estatísticas */}
+      {activeTab === 'stats' && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="space-y-4"
+        >
+          <PerformanceDashboardCard userId={user?.id || ''} />
+        </motion.div>
+      )}
+
+      {/* Tab Social */}
+      {activeTab === 'social' && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="space-y-4"
+        >
+          <SocialHubCard userId={user?.id || ''} />
+        </motion.div>
       )}
 
       {/* Modais */}

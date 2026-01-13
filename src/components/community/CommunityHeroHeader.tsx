@@ -14,6 +14,7 @@ interface CommunityHeroHeaderProps {
   missionsCompleted: number;
   profileViews?: number;
   unreadMessages?: number;
+  userGender?: string | null; // Gênero do usuário para mensagens personalizadas
 }
 
 const formatUserName = (name: string) => {
@@ -23,10 +24,18 @@ const formatUserName = (name: string) => {
   return formatted.length > 12 ? formatted.slice(0, 12) + '.' : formatted;
 };
 
+// Helper para termos de gênero
+const isFeminine = (gender: string | null | undefined): boolean => {
+  if (!gender) return false;
+  const g = gender.toLowerCase();
+  return g === 'feminino' || g === 'female' || g === 'f';
+};
+
 // Badges criativos baseados na posição (só mostra se posição <= 3)
-const getRankBadge = (position: number) => {
+const getRankBadge = (position: number, gender?: string | null) => {
   if (position === 0) return null;
-  if (position === 1) return { icon: Crown, label: '👑 Líder', color: 'text-yellow-300', bg: 'bg-yellow-500/20' };
+  const fem = isFeminine(gender);
+  if (position === 1) return { icon: Crown, label: fem ? '👑 Líder' : '👑 Líder', color: 'text-yellow-300', bg: 'bg-yellow-500/20' };
   if (position === 2) return { icon: Trophy, label: '🥈 Vice', color: 'text-slate-300', bg: 'bg-slate-500/20' };
   if (position === 3) return { icon: Star, label: '🥉 Top 3', color: 'text-amber-400', bg: 'bg-amber-500/20' };
   return null; // Não mostra badge para posições > 3
@@ -64,8 +73,9 @@ export const CommunityHeroHeader: React.FC<CommunityHeroHeaderProps> = ({
   missionsCompleted = 0,
   profileViews = 0,
   unreadMessages = 0,
+  userGender,
 }) => {
-  const rankBadge = getRankBadge(userPosition);
+  const rankBadge = getRankBadge(userPosition, userGender);
   const userLevel = getUserLevel(totalPoints);
   const avatarBorder = getAvatarBorderColor(streakDays);
 

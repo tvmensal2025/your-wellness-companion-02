@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Progress } from '@/components/ui/progress';
-import { Button } from '@/components/ui/button';
-import { Target, TrendingUp, ChefHat, Zap, Clock, Utensils, Apple } from 'lucide-react';
+import { ChefHat, Utensils, Apple } from 'lucide-react';
 import { MealPlanGeneratorModalV2 } from '@/components/nutrition-tracking/MealPlanGeneratorModalV2';
 import { useNutritionTracking } from '@/hooks/useNutritionTracking';
 
@@ -136,75 +133,9 @@ export const SofiaNutricionalSection: React.FC<SofiaNutricionalSectionProps> = (
           <SofiaNutricionalRedesigned userId={user?.id} />
         </TabsContent>
 
-        {/* Tab Nutrição */}
+        {/* Tab Nutrição - Apenas Suplementos */}
         <TabsContent value="tracker" className="space-y-4 mt-4">
           <SmartSupplementsSection maxProducts={4} showTitle={true} />
-
-          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
-            {/* Resumo diário */}
-            <Card className="bg-card shadow-sm border">
-              <CardHeader className="pb-2 px-3 pt-3 sm:px-4 sm:pt-4">
-                <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
-                  <Target className="w-4 h-4 text-emerald-600" />
-                  Hoje
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="px-3 pb-3 sm:px-4 sm:pb-4">
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center text-xs sm:text-sm">
-                    <span>Calorias</span>
-                    <span className="font-semibold">
-                      {currentNutrition.totalCalories.toFixed(0)}/{goals.calories}
-                    </span>
-                  </div>
-                  <Progress value={currentNutrition.totalCalories / goals.calories * 100} className="h-2" />
-                  
-                  <div className="grid grid-cols-3 gap-2 text-xs">
-                    <div className="text-center">
-                      <div className="font-medium text-orange-600">{currentNutrition.totalProtein.toFixed(0)}g</div>
-                      <div className="text-muted-foreground">Proteína</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="font-medium text-blue-600">{currentNutrition.totalCarbs.toFixed(0)}g</div>
-                      <div className="text-muted-foreground">Carbos</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="font-medium text-yellow-600">{currentNutrition.totalFat.toFixed(0)}g</div>
-                      <div className="text-muted-foreground">Gordura</div>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Estatísticas semanais */}
-            <Card className="bg-card shadow-sm border">
-              <CardHeader className="pb-2 px-3 pt-3 sm:px-4 sm:pt-4">
-                <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
-                  <TrendingUp className="w-4 h-4 text-blue-600" />
-                  Semana
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="px-3 pb-3 sm:px-4 sm:pb-4">
-                <div className="space-y-2 text-xs sm:text-sm">
-                  <div className="flex justify-between">
-                    <span>Média calorias</span>
-                    <span className="font-semibold">{stats.averageCalories.toFixed(0)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Dias registrados</span>
-                    <span className="font-semibold">7</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Aderência</span>
-                    <span className="font-semibold text-emerald-600">
-                      {(stats.averageCalories / goals.calories * 100).toFixed(0)}%
-                    </span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
         </TabsContent>
 
         {/* Tab Cardápios - PREMIUM */}

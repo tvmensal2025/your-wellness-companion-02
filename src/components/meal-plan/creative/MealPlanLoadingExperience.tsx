@@ -124,7 +124,7 @@ export const MealPlanLoadingExperience: React.FC<MealPlanLoadingExperienceProps>
       exit={{ opacity: 0 }}
       className={cn(
         "fixed inset-0 z-[9999] flex items-center justify-center",
-        "bg-background/98 backdrop-blur-md",
+        "bg-background backdrop-blur-none",
         className
       )}
       style={{ isolation: 'isolate' }}

@@ -1,8 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, Sparkles, Calendar, FileText } from 'lucide-react';
+import { CheckCircle, Sparkles, Calendar, FileText, Send, Loader2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 import sofiaImage from '@/assets/sofia.png';
+import html2canvas from 'html2canvas';
 
 interface MealPlanSuccessEffectProps {
   isVisible: boolean;
@@ -27,23 +30,94 @@ export const MealPlanSuccessEffect: React.FC<MealPlanSuccessEffectProps> = ({
 }) => {
   const [showConfetti, setShowConfetti] = useState(false);
   const [animationStep, setAnimationStep] = useState(0);
+  const [isSending, setIsSending] = useState(false);
+  const [wasSent, setWasSent] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (isVisible) {
       setShowConfetti(true);
       setAnimationStep(1);
+      setWasSent(false);
       
       const timer1 = setTimeout(() => setAnimationStep(2), 500);
       const timer2 = setTimeout(() => setAnimationStep(3), 1000);
       const timer3 = setTimeout(() => setShowConfetti(false), 3000);
       
+      // Auto-enviar via WhatsApp após 2 segundos
+      const timerWhatsApp = setTimeout(() => {
+        sendToWhatsApp();
+      }, 2000);
+      
       return () => {
         clearTimeout(timer1);
         clearTimeout(timer2);
         clearTimeout(timer3);
+        clearTimeout(timerWhatsApp);
       };
     }
   }, [isVisible]);
+
+  // Função para capturar e enviar via WhatsApp
+  const sendToWhatsApp = async () => {
+    if (isSending || wasSent || !mealPlanData) return;
+    
+    setIsSending(true);
+    
+    try {
+      // Obter usuário atual
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        console.log('Usuário não logado');
+        setIsSending(false);
+        return;
+      }
+
+      // Capturar imagem do card
+      let imageBase64 = '';
+      if (cardRef.current) {
+        try {
+          const canvas = await html2canvas(cardRef.current, {
+            backgroundColor: '#ffffff',
+            scale: 2,
+            useCORS: true,
+          });
+          imageBase64 = canvas.toDataURL('image/png');
+        } catch (err) {
+          console.log('Erro ao capturar imagem:', err);
+        }
+      }
+
+      // Enviar via edge function
+      const { data, error } = await supabase.functions.invoke('send-meal-plan-whatsapp', {
+        body: {
+          userId: user.id,
+          mealPlanData: {
+            type: mealPlanData.type,
+            title: mealPlanData.title,
+            days: mealPlanData.type === 'weekly' ? 7 : 1,
+            summary: mealPlanData.summary,
+          },
+          imageBase64: imageBase64 || undefined,
+        },
+      });
+
+      if (error) {
+        console.error('Erro ao enviar WhatsApp:', error);
+      } else if (data?.success) {
+        setWasSent(true);
+        toast({
+          title: "📱 Enviado!",
+          description: "Cardápio enviado para seu WhatsApp!",
+        });
+      }
+    } catch (err) {
+      console.error('Erro:', err);
+    } finally {
+      setIsSending(false);
+    }
+  };
 
   if (!isVisible) return null;
 
@@ -75,7 +149,9 @@ export const MealPlanSuccessEffect: React.FC<MealPlanSuccessEffectProps> = ({
       )}
 
       {/* Success Card */}
-      <Card className={`
+      <Card 
+        ref={cardRef}
+        className={`
         max-w-md w-full bg-white shadow-2xl border-0 relative overflow-hidden
         transform transition-all duration-700 ease-out
         ${animationStep >= 1 ? 'scale-100 opacity-100' : 'scale-75 opacity-0'}
@@ -161,6 +237,29 @@ export const MealPlanSuccessEffect: React.FC<MealPlanSuccessEffectProps> = ({
             <div className="flex items-center justify-center gap-2 text-xs text-gray-500 mb-6">
               <FileText className="w-3 h-3" />
               <span>HTML interativo com botão de impressão</span>
+            </div>
+
+            {/* WhatsApp Status */}
+            <div className="flex items-center justify-center gap-2 text-xs mb-4">
+              {isSending ? (
+                <span className="flex items-center gap-1 text-green-600">
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                  Enviando para WhatsApp...
+                </span>
+              ) : wasSent ? (
+                <span className="flex items-center gap-1 text-green-600">
+                  <CheckCircle className="w-3 h-3" />
+                  Enviado para seu WhatsApp!
+                </span>
+              ) : (
+                <button 
+                  onClick={sendToWhatsApp}
+                  className="flex items-center gap-1 text-green-600 hover:text-green-700 transition-colors"
+                >
+                  <Send className="w-3 h-3" />
+                  Enviar para WhatsApp
+                </button>
+              )}
             </div>
           </div>
 

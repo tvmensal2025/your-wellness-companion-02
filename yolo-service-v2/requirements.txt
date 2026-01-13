@@ -1,6 +1,6 @@
-# 🦾 YOLO Food Detection Service
-# Versão 2.1 - Atualizado Janeiro 2026
-# Suporta YOLO11, YOLOv8 e versões futuras
+# 🦾 YOLO Food Detection + Pose Estimation Service
+# Versão 2.2 - Atualizado Janeiro 2026
+# Suporta YOLO11, YOLOv8, YOLO-Pose e versões futuras
 
 # ==================== FRAMEWORK WEB ====================
 fastapi==0.115.6
@@ -10,6 +10,7 @@ python-multipart==0.0.17
 # ==================== YOLO - ULTRALYTICS ====================
 # Última versão estável - https://github.com/ultralytics/ultralytics
 # Changelog: https://github.com/ultralytics/ultralytics/releases
+# Inclui suporte a YOLO-Pose para pose estimation
 ultralytics>=8.3.50
 
 # ==================== VISÃO COMPUTACIONAL ====================
@@ -29,3 +30,8 @@ pydantic>=2.10.0
 # Descomente se tiver CUDA instalado na VPS
 # torch>=2.5.0
 # torchvision>=0.20.0
+
+# ==================== POSE ESTIMATION ====================
+# Modelos de pose já incluídos no ultralytics
+# yolo11n-pose.pt - Modelo leve para pose estimation (17 keypoints COCO)
+# Usado para: contagem de reps, análise de forma, treino com câmera

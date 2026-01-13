@@ -26,6 +26,7 @@ interface SocialRankingCardProps {
   currentUserId?: string;
   title?: string;
   onViewAll?: () => void;
+  userGender?: string | null; // Gênero do usuário atual para mensagens personalizadas
 }
 
 const POSITION_STYLES: Record<number, { icon: React.ElementType; color: string; bg: string }> = {
@@ -34,11 +35,19 @@ const POSITION_STYLES: Record<number, { icon: React.ElementType; color: string; 
   3: { icon: Award, color: 'text-amber-600', bg: 'bg-amber-600/10' },
 };
 
+// Helper para termos de gênero
+const isFeminine = (gender: string | null | undefined): boolean => {
+  if (!gender) return false;
+  const g = gender.toLowerCase();
+  return g === 'feminino' || g === 'female' || g === 'f';
+};
+
 export const SocialRankingCard: React.FC<SocialRankingCardProps> = ({
   users,
   currentUserId,
   title = "Ranking Semanal",
-  onViewAll
+  onViewAll,
+  userGender
 }) => {
   const sortedUsers = useMemo(() => {
     return [...users]
@@ -187,7 +196,7 @@ export const SocialRankingCard: React.FC<SocialRankingCardProps> = ({
             className="mt-4 p-3 rounded-xl bg-gradient-to-r from-yellow-500/10 to-amber-500/10 border border-yellow-500/30 text-center"
           >
             <p className="text-sm font-medium text-yellow-600">
-              👑 Você é o líder! Continue assim!
+              👑 Você é {isFeminine(userGender) ? 'a líder' : 'o líder'}! Continue assim!
             </p>
           </motion.div>
         )}

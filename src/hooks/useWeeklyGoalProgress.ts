@@ -35,8 +35,16 @@ export const useWeeklyGoalProgress = () => {
 
       if (measurementsError) throw measurementsError;
 
-      // Mock data - tabela google_fit_data ainda não existe
-      const fitData = [];
+      // Buscar dados do Google Fit se disponível
+      const { data: fitData } = await supabase
+        .from('google_fit_data')
+        .select('*')
+        .eq('user_id', user.id)
+        .gte('date', weekStart.toISOString().split('T')[0])
+        .lte('date', weekEnd.toISOString().split('T')[0])
+        .order('date', { ascending: false });
+      
+      // fitData pode ser null se tabela não existir ainda
 
       // Calcular progresso do peso
       const currentWeekMeasurements = measurements?.filter(m => 
@@ -55,12 +63,35 @@ export const useWeeklyGoalProgress = () => {
       const weightGoal = goals?.find(g => g.target_value && (g as any).category === 'peso') || null;
       const targetWeight = weightGoal?.target_value || currentWeight;
 
-      // Calcular progresso de exercícios (mock)
-      const exerciseDays = 4; // Mock - 4 dias de exercício
+      // Calcular progresso de exercícios real baseado em treinos completados
+      const { data: workoutData } = await supabase
+        .from('workout_history')
+        .select('completed_at')
+        .eq('user_id', user.id)
+        .gte('completed_at', weekStart.toISOString())
+        .lte('completed_at', weekEnd.toISOString());
+      
+      // Contar dias únicos de treino
+      const uniqueWorkoutDays = new Set(
+        workoutData?.map(w => w.completed_at?.split('T')[0]).filter(Boolean) || []
+      ).size;
+      
+      const exerciseDays = uniqueWorkoutDays;
       const exerciseTarget = 7; // Meta padrão de 7 dias por semana
 
-      // Calcular hidratação (simulado - pode ser integrado com apps de hidratação)
-      const hydrationProgress = Math.min(85 + Math.random() * 15, 100); // Simulado entre 85-100%
+      // Buscar hidratação real do advanced_daily_tracking
+      const { data: trackingData } = await supabase
+        .from('advanced_daily_tracking')
+        .select('water_ml')
+        .eq('user_id', user.id)
+        .gte('tracking_date', weekStart.toISOString().split('T')[0])
+        .lte('tracking_date', weekEnd.toISOString().split('T')[0]);
+      
+      // Calcular média de hidratação (meta: 2000ml = 100%)
+      const avgWaterMl = trackingData?.length 
+        ? trackingData.reduce((sum, t) => sum + (t.water_ml || 0), 0) / trackingData.length
+        : 0;
+      const hydrationProgress = Math.min(100, Math.round((avgWaterMl / 2000) * 100));
 
       // Calcular progresso geral baseado nas metas
       let overallProgress = 0;

@@ -196,10 +196,17 @@ const AdminPage = () => {
         .eq('is_completed', true)
         .eq('date_assigned', today);
 
+      // Fetch active sessions (users with activity in last 30 minutes)
+      const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString();
+      const { count: activeSessionsCount } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true })
+        .gte('updated_at', thirtyMinutesAgo);
+
       setStats({
         totalUsers: usersCount || 0,
         totalCourses: coursesCount || 0,
-        activeSessions: 12, // Mock data
+        activeSessions: activeSessionsCount || 0,
         completedMissions: missionsCount || 0
       });
     } catch (error) {

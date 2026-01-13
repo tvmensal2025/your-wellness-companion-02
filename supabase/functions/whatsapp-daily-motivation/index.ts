@@ -250,7 +250,7 @@ Responda APENAS com a mensagem, iniciando com *${firstName}*,`;
           const greetings = [
             `*${firstName}*, bom dia! ☀️`,
             `*${firstName}*, olá! 🌟`,
-            `*${firstName}*, bom dia, guerreiro(a)! 💪`
+            `*${firstName}*, bom dia! Bora conquistar o dia! 💪`
           ];
           
           const motivations = [

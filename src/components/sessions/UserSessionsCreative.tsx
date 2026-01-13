@@ -545,7 +545,7 @@ const SessionCard = ({
 };
 
 // Celebration Component
-const AllCompletedCelebration = ({ count }: { count: number }) => (
+const AllCompletedCelebration = ({ count, isFeminine }: { count: number; isFeminine?: boolean }) => (
   <motion.div
     initial={{ opacity: 0, scale: 0.8 }}
     animate={{ opacity: 1, scale: 1 }}
@@ -591,7 +591,7 @@ const AllCompletedCelebration = ({ count }: { count: number }) => (
     
     <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-6 py-3">
       <Crown className="w-5 h-5 text-yellow-300" />
-      <span className="font-bold">Mestre das Sessões</span>
+      <span className="font-bold">{isFeminine ? 'Mestra das Sessões' : 'Mestre das Sessões'}</span>
     </div>
   </motion.div>
 );

@@ -316,14 +316,15 @@ export const SmartSupplementsSection: React.FC<SmartSupplementsSectionProps> = (
 
       {/* Layout adaptativo baseado na quantidade de produtos */}
       {isFewProducts ? (
-        // Layout para 1-2 produtos: Cards centralizados e maiores
-        <div className="flex flex-col items-center gap-4 py-4">
+        // Layout para 1-2 produtos: Cards centralizados e maiores (full width)
+        <div className="flex flex-col items-center gap-6 py-4">
           {recommendations.map((rec, index) => (
             <motion.div
               key={rec.product.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
+              className="w-full"
             >
               <SmartSupplementCard
                 product={rec.product}
@@ -337,19 +338,6 @@ export const SmartSupplementsSection: React.FC<SmartSupplementsSectionProps> = (
               />
             </motion.div>
           ))}
-          
-          {/* Mensagem de mais produtos em breve */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
-            className="text-center py-4"
-          >
-            <p className="text-sm text-muted-foreground flex items-center gap-2 justify-center">
-              <Package className="w-4 h-4" />
-              Mais produtos chegando em breve
-            </p>
-          </motion.div>
         </div>
       ) : (
         // Layout carousel para 3+ produtos

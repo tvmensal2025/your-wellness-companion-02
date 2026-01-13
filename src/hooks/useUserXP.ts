@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { getUserDataFromCache, invalidateUserDataCache } from './useUserDataCache';
 
@@ -12,10 +12,23 @@ interface XPData {
   levelTitle: string;
 }
 
-const LEVEL_TITLES = [
+// Títulos de nível com suporte a gênero
+const LEVEL_TITLES_MASC = [
   'Iniciante', 'Explorador', 'Dedicado', 'Comprometido', 'Focado',
   'Guerreiro', 'Mestre', 'Campeão', 'Lenda', 'Imortal'
 ];
+
+const LEVEL_TITLES_FEM = [
+  'Iniciante', 'Exploradora', 'Dedicada', 'Comprometida', 'Focada',
+  'Guerreira', 'Mestra', 'Campeã', 'Lenda', 'Imortal'
+];
+
+// Função para detectar se é feminino
+const isFeminineGender = (gender: string | null | undefined): boolean => {
+  if (!gender) return false;
+  const g = gender.toLowerCase();
+  return g === 'feminino' || g === 'female' || g === 'f';
+};
 
 const calculateLevel = (totalXP: number): { level: number; xpInLevel: number; xpToNext: number } => {
   let level = 1;
@@ -40,12 +53,23 @@ export const useUserXP = () => {
   });
   const [loading, setLoading] = useState(true);
   const [xpGained, setXPGained] = useState<number | null>(null);
+  const [userGender, setUserGender] = useState<string | null>(null);
   const initializedRef = useRef(false);
+
+  // Seleciona títulos baseado no gênero
+  const levelTitles = useMemo(() => {
+    return isFeminineGender(userGender) ? LEVEL_TITLES_FEM : LEVEL_TITLES_MASC;
+  }, [userGender]);
 
   const fetchXP = useCallback(async () => {
     try {
       // Tenta cache primeiro
       const cachedData = getUserDataFromCache();
+      
+      // Obtém gênero do cache
+      const gender = cachedData?.profile?.gender || cachedData?.physicalData?.sexo || null;
+      setUserGender(gender);
+      const titles = isFeminineGender(gender) ? LEVEL_TITLES_FEM : LEVEL_TITLES_MASC;
       
       if (cachedData?.points) {
         const totalXP = cachedData.points.totalPoints;
@@ -58,7 +82,7 @@ export const useUserXP = () => {
           level,
           xpToNextLevel: xpToNext,
           xpProgress,
-          levelTitle: LEVEL_TITLES[Math.min(level - 1, LEVEL_TITLES.length - 1)]
+          levelTitle: titles[Math.min(level - 1, titles.length - 1)]
         });
         setLoading(false);
         return;
@@ -87,7 +111,7 @@ export const useUserXP = () => {
         level,
         xpToNextLevel: xpToNext,
         xpProgress,
-        levelTitle: LEVEL_TITLES[Math.min(level - 1, LEVEL_TITLES.length - 1)]
+        levelTitle: titles[Math.min(level - 1, titles.length - 1)]
       });
     } catch (error) {
       console.error('Erro ao buscar XP:', error);
@@ -134,7 +158,7 @@ export const useUserXP = () => {
         level,
         xpToNextLevel: xpToNext,
         xpProgress,
-        levelTitle: LEVEL_TITLES[Math.min(level - 1, LEVEL_TITLES.length - 1)]
+        levelTitle: levelTitles[Math.min(level - 1, levelTitles.length - 1)]
       });
 
       return { success: true, newLevel: level };
@@ -142,7 +166,7 @@ export const useUserXP = () => {
       console.error('Erro ao adicionar XP:', error);
       return { success: false };
     }
-  }, []);
+  }, [levelTitles]);
 
   useEffect(() => {
     if (!initializedRef.current) {

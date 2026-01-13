@@ -21,7 +21,9 @@ import base64
 import logging
 import time
 import os
+import math
 from contextlib import asynccontextmanager
+from collections import deque
 
 # Configurar logging
 logging.basicConfig(
@@ -35,10 +37,15 @@ YOLO_MODEL = os.getenv('YOLO_MODEL', 'yolo11s-seg.pt')  # Modelo padrão para al
 YOLOE_MODEL = os.getenv('YOLOE_MODEL', 'yoloe-11s-seg.pt')  # Modelo YOLOE para documentos
 YOLO_CONF = float(os.getenv('YOLO_CONF', '0.35'))
 YOLO_TASK = os.getenv('YOLO_TASK', 'detect')
+YOLO_POSE_MODEL = os.getenv('YOLO_POSE_MODEL', 'yolo11n-pose.pt')  # Modelo para pose estimation
 
 # Modelos globais
 model = None
 model_yoloe = None
+model_pose = None
+
+# Estado das sessões de pose (para contagem contínua)
+pose_session_states: Dict[str, Any] = {}
 
 # Classes COCO para alimentos (índices relevantes)
 FOOD_CLASS_IDS = {
@@ -58,10 +65,40 @@ FOOD_TRANSLATIONS = {
     'cake': 'bolo'
 }
 
+# COCO Pose Keypoints (17 pontos)
+POSE_KEYPOINTS = [
+    'nose', 'left_eye', 'right_eye', 'left_ear', 'right_ear',
+    'left_shoulder', 'right_shoulder', 'left_elbow', 'right_elbow',
+    'left_wrist', 'right_wrist', 'left_hip', 'right_hip',
+    'left_knee', 'right_knee', 'left_ankle', 'right_ankle'
+]
+
+# Thresholds padrão para exercícios
+EXERCISE_THRESHOLDS = {
+    'squat': {
+        'rep_down_angle': 100,  # Joelho a ~100° = agachamento
+        'rep_up_angle': 160,    # Joelho a ~160° = em pé
+        'safe_zone': 15,        # Tolerância em graus
+        'debounce_ms': 500      # 0.5s entre reps
+    },
+    'pushup': {
+        'rep_down_angle': 90,
+        'rep_up_angle': 160,
+        'safe_zone': 15,
+        'debounce_ms': 500
+    },
+    'situp': {
+        'rep_down_angle': 30,
+        'rep_up_angle': 80,
+        'safe_zone': 10,
+        'debounce_ms': 600
+    }
+}
+
 
 def load_yolo_model():
-    """Carrega os modelos YOLO11 e YOLOE"""
-    global model, model_yoloe
+    """Carrega os modelos YOLO11, YOLOE e YOLO-Pose"""
+    global model, model_yoloe, model_pose
     try:
         from ultralytics import YOLO
         
@@ -75,6 +112,19 @@ def load_yolo_model():
         dummy_img = np.zeros((640, 640, 3), dtype=np.uint8)
         model(dummy_img, verbose=False)
         logger.info(f"✅ YOLO11 {model_path} carregado!")
+        
+        # Carregar modelo YOLO-Pose para pose estimation
+        try:
+            pose_path = YOLO_POSE_MODEL
+            logger.info(f"🔄 Carregando modelo YOLO-Pose: {pose_path}")
+            model_pose = YOLO(pose_path)
+            # Warmup YOLO-Pose
+            logger.info("🔥 Fazendo warmup do YOLO-Pose...")
+            model_pose(dummy_img, verbose=False)
+            logger.info(f"✅ YOLO-Pose {pose_path} carregado!")
+        except Exception as e:
+            logger.warning(f"⚠️ YOLO-Pose erro: {e}")
+            model_pose = None
         
         # Carregar modelo YOLOE para documentos (vocabulário aberto)
         try:
@@ -102,6 +152,174 @@ def load_yolo_model():
     except Exception as e:
         logger.error(f"❌ Erro ao carregar modelos: {e}")
         return None
+
+
+class PoseSessionState:
+    """Estado de uma sessão de treino com câmera"""
+    def __init__(self, exercise_type: str, calibration: dict = None):
+        self.exercise_type = exercise_type
+        self.calibration = calibration or {}
+        self.rep_count = 0
+        self.partial_reps = 0
+        self.current_phase = 'up'  # 'up', 'down', 'transition'
+        self.last_rep_time = 0
+        self.angle_history = deque(maxlen=10)  # Smoothing
+        self.keypoint_history = deque(maxlen=5)
+        self.form_issues = []
+        self.valley_angle = 180  # Ângulo mínimo atingido
+        self.peak_angle = 0      # Ângulo máximo atingido
+        self.phase_start_time = time.time()
+        
+    def get_smoothed_angle(self, new_angle: float) -> float:
+        """Exponential moving average para suavizar ângulos"""
+        self.angle_history.append(new_angle)
+        if len(self.angle_history) < 2:
+            return new_angle
+        alpha = 0.3  # Fator de suavização
+        smoothed = self.angle_history[-1]
+        for angle in reversed(list(self.angle_history)[:-1]):
+            smoothed = alpha * smoothed + (1 - alpha) * angle
+        return smoothed
+    
+    def reset_phase_tracking(self):
+        """Reseta tracking de fase após uma rep"""
+        self.valley_angle = 180
+        self.peak_angle = 0
+        self.phase_start_time = time.time()
+
+
+def calculate_angle(p1: tuple, p2: tuple, p3: tuple) -> float:
+    """Calcula ângulo entre 3 pontos (p2 é o vértice)"""
+    v1 = (p1[0] - p2[0], p1[1] - p2[1])
+    v2 = (p3[0] - p2[0], p3[1] - p2[1])
+    
+    dot = v1[0] * v2[0] + v1[1] * v2[1]
+    mag1 = math.sqrt(v1[0]**2 + v1[1]**2)
+    mag2 = math.sqrt(v2[0]**2 + v2[1]**2)
+    
+    if mag1 * mag2 == 0:
+        return 180.0
+    
+    cos_angle = dot / (mag1 * mag2)
+    cos_angle = max(-1, min(1, cos_angle))  # Clamp
+    angle = math.acos(cos_angle) * 180 / math.pi
+    return angle
+
+
+def detect_pose(image: Image.Image) -> dict:
+    """Detecta pose na imagem usando YOLO-Pose"""
+    global model_pose
+    
+    if model_pose is None:
+        return {'error': 'Modelo YOLO-Pose não carregado'}
+    
+    start_time = time.time()
+    
+    try:
+        results = model_pose(image, verbose=False)
+        
+        keypoints_list = []
+        confidence = 0.0
+        bbox = None
+        
+        for result in results:
+            if result.keypoints is not None and len(result.keypoints) > 0:
+                kps = result.keypoints[0]  # Primeira pessoa detectada
+                
+                # Extrair keypoints
+                if hasattr(kps, 'xy') and kps.xy is not None:
+                    xy = kps.xy[0].cpu().numpy()  # Shape: (17, 2)
+                    conf = kps.conf[0].cpu().numpy() if kps.conf is not None else np.ones(17) * 0.5
+                    
+                    for i, (name, c) in enumerate(zip(POSE_KEYPOINTS, conf)):
+                        x, y = xy[i] if i < len(xy) else (0, 0)
+                        keypoints_list.append({
+                            'id': name,
+                            'name': name,
+                            'x': float(x) / image.width if image.width > 0 else 0,  # Normalizado
+                            'y': float(y) / image.height if image.height > 0 else 0,
+                            'confidence': float(c)
+                        })
+                    
+                    confidence = float(np.mean(conf))
+                
+                # Bounding box
+                if result.boxes is not None and len(result.boxes) > 0:
+                    box = result.boxes[0]
+                    x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
+                    bbox = {
+                        'x': float(x1) / image.width,
+                        'y': float(y1) / image.height,
+                        'width': float(x2 - x1) / image.width,
+                        'height': float(y2 - y1) / image.height
+                    }
+        
+        inference_time = (time.time() - start_time) * 1000
+        
+        # Verificar se é corpo completo (pelo menos 12 keypoints com confiança > 0.5)
+        high_conf_count = len([k for k in keypoints_list if k['confidence'] > 0.5])
+        
+        return {
+            'keypoints': keypoints_list,
+            'confidence': confidence,
+            'inference_time_ms': inference_time,
+            'bbox': bbox,
+            'is_full_body': high_conf_count >= 12
+        }
+        
+    except Exception as e:
+        logger.error(f"❌ Erro na detecção de pose: {e}")
+        return {'error': str(e)}
+
+
+def analyze_squat_form(keypoints: List[dict], angle: float, thresholds: dict) -> List[dict]:
+    """Analisa a forma do agachamento e retorna dicas gentis"""
+    hints = []
+    
+    # Encontrar keypoints relevantes
+    kp_dict = {k['id']: k for k in keypoints}
+    
+    left_knee = kp_dict.get('left_knee')
+    left_ankle = kp_dict.get('left_ankle')
+    left_shoulder = kp_dict.get('left_shoulder')
+    left_hip = kp_dict.get('left_hip')
+    
+    # Verificar joelhos passando dos pés
+    if left_knee and left_ankle:
+        if left_knee['confidence'] > 0.5 and left_ankle['confidence'] > 0.5:
+            if left_knee['x'] > left_ankle['x'] + 0.08:  # Tolerância de 8%
+                hints.append({
+                    'type': 'knee_over_toes',
+                    'message': 'Ótimo ritmo! Tente manter os joelhos alinhados com os pés 👍',
+                    'priority': 2
+                })
+    
+    # Verificar profundidade
+    down_threshold = thresholds.get('rep_down_angle', 100)
+    if angle > down_threshold + 20:  # Muito raso
+        hints.append({
+            'type': 'depth_insufficient',
+            'message': 'Você está indo bem! Tente descer um pouquinho mais quando se sentir confortável 💪',
+            'priority': 1
+        })
+    
+    # Verificar costas retas
+    if left_shoulder and left_hip:
+        if left_shoulder['confidence'] > 0.5 and left_hip['confidence'] > 0.5:
+            # Calcular inclinação do tronco
+            trunk_angle = math.atan2(
+                left_shoulder['y'] - left_hip['y'],
+                left_shoulder['x'] - left_hip['x']
+            ) * 180 / math.pi
+            
+            if abs(trunk_angle + 90) > 40:  # Muito inclinado
+                hints.append({
+                    'type': 'back_rounding',
+                    'message': 'Bom trabalho! Mantenha o peito erguido e olhe para frente 🎯',
+                    'priority': 2
+                })
+    
+    return hints
 
 
 @asynccontextmanager
@@ -549,6 +767,305 @@ async def detect_with_prompt(request: PromptDetectionRequest):
     except Exception as e:
         logger.error(f"❌ Erro no YOLOE: {e}")
         raise HTTPException(status_code=500, detail=f"Erro na detecção: {str(e)}")
+
+
+# ==================== YOLO-POSE - POSE ESTIMATION ====================
+
+class PoseAnalyzeRequest(BaseModel):
+    """Request para análise de pose"""
+    image_base64: Optional[str] = None
+    image_url: Optional[str] = None
+    session_id: str
+    exercise: str = 'squat'
+    calibration: Optional[dict] = None
+
+
+class PoseKeypointResult(BaseModel):
+    """Keypoint individual"""
+    id: str
+    name: str
+    x: float
+    y: float
+    confidence: float
+
+
+class FormHintResult(BaseModel):
+    """Dica de forma"""
+    type: str
+    message: str
+    priority: int
+
+
+class PoseAnalyzeResponse(BaseModel):
+    """Response da análise de pose"""
+    success: bool
+    keypoints: List[PoseKeypointResult]
+    rep_count: int
+    partial_reps: int
+    current_phase: str
+    phase_progress: float
+    form_hints: List[FormHintResult]
+    confidence: float
+    warnings: List[str]
+    inference_time_ms: float
+    angles: dict
+    is_valid_rep: bool
+    is_full_body: bool
+
+
+@app.post("/pose/analyze", response_model=PoseAnalyzeResponse)
+async def analyze_pose(request: PoseAnalyzeRequest):
+    """
+    🏋️ Análise de pose para treino com câmera
+    
+    Detecta keypoints, conta repetições e fornece feedback de postura.
+    Mantém estado da sessão para contagem contínua.
+    
+    Exercícios suportados: squat, pushup, situp
+    """
+    global pose_session_states
+    
+    # Verificar se modelo está carregado
+    if model_pose is None:
+        raise HTTPException(
+            status_code=503,
+            detail="YOLO-Pose não está disponível. Verifique se o modelo foi carregado."
+        )
+    
+    # Obter imagem
+    image = None
+    if request.image_base64:
+        image = decode_base64_image(request.image_base64)
+    elif request.image_url:
+        image = download_image(request.image_url)
+    
+    if image is None:
+        raise HTTPException(status_code=400, detail="Imagem não fornecida ou inválida")
+    
+    # Detectar pose
+    pose_result = detect_pose(image)
+    
+    if 'error' in pose_result:
+        raise HTTPException(status_code=500, detail=pose_result['error'])
+    
+    keypoints = pose_result['keypoints']
+    
+    # Obter ou criar estado da sessão
+    if request.session_id not in pose_session_states:
+        pose_session_states[request.session_id] = PoseSessionState(
+            request.exercise, 
+            request.calibration
+        )
+    
+    state = pose_session_states[request.session_id]
+    
+    # Obter thresholds do exercício
+    thresholds = EXERCISE_THRESHOLDS.get(request.exercise, EXERCISE_THRESHOLDS['squat'])
+    
+    # Aplicar calibração se disponível
+    if request.calibration:
+        if 'rep_down_angle' in request.calibration:
+            thresholds['rep_down_angle'] = request.calibration['rep_down_angle']
+        if 'rep_up_angle' in request.calibration:
+            thresholds['rep_up_angle'] = request.calibration['rep_up_angle']
+    
+    # Calcular ângulos baseado no exercício
+    angles = {}
+    form_hints = []
+    warnings = []
+    is_valid_rep = False
+    phase_progress = 0.0
+    
+    # Criar dicionário de keypoints para acesso rápido
+    kp_dict = {k['id']: k for k in keypoints}
+    
+    if request.exercise == 'squat':
+        # Calcular ângulo do joelho (hip-knee-ankle)
+        hip = kp_dict.get('left_hip')
+        knee = kp_dict.get('left_knee')
+        ankle = kp_dict.get('left_ankle')
+        
+        if hip and knee and ankle:
+            if all(k['confidence'] > 0.4 for k in [hip, knee, ankle]):
+                raw_angle = calculate_angle(
+                    (hip['x'], hip['y']),
+                    (knee['x'], knee['y']),
+                    (ankle['x'], ankle['y'])
+                )
+                
+                # Suavizar ângulo
+                smoothed_angle = state.get_smoothed_angle(raw_angle)
+                angles['knee'] = round(smoothed_angle, 1)
+                angles['raw'] = round(raw_angle, 1)
+                
+                # Thresholds
+                down_threshold = thresholds['rep_down_angle']
+                up_threshold = thresholds['rep_up_angle']
+                debounce_ms = thresholds['debounce_ms']
+                
+                # Rastrear ângulos extremos
+                if smoothed_angle < state.valley_angle:
+                    state.valley_angle = smoothed_angle
+                if smoothed_angle > state.peak_angle:
+                    state.peak_angle = smoothed_angle
+                
+                # Detectar fase e contar reps
+                current_time = time.time() * 1000  # ms
+                
+                if state.current_phase == 'up' and smoothed_angle < down_threshold:
+                    state.current_phase = 'down'
+                    state.phase_start_time = current_time
+                    
+                elif state.current_phase == 'down' and smoothed_angle > up_threshold:
+                    # Verificar debounce
+                    time_since_last = current_time - state.last_rep_time
+                    
+                    if time_since_last > debounce_ms:
+                        # Verificar se foi uma rep completa ou parcial
+                        if state.valley_angle <= down_threshold + thresholds['safe_zone']:
+                            state.rep_count += 1
+                            is_valid_rep = True
+                            logger.info(f"🏋️ Rep #{state.rep_count} válida! Ângulo mínimo: {state.valley_angle:.1f}°")
+                        else:
+                            state.partial_reps += 1
+                            logger.info(f"⚠️ Rep parcial #{state.partial_reps}. Ângulo mínimo: {state.valley_angle:.1f}°")
+                        
+                        state.last_rep_time = current_time
+                        state.reset_phase_tracking()
+                    
+                    state.current_phase = 'up'
+                
+                # Calcular progresso da fase
+                angle_range = up_threshold - down_threshold
+                if angle_range > 0:
+                    if state.current_phase == 'down':
+                        phase_progress = min(100, max(0, (up_threshold - smoothed_angle) / angle_range * 100))
+                    else:
+                        phase_progress = min(100, max(0, (smoothed_angle - down_threshold) / angle_range * 100))
+                
+                # Análise de forma (feedback gentil)
+                form_hints = analyze_squat_form(keypoints, smoothed_angle, thresholds)
+                
+            else:
+                warnings.append('Keypoints do joelho com baixa confiança. Ajuste sua posição.')
+        else:
+            warnings.append('Não foi possível detectar quadril, joelho ou tornozelo. Posicione-se de lado para a câmera.')
+    
+    elif request.exercise == 'pushup':
+        # Calcular ângulo do cotovelo (shoulder-elbow-wrist)
+        shoulder = kp_dict.get('left_shoulder')
+        elbow = kp_dict.get('left_elbow')
+        wrist = kp_dict.get('left_wrist')
+        
+        if shoulder and elbow and wrist:
+            if all(k['confidence'] > 0.4 for k in [shoulder, elbow, wrist]):
+                raw_angle = calculate_angle(
+                    (shoulder['x'], shoulder['y']),
+                    (elbow['x'], elbow['y']),
+                    (wrist['x'], wrist['y'])
+                )
+                smoothed_angle = state.get_smoothed_angle(raw_angle)
+                angles['elbow'] = round(smoothed_angle, 1)
+                
+                # Similar logic para pushup...
+                down_threshold = thresholds['rep_down_angle']
+                up_threshold = thresholds['rep_up_angle']
+                
+                if state.current_phase == 'up' and smoothed_angle < down_threshold:
+                    state.current_phase = 'down'
+                elif state.current_phase == 'down' and smoothed_angle > up_threshold:
+                    current_time = time.time() * 1000
+                    if current_time - state.last_rep_time > thresholds['debounce_ms']:
+                        state.rep_count += 1
+                        is_valid_rep = True
+                        state.last_rep_time = current_time
+                    state.current_phase = 'up'
+    
+    # Limitar hints para não sobrecarregar (máximo 2)
+    form_hints = sorted(form_hints, key=lambda x: x['priority'])[:2]
+    
+    # Converter keypoints para response
+    keypoints_response = [
+        PoseKeypointResult(
+            id=k['id'],
+            name=k['name'],
+            x=k['x'],
+            y=k['y'],
+            confidence=k['confidence']
+        )
+        for k in keypoints
+    ]
+    
+    # Converter hints para response
+    hints_response = [
+        FormHintResult(type=h['type'], message=h['message'], priority=h['priority'])
+        for h in form_hints
+    ]
+    
+    logger.info(f"🏋️ Pose: {request.exercise} | Reps: {state.rep_count} | Fase: {state.current_phase} | Ângulo: {angles.get('knee', angles.get('elbow', 0))}°")
+    
+    return PoseAnalyzeResponse(
+        success=True,
+        keypoints=keypoints_response,
+        rep_count=state.rep_count,
+        partial_reps=state.partial_reps,
+        current_phase=state.current_phase,
+        phase_progress=round(phase_progress, 1),
+        form_hints=hints_response,
+        confidence=pose_result['confidence'],
+        warnings=warnings,
+        inference_time_ms=round(pose_result['inference_time_ms'], 2),
+        angles=angles,
+        is_valid_rep=is_valid_rep,
+        is_full_body=pose_result['is_full_body']
+    )
+
+
+@app.get("/pose/session/{session_id}")
+async def get_pose_session(session_id: str):
+    """Obtém estado atual de uma sessão de pose"""
+    if session_id not in pose_session_states:
+        raise HTTPException(status_code=404, detail="Sessão não encontrada")
+    
+    state = pose_session_states[session_id]
+    return {
+        'session_id': session_id,
+        'exercise': state.exercise_type,
+        'rep_count': state.rep_count,
+        'partial_reps': state.partial_reps,
+        'current_phase': state.current_phase
+    }
+
+
+@app.delete("/pose/session/{session_id}")
+async def end_pose_session(session_id: str):
+    """Encerra uma sessão de pose e retorna estatísticas finais"""
+    if session_id in pose_session_states:
+        state = pose_session_states.pop(session_id)
+        return {
+            'success': True,
+            'session_id': session_id,
+            'exercise': state.exercise_type,
+            'total_reps': state.rep_count,
+            'partial_reps': state.partial_reps,
+            'message': f'Sessão encerrada com {state.rep_count} reps válidas!'
+        }
+    return {
+        'success': False,
+        'message': 'Sessão não encontrada'
+    }
+
+
+@app.get("/pose/health")
+async def pose_health():
+    """Health check do serviço de pose estimation"""
+    return {
+        'status': 'healthy' if model_pose else 'degraded',
+        'pose_model_loaded': model_pose is not None,
+        'pose_model_name': YOLO_POSE_MODEL,
+        'active_sessions': len(pose_session_states),
+        'supported_exercises': list(EXERCISE_THRESHOLDS.keys())
+    }
 
 
 # ==================== MAIN ====================

@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { Gift, Sparkles, X, Coins, Star, Zap } from 'lucide-react';
+import { Gift, Sparkles, X } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 interface Reward {
@@ -207,11 +207,11 @@ export const DailyRewardChest: React.FC<DailyRewardChestProps> = ({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+            className="fixed inset-0 z-50 flex items-start justify-center pt-16 sm:pt-24 p-4 bg-black/60 backdrop-blur-sm overflow-y-auto"
             onClick={closeRewardModal}
           >
             <motion.div
-              initial={{ scale: 0.5, y: 50 }}
+              initial={{ scale: 0.5, y: -50 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.8, opacity: 0 }}
               transition={{ type: "spring", damping: 15 }}

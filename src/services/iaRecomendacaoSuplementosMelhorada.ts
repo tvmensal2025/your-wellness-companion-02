@@ -500,8 +500,6 @@ export function recomendarProdutosMelhorado(
   
   const condicoesDetectadas = detectarCondicoesMedicas(perfilCompleto);
   
-  console.log('🏥 Condições detectadas:', condicoesDetectadas.map(c => c.nome));
-  
   // 2. CALCULAR SCORES PARA TODOS OS PRODUTOS
   const recomendacoes: RecomendacaoCompleta[] = [];
   
@@ -511,7 +509,6 @@ export function recomendarProdutosMelhorado(
     
     // Se produto é contraindicado criticamente, pular
     if (!validacao.seguro) {
-      console.log(`⚠️ Produto ${produto.name} contraindicado, pulando...`);
       return;
     }
     

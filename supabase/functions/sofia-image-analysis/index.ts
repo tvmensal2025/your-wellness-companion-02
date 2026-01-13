@@ -277,6 +277,64 @@ const YOLO_CLASS_MAP: Record<string, string> = {
   'cereal': 'cereal'
 };
 
+// ============================================
+// NORMALIZAÇÃO DE MEAL_TYPE
+// ============================================
+// Mapeia valores em inglês/variantes para o padrão português usado no app
+function normalizeMealType(mealType: string | undefined | null): string {
+  if (!mealType) {
+    // Detectar automaticamente baseado no horário
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 10) return 'cafe_da_manha';
+    if (hour >= 10 && hour < 14) return 'almoco';
+    if (hour >= 14 && hour < 18) return 'lanche';
+    if (hour >= 18 && hour < 22) return 'jantar';
+    return 'ceia';
+  }
+  
+  const normalized = mealType.toLowerCase().trim();
+  
+  // Mapeamento de inglês para português
+  const mealTypeMap: Record<string, string> = {
+    // Inglês
+    'breakfast': 'cafe_da_manha',
+    'lunch': 'almoco',
+    'dinner': 'jantar',
+    'snack': 'lanche',
+    'supper': 'ceia',
+    // Português com variações
+    'café da manhã': 'cafe_da_manha',
+    'cafe da manha': 'cafe_da_manha',
+    'café': 'cafe_da_manha',
+    'cafe': 'cafe_da_manha',
+    'almoço': 'almoco',
+    'almoco': 'almoco',
+    'lanche': 'lanche',
+    'lanche da tarde': 'lanche',
+    'jantar': 'jantar',
+    'janta': 'jantar',
+    'ceia': 'ceia',
+    // Valores já normalizados
+    'cafe_da_manha': 'cafe_da_manha',
+    // Fallback genérico
+    'refeicao': detectMealTypeByTime(),
+    'refeição': detectMealTypeByTime(),
+    'meal': detectMealTypeByTime()
+  };
+  
+  return mealTypeMap[normalized] || detectMealTypeByTime();
+}
+
+// Helper para detectar tipo de refeição pelo horário
+function detectMealTypeByTime(): string {
+  const hour = new Date().getHours();
+  if (hour >= 5 && hour < 10) return 'cafe_da_manha';
+  if (hour >= 10 && hour < 14) return 'almoco';
+  if (hour >= 14 && hour < 18) return 'lanche';
+  if (hour >= 18 && hour < 22) return 'jantar';
+  return 'ceia';
+}
+
 async function tryYoloDetect(imageUrl: string): Promise<{ 
   foods: string[]; 
   liquids: string[]; 
@@ -1794,7 +1852,7 @@ ${newRuleMacros}🤔 Esses alimentos estão corretos?`;
         total_carbs: finalMacros?.total_carbs || 0,
         total_fat: finalMacros?.total_fat || 0,
         total_fiber: finalMacros?.total_fiber || 0,
-        meal_type: userContext?.currentMeal || 'refeicao',
+        meal_type: normalizeMealType(userContext?.currentMeal),
         meal_date: new Date().toISOString().split('T')[0],
         meal_time: new Date().toTimeString().split(' ')[0],
         sofia_analysis: finalMessage,
@@ -1888,7 +1946,7 @@ ${newRuleMacros}🤔 Esses alimentos estão corretos?`;
         confidence: confidence,
         estimated_calories: finalKcal,
         nutrition_totals: localDeterministic && localDeterministic.grams_total > 0 ? localDeterministic : null,
-        meal_type: userContext?.currentMeal || 'refeicao'
+        meal_type: normalizeMealType(userContext?.currentMeal)
       },
       alimentos_identificados: detectedFoods // Para compatibilidade
     }), {

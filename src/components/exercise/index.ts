@@ -1,18 +1,19 @@
-/**
- * Índice centralizado de componentes de exercício
- * Use: import { UnifiedTimer, RestTimer } from '@/components/exercise';
- */
+// ============================================
+// 🏋️ EXERCISE COMPONENTS - EXPORTS
+// ============================================
 
-// Timers
-export { UnifiedTimer } from './UnifiedTimer';
-export { RestTimer } from './RestTimer';
-export { InlineRestTimer } from './InlineRestTimer';
-
-// Modals
-export { ExerciseOnboardingModal } from './ExerciseOnboardingModal';
-
-// Selectors
-export { DaySelector } from './DaySelector';
-
-// Types
+// Core Timer Components
+export { UnifiedTimer, RestTimer, InlineRestTimer, CompactTimer, MiniTimer } from './UnifiedTimer';
 export type { UnifiedTimerProps } from './UnifiedTimer';
+
+// AI Enhanced Components
+export { AIEnhancedTimer } from './AIEnhancedTimer';
+
+// Dashboard Components
+export { PerformanceDashboardCard } from './PerformanceDashboardCard';
+
+// Social Components
+export { SocialHubCard } from './SocialHubCard';
+
+// Notification Components
+export { NotificationCenter } from './NotificationCenter';
