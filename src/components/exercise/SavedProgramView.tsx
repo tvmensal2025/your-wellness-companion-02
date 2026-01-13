@@ -468,7 +468,7 @@ const WorkoutDayCard: React.FC<{
         name: exercise.name,
         type: cameraInfo.type,
         reps,
-        sets: exercise.sets || 3
+        sets: typeof exercise.sets === 'number' ? exercise.sets : parseInt(String(exercise.sets) || '3', 10)
       });
       setCameraModalOpen(true);
     }

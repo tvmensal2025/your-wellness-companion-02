@@ -57,12 +57,12 @@ export const useCoachingReport = (): UseCoachingReportReturn => {
     sessionId: string
   ): Promise<CoachingReportData | null> => {
     try {
-      const { data, error: fetchError } = await supabase
-        .from('coaching_reports')
+      const { data, error: fetchError } = await (supabase
+        .from('coaching_reports' as any)
         .select('report_data')
         .eq('user_id', userId)
         .eq('session_id', sessionId)
-        .single();
+        .single() as unknown as Promise<{ data: { report_data: CoachingReportData } | null; error: any }>);
 
       if (fetchError || !data) {
         return null;

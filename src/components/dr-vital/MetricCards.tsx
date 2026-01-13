@@ -190,7 +190,7 @@ export function useMetricCards() {
       const [weightData, trackingData, workoutData, nutritionData] = await Promise.all([
         supabase
           .from('weight_measurements')
-          .select('weight_kg, measurement_date')
+          .select('peso_kg, measurement_date')
           .eq('user_id', userId)
           .order('measurement_date', { ascending: false })
           .limit(2),
@@ -201,15 +201,15 @@ export function useMetricCards() {
           .order('tracking_date', { ascending: false })
           .limit(7),
         supabase
-          .from('workout_sessions')
+          .from('workout_sessions' as any)
           .select('id, created_at')
           .eq('user_id', userId)
-          .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()),
+          .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()) as unknown as Promise<{ data: any[] | null; error: any }>,
         supabase
-          .from('food_analysis')
+          .from('food_analysis' as any)
           .select('health_score, created_at')
           .eq('user_id', userId)
-          .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()),
+          .gte('created_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()) as unknown as Promise<{ data: any[] | null; error: any }>,
       ]);
 
       const cards: MetricCardType[] = [];
@@ -217,8 +217,8 @@ export function useMetricCards() {
       // Weight metric
       const weights = weightData.data || [];
       if (weights.length > 0) {
-        const current = weights[0].weight_kg;
-        const previous = weights[1]?.weight_kg;
+        const current = weights[0].peso_kg;
+        const previous = weights[1]?.peso_kg;
         const trend = previous ? (current > previous ? 'up' : current < previous ? 'down' : 'stable') : 'stable';
         
         cards.push({

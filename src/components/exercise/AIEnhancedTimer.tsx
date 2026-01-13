@@ -160,7 +160,8 @@ export const AIEnhancedTimer: React.FC<AIEnhancedTimerProps> = ({
     if (!recommendation) return;
 
     if (recommendation.action && typeof recommendation.action.value === 'number') {
-      setAdjustedTime(prev => Math.max(15, prev + recommendation.action!.value as number));
+      const actionValue = recommendation.action.value as number;
+      setAdjustedTime(prev => Math.max(15, prev + actionValue));
     }
 
     onAIRecommendationAccept?.(recommendation);
