@@ -10,7 +10,7 @@ export { InjuryPredictor, createInjuryPredictor } from './injuryPredictor';
 export { SocialHub, createSocialHub } from './socialHub';
 export { PerformanceDashboard, createPerformanceDashboard } from './performanceDashboard';
 
-// Re-export types
+// Re-export types that actually exist in the types file
 export type {
   ContextData,
   UserAnalysis,
@@ -29,21 +29,18 @@ export type {
   ChallengeParticipation,
   Leaderboard,
   LeaderboardEntry,
-  MuscleGroupProgress,
-  PlateauDetection,
-  RecoveryRecommendation,
-  ProgressionPlan,
-  InjuryRisk,
+  MuscleBalance,
+  MuscleImbalance,
+  InjuryRiskAssessment,
   PainReport,
-  RecoveryProtocol,
   WorkoutGroup,
   GroupMember,
-  TeamChallenge,
-  WorkoutBuddy,
-  LiveWorkoutSession,
-  Encouragement,
-  WorkoutStats,
-  ProgressInsight,
+  GroupChallenge,
+  WorkoutBuddyProfile,
+  BuddyConnection,
+  WorkoutEncouragement,
+  UserStatistics,
+  ExerciseInsight,
   GoalPrediction,
-  BenchmarkComparison,
+  UserBenchmarkComparison,
 } from '@/types/advanced-exercise-system';

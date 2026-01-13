@@ -4,13 +4,37 @@
 // ============================================
 
 import { supabase } from '@/integrations/supabase/client';
+import { fromTable } from '@/lib/supabase-helpers';
 import type {
   PerformanceMetric,
-  ProgressionPlan,
-  MuscleGroupProgress,
-  PlateauDetection,
-  RecoveryRecommendation,
+  MuscleBalance,
 } from '@/types/advanced-exercise-system';
+
+// Local types for untyped exports
+interface ProgressionPlan {
+  exerciseCode: string;
+  currentLevel: number;
+  nextTargets: any;
+  recommendations: string[];
+}
+
+interface MuscleGroupProgress {
+  muscleGroup: string;
+  weeklyVolume: number;
+  trend: string;
+}
+
+interface PlateauDetection {
+  isPlateaued: boolean;
+  duration: number;
+  suggestions: string[];
+}
+
+interface RecoveryRecommendation {
+  type: string;
+  priority: string;
+  description: string;
+}
 
 // ============================================
 // CONSTANTS

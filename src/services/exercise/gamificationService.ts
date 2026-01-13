@@ -455,8 +455,7 @@ export class GamificationService {
         ? 'monthly_points' 
         : 'total_points';
 
-    const { data } = await supabase
-      .from('exercise_gamification_points')
+    const { data } = await fromTable('exercise_gamification_points')
       .select(`
         user_id,
         ${pointsColumn},
@@ -464,9 +463,9 @@ export class GamificationService {
         profiles:user_id(full_name, avatar_url)
       `)
       .order(pointsColumn, { ascending: false })
-      .limit(limit);
+      .limit(limit) as any;
 
-    return (data || []).map((entry, index) => ({
+    return ((data as any[]) || []).map((entry: any, index: number) => ({
       rank: index + 1,
       userId: entry.user_id,
       userName: (entry.profiles as { full_name?: string })?.full_name || 'Usuário',
@@ -485,40 +484,39 @@ export class GamificationService {
         : 'total_points';
 
     // Buscar pontos do usuário
-    const { data: myPoints } = await supabase
-      .from('exercise_gamification_points')
+    const { data: myPoints } = await fromTable('exercise_gamification_points')
       .select(pointsColumn)
       .eq('user_id', this.userId)
-      .single();
+      .single() as any;
 
     if (!myPoints) return 0;
 
     // Contar quantos usuários têm mais pontos
-    const { count } = await supabase
-      .from('exercise_gamification_points')
+    const { count } = await fromTable('exercise_gamification_points')
       .select('*', { count: 'exact', head: true })
-      .gt(pointsColumn, myPoints[pointsColumn] || 0);
+      .gt(pointsColumn, (myPoints as any)[pointsColumn] || 0) as any;
 
     return (count || 0) + 1;
   }
 
   async getMyStats(): Promise<GamificationPoints | null> {
-    const { data } = await supabase
-      .from('exercise_gamification_points')
+    const { data } = await fromTable('exercise_gamification_points')
       .select('*')
       .eq('user_id', this.userId)
-      .single();
+      .single() as any;
 
     if (!data) return null;
 
+    const d = data as any;
     return {
-      userId: data.user_id,
-      totalPoints: data.total_points,
-      weeklyPoints: data.weekly_points,
-      monthlyPoints: data.monthly_points,
-      currentLevel: data.current_level,
-      currentXp: data.current_xp,
-      xpToNextLevel: data.xp_to_next_level,
+      userId: d.user_id,
+      totalPoints: d.total_points,
+      weeklyPoints: d.weekly_points,
+      monthlyPoints: d.monthly_points,
+      currentLevel: d.current_level,
+      currentXp: d.current_xp,
+      xpToNextLevel: d.xp_to_next_level,
+      activeMultipliers: [],
     };
   }
 
@@ -527,15 +525,13 @@ export class GamificationService {
   // ============================================
 
   async resetWeeklyPoints(): Promise<void> {
-    await supabase
-      .from('exercise_gamification_points')
+    await fromTable('exercise_gamification_points')
       .update({ weekly_points: 0 })
       .neq('weekly_points', 0);
   }
 
   async resetMonthlyPoints(): Promise<void> {
-    await supabase
-      .from('exercise_gamification_points')
+    await fromTable('exercise_gamification_points')
       .update({ monthly_points: 0 })
       .neq('monthly_points', 0);
   }

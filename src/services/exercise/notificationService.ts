@@ -3,12 +3,45 @@
 // Sistema inteligente de notificações para exercícios
 // ============================================
 
-import { supabase } from '@/integrations/supabase/client';
-import type {
-  ExerciseNotification,
-  NotificationPreferences,
-  NotificationTiming,
-} from '@/types/advanced-exercise-system';
+import { fromTable } from '@/lib/supabase-helpers';
+
+// ============================================
+// LOCAL TYPES (avoid type conflicts)
+// ============================================
+
+interface LocalExerciseNotification {
+  id: string;
+  type: string;
+  title: string;
+  message: string;
+  data?: Record<string, unknown>;
+  isRead: boolean;
+  priority: string;
+  actionUrl?: string;
+  createdAt: Date;
+  expiresAt?: Date;
+}
+
+interface LocalNotificationPreferences {
+  enabled: boolean;
+  streakReminders: boolean;
+  achievementAlerts: boolean;
+  socialNotifications: boolean;
+  recoveryReminders: boolean;
+  injuryAlerts: boolean;
+  motivationalMessages: boolean;
+  quietHoursStart: number;
+  quietHoursEnd: number;
+  preferredTime?: string;
+  maxPerDay: number;
+}
+
+interface LocalNotificationTiming {
+  recommendedHour: number;
+  confidence: number;
+  reason: string;
+  alternativeHours?: number[];
+}
 
 // ============================================
 // CONSTANTS
@@ -67,9 +100,8 @@ export class NotificationService {
   async getNotifications(
     unreadOnly: boolean = false,
     limit: number = 20
-  ): Promise<ExerciseNotification[]> {
-    let query = supabase
-      .from('exercise_notifications')
+  ): Promise<LocalExerciseNotification[]> {
+    let query = fromTable('exercise_notifications')
       .select('*')
       .eq('user_id', this.userId)
       .order('created_at', { ascending: false })
@@ -79,9 +111,9 @@ export class NotificationService {
       query = query.eq('is_read', false);
     }
 
-    const { data } = await query;
+    const { data } = await query as any;
 
-    return (data || []).map(n => ({
+    return ((data as any[]) || []).map((n: any) => ({
       id: n.id,
       type: n.notification_type,
       title: n.title,
@@ -96,24 +128,21 @@ export class NotificationService {
   }
 
   async markAsRead(notificationId: string): Promise<void> {
-    await supabase
-      .from('exercise_notifications')
+    await fromTable('exercise_notifications')
       .update({ is_read: true, read_at: new Date().toISOString() })
       .eq('id', notificationId)
       .eq('user_id', this.userId);
   }
 
   async markAllAsRead(): Promise<void> {
-    await supabase
-      .from('exercise_notifications')
+    await fromTable('exercise_notifications')
       .update({ is_read: true, read_at: new Date().toISOString() })
       .eq('user_id', this.userId)
       .eq('is_read', false);
   }
 
   async deleteNotification(notificationId: string): Promise<void> {
-    await supabase
-      .from('exercise_notifications')
+    await fromTable('exercise_notifications')
       .delete()
       .eq('id', notificationId)
       .eq('user_id', this.userId);
@@ -133,7 +162,7 @@ export class NotificationService {
       data?: Record<string, unknown>;
       expiresInHours?: number;
     }
-  ): Promise<ExerciseNotification> {
+  ): Promise<LocalExerciseNotification> {
     // Verificar preferências do usuário
     const prefs = await this.getPreferences();
     if (!this.shouldSendNotification(type, prefs)) {
@@ -150,8 +179,7 @@ export class NotificationService {
       ? new Date(Date.now() + options.expiresInHours * 60 * 60 * 1000)
       : null;
 
-    const { data, error } = await supabase
-      .from('exercise_notifications')
+    const { data, error } = await fromTable('exercise_notifications')
       .insert({
         user_id: this.userId,
         notification_type: type,
@@ -163,21 +191,22 @@ export class NotificationService {
         expires_at: expiresAt?.toISOString(),
       })
       .select()
-      .single();
+      .single() as any;
 
     if (error) throw error;
 
+    const d = data as any;
     return {
-      id: data.id,
-      type: data.notification_type,
-      title: data.title,
-      message: data.message,
-      data: data.data,
-      isRead: data.is_read,
-      priority: data.priority,
-      actionUrl: data.action_url,
-      createdAt: new Date(data.created_at),
-      expiresAt: data.expires_at ? new Date(data.expires_at) : undefined,
+      id: d.id,
+      type: d.notification_type,
+      title: d.title,
+      message: d.message,
+      data: d.data,
+      isRead: d.is_read,
+      priority: d.priority,
+      actionUrl: d.action_url,
+      createdAt: new Date(d.created_at),
+      expiresAt: d.expires_at ? new Date(d.expires_at) : undefined,
     };
   }
 
@@ -185,11 +214,10 @@ export class NotificationService {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const { count } = await supabase
-      .from('exercise_notifications')
+    const { count } = await fromTable('exercise_notifications')
       .select('*', { count: 'exact', head: true })
       .eq('user_id', this.userId)
-      .gte('created_at', today.toISOString());
+      .gte('created_at', today.toISOString()) as any;
 
     return count || 0;
   }
@@ -386,37 +414,36 @@ export class NotificationService {
   // TIMING & PREFERENCES
   // ============================================
 
-  async getPreferences(): Promise<NotificationPreferences> {
-    const { data } = await supabase
-      .from('exercise_notification_preferences')
+  async getPreferences(): Promise<LocalNotificationPreferences> {
+    const { data } = await fromTable('exercise_notification_preferences')
       .select('*')
       .eq('user_id', this.userId)
-      .single();
+      .single() as any;
 
     if (!data) {
       return this.getDefaultPreferences();
     }
 
+    const d = data as any;
     return {
-      enabled: data.enabled,
-      streakReminders: data.streak_reminders,
-      achievementAlerts: data.achievement_alerts,
-      socialNotifications: data.social_notifications,
-      recoveryReminders: data.recovery_reminders,
-      injuryAlerts: data.injury_alerts,
-      motivationalMessages: data.motivational_messages,
-      quietHoursStart: data.quiet_hours_start,
-      quietHoursEnd: data.quiet_hours_end,
-      preferredTime: data.preferred_time,
-      maxPerDay: data.max_per_day,
+      enabled: d.enabled ?? true,
+      streakReminders: d.streak_reminders ?? true,
+      achievementAlerts: d.achievement_alerts ?? true,
+      socialNotifications: d.social_notifications ?? true,
+      recoveryReminders: d.recovery_reminders ?? true,
+      injuryAlerts: d.injury_alerts ?? true,
+      motivationalMessages: d.motivational_messages ?? true,
+      quietHoursStart: d.quiet_hours_start ?? NOTIFICATION_CONFIG.quietHoursStart,
+      quietHoursEnd: d.quiet_hours_end ?? NOTIFICATION_CONFIG.quietHoursEnd,
+      preferredTime: d.preferred_time,
+      maxPerDay: d.max_per_day ?? NOTIFICATION_CONFIG.maxPerDay,
     };
   }
 
   async updatePreferences(
-    prefs: Partial<NotificationPreferences>
+    prefs: Partial<LocalNotificationPreferences>
   ): Promise<void> {
-    await supabase
-      .from('exercise_notification_preferences')
+    await fromTable('exercise_notification_preferences')
       .upsert({
         user_id: this.userId,
         enabled: prefs.enabled,
@@ -435,7 +462,7 @@ export class NotificationService {
       });
   }
 
-  private getDefaultPreferences(): NotificationPreferences {
+  private getDefaultPreferences(): LocalNotificationPreferences {
     return {
       enabled: true,
       streakReminders: true,
@@ -452,7 +479,7 @@ export class NotificationService {
 
   private shouldSendNotification(
     type: string,
-    prefs: NotificationPreferences
+    prefs: LocalNotificationPreferences
   ): boolean {
     if (!prefs.enabled) return false;
 
@@ -466,7 +493,7 @@ export class NotificationService {
     }
 
     // Verificar preferências por tipo
-    const typePrefs: Record<string, keyof NotificationPreferences> = {
+    const typePrefs: Record<string, keyof LocalNotificationPreferences> = {
       streak: 'streakReminders',
       missed_workout: 'streakReminders',
       achievement: 'achievementAlerts',
@@ -493,13 +520,12 @@ export class NotificationService {
   // OPTIMAL TIMING ANALYSIS
   // ============================================
 
-  async getOptimalWorkoutTime(): Promise<NotificationTiming> {
+  async getOptimalWorkoutTime(): Promise<LocalNotificationTiming> {
     // Buscar histórico de treinos
-    const { data: workouts } = await supabase
-      .from('exercise_performance_metrics')
+    const { data: workouts } = await fromTable('exercise_performance_metrics')
       .select('created_at, difficulty_rating, fatigue_level')
       .eq('user_id', this.userId)
-      .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString());
+      .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()) as any;
 
     if (!workouts || workouts.length < 5) {
       return {
@@ -509,10 +535,12 @@ export class NotificationService {
       };
     }
 
+    const workoutList = workouts as any[];
+
     // Agrupar por hora do dia
     const hourStats: Record<number, { count: number; avgPerformance: number }> = {};
 
-    workouts.forEach(w => {
+    workoutList.forEach((w: any) => {
       const hour = new Date(w.created_at).getHours();
       if (!hourStats[hour]) {
         hourStats[hour] = { count: 0, avgPerformance: 0 };
@@ -538,12 +566,12 @@ export class NotificationService {
       }
     });
 
-    const confidence = Math.min(0.9, 0.3 + workouts.length * 0.02);
+    const confidence = Math.min(0.9, 0.3 + workoutList.length * 0.02);
 
     return {
       recommendedHour: bestHour,
       confidence,
-      reason: `Baseado em ${workouts.length} treinos, você performa melhor às ${bestHour}h`,
+      reason: `Baseado em ${workoutList.length} treinos, você performa melhor às ${bestHour}h`,
       alternativeHours: this.getAlternativeHours(hourStats, bestHour),
     };
   }
@@ -568,7 +596,7 @@ export class NotificationService {
   // ============================================
 
   async scheduleWorkoutReminder(hour: number, minute: number = 0): Promise<void> {
-    await supabase.from('exercise_scheduled_notifications').upsert({
+    await fromTable('exercise_scheduled_notifications').upsert({
       user_id: this.userId,
       notification_type: 'workout_reminder',
       scheduled_hour: hour,
@@ -580,8 +608,7 @@ export class NotificationService {
   }
 
   async cancelScheduledNotification(type: string): Promise<void> {
-    await supabase
-      .from('exercise_scheduled_notifications')
+    await fromTable('exercise_scheduled_notifications')
       .update({ is_active: false })
       .eq('user_id', this.userId)
       .eq('notification_type', type);
@@ -593,12 +620,11 @@ export class NotificationService {
     minute: number;
     isActive: boolean;
   }>> {
-    const { data } = await supabase
-      .from('exercise_scheduled_notifications')
+    const { data } = await fromTable('exercise_scheduled_notifications')
       .select('*')
-      .eq('user_id', this.userId);
+      .eq('user_id', this.userId) as any;
 
-    return (data || []).map(n => ({
+    return ((data as any[]) || []).map((n: any) => ({
       type: n.notification_type,
       hour: n.scheduled_hour,
       minute: n.scheduled_minute,
