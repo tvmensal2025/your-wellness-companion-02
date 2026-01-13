@@ -16,25 +16,24 @@ export const useGoalsGamification = (userId?: string) => {
         .from('user_goal_levels')
         .select('*')
         .eq('user_id', userId)
-        .single();
+        .maybeSingle();
 
-      // Se a tabela não existe (406 Not Acceptable), retornar dados padrão
-      if (error) {
-        if (error.code === 'PGRST116' || error.message?.includes('406') || error.message?.includes('Not Acceptable')) {
-          console.warn('Tabela user_goal_levels não existe. Execute a migração 20260112400000_add_goals_gamification_safe.sql');
-          return {
-            id: 'temp',
-            user_id: userId,
-            current_level: 1,
-            current_xp: 0,
-            total_xp: 0,
-            xp_to_next_level: 100,
-            level_title: 'Iniciante',
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          };
+      // Se não existe registro ou houve erro, retornar dados padrão
+      if (error || !data) {
+        if (error) {
+          console.warn('Erro ao buscar user_goal_levels:', error.message);
         }
-        throw error;
+        return {
+          id: 'temp',
+          user_id: userId,
+          current_level: 1,
+          current_xp: 0,
+          total_xp: 0,
+          xp_to_next_level: 100,
+          level_title: 'Iniciante',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        };
       }
       return data;
     },
@@ -182,14 +181,14 @@ export const useGoalsGamification = (userId?: string) => {
     mutationFn: async ({ goalId, streakType = 'daily' }: { goalId: string; streakType?: 'daily' | 'weekly' | 'monthly' }) => {
       if (!userId) throw new Error('User ID required');
 
-      // Buscar streak atual
+      // Buscar streak atual (maybeSingle para evitar 406 quando não há linha)
       const { data: existingStreak } = await supabase
         .from('goal_streaks')
         .select('*')
         .eq('user_id', userId)
         .eq('goal_id', goalId)
         .eq('streak_type', streakType)
-        .single();
+        .maybeSingle();
 
       const today = new Date().toISOString().split('T')[0];
       const lastUpdate = existingStreak?.last_update_date;
