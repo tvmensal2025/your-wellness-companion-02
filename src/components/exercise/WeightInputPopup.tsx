@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Dumbbell, TrendingUp, History, Repeat } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { fromTable } from '@/lib/supabase-helpers';
 
 // Lista de exercícios que são de peso corporal (não usam peso externo)
 const BODYWEIGHT_EXERCISES = [
@@ -80,11 +80,11 @@ export const WeightInputPopup: React.FC<WeightInputPopupProps> = ({
     const fetchLastData = async () => {
       setLoading(true);
       try {
+        const { supabase } = await import('@/integrations/supabase/client');
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
-        const { data } = await supabase
-          .from('user_workout_evolution')
+        const { data } = await (fromTable('user_workout_evolution') as any)
           .select('weight_kg, max_weight_kg, max_reps, last_reps')
           .eq('user_id', user.id)
           .eq('exercise_name', exerciseName)

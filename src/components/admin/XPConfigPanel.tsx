@@ -30,14 +30,14 @@ interface XPConfigRow {
   action_type: string;
   action_name: string;
   points: number;
-  base_xp: number;
+  base_xp?: number;
   description: string | null;
   icon: string | null;
   category: string | null;
   multiplier: number;
   max_daily: number | null;
   is_active: boolean;
-  sort_order: number;
+  sort_order?: number;
 }
 
 interface EditingState {

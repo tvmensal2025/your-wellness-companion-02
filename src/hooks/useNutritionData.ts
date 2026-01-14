@@ -103,10 +103,10 @@ export function useNutritionData() {
       // Calcular totais do dia
       const totals = (todayAnalyses || []).reduce(
         (acc, meal) => ({
-          calories: acc.calories + (meal.calories || 0),
-          protein: acc.protein + (meal.protein_g || 0),
-          carbs: acc.carbs + (meal.carbs_g || 0),
-          fat: acc.fat + (meal.fat_g || 0),
+          calories: acc.calories + (meal.total_calories || 0),
+          protein: acc.protein + (meal.total_proteins || 0),
+          carbs: acc.carbs + (meal.total_carbs || 0),
+          fat: acc.fat + (meal.total_fats || 0),
         }),
         { calories: 0, protein: 0, carbs: 0, fat: 0 }
       );
@@ -129,10 +129,10 @@ export function useNutritionData() {
       const todayMeals = (todayAnalyses || []).map((meal) => ({
         id: meal.id,
         mealType: meal.meal_type || 'snack',
-        calories: meal.calories || 0,
-        protein: meal.protein_g || 0,
-        carbs: meal.carbs_g || 0,
-        fat: meal.fat_g || 0,
+        calories: meal.total_calories || 0,
+        protein: meal.total_proteins || 0,
+        carbs: meal.total_carbs || 0,
+        fat: meal.total_fats || 0,
         time: new Date(meal.created_at).toLocaleTimeString('pt-BR', {
           hour: '2-digit',
           minute: '2-digit',

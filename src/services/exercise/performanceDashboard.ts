@@ -11,14 +11,21 @@ import type {
   UserBenchmarkComparison,
 } from '@/types/advanced-exercise-system';
 
-// Local types
+// Local types - extended for internal use
 interface WorkoutStats {
   totalWorkouts: number;
   totalDuration: number;
+  totalDurationMinutes?: number;
   totalVolume: number;
   avgDifficulty: number;
+  avgWorkoutDuration?: number;
   personalRecords: any[];
   weeklyData: any[];
+  consistency?: number;
+  currentStreak?: number;
+  longestStreak?: number;
+  trends?: { volume: string; duration: string; frequency: string };
+  periodDays?: number;
 }
 
 interface ProgressInsight {
@@ -26,6 +33,9 @@ interface ProgressInsight {
   title: string;
   description: string;
   priority: string;
+  category?: string;
+  metric?: number;
+  recommendation?: string;
   actionItems?: string[];
 }
 

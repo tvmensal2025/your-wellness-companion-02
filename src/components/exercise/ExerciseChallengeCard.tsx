@@ -220,8 +220,8 @@ export const ExerciseChallengeCard: React.FC<ExerciseChallengeCardProps> = ({
 
   const handleCompleteChallenge = async (challenge: ExerciseChallenge) => {
     try {
-      const result = await completeChallenge(challenge.id);
-      const isWinner = result.winner_id === userId;
+      const result = await completeChallenge(challenge.id) as any;
+      const isWinner = result?.winner_id === userId;
       toast({
         title: isWinner ? "🏆 Você venceu!" : "Desafio finalizado",
         description: isWinner ? "Parabéns pela vitória!" : "Boa tentativa!",
