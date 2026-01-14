@@ -132,7 +132,7 @@ See `docs/AI_CODING_GUIDELINES.md` for complete documentation.
 
 ### NEVER disconnect YOLO service!
 ```bash
-YOLO_SERVICE_URL=http://45.67.221.216:8002
+YOLO_SERVICE_URL=https://yolo-service-yolo-detection.0sw627.easypanel.host
 YOLO_ENABLED=true
 ```
 

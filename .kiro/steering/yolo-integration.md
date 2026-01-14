@@ -6,7 +6,7 @@ inclusion: always
 
 ## ⚠️ REGRA CRÍTICA
 
-O serviço YOLO na VPS `45.67.221.216:8002` é **ESSENCIAL** para o funcionamento do app.
+O serviço YOLO em `yolo-service-yolo-detection.0sw627.easypanel.host` é **ESSENCIAL** para o funcionamento do app.
 
 **NUNCA:**
 - Remover chamadas ao YOLO das edge functions
@@ -17,7 +17,7 @@ O serviço YOLO na VPS `45.67.221.216:8002` é **ESSENCIAL** para o funcionament
 ## 🔧 Configuração Fixa
 
 ```bash
-YOLO_SERVICE_URL=http://45.67.221.216:8002
+YOLO_SERVICE_URL=https://yolo-service-yolo-detection.0sw627.easypanel.host
 YOLO_ENABLED=true
 ```
 

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
 🦾 Serviço YOLO para Detecção de Alimentos e Documentos
-Versão 2.2 - Janeiro 2026
-Suporta: YOLO11, YOLOE (vocabulário aberto), YOLOv8
+Versão 3.0 - Janeiro 2026
+Suporta: YOLO26 (NMS-free, 43% mais rápido), YOLOE-26 (vocabulário aberto), YOLO26-pose (RLE)
 Integração com Sofia IA e Dr. Vital
 GitHub: https://github.com/ultralytics/ultralytics
 """
@@ -33,11 +33,14 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Configurações via variáveis de ambiente
-YOLO_MODEL = os.getenv('YOLO_MODEL', 'yolo11s-seg.pt')  # Modelo padrão para alimentos
-YOLOE_MODEL = os.getenv('YOLOE_MODEL', 'yoloe-11s-seg.pt')  # Modelo YOLOE para documentos
+# YOLO26 = 43% mais rápido em CPU, NMS-free
+YOLO_MODEL = os.getenv('YOLO_MODEL', 'yolo26s.pt')
+# YOLOE-26 = vocabulário aberto para Dr. Vital e alimentos brasileiros
+YOLOE_MODEL = os.getenv('YOLOE_MODEL', 'yoloe-26s-seg.pt')
 YOLO_CONF = float(os.getenv('YOLO_CONF', '0.35'))
 YOLO_TASK = os.getenv('YOLO_TASK', 'detect')
-YOLO_POSE_MODEL = os.getenv('YOLO_POSE_MODEL', 'yolo11n-pose.pt')  # Modelo para pose estimation
+# YOLO26-pose = RLE para keypoints mais precisos
+YOLO_POSE_MODEL = os.getenv('YOLO_POSE_MODEL', 'yolo26s-pose.pt')
 
 # Modelos globais
 model = None
@@ -97,54 +100,51 @@ EXERCISE_THRESHOLDS = {
 
 
 def load_yolo_model():
-    """Carrega os modelos YOLO11, YOLOE e YOLO-Pose"""
+    """Carrega os modelos YOLO26, YOLOE-26 e YOLO26-Pose"""
     global model, model_yoloe, model_pose
     try:
         from ultralytics import YOLO
         
-        # Carregar modelo YOLO11 para alimentos
+        # Carregar modelo YOLO26 para alimentos (43% mais rápido, NMS-free)
         model_path = YOLO_MODEL
-        logger.info(f"🔄 Carregando modelo YOLO11: {model_path}")
+        logger.info(f"🔄 Carregando modelo YOLO26: {model_path}")
         model = YOLO(model_path)
         
-        # Warmup YOLO11
-        logger.info("🔥 Fazendo warmup do YOLO11...")
+        # Warmup YOLO26
+        logger.info("🔥 Fazendo warmup do YOLO26...")
         dummy_img = np.zeros((640, 640, 3), dtype=np.uint8)
         model(dummy_img, verbose=False)
-        logger.info(f"✅ YOLO11 {model_path} carregado!")
+        logger.info(f"✅ YOLO26 {model_path} carregado!")
         
-        # Carregar modelo YOLO-Pose para pose estimation
+        # Carregar modelo YOLO26-Pose para pose estimation (RLE = mais preciso)
         try:
             pose_path = YOLO_POSE_MODEL
-            logger.info(f"🔄 Carregando modelo YOLO-Pose: {pose_path}")
+            logger.info(f"🔄 Carregando modelo YOLO26-Pose: {pose_path}")
             model_pose = YOLO(pose_path)
-            # Warmup YOLO-Pose
-            logger.info("🔥 Fazendo warmup do YOLO-Pose...")
+            # Warmup YOLO26-Pose
+            logger.info("🔥 Fazendo warmup do YOLO26-Pose...")
             model_pose(dummy_img, verbose=False)
-            logger.info(f"✅ YOLO-Pose {pose_path} carregado!")
+            logger.info(f"✅ YOLO26-Pose {pose_path} carregado!")
         except Exception as e:
-            logger.warning(f"⚠️ YOLO-Pose erro: {e}")
+            logger.warning(f"⚠️ YOLO26-Pose erro: {e}")
             model_pose = None
         
-        # Carregar modelo YOLOE para documentos (vocabulário aberto)
+        # Carregar modelo YOLOE-26 para vocabulário aberto (Dr. Vital, alimentos brasileiros)
         try:
-            from ultralytics import YOLOE
+            from ultralytics import YOLO as YOLOE_LOADER
             yoloe_path = YOLOE_MODEL
-            if os.path.exists(yoloe_path):
-                logger.info(f"🔄 Carregando modelo YOLOE: {yoloe_path}")
-                model_yoloe = YOLOE(yoloe_path)
-                # Warmup YOLOE
-                logger.info("🔥 Fazendo warmup do YOLOE...")
-                model_yoloe.predict(dummy_img, prompts=["test"], verbose=False)
-                logger.info(f"✅ YOLOE {yoloe_path} carregado!")
-            else:
-                logger.warning(f"⚠️ Modelo YOLOE não encontrado: {yoloe_path}")
-                model_yoloe = None
+            logger.info(f"🔄 Carregando modelo YOLOE-26: {yoloe_path}")
+            model_yoloe = YOLOE_LOADER(yoloe_path)
+            # Warmup YOLOE-26
+            logger.info("🔥 Fazendo warmup do YOLOE-26...")
+            # YOLOE usa prompts de texto para detecção
+            model_yoloe.predict(dummy_img, verbose=False)
+            logger.info(f"✅ YOLOE-26 {yoloe_path} carregado!")
         except ImportError:
             logger.warning("⚠️ YOLOE não disponível - atualize ultralytics: pip install -U ultralytics")
             model_yoloe = None
         except Exception as e:
-            logger.warning(f"⚠️ YOLOE erro: {e}")
+            logger.warning(f"⚠️ YOLOE-26 erro: {e}")
             model_yoloe = None
         
         return model

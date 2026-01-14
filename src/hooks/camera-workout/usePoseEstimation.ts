@@ -15,7 +15,7 @@ import type {
 } from '@/types/camera-workout';
 
 // URL do servidor YOLO (fixo conforme steering rules)
-const YOLO_SERVICE_URL = 'http://45.67.221.216:8002';
+const YOLO_SERVICE_URL = 'https://yolo-service-yolo-detection.0sw627.easypanel.host';
 
 interface UsePoseEstimationConfig {
   exerciseType: ExerciseType;

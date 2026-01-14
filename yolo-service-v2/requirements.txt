@@ -1,6 +1,6 @@
-# 🦾 YOLO Food Detection + Pose Estimation Service
-# Versão 2.2 - Atualizado Janeiro 2026
-# Suporta YOLO11, YOLOv8, YOLO-Pose e versões futuras
+# 🦾 YOLO26 + YOLOE Food Detection + Pose Estimation Service
+# Versão 3.0 - Janeiro 2026
+# Suporta YOLO26 (NMS-free), YOLOE-26 (vocabulário aberto), YOLO26-pose (RLE)
 
 # ==================== FRAMEWORK WEB ====================
 fastapi==0.115.6
@@ -8,10 +8,10 @@ uvicorn[standard]==0.34.0
 python-multipart==0.0.17
 
 # ==================== YOLO - ULTRALYTICS ====================
-# Última versão estável - https://github.com/ultralytics/ultralytics
+# YOLO26 lançado em 14/01/2026 - https://github.com/ultralytics/ultralytics
 # Changelog: https://github.com/ultralytics/ultralytics/releases
-# Inclui suporte a YOLO-Pose para pose estimation
-ultralytics>=8.3.50
+# Requer versão >= 8.4.0 para YOLO26 e YOLOE-26
+ultralytics>=8.4.0
 
 # ==================== VISÃO COMPUTACIONAL ====================
 opencv-python-headless==4.10.0.84
@@ -31,7 +31,7 @@ pydantic>=2.10.0
 # torch>=2.5.0
 # torchvision>=0.20.0
 
-# ==================== POSE ESTIMATION ====================
-# Modelos de pose já incluídos no ultralytics
-# yolo11n-pose.pt - Modelo leve para pose estimation (17 keypoints COCO)
-# Usado para: contagem de reps, análise de forma, treino com câmera
+# ==================== MODELOS INCLUÍDOS ====================
+# yolo26s.pt - Detecção de alimentos (43% mais rápido, NMS-free)
+# yolo26s-pose.pt - Pose estimation com RLE (keypoints mais precisos)
+# yoloe-26s-seg.pt - Vocabulário aberto (Dr. Vital, alimentos brasileiros)

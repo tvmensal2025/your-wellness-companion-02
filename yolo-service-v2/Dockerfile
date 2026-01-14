@@ -1,12 +1,13 @@
-# 🦾 Dockerfile para YOLO11/YOLO26 Food Detection + Pose Estimation Service
-# Versão 2.2 - Com suporte a YOLO-Pose para treino com câmera
+# 🦾 Dockerfile para YOLO26 + YOLOE Food Detection + Pose Estimation Service
+# Versão 3.0 - Janeiro 2026
+# Suporta: YOLO26 (NMS-free), YOLO26-pose (RLE), YOLOE-26 (vocabulário aberto)
 
 FROM python:3.11-slim
 
 # Metadados
 LABEL maintainer="Instituto dos Sonhos"
-LABEL version="2.2.0"
-LABEL description="YOLO11 Food Detection + Pose Estimation Service"
+LABEL version="3.0.0"
+LABEL description="YOLO26 + YOLOE Food Detection + Pose Estimation Service"
 
 # Variáveis de ambiente
 ENV PYTHONUNBUFFERED=1
@@ -14,10 +15,11 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PIP_NO_CACHE_DIR=1
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1
 
-# Modelo padrão para detecção de alimentos
-ENV YOLO_MODEL=yolo11n.pt
-# Modelo para pose estimation (treino com câmera)
-ENV YOLO_POSE_MODEL=yolo11n-pose.pt
+# Modelos YOLO26 (mais rápidos, NMS-free)
+ENV YOLO_MODEL=yolo26s.pt
+ENV YOLO_POSE_MODEL=yolo26s-pose.pt
+# YOLOE para vocabulário aberto (Dr. Vital, alimentos brasileiros)
+ENV YOLOE_MODEL=yoloe-26s-seg.pt
 ENV YOLO_CONF=0.35
 ENV PORT=8000
 
@@ -39,14 +41,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Copiar requirements primeiro (cache de camadas)
 COPY requirements.txt .
 
-# Instalar dependências Python
+# Instalar dependências Python (ultralytics >= 8.4 para YOLO26)
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Baixar modelos YOLO durante build (mais rápido no startup)
-# Modelo para detecção de alimentos
-RUN python -c "from ultralytics import YOLO; YOLO('yolo11n.pt')"
-# Modelo para pose estimation
-RUN python -c "from ultralytics import YOLO; YOLO('yolo11n-pose.pt')"
+# 1. YOLO26 para detecção de alimentos (43% mais rápido, NMS-free)
+RUN python -c "from ultralytics import YOLO; YOLO('yolo26s.pt')"
+
+# 2. YOLO26-pose para treino com câmera (RLE = keypoints mais precisos)
+RUN python -c "from ultralytics import YOLO; YOLO('yolo26s-pose.pt')"
+
+# 3. YOLOE-26 para vocabulário aberto (Dr. Vital, alimentos brasileiros)
+RUN python -c "from ultralytics import YOLO; YOLO('yoloe-26s-seg.pt')"
 
 # Copiar código
 COPY main.py .
