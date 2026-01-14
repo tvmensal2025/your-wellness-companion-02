@@ -54,7 +54,7 @@ export function usePerformanceDashboard(userId: string | undefined) {
       targetValue,
       currentValue,
     }: {
-      goalType: 'weight_loss' | 'muscle_gain' | 'strength' | 'endurance';
+      goalType: 'weight_loss' | 'strength' | 'endurance' | 'consistency' | 'custom';
       targetValue: number;
       currentValue: number;
     }) => {

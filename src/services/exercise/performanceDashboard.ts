@@ -5,11 +5,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { fromTable } from '@/lib/supabase-helpers';
-import type {
-  PerformanceMetric,
-  GoalPrediction,
-  UserBenchmarkComparison,
-} from '@/types/advanced-exercise-system';
 
 // Local types - extended for internal use
 interface WorkoutStats {
@@ -39,7 +34,28 @@ interface ProgressInsight {
   actionItems?: string[];
 }
 
-type BenchmarkComparison = UserBenchmarkComparison;
+// Local GoalPrediction type (extended)
+interface LocalGoalPrediction {
+  goalType: string;
+  targetValue: number;
+  currentValue: number;
+  predictedDate?: Date | null;
+  confidence: number;
+  weeklyProgress: number;
+  weeksToGoal?: number;
+  recommendations: string[];
+}
+
+// Local BenchmarkComparison type (extended)
+interface LocalBenchmarkComparison {
+  userPercentile?: number;
+  percentile?: number;
+  comparedToAverage: number;
+  strengths: string[];
+  areasToImprove: string[];
+  similarUsers: number;
+  levelDistribution?: Record<number, number>;
+}
 
 // ============================================
 // CONSTANTS
@@ -279,7 +295,7 @@ export class PerformanceDashboard {
     goalType: 'weight_loss' | 'strength' | 'endurance' | 'consistency' | 'custom',
     targetValue: number,
     currentValue: number
-  ): Promise<GoalPrediction> {
+  ): Promise<LocalGoalPrediction> {
     // Buscar histórico de progresso
     const history = await this.getProgressHistory(goalType, 90);
     
@@ -430,7 +446,7 @@ export class PerformanceDashboard {
   // BENCHMARK COMPARISONS
   // ============================================
 
-  async getBenchmarkComparison(): Promise<BenchmarkComparison> {
+  async getBenchmarkComparison(): Promise<LocalBenchmarkComparison> {
     // Buscar dados do usuário
     const myStats = await this.getWorkoutStats(30);
     const { data: myPoints } = await supabase

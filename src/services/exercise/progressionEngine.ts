@@ -47,14 +47,16 @@ interface MuscleGroupProgress {
   totalVolume?: number;
   lastTrainedAt?: Date;
   progressScore?: number;
+  balanceScore?: number;
 }
 
 interface PlateauDetection {
-  isPlateaued: boolean;
+  isPlateaued?: boolean;
   duration: number;
   suggestions: string[];
   metric?: string;
   currentValue?: number;
+  exerciseCode?: string;
 }
 
 interface RecoveryRecommendation {
@@ -461,7 +463,7 @@ export class ProgressionEngine {
     };
   }
 
-  private calculateWorkoutLoad(workouts: PerformanceMetric[]): number {
+  private calculateWorkoutLoad(workouts: LocalPerformanceMetric[]): number {
     if (workouts.length === 0) return 0;
 
     // Calcular carga baseada em volume e intensidade
@@ -522,7 +524,6 @@ export class ProgressionEngine {
     );
 
     return {
-      goalType,
       durationWeeks: weeks,
       phases,
       priorityExercises,
@@ -531,7 +532,7 @@ export class ProgressionEngine {
     };
   }
 
-  private calculateBaseline(performance: PerformanceMetric[]): {
+  private calculateBaseline(performance: LocalPerformanceMetric[]): {
     avgVolume: number;
     avgIntensity: number;
     avgFrequency: number;
@@ -607,14 +608,14 @@ export class ProgressionEngine {
 
     // Adicionar exercícios em plateau
     plateaus.forEach(p => {
-      if (!priorities.includes(p.exerciseCode)) {
+      if (p.exerciseCode && !priorities.includes(p.exerciseCode)) {
         priorities.push(p.exerciseCode);
       }
     });
 
     // Adicionar grupos musculares fracos
     const weakGroups = muscleProgress
-      .filter(mg => (mg.balanceScore || 0.5) < 0.4)
+      .filter(mg => (mg.balanceScore || mg.progressScore || 0.5) < 0.4)
       .map(mg => mg.muscleGroup);
 
     // Mapear grupos para exercícios
