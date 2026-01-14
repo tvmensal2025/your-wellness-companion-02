@@ -72,6 +72,109 @@ interface Encouragement {
   createdAt: Date;
 }
 
+// Competition types
+interface CompetitionPrize {
+  rank: number;
+  reward?: string;
+  value?: number;
+  type?: string;
+  description?: string;
+}
+
+interface Competition {
+  id: string;
+  name: string;
+  description: string;
+  type: string;
+  startDate: Date;
+  endDate: Date;
+  maxParticipants: number;
+  status: string;
+  goalType: string;
+  goalValue?: number;
+  currentParticipants?: number;
+  [key: string]: any;
+}
+
+interface CompetitionParticipation {
+  id: string;
+  competitionId: string;
+  competition?: Competition;
+  currentProgress: number;
+  currentRank: number;
+  pointsEarned: number;
+  joinedAt: Date;
+}
+
+interface CompetitionLeaderboardEntry {
+  rank: number;
+  oderId?: string;
+  userId?: string;
+  userName: string;
+  avatarUrl?: string;
+  progress: number;
+  pointsEarned: number;
+  teamId?: string;
+}
+
+interface Tournament {
+  id: string;
+  name: string;
+  description: string;
+  bracketSize: number;
+  startDate: Date;
+  status: string;
+  matchDurationDays?: number;
+  [key: string]: any;
+}
+
+interface TournamentBracket {
+  rounds: TournamentRound[];
+  tournamentId?: string;
+  [key: string]: any;
+}
+
+interface TournamentRound {
+  roundNumber: number;
+  matches: TournamentMatch[];
+  roundName?: string;
+  [key: string]: any;
+}
+
+interface TournamentMatch {
+  id: string;
+  player1Id?: string;
+  player2Id?: string;
+  winnerId?: string;
+  status: string;
+  matchNumber?: number;
+  [key: string]: any;
+}
+
+interface SeasonalEvent {
+  id: string;
+  name: string;
+  description: string;
+  startDate: Date;
+  endDate: Date;
+  rewards: any[];
+}
+
+interface CommunityEvent {
+  id: string;
+  name?: string;
+  title?: string;
+  description?: string;
+  type?: string;
+  eventType?: string;
+  startDate?: Date;
+  endDate?: Date;
+  eventDate?: Date;
+  participantCount?: number;
+  currentParticipants?: number;
+  [key: string]: any;
+}
+
 // ============================================
 // CONSTANTS
 // ============================================
@@ -580,8 +683,7 @@ export class SocialHub {
     requestId: string,
     accept: boolean
   ): Promise<void> {
-    await supabase
-      .from('exercise_buddy_requests')
+    await (fromTable('exercise_buddy_requests') as any)
       .update({ 
         status: accept ? 'accepted' : 'rejected',
         responded_at: new Date().toISOString(),
@@ -590,24 +692,22 @@ export class SocialHub {
 
     if (accept) {
       // Criar conexão de buddy
-      const { data: request } = await supabase
-        .from('exercise_buddy_requests')
+      const { data: request } = await (fromTable('exercise_buddy_requests') as any)
         .select('from_user_id')
         .eq('id', requestId)
         .single();
 
       if (request) {
-        await supabase.from('exercise_buddy_connections').insert({
+        await (fromTable('exercise_buddy_connections') as any).insert({
           user_id_1: this.userId,
-          user_id_2: request.from_user_id,
+          user_id_2: (request as any).from_user_id,
         });
       }
     }
   }
 
   async getMyBuddies(): Promise<WorkoutBuddy[]> {
-    const { data } = await supabase
-      .from('exercise_buddy_connections')
+    const { data } = await (fromTable('exercise_buddy_connections') as any)
       .select(`
         *,
         buddy1:profiles!user_id_1(id, full_name, avatar_url),
@@ -615,19 +715,19 @@ export class SocialHub {
       `)
       .or(`user_id_1.eq.${this.userId},user_id_2.eq.${this.userId}`);
 
-    return (data || []).map(conn => {
+    return ((data || []) as any[]).map(conn => {
       const buddy = (conn.buddy1 as { id: string })?.id === this.userId 
         ? conn.buddy2 
         : conn.buddy1;
       
       return {
-        oderId: (buddy as { id: string })?.id,
+        userId: (buddy as { id: string })?.id,
         userName: (buddy as { full_name?: string })?.full_name || 'Usuário',
         avatarUrl: (buddy as { avatar_url?: string })?.avatar_url,
         level: 1,
         compatibilityScore: 1,
         commonGoals: [],
-        connectedSince: new Date(conn.connected_at),
+        connectedSince: conn.connected_at ? new Date(conn.connected_at) : undefined,
       };
     });
   }

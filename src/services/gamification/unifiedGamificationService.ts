@@ -7,6 +7,7 @@
  */
 
 import { supabase } from '@/integrations/supabase/client';
+import { fromTable, callRpc } from '@/lib/supabase-helpers';
 
 // ═══════════════════════════════════════════════════════════
 // 📋 TIPOS
@@ -72,7 +73,7 @@ export async function getXPConfig(actionType: string): Promise<XPConfig | null> 
     return cached.config;
   }
 
-  const { data, error } = await supabase.rpc('get_xp_config', {
+  const { data, error } = await callRpc('get_xp_config', {
     p_action_type: actionType,
   });
 
@@ -81,7 +82,7 @@ export async function getXPConfig(actionType: string): Promise<XPConfig | null> 
     return null;
   }
 
-  const config = data as XPConfig;
+  const config = data as unknown as XPConfig;
   
   // Atualizar cache
   configCache.set(actionType, { config, timestamp: Date.now() });
@@ -93,14 +94,14 @@ export async function getXPConfig(actionType: string): Promise<XPConfig | null> 
  * Busca todas as configurações de XP (para admin)
  */
 export async function getAllXPConfigs(): Promise<XPConfig[]> {
-  const { data, error } = await supabase.rpc('get_all_xp_configs');
+  const { data, error } = await callRpc('get_all_xp_configs');
 
   if (error) {
     console.error('[UnifiedGamification] Error fetching configs:', error);
     return [];
   }
 
-  return (data || []) as XPConfig[];
+  return (data || []) as unknown as XPConfig[];
 }
 
 /**
@@ -146,7 +147,7 @@ export async function awardXP(
     metadata?: Record<string, unknown>;
   }
 ): Promise<AwardResult> {
-  const { data, error } = await supabase.rpc('award_unified_xp', {
+  const { data, error } = await callRpc('award_unified_xp', {
     p_user_id: userId,
     p_action_type: actionType,
     p_source_system: options?.sourceSystem || null,
@@ -164,7 +165,7 @@ export async function awardXP(
     };
   }
 
-  return data as AwardResult;
+  return data as unknown as AwardResult;
 }
 
 /**
@@ -183,26 +184,27 @@ export async function awardCustomXP(
   }
 ): Promise<AwardResult> {
   // Verificar limite diário primeiro
-  const { data: limitCheck } = await supabase.rpc('check_and_increment_daily_limit', {
+  const { data: limitCheck } = await callRpc('check_and_increment_daily_limit', {
     p_user_id: userId,
     p_action_type: actionType,
     p_xp_to_add: customXP,
     p_points_to_add: customPoints,
   });
 
-  if (!limitCheck?.can_award) {
+  const result = limitCheck as any;
+  if (!result?.can_award) {
     return {
       success: false,
       xp_earned: 0,
       points_earned: 0,
-      reason: limitCheck?.reason || 'daily_limit_reached',
-      current_count: limitCheck?.current_count,
-      max_count: limitCheck?.max_count,
+      reason: result?.reason || 'daily_limit_reached',
+      current_count: result?.current_count,
+      max_count: result?.max_count,
     };
   }
 
   // Registrar no histórico
-  await supabase.from('unified_xp_history').insert({
+  await (fromTable('unified_xp_history') as any).insert({
     user_id: userId,
     action_type: actionType,
     xp_earned: customXP,
@@ -248,7 +250,7 @@ export async function awardCustomXP(
  * Busca estatísticas de XP do usuário
  */
 export async function getUserXPStats(userId: string): Promise<UserXPStats> {
-  const { data, error } = await supabase.rpc('get_user_xp_stats', {
+  const { data, error } = await callRpc('get_user_xp_stats', {
     p_user_id: userId,
   });
 
@@ -263,15 +265,14 @@ export async function getUserXPStats(userId: string): Promise<UserXPStats> {
     };
   }
 
-  return data as UserXPStats;
+  return data as unknown as UserXPStats;
 }
 
 /**
  * Busca limites diários do usuário
  */
 export async function getUserDailyLimits(userId: string): Promise<DailyLimit[]> {
-  const { data: limits } = await supabase
-    .from('user_daily_xp_limits')
+  const { data: limits } = await (fromTable('user_daily_xp_limits') as any)
     .select('action_type, count, total_xp')
     .eq('user_id', userId)
     .eq('date', new Date().toISOString().split('T')[0]);
@@ -283,7 +284,7 @@ export async function getUserDailyLimits(userId: string): Promise<DailyLimit[]> 
 
   const configMap = new Map(configs?.map(c => [c.action_type, c.max_daily]) || []);
 
-  return (limits || []).map(l => ({
+  return ((limits || []) as any[]).map(l => ({
     action_type: l.action_type,
     current_count: l.count,
     max_count: configMap.get(l.action_type) || null,
@@ -304,14 +305,13 @@ export async function getXPHistory(
   created_at: string;
   source_system: string | null;
 }>> {
-  const { data } = await supabase
-    .from('unified_xp_history')
+  const { data } = await (fromTable('unified_xp_history') as any)
     .select('action_type, xp_earned, points_earned, created_at, source_system')
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
     .limit(limit);
 
-  return data || [];
+  return (data || []) as any[];
 }
 
 // ═══════════════════════════════════════════════════════════
