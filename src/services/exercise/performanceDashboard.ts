@@ -14,13 +14,13 @@ import type {
 // Local types - extended for internal use
 interface WorkoutStats {
   totalWorkouts: number;
-  totalDuration: number;
+  totalDuration?: number;
   totalDurationMinutes?: number;
   totalVolume: number;
   avgDifficulty: number;
   avgWorkoutDuration?: number;
-  personalRecords: any[];
-  weeklyData: any[];
+  personalRecords?: any[];
+  weeklyData?: any[];
   consistency?: number;
   currentStreak?: number;
   longestStreak?: number;
@@ -32,12 +32,14 @@ interface ProgressInsight {
   type: string;
   title: string;
   description: string;
-  priority: string;
+  priority?: string;
   category?: string;
   metric?: number;
   recommendation?: string;
   actionItems?: string[];
 }
+
+type BenchmarkComparison = UserBenchmarkComparison;
 
 // ============================================
 // CONSTANTS
@@ -274,7 +276,7 @@ export class PerformanceDashboard {
   // ============================================
 
   async predictGoalTimeline(
-    goalType: 'weight_loss' | 'muscle_gain' | 'strength' | 'endurance',
+    goalType: 'weight_loss' | 'strength' | 'endurance' | 'consistency' | 'custom',
     targetValue: number,
     currentValue: number
   ): Promise<GoalPrediction> {
@@ -337,14 +339,13 @@ export class PerformanceDashboard {
       valueColumn = 'weight_used';
     }
 
-    const { data } = await supabase
-      .from(tableName)
+    const { data } = await (fromTable(tableName) as any)
       .select(`created_at, ${valueColumn}`)
       .eq('user_id', this.userId)
       .gte('created_at', new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString())
       .order('created_at');
 
-    return (data || []).map(d => ({
+    return (data || []).map((d: any) => ({
       date: new Date(d.created_at),
       value: d[valueColumn] || 0,
     }));

@@ -4,14 +4,73 @@
 // ============================================
 
 import { supabase } from '@/integrations/supabase/client';
-import type {
-  WorkoutGroup,
-  GroupMember,
-  TeamChallenge,
-  WorkoutBuddy,
-  LiveWorkoutSession,
-  Encouragement,
-} from '@/types/advanced-exercise-system';
+import { fromTable } from '@/lib/supabase-helpers';
+
+// Local types for social system
+interface WorkoutGroup {
+  id: string;
+  name: string;
+  description: string;
+  createdBy: string;
+  isPublic: boolean;
+  memberCount: number;
+  maxMembers: number;
+  isActive: boolean;
+  createdAt: Date;
+}
+
+interface GroupMember {
+  id: string;
+  groupId: string;
+  userId: string;
+  role: string;
+  joinedAt: Date;
+  userName?: string;
+  avatarUrl?: string;
+}
+
+interface TeamChallenge {
+  id: string;
+  groupId: string;
+  title: string;
+  description: string;
+  goalType: string;
+  goalValue: number;
+  currentProgress: number;
+  startDate: Date;
+  endDate: Date;
+  isCompleted: boolean;
+}
+
+interface WorkoutBuddy {
+  userId: string;
+  userName: string;
+  avatarUrl?: string;
+  level: number;
+  compatibilityScore: number;
+  commonGoals: string[];
+  preferredSchedule?: string[];
+}
+
+interface LiveWorkoutSession {
+  id: string;
+  hostUserId: string;
+  hostName?: string;
+  groupId?: string;
+  status: string;
+  participantCount: number;
+  startedAt: Date;
+}
+
+interface Encouragement {
+  id: string;
+  fromUserId: string;
+  fromUserName?: string;
+  toUserId: string;
+  type: string;
+  message?: string;
+  createdAt: Date;
+}
 
 // ============================================
 // CONSTANTS
@@ -51,8 +110,7 @@ export class SocialHub {
     isPublic: boolean = true,
     maxMembers: number = GROUP_LIMITS.maxMembers
   ): Promise<WorkoutGroup> {
-    const { data, error } = await supabase
-      .from('exercise_workout_groups')
+    const { data, error } = await (fromTable('exercise_workout_groups') as any)
       .insert({
         name,
         description,
@@ -66,7 +124,7 @@ export class SocialHub {
     if (error) throw error;
 
     // Adicionar criador como admin
-    await supabase.from('exercise_group_members').insert({
+    await (fromTable('exercise_group_members') as any).insert({
       group_id: data.id,
       user_id: this.userId,
       role: 'admin',
@@ -76,34 +134,31 @@ export class SocialHub {
   }
 
   async getMyGroups(): Promise<WorkoutGroup[]> {
-    const { data } = await supabase
-      .from('exercise_group_members')
+    const { data } = await (fromTable('exercise_group_members') as any)
       .select(`
         group:exercise_workout_groups(*)
       `)
       .eq('user_id', this.userId);
 
     return (data || [])
-      .filter(d => d.group)
-      .map(d => this.mapGroup(d.group));
+      .filter((d: any) => d.group)
+      .map((d: any) => this.mapGroup(d.group));
   }
 
   async getPublicGroups(limit: number = 20): Promise<WorkoutGroup[]> {
-    const { data } = await supabase
-      .from('exercise_workout_groups')
+    const { data } = await (fromTable('exercise_workout_groups') as any)
       .select('*')
       .eq('is_public', true)
       .eq('is_active', true)
       .order('member_count', { ascending: false })
       .limit(limit);
 
-    return (data || []).map(g => this.mapGroup(g));
+    return (data || []).map((g: any) => this.mapGroup(g));
   }
 
   async joinGroup(groupId: string): Promise<GroupMember> {
     // Verificar se grupo existe e tem vaga
-    const { data: group } = await supabase
-      .from('exercise_workout_groups')
+    const { data: group } = await (fromTable('exercise_workout_groups') as any)
       .select('member_count, max_members, is_public')
       .eq('id', groupId)
       .maybeSingle();
@@ -111,8 +166,7 @@ export class SocialHub {
     if (!group) throw new Error('Grupo não encontrado');
     if (group.member_count >= group.max_members) throw new Error('Grupo cheio');
 
-    const { data, error } = await supabase
-      .from('exercise_group_members')
+    const { data, error } = await (fromTable('exercise_group_members') as any)
       .insert({
         group_id: groupId,
         user_id: this.userId,
@@ -123,8 +177,10 @@ export class SocialHub {
 
     if (error) throw error;
 
-    // Atualizar contador
-    await supabase.rpc('increment_group_members', { p_group_id: groupId });
+    // Atualizar contador via direct update
+    await (fromTable('exercise_workout_groups') as any)
+      .update({ member_count: (group.member_count || 0) + 1 })
+      .eq('id', groupId);
 
     return {
       id: data.id,
@@ -136,18 +192,26 @@ export class SocialHub {
   }
 
   async leaveGroup(groupId: string): Promise<void> {
-    await supabase
-      .from('exercise_group_members')
+    await (fromTable('exercise_group_members') as any)
       .delete()
       .eq('group_id', groupId)
       .eq('user_id', this.userId);
 
-    await supabase.rpc('decrement_group_members', { p_group_id: groupId });
+    // Decrement member count via direct query
+    const { data: group } = await (fromTable('exercise_workout_groups') as any)
+      .select('member_count')
+      .eq('id', groupId)
+      .maybeSingle();
+    
+    if (group) {
+      await (fromTable('exercise_workout_groups') as any)
+        .update({ member_count: Math.max(0, (group.member_count || 1) - 1) })
+        .eq('id', groupId);
+    }
   }
 
   async getGroupMembers(groupId: string): Promise<GroupMember[]> {
-    const { data } = await supabase
-      .from('exercise_group_members')
+    const { data } = await (fromTable('exercise_group_members') as any)
       .select(`
         *,
         profile:profiles(full_name, avatar_url)
@@ -155,7 +219,7 @@ export class SocialHub {
       .eq('group_id', groupId)
       .order('joined_at');
 
-    return (data || []).map(m => ({
+    return (data || []).map((m: any) => ({
       id: m.id,
       groupId: m.group_id,
       userId: m.user_id,
@@ -185,8 +249,7 @@ export class SocialHub {
   // ============================================
 
   async startLiveSession(groupId?: string): Promise<LiveWorkoutSession> {
-    const { data, error } = await supabase
-      .from('exercise_live_sessions')
+    const { data, error } = await (fromTable('exercise_live_sessions') as any)
       .insert({
         host_user_id: this.userId,
         group_id: groupId,
@@ -208,27 +271,45 @@ export class SocialHub {
   }
 
   async joinLiveSession(sessionId: string): Promise<void> {
-    await supabase.from('exercise_live_session_participants').insert({
+    await (fromTable('exercise_live_session_participants') as any).insert({
       session_id: sessionId,
       user_id: this.userId,
     });
 
-    await supabase.rpc('increment_session_participants', { p_session_id: sessionId });
+    // Increment participant count directly
+    const { data: session } = await (fromTable('exercise_live_sessions') as any)
+      .select('participant_count')
+      .eq('id', sessionId)
+      .maybeSingle();
+    
+    if (session) {
+      await (fromTable('exercise_live_sessions') as any)
+        .update({ participant_count: (session.participant_count || 0) + 1 })
+        .eq('id', sessionId);
+    }
   }
 
   async leaveLiveSession(sessionId: string): Promise<void> {
-    await supabase
-      .from('exercise_live_session_participants')
+    await (fromTable('exercise_live_session_participants') as any)
       .delete()
       .eq('session_id', sessionId)
       .eq('user_id', this.userId);
 
-    await supabase.rpc('decrement_session_participants', { p_session_id: sessionId });
+    // Decrement participant count directly
+    const { data: session } = await (fromTable('exercise_live_sessions') as any)
+      .select('participant_count')
+      .eq('id', sessionId)
+      .maybeSingle();
+    
+    if (session) {
+      await (fromTable('exercise_live_sessions') as any)
+        .update({ participant_count: Math.max(0, (session.participant_count || 1) - 1) })
+        .eq('id', sessionId);
+    }
   }
 
   async endLiveSession(sessionId: string): Promise<void> {
-    await supabase
-      .from('exercise_live_sessions')
+    await (fromTable('exercise_live_sessions') as any)
       .update({ 
         status: 'ended',
         ended_at: new Date().toISOString(),
@@ -238,8 +319,7 @@ export class SocialHub {
   }
 
   async getActiveSessions(groupId?: string): Promise<LiveWorkoutSession[]> {
-    let query = supabase
-      .from('exercise_live_sessions')
+    let query = (fromTable('exercise_live_sessions') as any)
       .select(`
         *,
         host:profiles!host_user_id(full_name, avatar_url)
@@ -252,7 +332,7 @@ export class SocialHub {
 
     const { data } = await query.order('started_at', { ascending: false });
 
-    return (data || []).map(s => ({
+    return (data || []).map((s: any) => ({
       id: s.id,
       hostUserId: s.host_user_id,
       hostName: (s.host as { full_name?: string })?.full_name,
@@ -272,8 +352,7 @@ export class SocialHub {
     type: 'cheer' | 'high_five' | 'motivation' | 'celebration',
     message?: string
   ): Promise<Encouragement> {
-    const { data, error } = await supabase
-      .from('exercise_encouragements')
+    const { data, error } = await (fromTable('exercise_encouragements') as any)
       .insert({
         from_user_id: this.userId,
         to_user_id: toUserId,
@@ -296,8 +375,7 @@ export class SocialHub {
   }
 
   async getMyEncouragements(limit: number = 20): Promise<Encouragement[]> {
-    const { data } = await supabase
-      .from('exercise_encouragements')
+    const { data } = await (fromTable('exercise_encouragements') as any)
       .select(`
         *,
         from_user:profiles!from_user_id(full_name, avatar_url)
@@ -306,7 +384,7 @@ export class SocialHub {
       .order('created_at', { ascending: false })
       .limit(limit);
 
-    return (data || []).map(e => ({
+    return (data || []).map((e: any) => ({
       id: e.id,
       fromUserId: e.from_user_id,
       fromUserName: (e.from_user as { full_name?: string })?.full_name,
@@ -329,8 +407,7 @@ export class SocialHub {
     goalValue: number,
     endDate: Date
   ): Promise<TeamChallenge> {
-    const { data, error } = await supabase
-      .from('exercise_team_challenges')
+    const { data, error } = await (fromTable('exercise_team_challenges') as any)
       .insert({
         group_id: groupId,
         created_by: this.userId,
@@ -360,13 +437,12 @@ export class SocialHub {
   }
 
   async getGroupChallenges(groupId: string): Promise<TeamChallenge[]> {
-    const { data } = await supabase
-      .from('exercise_team_challenges')
+    const { data } = await (fromTable('exercise_team_challenges') as any)
       .select('*')
       .eq('group_id', groupId)
       .order('end_date');
 
-    return (data || []).map(c => ({
+    return (data || []).map((c: any) => ({
       id: c.id,
       groupId: c.group_id,
       title: c.title,
@@ -385,17 +461,23 @@ export class SocialHub {
     contribution: number
   ): Promise<void> {
     // Registrar contribuição individual
-    await supabase.from('exercise_challenge_contributions').insert({
+    await (fromTable('exercise_challenge_contributions') as any).insert({
       challenge_id: challengeId,
       user_id: this.userId,
       contribution_value: contribution,
     });
 
-    // Atualizar progresso total
-    await supabase.rpc('update_team_challenge_progress', {
-      p_challenge_id: challengeId,
-      p_contribution: contribution,
-    });
+    // Atualizar progresso total via direct update
+    const { data: challenge } = await (fromTable('exercise_team_challenges') as any)
+      .select('current_progress')
+      .eq('id', challengeId)
+      .maybeSingle();
+    
+    if (challenge) {
+      await (fromTable('exercise_team_challenges') as any)
+        .update({ current_progress: (challenge.current_progress || 0) + contribution })
+        .eq('id', challengeId);
+    }
   }
 
   // ============================================
@@ -404,15 +486,13 @@ export class SocialHub {
 
   async findWorkoutBuddies(limit: number = 10): Promise<WorkoutBuddy[]> {
     // Buscar perfil do usuário atual
-    const { data: myProfile } = await supabase
-      .from('exercise_user_preferences')
+    const { data: myProfile } = await (fromTable('exercise_user_preferences') as any)
       .select('*')
       .eq('user_id', this.userId)
       .maybeSingle();
 
     // Buscar candidatos
-    const { data: candidates } = await supabase
-      .from('exercise_user_preferences')
+    const { data: candidates } = await (fromTable('exercise_user_preferences') as any)
       .select(`
         *,
         profile:profiles(full_name, avatar_url),
@@ -425,7 +505,7 @@ export class SocialHub {
     if (!candidates || candidates.length === 0) return [];
 
     // Calcular compatibilidade
-    const scored = candidates.map(candidate => ({
+    const scored = (candidates as any[]).map(candidate => ({
       candidate,
       score: this.calculateBuddyScore(myProfile, candidate),
     }));
@@ -488,7 +568,7 @@ export class SocialHub {
   }
 
   async sendBuddyRequest(toUserId: string, message?: string): Promise<void> {
-    await supabase.from('exercise_buddy_requests').insert({
+    await (fromTable('exercise_buddy_requests') as any).insert({
       from_user_id: this.userId,
       to_user_id: toUserId,
       message,

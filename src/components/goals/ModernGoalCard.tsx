@@ -92,7 +92,7 @@ export const ModernGoalCard = ({ goal, onUpdate, onViewDetails }: ModernGoalCard
     agua: '💧'
   };
 
-  const categoryIcon = categoryIcons[goal.category.toLowerCase()] || '🎯';
+  const categoryIcon = goal.category ? categoryIcons[goal.category.toLowerCase()] || '🎯' : '🎯';
 
   // Status da meta
   const isCompleted = progress >= 100;
