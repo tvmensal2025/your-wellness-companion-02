@@ -6,6 +6,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { fromTable } from '@/lib/supabase-helpers';
 
 // ============================================
 // TYPES
@@ -63,8 +64,7 @@ export function useExerciseRanking(userId?: string) {
       if (!userId) return [];
 
       // Buscar pontos de exercício com perfis
-      const { data: pointsData, error } = await supabase
-        .from('exercise_gamification_points')
+      const { data: pointsData, error } = await (fromTable('exercise_gamification_points') as any)
         .select(`
           user_id,
           weekly_points,
@@ -106,8 +106,7 @@ export function useExerciseRanking(userId?: string) {
     queryFn: async () => {
       if (!userId) return { position: 0, points: 0 };
 
-      const { data: myPoints } = await supabase
-        .from('exercise_gamification_points')
+      const { data: myPoints } = await (fromTable('exercise_gamification_points') as any)
         .select('weekly_points, total_points, current_streak')
         .eq('user_id', userId)
         .maybeSingle();
@@ -115,8 +114,7 @@ export function useExerciseRanking(userId?: string) {
       if (!myPoints) return { position: 0, points: 0, consecutiveDays: 0 };
 
       // Contar posição
-      const { count } = await supabase
-        .from('exercise_gamification_points')
+      const { count } = await (fromTable('exercise_gamification_points') as any)
         .select('*', { count: 'exact', head: true })
         .gt('weekly_points', myPoints.weekly_points || 0);
 
@@ -201,8 +199,7 @@ export function useExerciseRanking(userId?: string) {
       if (!userId) return { buddy: null, ranking: null };
 
       // Buscar conexões/amigos do usuário
-      const { data: connections } = await supabase
-        .from('user_connections')
+      const { data: connections } = await (fromTable('user_connections') as any)
         .select(`
           connected_user_id,
           status,
@@ -214,8 +211,7 @@ export function useExerciseRanking(userId?: string) {
 
       if (!connections || connections.length === 0) {
         // Tentar buscar na direção inversa
-        const { data: reverseConnections } = await supabase
-          .from('user_connections')
+        const { data: reverseConnections } = await (fromTable('user_connections') as any)
           .select(`
             user_id,
             status,
@@ -229,12 +225,12 @@ export function useExerciseRanking(userId?: string) {
           return { buddy: null, ranking: null };
         }
 
-        const buddyId = reverseConnections[0].user_id;
-        return await fetchBuddyData(userId, buddyId, reverseConnections[0].profiles);
+        const buddyId = (reverseConnections[0] as any).user_id;
+        return await fetchBuddyData(userId, buddyId, (reverseConnections[0] as any).profiles);
       }
 
-      const buddyId = connections[0].connected_user_id;
-      return await fetchBuddyData(userId, buddyId, connections[0].profiles);
+      const buddyId = (connections[0] as any).connected_user_id;
+      return await fetchBuddyData(userId, buddyId, (connections[0] as any).profiles);
     },
     enabled,
     staleTime: 5 * 60 * 1000,
@@ -272,15 +268,13 @@ async function fetchBuddyData(
   buddyProfile: any
 ): Promise<{ buddy: BuddyInfo | null; ranking: BuddyRanking | null }> {
   // Buscar pontos do parceiro
-  const { data: buddyPoints } = await supabase
-    .from('exercise_gamification_points')
+  const { data: buddyPoints } = await (fromTable('exercise_gamification_points') as any)
     .select('weekly_points, total_points, current_streak')
     .eq('user_id', buddyId)
     .maybeSingle();
 
   // Buscar pontos do usuário
-  const { data: userPoints } = await supabase
-    .from('exercise_gamification_points')
+  const { data: userPoints } = await (fromTable('exercise_gamification_points') as any)
     .select('weekly_points, total_points, current_streak')
     .eq('user_id', userId)
     .maybeSingle();

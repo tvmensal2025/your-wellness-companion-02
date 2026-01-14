@@ -4,7 +4,7 @@
 // ============================================
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { fromTable, callRpc } from '@/lib/supabase-helpers';
 
 // ============================================
 // TYPES
@@ -64,12 +64,11 @@ export function useExerciseChallenges(userId?: string) {
     queryFn: async (): Promise<ExerciseChallenge[]> => {
       if (!userId) return [];
 
-      const { data, error } = await supabase
-        .from('exercise_challenges')
+      const { data, error } = await (fromTable('exercise_challenges') as any)
         .select(`
           *,
-          challenger:challenger_id(id, full_name, avatar_url),
-          challenged:challenged_id(id, full_name, avatar_url)
+          challenger:profiles!challenger_id(id, full_name, avatar_url),
+          challenged:profiles!challenged_id(id, full_name, avatar_url)
         `)
         .or(`challenger_id.eq.${userId},challenged_id.eq.${userId}`)
         .order('created_at', { ascending: false });
@@ -129,8 +128,7 @@ export function useExerciseChallenges(userId?: string) {
     mutationFn: async (params: CreateChallengeParams) => {
       if (!userId) throw new Error('Usuário não autenticado');
 
-      const { data, error } = await supabase
-        .from('exercise_challenges')
+      const { data, error } = await (fromTable('exercise_challenges') as any)
         .insert({
           challenger_id: userId,
           challenged_id: params.challengedId,
@@ -154,12 +152,12 @@ export function useExerciseChallenges(userId?: string) {
   // Aceitar desafio
   const acceptChallenge = useMutation({
     mutationFn: async (challengeId: string) => {
-      const { data, error } = await supabase
-        .rpc('accept_exercise_challenge', { p_challenge_id: challengeId });
+      const { data, error } = await callRpc('accept_exercise_challenge', { p_challenge_id: challengeId });
 
       if (error) throw error;
-      if (!data?.success) throw new Error(data?.error || 'Erro ao aceitar');
-      return data;
+      const result = data as any;
+      if (!result?.success) throw new Error(result?.error || 'Erro ao aceitar');
+      return result;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['exercise-challenges'] });
@@ -169,8 +167,7 @@ export function useExerciseChallenges(userId?: string) {
   // Recusar desafio
   const declineChallenge = useMutation({
     mutationFn: async (challengeId: string) => {
-      const { error } = await supabase
-        .from('exercise_challenges')
+      const { error } = await (fromTable('exercise_challenges') as any)
         .update({ status: 'declined' })
         .eq('id', challengeId);
 
@@ -184,12 +181,12 @@ export function useExerciseChallenges(userId?: string) {
   // Iniciar desafio
   const startChallenge = useMutation({
     mutationFn: async (challengeId: string) => {
-      const { data, error } = await supabase
-        .rpc('start_exercise_challenge', { p_challenge_id: challengeId });
+      const { data, error } = await callRpc('start_exercise_challenge', { p_challenge_id: challengeId });
 
       if (error) throw error;
-      if (!data?.success) throw new Error(data?.error || 'Erro ao iniciar');
-      return data;
+      const result = data as any;
+      if (!result?.success) throw new Error(result?.error || 'Erro ao iniciar');
+      return result;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['exercise-challenges'] });
@@ -199,15 +196,15 @@ export function useExerciseChallenges(userId?: string) {
   // Atualizar progresso
   const updateProgress = useMutation({
     mutationFn: async ({ challengeId, progress }: { challengeId: string; progress: number }) => {
-      const { data, error } = await supabase
-        .rpc('update_challenge_progress', { 
-          p_challenge_id: challengeId,
-          p_progress: progress,
-        });
+      const { data, error } = await callRpc('update_challenge_progress', { 
+        p_challenge_id: challengeId,
+        p_progress: progress,
+      });
 
       if (error) throw error;
-      if (!data?.success) throw new Error(data?.error || 'Erro ao atualizar');
-      return data;
+      const result = data as any;
+      if (!result?.success) throw new Error(result?.error || 'Erro ao atualizar');
+      return result;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['exercise-challenges'] });
@@ -217,12 +214,12 @@ export function useExerciseChallenges(userId?: string) {
   // Completar desafio
   const completeChallenge = useMutation({
     mutationFn: async (challengeId: string) => {
-      const { data, error } = await supabase
-        .rpc('complete_exercise_challenge', { p_challenge_id: challengeId });
+      const { data, error } = await callRpc('complete_exercise_challenge', { p_challenge_id: challengeId });
 
       if (error) throw error;
-      if (!data?.success) throw new Error(data?.error || 'Erro ao completar');
-      return data;
+      const result = data as any;
+      if (!result?.success) throw new Error(result?.error || 'Erro ao completar');
+      return result;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['exercise-challenges'] });

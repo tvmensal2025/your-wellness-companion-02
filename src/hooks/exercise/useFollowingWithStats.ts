@@ -128,11 +128,11 @@ export function useFollowingWithStats(userId?: string) {
         monthlyCount.set(w.user_id, (monthlyCount.get(w.user_id) || 0) + 1);
       });
 
-      (totalWorkouts || []).forEach(w => {
+      (totalWorkouts || []).forEach((w: any) => {
         totalCount.set(w.user_id, (totalCount.get(w.user_id) || 0) + 1);
       });
 
-      (lastWorkouts || []).forEach(w => {
+      (lastWorkouts || []).forEach((w: any) => {
         if (!lastWorkoutMap.has(w.user_id)) {
           lastWorkoutMap.set(w.user_id, w.completed_at);
         }

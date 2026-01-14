@@ -3660,6 +3660,147 @@ export type Database = {
         }
         Relationships: []
       }
+      exercise_challenges: {
+        Row: {
+          accepted_at: string | null
+          challenge_type: string
+          challenged_id: string
+          challenged_progress: number | null
+          challenger_id: string
+          challenger_progress: number | null
+          completed_at: string | null
+          created_at: string | null
+          duration_seconds: number | null
+          exercise_emoji: string | null
+          exercise_name: string
+          expires_at: string | null
+          id: string
+          started_at: string | null
+          status: string | null
+          target_value: number | null
+          winner_id: string | null
+        }
+        Insert: {
+          accepted_at?: string | null
+          challenge_type: string
+          challenged_id: string
+          challenged_progress?: number | null
+          challenger_id: string
+          challenger_progress?: number | null
+          completed_at?: string | null
+          created_at?: string | null
+          duration_seconds?: number | null
+          exercise_emoji?: string | null
+          exercise_name: string
+          expires_at?: string | null
+          id?: string
+          started_at?: string | null
+          status?: string | null
+          target_value?: number | null
+          winner_id?: string | null
+        }
+        Update: {
+          accepted_at?: string | null
+          challenge_type?: string
+          challenged_id?: string
+          challenged_progress?: number | null
+          challenger_id?: string
+          challenger_progress?: number | null
+          completed_at?: string | null
+          created_at?: string | null
+          duration_seconds?: number | null
+          exercise_emoji?: string | null
+          exercise_name?: string
+          expires_at?: string | null
+          id?: string
+          started_at?: string | null
+          status?: string | null
+          target_value?: number | null
+          winner_id?: string | null
+        }
+        Relationships: []
+      }
+      exercise_gamification_points: {
+        Row: {
+          created_at: string | null
+          current_level: number | null
+          current_streak: number | null
+          current_xp: number | null
+          id: string
+          monthly_points: number | null
+          total_points: number | null
+          updated_at: string | null
+          user_id: string
+          weekly_points: number | null
+          xp_to_next_level: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          current_level?: number | null
+          current_streak?: number | null
+          current_xp?: number | null
+          id?: string
+          monthly_points?: number | null
+          total_points?: number | null
+          updated_at?: string | null
+          user_id: string
+          weekly_points?: number | null
+          xp_to_next_level?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          current_level?: number | null
+          current_streak?: number | null
+          current_xp?: number | null
+          id?: string
+          monthly_points?: number | null
+          total_points?: number | null
+          updated_at?: string | null
+          user_id?: string
+          weekly_points?: number | null
+          xp_to_next_level?: number | null
+        }
+        Relationships: []
+      }
+      exercise_muscle_group_progress: {
+        Row: {
+          balance_score: number | null
+          created_at: string | null
+          id: string
+          last_trained_at: string | null
+          muscle_group: string
+          progress_score: number | null
+          total_volume: number | null
+          updated_at: string | null
+          user_id: string
+          weekly_volume: number | null
+        }
+        Insert: {
+          balance_score?: number | null
+          created_at?: string | null
+          id?: string
+          last_trained_at?: string | null
+          muscle_group: string
+          progress_score?: number | null
+          total_volume?: number | null
+          updated_at?: string | null
+          user_id: string
+          weekly_volume?: number | null
+        }
+        Update: {
+          balance_score?: number | null
+          created_at?: string | null
+          id?: string
+          last_trained_at?: string | null
+          muscle_group?: string
+          progress_score?: number | null
+          total_volume?: number | null
+          updated_at?: string | null
+          user_id?: string
+          weekly_volume?: number | null
+        }
+        Relationships: []
+      }
       exercise_nutrition: {
         Row: {
           created_at: string | null
@@ -3693,6 +3834,57 @@ export type Database = {
           pre_workout_recommendations?: Json | null
           supplement_suggestions?: string[] | null
           timing_guidelines?: string | null
+        }
+        Relationships: []
+      }
+      exercise_performance_metrics: {
+        Row: {
+          created_at: string | null
+          difficulty_rating: number | null
+          duration_seconds: number | null
+          exercise_code: string
+          fatigue_level: number | null
+          heart_rate_avg: number | null
+          heart_rate_max: number | null
+          id: string
+          notes: string | null
+          pain_level: number | null
+          reps_completed: number | null
+          sets_completed: number | null
+          user_id: string
+          weight_used: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          difficulty_rating?: number | null
+          duration_seconds?: number | null
+          exercise_code: string
+          fatigue_level?: number | null
+          heart_rate_avg?: number | null
+          heart_rate_max?: number | null
+          id?: string
+          notes?: string | null
+          pain_level?: number | null
+          reps_completed?: number | null
+          sets_completed?: number | null
+          user_id: string
+          weight_used?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          difficulty_rating?: number | null
+          duration_seconds?: number | null
+          exercise_code?: string
+          fatigue_level?: number | null
+          heart_rate_avg?: number | null
+          heart_rate_max?: number | null
+          id?: string
+          notes?: string | null
+          pain_level?: number | null
+          reps_completed?: number | null
+          sets_completed?: number | null
+          user_id?: string
+          weight_used?: number | null
         }
         Relationships: []
       }
@@ -3893,6 +4085,42 @@ export type Database = {
           session_type?: string | null
           updated_at?: string | null
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      exercise_streaks: {
+        Row: {
+          created_at: string | null
+          current_streak: number | null
+          freeze_available: boolean | null
+          freeze_used_at: string | null
+          id: string
+          last_workout_date: string | null
+          longest_streak: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          current_streak?: number | null
+          freeze_available?: boolean | null
+          freeze_used_at?: string | null
+          id?: string
+          last_workout_date?: string | null
+          longest_streak?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          current_streak?: number | null
+          freeze_available?: boolean | null
+          freeze_used_at?: string | null
+          id?: string
+          last_workout_date?: string | null
+          longest_streak?: number | null
+          updated_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -14213,6 +14441,36 @@ export type Database = {
         }
         Relationships: []
       }
+      xp_config_audit_log: {
+        Row: {
+          action_type: string
+          changed_at: string | null
+          changed_by: string | null
+          field_changed: string
+          id: string
+          new_value: string | null
+          old_value: string | null
+        }
+        Insert: {
+          action_type: string
+          changed_at?: string | null
+          changed_by?: string | null
+          field_changed: string
+          id?: string
+          new_value?: string | null
+          old_value?: string | null
+        }
+        Update: {
+          action_type?: string
+          changed_at?: string | null
+          changed_by?: string | null
+          field_changed?: string
+          id?: string
+          new_value?: string | null
+          old_value?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       exercise_progress_stats: {
@@ -14265,6 +14523,10 @@ export type Database = {
       }
     }
     Functions: {
+      accept_exercise_challenge: {
+        Args: { p_challenge_id: string }
+        Returns: Json
+      }
       assign_session_to_all_users: {
         Args: { session_id_param: string }
         Returns: boolean
@@ -14297,6 +14559,10 @@ export type Database = {
       }
       cleanup_expired_cache: { Args: never; Returns: number }
       cleanup_old_chat_history: { Args: never; Returns: undefined }
+      complete_exercise_challenge: {
+        Args: { p_challenge_id: string }
+        Returns: Json
+      }
       complete_session_cycle: {
         Args: { p_session_id: string; p_user_id: string }
         Returns: Json
@@ -14321,6 +14587,10 @@ export type Database = {
         Args: { _role: string; _user_id: string }
         Returns: boolean
       }
+      increment_report_download: {
+        Args: { p_report_id: string }
+        Returns: undefined
+      }
       is_admin_user: { Args: never; Returns: boolean }
       process_league_promotions: { Args: never; Returns: undefined }
       process_level_up: {
@@ -14343,12 +14613,20 @@ export type Database = {
         Returns: undefined
       }
       reset_whatsapp_daily_counters: { Args: never; Returns: undefined }
+      start_exercise_challenge: {
+        Args: { p_challenge_id: string }
+        Returns: Json
+      }
       sync_all_user_streaks: { Args: never; Returns: undefined }
       toggle_whatsapp_provider: {
         Args: { new_provider: string }
         Returns: Json
       }
       unlock_available_sessions: { Args: never; Returns: number }
+      update_challenge_progress: {
+        Args: { p_challenge_id: string; p_progress: number }
+        Returns: Json
+      }
       update_league_weekly_xp: {
         Args: { p_user_id: string; p_xp_amount: number }
         Returns: undefined
