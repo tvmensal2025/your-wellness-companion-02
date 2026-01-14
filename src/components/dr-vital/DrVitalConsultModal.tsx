@@ -220,9 +220,9 @@ export function DrVitalConsultModal({ isOpen, onClose, onNavigateToDrVital }: Dr
         <div className="relative bg-gradient-to-r from-blue-600 to-blue-700 p-4">
           <div className="relative flex items-center gap-3">
             <div className="relative">
-              <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center ring-2 ring-white/30">
-                <img src="/images/dr-vital-avatar.webp" alt="Dr. Vital" className="w-10 h-10 rounded-full object-cover" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
-                <Stethoscope className="w-5 h-5 text-white" />
+              <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center ring-2 ring-white/30 overflow-hidden">
+                <img src="/images/dr-vital-full.webp" alt="Dr. Vital" className="w-full h-full object-cover" onError={(e) => { e.currentTarget.style.display = 'none'; e.currentTarget.nextElementSibling?.classList.remove('hidden'); }} />
+                <Stethoscope className="hidden w-5 h-5 text-white" />
               </div>
               <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-emerald-400 rounded-full border-2 border-blue-600 animate-pulse" />
             </div>

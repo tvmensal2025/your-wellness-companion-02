@@ -133,16 +133,13 @@ export const featureRegistry = {
   ]
 } as const;
 
-// Placeholder temporário até ter as imagens reais
-const placeholderImage = '/images/instituto-logo.png';
-
-// Dados dos personagens
+// Dados dos personagens com imagens reais
 export const characters: Character[] = [
   {
     id: 'health',
     name: 'Dr. Vital',
     description: 'Foco em saúde e exames',
-    imagePath: placeholderImage,
+    imagePath: '/images/dr-vital-full.webp',
     features: [...featureRegistry.health, ...featureRegistry.shared],
     menuItems: [...characterMenus.health]
   },
@@ -150,7 +147,7 @@ export const characters: Character[] = [
     id: 'nutrition',
     name: 'Sofia',
     description: 'Foco em nutrição e alimentação',
-    imagePath: placeholderImage,
+    imagePath: '/images/sofia-full.webp',
     features: [...featureRegistry.nutrition, ...featureRegistry.shared],
     menuItems: [...characterMenus.nutrition]
   },
@@ -158,7 +155,7 @@ export const characters: Character[] = [
     id: 'exercise',
     name: 'Alex',
     description: 'Foco em exercícios e treinos',
-    imagePath: placeholderImage,
+    imagePath: '/images/alex-full.webp',
     features: [...featureRegistry.exercise, ...featureRegistry.shared],
     menuItems: [...characterMenus.exercise]
   },
@@ -166,7 +163,7 @@ export const characters: Character[] = [
     id: 'coaching',
     name: 'Rafael',
     description: 'Seu treinador de desenvolvimento pessoal',
-    imagePath: placeholderImage,
+    imagePath: '/images/rafael-full.webp',
     features: [...featureRegistry.coaching, ...featureRegistry.shared],
     menuItems: [...characterMenus.coaching]
   },
@@ -174,7 +171,7 @@ export const characters: Character[] = [
     id: 'complete',
     name: 'Experiência Completa',
     description: 'Todas as funcionalidades',
-    imagePath: placeholderImage,
+    imagePath: '/images/4-personagem.webp',
     features: [
       ...featureRegistry.health,
       ...featureRegistry.nutrition,

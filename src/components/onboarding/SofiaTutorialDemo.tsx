@@ -57,8 +57,8 @@ export const SofiaTutorialDemo: React.FC<SofiaTutorialDemoProps> = ({
           }}
         >
           <img
-            src="/placeholder.svg"
-            alt="Sofia - Conselheira dos Sonhos"
+            src="/images/sofia-full.webp"
+            alt="Sofia - Nutricionista"
             className="sofia-avatar-image"
             style={{
               width: '100%',
@@ -66,7 +66,7 @@ export const SofiaTutorialDemo: React.FC<SofiaTutorialDemoProps> = ({
               objectFit: 'cover'
             }}
             onError={(e) => {
-              e.currentTarget.src = '/placeholder.svg';
+              e.currentTarget.src = '/images/personagens-icon.png';
             }}
           />
           <div className="sofia-avatar-glow" />
