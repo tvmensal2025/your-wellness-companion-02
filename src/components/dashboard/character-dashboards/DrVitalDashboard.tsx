@@ -66,11 +66,11 @@ export function DrVitalDashboard({ className }: DrVitalDashboardProps) {
         <div className="flex items-start gap-3">
           {/* Avatar do Dr. Vital */}
           <div className="relative flex-shrink-0">
-            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
+            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform overflow-hidden">
               <img 
-                src="/images/dr-vital-avatar.webp" 
+                src="/images/dr-vital-full.webp" 
                 alt="Dr. Vital"
-                className="w-12 h-12 rounded-full object-cover"
+                className="w-full h-full object-cover"
                 onError={(e) => {
                   e.currentTarget.style.display = 'none';
                   e.currentTarget.nextElementSibling?.classList.remove('hidden');

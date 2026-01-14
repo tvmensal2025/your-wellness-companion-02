@@ -476,14 +476,14 @@ export const InteractiveTutorialPopup: React.FC<InteractiveTutorialPopupProps> =
             {/* Sofia Avatar Premium */}
             <div className="popup-sofia-avatar">
               <motion.img
-                src="/placeholder.svg"
-                alt="Sofia - Conselheira dos Sonhos"
+                src="/images/sofia-full.webp"
+                alt="Sofia - Nutricionista"
                 className="sofia-avatar-image"
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
                 onError={(e) => {
-                  e.currentTarget.src = '/placeholder.svg';
+                  e.currentTarget.src = '/images/personagens-icon.png';
                 }}
               />
             </div>
