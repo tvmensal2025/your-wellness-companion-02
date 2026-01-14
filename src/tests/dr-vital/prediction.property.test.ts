@@ -244,7 +244,7 @@ const predictionArb = fc.record({
   riskType: riskTypeArb,
   probability: probabilityArb,
   timeframe: timeframeArb,
-  factors: fc.constant([]),
+  factors: fc.constant([] as RiskFactor[]),
   recommendations: recommendationsArb,
 });
 
