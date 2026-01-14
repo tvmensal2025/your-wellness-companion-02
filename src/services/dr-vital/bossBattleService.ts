@@ -31,6 +31,9 @@ const ABNORMAL_EXAM_INDICATORS = [
   'alterado',
 ];
 
+// Helper to create typed queries for tables not in schema
+const fromTable = (tableName: string) => supabase.from(tableName as any);
+
 // =====================================================
 // BOSS BATTLE FUNCTIONS
 // =====================================================
@@ -52,17 +55,16 @@ export async function createBossBattle(
   }
 ): Promise<HealthMission> {
   // Check if boss battle already exists for this exam
-  const { data: existing } = await supabase
-    .from('health_missions')
+  const { data: existing } = await fromTable('health_missions')
     .select('*')
     .eq('user_id', userId)
     .eq('related_exam_id', examId)
     .eq('type', 'boss_battle')
     .eq('is_completed', false)
-    .single();
+    .single() as unknown as { data: HealthMissionRow | null };
 
   if (existing) {
-    return rowToMission(existing as HealthMissionRow);
+    return rowToMission(existing);
   }
 
   // Buscar configuração do banco
@@ -73,8 +75,7 @@ export async function createBossBattle(
     ? baseXP * DEFAULT_BOSS_BATTLE_BONUS_MULTIPLIER 
     : baseXP;
 
-  const { data, error } = await supabase
-    .from('health_missions')
+  const { data, error } = await fromTable('health_missions')
     .insert({
       user_id: userId,
       title: `🏆 Normalizar ${examDetails.examName}`,
@@ -93,7 +94,7 @@ export async function createBossBattle(
       },
     })
     .select()
-    .single();
+    .single() as unknown as { data: HealthMissionRow | null; error: any };
 
   if (error) {
     console.error('[BossBattleService] Error creating boss battle:', error);
@@ -101,14 +102,18 @@ export async function createBossBattle(
   }
 
   // Create timeline event
-  await supabase.rpc('create_timeline_event', {
-    p_user_id: userId,
-    p_event_type: 'exam_result',
-    p_title: `Nova Boss Battle: ${examDetails.examName}`,
-    p_description: `Exame detectado com valor anormal. Derrote este boss normalizando seu exame!`,
-    p_is_milestone: false,
-    p_metadata: { exam_id: examId, boss_battle_id: data.id },
-  });
+  try {
+    await fromTable('timeline_events').insert({
+      user_id: userId,
+      event_type: 'exam_result',
+      title: `Nova Boss Battle: ${examDetails.examName}`,
+      description: `Exame detectado com valor anormal. Derrote este boss normalizando seu exame!`,
+      is_milestone: false,
+      metadata: { exam_id: examId, boss_battle_id: data?.id },
+    });
+  } catch (e) {
+    console.warn('Could not create timeline event:', e);
+  }
 
   return rowToMission(data as HealthMissionRow);
 }
@@ -122,13 +127,12 @@ export async function defeatBossBattle(
   missionId: string
 ): Promise<{ mission: HealthMission; xpAwarded: number; trophyUnlocked: boolean }> {
   // Get the boss battle
-  const { data: mission, error: fetchError } = await supabase
-    .from('health_missions')
+  const { data: mission, error: fetchError } = await fromTable('health_missions')
     .select('*')
     .eq('id', missionId)
     .eq('user_id', userId)
     .eq('type', 'boss_battle')
-    .single();
+    .single() as unknown as { data: HealthMissionRow | null; error: any };
 
   if (fetchError || !mission) {
     throw new Error('Boss battle not found');
@@ -139,8 +143,7 @@ export async function defeatBossBattle(
   }
 
   // Mark as completed
-  const { data: updatedMission, error: updateError } = await supabase
-    .from('health_missions')
+  const { data: updatedMission, error: updateError } = await fromTable('health_missions')
     .update({
       is_completed: true,
       progress: 100,
@@ -148,7 +151,7 @@ export async function defeatBossBattle(
     })
     .eq('id', missionId)
     .select()
-    .single();
+    .single() as unknown as { data: HealthMissionRow | null; error: any };
 
   if (updateError) throw updateError;
 
@@ -163,12 +166,11 @@ export async function defeatBossBattle(
   });
 
   // Check if this unlocks a trophy achievement
-  const { data: bossBattlesWon } = await supabase
-    .from('health_missions')
+  const { data: bossBattlesWon } = await fromTable('health_missions')
     .select('id')
     .eq('user_id', userId)
     .eq('type', 'boss_battle')
-    .eq('is_completed', true);
+    .eq('is_completed', true) as unknown as { data: { id: string }[] | null };
 
   const totalWon = bossBattlesWon?.length || 0;
   let trophyUnlocked = false;
@@ -182,8 +184,7 @@ export async function defeatBossBattle(
       10: 'Mestre dos Bosses',
     };
 
-    await supabase
-      .from('health_achievements')
+    await fromTable('health_achievements')
       .upsert({
         user_id: userId,
         achievement_key: trophyKey,
@@ -199,18 +200,22 @@ export async function defeatBossBattle(
   }
 
   // Create victory timeline event
-  await supabase.rpc('create_timeline_event', {
-    p_user_id: userId,
-    p_event_type: 'achievement',
-    p_title: `Boss Derrotado: ${mission.title.replace('🏆 ', '')}`,
-    p_description: `Parabéns! Você normalizou seu exame e ganhou ${mission.xp_reward} XP!`,
-    p_is_milestone: true,
-    p_metadata: { 
-      boss_battle_id: missionId, 
-      xp_earned: mission.xp_reward,
-      trophy_unlocked: trophyUnlocked,
-    },
-  });
+  try {
+    await fromTable('timeline_events').insert({
+      user_id: userId,
+      event_type: 'achievement',
+      title: `Boss Derrotado: ${mission.title.replace('🏆 ', '')}`,
+      description: `Parabéns! Você normalizou seu exame e ganhou ${mission.xp_reward} XP!`,
+      is_milestone: true,
+      metadata: { 
+        boss_battle_id: missionId, 
+        xp_earned: mission.xp_reward,
+        trophy_unlocked: trophyUnlocked,
+      },
+    });
+  } catch (e) {
+    console.warn('Could not create timeline event:', e);
+  }
 
   return {
     mission: rowToMission(updatedMission as HealthMissionRow),
@@ -223,13 +228,19 @@ export async function defeatBossBattle(
  * Detecta exames anormais e cria boss battles automaticamente
  */
 export async function detectAbnormalExams(userId: string): Promise<HealthMission[]> {
+  interface ExamRow {
+    id: string;
+    exam_type?: string;
+    analysis_text?: string;
+    status?: string;
+  }
+
   // Get recent medical exams
-  const { data: exams } = await supabase
-    .from('medical_exams')
+  const { data: exams } = await fromTable('medical_exams')
     .select('*')
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
-    .limit(20);
+    .limit(20) as unknown as { data: ExamRow[] | null };
 
   if (!exams || exams.length === 0) return [];
 
@@ -246,13 +257,12 @@ export async function detectAbnormalExams(userId: string): Promise<HealthMission
 
     if (isAbnormal) {
       // Check if boss battle already exists
-      const { data: existingBattle } = await supabase
-        .from('health_missions')
+      const { data: existingBattle } = await fromTable('health_missions')
         .select('id')
         .eq('user_id', userId)
         .eq('related_exam_id', exam.id)
         .eq('type', 'boss_battle')
-        .single();
+        .single() as unknown as { data: { id: string } | null };
 
       if (!existingBattle) {
         try {
@@ -277,34 +287,32 @@ export async function detectAbnormalExams(userId: string): Promise<HealthMission
  * Busca boss battles ativas do usuário
  */
 export async function getActiveBossBattles(userId: string): Promise<HealthMission[]> {
-  const { data, error } = await supabase
-    .from('health_missions')
+  const { data, error } = await fromTable('health_missions')
     .select('*')
     .eq('user_id', userId)
     .eq('type', 'boss_battle')
     .eq('is_completed', false)
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false }) as unknown as { data: HealthMissionRow[] | null; error: any };
 
   if (error) throw error;
 
-  return (data as HealthMissionRow[]).map(rowToMission);
+  return (data || []).map(rowToMission);
 }
 
 /**
  * Busca boss battles derrotadas do usuário
  */
 export async function getDefeatedBossBattles(userId: string): Promise<HealthMission[]> {
-  const { data, error } = await supabase
-    .from('health_missions')
+  const { data, error } = await fromTable('health_missions')
     .select('*')
     .eq('user_id', userId)
     .eq('type', 'boss_battle')
     .eq('is_completed', true)
-    .order('completed_at', { ascending: false });
+    .order('completed_at', { ascending: false }) as unknown as { data: HealthMissionRow[] | null; error: any };
 
   if (error) throw error;
 
-  return (data as HealthMissionRow[]).map(rowToMission);
+  return (data || []).map(rowToMission);
 }
 
 // =====================================================

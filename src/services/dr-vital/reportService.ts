@@ -1,43 +1,20 @@
 // =====================================================
 // REPORT SERVICE - Dr. Vital
 // =====================================================
-// Sistema de geração e compartilhamento de relatórios
-// =====================================================
 
 import { supabase } from '@/integrations/supabase/client';
-import type {
-  HealthReport,
-  ReportType,
-  SharedReportRow,
-  DateRange,
-} from '@/types/dr-vital-revolution';
-
-// =====================================================
-// CONSTANTS
-// =====================================================
+import { fromTable, callRpc } from '@/lib/supabase-helpers';
+import type { HealthReport, ReportType, DateRange } from '@/types/dr-vital-revolution';
 
 const SHAREABLE_LINK_EXPIRY_DAYS = 7;
 const DEFAULT_REPORT_PERIOD_DAYS = 30;
 
-// =====================================================
-// REPORT GENERATION
-// =====================================================
-
-/**
- * Gera um relatório de saúde
- */
-export async function generateReport(
-  userId: string,
-  type: ReportType,
-  period?: DateRange
-): Promise<HealthReport> {
-  // Definir período padrão se não fornecido
+export async function generateReport(userId: string, type: ReportType, period?: DateRange): Promise<HealthReport> {
   const reportPeriod = period || {
     start: new Date(Date.now() - DEFAULT_REPORT_PERIOD_DAYS * 24 * 60 * 60 * 1000),
     end: new Date(),
   };
 
-  // Coletar dados para o relatório
   const [healthScores, missions, timeline, predictions] = await Promise.all([
     getHealthScoresForPeriod(userId, reportPeriod),
     getMissionsForPeriod(userId, reportPeriod),
@@ -45,13 +22,10 @@ export async function generateReport(
     getPredictionsForUser(userId),
   ]);
 
-  // Gerar análise AI
   const aiAnalysis = generateAIAnalysis(healthScores, missions, timeline);
   const recommendations = generateRecommendations(healthScores, predictions);
 
-  // Salvar relatório
-  const { data, error } = await supabase
-    .from('shared_reports')
+  const { data, error } = await fromTable('shared_reports')
     .insert({
       user_id: userId,
       report_type: type,
@@ -62,331 +36,160 @@ export async function generateReport(
       download_count: 0,
     })
     .select()
-    .single();
+    .single() as any;
 
   if (error) throw error;
-
-  return rowToReport(data as SharedReportRow);
+  return rowToReport(data);
 }
 
-/**
- * Busca relatórios do usuário
- */
-export async function getUserReports(
-  userId: string,
-  limit: number = 10
-): Promise<HealthReport[]> {
-  const { data, error } = await supabase
-    .from('shared_reports')
+export async function getUserReports(userId: string, limit: number = 10): Promise<HealthReport[]> {
+  const { data, error } = await fromTable('shared_reports')
     .select('*')
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
-    .limit(limit);
+    .limit(limit) as any;
 
   if (error) throw error;
-
-  return (data as SharedReportRow[]).map(rowToReport);
+  return (data || []).map(rowToReport);
 }
 
-/**
- * Busca relatório por ID
- */
 export async function getReportById(reportId: string): Promise<HealthReport | null> {
-  const { data, error } = await supabase
-    .from('shared_reports')
+  const { data, error } = await fromTable('shared_reports')
     .select('*')
     .eq('id', reportId)
-    .single();
+    .maybeSingle() as any;
 
-  if (error) {
-    if (error.code === 'PGRST116') return null;
-    throw error;
-  }
-
-  return rowToReport(data as SharedReportRow);
+  if (error) throw error;
+  if (!data) return null;
+  return rowToReport(data);
 }
 
-// =====================================================
-// SHAREABLE LINKS
-// =====================================================
-
-/**
- * Cria link compartilhável para um relatório
- */
-export async function createShareableLink(reportId: string): Promise<{
-  shareUrl: string;
-  accessToken: string;
-  expiresAt: Date;
-}> {
-  // Gerar token único
+export async function createShareableLink(reportId: string): Promise<{ shareUrl: string; accessToken: string; expiresAt: Date }> {
   const accessToken = generateAccessToken();
   const expiresAt = new Date();
   expiresAt.setDate(expiresAt.getDate() + SHAREABLE_LINK_EXPIRY_DAYS);
 
-  // Atualizar relatório com token
-  const { error } = await supabase
-    .from('shared_reports')
-    .update({
-      access_token: accessToken,
-      expires_at: expiresAt.toISOString(),
-    })
+  await fromTable('shared_reports')
+    .update({ access_token: accessToken, expires_at: expiresAt.toISOString() })
     .eq('id', reportId);
 
-  if (error) throw error;
-
   const shareUrl = `${window.location.origin}/report/${reportId}?token=${accessToken}`;
-
   return { shareUrl, accessToken, expiresAt };
 }
 
-/**
- * Valida acesso a relatório compartilhado
- */
-export async function validateShareableAccess(
-  reportId: string,
-  accessToken: string
-): Promise<{ valid: boolean; report?: HealthReport; error?: string }> {
-  const { data, error } = await supabase
-    .from('shared_reports')
+export async function validateShareableAccess(reportId: string, accessToken: string): Promise<{ valid: boolean; report?: HealthReport; error?: string }> {
+  const { data, error } = await fromTable('shared_reports')
     .select('*')
     .eq('id', reportId)
     .eq('access_token', accessToken)
-    .single();
+    .maybeSingle() as any;
 
-  if (error || !data) {
-    return { valid: false, error: 'Relatório não encontrado ou token inválido' };
-  }
-
-  const report = data as SharedReportRow;
-
-  // Verificar expiração
-  if (report.expires_at && new Date(report.expires_at) < new Date()) {
-    return { valid: false, error: 'Link expirado' };
-  }
-
-  return { valid: true, report: rowToReport(report) };
+  if (error || !data) return { valid: false, error: 'Relatório não encontrado ou token inválido' };
+  if (data.expires_at && new Date(data.expires_at) < new Date()) return { valid: false, error: 'Link expirado' };
+  return { valid: true, report: rowToReport(data) };
 }
 
-/**
- * Revoga link compartilhável
- */
 export async function revokeShareableLink(reportId: string): Promise<void> {
-  const { error } = await supabase
-    .from('shared_reports')
-    .update({
-      access_token: null,
-      expires_at: null,
-    })
-    .eq('id', reportId);
-
-  if (error) throw error;
+  await fromTable('shared_reports').update({ access_token: null, expires_at: null }).eq('id', reportId);
 }
 
-// =====================================================
-// DOWNLOAD TRACKING
-// =====================================================
-
-/**
- * Registra download do relatório
- */
 export async function trackDownload(reportId: string): Promise<void> {
-  const { error } = await supabase.rpc('increment_report_download', {
-    report_id: reportId,
-  });
-
-  // Fallback se RPC não existir
-  if (error) {
-    const { data: report } = await supabase
-      .from('shared_reports')
-      .select('download_count')
-      .eq('id', reportId)
-      .single();
-
+  try {
+    await callRpc('increment_report_download', { report_id: reportId });
+  } catch {
+    const { data: report } = await fromTable('shared_reports').select('download_count').eq('id', reportId).single() as any;
     if (report) {
-      await supabase
-        .from('shared_reports')
-        .update({ download_count: (report.download_count || 0) + 1 })
-        .eq('id', reportId);
+      await fromTable('shared_reports').update({ download_count: (report.download_count || 0) + 1 }).eq('id', reportId);
     }
   }
 }
 
-// =====================================================
-// DATA COLLECTION HELPERS
-// =====================================================
-
 async function getHealthScoresForPeriod(userId: string, period: DateRange) {
-  const { data } = await supabase
-    .from('health_scores')
+  const { data } = await fromTable('health_scores')
     .select('*')
     .eq('user_id', userId)
     .gte('calculated_at', period.start.toISOString())
     .lte('calculated_at', period.end.toISOString())
-    .order('calculated_at', { ascending: true });
-
+    .order('calculated_at', { ascending: true }) as any;
   return data || [];
 }
 
 async function getMissionsForPeriod(userId: string, period: DateRange) {
-  const { data } = await supabase
-    .from('health_missions')
+  const { data } = await fromTable('health_missions')
     .select('*')
     .eq('user_id', userId)
     .gte('created_at', period.start.toISOString())
-    .lte('created_at', period.end.toISOString());
-
+    .lte('created_at', period.end.toISOString()) as any;
   return data || [];
 }
 
 async function getTimelineForPeriod(userId: string, period: DateRange) {
-  const { data } = await supabase
-    .from('health_timeline_events')
+  const { data } = await fromTable('health_timeline_events')
     .select('*')
     .eq('user_id', userId)
     .gte('event_date', period.start.toISOString())
     .lte('event_date', period.end.toISOString())
-    .order('event_date', { ascending: true });
-
+    .order('event_date', { ascending: true }) as any;
   return data || [];
 }
 
 async function getPredictionsForUser(userId: string) {
-  const { data } = await supabase
-    .from('health_predictions')
+  const { data } = await fromTable('health_predictions')
     .select('*')
     .eq('user_id', userId)
-    .eq('is_active', true);
-
+    .eq('is_active', true) as any;
   return data || [];
 }
 
-// =====================================================
-// AI ANALYSIS GENERATION
-// =====================================================
-
-function generateAIAnalysis(
-  healthScores: any[],
-  missions: any[],
-  timeline: any[]
-): string {
-  const avgScore = healthScores.length > 0
-    ? Math.round(healthScores.reduce((sum, s) => sum + s.score, 0) / healthScores.length)
-    : 0;
-
+function generateAIAnalysis(healthScores: any[], missions: any[], timeline: any[]): string {
+  const avgScore = healthScores.length > 0 ? Math.round(healthScores.reduce((sum, s) => sum + s.score, 0) / healthScores.length) : 0;
   const completedMissions = missions.filter(m => m.is_completed).length;
   const totalMissions = missions.length;
-  const completionRate = totalMissions > 0 
-    ? Math.round((completedMissions / totalMissions) * 100) 
-    : 0;
-
+  const completionRate = totalMissions > 0 ? Math.round((completedMissions / totalMissions) * 100) : 0;
   const milestones = timeline.filter(e => e.is_milestone).length;
 
-  let analysis = `## Resumo do Período\n\n`;
-  analysis += `Durante este período, você manteve um **Health Score médio de ${avgScore}/100**. `;
-  
-  if (avgScore >= 70) {
-    analysis += `Isso indica um excelente estado de saúde geral! Continue assim.\n\n`;
-  } else if (avgScore >= 50) {
-    analysis += `Há espaço para melhorias, mas você está no caminho certo.\n\n`;
-  } else {
-    analysis += `Recomendamos atenção especial aos seus hábitos de saúde.\n\n`;
-  }
-
-  analysis += `### Missões\n`;
-  analysis += `Você completou **${completedMissions} de ${totalMissions} missões** (${completionRate}% de conclusão).\n\n`;
-
-  if (milestones > 0) {
-    analysis += `### Marcos Alcançados\n`;
-    analysis += `Parabéns! Você alcançou **${milestones} marcos importantes** neste período.\n\n`;
-  }
-
+  let analysis = `## Resumo do Período\n\nDurante este período, você manteve um **Health Score médio de ${avgScore}/100**. `;
+  analysis += avgScore >= 70 ? `Excelente!\n\n` : avgScore >= 50 ? `Há espaço para melhorias.\n\n` : `Recomendamos atenção.\n\n`;
+  analysis += `### Missões\nVocê completou **${completedMissions} de ${totalMissions} missões** (${completionRate}%).\n\n`;
+  if (milestones > 0) analysis += `### Marcos\nVocê alcançou **${milestones} marcos importantes**.\n\n`;
   return analysis;
 }
 
 function generateRecommendations(healthScores: any[], predictions: any[]): string[] {
   const recommendations: string[] = [];
-
-  // Analisar scores
   if (healthScores.length > 0) {
     const latest = healthScores[healthScores.length - 1];
-    
-    if (latest.nutrition_score < 15) {
-      recommendations.push('Melhore sua alimentação registrando refeições diariamente');
-    }
-    if (latest.exercise_score < 15) {
-      recommendations.push('Aumente sua atividade física para pelo menos 30 minutos por dia');
-    }
-    if (latest.sleep_score < 15) {
-      recommendations.push('Priorize 7-9 horas de sono por noite');
-    }
-    if (latest.mental_score < 15) {
-      recommendations.push('Pratique técnicas de relaxamento para reduzir o estresse');
-    }
+    if (latest.nutrition_score < 15) recommendations.push('Melhore sua alimentação');
+    if (latest.exercise_score < 15) recommendations.push('Aumente sua atividade física');
+    if (latest.sleep_score < 15) recommendations.push('Priorize 7-9 horas de sono');
+    if (latest.mental_score < 15) recommendations.push('Pratique técnicas de relaxamento');
   }
-
-  // Analisar previsões de risco
-  const highRiskPredictions = predictions.filter(p => p.probability > 50);
-  for (const pred of highRiskPredictions) {
-    recommendations.push(`Atenção ao risco de ${pred.risk_type}: siga as recomendações do Dr. Vital`);
-  }
-
-  // Recomendações gerais se não houver específicas
-  if (recommendations.length === 0) {
-    recommendations.push('Continue mantendo seus bons hábitos de saúde');
-    recommendations.push('Faça check-ups regulares com seu médico');
-    recommendations.push('Mantenha-se hidratado bebendo pelo menos 2L de água por dia');
-  }
-
+  predictions.filter(p => p.probability > 50).forEach(p => recommendations.push(`Atenção ao risco de ${p.risk_type}`));
+  if (recommendations.length === 0) recommendations.push('Continue mantendo seus bons hábitos');
   return recommendations;
 }
 
-// =====================================================
-// HELPER FUNCTIONS
-// =====================================================
-
 function generateAccessToken(): string {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let token = '';
-  for (let i = 0; i < 32; i++) {
-    token += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return token;
+  return Array.from({ length: 32 }, () => chars.charAt(Math.floor(Math.random() * chars.length))).join('');
 }
 
-function rowToReport(row: SharedReportRow): HealthReport {
+function rowToReport(row: any): HealthReport {
   return {
     id: row.id,
     userId: row.user_id,
     type: row.report_type,
-    period: {
-      start: new Date(row.period_start),
-      end: new Date(row.period_end),
-    },
+    period: { start: new Date(row.period_start), end: new Date(row.period_end) },
     pdfUrl: row.pdf_url || undefined,
-    shareableLink: row.access_token 
-      ? `${window.location.origin}/report/${row.id}?token=${row.access_token}`
-      : undefined,
+    shareableLink: row.access_token ? `${window.location.origin}/report/${row.id}?token=${row.access_token}` : undefined,
     accessToken: row.access_token || undefined,
     expiresAt: row.expires_at ? new Date(row.expires_at) : undefined,
-    downloadCount: row.download_count,
+    downloadCount: row.download_count || 0,
     aiAnalysis: row.ai_analysis || '',
     recommendations: row.recommendations || [],
     createdAt: new Date(row.created_at),
   };
 }
 
-// =====================================================
-// EXPORTS
-// =====================================================
-
-export const reportService = {
-  generateReport,
-  getUserReports,
-  getReportById,
-  createShareableLink,
-  validateShareableAccess,
-  revokeShareableLink,
-  trackDownload,
-};
-
+export const reportService = { generateReport, getUserReports, getReportById, createShareableLink, validateShareableAccess, revokeShareableLink, trackDownload };
 export default reportService;

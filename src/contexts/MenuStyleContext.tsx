@@ -51,9 +51,6 @@ export function MenuStyleProvider({ children }: MenuStyleProviderProps) {
   );
 }
 
-// Re-export types for convenience
-export type { MenuStyleContextValue };
-
 /**
  * Hook para consumir o contexto de MenuStyle
  * @throws Error se usado fora do MenuStyleProvider

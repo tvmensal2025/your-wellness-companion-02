@@ -18,9 +18,11 @@ export const useGoalsGamification = (userId?: string) => {
         .eq('user_id', userId)
         .maybeSingle();
 
-      // Se não existe registro ou tabela não existe, retornar dados padrão
-      if (error) {
-        console.warn('Erro ao buscar user_goal_levels:', error.message);
+      // Se não existe registro ou houve erro, retornar dados padrão
+      if (error || !data) {
+        if (error) {
+          console.warn('Erro ao buscar user_goal_levels:', error.message);
+        }
         return {
           id: 'temp',
           user_id: userId,
@@ -33,22 +35,6 @@ export const useGoalsGamification = (userId?: string) => {
           updated_at: new Date().toISOString(),
         };
       }
-      
-      // Se não existe registro para o usuário, retornar dados padrão
-      if (!data) {
-        return {
-          id: 'temp',
-          user_id: userId,
-          current_level: 1,
-          current_xp: 0,
-          total_xp: 0,
-          xp_to_next_level: 100,
-          level_title: 'Iniciante',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        };
-      }
-      
       return data;
     },
     enabled: !!userId,
@@ -116,9 +102,8 @@ export const useGoalsGamification = (userId?: string) => {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['user-goal-level', userId] });
       
-      // RPC pode retornar array, pegar primeiro elemento
+      // data pode ser um array ou objeto único, tratamos ambos os casos
       const result = Array.isArray(data) ? data[0] : data;
-      
       if (result && result.leveled_up) {
         toast({
           title: "🎉 Level Up!",
@@ -170,15 +155,13 @@ export const useGoalsGamification = (userId?: string) => {
           ignoreDuplicates: false,
         })
         .select()
-        .maybeSingle();
+        .single();
 
       if (error) throw error;
       return data;
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['goal-achievements', userId] });
-      
-      if (!data) return;
       
       const rarityEmoji = {
         common: '🥉',
@@ -200,7 +183,7 @@ export const useGoalsGamification = (userId?: string) => {
     mutationFn: async ({ goalId, streakType = 'daily' }: { goalId: string; streakType?: 'daily' | 'weekly' | 'monthly' }) => {
       if (!userId) throw new Error('User ID required');
 
-      // Buscar streak atual (maybeSingle para evitar 406 se não existir)
+      // Buscar streak atual (maybeSingle para evitar 406 quando não há linha)
       const { data: existingStreak } = await supabase
         .from('goal_streaks')
         .select('*')
@@ -247,7 +230,7 @@ export const useGoalsGamification = (userId?: string) => {
           onConflict: 'user_id,goal_id,streak_type',
         })
         .select()
-        .maybeSingle();
+        .single();
 
       if (error) throw error;
       return data;
@@ -255,7 +238,7 @@ export const useGoalsGamification = (userId?: string) => {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['goal-streaks', userId] });
       
-      if (data && data.current_streak >= 7) {
+      if (data.current_streak >= 7) {
         toast({
           title: `🔥 Streak de ${data.current_streak} dias!`,
           description: "Continue assim! Você está no caminho certo.",

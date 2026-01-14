@@ -1,10 +1,10 @@
 // Configuração centralizada das imagens dos personagens
 // Sistema com múltiplos fallbacks para garantir exibição
 
-// URLs locais (principal)
+// URLs locais (usando imagens que existem como placeholder)
 const LOCAL_URLS = {
-  DR_VITAL: '/images/dr-vital.png',
-  SOFIA: '/images/sofia.png',
+  DR_VITAL: '/images/instituto-logo.png',
+  SOFIA: '/images/instituto-logo.png',
   LOGO: '/images/maxnutrition-logo.png'
 };
 

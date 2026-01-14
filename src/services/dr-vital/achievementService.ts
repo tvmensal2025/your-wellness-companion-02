@@ -206,10 +206,10 @@ export async function checkAndUnlockAchievements(
   const stats = await getUserStats(userId);
   
   // Get already unlocked achievements
-  const { data: unlockedData } = await supabase
-    .from('health_achievements')
+  const { data: unlockedData } = await (supabase
+    .from('health_achievements' as any)
     .select('achievement_key')
-    .eq('user_id', userId);
+    .eq('user_id', userId)) as { data: { achievement_key: string }[] | null };
   
   const unlockedKeys = new Set((unlockedData || []).map(a => a.achievement_key));
   
@@ -221,8 +221,8 @@ export async function checkAndUnlockAchievements(
     
     if (def.criteria(stats)) {
       // Unlock achievement
-      const { data, error } = await supabase
-        .from('health_achievements')
+      const { data, error } = await (supabase
+        .from('health_achievements' as any)
         .insert({
           user_id: userId,
           achievement_key: def.key,
@@ -232,10 +232,10 @@ export async function checkAndUnlockAchievements(
           category: def.category,
         })
         .select()
-        .single();
+        .single()) as { data: HealthAchievementRow | null; error: any };
       
       if (!error && data) {
-        const achievement = rowToAchievement(data as HealthAchievementRow, def);
+        const achievement = rowToAchievement(data, def);
         newlyUnlocked.push(achievement);
         
         // If achievement has avatar item reward, unlock it
@@ -243,15 +243,21 @@ export async function checkAndUnlockAchievements(
           await unlockAvatarItem(userId, def.reward.value as string);
         }
         
-        // Create timeline event
-        await supabase.rpc('create_timeline_event', {
-          p_user_id: userId,
-          p_event_type: 'achievement',
-          p_title: `Conquista Desbloqueada: ${def.name}`,
-          p_description: def.description,
-          p_is_milestone: true,
-          p_metadata: { achievement_key: def.key, reward: def.reward },
-        });
+        // Create timeline event - use generic insert instead of RPC
+        try {
+          await (supabase
+            .from('timeline_events' as any)
+            .insert({
+              user_id: userId,
+              event_type: 'achievement',
+              title: `Conquista Desbloqueada: ${def.name}`,
+              description: def.description,
+              is_milestone: true,
+              metadata: { achievement_key: def.key, reward: def.reward },
+            }));
+        } catch (e) {
+          console.warn('Could not create timeline event:', e);
+        }
       }
     }
   }
@@ -263,13 +269,13 @@ export async function checkAndUnlockAchievements(
  * Busca todas as conquistas do usuário (desbloqueadas e bloqueadas)
  */
 export async function getAllAchievements(userId: string): Promise<Achievement[]> {
-  const { data: unlockedData } = await supabase
-    .from('health_achievements')
+  const { data: unlockedData } = await (supabase
+    .from('health_achievements' as any)
     .select('*')
-    .eq('user_id', userId);
+    .eq('user_id', userId)) as { data: HealthAchievementRow[] | null };
   
   const unlockedMap = new Map(
-    (unlockedData || []).map(a => [a.achievement_key, a as HealthAchievementRow])
+    (unlockedData || []).map(a => [a.achievement_key, a])
   );
   
   return ACHIEVEMENT_DEFINITIONS.map(def => {
@@ -294,15 +300,15 @@ export async function getAllAchievements(userId: string): Promise<Achievement[]>
  * Busca apenas conquistas desbloqueadas
  */
 export async function getUnlockedAchievements(userId: string): Promise<Achievement[]> {
-  const { data, error } = await supabase
-    .from('health_achievements')
+  const { data, error } = await (supabase
+    .from('health_achievements' as any)
     .select('*')
     .eq('user_id', userId)
-    .order('unlocked_at', { ascending: false });
+    .order('unlocked_at', { ascending: false })) as { data: HealthAchievementRow[] | null; error: any };
   
   if (error) throw error;
   
-  return (data as HealthAchievementRow[]).map(row => {
+  return (data || []).map(row => {
     const def = ACHIEVEMENT_DEFINITIONS.find(d => d.key === row.achievement_key);
     return rowToAchievement(row, def);
   });
@@ -326,12 +332,12 @@ export async function isAchievementUnlocked(
   userId: string,
   achievementKey: string
 ): Promise<boolean> {
-  const { data } = await supabase
-    .from('health_achievements')
+  const { data } = await (supabase
+    .from('health_achievements' as any)
     .select('id')
     .eq('user_id', userId)
     .eq('achievement_key', achievementKey)
-    .single();
+    .single()) as { data: { id: string } | null };
   
   return !!data;
 }
@@ -340,27 +346,39 @@ export async function isAchievementUnlocked(
 // HELPER FUNCTIONS
 // =====================================================
 
+interface StreakData {
+  total_xp_earned: number;
+  current_level: number;
+  current_streak: number;
+  longest_streak: number;
+}
+
+interface HealthScoreData {
+  score: number;
+}
+
 async function getUserStats(userId: string): Promise<UserStats> {
-  // Fetch all relevant data in parallel
+  // Fetch all relevant data in parallel with type assertions
   const [
-    streakData,
-    missionsData,
-    bossBattlesData,
-    mealsData,
-    workoutsData,
-    healthScoresData,
+    streakResult,
+    missionsResult,
+    bossBattlesResult,
+    mealsResult,
+    workoutsResult,
+    healthScoresResult,
   ] = await Promise.all([
-    supabase.from('health_streaks').select('*').eq('user_id', userId).maybeSingle(),
-    supabase.from('health_missions').select('id').eq('user_id', userId).eq('is_completed', true),
-    supabase.from('health_missions').select('id').eq('user_id', userId).eq('type', 'boss_battle').eq('is_completed', true),
-    supabase.from('food_analysis').select('id').eq('user_id', userId),
-    supabase.from('workout_sessions').select('id').eq('user_id', userId),
-    supabase.from('health_scores').select('score').eq('user_id', userId).order('calculated_at', { ascending: false }).limit(30),
+    supabase.from('health_streaks' as any).select('*').eq('user_id', userId).single() as unknown as Promise<{ data: StreakData | null; error: any }>,
+    supabase.from('health_missions' as any).select('id').eq('user_id', userId).eq('is_completed', true) as unknown as Promise<{ data: { id: string }[] | null; error: any }>,
+    supabase.from('health_missions' as any).select('id').eq('user_id', userId).eq('type', 'boss_battle').eq('is_completed', true) as unknown as Promise<{ data: { id: string }[] | null; error: any }>,
+    supabase.from('food_analysis' as any).select('id').eq('user_id', userId) as unknown as Promise<{ data: { id: string }[] | null; error: any }>,
+    supabase.from('workout_sessions' as any).select('id').eq('user_id', userId) as unknown as Promise<{ data: { id: string }[] | null; error: any }>,
+    supabase.from('health_scores' as any).select('score').eq('user_id', userId).order('calculated_at', { ascending: false }).limit(30) as unknown as Promise<{ data: HealthScoreData[] | null; error: any }>,
   ]);
 
-  const streak = streakData.data;
-  const avgHealthScore = healthScoresData.data && healthScoresData.data.length > 0
-    ? healthScoresData.data.reduce((sum, s) => sum + s.score, 0) / healthScoresData.data.length
+  const streak = streakResult.data;
+  const healthScores = healthScoresResult.data || [];
+  const avgHealthScore = healthScores.length > 0
+    ? healthScores.reduce((sum, s) => sum + (s.score || 0), 0) / healthScores.length
     : 0;
 
   return {
@@ -368,11 +386,11 @@ async function getUserStats(userId: string): Promise<UserStats> {
     currentLevel: streak?.current_level || 1,
     currentStreak: streak?.current_streak || 0,
     longestStreak: streak?.longest_streak || 0,
-    missionsCompleted: missionsData.data?.length || 0,
-    bossBattlesWon: bossBattlesData.data?.length || 0,
+    missionsCompleted: missionsResult.data?.length || 0,
+    bossBattlesWon: bossBattlesResult.data?.length || 0,
     daysActive: 0, // Would need to calculate from activity logs
-    mealsLogged: mealsData.data?.length || 0,
-    workoutsCompleted: workoutsData.data?.length || 0,
+    mealsLogged: mealsResult.data?.length || 0,
+    workoutsCompleted: workoutsResult.data?.length || 0,
     weightLost: 0, // Would need to calculate from weight history
     examsAnalyzed: 0, // Would need to count from medical_exams
     healthScoreAvg: Math.round(avgHealthScore),
@@ -381,26 +399,26 @@ async function getUserStats(userId: string): Promise<UserStats> {
 
 async function unlockAvatarItem(userId: string, itemId: string): Promise<void> {
   // Get current unlocked items
-  const { data: avatar } = await supabase
-    .from('avatar_customizations')
+  const { data: avatar } = await (supabase
+    .from('avatar_customizations' as any)
     .select('unlocked_items')
     .eq('user_id', userId)
-    .single();
+    .single()) as { data: { unlocked_items: string[] } | null };
 
   const currentItems: string[] = avatar?.unlocked_items || ['default'];
   
   if (!currentItems.includes(itemId)) {
     const updatedItems = [...currentItems, itemId];
     
-    await supabase
-      .from('avatar_customizations')
+    await (supabase
+      .from('avatar_customizations' as any)
       .upsert({
         user_id: userId,
         unlocked_items: updatedItems,
         updated_at: new Date().toISOString(),
       }, {
         onConflict: 'user_id',
-      });
+      }));
   }
 }
 

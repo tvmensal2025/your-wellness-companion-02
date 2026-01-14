@@ -4,12 +4,30 @@
 // ============================================
 
 import { supabase } from '@/integrations/supabase/client';
+import { fromTable } from '@/lib/supabase-helpers';
 import type {
   RiskFactor,
-  InjuryRisk,
+  InjuryRiskAssessment,
   PainReport,
-  RecoveryProtocol,
 } from '@/types/advanced-exercise-system';
+
+// Local type for recovery protocol
+interface RecoveryProtocol {
+  phase: 'acute' | 'subacute' | 'remodeling' | 'return_to_activity';
+  durationDays: number;
+  activities: string[];
+  restrictions: string[];
+  progressionCriteria: string[];
+}
+
+// Local type for injury risk
+interface InjuryRisk {
+  overallLevel: 'low' | 'moderate' | 'high' | 'critical';
+  riskScore: number;
+  riskFactors: RiskFactor[];
+  recommendations: string[];
+  nextAssessmentDate: Date;
+}
 
 // ============================================
 // CONSTANTS
@@ -42,6 +60,19 @@ const BODY_REGIONS = [
   'wrist_right', 'hip_left', 'hip_right', 'knee_left',
   'knee_right', 'ankle_left', 'ankle_right',
 ] as const;
+
+// Local pain report interface for internal use
+interface LocalPainReport {
+  id: string;
+  bodyRegion: string;
+  painLevel: number;
+  painType?: string;
+  duringExercise?: boolean;
+  exerciseCode?: string;
+  description?: string;
+  limitsMovement?: boolean;
+  reportedAt: Date;
+}
 
 // ============================================
 // INJURY PREDICTOR CLASS
@@ -163,25 +194,26 @@ export class InjuryPredictor {
     description: string;
     affectedMuscles: string[];
   }> {
-    const { data: recentWorkouts } = await supabase
-      .from('exercise_performance_metrics')
+    const { data: recentWorkouts } = await fromTable('exercise_performance_metrics')
       .select('*')
       .eq('user_id', this.userId)
       .gte('created_at', new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString())
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false }) as any;
 
     if (!recentWorkouts || recentWorkouts.length === 0) {
       return { isAtRisk: false, severity: 'low', description: '', affectedMuscles: [] };
     }
 
+    const workouts = recentWorkouts as any[];
+
     // Contar treinos por semana
-    const last7Days = recentWorkouts.filter(w => 
+    const last7Days = workouts.filter((w: any) => 
       new Date(w.created_at).getTime() > Date.now() - 7 * 24 * 60 * 60 * 1000
     );
 
     // Verificar dias consecutivos
     const workoutDates = [...new Set(
-      recentWorkouts.map(w => new Date(w.created_at).toISOString().split('T')[0])
+      workouts.map((w: any) => new Date(w.created_at).toISOString().split('T')[0])
     )].sort().reverse();
 
     let consecutiveDays = 1;
@@ -195,7 +227,7 @@ export class InjuryPredictor {
     }
 
     // Verificar intensidade alta consecutiva
-    const highIntensityWorkouts = recentWorkouts.filter(w => 
+    const highIntensityWorkouts = workouts.filter((w: any) => 
       (w.difficulty_rating || 0) >= 8
     );
 
@@ -223,7 +255,7 @@ export class InjuryPredictor {
 
     // Identificar músculos mais treinados
     const muscleCount: Record<string, number> = {};
-    recentWorkouts.forEach(w => {
+    workouts.forEach((w: any) => {
       const muscle = this.exerciseToMuscle(w.exercise_code);
       muscleCount[muscle] = (muscleCount[muscle] || 0) + 1;
     });
@@ -250,7 +282,7 @@ export class InjuryPredictor {
     };
 
     for (const [key, muscle] of Object.entries(mapping)) {
-      if (exerciseCode.includes(key)) return muscle;
+      if (exerciseCode?.includes(key)) return muscle;
     }
     return 'other';
   }
@@ -265,12 +297,13 @@ export class InjuryPredictor {
     severity: 'low' | 'moderate' | 'high' | 'critical';
     description: string;
   }>> {
-    const { data: muscleProgress } = await supabase
-      .from('exercise_muscle_group_progress')
+    const { data: muscleProgress } = await fromTable('exercise_muscle_group_progress')
       .select('*')
-      .eq('user_id', this.userId);
+      .eq('user_id', this.userId) as any;
 
     if (!muscleProgress || muscleProgress.length < 2) return [];
+
+    const progress = muscleProgress as any[];
 
     const imbalances: Array<{
       strongerGroup: string;
@@ -288,8 +321,8 @@ export class InjuryPredictor {
     ];
 
     for (const [group1, group2] of pairs) {
-      const prog1 = muscleProgress.find(p => p.muscle_group === group1);
-      const prog2 = muscleProgress.find(p => p.muscle_group === group2);
+      const prog1 = progress.find((p: any) => p.muscle_group === group1);
+      const prog2 = progress.find((p: any) => p.muscle_group === group2);
 
       if (prog1 && prog2) {
         const vol1 = prog1.weekly_volume || 0;
@@ -323,51 +356,52 @@ export class InjuryPredictor {
   // PAIN TRACKING
   // ============================================
 
-  async reportPain(report: Omit<PainReport, 'id' | 'reportedAt'>): Promise<PainReport> {
-    const { data, error } = await supabase
-      .from('exercise_pain_reports')
+  async reportPain(report: Omit<PainReport, 'id' | 'createdAt'>): Promise<PainReport> {
+    const { data, error } = await fromTable('exercise_pain_reports')
       .insert({
         user_id: this.userId,
-        body_region: report.bodyRegion,
+        body_region: report.bodyArea,
         pain_level: report.painLevel,
         pain_type: report.painType,
-        during_exercise: report.duringExercise,
-        exercise_code: report.exerciseCode,
+        during_exercise: report.occurredDuring === 'exercise',
+        exercise_code: report.relatedExerciseCode,
         description: report.description,
-        limits_movement: report.limitsMovement,
+        limits_movement: report.isRecurring,
       })
       .select()
-      .single();
+      .single() as any;
 
     if (error) throw error;
 
+    const d = data as any;
+
     // Verificar se precisa alerta imediato
-    if (report.painLevel >= 7 || report.limitsMovement) {
+    if (report.painLevel >= 7 || report.isRecurring) {
       await this.createInjuryAlert(report);
     }
 
     return {
-      id: data.id,
-      bodyRegion: data.body_region,
-      painLevel: data.pain_level,
-      painType: data.pain_type,
-      duringExercise: data.during_exercise,
-      exerciseCode: data.exercise_code,
-      description: data.description,
-      limitsMovement: data.limits_movement,
-      reportedAt: new Date(data.reported_at),
+      id: d.id,
+      userId: this.userId,
+      bodyArea: d.body_region,
+      painLevel: d.pain_level,
+      painType: d.pain_type,
+      occurredDuring: d.during_exercise ? 'exercise' : 'rest',
+      relatedExerciseCode: d.exercise_code,
+      description: d.description,
+      isRecurring: d.limits_movement || false,
+      createdAt: new Date(d.reported_at || d.created_at),
     };
   }
 
-  private async getPainHistory(days: number): Promise<PainReport[]> {
-    const { data } = await supabase
-      .from('exercise_pain_reports')
+  private async getPainHistory(days: number): Promise<LocalPainReport[]> {
+    const { data } = await fromTable('exercise_pain_reports')
       .select('*')
       .eq('user_id', this.userId)
       .gte('reported_at', new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString())
-      .order('reported_at', { ascending: false });
+      .order('reported_at', { ascending: false }) as any;
 
-    return (data || []).map(p => ({
+    return ((data as any[]) || []).map((p: any) => ({
       id: p.id,
       bodyRegion: p.body_region,
       painLevel: p.pain_level,
@@ -380,11 +414,11 @@ export class InjuryPredictor {
     }));
   }
 
-  private assessPainRisk(painHistory: PainReport[]): RiskFactor | null {
+  private assessPainRisk(painHistory: LocalPainReport[]): RiskFactor | null {
     if (painHistory.length === 0) return null;
 
     // Agrupar por região
-    const byRegion: Record<string, PainReport[]> = {};
+    const byRegion: Record<string, LocalPainReport[]> = {};
     painHistory.forEach(p => {
       if (!byRegion[p.bodyRegion]) byRegion[p.bodyRegion] = [];
       byRegion[p.bodyRegion].push(p);
@@ -422,14 +456,14 @@ export class InjuryPredictor {
     };
   }
 
-  private async createInjuryAlert(report: Omit<PainReport, 'id' | 'reportedAt'>): Promise<void> {
-    await supabase.from('exercise_injury_alerts').insert({
+  private async createInjuryAlert(report: Omit<PainReport, 'id' | 'createdAt'>): Promise<void> {
+    await fromTable('exercise_injury_alerts').insert({
       user_id: this.userId,
       alert_type: 'pain_report',
       severity: report.painLevel >= 8 ? 'critical' : 'high',
-      body_region: report.bodyRegion,
-      description: `Dor nível ${report.painLevel}/10 em ${report.bodyRegion}`,
-      recommended_action: report.limitsMovement 
+      body_region: report.bodyArea,
+      description: `Dor nível ${report.painLevel}/10 em ${report.bodyArea}`,
+      recommended_action: report.isRecurring 
         ? 'Evitar exercícios que envolvam esta região. Consulte um profissional.'
         : 'Reduzir intensidade e monitorar evolução.',
     });
@@ -443,20 +477,19 @@ export class InjuryPredictor {
     level: number;
     chronicFatigue: boolean;
   }> {
-    const { data } = await supabase
-      .from('exercise_performance_metrics')
+    const { data } = await fromTable('exercise_performance_metrics')
       .select('fatigue_level, created_at')
       .eq('user_id', this.userId)
       .gte('created_at', new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString())
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false }) as any;
 
     if (!data || data.length === 0) {
       return { level: 0, chronicFatigue: false };
     }
 
-    const fatigueLevels = data
-      .map(d => d.fatigue_level)
-      .filter(f => f !== null) as number[];
+    const fatigueLevels = (data as any[])
+      .map((d: any) => d.fatigue_level)
+      .filter((f: any) => f !== null) as number[];
 
     if (fatigueLevels.length === 0) {
       return { level: 0, chronicFatigue: false };
@@ -473,23 +506,24 @@ export class InjuryPredictor {
     stressLevel: number;
     nutritionScore: number;
   }> {
-    const { data } = await supabase
-      .from('holistic_health_data')
+    const { data } = await fromTable('holistic_health_data')
       .select('sleep_hours, stress_level, nutrition_score')
       .eq('user_id', this.userId)
       .gte('tracking_date', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
-      .order('tracking_date', { ascending: false });
+      .order('tracking_date', { ascending: false }) as any;
 
     if (!data || data.length === 0) {
       return { sleepDebt: 0, stressLevel: 5, nutritionScore: 5 };
     }
 
-    // Calcular déficit de sono (ideal = 8h/noite)
-    const sleepHours = data.map(d => d.sleep_hours || 8);
-    const sleepDebt = sleepHours.reduce((debt, hours) => debt + Math.max(0, 8 - hours), 0);
+    const records = data as any[];
 
-    const avgStress = data.reduce((sum, d) => sum + (d.stress_level || 5), 0) / data.length;
-    const avgNutrition = data.reduce((sum, d) => sum + (d.nutrition_score || 5), 0) / data.length;
+    // Calcular déficit de sono (ideal = 8h/noite)
+    const sleepHours = records.map((d: any) => d.sleep_hours || 8);
+    const sleepDebt = sleepHours.reduce((debt: number, hours: number) => debt + Math.max(0, 8 - hours), 0);
+
+    const avgStress = records.reduce((sum: number, d: any) => sum + (d.stress_level || 5), 0) / records.length;
+    const avgNutrition = records.reduce((sum: number, d: any) => sum + (d.nutrition_score || 5), 0) / records.length;
 
     return {
       sleepDebt,
@@ -668,7 +702,7 @@ export class InjuryPredictor {
     };
 
     for (const [key, regions] of Object.entries(exerciseRegions)) {
-      if (exerciseCode.includes(key) && regions.includes(region)) {
+      if (exerciseCode?.includes(key) && regions.includes(region)) {
         return true;
       }
     }
@@ -685,7 +719,7 @@ export class InjuryPredictor {
     };
 
     for (const [key, alts] of Object.entries(alternatives)) {
-      if (exerciseCode.includes(key.split('-')[0])) {
+      if (exerciseCode?.includes(key.split('-')[0])) {
         return alts;
       }
     }

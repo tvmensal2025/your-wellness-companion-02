@@ -64,12 +64,12 @@ export const useWeeklyGoalProgress = () => {
       const targetWeight = weightGoal?.target_value || currentWeight;
 
       // Calcular progresso de exercícios real baseado em treinos completados
-      const { data: workoutData } = await supabase
-        .from('workout_history')
+      const { data: workoutData } = await (supabase
+        .from('workout_history' as any)
         .select('completed_at')
         .eq('user_id', user.id)
         .gte('completed_at', weekStart.toISOString())
-        .lte('completed_at', weekEnd.toISOString());
+        .lte('completed_at', weekEnd.toISOString())) as { data: { completed_at: string }[] | null };
       
       // Contar dias únicos de treino
       const uniqueWorkoutDays = new Set(
