@@ -173,7 +173,7 @@ export class LearningService {
       .select('*')
       .eq('user_id', this.userId)
       .eq('exercise_code', exerciseCode)
-      .single();
+      .maybeSingle();
 
     if (!data) return null;
 
@@ -344,7 +344,7 @@ export class LearningService {
       .from('exercise_workout_history')
       .select('exercises')
       .eq('id', workoutId)
-      .single();
+      .maybeSingle();
 
     if (!workout?.exercises) return;
 
@@ -617,7 +617,7 @@ export class LearningService {
       .from('ai_user_learning_model')
       .select('model_accuracy, total_feedback_count')
       .eq('user_id', this.userId)
-      .single();
+      .maybeSingle();
 
     if (!data) {
       return {

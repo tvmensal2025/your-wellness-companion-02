@@ -14,6 +14,11 @@ export { PerformanceDashboardCard } from './PerformanceDashboardCard';
 
 // Social Components
 export { SocialHubCard } from './SocialHubCard';
+export { ExerciseRankingCard } from './ExerciseRankingCard';
+export { BuddyWorkoutCard } from './BuddyWorkoutCard';
+export { ExerciseChallengeCard } from './ExerciseChallengeCard';
+export { FeatureTutorialPopup, useFeatureTutorial, getTutorialDismissed, setTutorialDismissed, resetAllTutorials } from './FeatureTutorialPopup';
+export type { TutorialFeature } from './FeatureTutorialPopup';
 
 // Notification Components
 export { NotificationCenter } from './NotificationCenter';

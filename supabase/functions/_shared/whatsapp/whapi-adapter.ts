@@ -24,6 +24,7 @@ import { formatPhoneNumber } from './phone-formatter.ts';
 export interface WhapiConfig {
   apiUrl: string;
   apiToken: string;
+  channelId?: string;
 }
 
 
@@ -39,6 +40,23 @@ export class WhapiAdapter implements IWhatsAppAdapter {
     this.config = config;
   }
   
+  /**
+   * Get headers for Whapi API requests
+   */
+  private getHeaders(): Record<string, string> {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'Authorization': `Bearer ${this.config.apiToken}`,
+    };
+    
+    if (this.config.channelId) {
+      headers['X-Channel-Id'] = this.config.channelId;
+    }
+    
+    return headers;
+  }
+
   /**
    * Send a text message
    */
@@ -63,10 +81,7 @@ export class WhapiAdapter implements IWhatsAppAdapter {
     try {
       const response = await fetch(`${this.config.apiUrl}/messages/text`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.config.apiToken}`,
-        },
+        headers: this.getHeaders(),
         body: JSON.stringify({
           to: formattedPhone,
           body: message,
@@ -158,10 +173,7 @@ export class WhapiAdapter implements IWhatsAppAdapter {
       
       const response = await fetch(`${this.config.apiUrl}${endpoint}`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.config.apiToken}`,
-        },
+        headers: this.getHeaders(),
         body: JSON.stringify(body),
       });
       
@@ -234,10 +246,7 @@ export class WhapiAdapter implements IWhatsAppAdapter {
       
       const response = await fetch(`${this.config.apiUrl}/messages/interactive`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.config.apiToken}`,
-        },
+        headers: this.getHeaders(),
         body: JSON.stringify(payload),
       });
       
@@ -323,10 +332,7 @@ export class WhapiAdapter implements IWhatsAppAdapter {
       
       const response = await fetch(`${this.config.apiUrl}/messages/carousel`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.config.apiToken}`,
-        },
+        headers: this.getHeaders(),
         body: JSON.stringify(payload),
       });
       
@@ -370,9 +376,7 @@ export class WhapiAdapter implements IWhatsAppAdapter {
     try {
       const response = await fetch(`${this.config.apiUrl}/health`, {
         method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${this.config.apiToken}`,
-        },
+        headers: this.getHeaders(),
       });
       
       const data = await response.json();
@@ -540,11 +544,12 @@ export class WhapiAdapter implements IWhatsAppAdapter {
 export function createWhapiAdapter(): WhapiAdapter {
   const config: WhapiConfig = {
     apiUrl: Deno.env.get('WHAPI_API_URL') || 'https://gate.whapi.cloud',
-    apiToken: Deno.env.get('WHAPI_API_TOKEN') || '',
+    apiToken: Deno.env.get('WHAPI_TOKEN') || Deno.env.get('WHAPI_API_TOKEN') || '',
+    channelId: Deno.env.get('WHAPI_CHANNEL_ID') || undefined,
   };
   
   if (!config.apiToken) {
-    throw new Error('Whapi API configuration missing. Check WHAPI_API_TOKEN');
+    throw new Error('Whapi API configuration missing. Check WHAPI_TOKEN or WHAPI_API_TOKEN');
   }
   
   return new WhapiAdapter(config);

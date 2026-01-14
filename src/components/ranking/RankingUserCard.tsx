@@ -3,6 +3,7 @@ import { Star, Flame, Target, Trophy, TrendingDown, Zap, Award, Clock, CheckCirc
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { useState } from 'react';
 
 interface RankingUserCardProps {
   position: number;
@@ -137,7 +138,7 @@ export function RankingUserCard({
             streakBorder,
             recentlyActive && !streakBorder && "ring-2 ring-green-500 ring-offset-1 ring-offset-background"
           )}>
-            <AvatarImage src={avatarUrl} />
+            <AvatarImage src={avatarUrl} loading="lazy" />
             <AvatarFallback className="bg-muted font-semibold text-muted-foreground text-xl">
               {userName.charAt(0).toUpperCase()}
             </AvatarFallback>

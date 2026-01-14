@@ -3,8 +3,7 @@
 // Componente de hub social para exercícios
 // ============================================
 
-import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -17,12 +16,15 @@ import {
   Zap,
   ChevronRight,
   Crown,
-  Flame,
-  Target,
-  Calendar,
   Radio,
+  HelpCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { 
+  FeatureTutorialPopup, 
+  useFeatureTutorial,
+  type TutorialFeature 
+} from './FeatureTutorialPopup';
 
 // ============================================
 // TYPES
@@ -164,10 +166,31 @@ export const SocialHubCard: React.FC<SocialHubCardProps> = ({
   className,
   variant = 'full',
 }) => {
+  // Tutorial hooks
+  const gruposTutorial = useFeatureTutorial('grupos_treino');
+  const parceiroTutorial = useFeatureTutorial('parceiro_treino');
+  const sessaoTutorial = useFeatureTutorial('sessao_ao_vivo');
+  const encorajamentosTutorial = useFeatureTutorial('encorajamentos');
+
   // Use mock data if no external data provided
   const myGroups = externalGroups || getMockGroups();
   const buddies = externalBuddies || getMockBuddies();
   const leaderboard = externalLeaderboard || getMockLeaderboard();
+
+  // Helper para botão de tutorial
+  const TutorialButton: React.FC<{ onClick: () => void }> = ({ onClick }) => (
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick();
+      }}
+      className="h-6 w-6 p-0 text-muted-foreground hover:text-foreground"
+    >
+      <HelpCircle className="w-4 h-4" />
+    </Button>
+  );
   // Mini variant
   if (variant === 'mini') {
     return (
@@ -248,7 +271,7 @@ export const SocialHubCard: React.FC<SocialHubCardProps> = ({
               <div className="flex -space-x-2">
                 {buddies.slice(0, 5).map((buddy) => (
                   <Avatar key={buddy.id} className="w-7 h-7 border-2 border-background">
-                    <AvatarImage src={buddy.avatarUrl} />
+                    <AvatarImage src={buddy.avatarUrl} loading="lazy" />
                     <AvatarFallback className="text-xs">
                       {buddy.name.charAt(0)}
                     </AvatarFallback>
@@ -289,10 +312,13 @@ export const SocialHubCard: React.FC<SocialHubCardProps> = ({
         {/* Live Sessions */}
         {liveSessions.length > 0 && (
           <div className="space-y-2">
-            <h4 className="text-sm font-medium flex items-center gap-1.5">
-              <Radio className="w-4 h-4 text-red-500 animate-pulse" />
-              Sessões ao Vivo
-            </h4>
+            <div className="flex items-center justify-between">
+              <h4 className="text-sm font-medium flex items-center gap-1.5">
+                <Radio className="w-4 h-4 text-red-500 animate-pulse" />
+                Sessões ao Vivo
+              </h4>
+              <TutorialButton onClick={() => sessaoTutorial.showTutorial()} />
+            </div>
             <div className="space-y-2">
               {liveSessions.slice(0, 2).map((session) => (
                 <div
@@ -301,7 +327,7 @@ export const SocialHubCard: React.FC<SocialHubCardProps> = ({
                 >
                   <div className="flex items-center gap-2">
                     <Avatar className="w-8 h-8">
-                      <AvatarImage src={session.hostAvatarUrl} />
+                      <AvatarImage src={session.hostAvatarUrl} loading="lazy" />
                       <AvatarFallback>{session.hostName.charAt(0)}</AvatarFallback>
                     </Avatar>
                     <div>
@@ -362,7 +388,7 @@ export const SocialHubCard: React.FC<SocialHubCardProps> = ({
                       )}
                     </span>
                     <Avatar className="w-6 h-6">
-                      <AvatarImage src={entry.avatarUrl} />
+                      <AvatarImage src={entry.avatarUrl} loading="lazy" />
                       <AvatarFallback className="text-xs">
                         {entry.name.charAt(0)}
                       </AvatarFallback>
@@ -389,9 +415,12 @@ export const SocialHubCard: React.FC<SocialHubCardProps> = ({
                 <Users className="w-4 h-4 text-blue-500" />
                 Meus Grupos
               </h4>
-              <Button variant="ghost" size="sm" onClick={onViewGroups}>
-                Ver todos
-              </Button>
+              <div className="flex items-center gap-1">
+                <TutorialButton onClick={() => gruposTutorial.showTutorial()} />
+                <Button variant="ghost" size="sm" onClick={onViewGroups}>
+                  Ver todos
+                </Button>
+              </div>
             </div>
             <div className="flex gap-2 overflow-x-auto pb-1">
               {myGroups.slice(0, 4).map((group) => (
@@ -400,7 +429,7 @@ export const SocialHubCard: React.FC<SocialHubCardProps> = ({
                   className="flex-shrink-0 p-2 bg-muted/50 rounded-lg text-center min-w-[80px]"
                 >
                   <Avatar className="w-10 h-10 mx-auto mb-1">
-                    <AvatarImage src={group.avatarUrl} />
+                    <AvatarImage src={group.avatarUrl} loading="lazy" />
                     <AvatarFallback>{group.name.charAt(0)}</AvatarFallback>
                   </Avatar>
                   <p className="text-xs font-medium truncate">{group.name}</p>
@@ -421,9 +450,12 @@ export const SocialHubCard: React.FC<SocialHubCardProps> = ({
                 <Heart className="w-4 h-4 text-pink-500" />
                 Parceiros de Treino
               </h4>
-              <Button variant="ghost" size="sm" onClick={onViewBuddies}>
-                Ver todos
-              </Button>
+              <div className="flex items-center gap-1">
+                <TutorialButton onClick={() => parceiroTutorial.showTutorial()} />
+                <Button variant="ghost" size="sm" onClick={onViewBuddies}>
+                  Ver todos
+                </Button>
+              </div>
             </div>
             <div className="flex gap-2 overflow-x-auto pb-1">
               {buddies.slice(0, 5).map((buddy) => (
@@ -434,7 +466,7 @@ export const SocialHubCard: React.FC<SocialHubCardProps> = ({
                 >
                   <div className="relative inline-block">
                     <Avatar className="w-10 h-10">
-                      <AvatarImage src={buddy.avatarUrl} />
+                      <AvatarImage src={buddy.avatarUrl} loading="lazy" />
                       <AvatarFallback>{buddy.name.charAt(0)}</AvatarFallback>
                     </Avatar>
                     <OnlineIndicator isOnline={buddy.isOnline} />
@@ -449,10 +481,13 @@ export const SocialHubCard: React.FC<SocialHubCardProps> = ({
         {/* Recent Encouragements */}
         {recentEncouragements.length > 0 && (
           <div className="space-y-2">
-            <h4 className="text-sm font-medium flex items-center gap-1.5">
-              <MessageCircle className="w-4 h-4 text-purple-500" />
-              Apoio Recebido
-            </h4>
+            <div className="flex items-center justify-between">
+              <h4 className="text-sm font-medium flex items-center gap-1.5">
+                <MessageCircle className="w-4 h-4 text-purple-500" />
+                Apoio Recebido
+              </h4>
+              <TutorialButton onClick={() => encorajamentosTutorial.showTutorial()} />
+            </div>
             <div className="space-y-1.5">
               {recentEncouragements.slice(0, 3).map((enc) => (
                 <div
@@ -460,7 +495,7 @@ export const SocialHubCard: React.FC<SocialHubCardProps> = ({
                   className="flex items-center gap-2 p-2 bg-purple-50 dark:bg-purple-950/30 rounded-lg"
                 >
                   <Avatar className="w-6 h-6">
-                    <AvatarImage src={enc.fromAvatarUrl} />
+                    <AvatarImage src={enc.fromAvatarUrl} loading="lazy" />
                     <AvatarFallback>{enc.fromName.charAt(0)}</AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
@@ -476,6 +511,28 @@ export const SocialHubCard: React.FC<SocialHubCardProps> = ({
           </div>
         )}
       </CardContent>
+
+      {/* Tutorial Popups */}
+      <FeatureTutorialPopup
+        feature="grupos_treino"
+        isOpen={gruposTutorial.isOpen}
+        onClose={gruposTutorial.closeTutorial}
+      />
+      <FeatureTutorialPopup
+        feature="parceiro_treino"
+        isOpen={parceiroTutorial.isOpen}
+        onClose={parceiroTutorial.closeTutorial}
+      />
+      <FeatureTutorialPopup
+        feature="sessao_ao_vivo"
+        isOpen={sessaoTutorial.isOpen}
+        onClose={sessaoTutorial.closeTutorial}
+      />
+      <FeatureTutorialPopup
+        feature="encorajamentos"
+        isOpen={encorajamentosTutorial.isOpen}
+        onClose={encorajamentosTutorial.closeTutorial}
+      />
     </Card>
   );
 };

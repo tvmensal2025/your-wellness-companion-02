@@ -52,7 +52,6 @@ import { N8nWebhookManager } from "@/components/N8nWebhookManager";
 import AIControlPanelUnified from "@/components/admin/AIControlPanelUnified";
 import CompanyConfiguration from "@/components/admin/CompanyConfiguration";
 import { ProductManagement } from "@/components/admin/ProductManagement";
-import { ExerciseManagement } from "@/components/admin/ExerciseManagement";
 import { ExerciseLibraryManagement } from "@/components/admin/ExerciseLibraryManagement";
 
 import SystemStatus from "@/components/admin/SystemStatus";
@@ -64,6 +63,7 @@ import SofiaDataTestPanel from "@/components/admin/SofiaDataTestPanel";
 import WhatsAppManagement from "@/components/admin/WhatsAppManagement";
 import WebhookManagement from "@/components/admin/WebhookManagement";
 import { PlatformSettingsPanel } from "@/components/admin/PlatformSettingsPanel";
+import { XPConfigPanel } from "@/components/admin/XPConfigPanel";
 
 import { repairAuthSessionIfTooLarge } from "@/lib/auth-token-repair";
 
@@ -230,6 +230,7 @@ const AdminPage = () => {
     { id: 'exercises', icon: Dumbbell, label: 'Gestão de Exercícios', color: 'text-cyan-600', description: 'Gerenciar biblioteca de exercícios com vídeos' },
     { id: 'products', icon: Utensils, label: 'Gestão de Produtos', color: 'text-teal-500', description: 'Gerenciar suplementos e produtos' },
     { id: 'challenges', icon: Award, label: 'Gestão de Metas e Desafios', color: 'text-pink-500', description: 'Criar e gerenciar metas e desafios' },
+    { id: 'xp-config', icon: Award, label: '🎮 Configuração de XP', color: 'text-amber-500', description: 'Configurar pontos e XP do sistema de gamificação' },
     { id: 'payments', icon: CreditCard, label: 'Gestão de Pagamentos', color: 'text-emerald-500', description: 'Gestão Asaas e assinaturas' },
     { id: 'company-config', icon: Building2, label: '🏢 Dados da Empresa', color: 'text-indigo-500', description: 'Configure dados da empresa para melhor IA' },
     { id: 'ai-control', icon: Brain, label: '🧠 Controle Unificado de IA', color: 'text-purple-500', description: 'Configuração Avançada - DrVital/Sofia - MÁXIMO/MEIO/MÍNIMO' },
@@ -300,6 +301,16 @@ const AdminPage = () => {
         return <ExerciseLibraryManagement />;
       case 'challenges':
         return <ChallengeManagement user={user} />;
+      case 'xp-config':
+        return (
+          <div className="space-y-6">
+            <div>
+              <h1 className="text-3xl font-bold">🎮 Configuração de XP e Pontos</h1>
+              <p className="text-muted-foreground">Gerencie valores de XP, pontos e limites diários do sistema de gamificação</p>
+            </div>
+            <XPConfigPanel />
+          </div>
+        );
       case 'company-config':
         return <CompanyConfiguration />;
       case 'whatsapp':
@@ -929,7 +940,7 @@ const AdminPage = () => {
 
               <Card>
                 <CardHeader>
-                  <CardTitle>Performance</CardTitle>
+                  <CardTitle>Desempenho</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="text-center">
@@ -941,7 +952,7 @@ const AdminPage = () => {
 
               <Card>
                 <CardHeader>
-                  <CardTitle>Uptime</CardTitle>
+                  <CardTitle>Disponibilidade</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="text-center">

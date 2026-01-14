@@ -56,7 +56,7 @@ export default function RankingCommunity({ user }: RankingCommunityProps) {
   };
 
   const filteredAndSortedRanking = React.useMemo(() => {
-    let filtered = ranking.filter(user => 
+    const filtered = ranking.filter(user => 
       searchQuery === '' || 
       user.user_name.toLowerCase().includes(searchQuery.toLowerCase())
     );
@@ -193,7 +193,7 @@ export default function RankingCommunity({ user }: RankingCommunityProps) {
                           {/* Avatar */}
                           <div className="flex-shrink-0">
                             <Avatar className="h-8 w-8 sm:h-10 sm:w-10">
-                              <AvatarImage src={rankUser.avatar_url} alt={rankUser.user_name} />
+                              <AvatarImage src={rankUser.avatar_url} alt={rankUser.user_name} loading="lazy" />
                               <AvatarFallback className="bg-emerald-100 text-emerald-700 font-semibold text-xs sm:text-sm">
                                 {rankUser.user_name.charAt(0).toUpperCase()}
                               </AvatarFallback>

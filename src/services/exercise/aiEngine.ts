@@ -301,7 +301,7 @@ export class AIEngineService {
       .from('ai_user_learning_model')
       .select('*')
       .eq('user_id', this.userId)
-      .single();
+      .maybeSingle();
 
     const newFeedbackCount = (model?.total_feedback_count || 0) + 1;
     
@@ -343,7 +343,7 @@ export class AIEngineService {
       .from('ai_user_learning_model')
       .select('*')
       .eq('user_id', this.userId)
-      .single();
+      .maybeSingle();
 
     return data as unknown as UserLearningModel | null;
   }
@@ -628,7 +628,7 @@ export class AIEngineService {
       .from('user_physical_data')
       .select('data_nascimento')
       .eq('user_id', this.userId)
-      .single();
+      .maybeSingle();
 
     if (physicalData?.data_nascimento) {
       const birthDate = new Date(physicalData.data_nascimento);
@@ -646,7 +646,7 @@ export class AIEngineService {
       .from('profiles')
       .select('birth_date')
       .eq('id', this.userId)
-      .single();
+      .maybeSingle();
 
     if (profile?.birth_date) {
       const birthDate = new Date(profile.birth_date);

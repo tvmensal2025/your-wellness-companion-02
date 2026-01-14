@@ -187,7 +187,7 @@ export const useSocialRanking = (userId?: string, period: 'week' | 'month' = 'we
           .from('profiles')
           .select('id, full_name, avatar_url')
           .eq('id', userId)
-          .single();
+          .maybeSingle();
 
         if (currentProfile) {
           ranking.push({

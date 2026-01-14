@@ -102,7 +102,7 @@ export const LiveRankingCard: React.FC = () => {
 
             {/* Avatar */}
             <Avatar className="h-10 w-10 border-2 border-background">
-              <AvatarImage src={user.avatar} />
+              <AvatarImage src={user.avatar} loading="lazy" />
               <AvatarFallback className="bg-gradient-to-br from-primary to-violet-500 text-white text-sm">
                 {user.name.charAt(0).toUpperCase()}
               </AvatarFallback>
@@ -162,7 +162,7 @@ export const LiveRankingCard: React.FC = () => {
               <span className="text-sm font-bold text-primary">#{myPosition.position}</span>
             </div>
             <Avatar className="h-10 w-10 border-2 border-primary/30">
-              <AvatarImage src={myPosition.avatar} />
+              <AvatarImage src={myPosition.avatar} loading="lazy" />
               <AvatarFallback className="bg-gradient-to-br from-primary to-violet-500 text-white text-sm">
                 {myPosition.name.charAt(0).toUpperCase()}
               </AvatarFallback>

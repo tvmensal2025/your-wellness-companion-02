@@ -149,7 +149,7 @@ export class PerformanceDashboard {
       .from('exercise_streaks')
       .select('current_streak')
       .eq('user_id', this.userId)
-      .single();
+      .maybeSingle();
 
     return data?.current_streak || 0;
   }
@@ -159,7 +159,7 @@ export class PerformanceDashboard {
       .from('exercise_streaks')
       .select('longest_streak')
       .eq('user_id', this.userId)
-      .single();
+      .maybeSingle();
 
     return data?.longest_streak || 0;
   }
@@ -409,7 +409,7 @@ export class PerformanceDashboard {
       .from('exercise_gamification_points')
       .select('total_points, current_level')
       .eq('user_id', this.userId)
-      .single();
+      .maybeSingle();
 
     // Buscar dados agregados de todos os usuários
     const { data: allUsers } = await supabase

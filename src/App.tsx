@@ -7,7 +7,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { OfflineIndicator } from "@/components/OfflineIndicator";
-import SofiaFloatingButton from "@/components/SofiaFloatingButton";
+import FloatingMessagesButton from "@/components/FloatingMessagesButton";
 import { createQueryClient } from "@/lib/queryConfig";
 import { InstallPrompt } from "@/components/pwa/InstallPrompt";
 import { ActiveSectionProvider } from "@/contexts/ActiveSectionContext";
@@ -24,7 +24,6 @@ import NotFound from "./pages/NotFound";
 import TermsPage from "./pages/TermsPage";
 
 // Lazy-loaded pages
-const CompleteDashboardPage = lazy(() => import("./pages/CompleteDashboardPage"));
 const AdminPage = lazy(() => import("./pages/AdminPage"));
 const SofiaPage = lazy(() => import("./pages/SofiaPage"));
 const GoalsPage = lazy(() => import("./pages/GoalsPage"));
@@ -46,9 +45,6 @@ const InstallPage = lazy(() => import("./pages/Install"));
 const PublicPostPage = lazy(() => import("./pages/PublicPostPage"));
 const PublicReport = lazy(() => import("./pages/PublicReport"));
 const SystemHealth = lazy(() => import("./pages/admin/SystemHealth"));
-const CreativeMealPlanDemo = lazy(() => import("./components/meal-plan/creative/CreativeMealPlanDemo").then(module => ({ default: module.CreativeMealPlanDemo })));
-const UltraCreativeLayoutsPreview = lazy(() => import("./components/meal-plan/UltraCreativeLayouts").then(module => ({ default: module.UltraCreativeLayoutsPreview })));
-const UltraCreativeLayoutsPreviewV2 = lazy(() => import("./components/meal-plan/UltraCreativeLayoutsV2").then(module => ({ default: module.UltraCreativeLayoutsPreviewV2 })));
 const ChallengesV2Page = lazy(() => import("./pages/ChallengesV2Page"));
 
 // Loader animado global com branding
@@ -81,7 +77,7 @@ const App: React.FC = () => {
                 <Route path="/terms" element={<TermsPage />} />
                 <Route path="/termos" element={<TermsPage />} />
                 <Route path="/privacidade" element={<TermsPage />} />
-                <Route path="/dashboard" element={<Suspense fallback={<PageLoader />}><CompleteDashboardPage /></Suspense>} />
+                <Route path="/dashboard" element={<Suspense fallback={<PageLoader />}><SofiaPage /></Suspense>} />
                 <Route path="/admin" element={<Suspense fallback={<PageLoader />}><AdminPage /></Suspense>} />
                 <Route path="/sofia" element={<Suspense fallback={<PageLoader />}><SofiaPage /></Suspense>} />
                 <Route path="/anamnesis" element={<Suspense fallback={<PageLoader />}><AnamnesisPage /></Suspense>} />
@@ -104,12 +100,9 @@ const App: React.FC = () => {
                 <Route path="/community/post/:postId" element={<Suspense fallback={<PageLoader />}><PublicPostPage /></Suspense>} />
                 <Route path="/relatorio/:token" element={<Suspense fallback={<PageLoader />}><PublicReport /></Suspense>} />
                 <Route path="/admin/system-health" element={<Suspense fallback={<PageLoader />}><SystemHealth /></Suspense>} />
-                <Route path="/cardapio-criativo" element={<Suspense fallback={<PageLoader />}><CreativeMealPlanDemo /></Suspense>} />
-                <Route path="/preview-estilos-cardapio" element={<Suspense fallback={<PageLoader />}><UltraCreativeLayoutsPreview /></Suspense>} />
-                <Route path="/preview-estilos-cardapio-v2" element={<Suspense fallback={<PageLoader />}><UltraCreativeLayoutsPreviewV2 /></Suspense>} />
                 <Route path="*" element={<NotFound />} />
                 </Routes>
-                <SofiaFloatingButton />
+                <FloatingMessagesButton />
               </Suspense>
             </BrowserRouter>
           </CharacterGate>

@@ -164,7 +164,7 @@ function __test() {
     'Código: `console.log("oi")` ok!',
   ];
   for (const s of samples) {
-    // eslint-disable-next-line no-console
+     
     console.log('[TTS]', s, '=>', preprocessTextForTTS(s));
   }
 }

@@ -3,17 +3,22 @@
 // =====================================================
 // Sistema de Boss Battles para exames anormais
 // Property 7: Boss Battle Trigger from Abnormal Exams
+// Agora usa configuração do banco via unifiedGamificationService
 // =====================================================
 
 import { supabase } from '@/integrations/supabase/client';
+import { 
+  awardXP as awardUnifiedXP,
+  getXPConfig,
+} from '@/services/gamification/unifiedGamificationService';
 import type { HealthMission, HealthMissionRow } from '@/types/dr-vital-revolution';
 
 // =====================================================
-// CONSTANTS
+// CONSTANTS (fallbacks - valores do banco têm prioridade)
 // =====================================================
 
-const BOSS_BATTLE_XP_REWARD = 500;
-const BOSS_BATTLE_BONUS_MULTIPLIER = 2;
+const DEFAULT_BOSS_BATTLE_XP_REWARD = 500;
+const DEFAULT_BOSS_BATTLE_BONUS_MULTIPLIER = 2;
 
 // Exam types that can trigger boss battles
 const ABNORMAL_EXAM_INDICATORS = [
@@ -34,6 +39,7 @@ const ABNORMAL_EXAM_INDICATORS = [
  * Cria uma Boss Battle para um exame anormal
  * Property 7: For any exam result marked as "abnormal" or "attention_needed",
  * a boss_battle mission SHALL be created with related_exam_id pointing to that exam.
+ * Agora busca XP do banco de configuração
  */
 export async function createBossBattle(
   userId: string,
@@ -59,9 +65,13 @@ export async function createBossBattle(
     return rowToMission(existing as HealthMissionRow);
   }
 
+  // Buscar configuração do banco
+  const bossConfig = await getXPConfig('boss_battle_win');
+  const baseXP = bossConfig?.base_xp || DEFAULT_BOSS_BATTLE_XP_REWARD;
+  
   const xpReward = examDetails.severity === 'critical' 
-    ? BOSS_BATTLE_XP_REWARD * BOSS_BATTLE_BONUS_MULTIPLIER 
-    : BOSS_BATTLE_XP_REWARD;
+    ? baseXP * DEFAULT_BOSS_BATTLE_BONUS_MULTIPLIER 
+    : baseXP;
 
   const { data, error } = await supabase
     .from('health_missions')
@@ -105,6 +115,7 @@ export async function createBossBattle(
 
 /**
  * Derrota uma Boss Battle quando o exame normaliza
+ * Agora usa sistema unificado para registrar XP
  */
 export async function defeatBossBattle(
   userId: string,
@@ -140,6 +151,16 @@ export async function defeatBossBattle(
     .single();
 
   if (updateError) throw updateError;
+
+  // Registrar XP no sistema unificado
+  await awardUnifiedXP(userId, 'boss_battle_win', {
+    sourceSystem: 'health',
+    sourceId: missionId,
+    metadata: {
+      missionTitle: mission.title,
+      relatedExamId: mission.related_exam_id,
+    },
+  });
 
   // Check if this unlocks a trophy achievement
   const { data: bossBattlesWon } = await supabase

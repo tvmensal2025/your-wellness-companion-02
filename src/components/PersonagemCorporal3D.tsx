@@ -81,6 +81,15 @@ const PersonagemCorporal3D: React.FC<Personagem3DProps> = ({
     }
   }, [touchCount]);
 
+  // URLs dos modelos 3D do Sketchfab - DEVE vir antes de qualquer return condicional
+  const embedUrl = useMemo(() => {
+    if (genero === 'masculino') {
+      return 'https://sketchfab.com/models/ebae6cc235c144cea4d46b3105f868a6/embed?autostart=1&autoplay=1';
+    } else {
+      return 'https://sketchfab.com/models/fe2c95ec93714e729becd46b2c37d3bb/embed?autostart=1&autoplay=1';
+    }
+  }, [genero]);
+
   // Verificações de segurança
   if (!genero) {
     return (
@@ -89,15 +98,6 @@ const PersonagemCorporal3D: React.FC<Personagem3DProps> = ({
       </div>
     );
   }
-
-  // URLs dos modelos 3D do Sketchfab
-  const embedUrl = useMemo(() => {
-    if (genero === 'masculino') {
-      return 'https://sketchfab.com/models/ebae6cc235c144cea4d46b3105f868a6/embed?autostart=1&autoplay=1';
-    } else {
-      return 'https://sketchfab.com/models/fe2c95ec93714e729becd46b2c37d3bb/embed?autostart=1&autoplay=1';
-    }
-  }, [genero]);
 
   // Função para tentar novamente
   const handleRetry = () => {

@@ -204,16 +204,16 @@ const eventTypeArb = fc.constantFrom(
 ) as fc.Arbitrary<TimelineEventType>;
 
 // Generate date within last 60 days
-const recentDateArb = fc.date({
-  min: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000),
-  max: new Date(),
-});
+const recentDateArb = fc.integer({ 
+  min: Date.now() - 60 * 24 * 60 * 60 * 1000, 
+  max: Date.now() 
+}).map(ts => new Date(ts));
 
 // Generate date within last 30 days (default range)
-const defaultRangeDateArb = fc.date({
-  min: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
-  max: new Date(),
-});
+const defaultRangeDateArb = fc.integer({ 
+  min: Date.now() - 30 * 24 * 60 * 60 * 1000, 
+  max: Date.now() 
+}).map(ts => new Date(ts));
 
 const metadataArb = fc.record({
   is_first_goal: fc.boolean(),
@@ -237,8 +237,8 @@ const filterArb = fc.record({
   types: fc.option(fc.uniqueArray(eventTypeArb, { minLength: 1, maxLength: 4 })),
   dateRange: fc.option(
     fc.record({
-      start: fc.date({ min: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000), max: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) }),
-      end: fc.date({ min: new Date(Date.now() - 29 * 24 * 60 * 60 * 1000), max: new Date() }),
+      start: fc.integer({ min: Date.now() - 90 * 24 * 60 * 60 * 1000, max: Date.now() - 30 * 24 * 60 * 60 * 1000 }).map(ts => new Date(ts)),
+      end: fc.integer({ min: Date.now() - 29 * 24 * 60 * 60 * 1000, max: Date.now() }).map(ts => new Date(ts)),
     })
   ),
   milestonesOnly: fc.option(fc.boolean()),

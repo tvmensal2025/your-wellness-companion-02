@@ -45,7 +45,7 @@ serve(async (req) => {
       healthScore: number;
     };
 
-    let reportData: WeeklyReportData = {
+    const reportData: WeeklyReportData = {
       user: null,
       weight: { measurements: [], trend: 'stable', change: 0 },
       water: { daily: [], average: 0, consistency: 0 },

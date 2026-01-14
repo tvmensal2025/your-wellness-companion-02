@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef, memo } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useWeightMeasurement } from '@/hooks/useWeightMeasurement';
 import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
 import { repairAuthSessionIfTooLarge } from '@/lib/auth-token-repair';
 import { useUserDataCache, getUserDataFromCache } from '@/hooks/useUserDataCache';
+import { useMenuStyleContext } from '@/contexts/MenuStyleContext';
 import SimpleWeightForm from '@/components/weighing/SimpleWeightForm';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { toast } from 'sonner';
@@ -14,14 +14,22 @@ import { CleanEvolutionChart } from './CleanEvolutionChart';
 import { QuickActionsGrid } from './QuickActionsGrid';
 import { MotivationalMascot } from './MotivationalMascot';
 import { SofiaTipsCard } from './SofiaTipsCard';
+// Character-specific dashboards
+import { 
+  SofiaDashboard, 
+  AlexDashboard, 
+  DrVitalDashboard, 
+  RafaelDashboard, 
+  CompleteDashboard 
+} from './character-dashboards';
 
 const DashboardOverview: React.FC = () => {
   const { measurements, stats, loading, fetchMeasurements } = useWeightMeasurement();
   const { data: userData, loading: userDataLoading } = useUserDataCache();
+  const { selectedCharacter } = useMenuStyleContext();
   
   const [isWeightModalOpen, setIsWeightModalOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const navigate = useNavigate();
 
   const [waistCircumference, setWaistCircumference] = useState<number>(0);
   const [healthScore, setHealthScore] = useState<number>(0);
@@ -205,7 +213,63 @@ const DashboardOverview: React.FC = () => {
 
   const currentWeight = stats?.currentWeight || (measurements?.[0]?.peso_kg ? Number(measurements[0].peso_kg) : 0);
 
-  // Layout: Hero + Evolução + Botão preenchem exatamente a viewport, Dr. Vital só no scroll
+  // Renderiza dashboard específico do personagem selecionado
+  const renderCharacterDashboard = () => {
+    switch (selectedCharacter) {
+      case 'nutrition':
+        return <SofiaDashboard />;
+      case 'exercise':
+        return <AlexDashboard />;
+      case 'health':
+        return <DrVitalDashboard />;
+      case 'coaching':
+        return <RafaelDashboard />;
+      case 'complete':
+        return <CompleteDashboard />;
+      default:
+        // Dashboard padrão (genérico) quando nenhum personagem selecionado
+        return null;
+    }
+  };
+
+  // Se tem personagem selecionado (exceto complete que tem seu próprio layout), renderiza dashboard específico
+  if (selectedCharacter && selectedCharacter !== 'complete') {
+    return (
+      <div className="min-h-[calc(100dvh-112px)] bg-background overflow-auto">
+        <div className="mx-auto w-full max-w-3xl px-2 py-1.5">
+          {renderCharacterDashboard()}
+        </div>
+        
+        {/* Weight Modal - disponível em todos os dashboards */}
+        <Dialog open={isWeightModalOpen} onOpenChange={setIsWeightModalOpen}>
+          <DialogContent className="w-[calc(100%-2rem)] max-w-sm mx-auto rounded-2xl">
+            <DialogHeader>
+              <DialogTitle>Registrar Peso</DialogTitle>
+              <DialogDescription>
+                Informe seu peso atual
+              </DialogDescription>
+            </DialogHeader>
+            <SimpleWeightForm 
+              onSubmit={handleWeightSubmit}
+            />
+          </DialogContent>
+        </Dialog>
+      </div>
+    );
+  }
+
+  // Dashboard "complete" ou sem personagem - mostra hub unificado ou dashboard genérico
+  if (selectedCharacter === 'complete') {
+    return (
+      <div className="min-h-[calc(100dvh-112px)] bg-background overflow-auto">
+        <div className="mx-auto w-full max-w-3xl px-2 py-1.5">
+          <CompleteDashboard />
+        </div>
+      </div>
+    );
+  }
+
+  // Layout padrão: Hero + Evolução + Botão preenchem exatamente a viewport
   return (
     <div className="min-h-[calc(100dvh-112px)] bg-background overflow-auto">
       <div className="mx-auto w-full max-w-3xl px-2 py-1.5">

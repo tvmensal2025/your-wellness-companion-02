@@ -3,7 +3,7 @@
  * Gerencia persistência e visibilidade de features baseado no personagem selecionado
  * 
  * IMPORTANTE: 
- * - Preferência atual usa sessionStorage (reseta ao fechar navegador)
+ * - Preferência atual usa localStorage (persiste entre sessões)
  * - Histórico de escolhas usa localStorage (persiste para ordenação inteligente)
  */
 
@@ -23,15 +23,15 @@ interface CharacterHistory {
 }
 
 /**
- * Salva a preferência de personagem no sessionStorage (sessão atual)
- * E incrementa o contador no histórico (localStorage)
+ * Salva a preferência de personagem no localStorage (persistente)
+ * E incrementa o contador no histórico
  */
 export function savePreference(characterId: CharacterId): void {
   try {
-    // Salva preferência atual (sessão)
-    sessionStorage.setItem(STORAGE_KEY, characterId);
+    // Salva preferência atual (persistente)
+    localStorage.setItem(STORAGE_KEY, characterId);
     
-    // Incrementa histórico (persistente)
+    // Incrementa histórico
     const history = getHistory();
     history[characterId] = (history[characterId] || 0) + 1;
     localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
@@ -41,32 +41,32 @@ export function savePreference(characterId: CharacterId): void {
 }
 
 /**
- * Carrega a preferência de personagem do sessionStorage
+ * Carrega a preferência de personagem do localStorage
  * Retorna null se não existir ou for inválida
  */
 export function loadPreference(): CharacterId | null {
   try {
-    const saved = sessionStorage.getItem(STORAGE_KEY);
+    const saved = localStorage.getItem(STORAGE_KEY);
     if (!saved) return null;
     
     if (!isValidCharacterId(saved)) {
-      sessionStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(STORAGE_KEY);
       return null;
     }
     
     return saved;
   } catch (error) {
-    console.warn('Could not access sessionStorage:', error);
+    console.warn('Could not access localStorage:', error);
     return null;
   }
 }
 
 /**
- * Remove a preferência de personagem do sessionStorage
+ * Remove a preferência de personagem do localStorage
  */
 export function clearPreference(): void {
   try {
-    sessionStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(STORAGE_KEY);
   } catch (error) {
     console.warn('Could not clear character preference:', error);
   }

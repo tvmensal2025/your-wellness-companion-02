@@ -306,7 +306,7 @@ serve(async (req) => {
       console.log(`\n📅 Gerando dia ${day}`);
       
       const dayMeals: any = {};
-      let dailyTotals = { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 };
+      const dailyTotals = { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 };
       
       const mealTypes = ['cafe_manha', 'almoco', 'lanche', 'jantar', 'ceia'];
       

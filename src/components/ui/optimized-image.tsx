@@ -1,33 +1,44 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 
-interface OptimizedImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
+interface OptimizedImageProps {
   src: string;
   alt: string;
-  fallbackSrc?: string;
-  blurPlaceholder?: boolean;
-  aspectRatio?: 'square' | 'video' | 'portrait' | 'auto';
-  priority?: boolean;
+  className?: string;
+  width?: number;
+  height?: number;
+  fallback?: string;
+  priority?: boolean; // Se true, carrega imediatamente (above the fold)
+  onLoad?: () => void;
+  onError?: () => void;
 }
 
-export const OptimizedImage: React.FC<OptimizedImageProps> = ({
+/**
+ * Componente de imagem otimizada com:
+ * - Lazy loading nativo (carrega só quando visível)
+ * - Skeleton loader enquanto carrega
+ * - Fallback para erros
+ * - Suporte a WebP
+ */
+export function OptimizedImage({
   src,
   alt,
-  fallbackSrc = '/placeholder.svg',
-  blurPlaceholder = true,
-  aspectRatio = 'auto',
-  priority = false,
   className,
-  ...props
-}) => {
+  width,
+  height,
+  fallback = '/placeholder.svg',
+  priority = false,
+  onLoad,
+  onError,
+}: OptimizedImageProps) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
   const [isInView, setIsInView] = useState(priority);
   const imgRef = useRef<HTMLImageElement>(null);
 
-  // Intersection Observer for lazy loading
+  // Intersection Observer para lazy loading
   useEffect(() => {
-    if (priority) return;
+    if (priority || !imgRef.current) return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -37,83 +48,117 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
         }
       },
       {
-        rootMargin: '50px',
+        rootMargin: '50px', // Começa a carregar 50px antes de entrar na tela
         threshold: 0.01,
       }
     );
 
-    if (imgRef.current) {
-      observer.observe(imgRef.current);
-    }
+    observer.observe(imgRef.current);
 
     return () => observer.disconnect();
   }, [priority]);
 
   const handleLoad = () => {
     setIsLoaded(true);
+    onLoad?.();
   };
 
   const handleError = () => {
     setHasError(true);
-    setIsLoaded(true);
+    onError?.();
   };
 
-  const aspectRatioClasses = {
-    square: 'aspect-square',
-    video: 'aspect-video',
-    portrait: 'aspect-[3/4]',
-    auto: '',
-  };
-
-  const imageSrc = hasError ? fallbackSrc : src;
+  const imageSrc = hasError ? fallback : src;
 
   return (
     <div
       ref={imgRef}
-      className={cn(
-        'relative overflow-hidden bg-muted',
-        aspectRatioClasses[aspectRatio],
-        className
-      )}
+      className={cn('relative overflow-hidden', className)}
+      style={{ width, height }}
     >
-      {/* Blur placeholder */}
-      {blurPlaceholder && !isLoaded && (
-        <div className="absolute inset-0 animate-pulse bg-gradient-to-r from-muted via-muted-foreground/10 to-muted" />
+      {/* Skeleton loader */}
+      {!isLoaded && (
+        <div
+          className="absolute inset-0 bg-muted animate-pulse rounded-inherit"
+          aria-hidden="true"
+        />
       )}
 
-      {/* Actual image */}
+      {/* Imagem */}
       {isInView && (
         <img
           src={imageSrc}
           alt={alt}
-          onLoad={handleLoad}
-          onError={handleError}
+          width={width}
+          height={height}
           loading={priority ? 'eager' : 'lazy'}
           decoding="async"
+          onLoad={handleLoad}
+          onError={handleError}
           className={cn(
-            'h-full w-full object-cover transition-opacity duration-300',
+            'w-full h-full object-cover transition-opacity duration-300',
             isLoaded ? 'opacity-100' : 'opacity-0'
           )}
-          {...props}
         />
       )}
     </div>
   );
-};
+}
 
-// Preload critical images
-export const preloadImage = (src: string): Promise<void> => {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => resolve();
-    img.onerror = reject;
-    img.src = src;
-  });
-};
+/**
+ * Versão simplificada para avatares
+ */
+export function OptimizedAvatar({
+  src,
+  alt,
+  size = 40,
+  className,
+  fallbackInitials,
+}: {
+  src?: string | null;
+  alt: string;
+  size?: number;
+  className?: string;
+  fallbackInitials?: string;
+}) {
+  const [hasError, setHasError] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
 
-// Preload multiple images
-export const preloadImages = (srcs: string[]): Promise<void[]> => {
-  return Promise.all(srcs.map(preloadImage));
-};
+  const showFallback = !src || hasError;
+
+  return (
+    <div
+      className={cn(
+        'relative rounded-full overflow-hidden bg-muted flex items-center justify-center',
+        className
+      )}
+      style={{ width: size, height: size }}
+    >
+      {/* Skeleton */}
+      {!isLoaded && !showFallback && (
+        <div className="absolute inset-0 bg-muted animate-pulse" />
+      )}
+
+      {showFallback ? (
+        <span className="text-muted-foreground font-medium text-sm">
+          {fallbackInitials || alt.charAt(0).toUpperCase()}
+        </span>
+      ) : (
+        <img
+          src={src}
+          alt={alt}
+          loading="lazy"
+          decoding="async"
+          onLoad={() => setIsLoaded(true)}
+          onError={() => setHasError(true)}
+          className={cn(
+            'w-full h-full object-cover transition-opacity duration-200',
+            isLoaded ? 'opacity-100' : 'opacity-0'
+          )}
+        />
+      )}
+    </div>
+  );
+}
 
 export default OptimizedImage;

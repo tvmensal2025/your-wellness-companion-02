@@ -1679,6 +1679,20 @@ html {
   animation: shimmer-slide 2s infinite;
 }
 
+/* ECG Animation for Dr. Vital Dashboard */
+@keyframes ecg-scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-ecg-scroll {
+  animation: ecg-scroll 2s linear infinite;
+}
+
 /* Reduce motion for users who prefer it */
 @media (prefers-reduced-motion: reduce) {
   .animate-fade-in,

@@ -9,7 +9,7 @@ import { ptBR } from 'date-fns/locale';
 
 interface OriginalResponsiveDashboardProps {
   currentWeight: number;
-  targetWeight?: number; // eslint-disable-line @typescript-eslint/no-unused-vars
+  targetWeight?: number;  
   weightChange?: number;
   totalLost?: number;
   healthScore: number;

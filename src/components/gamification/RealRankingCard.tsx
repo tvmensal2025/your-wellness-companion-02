@@ -103,7 +103,7 @@ export const RealRankingCard: React.FC = () => {
               </div>
 
               <Avatar className="h-10 w-10 border-2 border-background">
-                <AvatarImage src={user.avatar} />
+                <AvatarImage src={user.avatar} loading="lazy" />
                 <AvatarFallback className="text-xs">
                   {user.name.slice(0, 2).toUpperCase()}
                 </AvatarFallback>

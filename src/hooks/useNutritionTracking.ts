@@ -154,7 +154,7 @@ export const useNutritionTracking = () => {
         .from('user_physical_data')
         .select('*')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       // Carregar objetivo nutricional salvo (tabela correta: nutritional_goals)
       const { data: goalsResponse } = await (supabase as any)
@@ -500,7 +500,7 @@ export const useNutritionTracking = () => {
         .from('user_physical_data')
         .select('*')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       if (physicalResponse && physicalResponse.altura_cm && 
           physicalResponse.idade && physicalResponse.sexo) {

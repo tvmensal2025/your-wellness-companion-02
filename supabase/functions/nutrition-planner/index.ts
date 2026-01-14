@@ -125,7 +125,7 @@ serve(async (req) => {
     const slotEntries = Array.from(bySlot.entries());
 
     const slotResults: Record<string, { totals: Totals; resolved: any[] }> = {};
-    let dayTotals: Totals = { kcal: 0, protein_g: 0, fat_g: 0, carbs_g: 0, fiber_g: 0, sodium_mg: 0 };
+    const dayTotals: Totals = { kcal: 0, protein_g: 0, fat_g: 0, carbs_g: 0, fiber_g: 0, sodium_mg: 0 };
   const weightMap: Record<MealSlot, number> = { breakfast: 0.25, lunch: 0.35, snack: 0.1, dinner: 0.3, supper: 0 };
 
     for (const [slot, list] of slotEntries) {

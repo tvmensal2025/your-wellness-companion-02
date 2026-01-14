@@ -254,8 +254,7 @@ export const preloadCriticalResources = (): void => {
   
   // Preload componentes críticos via modulepreload
   const criticalModules = [
-    '/src/pages/CompleteDashboardPage.tsx',
-    '/src/components/dashboard/DashboardOverview.tsx',
+    '/src/pages/SofiaPage.tsx',
     '/src/components/ui/card.tsx'
   ];
   
@@ -297,9 +296,9 @@ export const optimizedCleanup = (): void => {
 // Bundle preloading inteligente (NOVO)
 export const preloadNextRoutes = (currentRoute: string): void => {
   const routePreloadMap: Record<string, string[]> = {
-    '/auth': ['/dashboard'],
-    '/dashboard': ['/app/goals', '/app/progress', '/sofia'],
-    '/': ['/auth', '/dashboard']
+    '/auth': ['/sofia'],
+    '/sofia': ['/app/goals', '/app/progress'],
+    '/': ['/auth', '/sofia']
   };
   
   const routesToPreload = routePreloadMap[currentRoute] || [];

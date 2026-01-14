@@ -350,7 +350,7 @@ async function getUserStats(userId: string): Promise<UserStats> {
     workoutsData,
     healthScoresData,
   ] = await Promise.all([
-    supabase.from('health_streaks').select('*').eq('user_id', userId).single(),
+    supabase.from('health_streaks').select('*').eq('user_id', userId).maybeSingle(),
     supabase.from('health_missions').select('id').eq('user_id', userId).eq('is_completed', true),
     supabase.from('health_missions').select('id').eq('user_id', userId).eq('type', 'boss_battle').eq('is_completed', true),
     supabase.from('food_analysis').select('id').eq('user_id', userId),

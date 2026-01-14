@@ -86,7 +86,7 @@ export const useTrackingData = () => {
         .select('*')
         .eq('user_id', user.id)
         .eq('sleep_date', today)
-        .single();
+        .maybeSingle();
 
       // 😊 Carregar dados de humor
       const { data: moodData } = await (supabase as any)
@@ -94,7 +94,7 @@ export const useTrackingData = () => {
         .select('*')
         .eq('user_id', user.id)
         .eq('date', today)
-        .single();
+        .maybeSingle();
 
       // 🚶 Carregar dados de exercício
       const { data: exerciseData } = await (supabase as any)

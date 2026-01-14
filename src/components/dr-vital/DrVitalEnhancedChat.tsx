@@ -135,7 +135,7 @@ export const DrVitalEnhancedChat: React.FC = () => {
     const formattedBlocks: string[] = [];
     
     for (let i = 0; i < blocks.length; i++) {
-      let block = blocks[i];
+      const block = blocks[i];
 
       // Converter marcador de título criado na etapa anterior
       if (/^TÍTULO:/i.test(block)) {
@@ -175,7 +175,7 @@ export const DrVitalEnhancedChat: React.FC = () => {
       }
 
       // Formatações: listas e destaques
-      let formatted = block
+      const formatted = block
         // Listas numeradas
         .replace(/^(\d+)\.\s*(.+)$/gm, '<div class="numbered-item"><div class="number">$1<\/div><div class="text">$2<\/div><\/div>')
         // Pontos com traço

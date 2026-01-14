@@ -48,7 +48,7 @@ export const useSofiaProactive = () => {
           message: `Você bebeu apenas ${Math.round(todayWater / 250)} copos de água hoje. A meta é 8 copos!`,
           icon: '💧',
           priority: 'high',
-          actionable: { label: 'Registrar água', route: '/dashboard' }
+          actionable: { label: 'Registrar água', route: '/sofia' }
         });
       }
 
@@ -68,7 +68,7 @@ export const useSofiaProactive = () => {
           message: 'Registre suas horas de sono para eu te ajudar a melhorar seu descanso!',
           icon: '🌙',
           priority: 'medium',
-          actionable: { label: 'Registrar sono', route: '/dashboard' }
+          actionable: { label: 'Registrar sono', route: '/sofia' }
         });
       }
 
@@ -125,7 +125,7 @@ export const useSofiaProactive = () => {
           message: 'Você ainda não registrou exercício hoje. Uma caminhada de 15 minutos já faz diferença!',
           icon: '🏃',
           priority: 'medium',
-          actionable: { label: 'Registrar exercício', route: '/dashboard' }
+          actionable: { label: 'Registrar exercício', route: '/sofia' }
         });
       }
 

@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="pt-BR"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Relatório Clínico — MaxNutrition</title>
+<style>
+:root{ --brand:#5A3DF0; --accent:#FF7A18; --ink:#1E2233; --muted:#5E6A81; --bg:#F6F7FC; --card:#FFFFFF; --line:#E7EAF3; --ok:#167C3B; --warn:#B26A00; --bad:#B11C1C;}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;font-size:16px;line-height:1.65}
+.page{max-width:980px;margin:0 auto;padding:20px}
+.header{display:flex;gap:14px;align-items:center;background:linear-gradient(135deg,rgba(90,61,240,.08),rgba(255,122,24,.07));border:1px solid var(--line);border-radius:18px;padding:12px 14px}
+.header img{height:56px}
+h1{margin:0;font-size:28px}
+.sub{color:var(--muted)}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px}
+.kpi .l{font-size:14px;color:var(--muted)} .kpi .v{font-size:20px;font-weight:800} .kpi .s{font-size:13px;color:var(--muted)}
+.btn-print{position:sticky;top:10px;float:right;background:var(--brand);color:#fff;border:none;border-radius:10px;padding:10px 14px;cursor:pointer;font-weight:600}
+section.block{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-top:14px}
+.stitle{margin:0 0 8px 0;font-size:22px}
+table{width:100%;border-collapse:collapse} th,td{padding:10px;border-bottom:1px dashed var(--line);text-align:left}
+th{color:var(--muted);font-weight:600} .green{color:var(--ok)} .amber{color:var(--warn)} .red{color:var(--bad)}
+.explain{border:1px solid var(--line);background:#FCFEFF;border-radius:12px;padding:12px;margin-top:10px}
+.explain h4{margin:0 0 6px 0;color:var(--brand)}
+.explain ul{margin:0;padding-left:18px}
+.explain li{margin-bottom:4px}
+.status-chip{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;font-size:13px;font-weight:600}
+.status-bom,.status-normal{background:rgba(22,124,59,0.1);color:var(--ok)}
+.status-atencao{background:rgba(178,106,0,0.1);color:var(--warn)}
+.status-alto{background:rgba(177,28,28,0.1);color:var(--bad)}
+@media (max-width:768px){.kpis{grid-template-columns:repeat(2,1fr)}.grid-2{grid-template-columns:1fr!important}}
+@media print{.btn-print{display:none}body{background:#fff}.page{padding:0}.header{box-shadow:none}}
+</style>
+</head>
+<body>
+<div class="page">
+  <button class="btn-print" onclick="window.print()">🖨️ Imprimir / Salvar PDF</button>
+  
+  <div class="header">
+    <div style="width:56px;height:56px;background:linear-gradient(135deg,#22c55e,#16a34a);border-radius:12px;display:flex;align-items:center;justify-content:center">
+      <span style="font-size:28px">🥗</span>
+    </div>
+    <div>
+      <h1>Relatório Clínico — linguagem simples</h1>
+      <div class="sub">Gerado por Sof.ia & Dr. Vital • 14/01/2026 às 10:30</div>
+    </div>
+  </div>
+
+  <!-- KPIs -->
+  <div class="kpis">
+    <div class="kpi">
+      <div class="l">Paciente</div>
+      <div class="v">João (35 anos)</div>
+      <div class="s">Masculino</div>
+    </div>
+    <div class="kpi">
+      <div class="l">Nascimento</div>
+      <div class="v">15/03/1990</div>
+      <div class="s">Coleta: 10/01/2026</div>
+    </div>
+    <div class="kpi">
+      <div class="l">Açúcar do sangue</div>
+      <div class="v">92 mg/dL</div>
+      <div class="s">HbA1c 5.4%</div>
+    </div>
+    <div class="kpi">
+      <div class="l">HOMA‑IR</div>
+      <div class="v">1.8</div>
+      <div class="s">Estimativa</div>
+    </div>
+  </div>
+
+  <!-- RESUMO -->
+  <section class="block">
+    <h2 class="stitle">📋 Resumo em 1 minuto</h2>
+    <ul>
+      <li><strong>Glicemia e HbA1c normais</strong> — seu controle de açúcar está excelente!</li>
+      <li><strong>LDL levemente elevado (142 mg/dL)</strong> — vale ajustar alimentação e reavaliar em 3 meses</li>
+      <li><strong>Vitamina D baixa (18 ng/mL)</strong> — considere suplementação após conversar com médico</li>
+      <li><strong>Hemograma completo normal</strong> — sem sinais de anemia ou infecção</li>
+      <li><strong>Função renal e hepática preservadas</strong> — rins e fígado trabalhando bem</li>
+    </ul>
+  </section>
+
+  <!-- SEÇÃO: CORAÇÃO/COLESTEROL -->
+  <section class="block">
+    <h2 class="stitle">❤️ Coração / Colesterol</h2>
+    <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:16px" class="grid-2">
+      <div>
+        <table>
+          <thead>
+            <tr><th>Exame</th><th>Resultado</th><th>Referência</th><th>Status</th><th>Interpretação</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Colesterol Total</strong></td>
+              <td><strong>185 mg/dL</strong></td>
+              <td>&lt; 200</td>
+              <td><span class="status-chip status-bom">🟢 Bom</span></td>
+              <td>Dentro do ideal</td>
+            </tr>
+            <tr>
+              <td><strong>HDL (bom)</strong></td>
+              <td><strong>55 mg/dL</strong></td>
+              <td>&gt; 40</td>
+              <td><span class="status-chip status-bom">🟢 Bom</span></td>
+              <td>Proteção cardiovascular</td>
+            </tr>
+            <tr>
+              <td><strong>LDL (ruim)</strong></td>
+              <td><strong>142 mg/dL</strong></td>
+              <td>&lt; 130</td>
+              <td><span class="status-chip status-atencao">🟡 Atenção</span></td>
+              <td>Levemente elevado</td>
+            </tr>
+            <tr>
+              <td><strong>Triglicerídeos</strong></td>
+              <td><strong>120 mg/dL</strong></td>
+              <td>&lt; 150</td>
+              <td><span class="status-chip status-bom">🟢 Bom</span></td>
+              <td>Gorduras controladas</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <div class="explain">
+          <h4>🔬 O que isso significa?</h4>
+          <p>Seu perfil lipídico está quase perfeito! O HDL (colesterol bom) está protegendo suas artérias. 
+          Apenas o LDL está um pouco acima do ideal — é como ter alguns "caminhões de gordura" a mais 
+          circulando nas suas artérias.</p>
+        </div>
+        <div class="explain">
+          <h4>💡 Dr. Vital sugere (em casa)</h4>
+          <ul>
+            <li>Aumente fibras: aveia no café, frutas com casca</li>
+            <li>Troque carne vermelha por peixe 2x/semana</li>
+            <li>Caminhada de 30 min, 5x por semana</li>
+            <li>Reduza alimentos ultraprocessados</li>
+          </ul>
+        </div>
+        <div class="explain">
+          <h4>🩺 Converse com o médico se…</h4>
+          <ul>
+            <li>LDL não baixar em 3 meses com dieta</li>
+            <li>Histórico familiar de infarto precoce</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SEÇÃO: AÇÚCAR NO SANGUE -->
+  <section class="block">
+    <h2 class="stitle">🩸 Açúcar no Sangue</h2>
+    <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:16px" class="grid-2">
+      <div>
+        <table>
+          <thead>
+            <tr><th>Exame</th><th>Resultado</th><th>Referência</th><th>Status</th><th>Interpretação</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Glicemia Jejum</strong></td>
+              <td><strong>92 mg/dL</strong></td>
+              <td>70-99</td>
+              <td><span class="status-chip status-bom">🟢 Bom</span></td>
+              <td>Açúcar controlado</td>
+            </tr>
+            <tr>
+              <td><strong>HbA1c</strong></td>
+              <td><strong>5.4%</strong></td>
+              <td>&lt; 5.7%</td>
+              <td><span class="status-chip status-bom">🟢 Bom</span></td>
+              <td>Média de 3 meses OK</td>
+            </tr>
+            <tr>
+              <td><strong>Insulina</strong></td>
+              <td><strong>8.2 µU/mL</strong></td>
+              <td>2-25</td>
+              <td><span class="status-chip status-bom">🟢 Bom</span></td>
+              <td>Produção adequada</td>
+            </tr>
+            <tr>
+              <td><strong>HOMA-IR</strong></td>
+              <td><strong>1.8</strong></td>
+              <td>&lt; 2.5</td>
+              <td><span class="status-chip status-bom">🟢 Bom</span></td>
+              <td>Sem resistência</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <div class="explain">
+          <h4>🔬 O que isso significa?</h4>
+          <p>Excelente notícia! Seu corpo está processando o açúcar perfeitamente. A glicemia mostra 
+          o "combustível" atual, a HbA1c é um "filme" dos últimos 3 meses, e o HOMA-IR confirma 
+          que suas células respondem bem à insulina.</p>
+        </div>
+        <div class="explain">
+          <h4>💡 Dr. Vital sugere (em casa)</h4>
+          <ul>
+            <li>Continue evitando açúcar refinado</li>
+            <li>Prefira carboidratos integrais</li>
+            <li>Caminhe 10 min após refeições grandes</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SEÇÃO: VITAMINAS -->
+  <section class="block">
+    <h2 class="stitle">🌞 Vitaminas e Estoques</h2>
+    <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:16px" class="grid-2">
+      <div>
+        <table>
+          <thead>
+            <tr><th>Exame</th><th>Resultado</th><th>Referência</th><th>Status</th><th>Interpretação</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Vitamina D</strong></td>
+              <td><strong>18 ng/mL</strong></td>
+              <td>30-100</td>
+              <td><span class="status-chip status-alto">🔴 Baixo</span></td>
+              <td>Deficiência</td>
+            </tr>
+            <tr>
+              <td><strong>Vitamina B12</strong></td>
+              <td><strong>450 pg/mL</strong></td>
+              <td>200-900</td>
+              <td><span class="status-chip status-bom">🟢 Bom</span></td>
+              <td>Estoque adequado</td>
+            </tr>
+            <tr>
+              <td><strong>Ferritina</strong></td>
+              <td><strong>85 ng/mL</strong></td>
+              <td>30-300</td>
+              <td><span class="status-chip status-bom">🟢 Bom</span></td>
+              <td>Ferro estocado</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <div class="explain">
+          <h4>🔬 O que isso significa?</h4>
+          <p>Sua vitamina D está baixa — é como ter pouco "sol engarrafado" no corpo. Isso pode 
+          afetar ossos, imunidade e até humor. B12 e ferro estão ótimos!</p>
+        </div>
+        <div class="explain">
+          <h4>💡 Dr. Vital sugere (em casa)</h4>
+          <ul>
+            <li>Tome 15-20 min de sol por dia (braços/pernas)</li>
+            <li>Coma mais peixes gordurosos e ovos</li>
+            <li>Converse com médico sobre suplementação</li>
+          </ul>
+        </div>
+        <div class="explain">
+          <h4>🩺 Converse com o médico se…</h4>
+          <ul>
+            <li>Sentir cansaço persistente ou dores ósseas</li>
+            <li>Vitamina D não subir em 3 meses</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SEÇÃO: HEMOGRAMA -->
+  <section class="block">
+    <h2 class="stitle">🔬 Hemograma</h2>
+    <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:16px" class="grid-2">
+      <div>
+        <table>
+          <thead>
+            <tr><th>Exame</th><th>Resultado</th><th>Referência</th><th>Status</th><th>Interpretação</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Hemoglobina</strong></td>
+              <td><strong>14.5 g/dL</strong></td>
+              <td>13.5-17.5</td>
+              <td><span class="status-chip status-bom">🟢 Bom</span></td>
+              <td>Oxigenação OK</td>
+            </tr>
+            <tr>
+              <td><strong>Hematócrito</strong></td>
+              <td><strong>43%</strong></td>
+              <td>38-50%</td>
+              <td><span class="status-chip status-bom">🟢 Bom</span></td>
+              <td>Proporção ideal</td>
+            </tr>
+            <tr>
+              <td><strong>Leucócitos</strong></td>
+              <td><strong>7.200/mm³</strong></td>
+              <td>4.000-11.000</td>
+              <td><span class="status-chip status-bom">🟢 Bom</span></td>
+              <td>Defesa ativa</td>
+            </tr>
+            <tr>
+              <td><strong>Plaquetas</strong></td>
+              <td><strong>245.000/mm³</strong></td>
+              <td>150.000-400.000</td>
+              <td><span class="status-chip status-bom">🟢 Bom</span></td>
+              <td>Coagulação OK</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <div class="explain">
+          <h4>🔬 O que isso significa?</h4>
+          <p>Seu sangue está saudável! A hemoglobina são os "táxis" que levam oxigênio, os leucócitos 
+          são seu "exército" de defesa, e as plaquetas são os "curativos" que estancam sangramentos.</p>
+        </div>
+        <div class="explain">
+          <h4>💡 Dr. Vital sugere (em casa)</h4>
+          <ul>
+            <li>Mantenha alimentação variada</li>
+            <li>Hidrate-se bem (2L água/dia)</li>
+            <li>Continue com check-ups anuais</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PLANO 7 DIAS -->
+  <section class="block">
+    <h2 class="stitle">📅 Plano simples — próximos 7 dias</h2>
+    <ul>
+      <li><strong>Dia 1-2:</strong> Comece a tomar 15 min de sol pela manhã</li>
+      <li><strong>Dia 3-4:</strong> Substitua uma refeição de carne vermelha por peixe</li>
+      <li><strong>Dia 5-6:</strong> Adicione aveia no café da manhã</li>
+      <li><strong>Dia 7:</strong> Faça uma caminhada de 30 minutos</li>
+      <li><strong>Toda semana:</strong> Reduza 1 alimento ultraprocessado</li>
+    </ul>
+  </section>
+
+  <!-- GLOSSÁRIO -->
+  <section class="block">
+    <h2 class="stitle">📚 Glossário</h2>
+    <ul>
+      <li><strong>LDL:</strong> Colesterol "ruim" que pode grudar nas artérias</li>
+      <li><strong>HDL:</strong> Colesterol "bom" que limpa as artérias</li>
+      <li><strong>HbA1c:</strong> Média do açúcar no sangue dos últimos 3 meses</li>
+      <li><strong>HOMA-IR:</strong> Índice que mede resistência à insulina</li>
+      <li><strong>Ferritina:</strong> Estoque de ferro no corpo</li>
+      <li><strong>Hemoglobina:</strong> Proteína que carrega oxigênio no sangue</li>
+    </ul>
+  </section>
+
+  <!-- DISCLAIMER -->
+  <p class="sub" style="text-align:center;margin-top:20px;padding:16px;background:rgba(90,61,240,0.05);border-radius:12px">
+    ⚠️ <strong>Importante:</strong> Este documento é educativo e não substitui consulta médica. 
+    Não faz diagnóstico nem prescrição. Sempre converse com seu médico sobre os resultados.
+  </p>
+
+  <!-- FOOTER -->
+  <div style="text-align:center;margin-top:20px;padding:16px;color:var(--muted)">
+    <div style="font-size:20px;margin-bottom:8px">🏥</div>
+    <div style="font-weight:600">MaxNutrition</div>
+    <div style="font-size:14px">www.oficialmaxnutrition.com.br • WhatsApp: (11) 98900-0650</div>
+  </div>
+</div>
+</body></html>

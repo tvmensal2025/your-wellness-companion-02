@@ -177,7 +177,7 @@ Deno.serve(async (req) => {
     });
 
     // Default report data
-    let reportData = {
+    const reportData = {
       title: "Relatório de Autoconhecimento",
       date: hoje,
       introduction: "Parabéns por dar esse passo importante de autoconhecimento! Este relatório apresenta uma análise personalizada dos seus sabotadores internos e como eles se conectam com seus hábitos e bem-estar.",

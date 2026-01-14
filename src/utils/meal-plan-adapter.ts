@@ -680,7 +680,7 @@ export function adaptMealieToStandard(mealieData: any): StandardDayPlan[] {
     });
 
     // Calcular totais do dia baseado nas refeições adaptadas
-    let dailyTotals = {
+    const dailyTotals = {
       calories: 0,
       protein: 0,
       carbs: 0,

@@ -103,7 +103,7 @@ export function RankingPodium({ topThree, currentUserId, onUserClick }: RankingP
           )}
           
           <Avatar className={`${avatarSizes[position as 1|2|3]} border-4 ${borderColors[position as 1|2|3]} ${glows[position as 1|2|3]} ${isCurrentUser ? 'ring-2 ring-primary ring-offset-2' : ''}`}>
-            <AvatarImage src={user.avatar_url} />
+            <AvatarImage src={user.avatar_url} loading="lazy" />
             <AvatarFallback className={`bg-gradient-to-br ${gradients[position as 1|2|3]} text-white font-bold text-lg`}>
               {user.user_name.charAt(0).toUpperCase()}
             </AvatarFallback>

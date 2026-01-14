@@ -171,7 +171,7 @@ export const WeeklyProgressCard: React.FC<WeeklyProgressCardProps> = ({
           <div className="text-center">
             <button 
               data-tutorial="pesagem"
-              onClick={() => navigate('/dashboard')}
+              onClick={() => navigate('/sofia')}
               className="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
             >
               <Scale className="w-4 h-4" />

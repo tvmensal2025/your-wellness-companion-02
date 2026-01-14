@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Flame, Target, Zap, Clock, Calendar, RefreshCw, AlertTriangle, Users, Bell, BarChart3 } from "lucide-react";
+import { Flame, Target, Zap, Clock, Calendar, RefreshCw, AlertTriangle, Bell, BarChart3, Swords } from "lucide-react";
 import { motion } from "framer-motion";
 
 import { ExerciseDetailModal } from "./ExerciseDetailModal";
@@ -16,7 +16,8 @@ import { SavedProgramView } from "./SavedProgramView";
 
 // Novos componentes avançados
 import { PerformanceDashboardCard } from "./PerformanceDashboardCard";
-import { SocialHubCard } from "./SocialHubCard";
+import { ExerciseChallengeCard } from "./ExerciseChallengeCard";
+import { FollowingProgressCard } from "./FollowingProgressCard";
 import { NotificationCenter } from "./NotificationCenter";
 
 import { useExerciseProgram } from "@/hooks/useExerciseProgram";
@@ -38,8 +39,11 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
   const [activeWorkout, setActiveWorkout] = useState<WeeklyPlan | null>(null);
   const [isWorkoutModalOpen, setIsWorkoutModalOpen] = useState(false);
   const [showLibraryPlan, setShowLibraryPlan] = useState(false);
-  const [activeTab, setActiveTab] = useState<'treino' | 'stats' | 'social'>('treino');
+  const [activeTab, setActiveTab] = useState<'treino' | 'stats' | 'desafio'>('treino');
   const { toast } = useToast();
+
+  // Hook para dados reais de ranking - REMOVIDO (não faz sentido para treino em casa)
+  // const { ... } = useExerciseRanking(user?.id);
 
   // Verificar se o programa salvo tem plano semanal detalhado
   const hasSavedWeekPlan = useMemo(() => {
@@ -329,7 +333,7 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
         transition={{ delay: 0.3 }}
         className="flex items-center justify-between gap-2"
       >
-        {/* Tabs de navegação */}
+        {/* Tabs de navegação - Simplificado para treino em casa */}
         <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-0.5">
           <Button
             variant={activeTab === 'treino' ? 'default' : 'ghost'}
@@ -347,16 +351,16 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
             className="h-7 px-2.5 text-[10px] sm:text-xs gap-1"
           >
             <BarChart3 className="w-3 h-3" />
-            <span className="hidden sm:inline">Stats</span>
+            <span className="hidden sm:inline">Progresso</span>
           </Button>
           <Button
-            variant={activeTab === 'social' ? 'default' : 'ghost'}
+            variant={activeTab === 'desafio' ? 'default' : 'ghost'}
             size="sm"
-            onClick={() => setActiveTab('social')}
+            onClick={() => setActiveTab('desafio')}
             className="h-7 px-2.5 text-[10px] sm:text-xs gap-1"
           >
-            <Users className="w-3 h-3" />
-            <span className="hidden sm:inline">Social</span>
+            <Swords className="w-3 h-3" />
+            <span className="hidden sm:inline">X1</span>
           </Button>
         </div>
         
@@ -393,7 +397,7 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
             <Button
               variant="ghost"
               size="icon"
-              onClick={refreshPlan}
+              onClick={() => refreshPlan()}
               disabled={loading}
               className="h-7 w-7 sm:h-8 sm:w-8 rounded-lg bg-muted/50 hover:bg-muted border border-border/40"
             >
@@ -420,7 +424,7 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
             <Card className="border-red-200 bg-red-50 dark:bg-red-950/20">
               <CardContent className="p-6 text-center">
                 <p className="text-red-600 dark:text-red-400">{error}</p>
-                <Button onClick={refreshPlan} variant="outline" className="mt-4">
+                <Button onClick={() => refreshPlan()} variant="outline" className="mt-4">
                   Tentar Novamente
                 </Button>
               </CardContent>
@@ -445,7 +449,7 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
         </>
       )}
 
-      {/* Tab de Estatísticas */}
+      {/* Tab de Estatísticas/Progresso */}
       {activeTab === 'stats' && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
@@ -456,14 +460,15 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
         </motion.div>
       )}
 
-      {/* Tab Social */}
-      {activeTab === 'social' && (
+      {/* Tab de Desafio X1 */}
+      {activeTab === 'desafio' && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           className="space-y-4"
         >
-          <SocialHubCard userId={user?.id || ''} />
+          <ExerciseChallengeCard userId={user?.id} />
+          <FollowingProgressCard userId={user?.id} />
         </motion.div>
       )}
 

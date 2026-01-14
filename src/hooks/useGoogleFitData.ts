@@ -1,5 +1,5 @@
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 interface GoogleFitData {
@@ -19,6 +19,9 @@ interface GoogleFitData {
   created_at: string;
 }
 
+// Constantes para auto-sync
+const AUTO_SYNC_INTERVAL_MS = 15 * 60 * 1000; // 15 minutos
+
 export type Period = 'day' | 'week' | 'month';
 
 function getLocalDateString(d: Date, tz = 'America/Sao_Paulo') {
@@ -34,7 +37,6 @@ function getPeriodRange(period: Period, tz = 'America/Sao_Paulo') {
     return { start: todayStr, end: todayStr };
   }
   if (period === 'week') {
-    const dow = new Intl.DateTimeFormat('en-US', { timeZone: tz, weekday: 'short' }).format(now);
     // Calcular segunda-feira da semana corrente
     const jsDay = now.getDay(); // 0 dom ... 6 sáb
     const delta = (jsDay + 6) % 7; // dias desde segunda
@@ -56,6 +58,21 @@ export function useGoogleFitData() {
   const [data, setData] = useState<GoogleFitData[]>([]);
   const [isConnected, setIsConnected] = useState(false);
   const [lastSync, setLastSync] = useState<string | null>(null);
+  const lastAutoSyncRef = useRef<Date | null>(null);
+
+  /**
+   * Verifica se deve fazer auto-sync baseado no tempo desde última sincronização
+   * Property 8: Sync Timing Logic - sync se > 15 minutos desde última sync
+   */
+  const shouldAutoSync = useCallback(() => {
+    if (!lastSync) return true;
+    
+    const lastSyncDate = new Date(lastSync);
+    const now = new Date();
+    const diffMs = now.getTime() - lastSyncDate.getTime();
+    
+    return diffMs > AUTO_SYNC_INTERVAL_MS;
+  }, [lastSync]);
 
   const fetchGoogleFitData = async () => {
     try {
@@ -106,6 +123,52 @@ export function useGoogleFitData() {
   };
 
   useEffect(() => { fetchGoogleFitData(); }, []);
+
+  /**
+   * Sincroniza dados do Google Fit
+   * Definido como useCallback para poder ser usado no auto-sync useEffect
+   */
+  const syncData = useCallback(async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Usuário não autenticado');
+    const { data: tokenData }: any = await (supabase as any)
+      .from('google_fit_tokens')
+      .select('access_token, refresh_token, expires_at')
+      .eq('user_id', user.id)
+      .maybeSingle();
+    if (!tokenData) throw new Error('Token do Google Fit não encontrado. Conecte novamente.');
+    if (new Date(tokenData.expires_at) < new Date()) throw new Error('Token expirado. Conecte novamente ao Google Fit.');
+
+    const end = getLocalDateString(new Date());
+    const start = getLocalDateString(new Date(Date.now() - 7 * 24 * 60 * 60 * 1000));
+    const { data: syncResult, error: syncError } = await supabase.functions.invoke('google-fit-sync', {
+      body: { access_token: tokenData.access_token, refresh_token: tokenData.refresh_token, date_range: { startDate: start, endDate: end } }
+    });
+    if (syncError) throw syncError;
+    await fetchGoogleFitData();
+    return syncResult;
+  }, []);
+
+  // Auto-sync quando necessário (> 15 minutos desde última sync)
+  useEffect(() => {
+    if (!isConnected || loading) return;
+    
+    // Verificar se deve fazer auto-sync
+    if (shouldAutoSync() && !lastAutoSyncRef.current) {
+      lastAutoSyncRef.current = new Date();
+      syncData().catch(console.error);
+    }
+    
+    // Configurar intervalo para verificar periodicamente
+    const interval = setInterval(() => {
+      if (shouldAutoSync()) {
+        lastAutoSyncRef.current = new Date();
+        syncData().catch(console.error);
+      }
+    }, AUTO_SYNC_INTERVAL_MS);
+    
+    return () => clearInterval(interval);
+  }, [isConnected, loading, shouldAutoSync, syncData]);
 
   const calculateStats = (rows: GoogleFitData[]) => {
     if (!rows.length) {
@@ -180,27 +243,10 @@ export function useGoogleFitData() {
         return new Date(tokenData.expires_at) > new Date();
       } catch { return false; }
     },
-    async syncData() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Usuário não autenticado');
-      const { data: tokenData }: any = await (supabase as any)
-        .from('google_fit_tokens')
-        .select('access_token, refresh_token, expires_at')
-        .eq('user_id', user.id)
-        .maybeSingle();
-      if (!tokenData) throw new Error('Token do Google Fit não encontrado. Conecte novamente.');
-      if (new Date(tokenData.expires_at) < new Date()) throw new Error('Token expirado. Conecte novamente ao Google Fit.');
-
-      const end = getLocalDateString(new Date());
-      const start = getLocalDateString(new Date(Date.now() - 7 * 24 * 60 * 60 * 1000));
-      const { data: syncResult, error: syncError } = await supabase.functions.invoke('google-fit-sync', {
-        body: { access_token: tokenData.access_token, refresh_token: tokenData.refresh_token, date_range: { startDate: start, endDate: end } }
-      });
-      if (syncError) throw syncError;
-      await fetchGoogleFitData();
-      return syncResult;
-    },
+    syncData,
     // score dinâmico utilitário (para período filtrado no componente)
     computeScoreForPeriod,
+    // Utilitário para verificar se deve sincronizar
+    shouldAutoSync,
   };
 }

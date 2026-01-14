@@ -257,7 +257,7 @@ async function analyzeAndProcessExam(
   console.log('👤 Perfil do usuário carregado:', profile?.full_name || 'Sem nome');
   
   // Processar imagens dos tmpPaths
-  let examImages: { mime: string; data: string }[] = [];
+  const examImages: { mime: string; data: string }[] = [];
   
   if (payload.tmpPaths && payload.tmpPaths.length > 0) {
     console.log('📥 Processando', payload.tmpPaths.length, 'imagens...');

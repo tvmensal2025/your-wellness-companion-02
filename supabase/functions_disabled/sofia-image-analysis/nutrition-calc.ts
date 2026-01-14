@@ -80,9 +80,9 @@ function resolveTacoFood(name: string): TacoFood | null {
 }
 
 export function calcNutrition(items: PlateItem[]) {
-  let totals = { kcal:0, protein:0, carbs:0, fat:0, fiber:0, sodium:0 };
-  let details: Array<{name:string; grams:number; tacoFood:TacoFood|null; contrib:any}> = [];
-  let missing: string[] = [];
+  const totals = { kcal:0, protein:0, carbs:0, fat:0, fiber:0, sodium:0 };
+  const details: Array<{name:string; grams:number; tacoFood:TacoFood|null; contrib:any}> = [];
+  const missing: string[] = [];
   let gramsTotal = 0;
 
   for (const it of items) {

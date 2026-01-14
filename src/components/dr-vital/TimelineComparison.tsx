@@ -132,7 +132,7 @@ export function TimelineComparison({ className }: TimelineComparisonProps) {
   const getDateRange = (preset: PeriodPreset): { start: Date; end: Date } => {
     const now = new Date();
     const end = new Date(now);
-    let start = new Date(now);
+    const start = new Date(now);
 
     switch (preset) {
       case 'last_week':

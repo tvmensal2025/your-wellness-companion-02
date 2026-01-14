@@ -387,18 +387,15 @@ export default function HealthFeedPage() {
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <div className="flex items-center justify-between mb-4 gap-2">
-            <TabsList className="w-full max-w-xl bg-primary/10 border border-primary/20">
+            <TabsList className="w-full max-w-md bg-primary/10 border border-primary/20">
               <TabsTrigger value="feed" className="flex-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-xs sm:text-sm">
                 Feed
-              </TabsTrigger>
-              <TabsTrigger value="following" className="flex-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-xs sm:text-sm">
-                Seguindo
               </TabsTrigger>
               <TabsTrigger value="ranking" className="flex-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-xs sm:text-sm">
                 Ranking
               </TabsTrigger>
               <TabsTrigger value="conexoes" className="flex-1 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground text-xs sm:text-sm">
-                Conexões
+                Pessoas
               </TabsTrigger>
             </TabsList>
           </div>
@@ -504,27 +501,7 @@ export default function HealthFeedPage() {
             />
           </TabsContent>
 
-          {/* Following Tab */}
-          <TabsContent value="following" className="mt-4">
-            <div className="max-w-2xl mx-auto space-y-6">
-              {/* Community Health Summary */}
-              <CommunityHealthSummary />
-
-              {/* Following List */}
-              <FollowingList 
-                onProfileClick={(userId) => {
-                  setSelectedProfileId(userId);
-                  setProfileModalOpen(true);
-                }}
-                onMessageClick={(userId) => {
-                  setInitialDmUser(userId);
-                  setDmModalOpen(true);
-                }}
-              />
-            </div>
-          </TabsContent>
-
-          {/* Conexões Tab */}
+          {/* Conexões Tab - UNIFICADA (Seguindo + Seguidores + Descobrir) */}
           <TabsContent value="conexoes" className="mt-4">
             <ConnectionsTab
               currentUserId={user?.id}

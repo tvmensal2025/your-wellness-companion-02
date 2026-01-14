@@ -430,7 +430,7 @@ async function handleReplaceFood(
   details: any,
   pendingFoods: any[]
 ): Promise<void> {
-  let updatedFoods = [...pendingFoods];
+  const updatedFoods = [...pendingFoods];
   const indexToReplace = details.foodIndex ?? 0;
   
   if (indexToReplace >= 0 && indexToReplace < updatedFoods.length) {

@@ -1,9 +1,16 @@
 // ============================================
 // 🎮 GAMIFICATION SERVICE
 // Sistema de pontos, conquistas e desafios
+// Agora usa configuração do banco via unifiedGamificationService
 // ============================================
 
 import { supabase } from '@/integrations/supabase/client';
+import { 
+  awardXP, 
+  getXPConfig,
+  calculateLevel,
+  xpToNextLevel,
+} from '@/services/gamification/unifiedGamificationService';
 import type {
   GamificationPoints,
   PointsAwarded,
@@ -18,15 +25,15 @@ import type {
 } from '@/types/advanced-exercise-system';
 
 // ============================================
-// CONSTANTS
+// CONSTANTS (fallbacks se config não existir)
 // ============================================
 
-const POINTS_CONFIG = {
+const DEFAULT_POINTS_CONFIG = {
   basePerExercise: 10,
   basePerMinute: 1,
   difficultyBonus: {
-    high: 20, // difficulty >= 7
-    medium: 10, // difficulty >= 5
+    high: 20,
+    medium: 10,
   },
   streakMultipliers: {
     3: 1.1,
@@ -37,10 +44,10 @@ const POINTS_CONFIG = {
   personalRecordBonus: 50,
 };
 
-const XP_CONFIG = {
+const DEFAULT_XP_CONFIG = {
   basePerWorkout: 25,
-  perLevel: 100, // XP necessário por nível
-  levelMultiplier: 1.2, // cada nível precisa 20% mais XP
+  perLevel: 100,
+  levelMultiplier: 1.2,
 };
 
 // ============================================
@@ -55,7 +62,7 @@ export class GamificationService {
   }
 
   // ============================================
-  // POINTS SYSTEM
+  // POINTS SYSTEM (usando sistema unificado)
   // ============================================
 
   async awardWorkoutPoints(
@@ -64,27 +71,48 @@ export class GamificationService {
     avgDifficulty: number,
     isPersonalRecord: boolean = false
   ): Promise<PointsAwarded> {
+    // Buscar configurações do banco
+    const [workoutConfig, exerciseConfig, recordConfig] = await Promise.all([
+      getXPConfig('workout_complete'),
+      getXPConfig('exercise_complete'),
+      getXPConfig('personal_record'),
+    ]);
+
+    // Usar valores do banco ou fallback
+    const basePerExercise = exerciseConfig?.points || DEFAULT_POINTS_CONFIG.basePerExercise;
+    const basePerMinute = DEFAULT_POINTS_CONFIG.basePerMinute;
+    const workoutXP = workoutConfig?.base_xp || DEFAULT_XP_CONFIG.basePerWorkout;
+
     // Calcular pontos base
     const basePoints = 
-      (exercisesCompleted * POINTS_CONFIG.basePerExercise) +
-      (durationMinutes * POINTS_CONFIG.basePerMinute);
+      (exercisesCompleted * basePerExercise) +
+      (durationMinutes * basePerMinute);
 
     // Calcular bônus
     let bonusPoints = 0;
     if (avgDifficulty >= 7) {
-      bonusPoints += POINTS_CONFIG.difficultyBonus.high;
+      bonusPoints += DEFAULT_POINTS_CONFIG.difficultyBonus.high;
     } else if (avgDifficulty >= 5) {
-      bonusPoints += POINTS_CONFIG.difficultyBonus.medium;
+      bonusPoints += DEFAULT_POINTS_CONFIG.difficultyBonus.medium;
     }
+    
+    // Bônus de recorde pessoal
     if (isPersonalRecord) {
-      bonusPoints += POINTS_CONFIG.personalRecordBonus;
+      const recordBonus = recordConfig?.points || DEFAULT_POINTS_CONFIG.personalRecordBonus;
+      bonusPoints += recordBonus;
+      
+      // Registrar recorde no sistema unificado
+      await awardXP(this.userId, 'personal_record', {
+        sourceSystem: 'exercise',
+        metadata: { avgDifficulty, exercisesCompleted },
+      });
     }
 
     // Buscar streak atual para multiplicador
     const streak = await this.getStreak();
     let multiplier = 1.0;
     if (streak) {
-      for (const [days, mult] of Object.entries(POINTS_CONFIG.streakMultipliers).reverse()) {
+      for (const [days, mult] of Object.entries(DEFAULT_POINTS_CONFIG.streakMultipliers).reverse()) {
         if (streak.currentStreak >= parseInt(days)) {
           multiplier = mult;
           break;
@@ -94,9 +122,21 @@ export class GamificationService {
 
     // Calcular total
     const totalPoints = Math.floor((basePoints + bonusPoints) * multiplier);
-    const xpEarned = XP_CONFIG.basePerWorkout + Math.floor(totalPoints / 10);
+    const xpEarned = workoutXP + Math.floor(totalPoints / 10);
 
-    // Salvar pontos
+    // Usar sistema unificado para registrar
+    await awardXP(this.userId, 'workout_complete', {
+      sourceSystem: 'exercise',
+      metadata: {
+        durationMinutes,
+        exercisesCompleted,
+        avgDifficulty,
+        isPersonalRecord,
+        multiplier,
+      },
+    });
+
+    // Salvar pontos no sistema de exercícios também (compatibilidade)
     await this.savePoints(totalPoints, xpEarned, 'workout_complete');
 
     // Atualizar streak
@@ -138,7 +178,7 @@ export class GamificationService {
       .from('exercise_gamification_points')
       .select('*')
       .eq('user_id', this.userId)
-      .single();
+      .maybeSingle();
 
     const newTotalPoints = (current?.total_points || 0) + points;
     const newWeeklyPoints = (current?.weekly_points || 0) + points;
@@ -208,7 +248,7 @@ export class GamificationService {
       .from('exercise_streaks')
       .select('*')
       .eq('user_id', this.userId)
-      .single();
+      .maybeSingle();
 
     if (!data) return null;
 
@@ -504,7 +544,7 @@ export class GamificationService {
       .from('exercise_gamification_points')
       .select(pointsColumn)
       .eq('user_id', this.userId)
-      .single();
+      .maybeSingle();
 
     if (!myPoints) return 0;
 
@@ -522,7 +562,7 @@ export class GamificationService {
       .from('exercise_gamification_points')
       .select('*')
       .eq('user_id', this.userId)
-      .single();
+      .maybeSingle();
 
     if (!data) return null;
 

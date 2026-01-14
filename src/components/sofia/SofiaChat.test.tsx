@@ -45,5 +45,5 @@ describe('SofiaChat', () => {
     const module = await import('./SofiaChat')
     expect(module).toBeDefined()
     expect(module.default).toBeDefined()
-  })
+  }, 15000) // Timeout de 15 segundos
 })

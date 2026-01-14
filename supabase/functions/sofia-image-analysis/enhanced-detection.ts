@@ -732,7 +732,7 @@ function generateConfirmationMessage(
 
 function parseAIResponse(text: string): any {
   try {
-    let clean = text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
+    const clean = text.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
     
     const jsonMatch = clean.match(/\{[\s\S]*"foods"[\s\S]*\}/);
     if (jsonMatch) {

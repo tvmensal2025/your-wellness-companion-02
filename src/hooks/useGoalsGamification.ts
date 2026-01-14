@@ -16,26 +16,39 @@ export const useGoalsGamification = (userId?: string) => {
         .from('user_goal_levels')
         .select('*')
         .eq('user_id', userId)
-        .single();
+        .maybeSingle();
 
-      // Se a tabela não existe (406 Not Acceptable), retornar dados padrão
+      // Se não existe registro ou tabela não existe, retornar dados padrão
       if (error) {
-        if (error.code === 'PGRST116' || error.message?.includes('406') || error.message?.includes('Not Acceptable')) {
-          console.warn('Tabela user_goal_levels não existe. Execute a migração 20260112400000_add_goals_gamification_safe.sql');
-          return {
-            id: 'temp',
-            user_id: userId,
-            current_level: 1,
-            current_xp: 0,
-            total_xp: 0,
-            xp_to_next_level: 100,
-            level_title: 'Iniciante',
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          };
-        }
-        throw error;
+        console.warn('Erro ao buscar user_goal_levels:', error.message);
+        return {
+          id: 'temp',
+          user_id: userId,
+          current_level: 1,
+          current_xp: 0,
+          total_xp: 0,
+          xp_to_next_level: 100,
+          level_title: 'Iniciante',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        };
       }
+      
+      // Se não existe registro para o usuário, retornar dados padrão
+      if (!data) {
+        return {
+          id: 'temp',
+          user_id: userId,
+          current_level: 1,
+          current_xp: 0,
+          total_xp: 0,
+          xp_to_next_level: 100,
+          level_title: 'Iniciante',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        };
+      }
+      
       return data;
     },
     enabled: !!userId,
@@ -103,10 +116,13 @@ export const useGoalsGamification = (userId?: string) => {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['user-goal-level', userId] });
       
-      if (data && data.leveled_up) {
+      // RPC pode retornar array, pegar primeiro elemento
+      const result = Array.isArray(data) ? data[0] : data;
+      
+      if (result && result.leveled_up) {
         toast({
           title: "🎉 Level Up!",
-          description: `Você alcançou o nível ${data.new_level}! Título: ${data.new_title}`,
+          description: `Você alcançou o nível ${result.new_level}! Título: ${result.new_title}`,
           duration: 5000,
         });
       }
@@ -154,13 +170,15 @@ export const useGoalsGamification = (userId?: string) => {
           ignoreDuplicates: false,
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data;
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['goal-achievements', userId] });
+      
+      if (!data) return;
       
       const rarityEmoji = {
         common: '🥉',
@@ -182,14 +200,14 @@ export const useGoalsGamification = (userId?: string) => {
     mutationFn: async ({ goalId, streakType = 'daily' }: { goalId: string; streakType?: 'daily' | 'weekly' | 'monthly' }) => {
       if (!userId) throw new Error('User ID required');
 
-      // Buscar streak atual
+      // Buscar streak atual (maybeSingle para evitar 406 se não existir)
       const { data: existingStreak } = await supabase
         .from('goal_streaks')
         .select('*')
         .eq('user_id', userId)
         .eq('goal_id', goalId)
         .eq('streak_type', streakType)
-        .single();
+        .maybeSingle();
 
       const today = new Date().toISOString().split('T')[0];
       const lastUpdate = existingStreak?.last_update_date;
@@ -229,7 +247,7 @@ export const useGoalsGamification = (userId?: string) => {
           onConflict: 'user_id,goal_id,streak_type',
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data;
@@ -237,7 +255,7 @@ export const useGoalsGamification = (userId?: string) => {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['goal-streaks', userId] });
       
-      if (data.current_streak >= 7) {
+      if (data && data.current_streak >= 7) {
         toast({
           title: `🔥 Streak de ${data.current_streak} dias!`,
           description: "Continue assim! Você está no caminho certo.",

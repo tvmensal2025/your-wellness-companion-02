@@ -100,7 +100,7 @@ function buildFallbackLines(block: BlockName, dayIdx = 0): MealLine[] {
 function applyIntelligence(lines: MealLine[]): MealLine[] {
   return avoidRepetition(lines).map((line) => {
     const intent = detectFoodIntent(line.food);
-    let foodName = intent.displayName;
+    const foodName = intent.displayName;
     if (intent.displayName.includes('(kcal/100g)') && !line.kcal) {
       // já será explicado no popover, mantemos kcal da linha
     }

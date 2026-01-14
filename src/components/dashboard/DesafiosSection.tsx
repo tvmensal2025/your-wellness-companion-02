@@ -265,7 +265,7 @@ const DesafiosSection: React.FC<DesafiosSectionProps> = ({
 
       // Buscar perfis para nomes/avatars somente dos usuários presentes no ranking
       const rankingUserIds = Array.from(pointsByUser.keys());
-      let profilesMap = new Map<string, any>();
+      const profilesMap = new Map<string, any>();
       if (rankingUserIds.length > 0) {
         const { data: profiles } = await supabase
           .from('profiles')

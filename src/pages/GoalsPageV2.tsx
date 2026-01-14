@@ -48,17 +48,17 @@ export default function GoalsPageV2() {
 
       if (goalsError) throw goalsError;
 
-      // Buscar nível do usuário
+      // Buscar nível do usuário (maybeSingle para evitar 406 se não existir)
       const { data: levelData, error: levelError } = await supabase
         .from('user_goal_levels')
         .select('current_level, current_xp, total_xp, level_title')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
-      // Se a tabela não existe (406), usar dados padrão
-      const userLevel = (levelError && (levelError.message?.includes('406') || levelError.message?.includes('Not Acceptable'))) 
-        ? { current_level: 1, current_xp: 0, total_xp: 0, level_title: 'Iniciante' }
-        : levelData;
+      // Se erro ou não existe registro, usar dados padrão
+      if (levelError) {
+        console.warn('Erro ao buscar user_goal_levels:', levelError.message);
+      }
 
       const total = goalsData.length;
       const completed = goalsData.filter(g => g.status === 'concluida').length;

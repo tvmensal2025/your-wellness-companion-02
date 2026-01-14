@@ -96,8 +96,8 @@ export const FollowingList: React.FC<FollowingListProps> = ({ onProfileClick, on
       // Get weight data for users who allow it
       const usersShowingWeight = profiles?.filter(p => p.show_weight_results).map(p => p.user_id) || [];
       
-      let weightChanges: Record<string, number> = {};
-      let weightHistories: Record<string, WeightDataPoint[]> = {};
+      const weightChanges: Record<string, number> = {};
+      const weightHistories: Record<string, WeightDataPoint[]> = {};
       
       if (usersShowingWeight.length > 0) {
         // Buscar últimas 15 medições para cada usuário
@@ -134,7 +134,7 @@ export const FollowingList: React.FC<FollowingListProps> = ({ onProfileClick, on
       }
 
       // Buscar conquistas dos usuários
-      let achievementsByUser: Record<string, Achievement[]> = {};
+      const achievementsByUser: Record<string, Achievement[]> = {};
       
       try {
         // Tentar buscar de user_achievements primeiro

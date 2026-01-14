@@ -27,8 +27,8 @@ export const useUserPoints = () => {
         const { data: profileData, error } = await supabase
           .from('profiles')
           .select('*')
-          .eq('user_id', user.id)
-          .single();
+          .eq('id', user.id)
+          .maybeSingle();
 
         if (error) {
           console.error('Erro ao buscar pontos do usuário:', error);

@@ -836,7 +836,7 @@ serve(async (req)=>{
       console.log(`📅 Gerando dia ${day}`);
       
       const dayMeals = {};
-      let dailyTotals = {
+      const dailyTotals = {
         calories: 0,
         protein: 0,
         carbs: 0,

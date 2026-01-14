@@ -106,7 +106,7 @@ export class SocialHub {
       .from('exercise_workout_groups')
       .select('member_count, max_members, is_public')
       .eq('id', groupId)
-      .single();
+      .maybeSingle();
 
     if (!group) throw new Error('Grupo não encontrado');
     if (group.member_count >= group.max_members) throw new Error('Grupo cheio');
@@ -408,7 +408,7 @@ export class SocialHub {
       .from('exercise_user_preferences')
       .select('*')
       .eq('user_id', this.userId)
-      .single();
+      .maybeSingle();
 
     // Buscar candidatos
     const { data: candidates } = await supabase
@@ -630,7 +630,7 @@ export class SocialHub {
       .from('exercise_competitions')
       .select('status, max_participants, entry_fee_points')
       .eq('id', competitionId)
-      .single();
+      .maybeSingle();
 
     if (!competition || competition.status !== 'upcoming') {
       throw new Error('Competição não está aberta para inscrições');
@@ -652,7 +652,7 @@ export class SocialHub {
         .from('exercise_gamification_points')
         .select('total_points')
         .eq('user_id', this.userId)
-        .single();
+        .maybeSingle();
 
       if (!points || points.total_points < competition.entry_fee_points) {
         throw new Error('Pontos insuficientes para taxa de entrada');

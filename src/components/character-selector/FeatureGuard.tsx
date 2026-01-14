@@ -17,7 +17,7 @@ interface FeatureGuardProps {
 export function FeatureGuard({ 
   featureId, 
   children, 
-  fallbackPath = '/dashboard',
+  fallbackPath = '/sofia',
   showMessage = false 
 }: FeatureGuardProps) {
   const menuStyle = useMenuStyleContextSafe();

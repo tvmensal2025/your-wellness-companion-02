@@ -276,7 +276,7 @@ async function searchNutritionFoods(supabase: any, normalizedName: string, origi
   if (!food) return null;
 
   let grams_effective = grams;
-  let debug: any = { original_grams: grams };
+  const debug: any = { original_grams: grams };
 
   // Aplicar yield se estado for diferente
   if (state && state !== food.state) {

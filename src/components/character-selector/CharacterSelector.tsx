@@ -25,7 +25,7 @@ export function CharacterSelector({
 }: CharacterSelectorProps) {
   const [isConfirming, setIsConfirming] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(true); // Começa como mobile para evitar flash
   
   // Personagens ordenados pelo mais escolhido primeiro
   const [sortedCharacters, setSortedCharacters] = useState<Character[]>(characters);
@@ -96,23 +96,10 @@ export function CharacterSelector({
 
         {/* Content */}
         <div className="relative z-10 flex-1 flex flex-col overflow-hidden">
-          {/* Título */}
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center py-4 px-4"
-          >
-            <h1 className="text-2xl md:text-3xl font-bold text-white mb-1">
-              {isChanging ? 'Trocar Experiência' : 'Escolha sua Experiência'}
-            </h1>
-            <p className="text-white/60 text-sm">
-              {isMobile ? 'Deslize e toque para selecionar' : 'Clique no personagem para começar'}
-            </p>
-          </motion.div>
 
           {/* Mobile: Carousel simples e centralizado */}
           {isMobile ? (
-            <div className="flex-1 flex flex-col pb-4">
+            <div className="flex-1 flex flex-col pb-2">
               {/* Carousel Container */}
               <div className="flex-1 flex items-center overflow-hidden">
                 <motion.div
@@ -123,23 +110,23 @@ export function CharacterSelector({
                   className="flex cursor-grab active:cursor-grabbing"
                   style={{ 
                     touchAction: 'pan-y',
-                    paddingLeft: 'calc(50vw - 130px)', // Centraliza o primeiro card
-                    paddingRight: 'calc(50vw - 130px)', // Espaço para o último
+                    paddingLeft: 'calc(50vw - 145px)',
+                    paddingRight: 'calc(50vw - 145px)',
                   }}
-                  animate={{ x: -currentIndex * 280 }}
+                  animate={{ x: -currentIndex * 310 }}
                   transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                 >
                   {sortedCharacters.map((character, index) => (
                     <motion.div 
                       key={character.id}
-                      className="flex-shrink-0 w-[260px] mx-[10px]"
+                      className="flex-shrink-0 w-[290px] mx-[10px]"
                       animate={{
                         scale: currentIndex === index ? 1 : 0.85,
                         opacity: currentIndex === index ? 1 : 0.4,
                       }}
                       transition={{ duration: 0.3 }}
                     >
-                      <div className="h-[55vh] min-h-[380px] max-h-[500px] flex flex-col">
+                      <div className="h-[70vh] min-h-[500px] max-h-[650px] flex flex-col">
                         <CharacterCard
                           character={character}
                           onSelect={handleSelect}
@@ -153,20 +140,29 @@ export function CharacterSelector({
                 </motion.div>
               </div>
 
-              {/* Dots */}
-              <div className="flex gap-3 justify-center py-4">
-                {sortedCharacters.map((_, index) => (
-                  <button
-                    key={index}
-                    onClick={() => goToSlide(index)}
-                    className={cn(
-                      "h-2.5 rounded-full transition-all duration-300",
-                      currentIndex === index 
-                        ? "w-8 bg-white" 
-                        : "w-2.5 bg-white/40 hover:bg-white/60"
-                    )}
-                  />
-                ))}
+              {/* Dots com cores do personagem */}
+              <div className="flex gap-3 justify-center py-3">
+                {sortedCharacters.map((char, index) => {
+                  const dotColors: Record<CharacterId, string> = {
+                    health: 'bg-red-400',
+                    nutrition: 'bg-green-400',
+                    exercise: 'bg-blue-400',
+                    coaching: 'bg-purple-400',
+                    complete: 'bg-yellow-400',
+                  };
+                  return (
+                    <button
+                      key={index}
+                      onClick={() => goToSlide(index)}
+                      className={cn(
+                        "h-3 rounded-full transition-all duration-300",
+                        currentIndex === index 
+                          ? `w-10 ${dotColors[char.id]}` 
+                          : "w-3 bg-white/30 hover:bg-white/50"
+                      )}
+                    />
+                  );
+                })}
               </div>
             </div>
           ) : (

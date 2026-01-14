@@ -12,7 +12,8 @@ export interface UserAnswers {
   time: string;
   frequency: string;
   location: string;
-  goal: string;
+  goal?: string; // Mantido para compatibilidade
+  goals?: string[]; // Novo: array de objetivos (máx 2)
   limitation: string;
   // Novas perguntas do onboarding
   bodyFocus?: string;
@@ -20,6 +21,12 @@ export interface UserAnswers {
   // Dados do perfil (buscados automaticamente)
   gender?: string;
   ageGroup?: string;
+  // Divisão de treino e dias selecionados
+  trainingSplit?: string;
+  selectedDays?: string[];
+  exercisesPerDay?: string;
+  // Atribuição de treinos aos dias
+  dayAssignments?: Record<string, string>;
 }
 
 export interface WeekPlanItem {
@@ -820,7 +827,10 @@ export const generateRecommendation = (answers: UserAnswers): ProgramRecommendat
     gender: answers.gender,
     bodyFocus: answers.bodyFocus,
     ageGroup: answers.ageGroup,
-    specialCondition: answers.specialCondition
+    specialCondition: answers.specialCondition,
+    trainingSplit: answers.trainingSplit,
+    selectedDays: answers.selectedDays,
+    exercisesPerDay: answers.exercisesPerDay
   });
 
   // PRIORIDADE 1: Senior sempre recebe programa especial

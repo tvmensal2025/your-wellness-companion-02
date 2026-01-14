@@ -226,7 +226,7 @@ export const useGamificationUnified = (userId?: string) => {
       if (!userId) throw new Error('Usuário não autenticado');
 
       // Buscar ou criar participação
-      let { data: participation, error: participationError } = await supabase
+      const { data: participation, error: participationError } = await supabase
         .from('challenge_participations')
         .select('*')
         .eq('user_id', userId)
@@ -322,7 +322,7 @@ export const useGamificationUnified = (userId?: string) => {
       const isCompleted = progress >= 100;
 
       // Buscar ou criar participação
-      let { data: participation, error: participationError } = await supabase
+      const { data: participation, error: participationError } = await supabase
         .from('challenge_participations')
         .select('*')
         .eq('user_id', userId)

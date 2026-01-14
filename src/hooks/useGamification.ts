@@ -47,8 +47,8 @@ export const useGamification = () => {
       const xpToNextLevel = 1000 - currentXP;
 
       // Para novos usuários, streak inicia em 0
-      let initialCurrentStreak = 0;
-      let initialBestStreak = 0;
+      const initialCurrentStreak = 0;
+      const initialBestStreak = 0;
 
       // Buscar desafios ativos do banco de dados
       const { data: challenges, error: challengesError } = await supabase

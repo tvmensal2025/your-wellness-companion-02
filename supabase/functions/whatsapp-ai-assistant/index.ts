@@ -940,7 +940,7 @@ serve(async (req) => {
     const aiMessage = choice?.message;
 
     // Processar tool calls se houver
-    let toolResults: string[] = [];
+    const toolResults: string[] = [];
     let finalResponse = aiMessage?.content;
 
     if (aiMessage?.tool_calls?.length > 0) {

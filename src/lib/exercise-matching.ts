@@ -13,23 +13,36 @@ export interface MatchResult {
 }
 
 // Mapeamento de termos comuns para muscle_groups da biblioteca
+// IMPORTANTE: Os valores devem corresponder EXATAMENTE aos muscle_group na tabela exercises_library
 const MUSCLE_GROUP_ALIASES: Record<string, string[]> = {
-  // Grupos principais
-  pernas: ['pernas', 'perna', 'leg', 'legs', 'quadriceps', 'posterior', 'panturrilha'],
-  peito: ['peito', 'peitoral', 'chest', 'supino', 'flexao', 'push'],
-  costas: ['costas', 'costa', 'dorsal', 'back', 'remada', 'pull', 'puxada'],
-  ombros: ['ombros', 'ombro', 'deltoides', 'deltoide', 'shoulder', 'desenvolvimento'],
+  // Grupos principais - valores exatos da tabela exercises_library
+  pernas: ['pernas', 'perna', 'leg', 'legs', 'quadriceps', 'posterior', 'panturrilha', 'coxa', 'coxas'],
+  peito: ['peito', 'peitoral', 'chest', 'supino', 'flexao', 'push', 'pectorais'],
+  costas: ['costas', 'costa', 'dorsal', 'back', 'remada', 'pull', 'puxada', 'lat'],
+  ombros: ['ombros', 'ombro', 'deltoides', 'deltoide', 'shoulder', 'desenvolvimento', 'elevacao lateral'],
   biceps: ['biceps', 'braco', 'bracos', 'rosca', 'curl'],
-  triceps: ['triceps', 'extensao', 'mergulho', 'frances'],
-  gluteos: ['gluteos', 'gluteo', 'glute', 'hip thrust', 'ponte'],
-  abdomen: ['abdomen', 'abdominal', 'core', 'prancha', 'plank', 'abs'],
-  funcional: ['funcional', 'full body', 'circuito', 'cardio', 'hiit', 'burpee'],
-  mobilidade: ['mobilidade', 'alongamento', 'flexibilidade', 'stretch', 'yoga'],
-  aquecimento: ['aquecimento', 'warmup', 'warm up'],
-  quadriceps: ['quadriceps', 'agachamento', 'squat', 'leg press'],
-  posterior: ['posterior', 'isquiotibiais', 'stiff', 'leg curl'],
-  panturrilha: ['panturrilha', 'calves', 'calf'],
+  triceps: ['triceps', 'extensao', 'mergulho', 'frances', 'tricep'],
+  gluteos: ['gluteos', 'gluteo', 'glute', 'hip thrust', 'ponte', 'bumbum', 'empinar'],
+  abdomen: ['abdomen', 'abdominal', 'core', 'prancha', 'plank', 'abs', 'barriga', 'obliquos'],
+  funcional: ['funcional', 'full body', 'circuito', 'cardio', 'hiit', 'burpee', 'treino completo', 'corpo todo'],
+  mobilidade: ['mobilidade', 'alongamento', 'flexibilidade', 'stretch', 'yoga', 'aquecimento'],
+  // Aliases adicionais que mapeiam para grupos principais
+  quadriceps: ['quadriceps', 'agachamento', 'squat', 'leg press', 'extensora'],
+  posterior: ['posterior', 'isquiotibiais', 'stiff', 'leg curl', 'flexora'],
+  panturrilha: ['panturrilha', 'calves', 'calf', 'gêmeos'],
   trapezio: ['trapezio', 'encolhimento', 'shrug'],
+  bracos: ['bracos', 'braco', 'arm', 'arms'], // Grupo específico na biblioteca
+};
+
+// Mapeamento de aliases para o muscle_group real na biblioteca
+const ALIAS_TO_REAL_GROUP: Record<string, string> = {
+  quadriceps: 'pernas',
+  posterior: 'pernas',
+  panturrilha: 'pernas',
+  trapezio: 'costas',
+  bracos: 'bracos', // existe como grupo próprio
+  biceps: 'bracos',
+  triceps: 'bracos',
 };
 
 // Palavras de ação que indicam exercícios específicos
@@ -50,6 +63,7 @@ const EXERCISE_KEYWORDS: Record<string, string[]> = {
 
 /**
  * Resolve muscle groups a partir de uma atividade textual
+ * Retorna os grupos musculares REAIS que existem na tabela exercises_library
  */
 export function resolveMuscleGroupFromActivity(activity: string): string[] {
   const key = normalizeKey(activity);
@@ -58,14 +72,19 @@ export function resolveMuscleGroupFromActivity(activity: string): string[] {
   // 1. Busca direta nos aliases
   for (const [muscleGroup, aliases] of Object.entries(MUSCLE_GROUP_ALIASES)) {
     if (aliases.some(alias => key.includes(alias) || alias.includes(key))) {
-      groups.add(muscleGroup);
+      // Converter para grupo real se necessário
+      const realGroup = ALIAS_TO_REAL_GROUP[muscleGroup] || muscleGroup;
+      groups.add(realGroup);
     }
   }
 
   // 2. Busca por palavras de exercícios
   for (const [keyword, targetGroups] of Object.entries(EXERCISE_KEYWORDS)) {
     if (key.includes(keyword)) {
-      targetGroups.forEach(g => groups.add(g));
+      targetGroups.forEach(g => {
+        const realGroup = ALIAS_TO_REAL_GROUP[g] || g;
+        groups.add(realGroup);
+      });
     }
   }
 

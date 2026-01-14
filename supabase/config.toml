@@ -93,6 +93,12 @@ verify_jwt = false
 [functions.whatsapp-saboteur-result]
 verify_jwt = false
 
+[functions.whatsapp-send-interactive]
+verify_jwt = false
+
+[functions.whatsapp-webhook-unified]
+verify_jwt = false
+
 [functions.whatsapp-habits-analysis]
 verify_jwt = false
 

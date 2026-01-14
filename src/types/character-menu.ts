@@ -31,12 +31,12 @@ export const menuIds = {
   subscriptions: 'subscriptions',
 } as const;
 
-// Menus COMPARTILHADOS (aparecem em TODOS os personagens - SEM missions e sessions)
+// Menus COMPARTILHADOS (aparecem em TODOS os personagens - SEM missions, sessions e challenges)
+// ORDEM: Dashboard primeiro, Social segundo
 export const sharedMenus = [
   menuIds.dashboard,
-  menuIds.goals,
   menuIds.comunidade,
-  menuIds.challenges,
+  menuIds.goals,
   menuIds.subscriptions,
 ] as const;
 
@@ -52,11 +52,12 @@ export const characterMenus: Record<CharacterId, readonly string[]> = {
     ...sharedMenus,
     menuIds.sofiaNutricional,
   ],
-  // Alex: Foco em exercícios
+  // Alex: Foco em exercícios + Arena de Desafios
   exercise: [
     ...sharedMenus,
     menuIds.progress,
     menuIds.exercicios,
+    menuIds.challenges, // Arena de Desafios exclusiva do Alex
   ],
   // Rafael: Foco em coaching/missões/sessões
   coaching: [

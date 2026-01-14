@@ -51,7 +51,7 @@ serve(async (req) => {
     }
 
     // 5. Lógica da função
-    let result = {
+    const result = {
       success: true,
       message: 'Função executada com sucesso!',
       timestamp: new Date().toISOString(),

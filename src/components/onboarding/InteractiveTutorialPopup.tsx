@@ -297,7 +297,7 @@ export const InteractiveTutorialPopup: React.FC<InteractiveTutorialPopupProps> =
     };
 
     // Tentar aplicar imediatamente
-    let applied = applyHighlight();
+    const applied = applyHighlight();
     
     // Se não conseguiu, tentar novamente após um delay
     if (!applied) {

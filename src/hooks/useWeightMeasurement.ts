@@ -215,7 +215,7 @@ export const useWeightMeasurement = () => {
       if (!measurement.peso_kg || measurement.peso_kg <= 0) throw new Error('Peso é obrigatório e deve ser maior que zero');
 
       // Preparar dados, adicionando cálculos automáticos apenas para medições manuais
-      let measurementData: any = {
+      const measurementData: any = {
         user_id: user.id,
         ...measurement,
         measurement_date: new Date().toISOString()

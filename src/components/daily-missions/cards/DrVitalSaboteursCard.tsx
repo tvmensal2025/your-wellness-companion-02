@@ -112,7 +112,7 @@ export const DrVitalSaboteursCard: React.FC<DrVitalSaboteursCardProps> = ({
               </div>
               <div>
                 <div className="text-xl font-bold text-purple-400">{streakDays}</div>
-                <div className="text-xs text-gray-400">insights</div>
+                <div className="text-xs text-gray-400">análises</div>
               </div>
             </div>
           </div>

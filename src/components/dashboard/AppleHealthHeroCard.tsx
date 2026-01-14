@@ -102,36 +102,34 @@ export const AppleHealthHeroCard: React.FC<AppleHealthHeroCardProps> = memo(({
 
   return (
     <div className={cn(
-      "relative overflow-hidden rounded-2xl bg-card border border-border p-4 sm:p-5 shadow-sm",
+      "relative overflow-hidden rounded-2xl bg-card border border-border p-4 min-[400px]:p-6 sm:p-7 shadow-sm h-full flex flex-col",
       shouldAnimate && "animate-scale-in"
     )}>
       {/* Gradient overlay - sutil */}
       <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 via-transparent to-primary/5 pointer-events-none" />
       
-      <div className="relative">
+      <div className="relative flex-1 flex flex-col justify-between">
         {/* Header - saudação */}
-        <div className="flex items-center justify-between mb-3 sm:mb-4">
-          <div className="flex items-center gap-2">
-            <span className="text-lg sm:text-xl">{greeting.emoji}</span>
-            <span className="text-muted-foreground text-sm sm:text-base">{greeting.text},</span>
-            <span className="text-foreground font-semibold text-base sm:text-lg truncate max-w-[120px]">
-              {userName.split(' ')[0]}
-            </span>
-            <span className="text-base sm:text-lg">👋</span>
-          </div>
+        <div className="flex items-center flex-wrap gap-1.5 mb-2 min-[400px]:mb-4 flex-shrink-0">
+          <span className="text-lg min-[400px]:text-xl sm:text-2xl">{greeting.emoji}</span>
+          <span className="text-muted-foreground text-sm min-[400px]:text-base sm:text-lg">{greeting.text},</span>
+          <span className="text-foreground font-semibold text-base min-[400px]:text-lg sm:text-xl truncate max-w-[120px] min-[400px]:max-w-[180px]">
+            {userName.split(' ')[0]}
+          </span>
+          <span className="text-base min-[400px]:text-lg sm:text-xl">👋</span>
         </div>
 
         {/* Layout principal - Ring + Peso lado a lado */}
-        <div className="flex items-center gap-5 sm:gap-6">
-          {/* Ring de pontuação - MAIOR */}
+        <div className="flex items-center justify-center gap-4 min-[400px]:gap-8 sm:gap-10 flex-1">
+          {/* Ring de pontuação */}
           <div className="relative flex-shrink-0">
-            <svg className="w-[90px] h-[90px] sm:w-[100px] sm:h-[100px] -rotate-90" viewBox="0 0 100 100">
-              <circle cx="50" cy="50" r="38" fill="none" className="stroke-muted" strokeWidth="7" />
+            <svg className="w-[80px] h-[80px] min-[400px]:w-[120px] min-[400px]:h-[120px] sm:w-[140px] sm:h-[140px] -rotate-90" viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="38" fill="none" className="stroke-muted" strokeWidth="6" />
               <circle 
                 cx="50" cy="50" r="38" 
                 fill="none" 
                 stroke="url(#healthGrad)" 
-                strokeWidth="7" 
+                strokeWidth="6" 
                 strokeLinecap="round"
                 strokeDasharray={circumference}
                 strokeDashoffset={strokeDashoffset}
@@ -145,71 +143,71 @@ export const AppleHealthHeroCard: React.FC<AppleHealthHeroCardProps> = memo(({
               </defs>
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-2xl sm:text-3xl font-bold text-foreground tabular-nums leading-none">
+              <span className="text-2xl min-[400px]:text-4xl sm:text-5xl font-bold text-foreground tabular-nums leading-none">
                 {animatedScore}
               </span>
-              <span className="text-[9px] sm:text-[10px] text-muted-foreground uppercase tracking-wide mt-0.5">
+              <span className="text-[8px] min-[400px]:text-xs sm:text-sm text-muted-foreground uppercase tracking-wide mt-0.5">
                 pontos
               </span>
             </div>
           </div>
 
-          {/* Peso + Badge - centralizado - MAIOR */}
+          {/* Peso + Badge */}
           <div className="flex-1 min-w-0 flex flex-col items-center justify-center">
-            <p className="text-xs sm:text-sm text-muted-foreground mb-1">Peso atual</p>
-            <div className="flex items-baseline gap-1">
-              <span className="text-5xl sm:text-6xl font-light text-foreground tabular-nums leading-none tracking-tight">
+            <p className="text-[10px] min-[400px]:text-base sm:text-lg text-muted-foreground mb-0.5 min-[400px]:mb-2">Peso atual</p>
+            <div className="flex items-baseline gap-0.5">
+              <span className="text-4xl min-[400px]:text-6xl sm:text-7xl font-light text-foreground tabular-nums leading-none tracking-tight">
                 {currentWeight === 0 ? '--' : currentWeight.toFixed(1)}
               </span>
-              <span className="text-lg sm:text-xl text-muted-foreground font-light">kg</span>
+              <span className="text-base min-[400px]:text-2xl sm:text-3xl text-muted-foreground font-light">kg</span>
             </div>
             
             {/* Badge de tendência */}
             <div className={cn(
-              "inline-flex items-center gap-1 px-3 py-1 rounded-full mt-2 border",
+              "inline-flex items-center gap-1 px-2.5 min-[400px]:px-5 py-1 min-[400px]:py-2 rounded-full mt-2 min-[400px]:mt-4 border",
               trend.bg
             )}>
-              <TrendIcon className={cn("h-3.5 w-3.5 sm:h-4 sm:w-4", trend.color)} />
-              <span className={cn("text-xs sm:text-sm font-medium tabular-nums", trend.color)}>
+              <TrendIcon className={cn("h-3.5 w-3.5 min-[400px]:h-5 min-[400px]:w-5", trend.color)} />
+              <span className={cn("text-xs min-[400px]:text-base font-medium tabular-nums", trend.color)}>
                 {weightChange !== 0 && (weightChange > 0 ? '+' : '')}{weightChange.toFixed(1)} kg
               </span>
             </div>
           </div>
         </div>
 
-        {/* Stats row - com labels descritivos - MAIOR */}
-        <div className="flex items-center justify-between mt-4 pt-3 border-t border-border">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-orange-500/20 flex items-center justify-center">
-              <Flame className="h-4 w-4 sm:h-5 sm:w-5 text-orange-500" />
+        {/* Stats row */}
+        <div className="flex items-center justify-between gap-2 min-[400px]:gap-4 mt-auto pt-3 min-[400px]:pt-5 border-t border-border">
+          <div className="flex items-center gap-1.5 min-[400px]:gap-3">
+            <div className="w-7 h-7 min-[400px]:w-12 min-[400px]:h-12 sm:w-14 sm:h-14 rounded-lg min-[400px]:rounded-xl bg-orange-500/20 flex items-center justify-center flex-shrink-0">
+              <Flame className="h-3.5 w-3.5 min-[400px]:h-6 min-[400px]:w-6 text-orange-500" />
             </div>
-            <div className="flex items-baseline gap-1">
-              <span className="text-base sm:text-lg font-semibold text-foreground tabular-nums">{currentStreak}</span>
-              <span className="text-xs sm:text-sm text-muted-foreground">dias</span>
+            <div className="flex items-baseline gap-0.5">
+              <span className="text-sm min-[400px]:text-xl sm:text-2xl font-semibold text-foreground tabular-nums">{currentStreak}</span>
+              <span className="text-[10px] min-[400px]:text-sm sm:text-base text-muted-foreground">dias</span>
             </div>
           </div>
           
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-emerald-500/20 flex items-center justify-center">
-              <TrendingDown className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-500" />
+          <div className="flex items-center gap-1.5 min-[400px]:gap-3">
+            <div className="w-7 h-7 min-[400px]:w-12 min-[400px]:h-12 sm:w-14 sm:h-14 rounded-lg min-[400px]:rounded-xl bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
+              <TrendingDown className="h-3.5 w-3.5 min-[400px]:h-6 min-[400px]:w-6 text-emerald-500" />
             </div>
-            <div className="flex items-baseline gap-1">
-              <span className="text-base sm:text-lg font-semibold text-foreground tabular-nums">
+            <div className="flex items-baseline gap-0.5">
+              <span className="text-sm min-[400px]:text-xl sm:text-2xl font-semibold text-foreground tabular-nums">
                 {weightChange < 0 ? Math.abs(weightChange).toFixed(1) : '0'}
               </span>
-              <span className="text-xs sm:text-sm text-muted-foreground">kg perdido</span>
+              <span className="text-[10px] min-[400px]:text-sm sm:text-base text-muted-foreground">kg</span>
             </div>
           </div>
           
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-amber-500/20 flex items-center justify-center">
-              <Zap className="h-4 w-4 sm:h-5 sm:w-5 text-amber-500" />
+          <div className="flex items-center gap-1.5 min-[400px]:gap-3">
+            <div className="w-7 h-7 min-[400px]:w-12 min-[400px]:h-12 sm:w-14 sm:h-14 rounded-lg min-[400px]:rounded-xl bg-amber-500/20 flex items-center justify-center flex-shrink-0">
+              <Zap className="h-3.5 w-3.5 min-[400px]:h-6 min-[400px]:w-6 text-amber-500" />
             </div>
-            <div className="flex items-baseline gap-1">
-              <span className="text-base sm:text-lg font-semibold text-foreground tabular-nums">
+            <div className="flex items-baseline gap-0.5">
+              <span className="text-sm min-[400px]:text-xl sm:text-2xl font-semibold text-foreground tabular-nums">
                 {tmb > 0 ? tmb.toLocaleString('pt-BR') : '--'}
               </span>
-              <span className="text-xs sm:text-sm text-muted-foreground">kcal</span>
+              <span className="text-[10px] min-[400px]:text-sm sm:text-base text-muted-foreground">kcal</span>
             </div>
           </div>
         </div>

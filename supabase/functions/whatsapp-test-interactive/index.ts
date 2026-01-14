@@ -9,7 +9,7 @@ const WHAPI_API_URL = Deno.env.get('WHAPI_API_URL') || 'https://gate.whapi.cloud
 const WHAPI_TOKEN = Deno.env.get('WHAPI_TOKEN') || '';
 const WHAPI_CHANNEL_ID = Deno.env.get('WHAPI_CHANNEL_ID') || '';
 
-const templates: Record<string, any> = {
+const defaultTemplates: Record<string, any> = {
   quick_reply: {
     type: 'button',
     header: { text: '⚡ Resposta Rápida' },
@@ -48,39 +48,6 @@ const templates: Record<string, any> = {
         }
       ]
     }
-  },
-  url: {
-    type: 'button',
-    header: { text: '🔗 Link Externo' },
-    body: { text: '🧪 *TESTE BOTÃO URL*\n\nClique no botão abaixo para acessar um link externo:' },
-    footer: { text: 'MaxNutrition • Teste Whapi' },
-    action: {
-      buttons: [
-        { type: 'url', title: '🌐 Acessar Site', url: 'https://maxnutrition.app' }
-      ]
-    }
-  },
-  call: {
-    type: 'button',
-    header: { text: '📞 Ligação' },
-    body: { text: '🧪 *TESTE BOTÃO LIGAÇÃO*\n\nClique no botão abaixo para iniciar uma chamada:' },
-    footer: { text: 'MaxNutrition • Teste Whapi' },
-    action: {
-      buttons: [
-        { type: 'call', title: '📞 Ligar Agora', phone_number: '+5511999999999' }
-      ]
-    }
-  },
-  copy: {
-    type: 'button',
-    header: { text: '📋 Copiar Código' },
-    body: { text: '🧪 *TESTE BOTÃO COPIAR*\n\nUse o código abaixo para verificação:\n\n*Código:* MAX2024' },
-    footer: { text: 'MaxNutrition • Teste Whapi' },
-    action: {
-      buttons: [
-        { type: 'copy_code', title: '📋 Copiar Código', copy_code: 'MAX2024' }
-      ]
-    }
   }
 };
 
@@ -90,7 +57,7 @@ serve(async (req) => {
   }
 
   try {
-    const { phone, type } = await req.json();
+    const { phone, type, customTemplate } = await req.json();
 
     if (!phone) {
       return new Response(
@@ -99,11 +66,17 @@ serve(async (req) => {
       );
     }
 
-    if (!type || !templates[type]) {
+    // Se for template customizado, usa ele; senão usa os defaults
+    let template;
+    if (type === 'custom' && customTemplate) {
+      template = customTemplate;
+    } else if (type && defaultTemplates[type]) {
+      template = defaultTemplates[type];
+    } else if (!type && !customTemplate) {
       return new Response(
         JSON.stringify({ 
-          error: "Invalid type", 
-          available: Object.keys(templates) 
+          error: "Type or customTemplate required", 
+          available: Object.keys(defaultTemplates) 
         }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
@@ -122,7 +95,7 @@ serve(async (req) => {
       formattedPhone = '55' + formattedPhone;
     }
 
-    console.log(`[Test Interactive] Type: ${type}, Phone: ${formattedPhone}`);
+    console.log(`[Test Interactive] Type: ${type || 'custom'}, Phone: ${formattedPhone}`);
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -134,7 +107,6 @@ serve(async (req) => {
       headers['X-Channel-Id'] = WHAPI_CHANNEL_ID;
     }
 
-    const template = templates[type];
     const payload = {
       to: formattedPhone,
       ...template
@@ -164,7 +136,7 @@ serve(async (req) => {
           success: false, 
           error: `HTTP ${response.status}`,
           details: data,
-          type,
+          type: type || 'custom',
           tip: !WHAPI_CHANNEL_ID 
             ? '⚠️ WHAPI_CHANNEL_ID não configurado' 
             : 'Verifique token e channel_id'
@@ -176,8 +148,8 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: `✅ Teste ${type} enviado!`,
-        type,
+        message: `✅ Template enviado!`,
+        type: type || 'custom',
         phone: formattedPhone,
         whapi_response: data,
       }),

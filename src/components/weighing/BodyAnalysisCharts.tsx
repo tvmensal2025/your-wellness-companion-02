@@ -73,8 +73,8 @@ const sampleData = [
 // Graph history utility functions based on the provided code
 const graphHistory = {
   generateHBars: function (values: number[], colors: string[]) {
-    let hBars = values.map((item, index) => {
-      var len = values[index - 1] ? item - values[index - 1] : item - 1;
+    const hBars = values.map((item, index) => {
+      const len = values[index - 1] ? item - values[index - 1] : item - 1;
       return [index > 0 ? values[index - 1] - 1 : 0, len, colors[index]];
     });
     return hBars;
@@ -84,7 +84,7 @@ const graphHistory = {
     tooltipOptions = { cssClass: 'tooltips-value-history', radius: -1, strokestyle: '#bc960099', fillstyle: '#fffb9b' },
     clearCanvas: boolean, isMobileDevice: boolean, settings = { dontChangeCanvasSize: false }, overWriteGraphOptions?: any) {
 
-    var theCanvas = document.getElementById(canvasID) as HTMLCanvasElement;
+    const theCanvas = document.getElementById(canvasID) as HTMLCanvasElement;
     if (!theCanvas) return null;
 
     if (clearCanvas) {
@@ -112,9 +112,9 @@ const graphHistory = {
       }
     });
 
-    let textSize = theCanvas.width * 0.013;
-    let gutterLeft = theCanvas.width * 0.032;
-    let gutterBottom = theCanvas.height * 0.0694;
+    const textSize = theCanvas.width * 0.013;
+    const gutterLeft = theCanvas.width * 0.032;
+    const gutterBottom = theCanvas.height * 0.0694;
 
     let options: any = {
       text: { size: textSize },
@@ -151,7 +151,7 @@ const graphHistory = {
     }
 
     try {
-      var scatter = new window.RGraph.Scatter({
+      const scatter = new window.RGraph.Scatter({
         id: canvasID,
         data: historyData,
         options

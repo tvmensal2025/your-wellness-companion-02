@@ -91,7 +91,7 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, serviceKey);
 
     const resolved: ResolvedItem[] = [];
-    let totals = { kcal: 0, protein_g: 0, fat_g: 0, carbs_g: 0, fiber_g: 0, sodium_mg: 0 };
+    const totals = { kcal: 0, protein_g: 0, fat_g: 0, carbs_g: 0, fiber_g: 0, sodium_mg: 0 };
 
     for (const input of items as InputItem[]) {
       // Apply synonyms before normalization to bias towards prepared variants
@@ -157,7 +157,7 @@ serve(async (req) => {
       }
 
       // 2) Load food row
-      let { data: foods } = await supabase
+      const { data: foods } = await supabase
         .from('nutrition_foods')
         .select('*')
         .eq('id', foodId)

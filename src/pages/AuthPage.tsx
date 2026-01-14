@@ -134,7 +134,7 @@ const AuthPage = () => {
       });
       if (error) {
         // Mensagens de erro específicas baseadas no código de erro
-        let errorMessage = "Erro no login";
+        const errorMessage = "Erro no login";
         let errorDescription = "Tente novamente";
         switch (error.message) {
           case "Invalid login credentials":

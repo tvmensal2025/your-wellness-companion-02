@@ -152,11 +152,11 @@ export const SofiaAnalysisDashboard: React.FC<SofiaAnalysisDashboardProps> = ({
       {currentAnalysis && (
         <Tabs defaultValue="insights" className="w-full">
           <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="insights">Insights</TabsTrigger>
+            <TabsTrigger value="insights">Análises</TabsTrigger>
             <TabsTrigger value="patterns">Padrões</TabsTrigger>
-            <TabsTrigger value="recommendations">Recomendações</TabsTrigger>
+            <TabsTrigger value="recommendations">Dicas</TabsTrigger>
             <TabsTrigger value="predictions">Previsões</TabsTrigger>
-            <TabsTrigger value="anomalies">Anomalias</TabsTrigger>
+            <TabsTrigger value="anomalies">Alertas</TabsTrigger>
           </TabsList>
 
           <TabsContent value="insights" className="space-y-4">

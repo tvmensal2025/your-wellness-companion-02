@@ -107,7 +107,7 @@ export const useAdminDashboard = () => {
 
       // Buscar perfis separadamente para os user_ids encontrados
       const userIds = [...new Set(data?.map(g => g.user_id).filter(Boolean) || [])];
-      let profilesMap = new Map<string, { full_name: string | null; email: string | null }>();
+      const profilesMap = new Map<string, { full_name: string | null; email: string | null }>();
       
       if (userIds.length > 0) {
         const { data: profiles } = await supabase

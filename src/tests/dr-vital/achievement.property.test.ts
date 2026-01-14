@@ -161,7 +161,7 @@ const rewardArb = fc.option(
 
 const avatarArb = fc.record({
   userId: userIdArb,
-  unlockedItems: fc.array(fc.string({ minLength: 1, maxLength: 20 }), { minLength: 1, maxLength: 10 }),
+  unlockedItems: fc.uniqueArray(fc.string({ minLength: 1, maxLength: 20 }), { minLength: 1, maxLength: 10 }),
 });
 
 // =====================================================

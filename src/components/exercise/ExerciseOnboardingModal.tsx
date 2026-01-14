@@ -35,6 +35,7 @@ import { parseWeekPlan } from '@/utils/workoutParser';
 import { generateRecommendation, UserAnswers } from '@/hooks/useExerciseRecommendation';
 import { useExerciseProfileData } from '@/hooks/useExerciseProfileData';
 import { DaySelector } from './DaySelector';
+import { DaySplitAssigner } from './DaySplitAssigner';
 
 interface ExerciseOnboardingModalProps {
   isOpen: boolean;
@@ -43,10 +44,10 @@ interface ExerciseOnboardingModalProps {
 }
 
 // Removido: question8 (gênero) e question10 (idade) - buscamos do perfil do usuário
-// Adicionado: question4b (seleção de dias), question3b (quantidade de exercícios)
+// Adicionado: question4b (seleção de dias), question3b (quantidade de exercícios), question4c (divisão de treino)
 // question5 agora pergunta ONDE vai treinar (Casa ou Academia)
 // question5b pergunta equipamentos disponíveis (se casa)
-type Step = 'welcome' | 'question1' | 'question2' | 'question3' | 'question3b' | 'question4' | 'question4b' | 'question5' | 'question5b' | 'question6' | 'question7' | 'question8' | 'question9' | 'result';
+type Step = 'welcome' | 'question1' | 'question2' | 'question3' | 'question3b' | 'question4' | 'question4b' | 'question4c' | 'question5' | 'question5b' | 'question6' | 'question7' | 'question8' | 'question9' | 'result';
 
 interface Answers {
   level: string;
@@ -54,7 +55,7 @@ interface Answers {
   time: string;
   frequency: string;
   location: string;
-  goal: string;
+  goals: string[]; // Mudou de goal para goals (array, máx 2)
   limitation: string;
   // Novas perguntas (gênero e idade vêm do perfil)
   bodyFocus: string;
@@ -64,6 +65,8 @@ interface Answers {
   trainingSplit: string;
   // Nova: quantidade de exercícios por treino
   exercisesPerDay: string;
+  // Nova: atribuição de treinos aos dias
+  dayAssignments: Record<string, string>;
 }
 
 export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = ({
@@ -79,15 +82,17 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
     time: '',
     frequency: '',
     location: '',
-    goal: '',
+    goals: [], // Array para múltiplos objetivos
     limitation: '',
     bodyFocus: '',
     specialCondition: '',
     selectedDays: [],
     trainingSplit: '',
     exercisesPerDay: '',
+    dayAssignments: {},
   });
   const [saving, setSaving] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
   const { saveProgram } = useExerciseProgram(user?.id);
   const { toast } = useToast();
   
@@ -124,23 +129,38 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
     ) : null
   );
 
-  // 9 perguntas agora (removemos gênero e idade)
-  const totalSteps = 9;
+  // 10 perguntas agora (adicionamos question4c para divisão de treino)
+  const totalSteps = 10;
   const currentStep = step === 'welcome' ? 0 : 
                      step === 'question1' ? 1 :
                      step === 'question2' ? 2 :
                      step === 'question3' ? 3 :
-                     step === 'question4' ? 4 :
-                     step === 'question5' ? 5 :
-                     step === 'question6' ? 6 :
-                     step === 'question7' ? 7 :
-                     step === 'question8' ? 8 :
-                     step === 'question9' ? 9 : 10;
+                     step === 'question3b' ? 4 :
+                     step === 'question4' ? 5 :
+                     step === 'question4b' ? 6 :
+                     step === 'question4c' ? 7 :
+                     step === 'question5' ? 8 :
+                     step === 'question5b' ? 8 :
+                     step === 'question6' ? 9 :
+                     step === 'question7' ? 10 :
+                     step === 'question8' ? 10 :
+                     step === 'question9' ? 10 : 11;
 
   const progress = (currentStep / (totalSteps + 1)) * 100;
 
   const handleAnswer = (question: keyof Answers, value: string) => {
     setAnswers((prev) => ({ ...prev, [question]: value }));
+  };
+
+  // Handler para seleção única com transição bloqueada
+  const handleSingleSelect = (question: keyof Answers, value: string, nextStep: Step) => {
+    if (isTransitioning) return; // Bloqueia se já está em transição
+    setIsTransitioning(true);
+    handleAnswer(question, value);
+    setTimeout(() => {
+      goToNextStep(nextStep);
+      setIsTransitioning(false);
+    }, 300);
   };
 
   // Função de recomendação agora vem do hook useExerciseRecommendation
@@ -500,7 +520,7 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
         <Button
           className="w-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white"
           disabled={!canContinue}
-          onClick={() => goToNextStep('question5')}
+          onClick={() => goToNextStep('question4c')}
         >
           {canContinue ? (
             <>
@@ -509,6 +529,103 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
             </>
           ) : (
             `Selecione ${maxDays - answers.selectedDays.length} dia(s)`
+          )}
+        </Button>
+      </div>
+    );
+  };
+
+  // PERGUNTA 4C: Divisão de treino com DaySplitAssigner (visual e interativo)
+  const getDefaultSplit = (daysCount: number): string => {
+    if (daysCount <= 2) return 'AB';
+    if (daysCount === 3) return 'ABC';
+    if (daysCount === 4) return 'ABCD';
+    if (daysCount >= 5) return 'ABCDE';
+    return 'ABC';
+  };
+
+  const renderQuestion4c = () => {
+    const daysCount = answers.selectedDays.length;
+    
+    // Se não tem divisão selecionada, usar padrão baseado nos dias
+    const currentSplit = answers.trainingSplit || getDefaultSplit(daysCount);
+    
+    // Verificar se todos os dias foram atribuídos
+    const allAssigned = answers.selectedDays.every(day => answers.dayAssignments[day]);
+
+    // Opções de divisão disponíveis
+    const splitOptions = [
+      { value: 'AB', label: 'AB', minDays: 2 },
+      { value: 'ABC', label: 'ABC', minDays: 3 },
+      { value: 'ABCD', label: 'ABCD', minDays: 4 },
+      { value: 'ABCDE', label: 'ABCDE', minDays: 5 },
+      { value: 'FULLBODY', label: 'Full Body', minDays: 1 },
+    ].filter(opt => daysCount >= opt.minDays || opt.value === 'FULLBODY');
+
+    return (
+      <div className="space-y-5 py-4 relative">
+        <BackButton />
+        <div className="text-center space-y-2 pt-6">
+          <div className="flex justify-center mb-3">
+            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg">
+              <Calendar className="w-7 h-7 text-white" />
+            </div>
+          </div>
+          <h3 className="text-xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+            Monte sua semana de treino
+          </h3>
+          <p className="text-sm text-muted-foreground">
+            Escolha a divisão e atribua cada treino aos seus dias
+          </p>
+        </div>
+
+        {/* Seletor de divisão */}
+        <div className="flex flex-wrap justify-center gap-2">
+          {splitOptions.map(opt => (
+            <Button
+              key={opt.value}
+              variant={currentSplit === opt.value ? "default" : "outline"}
+              size="sm"
+              className={currentSplit === opt.value 
+                ? "bg-gradient-to-r from-emerald-500 to-teal-600 text-white" 
+                : ""}
+              onClick={() => {
+                setAnswers(prev => ({ 
+                  ...prev, 
+                  trainingSplit: opt.value,
+                  dayAssignments: {} // Limpar atribuições ao mudar divisão
+                }));
+              }}
+            >
+              {opt.label}
+            </Button>
+          ))}
+        </div>
+
+        {/* DaySplitAssigner */}
+        <DaySplitAssigner
+          selectedDays={answers.selectedDays}
+          trainingSplit={currentSplit}
+          dayAssignments={answers.dayAssignments}
+          onChange={(assignments) => setAnswers(prev => ({ 
+            ...prev, 
+            dayAssignments: assignments,
+            trainingSplit: currentSplit // Garantir que a divisão está salva
+          }))}
+        />
+
+        <Button
+          className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white"
+          disabled={!allAssigned}
+          onClick={() => goToNextStep('question5')}
+        >
+          {allAssigned ? (
+            <>
+              Continuar
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </>
+          ) : (
+            `Atribua treinos a todos os ${daysCount} dias`
           )}
         </Button>
       </div>
@@ -657,56 +774,101 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
     </div>
   );
 
-  const renderQuestion6 = () => (
-    <div className="space-y-6 py-4 relative">
-      <BackButton />
-      <div className="text-center space-y-3 pt-6">
-        <div className="flex justify-center mb-4">
-          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center shadow-lg">
-            <Target className="w-8 h-8 text-white" />
-          </div>
-        </div>
-        <h3 className="text-2xl font-bold bg-gradient-to-r from-rose-600 to-pink-600 bg-clip-text text-transparent">
-          Qual é o seu objetivo principal?
-        </h3>
-        <p className="text-muted-foreground">Vamos focar no que é mais importante para você</p>
-      </div>
+  const renderQuestion6 = () => {
+    const maxGoals = 2;
+    const canContinue = answers.goals.length >= 1;
 
-      <div className="grid gap-3">
-        {[
-          { value: 'hipertrofia', emoji: '💪', title: 'Ganhar massa muscular', desc: 'Hipertrofia e força', color: 'from-purple-500 to-indigo-500' },
-          { value: 'emagrecer', emoji: '🔥', title: 'Emagrecer', desc: 'Perder gordura e definir', color: 'from-amber-500 to-yellow-500' },
-          { value: 'condicionamento', emoji: '🏃', title: 'Condicionamento físico', desc: 'Mais energia e disposição', color: 'from-blue-500 to-cyan-500' },
-          { value: 'saude', emoji: '❤️', title: 'Melhorar saúde', desc: 'Prevenir doenças e viver melhor', color: 'from-green-500 to-teal-500' },
-          { value: 'estresse', emoji: '🧘', title: 'Reduzir estresse', desc: 'Cuidar da saúde mental', color: 'from-pink-500 to-rose-500' },
-        ].map(option => (
-          <Card 
-            key={option.value}
-            className={`cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-[1.02] ${
-              answers.goal === option.value 
-                ? `bg-gradient-to-r ${option.color} text-white shadow-2xl` 
-                : 'hover:bg-muted/50'
-            }`}
-            onClick={() => {
-              handleAnswer('goal', option.value);
-              setTimeout(() => goToNextStep('question7'), 300);
-            }}
-          >
-            <CardContent className="p-4">
-              <div className="flex items-center gap-4">
-                <span className="text-2xl">{option.emoji}</span>
-                <div className="flex-1">
-                  <h4 className="font-bold">{option.title}</h4>
-                  <p className="text-sm opacity-80">{option.desc}</p>
-                </div>
-                {answers.goal === option.value && <CheckCircle2 className="w-5 h-5" />}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+    const toggleGoal = (value: string) => {
+      setAnswers(prev => {
+        const currentGoals = prev.goals;
+        if (currentGoals.includes(value)) {
+          // Remove se já está selecionado
+          return { ...prev, goals: currentGoals.filter(g => g !== value) };
+        } else if (currentGoals.length < maxGoals) {
+          // Adiciona se ainda não atingiu o limite
+          return { ...prev, goals: [...currentGoals, value] };
+        }
+        return prev; // Não faz nada se já tem 2
+      });
+    };
+
+    return (
+      <div className="space-y-6 py-4 relative">
+        <BackButton />
+        <div className="text-center space-y-3 pt-6">
+          <div className="flex justify-center mb-4">
+            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center shadow-lg">
+              <Target className="w-8 h-8 text-white" />
+            </div>
+          </div>
+          <h3 className="text-2xl font-bold bg-gradient-to-r from-rose-600 to-pink-600 bg-clip-text text-transparent">
+            Quais são seus objetivos?
+          </h3>
+          <p className="text-muted-foreground">
+            Selecione até {maxGoals} objetivos principais
+          </p>
+          {answers.goals.length > 0 && (
+            <p className="text-sm text-emerald-600 font-medium">
+              {answers.goals.length}/{maxGoals} selecionado(s)
+            </p>
+          )}
+        </div>
+
+        <div className="grid gap-3">
+          {[
+            { value: 'hipertrofia', emoji: '💪', title: 'Ganhar massa muscular', desc: 'Hipertrofia e força', color: 'from-purple-500 to-indigo-500' },
+            { value: 'emagrecer', emoji: '🔥', title: 'Emagrecer', desc: 'Perder gordura e definir', color: 'from-amber-500 to-yellow-500' },
+            { value: 'condicionamento', emoji: '🏃', title: 'Condicionamento físico', desc: 'Mais energia e disposição', color: 'from-blue-500 to-cyan-500' },
+            { value: 'saude', emoji: '❤️', title: 'Melhorar saúde', desc: 'Prevenir doenças e viver melhor', color: 'from-green-500 to-teal-500' },
+            { value: 'estresse', emoji: '🧘', title: 'Reduzir estresse', desc: 'Cuidar da saúde mental', color: 'from-pink-500 to-rose-500' },
+          ].map(option => {
+            const isSelected = answers.goals.includes(option.value);
+            const isDisabled = !isSelected && answers.goals.length >= maxGoals;
+            
+            return (
+              <Card 
+                key={option.value}
+                className={`cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-[1.02] ${
+                  isSelected 
+                    ? `bg-gradient-to-r ${option.color} text-white shadow-2xl` 
+                    : isDisabled
+                    ? 'opacity-50 cursor-not-allowed'
+                    : 'hover:bg-muted/50'
+                }`}
+                onClick={() => !isDisabled && toggleGoal(option.value)}
+              >
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-4">
+                    <span className="text-2xl">{option.emoji}</span>
+                    <div className="flex-1">
+                      <h4 className="font-bold">{option.title}</h4>
+                      <p className="text-sm opacity-80">{option.desc}</p>
+                    </div>
+                    {isSelected && <CheckCircle2 className="w-5 h-5" />}
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+
+        <Button
+          className="w-full bg-gradient-to-r from-rose-500 to-pink-600 hover:from-rose-600 hover:to-pink-700 text-white"
+          disabled={!canContinue}
+          onClick={() => goToNextStep('question7')}
+        >
+          {canContinue ? (
+            <>
+              Continuar
+              <ArrowRight className="w-4 h-4 ml-2" />
+            </>
+          ) : (
+            'Selecione pelo menos 1 objetivo'
+          )}
+        </Button>
       </div>
-    </div>
-  );
+    );
+  };
 
   const renderQuestion7 = () => (
     <div className="space-y-6 py-4 relative">
@@ -881,13 +1043,14 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
         time: answers.time,
         frequency: answers.frequency,
         location: answers.location,
-        goal: answers.goal,
+        goals: answers.goals, // Array de objetivos
         limitation: answers.limitation,
         bodyFocus: answers.bodyFocus,
         specialCondition: answers.specialCondition,
         selectedDays: answers.selectedDays,
         trainingSplit: answers.trainingSplit,
         exercisesPerDay: answers.exercisesPerDay,
+        dayAssignments: answers.dayAssignments,
         completedAt: new Date().toISOString()
       };
 
@@ -951,7 +1114,7 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
                 level: answers.level,
                 experience: answers.experience,
                 location: answers.location,
-                goal: answers.goal,
+                goal: answers.goals[0] || '', // Usa o primeiro objetivo como principal
                 limitation: answers.limitation
               });
               
@@ -1140,6 +1303,7 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
           {step === 'question3b' && renderQuestion3b()}
           {step === 'question4' && renderQuestion4()}
           {step === 'question4b' && renderQuestion4b()}
+          {step === 'question4c' && renderQuestion4c()}
           {step === 'question5' && renderQuestion5()}
           {step === 'question5b' && renderQuestion5b()}
           {step === 'question6' && renderQuestion6()}

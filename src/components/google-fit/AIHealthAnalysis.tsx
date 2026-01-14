@@ -303,7 +303,7 @@ export const AIHealthAnalysis: React.FC<AIHealthAnalysisProps> = ({
 
               {/* Insights */}
               <div className="space-y-3">
-                <h4 className="font-medium text-sm text-muted-foreground">INSIGHTS</h4>
+                <h4 className="font-medium text-sm text-muted-foreground">ANÁLISES</h4>
                 {analysis.insights.map((insight, index) => (
                   <motion.div
                     key={index}

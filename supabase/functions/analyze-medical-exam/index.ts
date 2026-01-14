@@ -2381,9 +2381,9 @@ ANTES DO JSON, escreva uma análise clínica EDUCATIVA, curta e objetiva, basead
         fixedJson = fixedJson.replace(/,\s*$/g, '');
         
         // Contar chaves/colchetes abertos
-        let openBraces = (fixedJson.match(/{/g) || []).length;
+        const openBraces = (fixedJson.match(/{/g) || []).length;
         let closeBraces = (fixedJson.match(/}/g) || []).length;
-        let openBrackets = (fixedJson.match(/\[/g) || []).length;
+        const openBrackets = (fixedJson.match(/\[/g) || []).length;
         let closeBrackets = (fixedJson.match(/]/g) || []).length;
         
         console.log(`🔧 Fechamentos faltantes: ${openBrackets - closeBrackets} colchetes, ${openBraces - closeBraces} chaves`);
@@ -2646,7 +2646,7 @@ ANTES DO JSON, escreva uma análise clínica EDUCATIVA, curta e objetiva, basead
       
       // PASSO 1: Preparar para análise com Lovable AI (OCR integrado nos modelos de visão)
       console.log(`🔍 Preparando ${imagesLimited.length} imagens para análise com IA...`);
-      let extractedText = '';
+      const extractedText = '';
       
       // Atualizar status - Lovable AI faz OCR nativo, não precisa de Google Vision
       await supabase

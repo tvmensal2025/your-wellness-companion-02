@@ -268,12 +268,27 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
   }, []);
 
   // Salvar exercício no histórico para análise da Sofia e Dr. Vital
-  const saveExerciseToHistory = useCallback(async (exercise: Exercise, setsCompleted: number, durationSeconds: number, weight?: number) => {
+  const saveExerciseToHistory = useCallback(async (
+    exercise: Exercise, 
+    setsCompleted: number, 
+    durationSeconds: number, 
+    weightOrReps?: number,
+    isBodyweight?: boolean
+  ) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const repsCompleted = parseInt(String(exercise.reps || '0').replace(/\D/g, '')) || 0;
+      const defaultReps = parseInt(String(exercise.reps || '0').replace(/\D/g, '')) || 0;
+      // Se for bodyweight, o valor informado são as reps; senão, usa as reps padrão do exercício
+      const repsCompleted = isBodyweight && weightOrReps ? weightOrReps : defaultReps;
+      const weight = isBodyweight ? undefined : weightOrReps;
+
+      const notesText = isBodyweight 
+        ? `Treino: ${workout.dayName} | Reps: ${weightOrReps || defaultReps}`
+        : weight 
+          ? `Treino: ${workout.dayName} | Peso: ${weight}kg` 
+          : `Treino: ${workout.dayName}`;
 
       await supabase.from('user_exercise_history').insert({
         user_id: user.id,
@@ -284,7 +299,7 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
         duration_seconds: durationSeconds,
         calories_burned: 0,
         difficulty_level: exerciseFeedback || 'ok',
-        notes: weight ? `Treino: ${workout.dayName} | Peso: ${weight}kg` : `Treino: ${workout.dayName}`,
+        notes: notesText,
         completed_at: new Date().toISOString()
       });
 
@@ -306,8 +321,12 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
           updated_at: new Date().toISOString()
         };
 
-        // Só atualizar peso se foi informado
-        if (weight && weight > 0) {
+        if (isBodyweight && weightOrReps && weightOrReps > 0) {
+          // Para exercícios de peso corporal, salvar reps
+          updateData.last_reps = weightOrReps;
+          updateData.max_reps = Math.max(existing.max_reps || 0, weightOrReps);
+        } else if (weight && weight > 0) {
+          // Para exercícios com peso, salvar peso
           updateData.weight_kg = weight;
           updateData.max_weight_kg = Math.max(existing.max_weight_kg || 0, weight);
           updateData.max_reps = Math.max(existing.max_reps || 0, repsCompleted);
@@ -326,6 +345,7 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
           weight_kg: weight || null,
           max_weight_kg: weight || null,
           max_reps: repsCompleted,
+          last_reps: isBodyweight ? weightOrReps : null,
           total_sets: setsCompleted,
           total_volume: volume || null,
           last_workout_date: new Date().toISOString(),
@@ -337,22 +357,24 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
     }
   }, [workout.dayName, exerciseFeedback]);
 
-  // Função para lidar com peso do exercício
-  const handleWeightSave = async (weight: number | null) => {
+  // Função para lidar com peso/reps do exercício
+  const handleWeightSave = async (value: number | null, isBodyweight?: boolean) => {
     if (pendingExerciseForWeight) {
-      if (weight !== null) {
+      if (value !== null && !isBodyweight) {
+        // Só salvar no state de weights se for peso (não reps)
         setWorkoutWeights(prev => ({
           ...prev,
-          [pendingExerciseForWeight.id]: weight
+          [pendingExerciseForWeight.id]: value
         }));
       }
       
-      // Salvar no histórico com peso
+      // Salvar no histórico com peso ou reps
       await saveExerciseToHistory(
         pendingExerciseForWeight, 
         totalSetsForExercise, 
         exerciseSeconds,
-        weight || undefined
+        value || undefined,
+        isBodyweight
       );
       
       // Animação de sucesso

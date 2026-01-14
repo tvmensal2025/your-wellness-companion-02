@@ -133,8 +133,8 @@ describe('Character Data Completeness - Property Tests', () => {
 
   it('Property 6d: Character image paths are valid format', () => {
     characters.forEach(character => {
-      // Path deve ser formato válido
-      expect(character.imagePath).toMatch(/^\/images\/[\w-]+\.(png|jpg|jpeg|svg)$/);
+      // Path deve ser formato válido (incluindo webp)
+      expect(character.imagePath).toMatch(/^\/images\/[\w-]+\.(png|jpg|jpeg|svg|webp)$/);
     });
   });
 

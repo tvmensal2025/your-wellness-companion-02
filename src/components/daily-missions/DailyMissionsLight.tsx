@@ -116,7 +116,7 @@ export const DailyMissionsLight: React.FC<DailyMissionsLightProps> = ({ user }) 
       date: today
     };
 
-    let trackingData: typeof baseData & {
+    const trackingData: typeof baseData & {
       mood_rating?: number;
       sleep_hours?: number;
       water_intake?: number;

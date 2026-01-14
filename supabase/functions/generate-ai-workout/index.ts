@@ -185,7 +185,7 @@ REGRAS:
     console.log("📝 Resposta da IA recebida, processando...");
 
     // Limpar a resposta (remover markdown se houver)
-    let cleanContent = content
+    const cleanContent = content
       .replace(/```json\n?/g, '')
       .replace(/```\n?/g, '')
       .trim();

@@ -425,6 +425,29 @@ async function executeAction(
     case 'feeling_bad':
       return await handleFeeling(supabase, userId, actionId, parsed);
     
+    // Water tracking buttons
+    case 'water_250ml':
+      return await handleWaterIntake(supabase, userId, parsed, 250);
+    
+    case 'water_500ml':
+      return await handleWaterIntake(supabase, userId, parsed, 500);
+    
+    case 'water_not_yet':
+      return await handleWaterNotYet(supabase, userId, parsed);
+    
+    case 'water_view_progress':
+      return await handleWaterViewProgress(supabase, userId, parsed);
+    
+    // Weekly weighing buttons
+    case 'weigh_now':
+      return await handleWeighNow(supabase, userId, parsed);
+    
+    case 'weigh_later':
+      return await handleWeighLater(supabase, userId, parsed);
+    
+    case 'weigh_view_evolution':
+      return await handleWeighViewEvolution(supabase, userId, parsed);
+    
     // Meal plan buttons
     case 'meal_accept':
       return { action: actionId, status: 'meal_accepted' };
@@ -448,7 +471,7 @@ async function executeAction(
       return { action: actionId, status: 'skipped' };
     
     case 'help':
-      return { action: actionId, status: 'showing_help' };
+      return await handleHelp(supabase, userId, parsed);
     
     case 'menu':
       return { action: actionId, status: 'showing_menu' };
@@ -576,4 +599,311 @@ async function handleFeeling(
   }
   
   return { action: 'daily_checkin', feeling, level };
+}
+
+// ============================================
+// Water Tracking Handlers
+// ============================================
+
+async function handleWaterIntake(
+  supabase: any,
+  userId: string | null,
+  parsed: ParsedWebhook,
+  amount: number
+): Promise<any> {
+  if (!userId) return { error: 'User not found' };
+  
+  const today = new Date().toISOString().split('T')[0];
+  
+  // Get current water intake
+  const { data: tracking } = await supabase
+    .from('advanced_daily_tracking')
+    .select('water_ml')
+    .eq('user_id', userId)
+    .eq('tracking_date', today)
+    .single();
+  
+  const currentWater = tracking?.water_ml || 0;
+  const newTotal = currentWater + amount;
+  
+  // Update water intake
+  await supabase
+    .from('advanced_daily_tracking')
+    .upsert({
+      user_id: userId,
+      tracking_date: today,
+      water_ml: newTotal,
+      updated_at: new Date().toISOString(),
+    }, {
+      onConflict: 'user_id,tracking_date',
+    });
+  
+  console.log(`[Webhook] Water intake recorded: +${amount}ml, total: ${newTotal}ml`);
+  
+  // Send confirmation message via edge function
+  try {
+    await supabase.functions.invoke('whatsapp-send-interactive', {
+      body: {
+        phone: parsed.phone,
+        userId,
+        templateType: 'water_confirmation',
+        data: {
+          amount,
+          totalToday: newTotal,
+          goal: 2500,
+        },
+      },
+    });
+  } catch (error) {
+    console.error('[Webhook] Error sending water confirmation:', error);
+  }
+  
+  return { 
+    action: 'water_intake', 
+    amount, 
+    previousTotal: currentWater,
+    newTotal,
+    status: 'recorded' 
+  };
+}
+
+async function handleWaterNotYet(
+  supabase: any,
+  userId: string | null,
+  parsed: ParsedWebhook
+): Promise<any> {
+  console.log(`[Webhook] User hasn't drunk water yet, will remind later`);
+  
+  // Send "not yet" response
+  try {
+    await supabase.functions.invoke('whatsapp-send-interactive', {
+      body: {
+        phone: parsed.phone,
+        userId,
+        templateType: 'water_not_yet',
+      },
+    });
+  } catch (error) {
+    console.error('[Webhook] Error sending water not yet response:', error);
+  }
+  
+  // TODO: Schedule reminder for 2 hours later
+  
+  return { action: 'water_not_yet', status: 'reminder_scheduled' };
+}
+
+async function handleWaterViewProgress(
+  supabase: any,
+  userId: string | null,
+  parsed: ParsedWebhook
+): Promise<any> {
+  if (!userId) return { error: 'User not found' };
+  
+  // Get last 7 days of water data
+  const weekAgo = new Date();
+  weekAgo.setDate(weekAgo.getDate() - 7);
+  
+  const { data: weekData } = await supabase
+    .from('advanced_daily_tracking')
+    .select('tracking_date, water_ml')
+    .eq('user_id', userId)
+    .gte('tracking_date', weekAgo.toISOString().split('T')[0])
+    .order('tracking_date', { ascending: true });
+  
+  const dayNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+  const formattedData = (weekData || []).map(d => ({
+    day: dayNames[new Date(d.tracking_date).getDay()],
+    amount: d.water_ml || 0,
+  }));
+  
+  const totalWater = formattedData.reduce((sum, d) => sum + d.amount, 0);
+  const avgDaily = formattedData.length > 0 ? Math.round(totalWater / formattedData.length) : 0;
+  const bestDay = formattedData.reduce((best, d) => d.amount > (best?.amount || 0) ? d : best, formattedData[0]);
+  
+  // Send weekly progress
+  try {
+    await supabase.functions.invoke('whatsapp-send-interactive', {
+      body: {
+        phone: parsed.phone,
+        userId,
+        templateType: 'water_weekly',
+        data: {
+          weekData: formattedData,
+          avgDaily,
+          goal: 2500,
+          bestDay: bestDay?.day || 'N/A',
+        },
+      },
+    });
+  } catch (error) {
+    console.error('[Webhook] Error sending water progress:', error);
+  }
+  
+  return { action: 'water_view_progress', avgDaily, status: 'sent' };
+}
+
+// ============================================
+// Weekly Weighing Handlers
+// ============================================
+
+async function handleWeighNow(
+  supabase: any,
+  userId: string | null,
+  parsed: ParsedWebhook
+): Promise<any> {
+  if (!userId) {
+    // Send prompt anyway for phone-only users
+    try {
+      await supabase.functions.invoke('whatsapp-send-interactive', {
+        body: {
+          phone: parsed.phone,
+          templateType: 'weighing_prompt_weight',
+        },
+      });
+    } catch (error) {
+      console.error('[Webhook] Error sending weight prompt:', error);
+    }
+    return { action: 'weigh_now', status: 'awaiting_weight' };
+  }
+  
+  // Store state for follow-up
+  await supabase
+    .from('whatsapp_user_state')
+    .upsert({
+      user_id: userId,
+      phone: parsed.phone,
+      state: 'awaiting_weight',
+      context: { flowType: 'weekly_weighing', step: 'weight' },
+      updated_at: new Date().toISOString(),
+    }, {
+      onConflict: 'user_id',
+    });
+  
+  // Send weight prompt
+  try {
+    await supabase.functions.invoke('whatsapp-send-interactive', {
+      body: {
+        phone: parsed.phone,
+        userId,
+        templateType: 'weighing_prompt_weight',
+      },
+    });
+  } catch (error) {
+    console.error('[Webhook] Error sending weight prompt:', error);
+  }
+  
+  return { action: 'weigh_now', status: 'awaiting_weight' };
+}
+
+async function handleWeighLater(
+  supabase: any,
+  userId: string | null,
+  parsed: ParsedWebhook
+): Promise<any> {
+  console.log(`[Webhook] User will weigh later, scheduling reminder`);
+  
+  // Send "later" response
+  try {
+    await supabase.functions.invoke('whatsapp-send-interactive', {
+      body: {
+        phone: parsed.phone,
+        userId,
+        templateType: 'weighing_later',
+      },
+    });
+  } catch (error) {
+    console.error('[Webhook] Error sending weigh later response:', error);
+  }
+  
+  // TODO: Schedule reminder for tomorrow morning
+  
+  return { action: 'weigh_later', status: 'reminder_scheduled' };
+}
+
+async function handleWeighViewEvolution(
+  supabase: any,
+  userId: string | null,
+  parsed: ParsedWebhook
+): Promise<any> {
+  if (!userId) return { error: 'User not found' };
+  
+  // Get last 4 weeks of weight data
+  const { data: history } = await supabase
+    .from('weight_measurements')
+    .select('measurement_date, weight_kg, waist_cm')
+    .eq('user_id', userId)
+    .order('measurement_date', { ascending: false })
+    .limit(4);
+  
+  if (!history || history.length === 0) {
+    // No data yet
+    try {
+      await supabase.functions.invoke('whatsapp-send-interactive', {
+        body: {
+          phone: parsed.phone,
+          userId,
+          templateType: 'weighing_reminder',
+          data: { daysSinceLastWeighing: 0 },
+        },
+      });
+    } catch (error) {
+      console.error('[Webhook] Error sending weighing reminder:', error);
+    }
+    return { action: 'weigh_view_evolution', status: 'no_data' };
+  }
+  
+  const formattedHistory = history.map(h => ({
+    date: new Date(h.measurement_date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
+    weight: h.weight_kg,
+    waist: h.waist_cm,
+  }));
+  
+  const currentWeight = history[0].weight_kg;
+  const startWeight = history[history.length - 1].weight_kg;
+  const totalLoss = currentWeight - startWeight;
+  
+  // Send evolution
+  try {
+    await supabase.functions.invoke('whatsapp-send-interactive', {
+      body: {
+        phone: parsed.phone,
+        userId,
+        templateType: 'weighing_evolution',
+        data: {
+          history: formattedHistory,
+          startWeight,
+          currentWeight,
+          totalLoss,
+        },
+      },
+    });
+  } catch (error) {
+    console.error('[Webhook] Error sending weight evolution:', error);
+  }
+  
+  return { action: 'weigh_view_evolution', currentWeight, totalLoss, status: 'sent' };
+}
+
+// ============================================
+// Help Handler
+// ============================================
+
+async function handleHelp(
+  supabase: any,
+  userId: string | null,
+  parsed: ParsedWebhook
+): Promise<any> {
+  try {
+    await supabase.functions.invoke('whatsapp-send-interactive', {
+      body: {
+        phone: parsed.phone,
+        userId,
+        templateType: 'help',
+      },
+    });
+  } catch (error) {
+    console.error('[Webhook] Error sending help:', error);
+  }
+  
+  return { action: 'help', status: 'sent' };
 }

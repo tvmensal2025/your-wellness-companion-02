@@ -83,7 +83,7 @@ export const FollowersList: React.FC<FollowersListProps> = ({ onProfileClick, on
 
       const usersShowingWeight = profiles?.filter(p => p.show_weight_results).map(p => p.user_id) || [];
       
-      let weightChanges: Record<string, number> = {};
+      const weightChanges: Record<string, number> = {};
       
       if (usersShowingWeight.length > 0) {
         const weightPromises = usersShowingWeight.map(async (userId) => {

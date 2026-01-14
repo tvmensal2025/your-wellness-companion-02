@@ -391,7 +391,7 @@ export class NotificationService {
       .from('exercise_notification_preferences')
       .select('*')
       .eq('user_id', this.userId)
-      .single();
+      .maybeSingle();
 
     if (!data) {
       return this.getDefaultPreferences();

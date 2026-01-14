@@ -146,8 +146,8 @@ export const NutritionTrackingPage: React.FC = () => {
       <Tabs defaultValue="tracker" className="space-y-3 sm:space-y-4">
         <TabsList className="grid w-full grid-cols-4 h-9 sm:h-10">
           <TabsTrigger value="tracker" className="text-xs sm:text-sm px-1 sm:px-3">Rastreador</TabsTrigger>
-          <TabsTrigger value="stats" className="text-xs sm:text-sm px-1 sm:px-3">Stats</TabsTrigger>
-          <TabsTrigger value="insights" className="text-xs sm:text-sm px-1 sm:px-3">Insights</TabsTrigger>
+          <TabsTrigger value="stats" className="text-xs sm:text-sm px-1 sm:px-3">Resumo</TabsTrigger>
+          <TabsTrigger value="insights" className="text-xs sm:text-sm px-1 sm:px-3">Dicas</TabsTrigger>
           <TabsTrigger value="goals" className="text-xs sm:text-sm px-1 sm:px-3">Metas</TabsTrigger>
         </TabsList>
 

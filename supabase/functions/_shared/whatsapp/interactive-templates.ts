@@ -36,6 +36,17 @@ export const BUTTON_IDS = {
   MEAL_RECIPE: 'meal_recipe',
   MEAL_SHOPPING: 'meal_shopping',
   
+  // Water Tracking
+  WATER_250ML: 'water_250ml',
+  WATER_500ML: 'water_500ml',
+  WATER_NOT_YET: 'water_not_yet',
+  WATER_VIEW_PROGRESS: 'water_view_progress',
+  
+  // Weekly Weighing
+  WEIGH_NOW: 'weigh_now',
+  WEIGH_LATER: 'weigh_later',
+  WEIGH_VIEW_EVOLUTION: 'weigh_view_evolution',
+  
   // General
   YES: 'yes',
   NO: 'no',
@@ -95,8 +106,8 @@ export function createSofiaPostConfirm(): InteractiveContent {
     action: {
       buttons: [
         { type: 'quick_reply', id: BUTTON_IDS.SOFIA_NEW_PHOTO, title: '📸 Nova Foto' },
-        { type: 'quick_reply', id: BUTTON_IDS.SOFIA_MEAL_PLAN, title: '🍽️ Cardápio' },
-        { type: 'quick_reply', id: BUTTON_IDS.SOFIA_TIPS, title: '💡 Dicas' },
+        { type: 'quick_reply', id: BUTTON_IDS.SOFIA_TIPS, title: '💡 Dica do Dia' },
+        { type: 'quick_reply', id: BUTTON_IDS.MENU, title: '📋 Menu' },
       ],
     },
   };
@@ -289,14 +300,26 @@ export function createCheckinResponse(feeling: 'great' | 'ok' | 'bad'): Interact
     great: {
       emoji: '🎉',
       text: '*Que maravilha!* Continue assim!\n\nSeu corpo agradece os cuidados que você tem dado a ele.',
+      buttons: [
+        { type: 'quick_reply' as const, id: BUTTON_IDS.SOFIA_NEW_PHOTO, title: '📸 Registrar Refeição' },
+        { type: 'quick_reply' as const, id: BUTTON_IDS.MENU, title: '📋 Menu' },
+      ],
     },
     ok: {
       emoji: '💪',
-      text: '*Entendi!* Vamos trabalhar juntos para melhorar seu dia.\n\nQue tal registrar uma refeição saudável?',
+      text: '*Entendi!* Vamos trabalhar juntos para melhorar seu dia.\n\nQue tal começar com uma boa hidratação?',
+      buttons: [
+        { type: 'quick_reply' as const, id: BUTTON_IDS.WATER_250ML, title: '💧 Beber água' },
+        { type: 'quick_reply' as const, id: BUTTON_IDS.SOFIA_TIPS, title: '💡 Dicas do Dia' },
+      ],
     },
     bad: {
       emoji: '💙',
-      text: '*Sinto muito que não esteja bem.*\n\nEstou aqui se precisar conversar. Lembre-se: dias difíceis passam.',
+      text: '*Sinto muito que não esteja bem.*\n\nEstou aqui se precisar conversar. Lembre-se: dias difíceis passam.\n\nPosso te ajudar com algo?',
+      buttons: [
+        { type: 'quick_reply' as const, id: BUTTON_IDS.VITAL_QUESTION, title: '💬 Conversar' },
+        { type: 'quick_reply' as const, id: BUTTON_IDS.MENU, title: '📋 Menu' },
+      ],
     },
   };
   
@@ -307,10 +330,7 @@ export function createCheckinResponse(feeling: 'great' | 'ok' | 'bad'): Interact
     body: { text: `${response.emoji} ${response.text}` },
     footer: { text: '🌿 MaxNutrition' },
     action: {
-      buttons: [
-        { type: 'quick_reply', id: BUTTON_IDS.SOFIA_NEW_PHOTO, title: '📸 Registrar Refeição' },
-        { type: 'quick_reply', id: BUTTON_IDS.SOFIA_TIPS, title: '💡 Dicas do Dia' },
-      ],
+      buttons: response.buttons,
     },
   };
 }
@@ -540,6 +560,384 @@ export function createErrorMessage(errorType: 'image_unclear' | 'no_food' | 'pro
 }
 
 // ============================================
+// WATER TRACKING Templates
+// ============================================
+
+export function createWaterReminder(data: {
+  userName?: string;
+  totalToday: number;
+  goal: number;
+}): InteractiveContent {
+  const remaining = Math.max(0, data.goal - data.totalToday);
+  const percentage = Math.min(100, Math.round((data.totalToday / data.goal) * 100));
+  const progressBar = generateProgressBar(percentage);
+  const greeting = data.userName ? `${data.userName}, ` : '';
+  
+  return {
+    type: 'button',
+    header: { text: '💧 Hora de Hidratar!' },
+    body: {
+      text: `${greeting}já bebeu água? 💦\n\n` +
+            `📊 *Seu progresso hoje:*\n` +
+            `${progressBar} ${percentage}%\n\n` +
+            `💧 Consumido: ${data.totalToday}ml\n` +
+            `🎯 Meta: ${data.goal}ml\n` +
+            `📉 Faltam: ${remaining}ml\n\n` +
+            `Registre agora! 👇`,
+    },
+    footer: { text: '🌿 Sofia - MaxNutrition' },
+    action: {
+      buttons: [
+        { type: 'quick_reply', id: BUTTON_IDS.WATER_250ML, title: '💧 Bebi 250ml' },
+        { type: 'quick_reply', id: BUTTON_IDS.WATER_500ML, title: '💧 Bebi 500ml' },
+        { type: 'quick_reply', id: BUTTON_IDS.WATER_NOT_YET, title: '❌ Ainda não' },
+      ],
+    },
+  };
+}
+
+export function createWaterConfirmation(data: {
+  amount: number;
+  totalToday: number;
+  goal: number;
+}): InteractiveContent {
+  const percentage = Math.min(100, Math.round((data.totalToday / data.goal) * 100));
+  const progressBar = generateProgressBar(percentage);
+  const remaining = Math.max(0, data.goal - data.totalToday);
+  
+  let celebrationText = '';
+  if (percentage >= 100) {
+    celebrationText = '\n\n🎉 *PARABÉNS!* Meta atingida! Continue assim!';
+  } else if (percentage >= 75) {
+    celebrationText = '\n\n💪 Quase lá! Falta pouco!';
+  } else if (percentage >= 50) {
+    celebrationText = '\n\n👍 Ótimo progresso! Continue hidratando!';
+  }
+  
+  return {
+    type: 'button',
+    body: {
+      text: `✅ *+${data.amount}ml registrado!*\n\n` +
+            `💧 *Total hoje:* ${data.totalToday}ml / ${data.goal}ml\n` +
+            `${progressBar} ${percentage}%\n` +
+            (remaining > 0 ? `📉 Faltam: ${remaining}ml` : '') +
+            celebrationText,
+    },
+    footer: { text: '🌿 Sofia' },
+    action: {
+      buttons: [
+        { type: 'quick_reply', id: BUTTON_IDS.WATER_250ML, title: '💧 +250ml' },
+        { type: 'quick_reply', id: BUTTON_IDS.WATER_VIEW_PROGRESS, title: '📊 Ver Semana' },
+      ],
+    },
+  };
+}
+
+export function createWaterNotYetResponse(): InteractiveContent {
+  return {
+    type: 'button',
+    body: {
+      text: '⏰ *Tudo bem!*\n\n' +
+            'Vou te lembrar novamente em breve.\n\n' +
+            '💡 *Dica:* Deixe uma garrafa de água sempre por perto!\n\n' +
+            'Hidratação é essencial para:\n' +
+            '• 🧠 Concentração\n' +
+            '• 💪 Energia\n' +
+            '• ✨ Pele saudável',
+    },
+    footer: { text: '🌿 Sofia' },
+    action: {
+      buttons: [
+        { type: 'quick_reply', id: BUTTON_IDS.WATER_250ML, title: '💧 Beber agora' },
+        { type: 'quick_reply', id: BUTTON_IDS.MENU, title: '📋 Menu' },
+      ],
+    },
+  };
+}
+
+export function createWaterWeeklyProgress(data: {
+  weekData: { day: string; amount: number }[];
+  avgDaily: number;
+  goal: number;
+  bestDay: string;
+}): InteractiveContent {
+  let weekText = '📊 *Consumo da Semana:*\n\n';
+  
+  data.weekData.forEach(day => {
+    const percentage = Math.round((day.amount / data.goal) * 100);
+    const emoji = percentage >= 100 ? '✅' : percentage >= 50 ? '🟡' : '🔴';
+    weekText += `${emoji} ${day.day}: ${day.amount}ml (${percentage}%)\n`;
+  });
+  
+  weekText += `\n📈 *Média diária:* ${data.avgDaily}ml\n`;
+  weekText += `🏆 *Melhor dia:* ${data.bestDay}`;
+  
+  const avgPercentage = Math.round((data.avgDaily / data.goal) * 100);
+  let tipText = '';
+  if (avgPercentage < 50) {
+    tipText = '\n\n💡 Tente aumentar aos poucos!';
+  } else if (avgPercentage >= 100) {
+    tipText = '\n\n🎉 Excelente! Continue assim!';
+  }
+  
+  return {
+    type: 'button',
+    header: { text: '💧 Seu Progresso Semanal' },
+    body: { text: weekText + tipText },
+    footer: { text: '🌿 Sofia - MaxNutrition' },
+    action: {
+      buttons: [
+        { type: 'quick_reply', id: BUTTON_IDS.WATER_250ML, title: '💧 Registrar agora' },
+        { type: 'quick_reply', id: BUTTON_IDS.MENU, title: '📋 Menu' },
+      ],
+    },
+  };
+}
+
+// ============================================
+// WEEKLY WEIGHING Templates
+// ============================================
+
+export function createWeeklyWeighingReminder(data: {
+  userName?: string;
+  lastWeight?: number;
+  lastWaist?: number;
+  daysSinceLastWeighing: number;
+}): InteractiveContent {
+  const greeting = data.userName ? `${data.userName}, ` : '';
+  
+  let lastDataText = '';
+  if (data.lastWeight) {
+    lastDataText = `\n📊 *Última medição:*\n`;
+    lastDataText += `⚖️ Peso: ${data.lastWeight}kg\n`;
+    if (data.lastWaist) {
+      lastDataText += `📏 Cintura: ${data.lastWaist}cm\n`;
+    }
+    lastDataText += `📅 Há ${data.daysSinceLastWeighing} dias\n`;
+  }
+  
+  return {
+    type: 'button',
+    header: { text: '⚖️ Hora da Pesagem Semanal!' },
+    body: {
+      text: `${greeting}é dia de atualizar seus dados! 📊\n` +
+            lastDataText +
+            `\nAcompanhar seu progresso semanalmente ajuda a:\n` +
+            `• 📈 Identificar tendências\n` +
+            `• 🎯 Ajustar estratégias\n` +
+            `• 💪 Manter motivação\n\n` +
+            `Vamos registrar?`,
+    },
+    footer: { text: '🩺 Dr. Vital - MaxNutrition' },
+    action: {
+      buttons: [
+        { type: 'quick_reply', id: BUTTON_IDS.WEIGH_NOW, title: '⚖️ Registrar Agora' },
+        { type: 'quick_reply', id: BUTTON_IDS.WEIGH_LATER, title: '⏰ Lembrar Amanhã' },
+      ],
+    },
+  };
+}
+
+export function createWeighingPromptWeight(): InteractiveContent {
+  return {
+    type: 'button',
+    body: {
+      text: '⚖️ *Qual seu peso atual?*\n\n' +
+            'Digite apenas o número em kg.\n\n' +
+            '_Exemplos:_\n' +
+            '• 72.5\n' +
+            '• 68\n' +
+            '• 85.3\n\n' +
+            '💡 *Dica:* Pese-se sempre no mesmo horário, de preferência pela manhã em jejum.',
+    },
+    footer: { text: '🩺 Dr. Vital' },
+    action: {
+      buttons: [
+        { type: 'quick_reply', id: BUTTON_IDS.WEIGH_LATER, title: '⏰ Fazer depois' },
+      ],
+    },
+  };
+}
+
+export function createWeighingPromptWaist(weight: number): InteractiveContent {
+  return {
+    type: 'button',
+    body: {
+      text: `✅ *Peso registrado: ${weight}kg*\n\n` +
+            '📏 *Agora a circunferência da cintura!*\n\n' +
+            'Meça na altura do umbigo e digite em cm.\n\n' +
+            '_Exemplos:_\n' +
+            '• 85\n' +
+            '• 92.5\n' +
+            '• 78\n\n' +
+            '💡 *Dica:* Use uma fita métrica flexível, sem apertar.',
+    },
+    footer: { text: '🩺 Dr. Vital' },
+    action: {
+      buttons: [
+        { type: 'quick_reply', id: BUTTON_IDS.WEIGH_LATER, title: '⏭️ Pular cintura' },
+      ],
+    },
+  };
+}
+
+export function createWeighingComplete(data: {
+  weight: number;
+  waist?: number;
+  previousWeight?: number;
+  previousWaist?: number;
+  analysis?: string;
+}): InteractiveContent {
+  let variationText = '';
+  
+  if (data.previousWeight) {
+    const weightDiff = data.weight - data.previousWeight;
+    const weightEmoji = weightDiff < 0 ? '📉' : weightDiff > 0 ? '📈' : '➡️';
+    const weightSign = weightDiff > 0 ? '+' : '';
+    variationText += `${weightEmoji} Peso: ${weightSign}${weightDiff.toFixed(1)}kg\n`;
+  }
+  
+  if (data.waist && data.previousWaist) {
+    const waistDiff = data.waist - data.previousWaist;
+    const waistEmoji = waistDiff < 0 ? '📉' : waistDiff > 0 ? '📈' : '➡️';
+    const waistSign = waistDiff > 0 ? '+' : '';
+    variationText += `${waistEmoji} Cintura: ${waistSign}${waistDiff.toFixed(1)}cm\n`;
+  }
+  
+  let bodyText = `✅ *Dados registrados com sucesso!*\n\n` +
+                 `⚖️ *Peso:* ${data.weight}kg\n`;
+  
+  if (data.waist) {
+    bodyText += `📏 *Cintura:* ${data.waist}cm\n`;
+  }
+  
+  if (variationText) {
+    bodyText += `\n📊 *Variação desde última medição:*\n${variationText}`;
+  }
+  
+  if (data.analysis) {
+    bodyText += `\n🩺 *Dr. Vital diz:*\n${data.analysis}`;
+  }
+  
+  return {
+    type: 'button',
+    header: { text: '✅ Pesagem Registrada!' },
+    body: { text: bodyText },
+    footer: { text: '🩺 Dr. Vital - MaxNutrition' },
+    action: {
+      buttons: [
+        { type: 'quick_reply', id: BUTTON_IDS.WEIGH_VIEW_EVOLUTION, title: '📊 Ver Evolução' },
+        { type: 'quick_reply', id: BUTTON_IDS.MENU, title: '📋 Menu' },
+      ],
+    },
+  };
+}
+
+export function createWeighingEvolution(data: {
+  history: { date: string; weight: number; waist?: number }[];
+  startWeight: number;
+  currentWeight: number;
+  totalLoss: number;
+  avgWaist?: number;
+}): InteractiveContent {
+  let historyText = '📊 *Últimas 4 semanas:*\n\n';
+  
+  data.history.slice(0, 4).forEach(entry => {
+    historyText += `📅 ${entry.date}: ${entry.weight}kg`;
+    if (entry.waist) {
+      historyText += ` | 📏 ${entry.waist}cm`;
+    }
+    historyText += '\n';
+  });
+  
+  const lossEmoji = data.totalLoss < 0 ? '🎉' : data.totalLoss > 0 ? '📈' : '➡️';
+  const lossText = data.totalLoss < 0 ? 'perdeu' : data.totalLoss > 0 ? 'ganhou' : 'manteve';
+  
+  historyText += `\n${lossEmoji} *Resultado:* Você ${lossText} ${Math.abs(data.totalLoss).toFixed(1)}kg`;
+  
+  // Análise contextual
+  let analysisText = '';
+  if (data.totalLoss < -1) {
+    analysisText = '\n\n💪 Ótimo progresso! Continue assim!';
+  } else if (data.totalLoss > 1) {
+    analysisText = '\n\n💡 Vamos ajustar a estratégia?';
+  } else {
+    analysisText = '\n\n✅ Peso estável é bom sinal!';
+  }
+  
+  return {
+    type: 'button',
+    header: { text: '📈 Sua Evolução' },
+    body: { text: historyText + analysisText },
+    footer: { text: '🩺 Dr. Vital - MaxNutrition' },
+    action: {
+      buttons: [
+        { type: 'quick_reply', id: BUTTON_IDS.VITAL_QUESTION, title: '❓ Tirar dúvida' },
+        { type: 'quick_reply', id: BUTTON_IDS.MENU, title: '📋 Menu' },
+      ],
+    },
+  };
+}
+
+export function createWeighingLaterResponse(): InteractiveContent {
+  return {
+    type: 'button',
+    body: {
+      text: '⏰ *Tudo bem!*\n\n' +
+            'Vou te lembrar amanhã pela manhã.\n\n' +
+            '💡 *Dica:* O melhor momento para se pesar é:\n' +
+            '• 🌅 Pela manhã\n' +
+            '• 🚿 Após ir ao banheiro\n' +
+            '• 🍽️ Antes do café da manhã\n' +
+            '• 👕 Com roupas leves',
+    },
+    footer: { text: '🩺 Dr. Vital' },
+    action: {
+      buttons: [
+        { type: 'quick_reply', id: BUTTON_IDS.WEIGH_NOW, title: '⚖️ Registrar agora' },
+        { type: 'quick_reply', id: BUTTON_IDS.MENU, title: '📋 Menu' },
+      ],
+    },
+  };
+}
+
+// ============================================
+// HELP Templates
+// ============================================
+
+export function createHelpResponse(): InteractiveContent {
+  return {
+    type: 'button',
+    header: { text: '❓ Como posso ajudar?' },
+    body: {
+      text: '🌿 *Olá! Sou a Sofia, sua nutricionista virtual.*\n\n' +
+            'Posso te ajudar com:\n\n' +
+            '📸 *Analisar refeições* - Envie uma foto\n' +
+            '🔬 *Interpretar exames* - Envie foto do exame\n' +
+            '🍽️ *Sugerir cardápios* - Personalizado pra você\n' +
+            '💧 *Lembrar de beber água*\n' +
+            '⚖️ *Acompanhar peso semanal*\n\n' +
+            'Envie uma foto ou escolha uma opção!',
+    },
+    footer: { text: '🌿 Sofia - MaxNutrition' },
+    action: {
+      buttons: [
+        { type: 'quick_reply', id: BUTTON_IDS.SOFIA_NEW_PHOTO, title: '📸 Enviar Foto' },
+        { type: 'quick_reply', id: BUTTON_IDS.SOFIA_MEAL_PLAN, title: '🍽️ Ver Cardápio' },
+        { type: 'quick_reply', id: BUTTON_IDS.MENU, title: '📋 Menu Completo' },
+      ],
+    },
+  };
+}
+
+// Helper function for progress bar
+function generateProgressBar(percentage: number): string {
+  const filled = Math.round(percentage / 10);
+  const empty = 10 - filled;
+  return '█'.repeat(filled) + '░'.repeat(empty);
+}
+
+// ============================================
 // MAIN MENU Template
 // ============================================
 
@@ -608,6 +1006,21 @@ export const InteractiveTemplates = {
   // Welcome & Help
   welcomeMessage: createWelcomeMessage,
   helpMenu: createHelpMenu,
+  helpResponse: createHelpResponse,
+  
+  // Water Tracking
+  waterReminder: createWaterReminder,
+  waterConfirmation: createWaterConfirmation,
+  waterNotYetResponse: createWaterNotYetResponse,
+  waterWeeklyProgress: createWaterWeeklyProgress,
+  
+  // Weekly Weighing
+  weeklyWeighingReminder: createWeeklyWeighingReminder,
+  weighingPromptWeight: createWeighingPromptWeight,
+  weighingPromptWaist: createWeighingPromptWaist,
+  weighingComplete: createWeighingComplete,
+  weighingEvolution: createWeighingEvolution,
+  weighingLaterResponse: createWeighingLaterResponse,
   
   // Reports
   weeklyReport: createWeeklyReport,

@@ -1187,7 +1187,7 @@ async function calculateNutritionDirect(items: Array<{name: string; grams?: numb
     return text.toLowerCase().normalize('NFD').replace(/\p{Diacritic}+/gu, '').replace(/[^a-z0-9 ]/g, ' ').trim().replace(/\s+/g, ' ');
   };
 
-  let totals = { kcal: 0, protein_g: 0, fat_g: 0, carbs_g: 0, fiber_g: 0, sodium_mg: 0 };
+  const totals = { kcal: 0, protein_g: 0, fat_g: 0, carbs_g: 0, fiber_g: 0, sodium_mg: 0 };
 
   for (const item of items) {
     if (!item.name || (!item.grams && !item.ml)) continue;
@@ -1479,7 +1479,7 @@ serve(async (req) => {
 
     // 🔄 FLUXO CORRIGIDO: Google AI Gemini Vision (sem base64 para mais precisão)
     let detectedFoods: any[] = [];
-    let detectedLiquids: any[] = [];
+    const detectedLiquids: any[] = [];
     let isFood = false;
     let confidence = 0;
     let estimatedCalories = 0;

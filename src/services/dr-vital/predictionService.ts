@@ -599,10 +599,10 @@ export async function getActivePredictions(userId: string): Promise<HealthPredic
 // =====================================================
 
 async function fetchUserHealthData(userId: string): Promise<UserHealthData | null> {
-  // Fetch from multiple tables
+  // Fetch from multiple tables (usando maybeSingle para evitar 406)
   const [profileData, physicalData, trackingData, examsData] = await Promise.all([
-    supabase.from('profiles').select('*').eq('id', userId).single(),
-    supabase.from('user_physical_data').select('*').eq('user_id', userId).single(),
+    supabase.from('profiles').select('*').eq('id', userId).maybeSingle(),
+    supabase.from('user_physical_data').select('*').eq('user_id', userId).maybeSingle(),
     supabase.from('advanced_daily_tracking').select('*').eq('user_id', userId).order('tracking_date', { ascending: false }).limit(7),
     supabase.from('medical_exams').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(5),
   ]);

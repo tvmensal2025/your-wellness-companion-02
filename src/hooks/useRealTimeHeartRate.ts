@@ -37,7 +37,7 @@ export const useRealTimeHeartRate = (isActive: boolean = true) => {
         .from('profiles')
         .select('google_fit_enabled')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       if (!profile?.google_fit_enabled) {
         setIsConnected(false);

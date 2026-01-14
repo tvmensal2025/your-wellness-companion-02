@@ -60,7 +60,7 @@ export const useSofiaEmotional = () => {
           title: 'Bom dia! ☀️',
           message: 'Que tal começar o dia registrando seu peso? Pequenos hábitos fazem grande diferença!',
           emoji: '🌅',
-          action: { label: 'Registrar Peso', route: '/dashboard' },
+          action: { label: 'Registrar Peso', route: '/sofia' },
           priority: isActiveToday ? 1 : 5
         });
       } else if (hour >= 12 && hour < 18) {
@@ -112,7 +112,7 @@ export const useSofiaEmotional = () => {
           title: 'Não perca seu streak!',
           message: `Você tem ${streak} dias de sequência. Registre algo hoje para não perder!`,
           emoji: '⚠️',
-          action: { label: 'Manter Streak', route: '/dashboard' },
+          action: { label: 'Manter Streak', route: '/sofia' },
           priority: 9
         });
       }

@@ -92,7 +92,7 @@ const parseActivity = (activity: string): { name: string; sets: string; reps: st
   let name = activity;
   let sets = '3';
   let reps = '10';
-  let rest = '60s';
+  const rest = '60s';
   let difficulty = 'Medio';
   
   const setsMatch = activity.match(/(\d+)\s*(?:x|séries|sets)/i);

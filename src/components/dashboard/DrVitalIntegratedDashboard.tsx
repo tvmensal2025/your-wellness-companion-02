@@ -282,7 +282,7 @@ const DrVitalIntegratedDashboard: React.FC = () => {
           </TabsTrigger>
           <TabsTrigger value="insights" className="flex items-center space-x-2 text-sm xs:text-base">
             <Brain className="w-4 h-4 xs:w-5 xs:h-5" />
-            <span>Insights</span>
+            <span>Análises</span>
           </TabsTrigger>
         </TabsList>
 

@@ -141,7 +141,7 @@ export async function sendWhatsAppWithFallback(
   primaryText: string,
   fallbackText: string
 ): Promise<boolean> {
-  let success = await sendWhatsApp(phone, primaryText, 2);
+  const success = await sendWhatsApp(phone, primaryText, 2);
   
   if (success) return true;
   

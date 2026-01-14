@@ -149,7 +149,7 @@ serve(async (req) => {
       }
     }
 
-    let pendingMedical = await getPendingMedical(supabase, user.id);
+    const pendingMedical = await getPendingMedical(supabase, user.id);
     
     // 🔥 AUTO-DETECT: Check for stale batches (inactive for 30+ seconds)
     const INACTIVITY_TIMEOUT_MS = 30 * 1000; // 30 seconds

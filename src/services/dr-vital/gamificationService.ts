@@ -2,9 +2,14 @@
 // GAMIFICATION SERVICE
 // =====================================================
 // Sistema de gamificação Health Quest
+// Agora usa configuração do banco via unifiedGamificationService
 // =====================================================
 
 import { supabase } from '@/integrations/supabase/client';
+import { 
+  awardXP as awardUnifiedXP,
+  getXPConfig,
+} from '@/services/gamification/unifiedGamificationService';
 import type {
   HealthMission,
   HealthStreak,
@@ -16,23 +21,23 @@ import type {
 import { LEVEL_TITLES, LEVEL_TITLES_MASC, LEVEL_TITLES_FEM, getLevelTitleByGender } from '@/types/dr-vital-revolution';
 
 // =====================================================
-// CONSTANTS
+// CONSTANTS (fallbacks - valores do banco têm prioridade)
 // =====================================================
 
 const XP_PER_LEVEL_BASE = 100;
 const STREAK_BONUS_THRESHOLD = 7;
 const STREAK_BONUS_MULTIPLIER = 10;
 
-// Daily mission templates
+// Daily mission templates com action_type para buscar config do banco
 const DAILY_MISSION_TEMPLATES = [
-  { title: 'Beba 2L de água', description: 'Mantenha-se hidratado durante o dia', xpReward: 50 },
-  { title: 'Registre 3 refeições', description: 'Acompanhe sua alimentação', xpReward: 75 },
-  { title: 'Faça 30 min de exercício', description: 'Movimente seu corpo', xpReward: 100 },
-  { title: 'Durma 7+ horas', description: 'Descanse bem esta noite', xpReward: 75 },
-  { title: 'Medite por 10 minutos', description: 'Cuide da sua mente', xpReward: 50 },
-  { title: 'Caminhe 5000 passos', description: 'Mantenha-se ativo', xpReward: 60 },
-  { title: 'Coma uma fruta', description: 'Adicione vitaminas ao seu dia', xpReward: 30 },
-  { title: 'Evite açúcar refinado', description: 'Faça escolhas saudáveis', xpReward: 80 },
+  { title: 'Beba 2L de água', description: 'Mantenha-se hidratado durante o dia', xpReward: 50, actionType: 'water_goal' },
+  { title: 'Registre 3 refeições', description: 'Acompanhe sua alimentação', xpReward: 75, actionType: 'meal_logged' },
+  { title: 'Faça 30 min de exercício', description: 'Movimente seu corpo', xpReward: 100, actionType: 'workout_complete' },
+  { title: 'Durma 7+ horas', description: 'Descanse bem esta noite', xpReward: 75, actionType: 'sleep_goal' },
+  { title: 'Medite por 10 minutos', description: 'Cuide da sua mente', xpReward: 50, actionType: 'daily_checkin' },
+  { title: 'Caminhe 5000 passos', description: 'Mantenha-se ativo', xpReward: 60, actionType: 'steps_goal' },
+  { title: 'Coma uma fruta', description: 'Adicione vitaminas ao seu dia', xpReward: 30, actionType: 'meal_logged' },
+  { title: 'Evite açúcar refinado', description: 'Faça escolhas saudáveis', xpReward: 80, actionType: 'daily_checkin' },
 ];
 
 // =====================================================
@@ -179,6 +184,7 @@ export async function generateDailyMissions(userId: string): Promise<HealthMissi
 /**
  * Completa uma missão e atribui XP
  * Property 5: XP awarded equals mission's xpReward
+ * Agora usa sistema unificado para registrar XP
  */
 export async function completeMission(
   userId: string,
@@ -224,6 +230,16 @@ export async function completeMission(
   if (updateError) {
     throw updateError;
   }
+  
+  // Registrar XP no sistema unificado
+  await awardUnifiedXP(userId, 'mission_complete', {
+    sourceSystem: 'health',
+    sourceId: missionId,
+    metadata: { 
+      missionTitle: mission.title,
+      missionType: mission.type,
+    },
+  });
   
   // The trigger will handle XP and streak updates
   // Check if level changed

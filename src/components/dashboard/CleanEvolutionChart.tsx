@@ -19,7 +19,7 @@ interface CleanEvolutionChartProps {
   onRegisterClick?: () => void;
 }
 
-// Memoized mini stat component - ultra compacto para mobile
+// Memoized mini stat component - cresce proporcionalmente
 const MiniStat = memo(({ 
   label, 
   value, 
@@ -33,18 +33,19 @@ const MiniStat = memo(({
   icon?: React.ElementType;
   iconColor?: string;
 }) => (
-  <div className="py-1.5 text-center group hover:bg-muted/30 transition-colors">
+  <div className="py-1.5 min-[400px]:py-3 sm:py-4 text-center group hover:bg-muted/30 transition-colors">
     {Icon && (
       <div className={cn(
-        "flex items-center justify-center mx-auto mb-0.5 w-7 h-7 sm:w-8 sm:h-8 rounded-full",
+        "flex items-center justify-center mx-auto mb-0.5 min-[400px]:mb-1.5",
+        "w-6 h-6 min-[400px]:w-10 min-[400px]:h-10 sm:w-11 sm:h-11 rounded-full",
         iconColor || "bg-muted"
       )}>
-        <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
+        <Icon className="w-3 h-3 min-[400px]:w-5 min-[400px]:h-5 sm:w-5 sm:h-5 text-white" />
       </div>
     )}
-    <p className="text-[9px] sm:text-[10px] text-muted-foreground uppercase tracking-wide">{label}</p>
+    <p className="text-[8px] min-[400px]:text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">{label}</p>
     <p className={cn(
-      "text-xs sm:text-sm font-bold tabular-nums",
+      "text-xs min-[400px]:text-lg sm:text-xl font-bold tabular-nums",
       highlight ? 'text-primary' : 'text-foreground'
     )}>
       {value}
@@ -270,13 +271,13 @@ export const CleanEvolutionChart: React.FC<CleanEvolutionChartProps> = memo(({
 
   return (
     <div
-      className="rounded-xl sm:rounded-2xl bg-card border border-border/50 overflow-hidden animate-fade-in"
+      className="rounded-xl sm:rounded-2xl bg-card border border-border/50 overflow-hidden animate-fade-in h-full flex flex-col"
     >
-      {/* Header - compacto */}
-      <div className="px-2.5 sm:px-4 pt-2 pb-1 flex items-center justify-between">
+      {/* Header */}
+      <div className="px-3 min-[400px]:px-5 pt-2 min-[400px]:pt-4 pb-1 flex items-center justify-between flex-shrink-0">
         <div className="min-w-0">
-          <h3 className="text-sm sm:text-base font-semibold text-foreground leading-tight">Evolução</h3>
-          <p className="text-[10px] sm:text-xs text-muted-foreground">
+          <h3 className="text-sm min-[400px]:text-lg sm:text-xl font-semibold text-foreground leading-tight">Evolução</h3>
+          <p className="text-[10px] min-[400px]:text-sm sm:text-base text-muted-foreground">
             {chartData.length} registros
           </p>
         </div>
@@ -284,17 +285,17 @@ export const CleanEvolutionChart: React.FC<CleanEvolutionChartProps> = memo(({
           "text-right flex-shrink-0",
           change <= 0 ? 'text-emerald-500' : 'text-rose-500'
         )}>
-          <span className="text-base sm:text-lg font-bold tabular-nums">
+          <span className="text-sm min-[400px]:text-xl sm:text-2xl font-bold tabular-nums">
             {change > 0 ? '+' : ''}{change.toFixed(1)}
           </span>
-          <span className="text-[10px] sm:text-xs ml-0.5">kg</span>
+          <span className="text-[10px] min-[400px]:text-sm ml-0.5">kg</span>
         </div>
       </div>
 
-      {/* Chart - altura fixa responsiva */}
-      <div className="h-28 xs:h-32 sm:h-40 md:h-48 px-1 sm:px-2">
+      {/* Chart - flex-1 para preencher espaço */}
+      <div className="flex-1 min-h-[80px] px-1 sm:px-2">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={chartData} margin={{ top: 2, right: 4, left: -32, bottom: 0 }}>
+          <AreaChart data={chartData} margin={{ top: 4, right: 4, left: -28, bottom: 0 }}>
             <defs>
               <linearGradient id="cleanGradient" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
@@ -314,7 +315,7 @@ export const CleanEvolutionChart: React.FC<CleanEvolutionChartProps> = memo(({
               axisLine={false}
               tickLine={false}
               tick={{ fontSize: 8, fill: 'hsl(var(--muted-foreground))' }}
-              width={28}
+              width={26}
             />
             <Tooltip content={<CustomTooltip />} />
             <Area
@@ -337,8 +338,8 @@ export const CleanEvolutionChart: React.FC<CleanEvolutionChartProps> = memo(({
         </ResponsiveContainer>
       </div>
 
-      {/* Footer stats - compacto */}
-      <div className="grid grid-cols-3 divide-x divide-border/50 border-t border-border/50">
+      {/* Footer stats */}
+      <div className="grid grid-cols-3 divide-x divide-border/50 border-t border-border/50 flex-shrink-0">
         <MiniStat 
           label="Mínimo" 
           value={`${minWeight.toFixed(1)}kg`} 

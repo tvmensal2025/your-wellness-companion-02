@@ -125,7 +125,7 @@ async function calculateDeterministicNutrition(supabase: any, foods: DetectedFoo
     console.log(`🔍 Buscando: "${originalName}" (${grams}g)`);
 
     // Estratégia de busca em múltiplas etapas
-    let selectedFood = await searchTacoFood(supabase, originalName);
+    const selectedFood = await searchTacoFood(supabase, originalName);
 
     if (selectedFood) {
       const factor = grams / 100.0;

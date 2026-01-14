@@ -152,7 +152,7 @@ serve(async (req) => {
           const targetGrams = typeof item.quantidade === 'number' && item.quantidade > 0 ? item.quantidade : gramsSum;
           const scale = gramsSum > 0 ? (targetGrams / gramsSum) : 1;
 
-          let sum = { carbs: 0, prot: 0, fat: 0, fiber: 0, sodium: 0, kcal: 0 };
+          const sum = { carbs: 0, prot: 0, fat: 0, fiber: 0, sodium: 0, kcal: 0 };
           const expanded: Array<{ nome: string; grams: number; per100g?: Per100g }>= [];
           for (const c of recipe.components) {
             const gramsScaled = Number(c.grams) * scale;
@@ -209,7 +209,7 @@ serve(async (req) => {
       const fat100 = Number(per100g.gorduras ?? 0);
       const fiber100 = Number(per100g.fibra ?? 0);
       const sodio100 = Number(per100g.sodio_mg ?? 0);
-      let kcal100 = per100g.kcal != null ? Number(per100g.kcal) : (4 * carbs100 + 4 * prot100 + 9 * fat100);
+      const kcal100 = per100g.kcal != null ? Number(per100g.kcal) : (4 * carbs100 + 4 * prot100 + 9 * fat100);
 
       // EPF (edible portion)
       let epf = 1.0;

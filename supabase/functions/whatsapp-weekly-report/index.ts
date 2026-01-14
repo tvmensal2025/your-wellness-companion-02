@@ -274,7 +274,7 @@ async function generateSofiaAnalysis(
 ) {
   console.log("🥗 Sofia: Gerando análise nutricional...");
   
-  let nutritionData = {
+  const nutritionData = {
     mealsCount: 0,
     avgCalories: 0,
     avgProtein: 0,
