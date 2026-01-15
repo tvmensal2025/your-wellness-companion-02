@@ -14,8 +14,14 @@ import {
 } from '../contrast-validator';
 
 describe('Contrast Validation Properties', () => {
-  // Gerador de cores hexadecimais válidas
-  const hexColorArb = fc.hexaString({ minLength: 6, maxLength: 6 }).map(hex => `#${hex}`);
+  // Gerador de cores hexadecimais válidas usando tuple de integers
+  const hexColorArb: fc.Arbitrary<string> = fc.tuple(
+    fc.integer({ min: 0, max: 255 }),
+    fc.integer({ min: 0, max: 255 }),
+    fc.integer({ min: 0, max: 255 })
+  ).map(([r, g, b]) => 
+    `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`
+  );
 
   it('Property 2: Contraste mínimo WCAG AA - Razão de contraste é sempre positiva', () => {
     /**
@@ -27,7 +33,7 @@ describe('Contrast Validation Properties', () => {
           color1: hexColorArb,
           color2: hexColorArb
         }),
-        ({ color1, color2 }) => {
+        ({ color1, color2 }: { color1: string; color2: string }) => {
           const ratio = calculateContrastRatio(color1, color2);
           
           // Propriedade: razão de contraste deve ser sempre positiva
@@ -51,7 +57,7 @@ describe('Contrast Validation Properties', () => {
           color1: hexColorArb,
           color2: hexColorArb
         }),
-        ({ color1, color2 }) => {
+        ({ color1, color2 }: { color1: string; color2: string }) => {
           const ratio1 = calculateContrastRatio(color1, color2);
           const ratio2 = calculateContrastRatio(color2, color1);
           
@@ -76,7 +82,7 @@ describe('Contrast Validation Properties', () => {
           background: hexColorArb,
           fontSize: fc.integer({ min: 12, max: 17 }) // Texto normal
         }),
-        ({ foreground, background, fontSize }) => {
+        ({ foreground, background, fontSize }: { foreground: string; background: string; fontSize: number }) => {
           const result = validateContrast(foreground, background, fontSize);
           const ratio = calculateContrastRatio(foreground, background);
           
@@ -107,7 +113,7 @@ describe('Contrast Validation Properties', () => {
           background: hexColorArb,
           fontSize: fc.integer({ min: 18, max: 48 }) // Texto grande
         }),
-        ({ foreground, background, fontSize }) => {
+        ({ foreground, background, fontSize }: { foreground: string; background: string; fontSize: number }) => {
           const result = validateContrast(foreground, background, fontSize);
           const ratio = calculateContrastRatio(foreground, background);
           
@@ -148,7 +154,7 @@ describe('Contrast Validation Properties', () => {
     fc.assert(
       fc.property(
         hexColorArb,
-        (color) => {
+        (color: string) => {
           const ratio = calculateContrastRatio(color, color);
           
           // Propriedade: cores idênticas têm contraste 1:1
@@ -174,10 +180,10 @@ describe('Contrast Validation Properties', () => {
         fc.record({
           textColor: hexColorArb,
           bgColor: hexColorArb,
-          theme: fc.constantFrom('light', 'dark'),
+          theme: fc.constantFrom('light' as const, 'dark' as const),
           fontSize: fc.integer({ min: 12, max: 24 })
         }),
-        ({ textColor, bgColor, theme, fontSize }) => {
+        ({ textColor, bgColor, theme, fontSize }: { textColor: string; bgColor: string; theme: 'light' | 'dark'; fontSize: number }) => {
           const ensuredColor = ensureContrast(textColor, bgColor, theme, fontSize);
           const finalRatio = calculateContrastRatio(ensuredColor, bgColor);
           
@@ -210,7 +216,7 @@ describe('Contrast Validation Properties', () => {
           backgrounds: fc.array(hexColorArb, { minLength: 1, maxLength: 3 }),
           fontSize: fc.integer({ min: 12, max: 24 })
         }),
-        ({ foregrounds, backgrounds, fontSize }) => {
+        ({ foregrounds, backgrounds, fontSize }: { foregrounds: string[]; backgrounds: string[]; fontSize: number }) => {
           const results = validatePalette(foregrounds, backgrounds, fontSize);
           
           // Propriedade: deve haver resultado para cada combinação
