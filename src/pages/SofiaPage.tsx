@@ -55,7 +55,7 @@ const SofiaPage = () => {
   const [loading, setLoading] = useState(true);
   const [activeSectionState, setActiveSectionState] = useState<DashboardSection>('dashboard');
   const { setActiveSection: setActiveSectionContext } = useActiveSection();
-  const { isMenuEnabled, selectedCharacter } = useMenuStyleContext();
+  const { isMenuEnabled, selectedCharacter, setShowSelector } = useMenuStyleContext();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
@@ -563,8 +563,6 @@ const SofiaPage = () => {
     }
   };
 
-  const { setShowSelector } = useMenuStyleContext();
-  
   const handleMoreMenuNavigate = (section: MenuSection) => {
     if (section === 'whatsapp-settings') {
       setWhatsappSettingsOpen(true);
