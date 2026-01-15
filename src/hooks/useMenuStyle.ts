@@ -37,11 +37,35 @@ export function useMenuStyle(): UseMenuStyleReturn {
   const [selectedCharacter, setSelectedCharacter] = useState<CharacterId | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Carregar preferência do localStorage na inicialização
+  // Carregar preferência do localStorage na inicialização com timeout de segurança
   useEffect(() => {
-    const saved = loadPreference();
-    setSelectedCharacter(saved);
-    setIsLoading(false);
+    let mounted = true;
+    
+    // Timeout de segurança - máximo 1.5s para evitar tela branca em mobile
+    const timeout = setTimeout(() => {
+      if (mounted && isLoading) {
+        console.warn('[useMenuStyle] Timeout ao carregar preferência - forçando loading=false');
+        setIsLoading(false);
+      }
+    }, 1500);
+    
+    try {
+      const saved = loadPreference();
+      if (mounted) {
+        setSelectedCharacter(saved);
+        setIsLoading(false);
+      }
+    } catch (error) {
+      console.warn('[useMenuStyle] Erro ao carregar preferência:', error);
+      if (mounted) {
+        setIsLoading(false);
+      }
+    }
+    
+    return () => {
+      mounted = false;
+      clearTimeout(timeout);
+    };
   }, []);
 
   // Função para definir o personagem

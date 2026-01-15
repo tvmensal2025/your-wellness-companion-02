@@ -14,6 +14,7 @@ import { ActiveSectionProvider } from "@/contexts/ActiveSectionContext";
 import { PageLoader as AnimatedPageLoader } from "@/components/ui/animated-loader";
 import { MenuStyleProvider } from "@/contexts/MenuStyleContext";
 import { CharacterGate } from "@/components/character-selector";
+import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 
 import { SplashScreen, useSplashScreen } from "@/components/pwa/SplashScreen";
 
@@ -58,58 +59,78 @@ const App: React.FC = () => {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
-        <TooltipProvider>
-          <MenuStyleProvider>
-            <ActiveSectionProvider>
-              <Toaster />
-              <Sonner />
-              <OfflineIndicator />
-              
-              <InstallPrompt delay={60000} />
-              {showSplash && <SplashScreen onComplete={hideSplash} />}
-              <CharacterGate>
-                <BrowserRouter>
-                  <Suspense fallback={<PageLoader />}>
-                    <Routes>
-                <Route path="/" element={<AutoRedirect />} />
-                <Route path="/auth" element={<AuthPage />} />
-                <Route path="/terms" element={<TermsPage />} />
-                <Route path="/termos" element={<TermsPage />} />
-                <Route path="/privacidade" element={<TermsPage />} />
-                <Route path="/dashboard" element={<Suspense fallback={<PageLoader />}><SofiaPage /></Suspense>} />
-                <Route path="/admin" element={<Suspense fallback={<PageLoader />}><AdminPage /></Suspense>} />
-                <Route path="/sofia" element={<Suspense fallback={<PageLoader />}><SofiaPage /></Suspense>} />
-                <Route path="/anamnesis" element={<Suspense fallback={<PageLoader />}><AnamnesisPage /></Suspense>} />
-                <Route path="/app/goals" element={<Suspense fallback={<PageLoader />}><GoalsPageV2 /></Suspense>} />
-                <Route path="/app/courses" element={<Suspense fallback={<PageLoader />}><CoursePlatform /></Suspense>} />
-                <Route path="/app/progress" element={<Suspense fallback={<PageLoader />}><ProgressPage /></Suspense>} />
-                <Route path="/nutricao" element={<Suspense fallback={<PageLoader />}><NutritionTrackingPage /></Suspense>} />
-                <Route path="/challenges/:id" element={<Suspense fallback={<PageLoader />}><ChallengeDetailPage /></Suspense>} />
-                <Route path="/desafios" element={<Suspense fallback={<PageLoader />}><ChallengesV2Page /></Suspense>} />
-                <Route path="/challenges" element={<Suspense fallback={<PageLoader />}><ChallengesV2Page /></Suspense>} />
-                <Route path="/google-fit-oauth" element={<Suspense fallback={<PageLoader />}><GoogleFitPage /></Suspense>} />
-                <Route path="/google-fit-callback" element={<Suspense fallback={<PageLoader />}><GoogleFitCallbackPage /></Suspense>} />
-                <Route path="/google-fit-test" element={<Suspense fallback={<PageLoader />}><GoogleFitTestPage /></Suspense>} />
-                <Route path="/google-fit-dashboard" element={<Suspense fallback={<PageLoader />}><GoogleFitPremiumDashboard /></Suspense>} />
-                <Route path="/dr-vital-enhanced" element={<Suspense fallback={<PageLoader />}><DrVitalEnhancedPage /></Suspense>} />
-                <Route path="/sofia-nutricional" element={<Suspense fallback={<PageLoader />}><SofiaNutricionalPage /></Suspense>} />
-                <Route path="/professional-evaluation" element={<Suspense fallback={<PageLoader />}><ProfessionalEvaluationPage /></Suspense>} />
-                <Route path="/auto-login" element={<Suspense fallback={<PageLoader />}><AutoLoginPage /></Suspense>} />
-                <Route path="/install" element={<Suspense fallback={<PageLoader />}><InstallPage /></Suspense>} />
-                <Route path="/community/post/:postId" element={<Suspense fallback={<PageLoader />}><PublicPostPage /></Suspense>} />
-                <Route path="/relatorio/:token" element={<Suspense fallback={<PageLoader />}><PublicReport /></Suspense>} />
-                <Route path="/admin/system-health" element={<Suspense fallback={<PageLoader />}><SystemHealth /></Suspense>} />
-                <Route path="*" element={<NotFound />} />
-                </Routes>
-                <FloatingMessagesButton />
-              </Suspense>
-            </BrowserRouter>
-          </CharacterGate>
-        </ActiveSectionProvider>
-      </MenuStyleProvider>
-        </TooltipProvider>
-      </ThemeProvider>
+      <ErrorBoundary
+        fallback={
+          <div className="min-h-screen flex items-center justify-center bg-background">
+            <div className="text-center p-6">
+              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-3xl">🔄</span>
+              </div>
+              <h2 className="text-xl font-semibold mb-2 text-foreground">Algo deu errado</h2>
+              <p className="text-muted-foreground mb-4">Tente recarregar a página</p>
+              <button 
+                onClick={() => window.location.reload()}
+                className="px-6 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:bg-primary/90 transition-colors"
+              >
+                Recarregar
+              </button>
+            </div>
+          </div>
+        }
+      >
+        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
+          <TooltipProvider>
+            <MenuStyleProvider>
+              <ActiveSectionProvider>
+                <Toaster />
+                <Sonner />
+                <OfflineIndicator />
+                
+                <InstallPrompt delay={60000} />
+                {showSplash && <SplashScreen onComplete={hideSplash} />}
+                <CharacterGate>
+                  <BrowserRouter>
+                    <Suspense fallback={<PageLoader />}>
+                      <Routes>
+                        <Route path="/" element={<AutoRedirect />} />
+                        <Route path="/auth" element={<AuthPage />} />
+                        <Route path="/terms" element={<TermsPage />} />
+                        <Route path="/termos" element={<TermsPage />} />
+                        <Route path="/privacidade" element={<TermsPage />} />
+                        <Route path="/dashboard" element={<Suspense fallback={<PageLoader />}><SofiaPage /></Suspense>} />
+                        <Route path="/admin" element={<Suspense fallback={<PageLoader />}><AdminPage /></Suspense>} />
+                        <Route path="/sofia" element={<Suspense fallback={<PageLoader />}><SofiaPage /></Suspense>} />
+                        <Route path="/anamnesis" element={<Suspense fallback={<PageLoader />}><AnamnesisPage /></Suspense>} />
+                        <Route path="/app/goals" element={<Suspense fallback={<PageLoader />}><GoalsPageV2 /></Suspense>} />
+                        <Route path="/app/courses" element={<Suspense fallback={<PageLoader />}><CoursePlatform /></Suspense>} />
+                        <Route path="/app/progress" element={<Suspense fallback={<PageLoader />}><ProgressPage /></Suspense>} />
+                        <Route path="/nutricao" element={<Suspense fallback={<PageLoader />}><NutritionTrackingPage /></Suspense>} />
+                        <Route path="/challenges/:id" element={<Suspense fallback={<PageLoader />}><ChallengeDetailPage /></Suspense>} />
+                        <Route path="/desafios" element={<Suspense fallback={<PageLoader />}><ChallengesV2Page /></Suspense>} />
+                        <Route path="/challenges" element={<Suspense fallback={<PageLoader />}><ChallengesV2Page /></Suspense>} />
+                        <Route path="/google-fit-oauth" element={<Suspense fallback={<PageLoader />}><GoogleFitPage /></Suspense>} />
+                        <Route path="/google-fit-callback" element={<Suspense fallback={<PageLoader />}><GoogleFitCallbackPage /></Suspense>} />
+                        <Route path="/google-fit-test" element={<Suspense fallback={<PageLoader />}><GoogleFitTestPage /></Suspense>} />
+                        <Route path="/google-fit-dashboard" element={<Suspense fallback={<PageLoader />}><GoogleFitPremiumDashboard /></Suspense>} />
+                        <Route path="/dr-vital-enhanced" element={<Suspense fallback={<PageLoader />}><DrVitalEnhancedPage /></Suspense>} />
+                        <Route path="/sofia-nutricional" element={<Suspense fallback={<PageLoader />}><SofiaNutricionalPage /></Suspense>} />
+                        <Route path="/professional-evaluation" element={<Suspense fallback={<PageLoader />}><ProfessionalEvaluationPage /></Suspense>} />
+                        <Route path="/auto-login" element={<Suspense fallback={<PageLoader />}><AutoLoginPage /></Suspense>} />
+                        <Route path="/install" element={<Suspense fallback={<PageLoader />}><InstallPage /></Suspense>} />
+                        <Route path="/community/post/:postId" element={<Suspense fallback={<PageLoader />}><PublicPostPage /></Suspense>} />
+                        <Route path="/relatorio/:token" element={<Suspense fallback={<PageLoader />}><PublicReport /></Suspense>} />
+                        <Route path="/admin/system-health" element={<Suspense fallback={<PageLoader />}><SystemHealth /></Suspense>} />
+                        <Route path="*" element={<NotFound />} />
+                      </Routes>
+                      <FloatingMessagesButton />
+                    </Suspense>
+                  </BrowserRouter>
+                </CharacterGate>
+              </ActiveSectionProvider>
+            </MenuStyleProvider>
+          </TooltipProvider>
+        </ThemeProvider>
+      </ErrorBoundary>
     </QueryClientProvider>
   );
 };
