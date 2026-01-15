@@ -120,10 +120,10 @@ export const AppleHealthHeroCard: React.FC<AppleHealthHeroCardProps> = memo(({
         </div>
 
         {/* Layout principal - Ring + Peso lado a lado */}
-        <div className="flex items-center justify-center gap-4 min-[400px]:gap-8 sm:gap-10 flex-1">
+        <div className="flex items-center justify-center gap-6 min-[400px]:gap-10 sm:gap-12 flex-1">
           {/* Ring de pontuação */}
           <div className="relative flex-shrink-0">
-            <svg className="w-[80px] h-[80px] min-[400px]:w-[120px] min-[400px]:h-[120px] sm:w-[140px] sm:h-[140px] -rotate-90" viewBox="0 0 100 100">
+            <svg className="w-[100px] h-[100px] min-[400px]:w-[150px] min-[400px]:h-[150px] sm:w-[180px] sm:h-[180px] -rotate-90" viewBox="0 0 100 100">
               <circle cx="50" cy="50" r="38" fill="none" className="stroke-muted" strokeWidth="6" />
               <circle 
                 cx="50" cy="50" r="38" 
@@ -143,10 +143,10 @@ export const AppleHealthHeroCard: React.FC<AppleHealthHeroCardProps> = memo(({
               </defs>
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-2xl min-[400px]:text-4xl sm:text-5xl font-bold text-foreground tabular-nums leading-none">
+              <span className="text-3xl min-[400px]:text-5xl sm:text-6xl font-bold text-foreground tabular-nums leading-none">
                 {animatedScore}
               </span>
-              <span className="text-[8px] min-[400px]:text-xs sm:text-sm text-muted-foreground uppercase tracking-wide mt-0.5">
+              <span className="text-[10px] min-[400px]:text-sm sm:text-base text-muted-foreground uppercase tracking-wide mt-1">
                 pontos
               </span>
             </div>
@@ -154,21 +154,21 @@ export const AppleHealthHeroCard: React.FC<AppleHealthHeroCardProps> = memo(({
 
           {/* Peso + Badge */}
           <div className="flex-1 min-w-0 flex flex-col items-center justify-center">
-            <p className="text-[10px] min-[400px]:text-base sm:text-lg text-muted-foreground mb-0.5 min-[400px]:mb-2">Peso atual</p>
+            <p className="text-xs min-[400px]:text-lg sm:text-xl text-muted-foreground mb-1 min-[400px]:mb-2">Peso atual</p>
             <div className="flex items-baseline gap-0.5">
-              <span className="text-4xl min-[400px]:text-6xl sm:text-7xl font-light text-foreground tabular-nums leading-none tracking-tight">
+              <span className="text-5xl min-[400px]:text-7xl sm:text-8xl font-light text-foreground tabular-nums leading-none tracking-tight">
                 {currentWeight === 0 ? '--' : currentWeight.toFixed(1)}
               </span>
-              <span className="text-base min-[400px]:text-2xl sm:text-3xl text-muted-foreground font-light">kg</span>
+              <span className="text-lg min-[400px]:text-3xl sm:text-4xl text-muted-foreground font-light">kg</span>
             </div>
             
             {/* Badge de tendência */}
             <div className={cn(
-              "inline-flex items-center gap-1 px-2.5 min-[400px]:px-5 py-1 min-[400px]:py-2 rounded-full mt-2 min-[400px]:mt-4 border",
+              "inline-flex items-center gap-1.5 px-3 min-[400px]:px-6 py-1.5 min-[400px]:py-2.5 rounded-full mt-3 min-[400px]:mt-5 border",
               trend.bg
             )}>
-              <TrendIcon className={cn("h-3.5 w-3.5 min-[400px]:h-5 min-[400px]:w-5", trend.color)} />
-              <span className={cn("text-xs min-[400px]:text-base font-medium tabular-nums", trend.color)}>
+              <TrendIcon className={cn("h-4 w-4 min-[400px]:h-6 min-[400px]:w-6", trend.color)} />
+              <span className={cn("text-sm min-[400px]:text-lg font-medium tabular-nums", trend.color)}>
                 {weightChange !== 0 && (weightChange > 0 ? '+' : '')}{weightChange.toFixed(1)} kg
               </span>
             </div>
