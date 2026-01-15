@@ -15,6 +15,50 @@ const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY")!;
 const AI_GATEWAY_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
 const AI_MODEL = "google/gemini-2.5-flash-lite"; // Otimizado: -40% latência, -40% custo
 
+// 🦙 OLLAMA - Para mensagens simples (GRÁTIS)
+const OLLAMA_URL = Deno.env.get("OLLAMA_URL") || "https://yolo-service-ollama.0sw627.easypanel.host";
+
+async function isOllamaAvailable(): Promise<boolean> {
+  try {
+    const response = await fetch(`${OLLAMA_URL}/api/tags`, { method: 'GET', signal: AbortSignal.timeout(3000) });
+    return response.ok;
+  } catch { return false; }
+}
+
+async function callOllama(message: string, userName: string): Promise<string | null> {
+  try {
+    const systemPrompt = `Você é Sofia, nutricionista virtual carinhosa do MaxNutrition. Responda breve e amigável. Nome: ${userName}. Assine: _Sofia 💚_`;
+    const response = await fetch(`${OLLAMA_URL}/api/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'llama3.2:3b',
+        messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: message }],
+        stream: false,
+        options: { temperature: 0.8, num_predict: 256 }
+      }),
+      signal: AbortSignal.timeout(30000)
+    });
+    if (!response.ok) return null;
+    const data = await response.json();
+    return data.message?.content || null;
+  } catch { return null; }
+}
+
+function isSimpleMessage(message: string): boolean {
+  const msg = message.toLowerCase().trim();
+  const patterns = [
+    /^(?:oi|olá|ola|hey|hi|e\s*aí|eai|opa|fala)[\s!?.,]*$/i,
+    /^(?:bom\s*dia|boa\s*tarde|boa\s*noite)[\s!?.,]*$/i,
+    /^(?:tudo\s*bem|como\s*vai|beleza|suave)[\s!?.,]*$/i,
+    /^(?:obrigad[oa]|valeu|thanks|vlw|brigad[oa])[\s!?.,]*$/i,
+    /^(?:tchau|bye|até\s*mais|flw|falou)[\s!?.,]*$/i,
+    /^(?:ok|certo|entendi|blz|show|top|massa)[\s!?.,]*$/i,
+  ];
+  for (const p of patterns) if (p.test(msg)) return true;
+  return msg.length < 15 && !/\d/.test(msg);
+}
+
 // ============ SISTEMA DE TOOLS ============
 
 const TOOLS = [
@@ -880,6 +924,26 @@ serve(async (req) => {
     // 🎯 Detectar personalidade baseada na mensagem e contexto
     const personality = detectPersonality(message, ctx);
     console.log(`[IA] Personalidade detectada: ${personality}`);
+
+    // 🦙 OLLAMA: Usar para mensagens simples (GRÁTIS!)
+    if (isSimpleMessage(message) && personality === 'sofia') {
+      console.log('[IA] 🦙 Tentando Ollama para mensagem simples...');
+      const ollamaAvailable = await isOllamaAvailable();
+      
+      if (ollamaAvailable) {
+        const ollamaResponse = await callOllama(message, ctx.nome);
+        if (ollamaResponse) {
+          console.log('[IA] ✅ Ollama respondeu! Economia de custos! 💰');
+          await saveMessage(userId, sessionId, "user", message, personality);
+          await saveMessage(userId, sessionId, "assistant", ollamaResponse, personality);
+          return new Response(
+            JSON.stringify({ response: ollamaResponse, personality: 'sofia', api_used: 'ollama', cost: 0 }),
+            { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+      }
+      console.log('[IA] ⚠️ Ollama indisponível, usando Gemini...');
+    }
 
     // Salvar mensagem do usuário com personalidade detectada
     await saveMessage(userId, sessionId, "user", message, personality);
