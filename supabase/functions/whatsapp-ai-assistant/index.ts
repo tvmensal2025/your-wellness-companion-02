@@ -928,12 +928,29 @@ serve(async (req) => {
     // 🦙 OLLAMA: Usar para mensagens simples (GRÁTIS!)
     if (isSimpleMessage(message) && personality === 'sofia') {
       console.log('[IA] 🦙 Tentando Ollama para mensagem simples...');
+      const startTime = Date.now();
       const ollamaAvailable = await isOllamaAvailable();
       
       if (ollamaAvailable) {
         const ollamaResponse = await callOllama(message, ctx.nome);
         if (ollamaResponse) {
-          console.log('[IA] ✅ Ollama respondeu! Economia de custos! 💰');
+          const responseTime = Date.now() - startTime;
+          console.log(`[IA] ✅ Ollama respondeu em ${responseTime}ms! Economia de custos! 💰`);
+          
+          // Log AI usage para tracking de custos
+          await supabase.from('ai_usage_logs').insert({
+            user_id: userId,
+            provider: 'ollama',
+            method: 'simple_message',
+            estimated_cost: 0,
+            tokens_used: ollamaResponse.length / 4,
+            response_time_ms: responseTime,
+            success: true,
+            functionality: 'whatsapp_chat',
+            model_name: 'llama3.2:3b',
+            metadata: { message_type: 'simple', message_length: message.length }
+          });
+          
           await saveMessage(userId, sessionId, "user", message, personality);
           await saveMessage(userId, sessionId, "assistant", ollamaResponse, personality);
           return new Response(
@@ -1056,11 +1073,34 @@ serve(async (req) => {
       await saveMessage(userId, sessionId, "assistant", finalResponse, personality);
     }
 
+    // Log AI usage para Lovable AI (fire and forget)
+    try {
+      await supabase.from('ai_usage_logs').insert({
+        user_id: userId,
+        provider: 'lovable',
+        method: toolResults.length > 0 ? 'tool_call' : 'chat',
+        estimated_cost: 0.001,
+        tokens_used: Math.round((finalResponse?.length || 0) / 4),
+        response_time_ms: 0,
+        success: true,
+        functionality: 'whatsapp_chat',
+        model_name: AI_MODEL,
+        metadata: { 
+          personality,
+          tools_used: toolResults.length,
+          message_length: message.length 
+        }
+      });
+    } catch (logErr) {
+      console.warn('[AI Log] Failed to log:', logErr);
+    }
+
     return new Response(
       JSON.stringify({
         response: finalResponse,
         personality: personality,  // Retorna qual voz foi usada
         toolResults: toolResults.length > 0 ? toolResults : undefined,
+        api_used: 'lovable',
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

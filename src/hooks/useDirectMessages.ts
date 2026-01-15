@@ -34,9 +34,12 @@ export function useDirectMessages() {
   const [activeConversation, setActiveConversation] = useState<string | null>(null);
   const [totalUnread, setTotalUnread] = useState(0);
 
-  // Fetch all conversations
-  const fetchConversations = useCallback(async () => {
+  // Fetch all conversations with robust error handling
+  const fetchConversations = useCallback(async (retryCount = 0) => {
     if (!user) return;
+
+    const MAX_RETRIES = 3;
+    const RETRY_DELAY = 1000;
 
     try {
       setLoading(true);
@@ -46,9 +49,25 @@ export function useDirectMessages() {
         .from('health_feed_direct_messages')
         .select('*')
         .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(500); // Limit to prevent timeout
 
-      if (error) throw error;
+      if (error) {
+        // Retry on network errors
+        if (retryCount < MAX_RETRIES && (error.message?.includes('fetch') || error.code === 'PGRST301')) {
+          console.warn(`[DM] Retry ${retryCount + 1}/${MAX_RETRIES}...`);
+          await new Promise(r => setTimeout(r, RETRY_DELAY * (retryCount + 1)));
+          return fetchConversations(retryCount + 1);
+        }
+        throw error;
+      }
+
+      // Handle empty data gracefully
+      if (!messagesData || messagesData.length === 0) {
+        setConversations([]);
+        setTotalUnread(0);
+        return;
+      }
 
       // Group by conversation partner
       const conversationsMap = new Map<string, {
@@ -56,7 +75,7 @@ export function useDirectMessages() {
         unreadCount: number;
       }>();
 
-      messagesData?.forEach(msg => {
+      messagesData.forEach(msg => {
         const partnerId = msg.sender_id === user.id ? msg.receiver_id : msg.sender_id;
         
         if (!conversationsMap.has(partnerId)) {
@@ -80,10 +99,14 @@ export function useDirectMessages() {
         return;
       }
 
-      const { data: profiles } = await supabase
+      const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('user_id, full_name, avatar_url')
         .in('user_id', partnerIds);
+
+      if (profilesError) {
+        console.warn('[DM] Error fetching profiles:', profilesError);
+      }
 
       const profilesMap = new Map(
         profiles?.map(p => [p.user_id, p]) || []
@@ -117,7 +140,11 @@ export function useDirectMessages() {
       setConversations(convList);
       setTotalUnread(unreadTotal);
     } catch (err: any) {
-      console.error('Error fetching conversations:', err);
+      console.error('[DM] Error fetching conversations:', err?.message || err);
+      // Don't show toast for network errors to avoid spam
+      if (!err?.message?.includes('fetch')) {
+        toast.error('Erro ao carregar conversas');
+      }
     } finally {
       setLoading(false);
     }

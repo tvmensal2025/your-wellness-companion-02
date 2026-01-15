@@ -59,9 +59,12 @@ function getWhapiHeaders(): Record<string, string> {
 }
 
 /**
- * Send text message via Whapi
+ * Send text message via Whapi with exponential backoff retry
  */
-async function sendWhapiText(phone: string, text: string): Promise<boolean> {
+async function sendWhapiText(phone: string, text: string, retryCount = 0): Promise<boolean> {
+  const MAX_RETRIES = 3;
+  const BASE_DELAY = 1000;
+
   if (!WHAPI_TOKEN) {
     console.error('[Whapi] ❌ Token não configurado');
     return false;
@@ -75,10 +78,11 @@ async function sendWhapiText(phone: string, text: string): Promise<boolean> {
     channelId: WHAPI_CHANNEL_ID ? `configurado (${WHAPI_CHANNEL_ID.substring(0, 10)}...)` : 'NÃO configurado',
     tokenLength: WHAPI_TOKEN?.length || 0,
     phone: formattedPhone,
+    attempt: retryCount + 1,
   });
   
   try {
-    console.log(`[Whapi] Enviando texto para ${formattedPhone}`);
+    console.log(`[Whapi] Enviando texto para ${formattedPhone} (tentativa ${retryCount + 1})`);
     
     const response = await fetch(`${WHAPI_API_URL}/messages/text`, {
       method: 'POST',
@@ -97,6 +101,11 @@ async function sendWhapiText(phone: string, text: string): Promise<boolean> {
       data = JSON.parse(responseText);
     } catch {
       console.error('[Whapi] Resposta não é JSON:', responseText.substring(0, 200));
+      // Retry on parse error
+      if (retryCount < MAX_RETRIES) {
+        await sleep(BASE_DELAY * Math.pow(2, retryCount));
+        return sendWhapiText(phone, text, retryCount + 1);
+      }
       return false;
     }
 
@@ -105,11 +114,24 @@ async function sendWhapiText(phone: string, text: string): Promise<boolean> {
       if (response.status === 404 && !WHAPI_CHANNEL_ID) {
         console.error('[Whapi] ⚠️ DICA: Configure o secret WHAPI_CHANNEL_ID!');
       }
+      
+      // Retry on 5xx errors or rate limits
+      if ((response.status >= 500 || response.status === 429) && retryCount < MAX_RETRIES) {
+        const delay = response.status === 429 ? 5000 : BASE_DELAY * Math.pow(2, retryCount);
+        console.log(`[Whapi] Aguardando ${delay}ms antes de retry...`);
+        await sleep(delay);
+        return sendWhapiText(phone, text, retryCount + 1);
+      }
       return false;
     }
 
     if (data.sent === false) {
       console.error('[Whapi] Mensagem não foi enviada:', data);
+      // Retry on soft failure
+      if (retryCount < MAX_RETRIES) {
+        await sleep(BASE_DELAY * Math.pow(2, retryCount));
+        return sendWhapiText(phone, text, retryCount + 1);
+      }
       return false;
     }
 
@@ -117,20 +139,26 @@ async function sendWhapiText(phone: string, text: string): Promise<boolean> {
     return true;
   } catch (error) {
     console.error('[Whapi] Exceção ao enviar texto:', error);
+    // Retry on network errors
+    if (retryCount < MAX_RETRIES) {
+      console.log(`[Whapi] Retry ${retryCount + 1}/${MAX_RETRIES} após erro de rede...`);
+      await sleep(BASE_DELAY * Math.pow(2, retryCount));
+      return sendWhapiText(phone, text, retryCount + 1);
+    }
     return false;
   }
 }
 
 /**
- * Send text message via WhatsApp - APENAS WHAPI
+ * Send text message via WhatsApp - APENAS WHAPI com retry automático
  */
 export async function sendWhatsApp(
   phone: string, 
   message: string,
   _maxRetries: number = 3
 ): Promise<boolean> {
-  console.log('[WhatsApp] Usando Whapi (único provider)');
-  return await sendWhapiText(phone, message);
+  console.log('[WhatsApp] Usando Whapi (único provider) com retry automático');
+  return await sendWhapiText(phone, message, 0);
 }
 
 /**
@@ -146,6 +174,7 @@ export async function sendWhatsAppWithFallback(
   if (success) return true;
   
   console.log('[WhatsApp] Tentando mensagem de fallback...');
+  await sleep(500); // Small delay before fallback
   return await sendWhatsApp(phone, fallbackText, 2);
 }
 
