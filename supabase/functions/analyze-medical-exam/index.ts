@@ -2646,7 +2646,7 @@ ANTES DO JSON, escreva uma análise clínica EDUCATIVA, curta e objetiva, basead
       
       // PASSO 1: Preparar para análise com Lovable AI (OCR integrado nos modelos de visão)
       console.log(`🔍 Preparando ${imagesLimited.length} imagens para análise com IA...`);
-      const extractedText = '';
+      let extractedText: string = '';
       
       // Atualizar status - Lovable AI faz OCR nativo, não precisa de Google Vision
       await supabase
