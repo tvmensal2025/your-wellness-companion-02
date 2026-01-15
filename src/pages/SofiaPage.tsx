@@ -27,6 +27,7 @@ const ExerciseDashboard = lazy(() => import('@/components/exercise/ExerciseDashb
 const HealthFeedPage = lazy(() => import('@/pages/HealthFeedPage'));
 const PaymentPlans = lazy(() => import('@/components/PaymentPlans'));
 const UserDrVitalPage = lazy(() => import('@/pages/UserDrVitalPage'));
+const DrVitalDashboard = lazy(() => import('@/components/dr-vital/DrVitalDashboard'));
 const SofiaNutricionalSection = lazy(() => import('@/components/sofia/SofiaNutricionalSection').then(m => ({ default: m.SofiaNutricionalSection })));
 const DashboardOverview = lazy(() => import('@/components/dashboard/DashboardOverview'));
 const UserProfile = lazy(() => import('@/components/UserProfile'));
@@ -94,9 +95,9 @@ const SofiaPage = () => {
       color: 'text-green-500',
     },
     {
-      id: 'subscriptions',
-      icon: CreditCard,
-      label: 'Assinaturas',
+      id: 'courses',
+      icon: GraduationCap,
+      label: 'Plataforma de Sonhos',
       color: 'text-purple-600',
     },
     {
@@ -110,12 +111,6 @@ const SofiaPage = () => {
       icon: TrendingUp,
       label: 'Meu Progresso',
       color: 'text-cyan-500',
-    },
-    {
-      id: 'courses',
-      icon: GraduationCap,
-      label: 'Plataforma dos Sonhos',
-      color: 'text-accent',
     },
     {
       id: 'sessions',
@@ -285,8 +280,7 @@ const SofiaPage = () => {
         challenges: 'Desafios Individuais',
         comunidade: 'Comunidade',
         sessions: 'Sessões',
-        courses: 'Plataforma dos Sonhos',
-        subscriptions: 'Assinaturas'
+        courses: 'Plataforma de Sonhos'
       };
       return (
         <div key="locked-content" className="min-h-screen flex items-center justify-center p-6">
@@ -314,6 +308,8 @@ const SofiaPage = () => {
     switch (activeSection) {
       case 'dashboard':
         // Alex (exercise) usa o dashboard original com peso/evolução
+        // Dr. Vital (health) usa sua própria interface
+        // Rafael (coaching) abre direto na comunidade
         // Outros personagens usam SofiaNutricionalSection
         if (selectedCharacter === 'exercise') {
           return (
@@ -321,6 +317,22 @@ const SofiaPage = () => {
               <div key="dashboard-alex" className="p-2 sm:p-4">
                 <DashboardOverview />
               </div>
+            </Suspense>
+          );
+        }
+        if (selectedCharacter === 'health') {
+          return (
+            <Suspense fallback={<SectionLoader />}>
+              <div key="dashboard-health" className="p-2 sm:p-4">
+                <DrVitalDashboard embedded />
+              </div>
+            </Suspense>
+          );
+        }
+        if (selectedCharacter === 'coaching') {
+          return (
+            <Suspense fallback={<SectionLoader />}>
+              <HealthFeedPage key="dashboard-coaching" />
             </Suspense>
           );
         }

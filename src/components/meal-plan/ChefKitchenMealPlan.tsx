@@ -175,20 +175,20 @@ export const ChefKitchenMealPlan: React.FC = () => {
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <motion.div 
             animate={isGenerating ? { rotate: [0, -10, 10, 0] } : {}}
             transition={{ repeat: Infinity, duration: 0.5 }}
-            className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg"
+            className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center shadow-lg"
           >
-            <ChefHat className="w-4 h-4 text-white" />
+            <ChefHat className="w-5 h-5 text-white" />
           </motion.div>
           <div>
-            <h2 className="font-bold text-base">Cardápio Chef</h2>
-            <p className="text-[10px] text-muted-foreground">Personalizado para você</p>
+            <h2 className="font-bold text-lg">Cardápio Chef</h2>
+            <p className="text-xs text-muted-foreground">Personalizado para você</p>
           </div>
         </div>
         <MealPlanHistoryDrawer />
@@ -196,35 +196,35 @@ export const ChefKitchenMealPlan: React.FC = () => {
 
       {/* Aviso se não tiver dados do usuário */}
       {!hasUserData && !loadingPhysical && (
-        <div className="flex items-center gap-2 p-2.5 bg-amber-500/10 border border-amber-500/20 rounded-xl">
+        <div className="flex items-center gap-2 p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl">
           <AlertCircle className="w-4 h-4 text-amber-500 flex-shrink-0" />
-          <p className="text-[10px] text-amber-600 dark:text-amber-400">
+          <p className="text-xs text-amber-600 dark:text-amber-400">
             Complete seu perfil físico para cálculos mais precisos
           </p>
         </div>
       )}
 
       {/* OBJETIVO - Cards horizontais */}
-      <div className="space-y-2">
+      <div className="space-y-2.5">
         <div className="flex items-center gap-2">
           <Target className="w-4 h-4 text-amber-500" />
-          <span className="text-xs font-semibold">Objetivo</span>
+          <span className="text-sm font-semibold">Objetivo</span>
         </div>
-        <div className="grid grid-cols-4 gap-1.5">
+        <div className="grid grid-cols-4 gap-2">
           {OBJECTIVES.map((obj) => (
             <motion.button
               key={obj.value}
               whileTap={{ scale: 0.95 }}
               onClick={() => setSelectedObjective(obj.value)}
               className={cn(
-                "p-2 rounded-xl text-center transition-all border",
+                "p-3 rounded-xl text-center transition-all border",
                 selectedObjective === obj.value
                   ? `bg-gradient-to-br ${obj.color} text-white border-transparent shadow-lg`
                   : "bg-card border-border hover:border-amber-500/50"
               )}
             >
-              <span className="text-lg block">{obj.emoji}</span>
-              <span className="text-[10px] font-medium block mt-0.5">{obj.label}</span>
+              <span className="text-xl block">{obj.emoji}</span>
+              <span className="text-[11px] font-medium block mt-1">{obj.label}</span>
             </motion.button>
           ))}
         </div>
@@ -232,7 +232,7 @@ export const ChefKitchenMealPlan: React.FC = () => {
 
       {/* PANELA COM FOGO - Design Criativo */}
       <motion.div 
-        className="relative bg-gradient-to-b from-slate-800 to-slate-900 rounded-2xl p-4 overflow-hidden"
+        className="relative bg-gradient-to-b from-slate-800 to-slate-900 rounded-2xl p-5 overflow-hidden"
         animate={isGenerating ? { boxShadow: ['0 0 0 rgba(251,146,60,0)', '0 0 30px rgba(251,146,60,0.5)', '0 0 0 rgba(251,146,60,0)'] } : {}}
         transition={{ repeat: Infinity, duration: 0.5 }}
       >
@@ -243,7 +243,7 @@ export const ChefKitchenMealPlan: React.FC = () => {
         )} style={{ background: 'radial-gradient(ellipse at bottom, rgba(251,146,60,0.4), transparent 70%)' }} />
 
         {/* Ingredientes (Refeições) */}
-        <div className="relative flex justify-center gap-2 mb-3">
+        <div className="relative flex justify-center gap-2.5 mb-4">
           {MEALS_DATA.map((meal) => {
             const isSelected = selectedMeals[meal.key as keyof SelectedMealsType];
             return (
@@ -254,7 +254,7 @@ export const ChefKitchenMealPlan: React.FC = () => {
                 onClick={() => !isGenerating && toggleMeal(meal.key as keyof SelectedMealsType)}
                 disabled={isGenerating}
                 className={cn(
-                  "relative flex flex-col items-center p-2 rounded-xl transition-all min-w-[52px]",
+                  "relative flex flex-col items-center p-2.5 rounded-xl transition-all min-w-[56px]",
                   isSelected ? "bg-white/20 ring-2 ring-amber-400 shadow-lg" : "bg-white/5 hover:bg-white/10"
                 )}
               >
@@ -265,7 +265,7 @@ export const ChefKitchenMealPlan: React.FC = () => {
                 >
                   {meal.emoji}
                 </motion.span>
-                <span className="text-[9px] font-medium text-white/80 mt-0.5">{meal.shortLabel}</span>
+                <span className="text-[10px] font-medium text-white/80 mt-1">{meal.shortLabel}</span>
                 {isSelected && (
                   <motion.div 
                     initial={{ scale: 0 }}
@@ -336,25 +336,25 @@ export const ChefKitchenMealPlan: React.FC = () => {
           </div>
         </div>
 
-        <p className="text-center text-[10px] text-white/60 mt-2">
+        <p className="text-center text-xs text-white/60 mt-3">
           {isGenerating ? '🔥 Cozinhando...' : `${selectedCount} refeições na panela`}
         </p>
       </motion.div>
 
       {/* DURAÇÃO + META PERSONALIZADA */}
-      <div className="flex gap-2">
-        <div className="flex-1 bg-muted/50 rounded-xl p-2.5">
-          <div className="flex items-center gap-1.5 mb-1.5">
-            <Calendar className="w-3.5 h-3.5 text-muted-foreground" />
-            <span className="text-[10px] font-medium">Duração</span>
+      <div className="flex gap-3">
+        <div className="flex-1 bg-muted/50 rounded-xl p-3">
+          <div className="flex items-center gap-2 mb-2">
+            <Calendar className="w-4 h-4 text-muted-foreground" />
+            <span className="text-xs font-medium">Duração</span>
           </div>
-          <div className="flex gap-1">
+          <div className="flex gap-1.5">
             {[1, 3, 7].map((d) => (
               <button
                 key={d}
                 onClick={() => setSelectedDays(d)}
                 className={cn(
-                  "flex-1 py-1.5 rounded-lg text-xs font-medium transition-all",
+                  "flex-1 py-2 rounded-lg text-sm font-medium transition-all",
                   selectedDays === d ? "bg-amber-500 text-white" : "bg-background hover:bg-muted"
                 )}
               >
@@ -365,13 +365,13 @@ export const ChefKitchenMealPlan: React.FC = () => {
         </div>
         
         {/* Meta Personalizada */}
-        <div className={cn("flex-1 rounded-xl p-2.5 bg-gradient-to-br", getObjectiveColor())}>
-          <div className="flex items-center gap-1 text-white/80 text-[10px] font-medium">
-            <User className="w-3 h-3" />
+        <div className={cn("flex-1 rounded-xl p-3 bg-gradient-to-br", getObjectiveColor())}>
+          <div className="flex items-center gap-1.5 text-white/80 text-xs font-medium">
+            <User className="w-3.5 h-3.5" />
             <span>Sua meta</span>
           </div>
-          <div className="text-white text-lg font-bold">{nutritionalGoals.calories}</div>
-          <div className="text-white/70 text-[10px]">
+          <div className="text-white text-xl font-bold mt-0.5">{nutritionalGoals.calories}</div>
+          <div className="text-white/70 text-xs">
             kcal • {getObjectiveLabel()}
             {userWeight && <span className="ml-1">({userWeight}kg)</span>}
           </div>
@@ -380,7 +380,7 @@ export const ChefKitchenMealPlan: React.FC = () => {
 
       {/* Info dos macros calculados */}
       {hasUserData && (
-        <div className="flex justify-between text-[10px] text-muted-foreground bg-muted/30 rounded-lg px-3 py-2">
+        <div className="flex justify-between text-xs text-muted-foreground bg-muted/30 rounded-lg px-4 py-3">
           <span>🥩 {nutritionalGoals.protein}g prot</span>
           <span>🍚 {nutritionalGoals.carbs}g carb</span>
           <span>🥑 {nutritionalGoals.fat}g gord</span>
@@ -388,17 +388,17 @@ export const ChefKitchenMealPlan: React.FC = () => {
         </div>
       )}
 
-      {/* PREFERÊNCIAS E RESTRIÇÕES */}
-      <div className="bg-muted/50 rounded-xl overflow-hidden">
+      {/* PREFERÊNCIAS E RESTRIÇÕES - Layout Premium lado a lado */}
+      <div className="space-y-3">
         <button
           onClick={() => setShowPreferences(!showPreferences)}
-          className="w-full flex items-center justify-between p-2.5 hover:bg-muted/70"
+          className="w-full flex items-center justify-between p-3 bg-muted/50 rounded-xl hover:bg-muted/70 transition-colors"
         >
           <div className="flex items-center gap-2">
             <Heart className="w-4 h-4 text-pink-500" />
-            <span className="text-xs font-medium">Preferências & Restrições</span>
+            <span className="text-sm font-medium">Preferências & Restrições</span>
             {(localPreferences.length + localRestrictions.length) > 0 && (
-              <Badge variant="secondary" className="text-[9px] h-4">{localPreferences.length + localRestrictions.length}</Badge>
+              <Badge variant="secondary" className="text-[10px] h-5">{localPreferences.length + localRestrictions.length}</Badge>
             )}
           </div>
           {showPreferences ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -407,39 +407,81 @@ export const ChefKitchenMealPlan: React.FC = () => {
         <AnimatePresence>
           {showPreferences && (
             <motion.div
-              initial={{ height: 0 }}
-              animate={{ height: 'auto' }}
-              exit={{ height: 0 }}
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
               className="overflow-hidden"
             >
-              <div className="p-2.5 pt-0 space-y-3">
+              <div className="grid grid-cols-2 gap-3">
                 {/* Preferidos */}
-                <div>
-                  <label className="text-[10px] font-medium text-emerald-500 mb-1 block">❤️ Preferidos</label>
+                <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-base">❤️</span>
+                    <span className="text-xs font-semibold text-emerald-500">Preferidos</span>
+                  </div>
                   <div className="flex gap-1.5">
-                    <Input placeholder="frango, peixe..." value={newPreference} onChange={(e) => setNewPreference(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleAddPreference()} className="h-7 text-xs" />
-                    <Button onClick={handleAddPreference} size="sm" variant="outline" className="h-7 px-2" disabled={!newPreference.trim()}><Plus className="w-3 h-3" /></Button>
+                    <Input 
+                      placeholder="frango..." 
+                      value={newPreference} 
+                      onChange={(e) => setNewPreference(e.target.value)} 
+                      onKeyDown={(e) => e.key === 'Enter' && handleAddPreference()} 
+                      className="h-8 text-xs bg-background/50 border-emerald-500/30 focus:border-emerald-500" 
+                    />
+                    <Button 
+                      onClick={handleAddPreference} 
+                      size="sm" 
+                      className="h-8 w-8 p-0 bg-emerald-500 hover:bg-emerald-600" 
+                      disabled={!newPreference.trim()}
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                    </Button>
                   </div>
                   {localPreferences.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-1.5">
+                    <div className="flex flex-wrap gap-1">
                       {localPreferences.map(f => (
-                        <Badge key={f} variant="secondary" className="text-[9px] gap-0.5">{f}<button onClick={() => handleRemovePreference(f)}><X className="w-2.5 h-2.5" /></button></Badge>
+                        <Badge key={f} className="text-[10px] gap-0.5 py-0.5 bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/30">
+                          {f}
+                          <button onClick={() => handleRemovePreference(f)} className="ml-0.5 hover:text-emerald-700">
+                            <X className="w-2.5 h-2.5" />
+                          </button>
+                        </Badge>
                       ))}
                     </div>
                   )}
                 </div>
                 
-                {/* Excluídos */}
-                <div>
-                  <label className="text-[10px] font-medium text-red-500 mb-1 block">🚫 Excluídos</label>
+                {/* Restrições */}
+                <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-base">🚫</span>
+                    <span className="text-xs font-semibold text-red-500">Restrições</span>
+                  </div>
                   <div className="flex gap-1.5">
-                    <Input placeholder="lactose, glúten..." value={newRestriction} onChange={(e) => setNewRestriction(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleAddRestriction()} className="h-7 text-xs" />
-                    <Button onClick={handleAddRestriction} size="sm" variant="outline" className="h-7 px-2" disabled={!newRestriction.trim()}><Plus className="w-3 h-3" /></Button>
+                    <Input 
+                      placeholder="lactose..." 
+                      value={newRestriction} 
+                      onChange={(e) => setNewRestriction(e.target.value)} 
+                      onKeyDown={(e) => e.key === 'Enter' && handleAddRestriction()} 
+                      className="h-8 text-xs bg-background/50 border-red-500/30 focus:border-red-500" 
+                    />
+                    <Button 
+                      onClick={handleAddRestriction} 
+                      size="sm" 
+                      className="h-8 w-8 p-0 bg-red-500 hover:bg-red-600" 
+                      disabled={!newRestriction.trim()}
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                    </Button>
                   </div>
                   {localRestrictions.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-1.5">
+                    <div className="flex flex-wrap gap-1">
                       {localRestrictions.map(f => (
-                        <Badge key={f} variant="destructive" className="text-[9px] gap-0.5">{f}<button onClick={() => handleRemoveRestriction(f)}><X className="w-2.5 h-2.5" /></button></Badge>
+                        <Badge key={f} className="text-[10px] gap-0.5 py-0.5 bg-red-500/20 text-red-600 dark:text-red-400 border-red-500/30 hover:bg-red-500/30">
+                          {f}
+                          <button onClick={() => handleRemoveRestriction(f)} className="ml-0.5 hover:text-red-700">
+                            <X className="w-2.5 h-2.5" />
+                          </button>
+                        </Badge>
                       ))}
                     </div>
                   )}
@@ -457,7 +499,7 @@ export const ChefKitchenMealPlan: React.FC = () => {
         onClick={handleGenerate}
         disabled={selectedCount === 0 || isGenerating}
         className={cn(
-          "w-full py-3 rounded-xl font-bold text-sm",
+          "w-full py-3.5 rounded-xl font-bold text-base",
           "bg-gradient-to-r from-amber-500 to-orange-500 text-white",
           "shadow-lg shadow-amber-500/25 flex items-center justify-center gap-2",
           "disabled:opacity-50"

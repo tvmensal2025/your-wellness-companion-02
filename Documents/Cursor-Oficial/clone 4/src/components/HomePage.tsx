@@ -153,7 +153,7 @@ const LiveRanking = () => {
     >
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-xl font-semibold text-netflix-text">🏆 Top Ranking</h3>
-        <Link to="/ranking">
+        <Link to="/sofia?section=comunidade">
           <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80">
             Ver Mais <ChevronRight className="w-4 h-4 ml-1" />
           </Button>
@@ -289,7 +289,7 @@ const HomePage = () => {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
             >
-              <Link to="/ranking">
+              <Link to="/sofia?section=comunidade">
                 <Button variant="ghost" className="text-foreground/70 hover:text-primary hover:bg-primary/5">
                   <Trophy className="mr-2 h-4 w-4" />
                   Ranking
@@ -409,7 +409,7 @@ const HomePage = () => {
                   </Button>
                 </Link>
                 
-                <Link to="/ranking" className="flex-1 sm:flex-none">
+                <Link to="/sofia?section=comunidade" className="flex-1 sm:flex-none">
                   <Button 
                     variant="outline" 
                     size="lg" 
@@ -726,7 +726,7 @@ const HomePage = () => {
                 </Button>
               </Link>
               
-              <Link to="/ranking">
+              <Link to="/sofia?section=comunidade">
                 <Button 
                   variant="outline" 
                   size="lg" 

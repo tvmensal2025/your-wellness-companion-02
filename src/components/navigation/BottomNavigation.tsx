@@ -16,7 +16,7 @@ const shortLabels: Record<string, string> = {
   'missions': 'Missões',
   'progress': 'Progresso',
   'goals': 'Metas',
-  'courses': 'Cursos',
+  'courses': 'Plataforma',
   'sessions': 'Sessões',
   'comunidade': 'Social',
   'challenges': 'Desafios',

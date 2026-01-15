@@ -19,7 +19,7 @@ import {
   TrendingUp, Eye, Download, Share, Edit2,
   Shield, CreditCard, Clock, Target, Zap,
   BarChart3, Plus, ExternalLink, SlidersHorizontal, Camera, Loader2,
-  MessageCircle
+  MessageCircle, Users
 } from 'lucide-react';
 import { WhatsAppNotificationSettings } from '@/components/settings/WhatsAppNotificationSettings';
 
@@ -745,6 +745,23 @@ const UserProfile = ({ onOpenLayoutPrefs }: UserProfileProps = {}) => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
+                {/* Auto Accept Followers Toggle */}
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between p-3 rounded-lg bg-muted/50 border">
+                  <div className="min-w-0">
+                    <p className="font-medium flex items-center gap-2">
+                      <Users className="h-4 w-4 text-blue-500" />
+                      Aceitar seguidores automaticamente
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Novos seguidores são aceitos sem aprovação manual
+                    </p>
+                  </div>
+                  <Switch 
+                    checked={true} 
+                    disabled={true}
+                  />
+                </div>
+
                 {/* Weight Privacy Toggle */}
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between p-3 rounded-lg bg-muted/50 border">
                   <div className="min-w-0">

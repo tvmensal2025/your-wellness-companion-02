@@ -155,7 +155,7 @@ const ProfessionalEvaluationPage: React.FC = () => {
         
         if (!user) {
           console.log('Usuário não autenticado');
-          navigate('/login');
+          navigate('/auth');
           return;
         }
 

@@ -14,6 +14,50 @@ interface AnimatedLoaderProps {
   className?: string;
 }
 
+// Detecta se é dispositivo de baixa performance
+const isLowEndDevice = () => {
+  if (typeof navigator === 'undefined') return false;
+  const memory = (navigator as any).deviceMemory;
+  if (memory && memory < 4) return true;
+  const connection = (navigator as any).connection;
+  if (connection) {
+    const slowTypes = ['slow-2g', '2g', '3g'];
+    if (slowTypes.includes(connection.effectiveType)) return true;
+    if (connection.saveData) return true;
+  }
+  if (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 2) return true;
+  return false;
+};
+
+// Loader CSS puro - funciona em qualquer dispositivo
+const CSSLoader: React.FC<{ text?: string; size?: 'sm' | 'md' | 'lg' }> = ({ text, size = 'md' }) => {
+  const sizes = {
+    sm: { container: 'w-8 h-8', leaf: 'w-4 h-4' },
+    md: { container: 'w-16 h-16', leaf: 'w-6 h-6' },
+    lg: { container: 'w-20 h-20', leaf: 'w-8 h-8' }
+  };
+  const s = sizes[size];
+  
+  return (
+    <div className="flex flex-col items-center gap-4">
+      <div className={cn("relative", s.container)}>
+        {/* Círculo girando - CSS puro */}
+        <div className={cn(
+          "absolute inset-0 rounded-full border-2 border-primary/20 border-t-primary animate-spin",
+          s.container
+        )} />
+        {/* Folha central */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <Leaf className={cn("text-primary animate-pulse", s.leaf)} />
+        </div>
+      </div>
+      {text && (
+        <p className="text-sm text-muted-foreground animate-pulse">{text}</p>
+      )}
+    </div>
+  );
+};
+
 // Loader com folha animada (branding)
 export const AnimatedLoader: React.FC<AnimatedLoaderProps> = ({
   text = 'Carregando...',
@@ -21,6 +65,9 @@ export const AnimatedLoader: React.FC<AnimatedLoaderProps> = ({
   size = 'md',
   className
 }) => {
+  // Em dispositivos lentos, usar CSS puro
+  const useCSSOnly = isLowEndDevice();
+  
   const sizes = {
     sm: { icon: 'w-6 h-6', text: 'text-xs', container: 'p-3' },
     md: { icon: 'w-10 h-10', text: 'text-sm', container: 'p-4' },
@@ -33,12 +80,9 @@ export const AnimatedLoader: React.FC<AnimatedLoaderProps> = ({
   if (variant === 'inline') {
     return (
       <div className={cn("flex items-center gap-2", className)}>
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
-        >
+        <div className="animate-spin">
           <Leaf className={cn("text-primary", size === 'sm' ? 'w-4 h-4' : 'w-5 h-5')} />
-        </motion.div>
+        </div>
         {text && <span className={cn("text-muted-foreground", s.text)}>{text}</span>}
       </div>
     );
@@ -48,37 +92,27 @@ export const AnimatedLoader: React.FC<AnimatedLoaderProps> = ({
   if (variant === 'minimal') {
     return (
       <div className={cn("flex items-center justify-center", s.container, className)}>
-        <motion.div
-          animate={{ 
-            rotate: 360,
-            scale: [1, 1.1, 1]
-          }}
-          transition={{ 
-            rotate: { duration: 1.5, repeat: Infinity, ease: "linear" },
-            scale: { duration: 1, repeat: Infinity }
-          }}
-        >
+        <div className="animate-spin">
           <Leaf className={cn("text-primary", s.icon)} />
-        </motion.div>
+        </div>
       </div>
     );
   }
 
-  // Loader fullscreen
+  // Loader fullscreen - sempre usar CSS puro para garantir que aparece
   if (variant === 'fullscreen') {
     return (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className={cn(
-          "fixed inset-0 z-50 flex flex-col items-center justify-center",
-          "bg-background/95 backdrop-blur-sm",
-          className
+      <div className={cn(
+        "fixed inset-0 z-50 flex flex-col items-center justify-center",
+        "bg-background/95 backdrop-blur-sm",
+        className
+      )}>
+        {useCSSOnly ? (
+          <CSSLoader text={text} size="lg" />
+        ) : (
+          <FullscreenLoaderContent text={text} />
         )}
-      >
-        <FullscreenLoaderContent text={text} />
-      </motion.div>
+      </div>
     );
   }
 
@@ -88,7 +122,11 @@ export const AnimatedLoader: React.FC<AnimatedLoaderProps> = ({
       "flex flex-col items-center justify-center min-h-[200px]",
       className
     )}>
-      <DefaultLoaderContent text={text} size={size} />
+      {useCSSOnly ? (
+        <CSSLoader text={text} size={size} />
+      ) : (
+        <DefaultLoaderContent text={text} size={size} />
+      )}
     </div>
   );
 };
@@ -250,10 +288,10 @@ const FullscreenLoaderContent: React.FC<{ text?: string }> = ({ text }) => {
   );
 };
 
-// Componente de loading para páginas
+// Componente de loading para páginas - SEMPRE mostra algo
 export const PageLoader: React.FC<{ text?: string }> = ({ text }) => (
   <div className="flex items-center justify-center min-h-screen bg-background">
-    <AnimatedLoader variant="default" text={text} size="lg" />
+    <CSSLoader text={text || 'Carregando...'} size="lg" />
   </div>
 );
 
@@ -263,7 +301,7 @@ export const SectionLoader: React.FC<{ text?: string; className?: string }> = ({
   className 
 }) => (
   <div className={cn("flex items-center justify-center py-8", className)}>
-    <AnimatedLoader variant="default" text={text} size="md" />
+    <CSSLoader text={text} size="md" />
   </div>
 );
 

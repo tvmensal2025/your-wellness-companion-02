@@ -145,7 +145,7 @@ export function DrVitalDashboard({ className }: DrVitalDashboardProps) {
                 <p className="text-[10px] text-muted-foreground truncate">Desbloqueie análises em tempo real</p>
               </div>
               <button
-                onClick={() => navigate('/settings')}
+                onClick={() => navigate('/google-fit-oauth')}
                 className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-lg py-2 px-3 flex items-center gap-1 font-medium text-xs hover:opacity-90 transition-all flex-shrink-0"
               >
                 <Sparkles className="w-3 h-3" />

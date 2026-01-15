@@ -116,256 +116,187 @@ export function ConnectionProfileModal({
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-      <DialogContent className="max-w-md p-0 overflow-hidden max-h-[95vh] overflow-y-auto bg-card rounded-3xl border-0 shadow-2xl">
-        {/* Header com foto grande */}
-        <div className="relative h-72 bg-gradient-to-br from-primary/30 to-accent/30">
+      <DialogContent className="max-w-sm p-0 overflow-hidden max-h-[90vh] overflow-y-auto bg-card rounded-2xl border-0 shadow-2xl">
+        {/* Header com foto - mais compacto */}
+        <div className="relative aspect-[4/3] bg-gradient-to-br from-primary/30 to-accent/30">
           {profile.avatar_url ? (
             <img 
               src={profile.avatar_url} 
               alt={profile.user_name}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover object-top"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
-              <span className="text-8xl font-bold text-primary/40">
+              <span className="text-6xl font-bold text-primary/40">
                 {profile.user_name.charAt(0).toUpperCase()}
               </span>
             </div>
           )}
           
           {/* Gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
           
           {/* Close button */}
-          <motion.button 
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
+          <button 
             onClick={onClose}
-            className="absolute top-4 right-4 bg-black/40 backdrop-blur-sm text-white p-2 rounded-full hover:bg-black/60 transition-colors"
+            className="absolute top-3 right-3 bg-black/40 backdrop-blur-sm text-white p-1.5 rounded-full hover:bg-black/60 transition-colors"
           >
-            <X className="w-5 h-5" />
-          </motion.button>
+            <X className="w-4 h-4" />
+          </button>
 
           {/* Streak badge */}
           {profile.streak_days > 0 && (
-            <div className="absolute top-4 left-4 bg-gradient-to-r from-orange-500 to-amber-500 text-white text-sm font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg">
-              <Flame className="w-4 h-4" />
-              {profile.streak_days} dias
+            <div className="absolute top-3 left-3 bg-orange-500 text-white text-[10px] font-bold px-2 py-1 rounded-full flex items-center gap-1">
+              <Flame className="w-3 h-3" />
+              {profile.streak_days}d
             </div>
           )}
 
           {/* Info no bottom */}
-          <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
-            <div className="flex items-center gap-3">
-              <h2 className="text-3xl font-bold">{profile.user_name.split(' ')[0]}</h2>
-              {profile.age && <span className="text-2xl font-light">{profile.age}</span>}
+          <div className="absolute bottom-0 left-0 right-0 p-3 text-white">
+            <div className="flex items-center gap-2">
+              <h2 className="text-xl font-bold">{profile.user_name.split(' ')[0]}</h2>
+              {profile.age && <span className="text-lg font-light">{profile.age}</span>}
               {profile.is_online && (
-                <span className="w-3.5 h-3.5 bg-green-500 rounded-full ring-2 ring-white animate-pulse" />
+                <span className="w-2.5 h-2.5 bg-green-500 rounded-full ring-2 ring-white" />
               )}
             </div>
             {profile.city && (
-              <div className="flex items-center gap-1.5 text-white/90 mt-2">
-                <MapPin className="w-4 h-4" />
-                <span className="text-base">{profile.city}</span>
+              <div className="flex items-center gap-1 text-white/80 text-xs mt-0.5">
+                <MapPin className="w-3 h-3" />
+                <span>{profile.city}</span>
               </div>
             )}
           </div>
         </div>
 
-        {/* Content */}
-        <div className="p-5 space-y-5">
+        {/* Content - mais compacto */}
+        <div className="p-3 space-y-3">
           {/* Interesses */}
           {profile.interests && profile.interests.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-            >
-              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+            <div>
+              <h3 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">
                 Interesses
               </h3>
-              <div className="flex flex-wrap gap-2">
-                {profile.interests.map((interest, index) => {
+              <div className="flex flex-wrap gap-1">
+                {profile.interests.map((interest) => {
                   const config = getInterestConfig(interest);
                   return (
-                    <motion.span
+                    <span
                       key={interest}
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: 0.1 + index * 0.05 }}
                       className={cn(
-                        "px-3 py-1.5 rounded-full text-sm font-medium border",
+                        "px-2 py-0.5 rounded-full text-[10px] font-medium border",
                         config.color
                       )}
                     >
                       {config.emoji} {interest}
-                    </motion.span>
+                    </span>
                   );
                 })}
               </div>
-            </motion.div>
+            </div>
           )}
 
-          {/* Objetivo */}
-          {profile.objective && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-            >
-              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-                🎯 Objetivo
-              </h3>
+          {/* Objetivo + Status em linha */}
+          <div className="grid grid-cols-2 gap-2">
+            {/* Objetivo */}
+            {profile.objective && (
               <div className={cn(
-                "flex items-center gap-3 p-4 rounded-2xl border",
+                "p-2 rounded-xl border",
                 getObjectiveConfig(profile.objective).color
               )}>
-                <Target className="w-5 h-5" />
-                <span className="font-medium">{profile.objective}</span>
+                <h4 className="text-[9px] font-semibold text-muted-foreground uppercase mb-0.5">Objetivo</h4>
+                <p className="text-xs font-medium truncate">{profile.objective}</p>
               </div>
-            </motion.div>
-          )}
-
-          {/* Idade e Status em grid */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="grid grid-cols-2 gap-3"
-          >
-            {/* Idade */}
-            <div className="p-4 rounded-2xl bg-muted/50 border border-border/50">
-              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-                🎂 Idade
-              </h4>
-              <p className="text-2xl font-bold">{profile.age || '—'}</p>
-            </div>
+            )}
 
             {/* Status */}
             <div className={cn(
-              "p-4 rounded-2xl border",
+              "p-2 rounded-xl border",
               profile.status ? getStatusConfig(profile.status).color : "bg-muted/50"
             )}>
-              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-                💑 Status
-              </h4>
-              <p className="text-lg font-semibold flex items-center gap-2">
+              <h4 className="text-[9px] font-semibold text-muted-foreground uppercase mb-0.5">Status</h4>
+              <p className="text-xs font-medium flex items-center gap-1">
                 {profile.status ? (
                   <>
                     {getStatusConfig(profile.status).emoji}
                     <span className="truncate">{profile.status}</span>
                   </>
-                ) : (
-                  '—'
-                )}
+                ) : '—'}
               </p>
             </div>
-          </motion.div>
+          </div>
 
           {/* Stats - Pontos e Sequência */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.35 }}
-            className="grid grid-cols-2 gap-3"
-          >
-            <div className="p-4 rounded-2xl bg-primary/10 border border-primary/20">
-              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-                🏆 Pontos
-              </h4>
-              <p className="text-2xl font-bold text-primary">{profile.total_points.toLocaleString()}</p>
+          <div className="grid grid-cols-2 gap-2">
+            <div className="p-2 rounded-xl bg-primary/10 border border-primary/20">
+              <h4 className="text-[9px] font-semibold text-muted-foreground uppercase mb-0.5">🏆 Pontos</h4>
+              <p className="text-lg font-bold text-primary">{profile.total_points.toLocaleString()}</p>
             </div>
 
-            <div className="p-4 rounded-2xl bg-orange-500/10 border border-orange-500/20">
-              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-                🔥 Sequência
-              </h4>
-              <p className="text-2xl font-bold text-orange-500">{profile.streak_days} dias</p>
+            <div className="p-2 rounded-xl bg-orange-500/10 border border-orange-500/20">
+              <h4 className="text-[9px] font-semibold text-muted-foreground uppercase mb-0.5">🔥 Sequência</h4>
+              <p className="text-lg font-bold text-orange-500">{profile.streak_days} dias</p>
             </div>
-          </motion.div>
+          </div>
 
           {/* Bio / Sobre mim */}
           {profile.bio && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
-            >
-              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-                📝 Sobre mim
+            <div>
+              <h3 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                Sobre mim
               </h3>
-              <div className="p-4 rounded-2xl bg-muted/50 border border-border/50">
-                <p className="text-sm leading-relaxed text-foreground">
-                  "{profile.bio}"
-                </p>
-              </div>
-            </motion.div>
+              <p className="text-xs text-muted-foreground line-clamp-2">
+                "{profile.bio}"
+              </p>
+            </div>
           )}
 
-          {/* Buscando */}
+          {/* Buscando - inline */}
           {profile.looking_for && profile.looking_for.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
-            >
-              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-                🔍 Buscando
+            <div>
+              <h3 className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                Buscando
               </h3>
-              <div className="space-y-2">
-                {profile.looking_for.map((item, index) => {
+              <div className="flex flex-wrap gap-1">
+                {profile.looking_for.map((item) => {
                   const config = getLookingForConfig(item);
                   return (
-                    <motion.div
+                    <span
                       key={item}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.5 + index * 0.1 }}
-                      className="flex items-center gap-3 p-3 rounded-xl bg-muted/30 border border-border/30"
+                      className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-muted/50 border"
                     >
-                      <div className={cn("w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center", config.color)}>
-                        <span className="text-sm">{config.emoji}</span>
-                      </div>
-                      <span className="text-sm font-medium">{item}</span>
-                      <div className="ml-auto w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center">
-                        <span className="text-green-500 text-xs">✓</span>
-                      </div>
-                    </motion.div>
+                      {config.emoji} {item}
+                    </span>
                   );
                 })}
               </div>
-            </motion.div>
+            </div>
           )}
 
           {/* Ações */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
-            className="flex gap-3 pt-3"
-          >
+          <div className="flex gap-2 pt-1">
             <Button 
-              className="flex-1 h-12 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground font-semibold text-base shadow-lg"
+              className="flex-1 h-9 text-sm font-medium"
               onClick={() => {
                 onMessageClick(profile.user_id);
                 onClose();
               }}
             >
-              <MessageCircle className="w-5 h-5 mr-2" />
+              <MessageCircle className="w-4 h-4 mr-1.5" />
               Mensagem
             </Button>
             <Button 
               variant="outline"
-              className="h-12 px-5 font-semibold"
+              className="h-9 px-3 text-sm"
               onClick={() => {
                 onViewFullProfile(profile.user_id);
                 onClose();
               }}
             >
-              <User className="w-5 h-5 mr-2" />
-              Perfil
+              <User className="w-4 h-4" />
             </Button>
-          </motion.div>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

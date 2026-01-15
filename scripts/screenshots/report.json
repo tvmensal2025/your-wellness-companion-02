@@ -1,0 +1,182 @@
+[
+  {
+    "name": "01_Dashboard",
+    "url": "/dashboard",
+    "status": "✅",
+    "detail": "URL OK: http://localhost:8080/dashboard"
+  },
+  {
+    "name": "02_Sofia",
+    "url": "/sofia",
+    "status": "✅",
+    "detail": "URL OK: http://localhost:8080/sofia"
+  },
+  {
+    "name": "03_Admin",
+    "url": "/admin",
+    "status": "✅",
+    "detail": "URL OK: http://localhost:8080/admin"
+  },
+  {
+    "name": "04_Anamnesis",
+    "url": "/anamnesis",
+    "status": "✅",
+    "detail": "URL OK: http://localhost:8080/anamnesis"
+  },
+  {
+    "name": "05_Goals",
+    "url": "/app/goals",
+    "status": "✅",
+    "detail": "URL OK: http://localhost:8080/app/goals"
+  },
+  {
+    "name": "06_Courses",
+    "url": "/app/courses",
+    "status": "✅",
+    "detail": "URL OK: http://localhost:8080/app/courses"
+  },
+  {
+    "name": "07_Progress",
+    "url": "/app/progress",
+    "status": "✅",
+    "detail": "URL OK: http://localhost:8080/app/progress"
+  },
+  {
+    "name": "08_Nutricao",
+    "url": "/nutricao",
+    "status": "✅",
+    "detail": "URL OK: http://localhost:8080/nutricao"
+  },
+  {
+    "name": "09_Desafios",
+    "url": "/desafios",
+    "status": "✅",
+    "detail": "URL OK: http://localhost:8080/desafios"
+  },
+  {
+    "name": "10_Challenges",
+    "url": "/challenges",
+    "status": "✅",
+    "detail": "URL OK: http://localhost:8080/challenges"
+  },
+  {
+    "name": "11_GoogleFit_OAuth",
+    "url": "/google-fit-oauth",
+    "status": "✅",
+    "detail": "URL OK: http://localhost:8080/google-fit-oauth"
+  },
+  {
+    "name": "12_GoogleFit_Dashboard",
+    "url": "/google-fit-dashboard",
+    "status": "✅",
+    "detail": "URL OK: http://localhost:8080/google-fit-dashboard"
+  },
+  {
+    "name": "13_DrVital_Enhanced",
+    "url": "/dr-vital-enhanced",
+    "status": "✅",
+    "detail": "URL OK: http://localhost:8080/dr-vital-enhanced"
+  },
+  {
+    "name": "14_Sofia_Nutricional",
+    "url": "/sofia-nutricional",
+    "status": "✅",
+    "detail": "URL OK: http://localhost:8080/sofia-nutricional"
+  },
+  {
+    "name": "15_Professional_Evaluation",
+    "url": "/professional-evaluation",
+    "status": "❌",
+    "detail": "Esperado: /professional-evaluation, Atual: http://localhost:8080/dashboard"
+  },
+  {
+    "name": "16_Install",
+    "url": "/install",
+    "status": "✅",
+    "detail": "URL OK: http://localhost:8080/install"
+  },
+  {
+    "name": "17_Termos",
+    "url": "/termos",
+    "status": "✅",
+    "detail": "URL OK: http://localhost:8080/termos"
+  },
+  {
+    "name": "18_Privacidade",
+    "url": "/privacidade",
+    "status": "✅",
+    "detail": "URL OK: http://localhost:8080/privacidade"
+  },
+  {
+    "name": "19_SystemHealth",
+    "url": "/admin/system-health",
+    "status": "✅",
+    "detail": "URL OK: http://localhost:8080/admin/system-health"
+  },
+  {
+    "name": "20_Section_Comunidade",
+    "url": "/sofia?section=comunidade",
+    "status": "❌",
+    "detail": "Texto \"comunidade\" NÃO encontrado"
+  },
+  {
+    "name": "21_Section_Missions",
+    "url": "/sofia?section=missions",
+    "status": "✅",
+    "detail": "Texto \"miss\" encontrado"
+  },
+  {
+    "name": "22_Section_Subscriptions",
+    "url": "/sofia?section=subscriptions",
+    "status": "❌",
+    "detail": "Texto \"plano\" NÃO encontrado"
+  },
+  {
+    "name": "23_Section_Exercicios",
+    "url": "/sofia?section=exercicios",
+    "status": "❌",
+    "detail": "Texto \"exerc\" NÃO encontrado"
+  },
+  {
+    "name": "24_Section_Goals",
+    "url": "/sofia?section=goals",
+    "status": "✅",
+    "detail": "Texto \"meta\" encontrado"
+  },
+  {
+    "name": "25_Section_Challenges",
+    "url": "/sofia?section=challenges",
+    "status": "✅",
+    "detail": "Texto \"desafio\" encontrado"
+  },
+  {
+    "name": "26_Section_Progress",
+    "url": "/sofia?section=progress",
+    "status": "✅",
+    "detail": "Texto \"progress\" encontrado"
+  },
+  {
+    "name": "27_Section_Courses",
+    "url": "/sofia?section=courses",
+    "status": "✅",
+    "detail": "Texto \"curso\" encontrado"
+  },
+  {
+    "name": "28_Section_Sessions",
+    "url": "/sofia?section=sessions",
+    "status": "✅",
+    "detail": "Texto \"sess\" encontrado"
+  },
+  {
+    "name": "29_Section_DrVital",
+    "url": "/sofia?section=dr-vital",
+    "status": "✅",
+    "detail": "Texto \"vital\" encontrado"
+  },
+  {
+    "name": "30_Section_Profile",
+    "url": "/sofia?section=profile",
+    "status": "✅",
+    "detail": "Texto \"perfil\" encontrado"
+  }
+]

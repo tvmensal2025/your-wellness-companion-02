@@ -925,33 +925,33 @@ const MedicalDocumentsSection: React.FC<MedicalDocumentsSectionProps> = ({ hideS
             </div>
           </div>
           {/* Lista de Documentos */}
-          <div className="space-y-4">
+          <div className="space-y-4 print:space-y-2">
             {filteredDocuments.length > 0 ? (
               filteredDocuments.map((doc) => (
-                <div key={doc.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-start space-x-3">
-                      <div className="p-2 bg-blue-100 rounded-lg">
+                <div key={doc.id} className="border border-border rounded-lg p-4 hover:bg-muted/50 transition-colors print:break-inside-avoid print:p-3 print:border-gray-300">
+                  <div className="flex items-start justify-between flex-wrap gap-3 print:flex-col">
+                    <div className="flex items-start space-x-3 flex-1 min-w-0">
+                      <div className="p-2 bg-primary/10 rounded-lg print:bg-gray-100">
                         {getDocumentIcon(doc.type)}
                       </div>
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-2 mb-1">
-                          <h3 className="font-semibold text-gray-900">{doc.title}</h3>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center flex-wrap gap-2 mb-1">
+                          <h3 className="font-semibold text-foreground print:text-black">{doc.title}</h3>
                           <Badge className={getStatusColor(doc.status)}>
                             {doc.status === 'normal' ? 'Normal' :
                              doc.status === 'alterado' ? 'Alterado' :
                              doc.status === 'critico' ? 'Crítico' : 'Pendente'}
                           </Badge>
                         </div>
-                        <p className="text-sm text-gray-600 mb-2">
+                        <p className="text-sm text-muted-foreground mb-2 print:text-gray-700">
                           {getTypeLabel(doc.type)}
                           {doc.doctor_name && ` • Dr. ${doc.doctor_name}`}
                           {doc.clinic_name && ` • ${doc.clinic_name}`}
                         </p>
                         {doc.description && (
-                          <p className="text-sm text-gray-500 mb-2">{doc.description}</p>
+                          <p className="text-sm text-muted-foreground/80 mb-2 print:text-gray-600">{doc.description}</p>
                         )}
-                        <div className="flex items-center space-x-4 text-xs text-gray-500">
+                        <div className="flex items-center flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground print:text-gray-600">
                           {doc.exam_date && (
                             <span className="flex items-center space-x-1">
                               <Calendar className="w-3 h-3" />
@@ -965,7 +965,7 @@ const MedicalDocumentsSection: React.FC<MedicalDocumentsSectionProps> = ({ hideS
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-2 flex-wrap gap-2 print:hidden">
                       {/* Análise premium é automática */}
                       {(doc.didactic_report_path || doc.report_path) ? (
                         <>
@@ -1039,15 +1039,15 @@ const MedicalDocumentsSection: React.FC<MedicalDocumentsSectionProps> = ({ hideS
                           </Button>
                         </>
                       ) : (
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 print:hidden">
                           <div className="relative">
                             <span className="absolute inset-0 rounded-full bg-purple-500 opacity-30 animate-ping"></span>
                             <DrVitalImage size="sm" className="relative ring-2 ring-purple-500" />
                           </div>
                           <div className="flex flex-col">
-                            <div className="text-xs text-gray-600 font-medium">Dr. Vital está analisando…</div>
-                            <div className="flex items-center gap-2 text-[11px] text-gray-600">
-                              <div className="w-40 bg-gray-200 h-2 rounded overflow-hidden">
+                            <div className="text-xs text-muted-foreground font-medium">Dr. Vital está analisando…</div>
+                            <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                              <div className="w-40 bg-muted h-2 rounded overflow-hidden">
                                 <div className="h-2 bg-purple-600" style={{ width: `${Math.min(100, Math.max(5, Number(doc.progress_pct) || 5))}%` }} />
                               </div>
                               <span>
@@ -1080,7 +1080,7 @@ const MedicalDocumentsSection: React.FC<MedicalDocumentsSectionProps> = ({ hideS
               ))
             ) : (
               <div className="text-center py-8">
-                <FileText className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <FileText className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
                 <p className="text-muted-foreground">
                   {searchTerm || filterType !== 'all' 
                     ? 'Nenhum documento encontrado com os filtros aplicados.'
@@ -1094,10 +1094,10 @@ const MedicalDocumentsSection: React.FC<MedicalDocumentsSectionProps> = ({ hideS
 
       {/* Modal de Upload */}
       {showUploadModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-lg mx-4 max-h-[90vh] overflow-auto shadow-2xl">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-background rounded-lg p-6 w-full max-w-lg max-h-[90vh] overflow-auto shadow-2xl border border-border">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold">Adicionar Documento Médico</h2>
+              <h2 className="text-lg font-semibold text-foreground">Adicionar Documento Médico</h2>
               <Button
                 variant="ghost"
                 size="sm"
@@ -1124,7 +1124,7 @@ const MedicalDocumentsSection: React.FC<MedicalDocumentsSectionProps> = ({ hideS
                   id="type"
                   value={newDocument.type}
                   onChange={(e) => setNewDocument({...newDocument, type: e.target.value as MedicalDocument['type']})}
-                  className="w-full border rounded-md px-3 py-2"
+                  className="w-full border border-border rounded-md px-3 py-2 bg-background text-foreground"
                 >
                   <option value="exame_laboratorial">Exame Laboratorial</option>
                   <option value="exame_imagem">Exame de Imagem</option>
@@ -1154,14 +1154,14 @@ const MedicalDocumentsSection: React.FC<MedicalDocumentsSectionProps> = ({ hideS
                   }}
                 />
                 {pendingFiles.length > 0 && (
-                  <div className="mt-2 space-y-1 text-sm text-gray-600">
+                  <div className="mt-2 space-y-1 text-sm text-muted-foreground">
                     {pendingFiles.map(f => (
                       <div key={f.tmpPath} className="flex items-center justify-between">
                         <span className="truncate max-w-[70%]">{f.name}</span>
                         <span className="opacity-70">{Math.round(f.size/1024)} KB</span>
                       </div>
                     ))}
-                    <p className="text-xs text-gray-500">Os créditos só serão cobrados quando você clicar em "Enviar".</p>
+                    <p className="text-xs text-muted-foreground/80">Os créditos só serão cobrados quando você clicar em "Enviar".</p>
                   </div>
                 )}
               </div>

@@ -2,6 +2,7 @@
  * CharacterSelector Component
  * Overlay transparente sobre o app
  * Clique no personagem = seleciona e começa
+ * Após selecionar personagem, mostra seleção de tema (primeira vez)
  */
 
 import { useState, useEffect } from 'react';
@@ -11,6 +12,10 @@ import { characters, CharacterId, Character } from '@/types/character-menu';
 import { CharacterCard } from './CharacterCard';
 import { Logo } from '@/components/ui/logo';
 import { getCharactersSortedByPopularity } from '@/utils/characterPreference';
+import { ThemeSelector } from '@/components/theme/ThemeSelector';
+import { useTheme, THEME_PRESETS } from '@/contexts/ThemeContext';
+import { Sparkles, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface CharacterSelectorProps {
   onSelect: (characterId: CharacterId) => void;
@@ -26,6 +31,10 @@ export function CharacterSelector({
   const [isConfirming, setIsConfirming] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(true); // Começa como mobile para evitar flash
+  const [showThemeStep, setShowThemeStep] = useState(false);
+  const [selectedCharacterId, setSelectedCharacterId] = useState<CharacterId | null>(null);
+  
+  const { hasSelectedTheme, currentPreset } = useTheme();
   
   // Personagens ordenados pelo mais escolhido primeiro
   const [sortedCharacters, setSortedCharacters] = useState<Character[]>(characters);
@@ -45,9 +54,25 @@ export function CharacterSelector({
 
   // Clique no personagem = seleciona e começa direto
   const handleSelect = (id: CharacterId) => {
+    // Se é primeira vez (não tem tema selecionado) e não está trocando personagem
+    if (!hasSelectedTheme && !isChanging) {
+      setSelectedCharacterId(id);
+      setShowThemeStep(true);
+    } else {
+      // Já tem tema ou está trocando - vai direto
+      setIsConfirming(true);
+      setTimeout(() => {
+        onSelect(id);
+      }, 300);
+    }
+  };
+
+  // Confirmar após selecionar tema
+  const handleConfirmWithTheme = () => {
+    if (!selectedCharacterId) return;
     setIsConfirming(true);
     setTimeout(() => {
-      onSelect(id);
+      onSelect(selectedCharacterId);
     }, 300);
   };
 
@@ -76,7 +101,7 @@ export function CharacterSelector({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex flex-col overflow-hidden"
+        className="fixed inset-0 z-[9999] flex flex-col overflow-hidden"
       >
         {/* Overlay leve - blur suave */}
         <div className="absolute inset-0 backdrop-blur-sm bg-black/30" />
@@ -99,7 +124,29 @@ export function CharacterSelector({
 
           {/* Mobile: Carousel simples e centralizado */}
           {isMobile ? (
-            <div className="flex-1 flex flex-col pb-2">
+            <div className="flex-1 flex flex-col pb-2 relative">
+              {/* Seta Esquerda */}
+              {currentIndex > 0 && (
+                <button
+                  onClick={() => goToSlide(currentIndex - 1)}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/30 transition-colors"
+                  aria-label="Anterior"
+                >
+                  <ChevronLeft className="w-6 h-6" />
+                </button>
+              )}
+              
+              {/* Seta Direita */}
+              {currentIndex < sortedCharacters.length - 1 && (
+                <button
+                  onClick={() => goToSlide(currentIndex + 1)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/30 transition-colors"
+                  aria-label="Próximo"
+                >
+                  <ChevronRight className="w-6 h-6" />
+                </button>
+              )}
+
               {/* Carousel Container */}
               <div className="flex-1 flex items-center overflow-hidden">
                 <motion.div
@@ -192,7 +239,7 @@ export function CharacterSelector({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-background z-60 flex items-center justify-center"
+              className="fixed inset-0 bg-background z-[10000] flex items-center justify-center"
             >
               <motion.div
                 initial={{ scale: 0.8, opacity: 0 }}
@@ -201,6 +248,69 @@ export function CharacterSelector({
               >
                 <div className="w-12 h-12 border-2 border-foreground border-t-transparent rounded-full animate-spin mx-auto mb-4" />
                 <p className="text-muted-foreground">Preparando...</p>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Theme Selection Step */}
+        <AnimatePresence>
+          {showThemeStep && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-background z-[10000] flex flex-col items-center justify-center p-6"
+            >
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="w-full max-w-sm text-center"
+              >
+                {/* Icon */}
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: 'spring', delay: 0.2 }}
+                  className={cn(
+                    "w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center",
+                    `bg-gradient-to-br ${currentPreset.gradient}`
+                  )}
+                >
+                  <Sparkles className="w-8 h-8 text-white" />
+                </motion.div>
+
+                {/* Title */}
+                <h2 className="text-xl font-bold mb-2">Personalize seu app</h2>
+                <p className="text-sm text-muted-foreground mb-6">
+                  Escolha a cor que mais combina com você
+                </p>
+
+                {/* Theme Selector */}
+                <div className="bg-card rounded-2xl p-4 mb-6 border border-border/50">
+                  <ThemeSelector variant="grid" showLabel={false} />
+                </div>
+
+                {/* Continue Button */}
+                <Button
+                  onClick={handleConfirmWithTheme}
+                  className={cn(
+                    "w-full h-12 text-base font-semibold rounded-xl",
+                    `bg-gradient-to-r ${currentPreset.gradient} hover:opacity-90`
+                  )}
+                >
+                  Continuar
+                  <ArrowRight className="w-5 h-5 ml-2" />
+                </Button>
+
+                {/* Skip option */}
+                <button
+                  onClick={handleConfirmWithTheme}
+                  className="mt-3 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Pular por agora
+                </button>
               </motion.div>
             </motion.div>
           )}

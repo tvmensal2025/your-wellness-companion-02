@@ -11,6 +11,7 @@ import { useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import { useMenuStyleContext } from '@/contexts/MenuStyleContext';
 import { CharacterSelector } from './CharacterSelector';
+import { Leaf } from 'lucide-react';
 
 interface CharacterGateProps {
   children: ReactNode;
@@ -18,6 +19,21 @@ interface CharacterGateProps {
 
 // Rotas onde o seletor NÃO deve aparecer (inclui / para evitar tela branca no redirect)
 const PUBLIC_ROUTES = ['/', '/auth', '/terms', '/termos', '/privacidade', '/auto-login', '/install', '/relatorio', '/community/post'];
+
+// Loader CSS puro - sempre funciona
+const CSSLoader = () => (
+  <div className="fixed inset-0 bg-background/90 backdrop-blur-sm flex flex-col items-center justify-center z-50">
+    <div className="relative w-16 h-16">
+      {/* Círculo girando - CSS puro */}
+      <div className="absolute inset-0 rounded-full border-3 border-primary/20 border-t-primary animate-spin" />
+      {/* Folha central */}
+      <div className="absolute inset-0 flex items-center justify-center">
+        <Leaf className="w-6 h-6 text-primary animate-pulse" />
+      </div>
+    </div>
+    <p className="mt-4 text-sm text-muted-foreground animate-pulse">Carregando...</p>
+  </div>
+);
 
 export function CharacterGate({ children }: CharacterGateProps) {
   const location = useLocation();
@@ -37,26 +53,25 @@ export function CharacterGate({ children }: CharacterGateProps) {
     location.pathname === route || location.pathname.startsWith(route + '/')
   );
 
-  // Se loading demorar mais de 1.5s, força mostrar o app
+  // Se loading demorar mais de 800ms, força mostrar o app (reduzido de 1.5s)
   useEffect(() => {
     if (isLoading && !forceShow) {
       const timeout = setTimeout(() => {
         console.warn('[CharacterGate] Timeout de loading - forçando exibição');
         setForceShow(true);
-      }, 1500);
+      }, 800);
       return () => clearTimeout(timeout);
     }
   }, [isLoading, forceShow]);
 
   // Loading state com timeout de segurança - só se não for rota pública
+  // SEMPRE mostra o loader com folha, nunca tela branca
   if (isLoading && !forceShow && !isPublicRoute) {
     return (
       <>
         {/* Sempre renderiza o conteúdo por baixo */}
         {children}
-        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-        </div>
+        <CSSLoader />
       </>
     );
   }

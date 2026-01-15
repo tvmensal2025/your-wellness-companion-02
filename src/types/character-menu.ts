@@ -32,11 +32,12 @@ export const menuIds = {
 } as const;
 
 // Menus COMPARTILHADOS (aparecem em TODOS os personagens - SEM missions, sessions e challenges)
-// ORDEM: Dashboard primeiro, Social segundo
+// ORDEM: Dashboard primeiro, Social segundo, Metas, Plataforma
 export const sharedMenus = [
   menuIds.dashboard,
   menuIds.comunidade,
   menuIds.goals,
+  menuIds.courses,
   menuIds.subscriptions,
 ] as const;
 
@@ -59,12 +60,15 @@ export const characterMenus: Record<CharacterId, readonly string[]> = {
     menuIds.exercicios,
     menuIds.challenges, // Arena de Desafios exclusiva do Alex
   ],
-  // Rafael: Foco em coaching/missões/sessões
+  // Rafael: Foco em coaching/missões/sessões (SEM comunidade pois o dashboard já é a comunidade)
   coaching: [
-    ...sharedMenus,
+    menuIds.dashboard,
+    menuIds.goals,
+    menuIds.courses,
     menuIds.missions,
     menuIds.sessions,
     menuIds.saboteurTest,
+    menuIds.subscriptions,
   ],
   // Completo: TUDO liberado
   complete: [

@@ -209,28 +209,30 @@ export default function GoalsPageV2() {
         </div>
       )}
 
-      {/* Filtros */}
-      <div className="flex items-center gap-2 flex-wrap">
+      {/* Filtros - Ultra compactos */}
+      <div className="flex items-center gap-1">
         <Button
           variant={selectedFilter === null ? "default" : "outline"}
           size="sm"
           onClick={() => setSelectedFilter(null)}
-          className="gap-2"
+          className="gap-0.5 h-7 px-2 text-[11px]"
         >
-          <Filter className="w-4 h-4" />
+          <Filter className="w-3 h-3" />
           Todas
         </Button>
         <Button
           variant={selectedFilter === 'em_progresso' ? "default" : "outline"}
           size="sm"
           onClick={() => setSelectedFilter('em_progresso')}
+          className="h-7 px-2 text-[11px]"
         >
-          Em Progresso
+          Progresso
         </Button>
         <Button
           variant={selectedFilter === 'concluida' ? "default" : "outline"}
           size="sm"
           onClick={() => setSelectedFilter('concluida')}
+          className="h-7 px-2 text-[11px]"
         >
           Concluídas
         </Button>
@@ -238,6 +240,7 @@ export default function GoalsPageV2() {
           variant={selectedFilter === 'pendente' ? "default" : "outline"}
           size="sm"
           onClick={() => setSelectedFilter('pendente')}
+          className="h-7 px-2 text-[11px]"
         >
           Pendentes
         </Button>

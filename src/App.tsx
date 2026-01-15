@@ -12,6 +12,7 @@ import { createQueryClient } from "@/lib/queryConfig";
 import { InstallPrompt } from "@/components/pwa/InstallPrompt";
 import { UpdatePrompt, ChunkErrorHandler } from "@/components/pwa/UpdatePrompt";
 import { ActiveSectionProvider } from "@/contexts/ActiveSectionContext";
+import { UserThemeProvider } from "@/contexts/ThemeContext";
 import { PageLoader as AnimatedPageLoader } from "@/components/ui/animated-loader";
 import { MenuStyleProvider } from "@/contexts/MenuStyleContext";
 import { CharacterGate } from "@/components/character-selector";
@@ -84,59 +85,61 @@ const App: React.FC = () => {
         }
       >
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
-          <TooltipProvider>
-            <MenuStyleProvider>
-              <ActiveSectionProvider>
-                <Toaster />
-                <Sonner />
-                <OfflineIndicator />
-                
-                {/* PWA: Atualização automática + Prompt de instalação */}
-                <UpdatePrompt />
-                <InstallPrompt delay={3000} showOnlyOnce={false} />
-                
-                {showSplash && <SplashScreen onComplete={hideSplash} />}
-                <BrowserRouter>
-                  <CharacterGate>
-                    <Suspense fallback={<PageLoader />}>
-                      <Routes>
-                        <Route path="/" element={<AutoRedirect />} />
-                        <Route path="/auth" element={<AuthPage />} />
-                        <Route path="/terms" element={<TermsPage />} />
-                        <Route path="/termos" element={<TermsPage />} />
-                        <Route path="/privacidade" element={<TermsPage />} />
-                        <Route path="/dashboard" element={<Suspense fallback={<PageLoader />}><SofiaPage /></Suspense>} />
-                        <Route path="/admin" element={<Suspense fallback={<PageLoader />}><AdminPage /></Suspense>} />
-                        <Route path="/sofia" element={<Suspense fallback={<PageLoader />}><SofiaPage /></Suspense>} />
-                        <Route path="/anamnesis" element={<Suspense fallback={<PageLoader />}><AnamnesisPage /></Suspense>} />
-                        <Route path="/app/goals" element={<Suspense fallback={<PageLoader />}><GoalsPageV2 /></Suspense>} />
-                        <Route path="/app/courses" element={<Suspense fallback={<PageLoader />}><CoursePlatform /></Suspense>} />
-                        <Route path="/app/progress" element={<Suspense fallback={<PageLoader />}><ProgressPage /></Suspense>} />
-                        <Route path="/nutricao" element={<Suspense fallback={<PageLoader />}><NutritionTrackingPage /></Suspense>} />
-                        <Route path="/challenges/:id" element={<Suspense fallback={<PageLoader />}><ChallengeDetailPage /></Suspense>} />
-                        <Route path="/desafios" element={<Suspense fallback={<PageLoader />}><ChallengesV2Page /></Suspense>} />
-                        <Route path="/challenges" element={<Suspense fallback={<PageLoader />}><ChallengesV2Page /></Suspense>} />
-                        <Route path="/google-fit-oauth" element={<Suspense fallback={<PageLoader />}><GoogleFitPage /></Suspense>} />
-                        <Route path="/google-fit-callback" element={<Suspense fallback={<PageLoader />}><GoogleFitCallbackPage /></Suspense>} />
-                        <Route path="/google-fit-test" element={<Suspense fallback={<PageLoader />}><GoogleFitTestPage /></Suspense>} />
-                        <Route path="/google-fit-dashboard" element={<Suspense fallback={<PageLoader />}><GoogleFitPremiumDashboard /></Suspense>} />
-                        <Route path="/dr-vital-enhanced" element={<Suspense fallback={<PageLoader />}><DrVitalEnhancedPage /></Suspense>} />
-                        <Route path="/sofia-nutricional" element={<Suspense fallback={<PageLoader />}><SofiaNutricionalPage /></Suspense>} />
-                        <Route path="/professional-evaluation" element={<Suspense fallback={<PageLoader />}><ProfessionalEvaluationPage /></Suspense>} />
-                        <Route path="/auto-login" element={<Suspense fallback={<PageLoader />}><AutoLoginPage /></Suspense>} />
-                        <Route path="/install" element={<Suspense fallback={<PageLoader />}><InstallPage /></Suspense>} />
-                        <Route path="/community/post/:postId" element={<Suspense fallback={<PageLoader />}><PublicPostPage /></Suspense>} />
-                        <Route path="/relatorio/:token" element={<Suspense fallback={<PageLoader />}><PublicReport /></Suspense>} />
-                        <Route path="/admin/system-health" element={<Suspense fallback={<PageLoader />}><SystemHealth /></Suspense>} />
-                        <Route path="*" element={<NotFound />} />
-                      </Routes>
-                      <FloatingMessagesButton />
-                    </Suspense>
-                  </CharacterGate>
-                </BrowserRouter>
-              </ActiveSectionProvider>
-            </MenuStyleProvider>
-          </TooltipProvider>
+          <UserThemeProvider>
+            <TooltipProvider>
+              <MenuStyleProvider>
+                <ActiveSectionProvider>
+                  <Toaster />
+                  <Sonner />
+                  <OfflineIndicator />
+                  
+                  {/* PWA: Atualização automática + Prompt de instalação */}
+                  <UpdatePrompt />
+                  <InstallPrompt delay={3000} showOnlyOnce={false} />
+                  
+                  {showSplash && <SplashScreen onComplete={hideSplash} />}
+                  <BrowserRouter>
+                    <CharacterGate>
+                      <Suspense fallback={<PageLoader />}>
+                        <Routes>
+                          <Route path="/" element={<AutoRedirect />} />
+                          <Route path="/auth" element={<AuthPage />} />
+                          <Route path="/terms" element={<TermsPage />} />
+                          <Route path="/termos" element={<TermsPage />} />
+                          <Route path="/privacidade" element={<TermsPage />} />
+                          <Route path="/dashboard" element={<Suspense fallback={<PageLoader />}><SofiaPage /></Suspense>} />
+                          <Route path="/admin" element={<Suspense fallback={<PageLoader />}><AdminPage /></Suspense>} />
+                          <Route path="/sofia" element={<Suspense fallback={<PageLoader />}><SofiaPage /></Suspense>} />
+                          <Route path="/anamnesis" element={<Suspense fallback={<PageLoader />}><AnamnesisPage /></Suspense>} />
+                          <Route path="/app/goals" element={<Suspense fallback={<PageLoader />}><GoalsPageV2 /></Suspense>} />
+                          <Route path="/app/courses" element={<Suspense fallback={<PageLoader />}><CoursePlatform /></Suspense>} />
+                          <Route path="/app/progress" element={<Suspense fallback={<PageLoader />}><ProgressPage /></Suspense>} />
+                          <Route path="/nutricao" element={<Suspense fallback={<PageLoader />}><NutritionTrackingPage /></Suspense>} />
+                          <Route path="/challenges/:id" element={<Suspense fallback={<PageLoader />}><ChallengeDetailPage /></Suspense>} />
+                          <Route path="/desafios" element={<Suspense fallback={<PageLoader />}><ChallengesV2Page /></Suspense>} />
+                          <Route path="/challenges" element={<Suspense fallback={<PageLoader />}><ChallengesV2Page /></Suspense>} />
+                          <Route path="/google-fit-oauth" element={<Suspense fallback={<PageLoader />}><GoogleFitPage /></Suspense>} />
+                          <Route path="/google-fit-callback" element={<Suspense fallback={<PageLoader />}><GoogleFitCallbackPage /></Suspense>} />
+                          <Route path="/google-fit-test" element={<Suspense fallback={<PageLoader />}><GoogleFitTestPage /></Suspense>} />
+                          <Route path="/google-fit-dashboard" element={<Suspense fallback={<PageLoader />}><GoogleFitPremiumDashboard /></Suspense>} />
+                          <Route path="/dr-vital-enhanced" element={<Suspense fallback={<PageLoader />}><DrVitalEnhancedPage /></Suspense>} />
+                          <Route path="/sofia-nutricional" element={<Suspense fallback={<PageLoader />}><SofiaNutricionalPage /></Suspense>} />
+                          <Route path="/professional-evaluation" element={<Suspense fallback={<PageLoader />}><ProfessionalEvaluationPage /></Suspense>} />
+                          <Route path="/auto-login" element={<Suspense fallback={<PageLoader />}><AutoLoginPage /></Suspense>} />
+                          <Route path="/install" element={<Suspense fallback={<PageLoader />}><InstallPage /></Suspense>} />
+                          <Route path="/community/post/:postId" element={<Suspense fallback={<PageLoader />}><PublicPostPage /></Suspense>} />
+                          <Route path="/relatorio/:token" element={<Suspense fallback={<PageLoader />}><PublicReport /></Suspense>} />
+                          <Route path="/admin/system-health" element={<Suspense fallback={<PageLoader />}><SystemHealth /></Suspense>} />
+                          <Route path="*" element={<NotFound />} />
+                        </Routes>
+                        <FloatingMessagesButton />
+                      </Suspense>
+                    </CharacterGate>
+                  </BrowserRouter>
+                </ActiveSectionProvider>
+              </MenuStyleProvider>
+            </TooltipProvider>
+          </UserThemeProvider>
         </ThemeProvider>
       </ErrorBoundary>
     </QueryClientProvider>

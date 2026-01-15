@@ -51,8 +51,8 @@ const fetchPromise: { current: Promise<void> | null } = { current: null };
 
 // Default values
 const DEFAULT_SIDEBAR_ORDER = [
-  'dashboard', 'missions', 'progress', 'goals', 'courses', 
-  'sessions', 'comunidade', 'challenges', 'saboteur-test', 
+  'dashboard', 'comunidade', 'goals', 'courses', 
+  'missions', 'progress', 'sessions', 'challenges', 'saboteur-test', 
   'sofia-nutricional', 'dr-vital', 'exercicios', 'subscriptions'
 ];
 

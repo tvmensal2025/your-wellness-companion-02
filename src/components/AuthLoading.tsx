@@ -1,17 +1,34 @@
 import React from 'react';
-import { Loader2 } from 'lucide-react';
+import { Leaf } from 'lucide-react';
 
 const AuthLoading: React.FC = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
-      <div className="text-center">
-        <Loader2 className="h-12 w-12 animate-spin text-blue-600 mx-auto mb-4" />
-        <h2 className="text-xl font-semibold text-gray-800 mb-2">
-          Carregando Sofia Health
+    <div className="min-h-screen flex flex-col items-center justify-center bg-background">
+      {/* Loader com folha - CSS puro para garantir que funciona */}
+      <div className="relative w-20 h-20">
+        {/* Círculo girando */}
+        <div className="absolute inset-0 rounded-full border-3 border-primary/20 border-t-primary animate-spin" />
+        {/* Folha central */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <Leaf className="w-8 h-8 text-primary animate-pulse" />
+        </div>
+      </div>
+      
+      <div className="text-center mt-6">
+        <h2 className="text-lg font-semibold text-foreground mb-2">
+          MaxNutrition
         </h2>
-        <p className="text-gray-600">
-          Verificando sua autenticação...
+        <p className="text-sm text-muted-foreground animate-pulse">
+          Verificando autenticação...
         </p>
+      </div>
+      
+      {/* Barra de progresso */}
+      <div className="mt-6 w-32 h-1 bg-muted rounded-full overflow-hidden">
+        <div 
+          className="h-full bg-primary rounded-full animate-[progress_1.5s_ease-in-out_infinite]"
+          style={{ width: '40%' }}
+        />
       </div>
     </div>
   );

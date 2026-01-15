@@ -40,7 +40,7 @@ export function CommunityButton() {
           </div>
           
           <Button 
-            onClick={() => navigate('/health-feed')}
+            onClick={() => navigate('/sofia?section=comunidade')}
             className="bg-primary hover:bg-primary/90 mobile-button-lg w-full lg:w-auto"
           >
             <Users className="w-4 h-4 mr-2" />

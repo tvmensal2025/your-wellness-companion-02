@@ -20,11 +20,14 @@ import {
   X,
   ChevronDown,
   Flame,
-  Target
+  Target,
+  Users,
+  UserPlus
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useRanking } from '@/hooks/useRanking';
+import { useFollow } from '@/hooks/useFollow';
 import { ConnectionProfileModal } from './ConnectionProfileModal';
 
 interface ConnectionsTabProps {
@@ -69,9 +72,12 @@ const OBJECTIVES = [
 export function ConnectionsTab({ currentUserId, onProfileClick, onMessageClick }: ConnectionsTabProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterObjective, setFilterObjective] = useState('all');
+  const [filterConnection, setFilterConnection] = useState<'all' | 'following' | 'discover'>('all');
   const [selectedProfile, setSelectedProfile] = useState<UserProfile | null>(null);
+  const [showObjectiveMenu, setShowObjectiveMenu] = useState(false);
 
   const { ranking } = useRanking();
+  const { isFollowing } = useFollow();
 
   // Combinar dados do ranking com perfis mockados
   const profiles = useMemo(() => {
@@ -91,16 +97,34 @@ export function ConnectionsTab({ currentUserId, onProfileClick, onMessageClick }
   // Filtrar perfis
   const filteredProfiles = useMemo(() => {
     return profiles.filter(profile => {
+      // Filtro de busca
       if (searchTerm && !profile.user_name.toLowerCase().includes(searchTerm.toLowerCase()) &&
           !profile.city?.toLowerCase().includes(searchTerm.toLowerCase())) {
         return false;
       }
+      // Filtro de objetivo
       if (filterObjective !== 'all' && profile.objective !== filterObjective) {
+        return false;
+      }
+      // Filtro de conexão (seguindo/descobrir)
+      if (filterConnection === 'following' && !isFollowing(profile.user_id)) {
+        return false;
+      }
+      if (filterConnection === 'discover' && isFollowing(profile.user_id)) {
         return false;
       }
       return true;
     });
-  }, [profiles, searchTerm, filterObjective]);
+  }, [profiles, searchTerm, filterObjective, filterConnection, isFollowing]);
+
+  // Contadores para os filtros
+  const followingCount = useMemo(() => {
+    return profiles.filter(p => isFollowing(p.user_id)).length;
+  }, [profiles, isFollowing]);
+
+  const discoverCount = useMemo(() => {
+    return profiles.filter(p => !isFollowing(p.user_id)).length;
+  }, [profiles, isFollowing]);
 
   const getStatusColor = (status?: string) => {
     switch (status) {
@@ -110,6 +134,9 @@ export function ConnectionsTab({ currentUserId, onProfileClick, onMessageClick }
       default: return 'text-gray-600 bg-gray-50 dark:bg-gray-800';
     }
   };
+
+  // Label do objetivo selecionado
+  const selectedObjectiveLabel = OBJECTIVES.find(o => o.value === filterObjective)?.label || 'Objetivo';
 
   return (
     <div className="max-w-2xl mx-auto space-y-4">
@@ -126,22 +153,98 @@ export function ConnectionsTab({ currentUserId, onProfileClick, onMessageClick }
         </div>
       </div>
 
-      {/* Filter Pills - Horizontal Scroll */}
-      <div className="flex gap-2 overflow-x-auto pb-2 -mx-2 px-2 scrollbar-hide">
-        {OBJECTIVES.map(obj => (
+      {/* Filtros em uma linha: Todos | Seguindo | Descobrir | [Objetivo ▼] */}
+      <div className="flex items-center gap-2">
+        {/* Segmented Control - Conexão */}
+        <div className="flex bg-muted/40 rounded-lg p-0.5">
           <button
-            key={obj.value}
-            onClick={() => setFilterObjective(obj.value)}
+            onClick={() => setFilterConnection('all')}
             className={cn(
-              "px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-all shrink-0",
-              filterObjective === obj.value
-                ? "bg-primary text-primary-foreground shadow-sm"
-                : "bg-muted/60 text-muted-foreground hover:bg-muted"
+              "px-2.5 py-1 rounded-md text-[11px] font-medium transition-all",
+              filterConnection === 'all'
+                ? "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
             )}
           >
-            {obj.label}
+            Todos
           </button>
-        ))}
+          <button
+            onClick={() => setFilterConnection('following')}
+            className={cn(
+              "px-2.5 py-1 rounded-md text-[11px] font-medium transition-all whitespace-nowrap",
+              filterConnection === 'following'
+                ? "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            Seguindo{followingCount > 0 && <span className="text-green-500 ml-0.5">({followingCount})</span>}
+          </button>
+          <button
+            onClick={() => setFilterConnection('discover')}
+            className={cn(
+              "px-2.5 py-1 rounded-md text-[11px] font-medium transition-all whitespace-nowrap",
+              filterConnection === 'discover'
+                ? "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            Descobrir{discoverCount > 0 && <span className="text-blue-500 ml-0.5">({discoverCount})</span>}
+          </button>
+        </div>
+
+        {/* Dropdown de Objetivo */}
+        <div className="relative">
+          <button
+            onClick={() => setShowObjectiveMenu(!showObjectiveMenu)}
+            className={cn(
+              "flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all border",
+              filterObjective !== 'all'
+                ? "bg-primary/10 text-primary border-primary/30"
+                : "bg-muted/40 text-muted-foreground border-transparent hover:bg-muted"
+            )}
+          >
+            {filterObjective !== 'all' ? selectedObjectiveLabel : '🎯 Objetivo'}
+            <ChevronDown className={cn("w-3 h-3 transition-transform", showObjectiveMenu && "rotate-180")} />
+          </button>
+
+          {/* Menu dropdown */}
+          <AnimatePresence>
+            {showObjectiveMenu && (
+              <motion.div
+                initial={{ opacity: 0, y: -5 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -5 }}
+                className="absolute top-full left-0 mt-1 bg-background border rounded-lg shadow-lg z-50 min-w-[140px] py-1"
+              >
+                {OBJECTIVES.map(obj => (
+                  <button
+                    key={obj.value}
+                    onClick={() => {
+                      setFilterObjective(obj.value);
+                      setShowObjectiveMenu(false);
+                    }}
+                    className={cn(
+                      "w-full px-3 py-1.5 text-left text-xs hover:bg-muted transition-colors",
+                      filterObjective === obj.value && "bg-primary/10 text-primary font-medium"
+                    )}
+                  >
+                    {obj.label}
+                  </button>
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* Limpar filtro de objetivo */}
+        {filterObjective !== 'all' && (
+          <button
+            onClick={() => setFilterObjective('all')}
+            className="p-1 rounded-full hover:bg-muted text-muted-foreground"
+          >
+            <X className="w-3 h-3" />
+          </button>
+        )}
       </div>
 
       {/* Results Count */}
@@ -163,12 +266,12 @@ export function ConnectionsTab({ currentUserId, onProfileClick, onMessageClick }
               onClick={() => setSelectedProfile(profile)}
             >
               {/* Foto com overlay */}
-              <div className="relative aspect-[4/5] bg-gradient-to-br from-primary/20 to-accent/20">
+              <div className="relative aspect-[3/4] bg-gradient-to-br from-primary/20 to-accent/20">
                 {profile.avatar_url ? (
                   <img 
                     src={profile.avatar_url} 
                     alt={profile.user_name}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover object-top"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">

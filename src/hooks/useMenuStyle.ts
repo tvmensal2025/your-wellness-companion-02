@@ -41,24 +41,27 @@ export function useMenuStyle(): UseMenuStyleReturn {
   useEffect(() => {
     let mounted = true;
     
-    // Timeout de segurança - máximo 1.5s para evitar tela branca em mobile
+    // Timeout de segurança - máximo 500ms para evitar tela branca em mobile (reduzido de 1.5s)
     const timeout = setTimeout(() => {
       if (mounted && isLoading) {
         console.warn('[useMenuStyle] Timeout ao carregar preferência - forçando loading=false');
         setIsLoading(false);
       }
-    }, 1500);
+    }, 500);
     
+    // Carregar imediatamente de forma síncrona
     try {
       const saved = loadPreference();
       if (mounted) {
         setSelectedCharacter(saved);
         setIsLoading(false);
+        clearTimeout(timeout);
       }
     } catch (error) {
       console.warn('[useMenuStyle] Erro ao carregar preferência:', error);
       if (mounted) {
         setIsLoading(false);
+        clearTimeout(timeout);
       }
     }
     

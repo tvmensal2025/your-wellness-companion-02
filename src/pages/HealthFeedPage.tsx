@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { Button } from '@/components/ui/button';
@@ -46,9 +46,10 @@ import { CurrentUserRankCard } from '@/components/ranking/CurrentUserRankCard';
 import { RankingUserCard } from '@/components/ranking/RankingUserCard';
 import { RankingStats } from '@/components/ranking/RankingStats';
 import { RankingHeader } from '@/components/ranking/RankingHeader';
-import { RankingSocialHeader } from '@/components/ranking/RankingSocialHeader';
 import { ConnectionsTab } from '@/components/community/ConnectionsTab';
+import { EditConnectionProfileModal } from '@/components/community/EditConnectionProfileModal';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 export default function HealthFeedPage() {
@@ -66,6 +67,8 @@ export default function HealthFeedPage() {
   const [selectedProfileId, setSelectedProfileId] = useState<string | null>(null);
   const [initialDmUser, setInitialDmUser] = useState<string | null>(null);
   const [showFollowersList, setShowFollowersList] = useState(false);
+  const [editProfileOpen, setEditProfileOpen] = useState(false);
+  const [totalWeightLost, setTotalWeightLost] = useState(0);
 
   const { user } = useAuth();
   const { ranking, loading: rankingLoading } = useRanking();
@@ -81,6 +84,45 @@ export default function HealthFeedPage() {
   const { totalUnread } = useDirectMessages();
   const { unreadCount: notificationCount, createNotification } = useNotifications();
   const { stats: userProgressStats } = useUserProgressStats(user?.id || null);
+
+  // Fetch total weight lost by community
+  useEffect(() => {
+    const fetchTotalWeightLost = async () => {
+      try {
+        // Buscar peso eliminado de todos os usuários que permitiram mostrar
+        const { data } = await supabase
+          .from('weight_measurements')
+          .select('weight_kg, user_id')
+          .order('measurement_date', { ascending: true });
+
+        if (data && data.length > 0) {
+          // Agrupar por usuário e calcular diferença (primeiro peso - último peso)
+          const userWeights: Record<string, { first: number; last: number }> = {};
+          
+          data.forEach(m => {
+            if (!userWeights[m.user_id]) {
+              userWeights[m.user_id] = { first: m.weight_kg, last: m.weight_kg };
+            } else {
+              userWeights[m.user_id].last = m.weight_kg;
+            }
+          });
+
+          // Somar apenas perdas de peso (diferenças positivas)
+          let totalLost = 0;
+          Object.values(userWeights).forEach(w => {
+            const diff = w.first - w.last;
+            if (diff > 0) totalLost += diff;
+          });
+
+          setTotalWeightLost(totalLost);
+        }
+      } catch (error) {
+        console.error('Error fetching weight data:', error);
+      }
+    };
+
+    fetchTotalWeightLost();
+  }, []);
 
   // Smart Feed integration
   const { sortedPosts, trendingTopics, suggestedPosts, trackInteraction } = useSmartFeed(posts, feedAlgorithm);
@@ -415,6 +457,7 @@ export default function HealthFeedPage() {
                   missionsCompleted={currentUserStats.missions}
                   profileViews={userProgressStats?.followersCount || 0}
                   unreadMessages={totalUnread}
+                  onEditProfile={() => setEditProfileOpen(true)}
                 />
 
                 {/* Stories Section */}
@@ -542,18 +585,22 @@ export default function HealthFeedPage() {
                 </DialogContent>
               </Dialog>
 
-              {/* Social Header with Followers/Following */}
-              <RankingSocialHeader
-                userId={user?.id || null}
-                userName={userName}
-                avatarUrl={userAvatar}
-                rankingPosition={currentUserStats.position}
-                onFollowersClick={() => setShowFollowersList(!showFollowersList)}
-                onFollowingClick={() => setActiveTab('following')}
-              />
-
               {/* Header */}
               <RankingHeader />
+
+              {/* Community Stats - Impacto da Comunidade */}
+              {!rankingLoading && ranking.length > 0 && (
+                <RankingStats
+                  totalMembers={ranking.length}
+                  totalMissions={ranking.reduce((sum, u) => sum + u.missions_completed, 0)}
+                  totalPoints={ranking.reduce((sum, u) => sum + u.total_points, 0)}
+                  avgStreak={Math.round(ranking.reduce((sum, u) => sum + u.streak_days, 0) / ranking.length)}
+                  totalWeightLost={totalWeightLost}
+                  userName={userName}
+                  userAvatar={userAvatar}
+                  userPosition={currentUserStats.position}
+                />
+              )}
 
               {/* Podium - Top 3 */}
               {!rankingLoading && filteredRanking.length >= 3 && (
@@ -634,16 +681,6 @@ export default function HealthFeedPage() {
                   ))}
                 </div>
               )}
-
-              {/* Stats */}
-              {!rankingLoading && ranking.length > 0 && (
-                <RankingStats
-                  totalMembers={ranking.length}
-                  totalMissions={ranking.reduce((sum, u) => sum + u.missions_completed, 0)}
-                  totalPoints={ranking.reduce((sum, u) => sum + u.total_points, 0)}
-                  avgStreak={Math.round(ranking.reduce((sum, u) => sum + u.streak_days, 0) / ranking.length)}
-                />
-              )}
             </div>
           </TabsContent>
         </Tabs>
@@ -703,6 +740,16 @@ export default function HealthFeedPage() {
             }
           }}
           isOwnProfile={selectedProfileId === user?.id}
+        />
+
+        {/* Edit Connection Profile Modal */}
+        <EditConnectionProfileModal
+          open={editProfileOpen}
+          onOpenChange={setEditProfileOpen}
+          onSave={() => {
+            setEditProfileOpen(false);
+            toast.success('Perfil atualizado!');
+          }}
         />
       </div>
     </div>

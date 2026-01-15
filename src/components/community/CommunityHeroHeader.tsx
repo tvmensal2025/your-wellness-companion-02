@@ -1,6 +1,6 @@
 import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Star, TrendingUp, Crown, Flame, Users, MessageCircle, Trophy, Target } from 'lucide-react';
+import { Star, TrendingUp, Crown, Flame, Users, MessageCircle, Trophy, Target, Settings } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -15,6 +15,7 @@ interface CommunityHeroHeaderProps {
   profileViews?: number;
   unreadMessages?: number;
   userGender?: string | null; // Gênero do usuário para mensagens personalizadas
+  onEditProfile?: () => void; // Callback para editar perfil
 }
 
 const formatUserName = (name: string) => {
@@ -74,6 +75,7 @@ export const CommunityHeroHeader: React.FC<CommunityHeroHeaderProps> = ({
   profileViews = 0,
   unreadMessages = 0,
   userGender,
+  onEditProfile,
 }) => {
   const rankBadge = getRankBadge(userPosition, userGender);
   const userLevel = getUserLevel(totalPoints);
@@ -99,7 +101,8 @@ export const CommunityHeroHeader: React.FC<CommunityHeroHeaderProps> = ({
           {/* Avatar with dynamic ring based on streak */}
           <motion.div
             whileHover={{ scale: 1.05 }}
-            className="relative"
+            className="relative cursor-pointer"
+            onClick={onEditProfile}
           >
             <div className="absolute inset-0 bg-gradient-to-br from-white/30 to-white/10 rounded-full blur-sm" />
             <Avatar className={cn(
@@ -122,6 +125,15 @@ export const CommunityHeroHeader: React.FC<CommunityHeroHeaderProps> = ({
             >
               {userLevel.number}
             </motion.div>
+            {/* Edit button */}
+            {onEditProfile && (
+              <motion.div 
+                whileHover={{ scale: 1.1 }}
+                className="absolute -top-1 -left-1 w-6 h-6 rounded-full bg-white/90 flex items-center justify-center shadow-md"
+              >
+                <Settings className="w-3 h-3 text-gray-600" />
+              </motion.div>
+            )}
           </motion.div>
           
           {/* User info - centralizado no mobile */}

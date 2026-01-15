@@ -142,7 +142,7 @@ const OnboardingFlow: React.FC<{ onComplete: () => void }> = ({ onComplete }) =>
             </div>
             <div className="flex flex-col gap-3 mt-6">
               <Button 
-                onClick={() => navigate('/app/scale-test')}
+                onClick={() => navigate('/dashboard')}
                 className="w-full"
               >
                 <Bluetooth className="h-4 w-4 mr-2" />
@@ -190,7 +190,7 @@ const OnboardingFlow: React.FC<{ onComplete: () => void }> = ({ onComplete }) =>
                 <h4 className="font-semibold">Missões Diárias</h4>
                 <p className="text-sm text-muted-foreground">Complete desafios e ganhe pontos</p>
               </div>
-              <Button size="sm" variant="ghost" onClick={() => navigate('/app/missions')}>
+              <Button size="sm" variant="ghost" onClick={() => navigate('/sofia?section=missions')}>
                 <Play className="h-3 w-3 mr-1" />
                 Começar
               </Button>
