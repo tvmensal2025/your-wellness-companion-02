@@ -18,7 +18,7 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
 const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
 const googleAIApiKey = Deno.env.get('GOOGLE_AI_API_KEY');
 // Modelo Gemini configurável; padrão mais preciso
-const geminiModel = (Deno.env.get('SOFIA_GEMINI_MODEL') || 'gemini-1.5-pro').trim();
+const geminiModel = (Deno.env.get('SOFIA_GEMINI_MODEL') || 'google/gemini-2.5-pro').trim();
 // Modo de porção: 'ai_strict' usa os números do Gemini; 'defaults' usa porções padrão
 const portionMode = (Deno.env.get('SOFIA_PORTION_MODE') || 'ai_strict').trim();
 const minPortionConfidence = Number(Deno.env.get('SOFIA_PORTION_CONFIDENCE_MIN') || '0.55');
@@ -29,7 +29,7 @@ const sofiaUseGpt = (Deno.env.get('SOFIA_USE_GPT') || 'false').toLowerCase() ===
 const strictMode = (Deno.env.get('SOFIA_STRICT_MODE') || 'true').toLowerCase() === 'true';
 // YOLO microserviço - HABILITADO por padrão (VPS estável)
 const yoloEnabled = (Deno.env.get('YOLO_ENABLED') || 'true').toLowerCase() === 'true';
-const yoloServiceUrl = (Deno.env.get('YOLO_SERVICE_URL') || 'http://45.67.221.216:8002').replace(/\/$/, '');
+const yoloServiceUrl = (Deno.env.get('YOLO_SERVICE_URL') || 'https://yolo-service-yolo-detection.0sw627.easypanel.host').replace(/\/$/, '');
 // Configurações avançadas para máxima precisão
 const yoloMaxRetries = Number(Deno.env.get('YOLO_MAX_RETRIES') || '3');
 // Configurações otimizadas para alimentos brasileiros (pizza, tortas, salgados)
@@ -1877,6 +1877,18 @@ ${newRuleMacros}🤔 Esses alimentos estão corretos?`;
         // Não falhar por causa do banco, continuar com a análise
       } else {
         savedAnalysis = dbResult;
+        
+        // 📊 Log estruturado para monitoramento
+        console.log(JSON.stringify({
+          event: 'food_analysis_complete',
+          user_id: userId,
+          analysis_id: dbResult?.id,
+          yolo_detected: yoloContext?.foods?.length || 0,
+          taco_matched: tacoNutritionData?.foods_matched || 0,
+          total_kcal: Math.round(estimatedCalories || 0),
+          foods: detectedFoods?.map((f: any) => f.nome || f.name).slice(0, 5),
+          model_used: geminiModel
+        }));
       }
     } else {
       console.log('⚠️ Usuário guest, não salvando no banco');

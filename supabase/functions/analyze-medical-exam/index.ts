@@ -24,7 +24,7 @@ let AI_CONFIG = {
 // 🦾 YOLOE microserviço para detecção de documentos médicos
 // YOLOE usa vocabulário aberto - pode detectar QUALQUER coisa via prompts de texto
 const yoloEnabled = (Deno.env.get('YOLO_ENABLED') || 'true').toLowerCase() === 'true';
-const yoloServiceUrl = (Deno.env.get('YOLO_SERVICE_URL') || 'http://45.67.221.216:8002').replace(/\/$/, '');
+const yoloServiceUrl = (Deno.env.get('YOLO_SERVICE_URL') || 'https://yolo-service-yolo-detection.0sw627.easypanel.host').replace(/\/$/, '');
 
 // Prompts para detecção de documentos médicos
 const MEDICAL_DOCUMENT_PROMPTS = [

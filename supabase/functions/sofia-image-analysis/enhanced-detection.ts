@@ -212,6 +212,70 @@ const TACO_SYNONYMS: Record<string, string> = {
 };
 
 // ========================================
+// 🧠 FALLBACK INTELIGENTE POR CATEGORIA
+// ========================================
+interface CategoryFallback {
+  category: string;
+  rate: number;      // kcal por grama
+  protein: number;   // g por grama
+  carbs: number;     // g por grama
+  fat: number;       // g por grama
+}
+
+function detectFoodCategoryFallback(name: string): CategoryFallback {
+  const n = name.toLowerCase();
+  
+  // Proteínas fritas/empanadas (alto valor calórico)
+  if ((n.includes('empanado') || n.includes('frito') || n.includes('milanesa') || n.includes('nuggets') || n.includes('tiras')) 
+      && (n.includes('frango') || n.includes('carne') || n.includes('peixe') || n.includes('chicken'))) {
+    return { category: 'proteina_frita', rate: 2.8, protein: 0.18, carbs: 0.15, fat: 0.16 };
+  }
+  
+  // Salgados fritos brasileiros
+  if (n.includes('coxinha') || n.includes('pastel') || n.includes('kibe') || n.includes('risole') || n.includes('bolinho')) {
+    return { category: 'fritura', rate: 3.0, protein: 0.10, carbs: 0.25, fat: 0.18 };
+  }
+  
+  // Molhos cremosos
+  if (n.includes('molho') && (n.includes('cremoso') || n.includes('rosê') || n.includes('rose') || n.includes('branco'))) {
+    return { category: 'molho_cremoso', rate: 3.5, protein: 0.02, carbs: 0.05, fat: 0.35 };
+  }
+  
+  // Molhos simples
+  if (n.includes('molho')) {
+    return { category: 'molho', rate: 0.8, protein: 0.01, carbs: 0.10, fat: 0.04 };
+  }
+  
+  // Proteínas grelhadas/assadas
+  if (n.includes('frango') || n.includes('carne') || n.includes('peixe') || n.includes('ovo') || n.includes('bife')) {
+    return { category: 'proteina', rate: 2.0, protein: 0.25, carbs: 0, fat: 0.10 };
+  }
+  
+  // Carboidratos
+  if (n.includes('arroz') || n.includes('feijão') || n.includes('feijao') || n.includes('massa') || n.includes('macarrão') || n.includes('pão') || n.includes('batata')) {
+    return { category: 'carboidrato', rate: 1.2, protein: 0.05, carbs: 0.25, fat: 0.02 };
+  }
+  
+  // Vegetais e saladas
+  if (n.includes('salada') || n.includes('alface') || n.includes('tomate') || n.includes('legume') || n.includes('vegetal') || n.includes('verdura')) {
+    return { category: 'vegetal', rate: 0.3, protein: 0.02, carbs: 0.05, fat: 0.01 };
+  }
+  
+  // Doces e sobremesas
+  if (n.includes('bolo') || n.includes('doce') || n.includes('sobremesa') || n.includes('chocolate') || n.includes('pudim') || n.includes('sorvete')) {
+    return { category: 'doce', rate: 4.0, protein: 0.04, carbs: 0.55, fat: 0.15 };
+  }
+  
+  // Frutas
+  if (n.includes('fruta') || n.includes('maçã') || n.includes('banana') || n.includes('laranja') || n.includes('morango')) {
+    return { category: 'fruta', rate: 0.5, protein: 0.01, carbs: 0.12, fat: 0.005 };
+  }
+  
+  // Default genérico
+  return { category: 'default', rate: 1.5, protein: 0.08, carbs: 0.15, fat: 0.06 };
+}
+
+// ========================================
 // 🔍 BUSCAR DADOS NUTRICIONAIS NA TACO (OTIMIZADO)
 // ========================================
 
@@ -263,6 +327,33 @@ const TACO_QUICK_LOOKUP: Record<string, { kcal: number; protein: number; carbs: 
   'frango frito': { kcal: 249, protein: 26.8, carbs: 7.5, fat: 12.4, fiber: 0 },
   'frango assado': { kcal: 215, protein: 28.6, carbs: 0, fat: 10.8, fiber: 0 },
   'coxa de frango': { kcal: 215, protein: 28.6, carbs: 0, fat: 10.8, fiber: 0 },
+  // FRANGO EMPANADO/FRITO (alimentos frequentemente não encontrados)
+  'frango empanado': { kcal: 280, protein: 18, carbs: 15, fat: 16, fiber: 0.5 },
+  'tiras de frango empanadas': { kcal: 280, protein: 18, carbs: 15, fat: 16, fiber: 0.5 },
+  'tiras de frango empanadas fritas': { kcal: 280, protein: 18, carbs: 15, fat: 16, fiber: 0.5 },
+  'tiras de frango': { kcal: 280, protein: 18, carbs: 15, fat: 16, fiber: 0.5 },
+  'frango à milanesa': { kcal: 280, protein: 18, carbs: 15, fat: 16, fiber: 0.5 },
+  'frango a milanesa': { kcal: 280, protein: 18, carbs: 15, fat: 16, fiber: 0.5 },
+  'filé de frango empanado': { kcal: 280, protein: 18, carbs: 15, fat: 16, fiber: 0.5 },
+  'nuggets': { kcal: 260, protein: 14, carbs: 18, fat: 14, fiber: 0 },
+  'nuggets de frango': { kcal: 260, protein: 14, carbs: 18, fat: 14, fiber: 0 },
+  'isca de frango': { kcal: 280, protein: 18, carbs: 15, fat: 16, fiber: 0.5 },
+  'steak de frango': { kcal: 220, protein: 25, carbs: 10, fat: 10, fiber: 0 },
+  'steak de frango empanado': { kcal: 280, protein: 18, carbs: 15, fat: 16, fiber: 0.5 },
+  // MOLHOS CREMOSOS
+  'molho cremoso': { kcal: 350, protein: 2, carbs: 5, fat: 35, fiber: 0 },
+  'molho rosê': { kcal: 300, protein: 1, carbs: 8, fat: 30, fiber: 0 },
+  'molho rose': { kcal: 300, protein: 1, carbs: 8, fat: 30, fiber: 0 },
+  'molho branco': { kcal: 180, protein: 3, carbs: 8, fat: 15, fiber: 0 },
+  'molho de queijo': { kcal: 220, protein: 5, carbs: 4, fat: 20, fiber: 0 },
+  'maionese': { kcal: 680, protein: 1, carbs: 2, fat: 75, fiber: 0 },
+  // SALGADOS BRASILEIROS
+  'coxinha': { kcal: 300, protein: 10, carbs: 25, fat: 18, fiber: 1 },
+  'pastel': { kcal: 280, protein: 8, carbs: 22, fat: 18, fiber: 1 },
+  'kibe': { kcal: 250, protein: 12, carbs: 18, fat: 14, fiber: 2 },
+  'risole': { kcal: 270, protein: 8, carbs: 20, fat: 17, fiber: 1 },
+  'bolinho de bacalhau': { kcal: 240, protein: 12, carbs: 15, fat: 15, fiber: 0 },
+  'esfiha': { kcal: 230, protein: 9, carbs: 22, fat: 12, fiber: 1 },
   
   // BATATA (CRÍTICO: FRITA ≠ COZIDA!)
   'batata frita': { kcal: 267, protein: 4.1, carbs: 36, fat: 12.4, fiber: 3.3 },
@@ -307,12 +398,10 @@ const TACO_QUICK_LOOKUP: Record<string, { kcal: number; protein: number; carbs: 
   'pão': { kcal: 300, protein: 8, carbs: 58.6, fat: 3.1, fiber: 2.3 },
   'pão francês': { kcal: 300, protein: 8, carbs: 58.6, fat: 3.1, fiber: 2.3 },
   
-  // SALGADOS E FRITURAS
+  // SALGADOS E FRITURAS (valores TACO - pizza, hambúrguer, pão de queijo)
   'pizza': { kcal: 247, protein: 10.9, carbs: 29.3, fat: 9.5, fiber: 2.1 },
   'hambúrguer': { kcal: 258, protein: 17, carbs: 3.3, fat: 20, fiber: 0 },
   'hamburger': { kcal: 258, protein: 17, carbs: 3.3, fat: 20, fiber: 0 },
-  'coxinha': { kcal: 279, protein: 9.4, carbs: 27.4, fat: 14.7, fiber: 0.8 },
-  'pastel': { kcal: 342, protein: 8.7, carbs: 28.2, fat: 21.7, fiber: 1.4 },
   'pão de queijo': { kcal: 363, protein: 5.2, carbs: 34.2, fat: 22.7, fiber: 0.5 },
   
   // FRUTAS
@@ -451,18 +540,29 @@ async function calculateNutritionFromTaco(foods: Array<{ name: string; grams: nu
         taco_match: tacoData.food_name
       });
     } else {
-      const estimatedKcal = grams * 1.5;
+      // Fallback inteligente por categoria (kcal/g)
+      const categoryFallback = detectFoodCategoryFallback(food.name);
+      const estimatedKcal = grams * categoryFallback.rate;
+      const estimatedProtein = grams * categoryFallback.protein;
+      const estimatedCarbs = grams * categoryFallback.carbs;
+      const estimatedFat = grams * categoryFallback.fat;
+      
       total_kcal += estimatedKcal;
+      total_protein += estimatedProtein;
+      total_carbs += estimatedCarbs;
+      total_fat += estimatedFat;
       
       foods_details.push({
         name: food.name,
         grams,
         kcal: Math.round(estimatedKcal),
-        protein: 0,
-        carbs: 0,
-        fat: 0,
-        taco_match: null
+        protein: Math.round(estimatedProtein * 10) / 10,
+        carbs: Math.round(estimatedCarbs * 10) / 10,
+        fat: Math.round(estimatedFat * 10) / 10,
+        taco_match: `ESTIMATIVA (${categoryFallback.category})`
       });
+      
+      console.log(`⚠️ TACO não encontrou "${food.name}" - usando fallback ${categoryFallback.category}: ${Math.round(estimatedKcal)} kcal`);
     }
   }
 
