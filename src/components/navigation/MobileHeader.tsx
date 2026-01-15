@@ -6,7 +6,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useMenuStyleContext } from '@/contexts/MenuStyleContext';
 import { CharacterId, getCharacterById } from '@/types/character-menu';
 import { CharacterSelector } from '@/components/character-selector/CharacterSelector';
-
 interface MobileHeaderProps {
   title: string;
   onAvatarClick?: () => void;
@@ -21,24 +20,23 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
   userName,
   userId
 }) => {
-  const { selectedCharacter, setCharacter } = useMenuStyleContext();
+  const {
+    selectedCharacter,
+    setCharacter
+  } = useMenuStyleContext();
   const [showSelector, setShowSelector] = useState(false);
-  
   const getInitials = (name?: string) => {
     if (!name) return '?';
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
-
   const handleCharacterSwitch = (characterId: CharacterId) => {
     setCharacter(characterId);
     setShowSelector(false);
   };
-
-  return (
-    <>
+  return <>
       <header className="lg:hidden sticky top-0 z-40 bg-card/95 backdrop-blur-lg border-b border-border/50 overflow-visible" style={{
-        paddingTop: 'env(safe-area-inset-top, 0px)'
-      }}>
+      paddingTop: 'env(safe-area-inset-top, 0px)'
+    }}>
         <div className="flex items-center justify-between h-12 px-4 relative overflow-visible">
           {/* Left side - Offline Indicator + Theme Toggle */}
           <div className="flex items-center gap-2 shrink-0 z-10">
@@ -48,7 +46,7 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
           
           {/* Center - Title */}
           <div className="absolute left-1/2 -translate-x-1/2 max-w-[40%] z-0">
-            <h1 className="text-xs font-medium text-center leading-tight truncate text-primary">
+            <h1 className="text-xs font-medium text-center leading-tight truncate text-destructive">
               {title}
             </h1>
           </div>
@@ -56,16 +54,8 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
           {/* Right side - Character Switcher + Notifications + Avatar */}
           <div className="flex items-center gap-0 shrink-0 justify-end z-10 overflow-visible">
             {/* Character Switcher - Small image button */}
-            <button
-              onClick={() => setShowSelector(true)}
-              className="w-20 h-20 transition-all active:scale-95 flex-shrink-0 -mr-2"
-              aria-label="Trocar personagem"
-            >
-              <img
-                src="/images/personagens-icon.png"
-                alt="Trocar personagem"
-                className="w-full h-full object-contain"
-              />
+            <button onClick={() => setShowSelector(true)} className="w-20 h-20 transition-all active:scale-95 flex-shrink-0 -mr-2" aria-label="Trocar personagem">
+              <img src="/images/personagens-icon.png" alt="Trocar personagem" className="w-full h-full object-contain" />
             </button>
             
             <NotificationBell userId={userId} />
@@ -84,14 +74,7 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
       </header>
 
       {/* Character Selector Fullscreen */}
-      {showSelector && (
-        <CharacterSelector
-          onSelect={handleCharacterSwitch}
-          isChanging={true}
-          onCancel={() => setShowSelector(false)}
-        />
-      )}
-    </>
-  );
+      {showSelector && <CharacterSelector onSelect={handleCharacterSwitch} isChanging={true} onCancel={() => setShowSelector(false)} />}
+    </>;
 };
 export default MobileHeader;
