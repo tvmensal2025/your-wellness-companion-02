@@ -10,6 +10,7 @@ import { OfflineIndicator } from "@/components/OfflineIndicator";
 import FloatingMessagesButton from "@/components/FloatingMessagesButton";
 import { createQueryClient } from "@/lib/queryConfig";
 import { InstallPrompt } from "@/components/pwa/InstallPrompt";
+import { UpdatePrompt, ChunkErrorHandler } from "@/components/pwa/UpdatePrompt";
 import { ActiveSectionProvider } from "@/contexts/ActiveSectionContext";
 import { PageLoader as AnimatedPageLoader } from "@/components/ui/animated-loader";
 import { MenuStyleProvider } from "@/contexts/MenuStyleContext";
@@ -58,7 +59,11 @@ const App: React.FC = () => {
   const { showSplash, hideSplash } = useSplashScreen();
 
   return (
-    <QueryClientProvider client={queryClient}>
+    <>
+      {/* Handler global para erros de chunk - evita tela branca */}
+      <ChunkErrorHandler />
+      
+      <QueryClientProvider client={queryClient}>
       <ErrorBoundary
         fallback={
           <div className="min-h-screen flex items-center justify-center bg-background">
@@ -86,7 +91,10 @@ const App: React.FC = () => {
                 <Sonner />
                 <OfflineIndicator />
                 
-                <InstallPrompt delay={60000} />
+                {/* PWA: Atualização automática + Prompt de instalação */}
+                <UpdatePrompt />
+                <InstallPrompt delay={3000} showOnlyOnce={false} />
+                
                 {showSplash && <SplashScreen onComplete={hideSplash} />}
                 <CharacterGate>
                   <BrowserRouter>
@@ -132,6 +140,7 @@ const App: React.FC = () => {
         </ThemeProvider>
       </ErrorBoundary>
     </QueryClientProvider>
+    </>
   );
 };
 
