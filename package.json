@@ -14,7 +14,8 @@
     "test": "vitest",
     "test:ci": "vitest run --coverage",
     "deploy": "npm run build:prod",
-    "deploy:dev": "npm run build:dev"
+    "deploy:dev": "npm run build:dev",
+    "analyze-colors": "tsx scripts/analyze-colors.ts"
   },
   "dependencies": {
     "@capacitor/android": "^8.0.0",
