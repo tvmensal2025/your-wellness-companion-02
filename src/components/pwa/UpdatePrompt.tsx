@@ -132,36 +132,66 @@ export function UpdatePrompt() {
   );
 }
 
+// Padrões de erro de chunk/cache que causam tela branca
+const CHUNK_ERROR_PATTERNS = [
+  'ChunkLoadError',
+  'Loading chunk',
+  'dynamically imported module',
+  'Failed to fetch dynamically imported module',
+  'Failed to fetch',
+  'Importing a module script failed',
+  'NetworkError when attempting to fetch',
+  'Load failed',
+  'error loading dynamically imported module',
+  'Unable to preload CSS',
+  'Loading CSS chunk',
+  'Unexpected token \'<\'' // HTML retornado em vez de JS
+];
+
+function isChunkError(message: string): boolean {
+  if (!message) return false;
+  const lowerMsg = message.toLowerCase();
+  return CHUNK_ERROR_PATTERNS.some(pattern => 
+    lowerMsg.includes(pattern.toLowerCase())
+  );
+}
+
 // Component to handle chunk load errors (white screen fix)
 export function ChunkErrorHandler() {
   const [hasError, setHasError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
+    // Verificar se houve erro de chunk na sessão anterior
+    const lastChunkError = sessionStorage.getItem('chunk_error_recovery');
+    if (lastChunkError) {
+      console.log('[PWA] Recuperação de erro de chunk detectada');
+      sessionStorage.removeItem('chunk_error_recovery');
+    }
+
     const handleError = (event: ErrorEvent) => {
       const msg = event.message || '';
-      if (
-        msg.includes('ChunkLoadError') ||
-        msg.includes('Loading chunk') ||
-        msg.includes('dynamically imported module') ||
-        msg.includes('Failed to fetch dynamically imported module')
-      ) {
-        console.error('[PWA] Chunk load error - versão desatualizada');
+      if (isChunkError(msg)) {
+        console.error('[PWA] Chunk load error detectado:', msg);
+        setErrorMessage(msg);
         setHasError(true);
         event.preventDefault();
+        
+        // Marcar para auto-recovery
+        sessionStorage.setItem('chunk_error_recovery', 'pending');
       }
     };
 
     const handleRejection = (event: PromiseRejectionEvent) => {
       const msg = String(event.reason?.message || event.reason || '');
-      if (
-        msg.includes('ChunkLoadError') ||
-        msg.includes('Loading chunk') ||
-        msg.includes('dynamically imported module') ||
-        msg.includes('Failed to fetch')
-      ) {
-        console.error('[PWA] Chunk promise rejected - versão desatualizada');
+      if (isChunkError(msg)) {
+        console.error('[PWA] Chunk promise rejected:', msg);
+        setErrorMessage(msg);
         setHasError(true);
         event.preventDefault();
+        
+        // Marcar para auto-recovery
+        sessionStorage.setItem('chunk_error_recovery', 'pending');
       }
     };
 
@@ -180,8 +210,9 @@ export function ChunkErrorHandler() {
       try {
         const keys = await caches.keys();
         await Promise.all(keys.map(key => caches.delete(key)));
+        console.log('[PWA] Caches limpos:', keys.length);
       } catch (e) {
-        console.warn('Erro ao limpar cache:', e);
+        console.warn('[PWA] Erro ao limpar cache:', e);
       }
     }
 
@@ -190,9 +221,17 @@ export function ChunkErrorHandler() {
       try {
         const registrations = await navigator.serviceWorker.getRegistrations();
         await Promise.all(registrations.map(r => r.unregister()));
+        console.log('[PWA] Service workers desregistrados:', registrations.length);
       } catch (e) {
-        console.warn('Erro ao desregistrar SW:', e);
+        console.warn('[PWA] Erro ao desregistrar SW:', e);
       }
+    }
+
+    // Limpar sessionStorage exceto marcador de recovery
+    const recoveryFlag = sessionStorage.getItem('chunk_error_recovery');
+    sessionStorage.clear();
+    if (recoveryFlag) {
+      sessionStorage.setItem('chunk_error_recovery', 'done');
     }
 
     // Hard reload
@@ -202,23 +241,34 @@ export function ChunkErrorHandler() {
   if (!hasError) return null;
 
   return (
-    <div className="fixed inset-0 z-[200] bg-background flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[9999] bg-gray-900 flex items-center justify-center p-4">
       <div className="max-w-sm w-full text-center space-y-6">
-        <div className="w-16 h-16 bg-yellow-500/20 rounded-full flex items-center justify-center mx-auto">
-          <AlertTriangle className="w-8 h-8 text-yellow-500" />
+        <div className="w-20 h-20 bg-yellow-500/20 rounded-full flex items-center justify-center mx-auto">
+          <AlertTriangle className="w-10 h-10 text-yellow-500" />
         </div>
         <div>
-          <h2 className="text-xl font-bold text-foreground mb-2">
+          <h2 className="text-2xl font-bold text-white mb-3">
             Atualização Necessária
           </h2>
-          <p className="text-muted-foreground">
-            Uma nova versão do app está disponível. Recarregue para continuar.
+          <p className="text-gray-400">
+            Uma nova versão do app está disponível. Limpe o cache para continuar usando.
           </p>
         </div>
-        <Button onClick={handleReload} size="lg" className="w-full gap-2">
-          <RefreshCw className="w-4 h-4" />
-          Recarregar App
+        <Button 
+          onClick={handleReload} 
+          size="lg" 
+          className="w-full gap-2 py-6 text-lg bg-yellow-500 hover:bg-yellow-400 text-black font-bold"
+        >
+          <RefreshCw className="w-5 h-5" />
+          Limpar Cache e Recarregar
         </Button>
+        
+        {/* Debug info */}
+        {process.env.NODE_ENV === 'development' && errorMessage && (
+          <p className="text-xs text-gray-600 break-all mt-4">
+            {errorMessage}
+          </p>
+        )}
       </div>
     </div>
   );

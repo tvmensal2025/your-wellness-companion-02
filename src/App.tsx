@@ -96,8 +96,8 @@ const App: React.FC = () => {
                 <InstallPrompt delay={3000} showOnlyOnce={false} />
                 
                 {showSplash && <SplashScreen onComplete={hideSplash} />}
-                <CharacterGate>
-                  <BrowserRouter>
+                <BrowserRouter>
+                  <CharacterGate>
                     <Suspense fallback={<PageLoader />}>
                       <Routes>
                         <Route path="/" element={<AutoRedirect />} />
@@ -132,8 +132,8 @@ const App: React.FC = () => {
                       </Routes>
                       <FloatingMessagesButton />
                     </Suspense>
-                  </BrowserRouter>
-                </CharacterGate>
+                  </CharacterGate>
+                </BrowserRouter>
               </ActiveSectionProvider>
             </MenuStyleProvider>
           </TooltipProvider>
