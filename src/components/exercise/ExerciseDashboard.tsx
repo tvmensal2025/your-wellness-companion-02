@@ -18,7 +18,7 @@ import { SavedProgramView } from "./SavedProgramView";
 import { PerformanceDashboardCard } from "./PerformanceDashboardCard";
 import { ExerciseChallengeCard } from "./ExerciseChallengeCard";
 import { FollowingProgressCard } from "./FollowingProgressCard";
-import { NotificationCenter } from "./NotificationCenter";
+
 
 import { useExerciseProgram } from "@/hooks/useExerciseProgram";
 import { useExercisesLibrary, Exercise, WeeklyPlan } from "@/hooks/useExercisesLibrary";
@@ -366,8 +366,6 @@ export const ExerciseDashboard: React.FC<ExerciseDashboardProps> = ({ user }) =>
         
         {/* Ações compactas no topo */}
         <div className="flex items-center gap-1 sm:gap-1.5">
-          {/* Notificações */}
-          <NotificationCenter userId={user?.id || ''} variant="compact" />
 
           {/* Botão Progresso Compartilhável */}
           <ProgressShareButton 
