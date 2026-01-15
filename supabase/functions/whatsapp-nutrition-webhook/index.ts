@@ -128,14 +128,44 @@ serve(async (req) => {
       return new Response(JSON.stringify({ ok: true }), { headers: corsHeaders });
     }
 
-    console.log(`[WhatsApp] Mensagem de ${phone} (${pushName})`);
+    console.log(`[WhatsApp] 📩 Mensagem de ${phone} (${pushName})`);
 
     // Buscar usuário
     const user = await findUserByPhone(supabase, phone);
     if (!user) {
-      console.log("[WhatsApp] Usuário não encontrado:", phone);
-      return new Response(JSON.stringify({ ok: true }), { headers: corsHeaders });
+      console.log(`[WhatsApp] ⚠️ Usuário NÃO ENCONTRADO: ${phone}`);
+      console.log(`[WhatsApp] 📤 Enviando mensagem de boas-vindas para usuário não cadastrado...`);
+      
+      // Enviar mensagem de boas-vindas para usuário não cadastrado
+      const welcomeMessage = 
+        `👋 *Olá! Prazer em conhecê-lo(a)!*\n\n` +
+        `Sou a *Sofia* 🥗, sua nutricionista virtual, e trabalho junto com o *Dr. Vital* 🩺 para análise de exames.\n\n` +
+        `📱 Para usar nossos serviços, você precisa criar uma conta:\n` +
+        `🔗 https://app.oficialmaxnutrition.com.br\n\n` +
+        `*Depois de se cadastrar:*\n` +
+        `1️⃣ Vá em Configurações > Perfil\n` +
+        `2️⃣ Adicione seu número de WhatsApp\n` +
+        `3️⃣ Volte aqui e me mande uma foto da sua refeição!\n\n` +
+        `✨ *O que posso fazer por você:*\n` +
+        `• 🍽️ Analisar fotos de refeições\n` +
+        `• 📊 Calcular calorias e macros\n` +
+        `• 🩺 Analisar exames laboratoriais\n\n` +
+        `Te aguardo! 😊`;
+      
+      await sendWhatsApp(phone, welcomeMessage);
+      
+      // Registrar log para análise
+      console.log(`[WhatsApp] ✅ Mensagem de boas-vindas enviada para: ${phone}`);
+      
+      return new Response(JSON.stringify({ 
+        ok: true, 
+        action: "welcome_sent",
+        phone: phone,
+        reason: "user_not_registered"
+      }), { headers: corsHeaders });
     }
+    
+    console.log(`[WhatsApp] ✅ Usuário encontrado: ${user.full_name || user.email} (ID: ${user.id})`)
 
     // Buscar pendências
     const pending = await getPendingConfirmation(supabase, user.id);
@@ -377,30 +407,43 @@ serve(async (req) => {
 
 async function processImage(user: UserInfo, phone: string, message: any, webhook: any, isDocument: boolean = false): Promise<void> {
   try {
+    console.log(`[WhatsApp] 📷 Processando ${isDocument ? 'documento' : 'imagem'} para usuário: ${user.full_name || user.email}`);
+    
     const imageUrl = await processAndUploadImage(supabase, user.id, message, webhook);
 
     if (!imageUrl) {
+      console.log(`[WhatsApp] ❌ Falha ao fazer upload da ${isDocument ? 'documento' : 'imagem'}`);
       await sendWhatsApp(phone, `❌ Não consegui processar ${isDocument ? 'seu documento' : 'sua foto'}. Tente enviar novamente!`);
       return;
     }
+    
+    console.log(`[WhatsApp] ✅ Upload concluído: ${imageUrl.substring(0, 80)}...`);
 
     // Se é um documento (PDF), encaminhar diretamente para análise médica
     if (isDocument) {
-      console.log('[WhatsApp] Documento detectado, encaminhando para análise médica...');
+      console.log('[WhatsApp] 📄 Documento detectado, encaminhando para Dr. Vital...');
       await processMedicalImage(supabase, user, phone, imageUrl);
       return;
     }
 
     // Detectar tipo de imagem
-    const { data: imageTypeResult } = await supabase.functions.invoke("detect-image-type", {
+    console.log('[WhatsApp] 🔍 Detectando tipo de imagem...');
+    const { data: imageTypeResult, error: detectError } = await supabase.functions.invoke("detect-image-type", {
       body: { imageUrl }
     });
+    
+    if (detectError) {
+      console.error('[WhatsApp] ❌ Erro ao detectar tipo de imagem:', detectError);
+    }
 
     const imageType = imageTypeResult?.type || "OTHER";
+    console.log(`[WhatsApp] 🏷️ Tipo detectado: ${imageType}`);
 
     if (imageType === "FOOD") {
+      console.log('[WhatsApp] 🍽️ Encaminhando para Sofia (análise nutricional)...');
       await processFoodImage(user, phone, imageUrl);
     } else if (imageType === "MEDICAL") {
+      console.log('[WhatsApp] 🩺 Encaminhando para Dr. Vital (análise médica)...');
       await processMedicalImage(supabase, user, phone, imageUrl);
     } else {
       // Verificar se tem lote médico ativo
@@ -436,6 +479,9 @@ async function processImage(user: UserInfo, phone: string, message: any, webhook
 
 async function processFoodImage(user: UserInfo, phone: string, imageUrl: string): Promise<void> {
   try {
+    console.log(`[Sofia] 🍽️ Iniciando análise nutricional para: ${user.full_name || user.email}`);
+    console.log(`[Sofia] 📷 URL da imagem: ${imageUrl.substring(0, 80)}...`);
+    
     const { data: analysis, error: analysisError } = await supabase.functions.invoke("sofia-image-analysis", {
       body: {
         imageUrl,
@@ -444,10 +490,19 @@ async function processFoodImage(user: UserInfo, phone: string, imageUrl: string)
       },
     });
 
-    if (analysisError || !analysis) {
+    if (analysisError) {
+      console.error(`[Sofia] ❌ Erro na análise:`, analysisError);
       await sendWhatsApp(phone, "❌ Erro ao analisar sua foto. Tente novamente!");
       return;
     }
+    
+    if (!analysis) {
+      console.log(`[Sofia] ⚠️ Análise retornou vazio`);
+      await sendWhatsApp(phone, "❌ Erro ao analisar sua foto. Tente novamente!");
+      return;
+    }
+    
+    console.log(`[Sofia] ✅ Análise concluída:`, JSON.stringify(analysis).substring(0, 300));
 
     const normalizedFoods =
       analysis?.detectedFoods ??
@@ -457,8 +512,10 @@ async function processFoodImage(user: UserInfo, phone: string, imageUrl: string)
       [];
 
     const detectedFoods = Array.isArray(normalizedFoods) ? normalizedFoods : [];
+    console.log(`[Sofia] 🍴 Alimentos detectados: ${detectedFoods.length}`);
 
     if (detectedFoods.length === 0) {
+      console.log(`[Sofia] ⚠️ Nenhum alimento detectado na imagem`);
       await sendWhatsApp(phone, "🤔 Não consegui identificar alimentos na foto. Tente enviar uma foto mais clara!");
       return;
     }
