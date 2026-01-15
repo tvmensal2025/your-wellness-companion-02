@@ -94,12 +94,12 @@ export function CharacterCard({
         className="relative flex flex-col items-center w-full h-full focus:outline-none"
       >
         {/* Imagem do personagem - ocupa maior parte */}
-        <div className="flex-[1.5] w-full flex items-end justify-center overflow-visible">
+        <div className="flex-[2.5] w-full flex items-end justify-center overflow-visible">
           <img
             src={character.imagePath}
             alt={character.name}
             className="w-auto object-contain drop-shadow-2xl"
-            style={{ maxHeight: '100%', maxWidth: '115%' }}
+            style={{ maxHeight: '110%', maxWidth: '150%' }}
             onError={(e) => {
               console.error('Erro ao carregar imagem:', character.imagePath);
               e.currentTarget.src = '/placeholder.svg';
@@ -113,21 +113,21 @@ export function CharacterCard({
           animate={{ opacity: isActive ? 1 : 0.5, y: isActive ? 0 : 10 }}
           transition={{ delay: 0.1 }}
           className={cn(
-            "w-full -mt-4 rounded-2xl p-4 backdrop-blur-md border",
+            "w-full -mt-8 rounded-3xl p-5 backdrop-blur-md border",
             "bg-gradient-to-b",
             characterColors[character.id]
           )}
         >
           {/* Nome com ícone */}
-          <div className="flex items-center justify-center gap-2 mb-1">
+          <div className="flex items-center justify-center gap-2 mb-2">
             {benefits.icon}
-            <h3 className="text-2xl font-bold text-white">
+            <h3 className="text-3xl font-bold text-white">
               {character.name}
             </h3>
           </div>
           
           {/* Descrição curta */}
-          <p className="text-sm text-white/70 text-center mb-3">
+          <p className="text-base text-white/70 text-center mb-4">
             {character.description}
           </p>
           
@@ -137,7 +137,7 @@ export function CharacterCard({
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               transition={{ delay: 0.2 }}
-              className="space-y-2 pt-2 border-t border-white/10"
+              className="space-y-2.5 pt-3 border-t border-white/10"
             >
               {benefits.benefits.map((benefit, idx) => (
                 <motion.div 
@@ -145,10 +145,10 @@ export function CharacterCard({
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.3 + idx * 0.1 }}
-                  className="flex items-center gap-2"
+                  className="flex items-center gap-2.5"
                 >
-                  <div className="w-1.5 h-1.5 rounded-full bg-green-400 flex-shrink-0" />
-                  <span className="text-sm text-white/90">{benefit}</span>
+                  <div className="w-2 h-2 rounded-full bg-green-400 flex-shrink-0" />
+                  <span className="text-base text-white/90">{benefit}</span>
                 </motion.div>
               ))}
             </motion.div>

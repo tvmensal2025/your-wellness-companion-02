@@ -110,23 +110,23 @@ export function CharacterSelector({
                   className="flex cursor-grab active:cursor-grabbing"
                   style={{ 
                     touchAction: 'pan-y',
-                    paddingLeft: 'calc(50vw - 145px)',
-                    paddingRight: 'calc(50vw - 145px)',
+                    paddingLeft: 'calc(50vw - 175px)',
+                    paddingRight: 'calc(50vw - 175px)',
                   }}
-                  animate={{ x: -currentIndex * 310 }}
+                  animate={{ x: -currentIndex * 370 }}
                   transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                 >
                   {sortedCharacters.map((character, index) => (
                     <motion.div 
                       key={character.id}
-                      className="flex-shrink-0 w-[290px] mx-[10px]"
+                      className="flex-shrink-0 w-[350px] mx-[10px]"
                       animate={{
                         scale: currentIndex === index ? 1 : 0.85,
                         opacity: currentIndex === index ? 1 : 0.4,
                       }}
                       transition={{ duration: 0.3 }}
                     >
-                      <div className="h-[70vh] min-h-[500px] max-h-[650px] flex flex-col">
+                      <div className="h-[85vh] min-h-[600px] max-h-[800px] flex flex-col">
                         <CharacterCard
                           character={character}
                           onSelect={handleSelect}
