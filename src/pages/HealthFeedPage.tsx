@@ -92,18 +92,18 @@ export default function HealthFeedPage() {
         // Buscar peso eliminado de todos os usuários que permitiram mostrar
         const { data } = await supabase
           .from('weight_measurements')
-          .select('weight_kg, user_id')
+          .select('peso_kg, user_id')
           .order('measurement_date', { ascending: true });
 
         if (data && data.length > 0) {
           // Agrupar por usuário e calcular diferença (primeiro peso - último peso)
           const userWeights: Record<string, { first: number; last: number }> = {};
           
-          data.forEach(m => {
+          data.forEach((m: any) => {
             if (!userWeights[m.user_id]) {
-              userWeights[m.user_id] = { first: m.weight_kg, last: m.weight_kg };
+              userWeights[m.user_id] = { first: m.peso_kg, last: m.peso_kg };
             } else {
-              userWeights[m.user_id].last = m.weight_kg;
+              userWeights[m.user_id].last = m.peso_kg;
             }
           });
 
