@@ -586,36 +586,48 @@ export type Database = {
       }
       ai_usage_logs: {
         Row: {
-          completion_tokens: number | null
-          cost: number | null
           created_at: string | null
+          error_message: string | null
+          estimated_cost: number | null
+          functionality: string | null
           id: string
-          model: string | null
-          prompt_tokens: number | null
-          service_name: string | null
-          total_tokens: number | null
+          metadata: Json | null
+          method: string
+          model_name: string | null
+          provider: string
+          response_time_ms: number | null
+          success: boolean | null
+          tokens_used: number | null
           user_id: string | null
         }
         Insert: {
-          completion_tokens?: number | null
-          cost?: number | null
           created_at?: string | null
+          error_message?: string | null
+          estimated_cost?: number | null
+          functionality?: string | null
           id?: string
-          model?: string | null
-          prompt_tokens?: number | null
-          service_name?: string | null
-          total_tokens?: number | null
+          metadata?: Json | null
+          method: string
+          model_name?: string | null
+          provider: string
+          response_time_ms?: number | null
+          success?: boolean | null
+          tokens_used?: number | null
           user_id?: string | null
         }
         Update: {
-          completion_tokens?: number | null
-          cost?: number | null
           created_at?: string | null
+          error_message?: string | null
+          estimated_cost?: number | null
+          functionality?: string | null
           id?: string
-          model?: string | null
-          prompt_tokens?: number | null
-          service_name?: string | null
-          total_tokens?: number | null
+          metadata?: Json | null
+          method?: string
+          model_name?: string | null
+          provider?: string
+          response_time_ms?: number | null
+          success?: boolean | null
+          tokens_used?: number | null
           user_id?: string | null
         }
         Relationships: []
@@ -14473,6 +14485,19 @@ export type Database = {
       }
     }
     Views: {
+      ai_usage_daily_stats: {
+        Row: {
+          avg_response_time: number | null
+          date: string | null
+          method: string | null
+          provider: string | null
+          success_rate: number | null
+          total_calls: number | null
+          total_cost: number | null
+          total_tokens: number | null
+        }
+        Relationships: []
+      }
       exercise_progress_stats: {
         Row: {
           avg_reps: number | null
@@ -14582,6 +14607,17 @@ export type Database = {
         }[]
       }
       get_active_whatsapp_provider: { Args: never; Returns: string }
+      get_ai_usage_summary: {
+        Args: { end_date?: string; start_date?: string }
+        Returns: {
+          avg_response_time: number
+          provider: string
+          success_rate: number
+          total_calls: number
+          total_cost: number
+          yolo_savings: number
+        }[]
+      }
       has_role: { Args: { _role: string; _user_id: string }; Returns: boolean }
       has_role_text: {
         Args: { _role: string; _user_id: string }
