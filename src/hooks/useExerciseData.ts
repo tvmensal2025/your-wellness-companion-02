@@ -82,29 +82,48 @@ async function fetchExerciseData(userId: string): Promise<ExerciseData> {
   const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString();
   const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0).toISOString();
 
-  // Fazer todas as queries em paralelo
+  // Fazer todas as queries em paralelo (incluindo user_exercise_history como fallback)
   const [
-    thisMonthResult,
-    lastMonthResult,
+    sessionsResult,
+    historyResult,
+    lastMonthSessionsResult,
+    lastMonthHistoryResult,
     pointsResult,
     goalResult,
   ] = await Promise.all([
-    // Treinos deste mês
+    // Treinos deste mês (exercise_sessions)
     supabase
       .from('exercise_sessions')
       .select('id, session_type, duration_minutes, created_at')
       .eq('user_id', userId)
       .gte('created_at', startOfMonth)
       .order('created_at', { ascending: false })
-      .limit(20),
+      .limit(50),
     
-    // Treinos do mês passado (só count)
+    // Treinos deste mês (user_exercise_history - fallback)
+    supabase
+      .from('user_exercise_history')
+      .select('id, exercise_name, duration_seconds, completed_at')
+      .eq('user_id', userId)
+      .gte('completed_at', startOfMonth)
+      .order('completed_at', { ascending: false })
+      .limit(50),
+    
+    // Treinos do mês passado (exercise_sessions - só count)
     supabase
       .from('exercise_sessions')
       .select('id', { count: 'exact', head: true })
       .eq('user_id', userId)
       .gte('created_at', startOfLastMonth)
       .lte('created_at', endOfLastMonth),
+    
+    // Treinos do mês passado (user_exercise_history - só count)
+    supabase
+      .from('user_exercise_history')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .gte('completed_at', startOfLastMonth)
+      .lte('completed_at', endOfLastMonth),
     
     // Streak
     supabase
@@ -123,19 +142,41 @@ async function fetchExerciseData(userId: string): Promise<ExerciseData> {
       .maybeSingle(),
   ]);
 
-  const thisMonthWorkouts = thisMonthResult.data || [];
-  const lastMonthCount = lastMonthResult.count || 0;
-  const workoutsCount = thisMonthWorkouts.length;
+  // Combinar dados de ambas as tabelas
+  const sessions = sessionsResult.data || [];
+  const history = historyResult.data || [];
+  
+  // Calcular treinos únicos por data (para evitar contagem dupla)
+  const uniqueWorkoutDates = new Set<string>();
+  
+  // Adicionar datas de exercise_sessions
+  sessions.forEach(s => {
+    const date = new Date(s.created_at).toISOString().slice(0, 10);
+    uniqueWorkoutDates.add(date);
+  });
+  
+  // Adicionar datas de user_exercise_history
+  history.forEach(h => {
+    const date = new Date(h.completed_at).toISOString().slice(0, 10);
+    uniqueWorkoutDates.add(date);
+  });
+  
+  const workoutsCount = uniqueWorkoutDates.size;
+  
+  // Combinar contagem do mês passado
+  const lastMonthSessionsCount = lastMonthSessionsResult.count || 0;
+  const lastMonthHistoryCount = lastMonthHistoryResult.count || 0;
+  const lastMonthCount = Math.max(lastMonthSessionsCount, Math.floor(lastMonthHistoryCount / 3)); // Estimar sessões de histórico
 
   // Calcular totais
   const workoutsChangePercent = lastMonthCount > 0 
     ? Math.round(((workoutsCount - lastMonthCount) / lastMonthCount) * 100)
     : 0;
 
-  const totalMinutes = thisMonthWorkouts.reduce(
-    (acc, w) => acc + (w.duration_minutes || 0),
-    0
-  );
+  // Calcular minutos totais de ambas fontes
+  const minutesFromSessions = sessions.reduce((acc, w) => acc + (w.duration_minutes || 0), 0);
+  const minutesFromHistory = history.reduce((acc, h) => acc + Math.ceil((h.duration_seconds || 0) / 60), 0);
+  const totalMinutes = minutesFromSessions + minutesFromHistory;
 
   // Calcular progresso da meta
   const goalProgress = goalResult.data?.target_value 
@@ -147,18 +188,36 @@ async function fetchExerciseData(userId: string): Promise<ExerciseData> {
   const strength = Math.min(100, 50 + workoutsCount * 2);
   const endurance = Math.min(100, Math.round(totalMinutes / 6));
 
+  // Combinar e formatar dados recentes (priorizar sessions, adicionar history)
+  const allWorkouts = [
+    ...sessions.map(w => ({
+      id: w.id,
+      name: w.session_type || 'Treino',
+      duration: w.duration_minutes || 0,
+      date: w.created_at,
+      source: 'session' as const
+    })),
+    ...history.map(h => ({
+      id: h.id,
+      name: h.exercise_name || 'Exercício',
+      duration: Math.ceil((h.duration_seconds || 0) / 60),
+      date: h.completed_at,
+      source: 'history' as const
+    }))
+  ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
   // Formatar dados
-  const records = thisMonthWorkouts.slice(0, 3).map((w) => ({
-    name: w.session_type || 'Treino',
-    weight: `${w.duration_minutes || 0} min`,
-    date: formatRelativeDate(w.created_at),
+  const records = allWorkouts.slice(0, 3).map((w) => ({
+    name: w.name,
+    weight: `${w.duration || 0} min`,
+    date: formatRelativeDate(w.date),
   }));
 
-  const recentWorkouts = thisMonthWorkouts.slice(0, 5).map((w) => ({
+  const recentWorkouts = allWorkouts.slice(0, 5).map((w) => ({
     id: w.id,
-    name: w.session_type || 'Treino',
-    duration: w.duration_minutes || 0,
-    date: formatRelativeDate(w.created_at),
+    name: w.name,
+    duration: w.duration,
+    date: formatRelativeDate(w.date),
   }));
 
   const data: ExerciseData = {

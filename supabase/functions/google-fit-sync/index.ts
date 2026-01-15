@@ -286,6 +286,53 @@ serve(async (req) => {
 
       await supabaseClient.from('google_fit_data').upsert(googleFitRecord, { onConflict: 'user_id,date' });
       
+      // === SINCRONIZAÇÃO AUTOMÁTICA COM EXERCISE_SESSIONS ===
+      // Se houver dados de exercício do Google Fit, salvar em exercise_sessions
+      if ((d.workoutSessions && d.workoutSessions > 0) || (d.exerciseMinutes && d.exerciseMinutes > 0)) {
+        // Verificar se já existe sessão do Google Fit para este dia
+        const { data: existingExerciseSession } = await supabaseClient
+          .from('exercise_sessions')
+          .select('id')
+          .eq('user_id', user.user.id)
+          .eq('session_date', d.date)
+          .eq('notes', 'Sincronizado do Google Fit')
+          .maybeSingle();
+
+        if (existingExerciseSession) {
+          // Atualizar sessão existente
+          await supabaseClient
+            .from('exercise_sessions')
+            .update({
+              duration_minutes: d.exerciseMinutes || 0,
+              calories_burned: d.exerciseCalories || 0,
+              heart_rate_avg: d.heartRateAvg || null,
+              heart_rate_max: d.heartRateMax || null,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', existingExerciseSession.id);
+            
+          console.log(`🏋️ Exercise session atualizada para ${d.date}: ${d.exerciseMinutes}min, ${d.workoutSessions} sessões`);
+        } else if ((d.exerciseMinutes && d.exerciseMinutes > 0) || (d.workoutSessions && d.workoutSessions > 0)) {
+          // Criar nova sessão de exercício
+          await supabaseClient
+            .from('exercise_sessions')
+            .insert({
+              user_id: user.user.id,
+              session_date: d.date,
+              session_type: 'Google Fit Sync',
+              duration_minutes: d.exerciseMinutes || 0,
+              calories_burned: d.exerciseCalories || 0,
+              heart_rate_avg: d.heartRateAvg || null,
+              heart_rate_max: d.heartRateMax || null,
+              intensity_level: d.exerciseCalories > 200 ? 'high' : d.exerciseCalories > 100 ? 'moderate' : 'low',
+              notes: 'Sincronizado do Google Fit',
+              created_at: new Date().toISOString()
+            });
+            
+          console.log(`🏋️ Exercise session criada para ${d.date}: ${d.exerciseMinutes}min, ${d.exerciseCalories || 0} kcal`);
+        }
+      }
+      
       // === SINCRONIZAÇÃO AUTOMÁTICA COM NUTRITION_TRACKING ===
       // Se houver dados de hidratação ou nutrição, salvar em nutrition_tracking
       if ((d.hydration && d.hydration > 0) || (d.waterIntake && d.waterIntake > 0) || (d.nutritionCalories && d.nutritionCalories > 0)) {

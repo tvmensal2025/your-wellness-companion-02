@@ -282,6 +282,32 @@ export const useExerciseProgram = (userId: string | undefined) => {
       
       console.log('✅ Log de treino inserido com sucesso!');
 
+      // TAMBÉM salvar em exercise_sessions (para o dashboard)
+      const sessionDate = new Date().toISOString().slice(0, 10);
+      
+      // Verificar se já existe sessão para hoje
+      const { data: existingSession } = await supabase
+        .from('exercise_sessions')
+        .select('id, duration_minutes')
+        .eq('user_id', userId)
+        .eq('session_date', sessionDate)
+        .maybeSingle();
+
+      if (!existingSession) {
+        // Criar nova sessão do dia
+        await supabase.from('exercise_sessions').insert({
+          user_id: userId,
+          session_date: sessionDate,
+          session_type: workoutType || 'Treino',
+          exercises: exercises,
+          duration_minutes: 30, // Estimativa padrão
+          intensity_level: 'moderate',
+          notes: `Semana ${weekNumber}, Dia ${dayNumber}`,
+          created_at: new Date().toISOString()
+        });
+        console.log('✅ Sessão de exercício criada em exercise_sessions');
+      }
+
       // Atualizar contador de treinos completos
       console.log('📊 Buscando dados do programa...');
       const { data: plan } = await supabase
