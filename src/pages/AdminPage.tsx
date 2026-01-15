@@ -35,8 +35,10 @@ import {
   Plus,
   MessageSquare,
   Send,
-  Image as ImageIcon
+  Image as ImageIcon,
+  DollarSign
 } from "lucide-react";
+import { AICostDashboard } from "@/components/admin/AICostDashboard";
 import { AdminDashboard } from "@/components/admin/AdminDashboard";
 import UserManagement from "@/components/admin/UserManagement";
 import WeighingMonitoring from "@/components/admin/WeighingMonitoring";
@@ -234,6 +236,7 @@ const AdminPage = () => {
     { id: 'payments', icon: CreditCard, label: 'Gestão de Pagamentos', color: 'text-emerald-500', description: 'Gestão Asaas e assinaturas' },
     { id: 'company-config', icon: Building2, label: '🏢 Dados da Empresa', color: 'text-indigo-500', description: 'Configure dados da empresa para melhor IA' },
     { id: 'ai-control', icon: Brain, label: '🧠 Controle Unificado de IA', color: 'text-purple-500', description: 'Configuração Avançada - DrVital/Sofia - MÁXIMO/MEIO/MÍNIMO' },
+    { id: 'ai-costs', icon: DollarSign, label: '💰 Custos de IA', color: 'text-green-600', description: 'Dashboard de custos, economia e uso de IA' },
     { id: 'mealie', icon: Utensils, label: 'Mealie (Cardápio)', color: 'text-emerald-600', description: 'Curadoria de receitas e token' },
     { id: 'sessions', icon: FileText, label: 'Gestão de Sessões', color: 'text-cyan-500', description: 'Criar e enviar sessões personalizadas' },
     { id: 'whatsapp', icon: MessageSquare, label: 'WhatsApp Evolution', color: 'text-green-500', description: 'Mensagens, templates e automações' },
@@ -331,6 +334,12 @@ const AdminPage = () => {
               </Badge>
             </div>
             <AIControlPanelUnified />
+          </div>
+        );
+      case 'ai-costs':
+        return (
+          <div className="space-y-6">
+            <AICostDashboard />
           </div>
         );
       case 'mealie':
