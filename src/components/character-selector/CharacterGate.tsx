@@ -16,8 +16,8 @@ interface CharacterGateProps {
   children: ReactNode;
 }
 
-// Rotas onde o seletor NÃO deve aparecer
-const PUBLIC_ROUTES = ['/auth', '/terms', '/termos', '/privacidade', '/auto-login', '/install'];
+// Rotas onde o seletor NÃO deve aparecer (inclui / para evitar tela branca no redirect)
+const PUBLIC_ROUTES = ['/', '/auth', '/terms', '/termos', '/privacidade', '/auto-login', '/install', '/relatorio', '/community/post'];
 
 export function CharacterGate({ children }: CharacterGateProps) {
   const location = useLocation();
