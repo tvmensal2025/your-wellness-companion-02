@@ -18,6 +18,21 @@ import {
 const STORAGE_KEY = 'maxnutrition_selected_character';
 const HISTORY_KEY = 'maxnutrition_character_history';
 
+// Verificar se localStorage está disponível (Safari privado, etc)
+function isLocalStorageAvailable(): boolean {
+  try {
+    if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+      return false;
+    }
+    const testKey = '__test_ls__';
+    localStorage.setItem(testKey, 'test');
+    localStorage.removeItem(testKey);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 interface CharacterHistory {
   [key: string]: number; // characterId -> número de vezes escolhido
 }
@@ -46,17 +61,25 @@ export function savePreference(characterId: CharacterId): void {
  */
 export function loadPreference(): CharacterId | null {
   try {
+    // Verificar se localStorage está disponível (Safari privado, etc)
+    if (!isLocalStorageAvailable()) {
+      console.warn('[CharacterPreference] localStorage não disponível');
+      return null;
+    }
+    
     const saved = localStorage.getItem(STORAGE_KEY);
     if (!saved) return null;
     
     if (!isValidCharacterId(saved)) {
-      localStorage.removeItem(STORAGE_KEY);
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+      } catch {}
       return null;
     }
     
     return saved;
   } catch (error) {
-    console.warn('Could not access localStorage:', error);
+    console.warn('[CharacterPreference] Erro ao carregar:', error);
     return null;
   }
 }

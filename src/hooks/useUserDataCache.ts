@@ -87,6 +87,13 @@ export const useUserDataCache = (): UseUserDataCacheReturn => {
     }
 
     const doFetch = async () => {
+      // Timeout de segurança para evitar loading infinito em redes lentas
+      const controller = new AbortController();
+      const fetchTimeout = setTimeout(() => {
+        console.warn('[useUserDataCache] Timeout de 10s - abortando');
+        controller.abort();
+      }, 10000);
+      
       try {
         const { data: { session } } = await supabase.auth.getSession();
         const user = session?.user ?? null;
@@ -106,6 +113,7 @@ export const useUserDataCache = (): UseUserDataCacheReturn => {
             setData(emptyData);
             setLoading(false);
           }
+          clearTimeout(fetchTimeout);
           return;
         }
 
@@ -182,10 +190,19 @@ export const useUserDataCache = (): UseUserDataCacheReturn => {
           setData(cachedData);
           setLoading(false);
         }
+        clearTimeout(fetchTimeout);
       } catch (err: any) {
-        console.error('Erro ao buscar dados do usuário:', err);
+        clearTimeout(fetchTimeout);
+        
+        // Se foi abortado por timeout, apenas logar
+        if (err?.name === 'AbortError' || err?.message?.includes('abort')) {
+          console.warn('[useUserDataCache] Timeout - continuando sem dados completos');
+        } else {
+          console.error('[useUserDataCache] Erro ao buscar dados:', err);
+        }
+        
         if (mountedRef.current) {
-          setError(err.message);
+          setError(err?.message || 'Erro de conexão');
           setLoading(false);
         }
       }
