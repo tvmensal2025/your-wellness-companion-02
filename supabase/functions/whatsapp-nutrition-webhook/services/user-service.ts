@@ -7,33 +7,73 @@ export interface UserInfo {
 }
 
 /**
+ * Normaliza telefone para busca - gera múltiplas variações
+ */
+function generatePhoneVariations(phone: string): string[] {
+  // Remove tudo que não é número
+  const numbersOnly = phone.replace(/\D/g, "");
+  
+  const variations: string[] = [];
+  
+  // Original
+  if (phone) variations.push(phone);
+  
+  // Só números
+  if (numbersOnly) variations.push(numbersOnly);
+  
+  // Com DDI 55
+  if (!numbersOnly.startsWith("55")) {
+    variations.push("55" + numbersOnly);
+    variations.push("+55" + numbersOnly);
+  }
+  
+  // Sem DDI 55
+  if (numbersOnly.startsWith("55") && numbersOnly.length > 10) {
+    const withoutDDI = numbersOnly.substring(2);
+    variations.push(withoutDDI);
+  }
+  
+  // Com + no início
+  if (!phone.startsWith("+") && numbersOnly.startsWith("55")) {
+    variations.push("+" + numbersOnly);
+  }
+  
+  // Remove duplicatas
+  return [...new Set(variations)].filter(v => v.length >= 8);
+}
+
+/**
  * Find user by phone number
- * Busca primeiro em profiles, depois tenta criar profile se usuário existir em auth.users
+ * Busca com múltiplas variações de formato de telefone
  */
 export async function findUserByPhone(
   supabase: SupabaseClient,
   phone: string
 ): Promise<UserInfo | null> {
-  let cleanPhone = phone.replace(/\D/g, "");
-  if (cleanPhone.startsWith("55")) {
-    cleanPhone = cleanPhone.substring(2);
-  }
+  const variations = generatePhoneVariations(phone);
+  
+  console.log(`[UserService] 🔍 Buscando usuário pelo telefone: ${phone}`);
+  console.log(`[UserService] 📱 Variações geradas: ${JSON.stringify(variations)}`);
 
-  // 1. Buscar em profiles
+  // 1. Buscar em profiles usando OR com todas as variações
+  const orConditions = variations.map(v => `phone.ilike.%${v}%`).join(",");
+  
+  console.log(`[UserService] 🔎 Query OR: ${orConditions}`);
+
   const { data, error } = await supabase
     .from("profiles")
     .select("user_id, email, phone, full_name")
-    .or(`phone.ilike.%${cleanPhone}%,phone.ilike.%${phone}%`)
+    .or(orConditions)
     .limit(1)
     .maybeSingle();
 
   if (error) {
-    console.error("[UserService] Erro ao buscar usuário:", error);
+    console.error("[UserService] ❌ Erro ao buscar usuário:", error);
     return null;
   }
 
   if (data) {
-    console.log(`[UserService] Usuário encontrado: ${data.full_name || data.email}`);
+    console.log(`[UserService] ✅ Usuário encontrado: ${data.full_name || data.email} (phone: ${data.phone})`);
     return { 
       id: data.user_id, 
       email: data.email,
@@ -41,16 +81,40 @@ export async function findUserByPhone(
     };
   }
 
-  // 2. Se não encontrou em profiles, tentar criar profile a partir de auth.users
-  console.log(`[UserService] Usuário não encontrado em profiles, tentando sincronizar...`);
+  // 2. Tentar busca exata com cada variação (fallback)
+  console.log(`[UserService] 🔄 Tentando busca exata com cada variação...`);
   
+  for (const variation of variations) {
+    const { data: exactData, error: exactError } = await supabase
+      .from("profiles")
+      .select("user_id, email, phone, full_name")
+      .eq("phone", variation)
+      .limit(1)
+      .maybeSingle();
+    
+    if (!exactError && exactData) {
+      console.log(`[UserService] ✅ Usuário encontrado (busca exata): ${exactData.full_name || exactData.email}`);
+      return { 
+        id: exactData.user_id, 
+        email: exactData.email,
+        full_name: exactData.full_name || undefined,
+      };
+    }
+  }
+
+  // 3. Se não encontrou em profiles, tentar sincronizar usuário órfão
+  console.log(`[UserService] 🔄 Usuário não encontrado em profiles, tentando sincronizar...`);
+  
+  const cleanPhone = phone.replace(/\D/g, "").replace(/^55/, "");
   const syncedUser = await syncOrphanUser(supabase, cleanPhone, phone);
+  
   if (syncedUser) {
-    console.log(`[UserService] Usuário sincronizado com sucesso: ${syncedUser.full_name || syncedUser.email}`);
+    console.log(`[UserService] ✅ Usuário sincronizado com sucesso: ${syncedUser.full_name || syncedUser.email}`);
     return syncedUser;
   }
 
-  console.log(`[UserService] Usuário não encontrado em nenhuma fonte: ${phone}`);
+  console.log(`[UserService] ⚠️ Usuário NÃO encontrado em nenhuma fonte: ${phone}`);
+  console.log(`[UserService] 📊 Variações testadas: ${JSON.stringify(variations)}`);
   return null;
 }
 
@@ -63,6 +127,8 @@ async function syncOrphanUser(
   originalPhone: string
 ): Promise<UserInfo | null> {
   try {
+    console.log(`[UserService] 🔍 Buscando usuário órfão com telefone: ${cleanPhone}`);
+    
     // Buscar usuário órfão usando RPC (função no banco que pode acessar auth.users)
     const { data: orphanData, error: orphanError } = await supabase.rpc(
       'find_and_sync_orphan_user_by_phone',
@@ -70,21 +136,26 @@ async function syncOrphanUser(
     );
 
     if (orphanError) {
-      console.error("[UserService] Erro ao buscar usuário órfão:", orphanError);
+      console.error("[UserService] ❌ Erro ao buscar usuário órfão:", orphanError);
       return null;
     }
 
-    if (orphanData && orphanData.user_id) {
+    // O RPC retorna um array
+    const orphan = Array.isArray(orphanData) ? orphanData[0] : orphanData;
+
+    if (orphan && orphan.user_id) {
+      console.log(`[UserService] ✅ Usuário órfão encontrado e sincronizado: ${orphan.email}`);
       return {
-        id: orphanData.user_id,
-        email: orphanData.email,
-        full_name: orphanData.full_name || undefined,
+        id: orphan.user_id,
+        email: orphan.email,
+        full_name: orphan.full_name || undefined,
       };
     }
 
+    console.log(`[UserService] ℹ️ Nenhum usuário órfão encontrado para: ${cleanPhone}`);
     return null;
   } catch (err) {
-    console.error("[UserService] Exceção ao sincronizar usuário órfão:", err);
+    console.error("[UserService] ❌ Exceção ao sincronizar usuário órfão:", err);
     return null;
   }
 }
