@@ -290,6 +290,7 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
           ? `Treino: ${workout.dayName} | Peso: ${weight}kg` 
           : `Treino: ${workout.dayName}`;
 
+      // Salvar no user_exercise_history (histórico detalhado)
       await supabase.from('user_exercise_history').insert({
         user_id: user.id,
         exercise_name: exercise.name,
@@ -302,6 +303,57 @@ export const ActiveWorkoutModal: React.FC<ActiveWorkoutModalProps> = ({
         notes: notesText,
         completed_at: new Date().toISOString()
       });
+
+      // TAMBÉM salvar em exercise_sessions (usado pelo dashboard)
+      const sessionDate = new Date().toISOString().slice(0, 10);
+      const durationMinutes = Math.max(1, Math.ceil(durationSeconds / 60));
+      
+      // Verificar se já existe sessão para hoje
+      const { data: existingSession } = await supabase
+        .from('exercise_sessions')
+        .select('id, exercises, duration_minutes')
+        .eq('user_id', user.id)
+        .eq('session_date', sessionDate)
+        .maybeSingle();
+
+      if (existingSession) {
+        // Adicionar exercício à sessão existente
+        const currentExercises = existingSession.exercises || [];
+        const exerciseData = {
+          name: exercise.name,
+          sets: setsCompleted,
+          reps: repsCompleted,
+          weight: weight || null,
+          muscle_group: exercise.muscle_group
+        };
+        
+        await supabase
+          .from('exercise_sessions')
+          .update({
+            exercises: [...(Array.isArray(currentExercises) ? currentExercises : []), exerciseData],
+            duration_minutes: (existingSession.duration_minutes || 0) + durationMinutes,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', existingSession.id);
+      } else {
+        // Criar nova sessão do dia
+        await supabase.from('exercise_sessions').insert({
+          user_id: user.id,
+          session_date: sessionDate,
+          session_type: workout.dayName || 'Treino',
+          exercises: [{
+            name: exercise.name,
+            sets: setsCompleted,
+            reps: repsCompleted,
+            weight: weight || null,
+            muscle_group: exercise.muscle_group
+          }],
+          duration_minutes: durationMinutes,
+          intensity_level: exerciseFeedback || 'moderate',
+          notes: notesText,
+          created_at: new Date().toISOString()
+        });
+      }
 
       // SEMPRE atualizar evolução (mesmo sem peso)
       const volume = (weight || 0) * repsCompleted * setsCompleted;
