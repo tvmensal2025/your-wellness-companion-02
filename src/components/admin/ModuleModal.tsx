@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { uploadToVPS } from "@/lib/vpsApi";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -91,11 +91,9 @@ export const ModuleModal = ({ isOpen, onClose, onSubmit, courses }: ModuleModalP
     try {
       let finalThumb: string | undefined = imageUrl || undefined;
       if (!imageUrl && file) {
-        const path = `course-thumbnails/${Date.now()}_${file.name}`;
-        const { error: upErr } = await supabase.storage.from('course-thumbnails').upload(path, file, { cacheControl: '3600', upsert: false });
-        if (upErr) throw upErr;
-        const { data: pub } = supabase.storage.from('course-thumbnails').getPublicUrl(path);
-        finalThumb = pub?.publicUrl;
+        // Upload para MinIO via VPS
+        const result = await uploadToVPS(file, 'course-thumbnails');
+        finalThumb = result.url;
       }
 
       const moduleData = {

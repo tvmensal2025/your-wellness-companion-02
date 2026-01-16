@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback } from 'react';
 import { User as SupabaseUser } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
+import { uploadToVPS } from '@/lib/vpsApi';
 import { useToast } from '@/hooks/use-toast';
 
 interface UseImageHandlingProps {
@@ -32,7 +32,7 @@ export const useImageHandling = ({ user }: UseImageHandlingProps): UseImageHandl
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
-  // Image upload handler
+  // Image upload handler - Migrado para MinIO via VPS
   const handleImageUpload = useCallback(async (file: File): Promise<string | null> => {
     try {
       if (!user) {
@@ -44,31 +44,9 @@ export const useImageHandling = ({ user }: UseImageHandlingProps): UseImageHandl
         return null;
       }
 
-      const safeOriginalName = (file.name || 'imagem')
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/[^a-zA-Z0-9._-]/g, '-');
-
-      const fileName = `${user.id}/${Date.now()}_${safeOriginalName}`;
-      const { data, error } = await supabase.storage
-        .from('chat-images')
-        .upload(fileName, file);
-
-      if (error) {
-        console.error('Erro ao fazer upload da imagem:', error);
-        toast({
-          title: "Erro",
-          description: "Erro ao fazer upload da imagem",
-          variant: "destructive",
-        });
-        return null;
-      }
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('chat-images')
-        .getPublicUrl(fileName);
-
-      return publicUrl;
+      // Upload para MinIO via VPS
+      const result = await uploadToVPS(file, 'chat-images');
+      return result.url;
     } catch (error) {
       console.error('Erro ao processar imagem:', error);
       toast({
