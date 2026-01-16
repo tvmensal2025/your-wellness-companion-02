@@ -1,0 +1,79 @@
+# MaxNutrition VPS Backend - Docker Compose
+# Para deploy no EasyPanel ou VPS
+
+version: '3.8'
+
+services:
+  # ===========================================
+  # Backend Node.js
+  # ===========================================
+  backend:
+    build: .
+    container_name: maxnutrition-backend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+    env_file:
+      - .env
+    depends_on:
+      - minio
+    networks:
+      - maxnutrition
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ===========================================
+  # MinIO (Storage S3-compatible)
+  # ===========================================
+  minio:
+    image: minio/minio:latest
+    container_name: maxnutrition-minio
+    restart: unless-stopped
+    ports:
+      - "9000:9000"   # API
+      - "9001:9001"   # Console
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY}
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+    networks:
+      - maxnutrition
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ===========================================
+  # Redis (Cache - opcional)
+  # ===========================================
+  redis:
+    image: redis:7-alpine
+    container_name: maxnutrition-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - maxnutrition
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  maxnutrition:
+    driver: bridge
+
+volumes:
+  minio_data:
+  redis_data:
