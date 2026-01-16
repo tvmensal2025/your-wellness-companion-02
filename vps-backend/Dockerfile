@@ -11,10 +11,10 @@ RUN apk add --no-cache \
 WORKDIR /app
 
 # Copiar package.json primeiro (cache de dependências)
-COPY package*.json ./
+COPY package.json ./
 
 # Instalar dependências
-RUN npm ci --only=production
+RUN npm install --omit=dev
 
 # Copiar código
 COPY . .
