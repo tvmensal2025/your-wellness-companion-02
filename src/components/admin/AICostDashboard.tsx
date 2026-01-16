@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { checkVPSHealth, isVPSConfigured } from '@/lib/vpsApi';
+import { VPSApiMonitor } from './VPSApiMonitor';
 import { 
   Brain, 
   DollarSign, 
@@ -30,7 +31,8 @@ import {
   Scale,
   Bot,
   Eye,
-  AlertTriangle
+  AlertTriangle,
+  Network
 } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, Legend, BarChart, Bar, CartesianGrid } from 'recharts';
 import { format, subDays, startOfDay, endOfDay } from 'date-fns';
@@ -467,10 +469,14 @@ export function AICostDashboard() {
 
       {/* Tabs */}
       <Tabs value={selectedTab} onValueChange={setSelectedTab}>
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="overview">Visão Geral</TabsTrigger>
           <TabsTrigger value="providers">Por Provedor</TabsTrigger>
           <TabsTrigger value="infrastructure">Infraestrutura</TabsTrigger>
+          <TabsTrigger value="api-calls" className="gap-1">
+            <Network className="h-3.5 w-3.5" />
+            API Calls
+          </TabsTrigger>
           <TabsTrigger value="logs">Logs Detalhados</TabsTrigger>
         </TabsList>
 
@@ -833,6 +839,11 @@ export function AICostDashboard() {
               </CardContent>
             </Card>
           )}
+        </TabsContent>
+
+        {/* API Calls Tab - VPS Monitor */}
+        <TabsContent value="api-calls">
+          <VPSApiMonitor />
         </TabsContent>
 
         <TabsContent value="logs">

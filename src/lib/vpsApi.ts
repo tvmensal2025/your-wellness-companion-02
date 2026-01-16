@@ -165,28 +165,101 @@ async function fileToBase64(file: File): Promise<string> {
 /**
  * Chamar VPS API via Edge Function proxy (para WhatsApp, Tracking, etc.)
  */
+/**
+ * Logar chamada da API no banco
+ */
+async function logApiCall(logData: {
+  endpoint: string;
+  method: string;
+  statusCode?: number;
+  success: boolean;
+  responseTimeMs: number;
+  errorMessage?: string;
+  requestSummary?: string;
+}) {
+  try {
+    await supabase.from('vps_api_logs').insert([{
+      endpoint: logData.endpoint,
+      method: logData.method,
+      status_code: logData.statusCode,
+      success: logData.success,
+      response_time_ms: logData.responseTimeMs,
+      error_message: logData.errorMessage,
+      request_summary: logData.requestSummary,
+    }]);
+  } catch (err) {
+    console.warn('[VPS API] Erro ao logar chamada:', err);
+  }
+}
+
 async function vpsProxyRequest<T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> {
-  const { data, error } = await supabase.functions.invoke('vps-proxy', {
-    body: {
+  const startTime = Date.now();
+  const method = options.method || 'GET';
+  
+  try {
+    const { data, error } = await supabase.functions.invoke('vps-proxy', {
+      body: {
+        endpoint,
+        method,
+        headers: options.headers,
+        body: options.body ? JSON.parse(options.body as string) : undefined,
+      },
+    });
+
+    const responseTime = Date.now() - startTime;
+
+    if (error) {
+      // Log erro
+      await logApiCall({
+        endpoint,
+        method,
+        success: false,
+        responseTimeMs: responseTime,
+        errorMessage: error.message,
+      });
+      throw new Error(error.message || 'Erro na requisição VPS');
+    }
+
+    if (!data?.success && data?.error) {
+      // Log erro de negócio
+      await logApiCall({
+        endpoint,
+        method,
+        statusCode: data?.httpStatus || 400,
+        success: false,
+        responseTimeMs: responseTime,
+        errorMessage: data.error,
+      });
+      throw new Error(data.error);
+    }
+
+    // Log sucesso
+    await logApiCall({
       endpoint,
-      method: options.method || 'GET',
-      headers: options.headers,
-      body: options.body ? JSON.parse(options.body as string) : undefined,
-    },
-  });
+      method,
+      statusCode: data?.httpStatus || 200,
+      success: true,
+      responseTimeMs: responseTime,
+    });
 
-  if (error) {
-    throw new Error(error.message || 'Erro na requisição VPS');
+    return data as T;
+  } catch (err) {
+    const responseTime = Date.now() - startTime;
+    
+    // Log erro não tratado
+    await logApiCall({
+      endpoint,
+      method,
+      success: false,
+      responseTimeMs: responseTime,
+      errorMessage: err instanceof Error ? err.message : 'Erro desconhecido',
+    });
+    
+    throw err;
   }
-
-  if (!data?.success && data?.error) {
-    throw new Error(data.error);
-  }
-
-  return data as T;
 }
 
 /**
