@@ -148,7 +148,7 @@ const UserProfile = ({ onOpenLayoutPrefs }: UserProfileProps = {}) => {
       if (!user) return;
 
       const { data: achievementsData, error: achievementsError } = await supabase
-        .from('user_achievements')
+        .from('user_achievements_v2')
         .select('*')
         .eq('user_id', user.id)
         .order('earned_at', { ascending: false });
