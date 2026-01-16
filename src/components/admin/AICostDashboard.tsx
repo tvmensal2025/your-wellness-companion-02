@@ -21,7 +21,15 @@ import {
   Image,
   Server,
   Database,
-  Cpu
+  Cpu,
+  FileText,
+  Utensils,
+  Stethoscope,
+  MessageSquare,
+  Camera,
+  Scale,
+  Bot,
+  Eye
 } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, Legend, BarChart, Bar, CartesianGrid } from 'recharts';
 import { format, subDays, startOfDay, endOfDay } from 'date-fns';
@@ -76,6 +84,100 @@ const COST_PER_1K_TOKENS: Record<string, number> = {
   'openai': 0.002,
   'lovable': 0.001,
   'google': 0.00025,
+};
+
+// Helper para identificar tipo de funcionalidade
+const getFunctionalityInfo = (log: AIUsageLog): { 
+  icon: React.ReactNode; 
+  label: string; 
+  type: 'image' | 'text' | 'exam' | 'food' | 'chat' | 'other';
+  color: string;
+} => {
+  const method = log.method?.toLowerCase() || '';
+  const functionality = log.functionality?.toLowerCase() || '';
+  
+  // Análise de exames médicos
+  if (functionality.includes('exam') || functionality.includes('medical') || 
+      method.includes('exam') || method.includes('medical') || method.includes('analyze-medical')) {
+    return { 
+      icon: <Stethoscope className="h-4 w-4" />, 
+      label: 'Exame Médico', 
+      type: 'exam',
+      color: 'text-red-500 bg-red-50 border-red-200'
+    };
+  }
+  
+  // Análise de alimentos
+  if (functionality.includes('food') || functionality.includes('nutrition') || 
+      method.includes('food') || method.includes('sofia-image') || method.includes('analyze-food')) {
+    return { 
+      icon: <Utensils className="h-4 w-4" />, 
+      label: 'Análise Alimento', 
+      type: 'food',
+      color: 'text-orange-500 bg-orange-50 border-orange-200'
+    };
+  }
+  
+  // YOLO detection
+  if (log.provider?.toLowerCase() === 'yolo' || method.includes('yolo') || method.includes('detect')) {
+    return { 
+      icon: <Eye className="h-4 w-4" />, 
+      label: 'Detecção YOLO', 
+      type: 'image',
+      color: 'text-yellow-500 bg-yellow-50 border-yellow-200'
+    };
+  }
+  
+  // Imagem genérica
+  if (functionality.includes('image') || functionality.includes('vision') || 
+      method.includes('image') || method.includes('vision') || method.includes('photo')) {
+    return { 
+      icon: <Camera className="h-4 w-4" />, 
+      label: 'Análise Imagem', 
+      type: 'image',
+      color: 'text-blue-500 bg-blue-50 border-blue-200'
+    };
+  }
+  
+  // Chat/Conversa
+  if (functionality.includes('chat') || functionality.includes('conversation') || 
+      method.includes('chat') || method.includes('message')) {
+    return { 
+      icon: <MessageSquare className="h-4 w-4" />, 
+      label: 'Chat', 
+      type: 'chat',
+      color: 'text-purple-500 bg-purple-50 border-purple-200'
+    };
+  }
+  
+  // Peso/Tracking
+  if (functionality.includes('weight') || functionality.includes('tracking') || 
+      method.includes('weight')) {
+    return { 
+      icon: <Scale className="h-4 w-4" />, 
+      label: 'Tracking', 
+      type: 'other',
+      color: 'text-green-500 bg-green-50 border-green-200'
+    };
+  }
+  
+  // Texto genérico
+  if (method.includes('text') || method.includes('generate') || method.includes('complete')) {
+    return { 
+      icon: <FileText className="h-4 w-4" />, 
+      label: 'Texto', 
+      type: 'text',
+      color: 'text-gray-500 bg-gray-50 border-gray-200'
+    };
+  }
+  
+  // Default
+  return { 
+    icon: <Bot className="h-4 w-4" />, 
+    label: 'IA', 
+    type: 'other',
+    color: 'text-gray-500 bg-gray-50 border-gray-200'
+  };
 };
 
 export function AICostDashboard() {
@@ -725,19 +827,45 @@ export function AICostDashboard() {
         <TabsContent value="logs">
           <Card>
             <CardHeader>
-              <CardTitle>Logs de Chamadas</CardTitle>
+              <CardTitle>Logs de Chamadas Detalhados</CardTitle>
               <CardDescription>
-                Últimas {logs.length} chamadas de IA registradas
+                Últimas {logs.length} chamadas de IA registradas com detalhes completos
               </CardDescription>
             </CardHeader>
             <CardContent>
+              {/* Summary by type */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
+                {[
+                  { type: 'exam', label: 'Exames', icon: <Stethoscope className="h-4 w-4" />, color: 'text-red-500' },
+                  { type: 'food', label: 'Alimentos', icon: <Utensils className="h-4 w-4" />, color: 'text-orange-500' },
+                  { type: 'image', label: 'Imagens', icon: <Camera className="h-4 w-4" />, color: 'text-blue-500' },
+                  { type: 'chat', label: 'Chat', icon: <MessageSquare className="h-4 w-4" />, color: 'text-purple-500' },
+                ].map(({ type, label, icon, color }) => {
+                  const count = logs.filter(l => getFunctionalityInfo(l).type === type).length;
+                  const cost = logs
+                    .filter(l => getFunctionalityInfo(l).type === type)
+                    .reduce((sum, l) => sum + (l.estimated_cost || 0), 0);
+                  return (
+                    <div key={type} className="p-2 bg-muted/50 rounded-lg">
+                      <div className={`flex items-center gap-1 ${color}`}>
+                        {icon}
+                        <span className="text-xs font-medium">{label}</span>
+                      </div>
+                      <p className="text-lg font-bold">{count}</p>
+                      <p className="text-xs text-muted-foreground">${cost.toFixed(4)}</p>
+                    </div>
+                  );
+                })}
+              </div>
+
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b">
+                    <tr className="border-b bg-muted/30">
                       <th className="text-left p-2">Data</th>
+                      <th className="text-left p-2">Tipo</th>
                       <th className="text-left p-2">Provedor</th>
-                      <th className="text-left p-2">Método</th>
+                      <th className="text-left p-2">Funcionalidade</th>
                       <th className="text-left p-2">Tokens</th>
                       <th className="text-left p-2">Custo</th>
                       <th className="text-left p-2">Tempo</th>
@@ -745,38 +873,82 @@ export function AICostDashboard() {
                     </tr>
                   </thead>
                   <tbody>
-                    {logs.slice(0, 50).map(log => (
-                      <tr key={log.id} className="border-b hover:bg-muted/50">
-                        <td className="p-2 text-muted-foreground">
-                          {format(new Date(log.created_at), "dd/MM HH:mm", { locale: ptBR })}
-                        </td>
-                        <td className="p-2">
-                          <Badge 
-                            variant="outline"
-                            style={{ 
-                              borderColor: PROVIDER_COLORS[log.provider?.toLowerCase()]?.color || '#6b7280',
-                              color: PROVIDER_COLORS[log.provider?.toLowerCase()]?.color || '#6b7280'
-                            }}
-                          >
-                            {log.provider}
-                          </Badge>
-                        </td>
-                        <td className="p-2 font-mono text-xs">{log.method}</td>
-                        <td className="p-2">{log.tokens_used?.toLocaleString() || '-'}</td>
-                        <td className="p-2">${log.estimated_cost?.toFixed(6) || '0.00'}</td>
-                        <td className="p-2">{log.response_time_ms ? `${log.response_time_ms}ms` : '-'}</td>
-                        <td className="p-2">
-                          {log.success ? (
-                            <CheckCircle className="h-4 w-4 text-green-500" />
-                          ) : (
-                            <XCircle className="h-4 w-4 text-red-500" />
-                          )}
-                        </td>
-                      </tr>
-                    ))}
+                    {logs.slice(0, 100).map(log => {
+                      const funcInfo = getFunctionalityInfo(log);
+                      return (
+                        <tr key={log.id} className="border-b hover:bg-muted/50">
+                          <td className="p-2 text-muted-foreground whitespace-nowrap">
+                            {format(new Date(log.created_at), "dd/MM HH:mm", { locale: ptBR })}
+                          </td>
+                          <td className="p-2">
+                            <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs border ${funcInfo.color}`}>
+                              {funcInfo.icon}
+                              <span>{funcInfo.label}</span>
+                            </div>
+                          </td>
+                          <td className="p-2">
+                            <Badge 
+                              variant="outline"
+                              style={{ 
+                                borderColor: PROVIDER_COLORS[log.provider?.toLowerCase()]?.color || '#6b7280',
+                                color: PROVIDER_COLORS[log.provider?.toLowerCase()]?.color || '#6b7280'
+                              }}
+                            >
+                              {log.provider}
+                            </Badge>
+                          </td>
+                          <td className="p-2">
+                            <div className="max-w-[200px]">
+                              <p className="font-mono text-xs truncate" title={log.method}>
+                                {log.method || '-'}
+                              </p>
+                              {log.functionality && (
+                                <p className="text-xs text-muted-foreground truncate" title={log.functionality}>
+                                  {log.functionality}
+                                </p>
+                              )}
+                              {log.model_name && (
+                                <p className="text-xs text-blue-500 truncate" title={log.model_name}>
+                                  {log.model_name}
+                                </p>
+                              )}
+                            </div>
+                          </td>
+                          <td className="p-2 font-mono">
+                            {log.tokens_used?.toLocaleString() || '-'}
+                          </td>
+                          <td className="p-2">
+                            <span className={log.estimated_cost && log.estimated_cost > 0 ? 'text-amber-600 font-medium' : 'text-emerald-600'}>
+                              ${log.estimated_cost?.toFixed(6) || '0.00'}
+                            </span>
+                          </td>
+                          <td className="p-2 whitespace-nowrap">
+                            {log.response_time_ms ? (
+                              <span className={log.response_time_ms > 5000 ? 'text-red-500' : log.response_time_ms > 2000 ? 'text-amber-500' : 'text-green-500'}>
+                                {log.response_time_ms}ms
+                              </span>
+                            ) : '-'}
+                          </td>
+                          <td className="p-2">
+                            {log.success ? (
+                              <CheckCircle className="h-4 w-4 text-green-500" />
+                            ) : (
+                              <div className="flex items-center gap-1">
+                                <XCircle className="h-4 w-4 text-red-500" />
+                                {log.error_message && (
+                                  <span className="text-xs text-red-500 max-w-[100px] truncate" title={log.error_message}>
+                                    {log.error_message}
+                                  </span>
+                                )}
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
                     {logs.length === 0 && (
                       <tr>
-                        <td colSpan={7} className="p-8 text-center text-muted-foreground">
+                        <td colSpan={8} className="p-8 text-center text-muted-foreground">
                           Nenhum log de IA registrado no período selecionado
                         </td>
                       </tr>
@@ -784,6 +956,12 @@ export function AICostDashboard() {
                   </tbody>
                 </table>
               </div>
+              
+              {logs.length > 100 && (
+                <p className="text-center text-sm text-muted-foreground mt-4">
+                  Mostrando 100 de {logs.length} registros
+                </p>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
