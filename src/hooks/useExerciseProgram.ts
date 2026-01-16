@@ -417,10 +417,10 @@ export const useExerciseProgram = (userId: string | undefined) => {
   }, [userId]);
 
   useEffect(() => {
-    if (activeProgram) {
+    if (activeProgram?.id) {
       fetchWorkoutLogs(activeProgram.id);
     }
-  }, [activeProgram]);
+  }, [activeProgram?.id]);
 
   return {
     programs,
