@@ -424,7 +424,8 @@ const ProfessionalEvaluationPage: React.FC = () => {
                 const user = users.find(u => u.id === value);
                 if (user) {
                   console.log('🔍 DEBUG: Usuário selecionado:', user.name);
-                  setSelectedUser(user);
+                  // Convert UserForEvaluation to UserProfile format
+                  setSelectedUser({ ...user, height_cm: 0 } as UserProfile);
                   await loadUserEvaluations(user.id);
                   console.log('📊 DEBUG: Avaliações carregadas:', evaluations.length);
                 }
@@ -862,7 +863,7 @@ const ProfessionalEvaluationPage: React.FC = () => {
           </div>
           <NewEvaluationWizard
             user={selectedUser}
-            calculateMetrics={(u, m) => calculateMetricsFromHook(u as any, m as any) as any}
+            calculateMetrics={(u, m) => calculateMetricsFromHook(u as any) as any}
             onPreview={() => {}}
             onSave={async (ev) => { await saveEvaluation(ev as any); await loadUserEvaluations(selectedUser.id); }}
           />
@@ -890,7 +891,7 @@ const ProfessionalEvaluationPage: React.FC = () => {
       {selectedUser && getFilteredEvaluations().length > 0 && (
         <div className="max-w-7xl mx-auto p-6 space-y-6">
           <MuscleCompositionPanel
-            evaluations={getFilteredEvaluations()}
+            evaluations={getFilteredEvaluations() as any[]}
             currentEvaluation={selectedEvaluation || undefined}
           />
           {(selectedEvaluation || getFilteredEvaluations()[0]) && (
@@ -1983,7 +1984,7 @@ const ProfessionalEvaluationPage: React.FC = () => {
             {/* Comparação de Avaliações */}
             {showComparison && evaluations.length > 1 && (
               <EvaluationComparison
-                evaluations={evaluations}
+                evaluations={evaluations as any[]}
                 currentEvaluation={calculatedMetrics ? {
                   ...measurements,
                   ...calculatedMetrics,

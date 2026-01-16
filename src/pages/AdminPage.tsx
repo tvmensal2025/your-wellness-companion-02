@@ -190,13 +190,13 @@ const AdminPage = () => {
         .from('courses')
         .select('*', { count: 'exact', head: true });
 
-      // Fetch today's completed missions
+      // Fetch today's completed missions from daily_mission_sessions
       const today = new Date().toISOString().split('T')[0];
       const { count: missionsCount } = await supabase
-        .from('user_missions')
+        .from('daily_mission_sessions')
         .select('*', { count: 'exact', head: true })
         .eq('is_completed', true)
-        .eq('date_assigned', today);
+        .eq('date', today);
 
       // Fetch active sessions (users with activity in last 30 minutes)
       const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString();

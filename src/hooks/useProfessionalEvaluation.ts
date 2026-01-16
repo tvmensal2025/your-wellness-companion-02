@@ -11,11 +11,13 @@ export interface UserProfile {
   id: string;
   user_id: string;
   full_name?: string;
+  name?: string; // Added for compatibility
   avatar_url?: string;
   email?: string;
   height_cm: number;
   age?: number;
   gender?: string;
+  birth_date?: string; // Added for PDF export
   activity_level?: string;
 }
 
@@ -41,6 +43,14 @@ export interface ProfessionalEvaluation {
   abdominal_circumference_cm?: number; // Alias
   hip_circumference_cm?: number;
   waist_to_height_ratio?: number;
+  waist_to_hip_ratio?: number; // Added for PDF export
+  muscle_to_fat_ratio?: number; // Added for PDF export
+  // Skinfold measurements
+  skinfold_triceps_mm?: number;
+  skinfold_chest_mm?: number;
+  skinfold_abdomen_mm?: number;
+  skinfold_thigh_mm?: number;
+  skinfold_suprailiac_mm?: number;
   risk_level?: string;
   notes?: string;
   created_at: string;

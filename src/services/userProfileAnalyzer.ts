@@ -254,10 +254,10 @@ export const analyzeUserProfile = async (userId: string): Promise<UserHealthProf
       supabase.from('user_anamnesis').select('*').eq('user_id', userId).maybeSingle(),
       supabase.from('user_physical_data').select('*').eq('user_id', userId).maybeSingle(),
       supabase.from('profiles').select('*').eq('id', userId).maybeSingle(),
-      supabase.from('nutritional_goals').select('*').eq('user_id', userId).eq('status', 'active').maybeSingle(),
+      supabase.from('nutritional_goals').select('*').eq('user_id', userId).maybeSingle(),
       supabase.from('sofia_food_analysis').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(30),
       supabase.from('weight_measurements').select('weight_kg').eq('user_id', userId).order('measurement_date', { ascending: false }).limit(1)
-    ]);
+    ]) as any;
 
     // 2. Extrair dados básicos
     const weight = (weightData as any)?.[0]?.weight_kg || (anamnesis as any)?.current_weight || 70;
@@ -304,7 +304,7 @@ export const analyzeUserProfile = async (userId: string): Promise<UserHealthProf
 
     // 8. Determinar objetivo principal
     const primaryGoal = mapGoalToType(
-      String(nutritionalGoals?.goal_type || 
+      String((nutritionalGoals as any)?.goal_type || 
       anamnesis?.main_treatment_goals || 
       anamnesis?.ideal_weight_goal || '')
     );
