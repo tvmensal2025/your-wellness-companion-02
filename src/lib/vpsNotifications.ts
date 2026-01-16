@@ -4,8 +4,9 @@
  */
 
 import { supabase } from '@/integrations/supabase/client';
+import type { Json } from '@/integrations/supabase/types';
 
-export type NotificationCategory = 
+export type NotificationCategory =
   | 'general' 
   | 'dr_vital' 
   | 'exercise' 
@@ -29,7 +30,7 @@ export interface QueueNotificationOptions {
   title: string;
   body: string;
   actionUrl?: string;
-  metadata?: Record<string, unknown>;
+  metadata?: Json;
   priority?: NotificationPriority;
   scheduledFor?: Date;
 }
