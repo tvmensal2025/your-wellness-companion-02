@@ -119,16 +119,52 @@ export const LessonModal = ({ isOpen, onClose, onSubmit, courses, modules }: Les
   const handleFileUpload = async (field: 'thumbnail' | 'document' | 'image' | 'video', event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      // Se for vídeo e o tipo for upload, fazer upload para MinIO
+      // Se for vídeo e o tipo for upload, fazer upload
       if (field === 'video' && formData.videoType === 'upload') {
         setUploadingVideo(true);
         setVideoUploadProgress(10);
         try {
-          const result = await uploadToVPS(file, 'lesson-videos');
+          // Vídeos grandes (> 10MB): upload direto para Supabase Storage
+          // Vídeos pequenos: via Edge Function (MinIO)
+          const MAX_EDGE_FUNCTION_SIZE = 10 * 1024 * 1024; // 10MB
+          
+          let videoUrl: string;
+          
+          if (file.size > MAX_EDGE_FUNCTION_SIZE) {
+            // Upload direto para Supabase Storage (evita limite de memória da Edge Function)
+            const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${file.name.split('.').pop()}`;
+            const filePath = `lesson-videos/${fileName}`;
+            
+            setVideoUploadProgress(30);
+            
+            const { supabase } = await import('@/integrations/supabase/client');
+            const { data, error } = await supabase.storage
+              .from('exercise-media')
+              .upload(filePath, file, {
+                contentType: file.type,
+                upsert: true,
+              });
+            
+            if (error) throw error;
+            
+            setVideoUploadProgress(80);
+            
+            const { data: publicUrl } = supabase.storage
+              .from('exercise-media')
+              .getPublicUrl(data.path);
+            
+            videoUrl = publicUrl.publicUrl;
+          } else {
+            // Arquivos menores: usar Edge Function com MinIO
+            setVideoUploadProgress(30);
+            const result = await uploadToVPS(file, 'lesson-videos');
+            videoUrl = result.url;
+          }
+          
           setVideoUploadProgress(100);
           setFormData(prev => ({
             ...prev,
-            videoUrl: result.url,
+            videoUrl: videoUrl,
             video: file
           }));
           toast({ title: '✅ Vídeo enviado!', description: 'Upload concluído com sucesso.' });

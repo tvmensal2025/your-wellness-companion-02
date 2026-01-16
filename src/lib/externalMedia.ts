@@ -15,20 +15,22 @@ import { supabase } from '@/integrations/supabase/client';
 // ===========================================
 
 export type MediaFolder = 
-  | 'whatsapp' 
-  | 'feed' 
-  | 'stories' 
-  | 'profiles' 
-  | 'food-analysis' 
-  | 'weight-photos'
+  | 'avatars'
+  | 'banners'
   | 'chat-images'
   | 'course-thumbnails'
   | 'exercise-media'
   | 'exercise-videos'
-  | 'avatars'
+  | 'feed' 
+  | 'food-analysis' 
+  | 'lesson-videos'
   | 'medical-exams'
   | 'medical-reports'
-  | 'product-images';
+  | 'product-images'
+  | 'profiles' 
+  | 'stories' 
+  | 'weight-photos'
+  | 'whatsapp';
 
 export interface UploadOptions {
   folder: MediaFolder;
