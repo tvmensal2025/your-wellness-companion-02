@@ -67,7 +67,7 @@ export const CreateGoalModal = ({ open, onOpenChange }: CreateGoalModalProps) =>
     queryFn: async () => {
       const { data, error } = await supabase
         .from("challenges")
-        .select("id, title, description, category")
+        .select("id, title, challenge_type")
         .eq("is_active", true)
         .order("title");
 

@@ -32,18 +32,22 @@ interface MedicalDocument {
 
 interface DocumentCardProps {
   document: MedicalDocument;
-  onView: (doc: MedicalDocument) => void;
-  onDownload: (doc: MedicalDocument) => void;
-  onDelete: (doc: MedicalDocument) => void;
   onViewReport: (doc: MedicalDocument) => void;
+  onDownloadPdf: (doc: MedicalDocument) => void;
+  onDownloadPng: (doc: MedicalDocument) => void;
+  onDelete: (doc: MedicalDocument) => void;
+  onTriggerAnalysis: (doc: MedicalDocument) => void;
+  onRestartAnalysis: (doc: MedicalDocument) => void;
 }
 
 export const DocumentCard: React.FC<DocumentCardProps> = ({
   document,
-  onView,
-  onDownload,
+  onViewReport,
+  onDownloadPdf,
+  onDownloadPng,
   onDelete,
-  onViewReport
+  onTriggerAnalysis,
+  onRestartAnalysis
 }) => {
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -125,7 +129,7 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => onView(document)}
+                  onClick={() => onViewReport(document)}
                   className="text-xs"
                 >
                   <Eye className="w-3 h-3 mr-1" />
@@ -135,7 +139,7 @@ export const DocumentCard: React.FC<DocumentCardProps> = ({
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => onDownload(document)}
+                  onClick={() => onDownloadPdf(document)}
                   className="text-xs"
                 >
                   <Download className="w-3 h-3 mr-1" />

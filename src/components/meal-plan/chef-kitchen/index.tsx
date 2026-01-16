@@ -41,9 +41,20 @@ export const ChefKitchenMealPlan: React.FC<ChefKitchenMealPlanProps> = ({ classN
   const logic = useChefKitchenLogic();
 
   // Preparar dados para o modal de sucesso
-  const mealPlanData = logic.generatedPlan.length > 0 ? {
-    type: logic.generatedPlan.length > 1 ? 'weekly' : 'daily' as const,
-    title: `Cardápio ${logic.generatedPlan.length > 1 ? 'Semanal' : 'Diário'}`,
+  const planType = logic.generatedPlan.length > 1 ? 'weekly' : 'daily';
+  const mealPlanData: {
+    type: 'daily' | 'weekly';
+    title: string;
+    summary: {
+      calories: number;
+      protein: number;
+      carbs: number;
+      fat: number;
+      fiber: number;
+    };
+  } | undefined = logic.generatedPlan.length > 0 ? {
+    type: planType as 'daily' | 'weekly',
+    title: `Cardápio ${planType === 'weekly' ? 'Semanal' : 'Diário'}`,
     summary: {
       calories: Math.round(logic.generatedPlan.reduce((a, d) => a + d.dailyTotals.calories, 0) / logic.generatedPlan.length),
       protein: Math.round(logic.generatedPlan.reduce((a, d) => a + d.dailyTotals.protein, 0) / logic.generatedPlan.length),

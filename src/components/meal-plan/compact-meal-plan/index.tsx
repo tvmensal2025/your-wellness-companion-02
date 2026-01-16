@@ -182,5 +182,4 @@ export { MealNavigation } from './MealNavigation';
 export { PrintButton } from './PrintButton';
 export { useCompactMealPlanLogic } from './hooks/useCompactMealPlanLogic';
 
-// Re-export types
-export type { CompactMealPlanModalProps };
+// Types are already exported at line 41

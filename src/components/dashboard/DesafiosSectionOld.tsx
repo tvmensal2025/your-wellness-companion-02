@@ -95,7 +95,7 @@ const DesafiosSection: React.FC<DesafiosSectionProps> = ({ user }) => {
           id: desafio.id,
           title: desafio.title,
           description: desafio.description,
-          category: desafio.category || 'exercicio',
+          category: desafio.challenge_type || 'exercicio',
           difficulty: desafio.difficulty || 'medio',
           duration_days: desafio.duration_days || 7,
           points_reward: desafio.points_reward || 100,

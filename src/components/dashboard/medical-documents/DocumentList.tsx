@@ -31,7 +31,7 @@ interface DocumentListProps {
   onViewReport: (doc: MedicalDocument) => void;
   onDownloadPdf: (doc: MedicalDocument) => void;
   onDownloadPng: (doc: MedicalDocument) => void;
-  onDelete: (docId: string) => void;
+  onDelete: (doc: MedicalDocument) => void;
   onTriggerAnalysis: (doc: MedicalDocument) => void;
   onRestartAnalysis: (doc: MedicalDocument) => void;
 }

@@ -40,8 +40,9 @@ interface Course {
   is_published: boolean;
   thumbnail_url?: string;
   price?: number;
-  structure_type: 'course_lesson' | 'course_module_lesson';
+  structure_type?: 'course_lesson' | 'course_module_lesson';
   created_at: string;
+  updated_at?: string;
   modules_count?: number;
   lessons_count?: number;
 }
@@ -94,7 +95,7 @@ interface CourseFormData {
 interface ModuleFormData {
   title: string;
   description?: string;
-  course_id: string;
+  course_id?: string;
   order_index?: number;
   is_active?: boolean;
   thumbnail_url?: string;
@@ -341,7 +342,9 @@ export const CourseManagementNew = () => {
       const { thumbnail_url, order, structure_type, ...modulePayload } = moduleData;
 
       const finalPayload = {
-        ...modulePayload,
+        title: modulePayload.title,
+        course_id: modulePayload.course_id!,
+        is_active: modulePayload.is_active ?? true,
         description: modulePayload.description || "Módulo criado automaticamente",
         order_index: moduleData.order_index || 1,
       };
@@ -483,13 +486,13 @@ export const CourseManagementNew = () => {
       // Verifica perfil de admin
       const { data: profile } = await supabase
         .from('profiles')
-        .select('role, admin_level, email')
+        .select('role, email')
         .eq('user_id', user.id)
         .single();
 
       if (profile) {
         // Verifica se é admin ou super admin
-        if (profile.role === 'admin' || profile.admin_level === 'super' || profile.email === 'rafael.ids@icloud.com') {
+        if (profile.role === 'admin' || profile.email === 'rafael.ids@icloud.com') {
           return true;
         }
       }

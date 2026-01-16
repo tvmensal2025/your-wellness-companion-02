@@ -146,7 +146,7 @@ const PlatformAudit: React.FC = () => {
         
         return {
           dataRecords: sessions?.length || 0,
-          lastUpdate: sessions?.[0]?.updated_at,
+          lastUpdate: sessions?.[0]?.created_at,
           suggestions: responses?.length === 0 ? ['Nenhuma resposta registrada'] : []
         };
       }
@@ -206,7 +206,6 @@ const PlatformAudit: React.FC = () => {
       functionality: 'Sistema de Pontos e Níveis',
       icon: TrendingUp,
       test: async (): Promise<TestResult> => {
-        // @ts-expect-error - Tabela pode não existir no tipo gerado
         const { data, error } = await supabase
           .from('user_gamification')
           .select('*');
@@ -225,7 +224,6 @@ const PlatformAudit: React.FC = () => {
       functionality: 'Rastreamento de Água',
       icon: Activity,
       test: async (): Promise<TestResult> => {
-        // @ts-expect-error - Tabela pode não existir no tipo gerado
         const { data, error } = await supabase
           .from('water_tracking')
           .select('*');
@@ -244,9 +242,8 @@ const PlatformAudit: React.FC = () => {
       functionality: 'Rastreamento de Sono',
       icon: Activity,
       test: async (): Promise<TestResult> => {
-        // @ts-expect-error - Tabela pode não existir no tipo gerado
         const { data, error } = await supabase
-          .from('sleep_tracking')
+          .from('sleep_monitoring')
           .select('*');
         
         if (error) throw error;
@@ -263,9 +260,8 @@ const PlatformAudit: React.FC = () => {
       functionality: 'Rastreamento de Humor',
       icon: Heart,
       test: async (): Promise<TestResult> => {
-        // @ts-expect-error - Tabela pode não existir no tipo gerado
         const { data, error } = await supabase
-          .from('mood_tracking')
+          .from('mood_monitoring')
           .select('*');
         
         if (error) throw error;
@@ -282,7 +278,6 @@ const PlatformAudit: React.FC = () => {
       functionality: 'Sistema de Sabotadores',
       icon: Brain,
       test: async (): Promise<TestResult> => {
-        // @ts-expect-error - Tabela pode não existir no tipo gerado
         const { data, error } = await supabase
           .from('custom_saboteurs')
           .select('*')
@@ -353,7 +348,6 @@ const PlatformAudit: React.FC = () => {
         
         if (challengesError) throw challengesError;
         
-        // @ts-expect-error - Tabela pode não existir no tipo gerado
         const { data: participations, error: participationsError } = await supabase
           .from('challenge_participations')
           .select('*');
@@ -449,7 +443,6 @@ const PlatformAudit: React.FC = () => {
       functionality: 'Google Fit',
       icon: Activity,
       test: async (): Promise<TestResult> => {
-        // @ts-expect-error - Tabela pode não existir no tipo gerado
         const { data, error } = await supabase
           .from('google_fit_data')
           .select('*');

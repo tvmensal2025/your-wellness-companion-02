@@ -14,8 +14,9 @@ interface Course {
   is_published: boolean;
   thumbnail_url?: string;
   price?: number;
-  structure_type: 'course_lesson' | 'course_module_lesson';
+  structure_type?: 'course_lesson' | 'course_module_lesson';
   created_at: string;
+  updated_at?: string;
   modules_count?: number;
   lessons_count?: number;
 }

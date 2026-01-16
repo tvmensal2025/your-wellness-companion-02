@@ -22,7 +22,7 @@ interface UserGoal {
   description?: string;
   target_value?: number;
   unit?: string;
-  difficulty?: 'facil' | 'medio' | 'dificil';
+  difficulty?: string;
   estimated_points?: number;
   peso_meta_kg?: number;
   status: string;
@@ -30,6 +30,7 @@ interface UserGoal {
   data_fim?: string;
   created_at: string;
   updated_at?: string;
+  user_name?: string;
   user_info?: {
     full_name: string;
     email: string | null;

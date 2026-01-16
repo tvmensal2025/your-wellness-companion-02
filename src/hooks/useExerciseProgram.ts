@@ -118,8 +118,7 @@ export const useExerciseProgram = (userId: string | undefined) => {
     if (!userId) return;
 
     try {
-      // @ts-expect-error - Deep type inference issue with Supabase query builder
-      const result: any = await supabase
+      const result = await supabase
         .from('sport_workout_logs')
         .select('*')
         .eq('user_id', userId)

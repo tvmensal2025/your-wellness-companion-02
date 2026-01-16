@@ -39,7 +39,7 @@ export async function uploadCommunityMedia(
   });
 
   if (!response.success) {
-    throw new Error(response.error);
+    throw new Error('error' in response ? response.error : 'Upload failed');
   }
 
   return {
