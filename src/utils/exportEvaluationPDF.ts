@@ -40,8 +40,8 @@ export const exportEvaluationToPDF = async (
   pdf.text('Data da Avaliação:', 15, 83);
   
   pdf.setTextColor(textColor[0], textColor[1], textColor[2]);
-  pdf.text(user.name || user.full_name || 'N/A', 45, 55);
-  pdf.text(user.birth_date ? new Date(user.birth_date).toLocaleDateString('pt-BR') : 'N/A', 45, 62);
+  pdf.text(user.name, 45, 55);
+  pdf.text(new Date(user.birth_date).toLocaleDateString('pt-BR'), 45, 62);
   pdf.text(user.gender === 'M' ? 'Masculino' : 'Feminino', 45, 69);
   pdf.text(`${user.height_cm} cm`, 45, 76);
   pdf.text(new Date(evaluation.evaluation_date).toLocaleDateString('pt-BR'), 45, 83);
@@ -248,6 +248,5 @@ export const exportEvaluationToPDF = async (
   }
   
   // Salva o PDF
-  const userName = user.name || user.full_name || 'usuario';
-  pdf.save(`avaliacao_${userName.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`);
+  pdf.save(`avaliacao_${user.name.replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.pdf`);
 };

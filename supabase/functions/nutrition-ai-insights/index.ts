@@ -26,7 +26,7 @@ serve(async (req) => {
     const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
     
     const { data: nutritionData } = await supabase
-      .from('sofia_food_analysis')
+      .from('food_analysis')
       .select('*')
       .eq('user_id', userId)
       .gte('created_at', weekAgo.toISOString())

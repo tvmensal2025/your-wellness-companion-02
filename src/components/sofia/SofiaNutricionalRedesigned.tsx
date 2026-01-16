@@ -686,15 +686,15 @@ export const SofiaNutricionalRedesigned: React.FC<SofiaNutricionalRedesignedProp
       setPhysicalData(data);
       const {
         data: goalsData
-      } = await (supabase as any).from('nutritional_goals').select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(1).maybeSingle();
+      } = await (supabase as any).from('nutritional_goals').select('*').eq('user_id', userId).eq('status', 'active').maybeSingle();
       const objective = (goalsData as any)?.objective as NutritionObjective || NutritionObjective.MAINTAIN;
       const calculatedGoals = calculateNutritionalGoals(objective, data);
       setUserGoals({
         objective,
-        target_calories: (goalsData as any)?.calories_target || calculatedGoals.calories,
-        target_protein: (goalsData as any)?.protein_target || calculatedGoals.protein,
-        target_carbs: (goalsData as any)?.carbs_target || calculatedGoals.carbs,
-        target_fat: (goalsData as any)?.fats_target || calculatedGoals.fat
+        target_calories: (goalsData as any)?.target_calories || calculatedGoals.calories,
+        target_protein: (goalsData as any)?.target_protein_g || calculatedGoals.protein,
+        target_carbs: (goalsData as any)?.target_carbs_g || calculatedGoals.carbs,
+        target_fat: (goalsData as any)?.target_fats_g || calculatedGoals.fat
       });
     } else {
       // Valores padrão se não tiver dados físicos

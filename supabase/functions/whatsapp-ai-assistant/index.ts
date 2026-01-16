@@ -695,7 +695,7 @@ async function getCompactUserContext(userId: string): Promise<CompactContext> {
     supabase.from("food_history").select("total_calories").eq("user_id", userId).eq("meal_date", today),
     // Novas queries
     supabase.from("food_history").select("meal_type, food_items, total_calories").eq("user_id", userId).order("meal_date", { ascending: false }).order("meal_time", { ascending: false }).limit(3),
-    supabase.from("nutritional_goals").select("calories_target, protein_target, water_target").eq("user_id", userId).order("created_at", { ascending: false }).limit(1),
+    supabase.from("nutritional_goals").select("target_calories, target_protein_g, target_water_ml").eq("user_id", userId).eq("status", "active").limit(1),
     supabase.from("advanced_daily_tracking").select("exercise_duration_minutes").eq("user_id", userId).gte("tracking_date", sevenDaysAgoStr).not("exercise_duration_minutes", "is", null),
     supabase.from("mood_monitoring").select("mood_level").eq("user_id", userId).gte("mood_date", sevenDaysAgoStr),
   ]);
@@ -730,9 +730,9 @@ async function getCompactUserContext(userId: string): Promise<CompactContext> {
 
   // Metas de macros
   const metas_macros = nutritionalGoals ? {
-    calorias: nutritionalGoals.calories_target || 2000,
-    proteina: nutritionalGoals.protein_target || 100,
-    agua: nutritionalGoals.water_target || 2000,
+    calorias: nutritionalGoals.target_calories || 2000,
+    proteina: nutritionalGoals.target_protein_g || 100,
+    agua: nutritionalGoals.target_water_ml || 2000,
   } : null;
 
   // Exercícios da semana

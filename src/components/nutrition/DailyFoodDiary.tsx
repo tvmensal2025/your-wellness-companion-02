@@ -25,13 +25,13 @@ export const DailyFoodDiary: React.FC<DailyFoodDiaryProps> = ({
   onTakePhoto,
   compact = false 
 }) => {
-const { goals, dailySummary, loading, getProgress, addWater } = useDailyNutritionTracking();
+  const { goals, dailySummary, loading, getProgress, addWater } = useDailyNutritionTracking();
 
-  const caloriesProgress = getProgress(dailySummary.calories, goals.calories);
-  const proteinProgress = getProgress(dailySummary.protein_g, goals.protein_g);
-  const carbsProgress = getProgress(dailySummary.carbs_g, goals.carbs_g);
-  const fatProgress = getProgress(dailySummary.fats_g, goals.fats_g);
-  const waterProgress = getProgress(dailySummary.water_ml, goals.water_ml);
+  const caloriesProgress = getProgress(dailySummary.calories, goals.target_calories);
+  const proteinProgress = getProgress(dailySummary.protein, goals.target_protein_g);
+  const carbsProgress = getProgress(dailySummary.carbs, goals.target_carbs_g);
+  const fatProgress = getProgress(dailySummary.fat, goals.target_fats_g);
+  const waterProgress = getProgress(dailySummary.water_ml, goals.target_water_ml);
 
   const handleWaterClick = (ml: number) => {
     addWater(ml);
@@ -81,7 +81,7 @@ const { goals, dailySummary, loading, getProgress, addWater } = useDailyNutritio
             </Badge>
           </div>
           <div className="text-2xl font-bold mb-1">
-            {Math.round(dailySummary.calories)} <span className="text-sm font-normal text-muted-foreground">/ {goals.calories} kcal</span>
+            {Math.round(dailySummary.calories)} <span className="text-sm font-normal text-muted-foreground">/ {goals.target_calories} kcal</span>
           </div>
           <Progress value={caloriesProgress} className="h-2" />
         </div>
@@ -91,26 +91,26 @@ const { goals, dailySummary, loading, getProgress, addWater } = useDailyNutritio
           <div className="grid grid-cols-3 gap-2 text-center">
             <div className="p-2 rounded-lg bg-blue-500/10 border border-blue-500/20">
               <div className="text-xs text-muted-foreground">Proteína</div>
-              <div className="font-bold text-blue-600">{Math.round(dailySummary.protein_g)}g</div>
+              <div className="font-bold text-blue-600">{Math.round(dailySummary.protein)}g</div>
               <Progress value={proteinProgress} className="h-1 mt-1" />
             </div>
             <div className="p-2 rounded-lg bg-amber-500/10 border border-amber-500/20">
               <div className="text-xs text-muted-foreground">Carbos</div>
-              <div className="font-bold text-amber-600">{Math.round(dailySummary.carbs_g)}g</div>
+              <div className="font-bold text-amber-600">{Math.round(dailySummary.carbs)}g</div>
               <Progress value={carbsProgress} className="h-1 mt-1" />
             </div>
             <div className="p-2 rounded-lg bg-rose-500/10 border border-rose-500/20">
               <div className="text-xs text-muted-foreground">Gordura</div>
-              <div className="font-bold text-rose-600">{Math.round(dailySummary.fats_g)}g</div>
+              <div className="font-bold text-rose-600">{Math.round(dailySummary.fat)}g</div>
               <Progress value={fatProgress} className="h-1 mt-1" />
             </div>
           </div>
         )}
 
-        {/* Lista de refeições - meals não existem no DailySummary atual */}
+        {/* Lista de refeições */}
         <div className="space-y-2">
           {(Object.entries(mealConfig) as [keyof typeof mealConfig, typeof mealConfig.breakfast][]).map(([key, config]) => {
-            const meal = null; // TODO: implementar busca de refeições individuais
+            const meal = dailySummary.meals[key];
             const Icon = config.icon;
 
             return (
@@ -162,9 +162,9 @@ const { goals, dailySummary, loading, getProgress, addWater } = useDailyNutritio
             <div className="flex items-center gap-2">
               <Droplets className="h-4 w-4 text-cyan-500" />
               <span className="font-medium text-sm">Água</span>
-          </div>
+            </div>
             <span className="text-sm font-bold text-cyan-600">
-              {dailySummary.water_ml}ml / {goals.water_ml}ml
+              {dailySummary.water_ml}ml / {goals.target_water_ml}ml
             </span>
           </div>
           <Progress value={waterProgress} className="h-2 mb-2" />

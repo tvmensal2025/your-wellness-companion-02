@@ -329,19 +329,36 @@ export const useWeightMeasurement = () => {
     }
   }, [getUser]); // Apenas getUser como dependência estável
 
-  // Buscar análise semanal (simplificado) - tabela weekly_analyses pode não existir
-  const fetchWeeklyAnalysis = useCallback(async (): Promise<WeeklyAnalysis[]> => {
+  // Buscar análise semanal (simplificado)
+  const fetchWeeklyAnalysis = useCallback(async () => {
     try {
       const user = await getUser();
       if (!user) return [];
 
-      // A tabela weekly_analyses pode não existir no schema atual
-      // Retornar array vazio para evitar erros
-      setWeeklyAnalyses([]);
-      return [];
+      const { data, error } = await supabase
+        .from('weekly_analyses')
+        .select('id, user_id, created_at')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(8);
+
+      if (error) throw error;
+      const transformed = (data || []).map(item => ({
+        ...item,
+        week_start_date: item.created_at,
+        week_end_date: item.created_at,
+        summary_data: {},
+        insights: [],
+        recommendations: [],
+        overall_score: 0,
+        trends: {},
+        goals_progress: {},
+        health_metrics: {}
+      }));
+      setWeeklyAnalyses(transformed);
+      return data;
     } catch (err: any) {
-      console.warn('weekly_analyses table may not exist:', err.message);
-      setWeeklyAnalyses([]);
+      setError(err.message);
       return [];
     }
   }, [getUser]);

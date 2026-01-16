@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 export interface Notification {
   id: string;
   user_id: string;
-  type: 'like' | 'comment' | 'follow' | 'mention' | 'share' | 'challenge' | 'achievement' | 'message' | 'system' | string;
+  type: string;
   title: string;
   message?: string;
   is_read: boolean;
@@ -19,8 +19,6 @@ export interface Notification {
   entity_type?: string;
   created_at: string;
   actor_id?: string;
-  actor_name?: string;
-  actor_avatar?: string;
 }
 
 export interface NotificationPreferences {
@@ -32,16 +30,6 @@ export interface NotificationPreferences {
   challenge_updates: boolean;
   social_updates: boolean;
   achievement_alerts: boolean;
-  likes_enabled: boolean;
-  comments_enabled: boolean;
-  follows_enabled: boolean;
-  mentions_enabled: boolean;
-  shares_enabled: boolean;
-  challenges_enabled: boolean;
-  achievements_enabled: boolean;
-  direct_messages_enabled: boolean;
-  quiet_hours_start?: string;
-  quiet_hours_end?: string;
 }
 
 const defaultPreferences: NotificationPreferences = {
@@ -53,16 +41,6 @@ const defaultPreferences: NotificationPreferences = {
   challenge_updates: true,
   social_updates: true,
   achievement_alerts: true,
-  likes_enabled: true,
-  comments_enabled: true,
-  follows_enabled: true,
-  mentions_enabled: true,
-  shares_enabled: true,
-  challenges_enabled: true,
-  achievements_enabled: true,
-  direct_messages_enabled: true,
-  quiet_hours_start: undefined,
-  quiet_hours_end: undefined,
 };
 
 export function useNotifications() {
@@ -87,7 +65,7 @@ export function useNotifications() {
       setNotifications((data || []).map((n: any) => ({
         id: n.id,
         user_id: n.user_id,
-        type: n.type as Notification['type'],
+        type: n.type,
         title: n.title,
         message: n.message,
         is_read: n.is_read || false,
@@ -95,8 +73,6 @@ export function useNotifications() {
         entity_type: n.entity_type,
         created_at: n.created_at,
         actor_id: n.actor_id,
-        actor_name: (n as any).actor_name || undefined,
-        actor_avatar: (n as any).actor_avatar || undefined,
       })));
     } catch (error) {
       console.error('Error fetching notifications:', error);

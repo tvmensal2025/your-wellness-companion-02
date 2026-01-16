@@ -7,37 +7,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { notificationService } from '@/services/dr-vital/notificationService';
 import type { SmartNotification } from '@/types/dr-vital-revolution';
 
-// Exported types for components
-export interface Notification {
-  id: string;
-  type: 'like' | 'comment' | 'follow' | 'mention' | 'share' | 'challenge' | 'achievement' | 'message' | 'system';
-  title: string;
-  message?: string;
-  is_read: boolean;
-  created_at: string;
-  actor_id?: string;
-  actor_name?: string;
-  actor_avatar?: string;
-  entity_id?: string;
-  entity_type?: string;
-  action_url?: string;
-}
-
-export interface NotificationPreferences {
-  push_notifications: boolean;
-  email_notifications: boolean;
-  likes_enabled: boolean;
-  comments_enabled: boolean;
-  follows_enabled: boolean;
-  mentions_enabled: boolean;
-  shares_enabled: boolean;
-  challenges_enabled: boolean;
-  achievements_enabled: boolean;
-  direct_messages_enabled: boolean;
-  quiet_hours_start?: string;
-  quiet_hours_end?: string;
-}
-
 export function useNotifications() {
   const { user } = useAuth();
   const queryClient = useQueryClient();

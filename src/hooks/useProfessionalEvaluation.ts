@@ -6,80 +6,20 @@ import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-// Exported types for components
-export interface UserProfile {
-  id: string;
+interface UserForEvaluation {
   user_id: string;
-  full_name?: string;
-  name?: string; // Added for compatibility
-  avatar_url?: string;
-  email?: string;
-  height_cm: number;
-  age?: number;
-  gender?: string;
-  birth_date?: string; // Added for PDF export
-  activity_level?: string;
-}
-
-export interface ProfessionalEvaluation {
-  id: string;
-  user_id: string;
-  evaluation_date: string;
-  evaluator_name?: string;
-  weight_kg: number;
-  height_cm?: number;
-  body_fat_percent?: number;
-  body_fat_percentage?: number; // Alias for compatibility
-  muscle_mass_kg?: number;
-  lean_mass_kg?: number; // Alias for compatibility
-  fat_mass_kg?: number;
-  visceral_fat?: number;
-  bone_mass_kg?: number;
-  body_water_percent?: number;
-  metabolic_age?: number;
-  bmr_kcal?: number;
-  bmi?: number;
-  waist_circumference_cm?: number;
-  abdominal_circumference_cm?: number; // Alias
-  hip_circumference_cm?: number;
-  waist_to_height_ratio?: number;
-  waist_to_hip_ratio?: number; // Added for PDF export
-  muscle_to_fat_ratio?: number; // Added for PDF export
-  // Skinfold measurements
-  skinfold_triceps_mm?: number;
-  skinfold_chest_mm?: number;
-  skinfold_abdomen_mm?: number;
-  skinfold_thigh_mm?: number;
-  skinfold_suprailiac_mm?: number;
-  risk_level?: string;
-  notes?: string;
-  created_at: string;
-}
-
-export interface UserForEvaluation {
-  id: string;
-  user_id: string;
-  name: string;
   full_name: string | null;
   email: string | null;
   avatar_url: string | null;
   created_at: string;
 }
 
-export interface Evaluation {
+interface Evaluation {
   id: string;
   user_id: string;
   evaluator_id: string;
   evaluation_type: string;
-  evaluation_date: string;
   evaluation_data: any;
-  weight_kg?: number;
-  body_fat_percentage?: number;
-  lean_mass_kg?: number;
-  fat_mass_kg?: number;
-  muscle_mass_kg?: number;
-  bmi?: number;
-  waist_to_height_ratio?: number;
   notes?: string;
   created_at: string;
 }
@@ -111,17 +51,7 @@ export function useProfessionalEvaluation() {
 
       if (fetchError) throw fetchError;
       
-      const mappedUsers: UserForEvaluation[] = (data || []).map((u: any) => ({
-        id: u.user_id,
-        user_id: u.user_id,
-        name: u.full_name || u.email || 'Sem nome',
-        full_name: u.full_name,
-        email: u.email,
-        avatar_url: u.avatar_url,
-        created_at: u.created_at,
-      }));
-      
-      setUsers(mappedUsers);
+      setUsers(data || []);
     } catch (err) {
       console.error('Error loading users:', err);
       setError('Erro ao carregar usuários');
@@ -129,6 +59,7 @@ export function useProfessionalEvaluation() {
       setLoading(false);
     }
   }, []);
+
   const loadUserEvaluations = useCallback(async (userId: string) => {
     try {
       setLoading(true);
@@ -156,20 +87,12 @@ export function useProfessionalEvaluation() {
       const mappedEvaluations: Evaluation[] = (physicalData || []).map((pd: any) => ({
         id: pd.id,
         user_id: pd.user_id,
-        evaluator_id: pd.user_id,
+        evaluator_id: pd.user_id, // Self-reported
         evaluation_type: 'physical_data',
-        evaluation_date: pd.updated_at || pd.created_at,
         evaluation_data: {
           ...pd,
           weight_history: weightData?.filter((w: any) => w.user_id === pd.user_id) || []
         },
-        weight_kg: pd.peso_kg,
-        body_fat_percentage: pd.gordura_corporal_percent,
-        lean_mass_kg: pd.massa_magra_kg,
-        fat_mass_kg: pd.massa_gorda_kg,
-        muscle_mass_kg: pd.massa_muscular_kg,
-        bmi: pd.imc,
-        waist_to_height_ratio: pd.rce,
         notes: pd.notes || null,
         created_at: pd.created_at,
       }));

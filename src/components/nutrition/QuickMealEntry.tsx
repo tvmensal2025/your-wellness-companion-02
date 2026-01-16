@@ -159,15 +159,7 @@ export const QuickMealEntry: React.FC<QuickMealEntryProps> = ({
         fat: Math.round(f.fats_per_100g * f.quantity / 100),
       }));
 
-      await addMeal({
-        meal_type: mealType,
-        calories: totals.calories,
-        protein_g: totals.protein,
-        carbs_g: totals.carbs,
-        fats_g: totals.fat,
-        fiber_g: totals.fiber,
-        foods: foodItems.map(f => f.name),
-      });
+      await addMeal(mealType, foodItems, totals);
       onOpenChange(false);
     } catch (err) {
       console.error('Erro ao salvar:', err);
