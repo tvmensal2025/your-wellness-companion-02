@@ -21,7 +21,7 @@ import {
   Save
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { fromTable } from "@/lib/supabase-helpers";
 import { motion } from "framer-motion";
 
 interface CustomSaboteur {
@@ -69,22 +69,20 @@ export const SaboteurManagement = () => {
   const loadCustomSaboteurs = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('custom_saboteurs')
+      const { data, error } = await fromTable('saboteur_definitions')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false }) as any;
 
       if (error) throw error;
 
-      setCustomSaboteurs(data || []);
+      setCustomSaboteurs((data as CustomSaboteur[]) || []);
 
-      const activeCount = data?.filter(s => s.is_active).length || 0;
+      const activeCount = (data as CustomSaboteur[])?.filter(s => s.is_active).length || 0;
       setStats({
         total: data?.length || 0,
         active: activeCount,
         inactive: (data?.length || 0) - activeCount
       });
-
     } catch (error) {
       console.error('Error loading custom saboteurs:', error);
       toast({
@@ -108,8 +106,7 @@ export const SaboteurManagement = () => {
     }
 
     try {
-      const { error } = await supabase
-        .from('custom_saboteurs')
+      const { error } = await fromTable('saboteur_definitions')
         .insert([{
           saboteur_name: newSaboteur.saboteur_name,
           description: newSaboteur.description || null,
@@ -118,7 +115,7 @@ export const SaboteurManagement = () => {
           behavioral_patterns: newSaboteur.behavioral_patterns ? newSaboteur.behavioral_patterns.split(',').map(s => s.trim()) : null,
           coping_strategies: newSaboteur.coping_strategies ? newSaboteur.coping_strategies.split(',').map(s => s.trim()) : null,
           is_active: true
-        }]);
+        }]) as any;
 
       if (error) throw error;
 
@@ -149,10 +146,9 @@ export const SaboteurManagement = () => {
 
   const handleDeleteSaboteur = async (saboteurId: string) => {
     try {
-      const { error } = await supabase
-        .from('custom_saboteurs')
+      const { error } = await fromTable('saboteur_definitions')
         .delete()
-        .eq('id', saboteurId);
+        .eq('id', saboteurId) as any;
 
       if (error) throw error;
 
@@ -174,10 +170,9 @@ export const SaboteurManagement = () => {
 
   const handleToggleSaboteur = async (saboteurId: string, currentStatus: boolean) => {
     try {
-      const { error } = await supabase
-        .from('custom_saboteurs')
+      const { error } = await fromTable('saboteur_definitions')
         .update({ is_active: !currentStatus })
-        .eq('id', saboteurId);
+        .eq('id', saboteurId) as any;
 
       if (error) throw error;
 
@@ -201,14 +196,13 @@ export const SaboteurManagement = () => {
     if (!editingSaboteur) return;
 
     try {
-      const { error } = await supabase
-        .from('custom_saboteurs')
+      const { error } = await fromTable('saboteur_definitions')
         .update({
           saboteur_name: editingSaboteur.saboteur_name,
           description: editingSaboteur.description,
           category: editingSaboteur.category
         })
-        .eq('id', editingSaboteur.id);
+        .eq('id', editingSaboteur.id) as any;
 
       if (error) throw error;
 

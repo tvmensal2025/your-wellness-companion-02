@@ -155,10 +155,10 @@ serve(async (req) => {
           .limit(3);
 
         const { data: achievements } = await supabase
-          .from("conquistas_do_usuário")
-          .select("nome_conquista, data_desbloqueio")
+          .from("user_achievements_v2")
+          .select("achievement_name, unlocked_at")
           .eq("user_id", user.user_id)
-          .gte("data_desbloqueio", weekAgo)
+          .gte("unlocked_at", weekAgo)
           .limit(3);
 
         // Calcular dados
@@ -182,7 +182,7 @@ DADOS DO USUÁRIO *${firstName}*:
 - Missões completadas esta semana: ${missionsCompleted}/7
 - Variação de peso: ${weightChange ? `${weightChange}kg` : "não registrado"}
 - Humor médio: ${avgMood ? `${avgMood}/10` : "não registrado"}
-- Conquistas recentes: ${achievements?.map((a: any) => a.nome_conquista).join(", ") || "nenhuma"}
+- Conquistas recentes: ${achievements?.map((a: any) => a.achievement_name).join(", ") || "nenhuma"}
 
 Crie uma mensagem de bom dia PERSONALIZADA para *${firstName}*.
 Use os dados acima para tornar a mensagem especial.

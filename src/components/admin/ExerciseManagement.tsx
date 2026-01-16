@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { fromTable } from '@/lib/supabase-helpers';
 import { uploadToVPS } from '@/lib/vpsApi';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -76,8 +76,7 @@ export const ExerciseManagement = () => {
 
   const fetchExercises = async () => {
     try {
-      const { data, error } = await supabase
-        .from('exercises')
+      const { data, error } = await fromTable('exercises_library')
         .select('*')
         .order('name');
 
@@ -169,8 +168,7 @@ export const ExerciseManagement = () => {
       };
 
       if (editingExercise) {
-        const { error } = await supabase
-          .from('exercises')
+        const { error } = await fromTable('exercises_library')
           .update(exerciseData)
           .eq('id', editingExercise.id);
 
@@ -181,8 +179,7 @@ export const ExerciseManagement = () => {
           description: 'As alterações foram salvas com sucesso',
         });
       } else {
-        const { error } = await supabase
-          .from('exercises')
+        const { error } = await fromTable('exercises_library')
           .insert([exerciseData]);
 
         if (error) throw error;
@@ -231,8 +228,7 @@ export const ExerciseManagement = () => {
     if (!confirm('Tem certeza que deseja deletar este exercício?')) return;
 
     try {
-      const { error } = await supabase
-        .from('exercises')
+      const { error } = await fromTable('exercises_library')
         .delete()
         .eq('id', id);
 

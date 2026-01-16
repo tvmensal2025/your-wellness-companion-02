@@ -296,7 +296,7 @@ async function getPatientInfo(userId: string): Promise<any> {
     .maybeSingle();
 
   const { data: fisica } = await supabase
-    .from("dados_físicos_do_usuário")
+    .from("user_physical_data")
     .select("sexo, data_nascimento")
     .eq("user_id", userId)
     .maybeSingle();
