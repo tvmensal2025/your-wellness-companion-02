@@ -364,17 +364,37 @@ async function analyzeExamBatch(
       return;
     }
 
-    // Convert public URLs to storage paths
-    const tmpPaths = imageUrls
-      .map((img: any) => {
-        const url = img.url || img;
-        const match = url.match(/\/chat-images\/(.+)$/);
-        return match ? match[1] : null;
-      })
-      .filter(Boolean);
-
-    if (tmpPaths.length === 0) {
-      console.error("[Medical] ❌ Nenhum path válido extraído das URLs");
+    // Convert URLs - suporta tanto Supabase Storage quanto MinIO externo
+    const processedUrls: { storagePaths: string[], externalUrls: string[] } = {
+      storagePaths: [],
+      externalUrls: []
+    };
+    
+    for (const img of imageUrls) {
+      const urlStr: string = typeof img === 'string' ? img : (img.url || '');
+      if (!urlStr) continue;
+      
+      // Padrão 1: Supabase Storage (/chat-images/...)
+      const supabaseMatch = urlStr.match(/\/chat-images\/(.+)$/);
+      if (supabaseMatch) {
+        processedUrls.storagePaths.push(supabaseMatch[1]);
+        continue;
+      }
+      
+      // Padrão 2: URL externa (MinIO, etc) - passar URL completa
+      if (urlStr.startsWith('http://') || urlStr.startsWith('https://')) {
+        processedUrls.externalUrls.push(urlStr);
+        continue;
+      }
+      
+      console.warn(`[Medical] ⚠️ URL não reconhecida: ${urlStr}`);
+    }
+    
+    const hasStoragePaths = processedUrls.storagePaths.length > 0;
+    const hasExternalUrls = processedUrls.externalUrls.length > 0;
+    
+    if (!hasStoragePaths && !hasExternalUrls) {
+      console.error("[Medical] ❌ Nenhum path/URL válido extraído");
       await sendTextMessage(phone, "❌ Erro ao processar imagens.\n\nTente enviar novamente.\n\n_Dr. Vital 🩺_");
       await supabase
         .from("whatsapp_pending_medical")
@@ -383,18 +403,26 @@ async function analyzeExamBatch(
       return;
     }
 
-    console.log("[Medical] 📞 CHAMANDO analyze-medical-exam...");
+    console.log(`[Medical] 📞 CHAMANDO analyze-medical-exam... (storage: ${processedUrls.storagePaths.length}, external: ${processedUrls.externalUrls.length})`);
+
+    // Montar body com suporte a ambos os tipos de fonte
+    const invokeBody: Record<string, any> = {
+      userId: user.id,
+      examType: "exame_laboratorial",
+      title: `Exame via WhatsApp - ${new Date().toLocaleDateString("pt-BR")}`,
+    };
+    
+    if (hasStoragePaths) {
+      invokeBody.tmpPaths = processedUrls.storagePaths;
+    }
+    
+    if (hasExternalUrls) {
+      invokeBody.externalUrls = processedUrls.externalUrls;
+    }
 
     const { data: analysisResult, error: analysisError } = await supabase.functions.invoke(
       "analyze-medical-exam",
-      {
-        body: {
-          tmpPaths,
-          userId: user.id,
-          examType: "exame_laboratorial",
-          title: `Exame via WhatsApp - ${new Date().toLocaleDateString("pt-BR")}`,
-        },
-      }
+      { body: invokeBody }
     );
 
     if (analysisError || !analysisResult || analysisResult.error) {
