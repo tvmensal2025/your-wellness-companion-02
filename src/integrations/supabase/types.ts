@@ -13419,6 +13419,48 @@ export type Database = {
         }
         Relationships: []
       }
+      vps_api_logs: {
+        Row: {
+          created_at: string | null
+          endpoint: string
+          error_message: string | null
+          id: string
+          method: string
+          request_summary: string | null
+          response_summary: string | null
+          response_time_ms: number | null
+          status_code: number | null
+          success: boolean | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          endpoint: string
+          error_message?: string | null
+          id?: string
+          method: string
+          request_summary?: string | null
+          response_summary?: string | null
+          response_time_ms?: number | null
+          status_code?: number | null
+          success?: boolean | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          endpoint?: string
+          error_message?: string | null
+          id?: string
+          method?: string
+          request_summary?: string | null
+          response_summary?: string | null
+          response_time_ms?: number | null
+          status_code?: number | null
+          success?: boolean | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       water_tracking: {
         Row: {
           amount_ml: number | null
