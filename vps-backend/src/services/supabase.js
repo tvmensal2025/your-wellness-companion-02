@@ -25,10 +25,15 @@ export function getSupabase() {
  */
 export async function getUserByPhone(phone) {
   const db = getSupabase();
+  
+  // Limpar telefone
+  const cleanPhone = phone.replace(/\D/g, '');
+  
   const { data, error } = await db
     .from('profiles')
-    .select('id, full_name, email, phone')
-    .eq('phone', phone)
+    .select('id, user_id, full_name, email, phone')
+    .or(`phone.eq.${phone},phone.eq.${cleanPhone},phone.like.%${cleanPhone.slice(-9)}`)
+    .limit(1)
     .single();
   
   if (error) return null;
@@ -43,11 +48,26 @@ export async function getUserById(userId) {
   const { data, error } = await db
     .from('profiles')
     .select('*')
-    .eq('id', userId)
+    .or(`id.eq.${userId},user_id.eq.${userId}`)
+    .limit(1)
     .single();
   
   if (error) return null;
   return data;
+}
+
+/**
+ * Buscar usuários com telefone
+ */
+export async function getUsersWithPhone(limit = 1000) {
+  const db = getSupabase();
+  const { data } = await db
+    .from('profiles')
+    .select('id, user_id, full_name, phone')
+    .not('phone', 'is', null)
+    .limit(limit);
+  
+  return data || [];
 }
 
 // ===========================================
@@ -213,7 +233,121 @@ export async function confirmAnalysis(analysisId) {
 }
 
 // ===========================================
-// Funções de Notificação
+// Funções de Notificação (Fila Unificada)
+// ===========================================
+
+/**
+ * Buscar notificações pendentes para processar
+ */
+export async function getPendingNotifications(limit = 50, userId = null) {
+  const db = getSupabase();
+  
+  let query = db
+    .from('notification_queue_unified')
+    .select('*')
+    .eq('status', 'pending')
+    .lte('scheduled_for', new Date().toISOString())
+    .order('priority', { ascending: false }) // critical > high > medium > low
+    .order('scheduled_for', { ascending: true })
+    .limit(limit);
+  
+  if (userId) {
+    query = query.eq('user_id', userId);
+  }
+  
+  const { data, error } = await query;
+  
+  if (error) {
+    console.error('Erro ao buscar notificações pendentes:', error);
+    return [];
+  }
+  
+  return data || [];
+}
+
+/**
+ * Marcar notificação como enviada
+ */
+export async function markNotificationSent(notificationId, sentVia = 'whatsapp') {
+  const db = getSupabase();
+  
+  const { error } = await db
+    .from('notification_queue_unified')
+    .update({
+      status: 'sent',
+      sent_at: new Date().toISOString(),
+      sent_via: sentVia,
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', notificationId);
+  
+  if (error) {
+    console.error('Erro ao marcar notificação como enviada:', error);
+  }
+}
+
+/**
+ * Marcar notificação como falha
+ */
+export async function markNotificationFailed(notificationId, errorMessage) {
+  const db = getSupabase();
+  
+  const { data: current } = await db
+    .from('notification_queue_unified')
+    .select('retry_count')
+    .eq('id', notificationId)
+    .single();
+  
+  const retryCount = (current?.retry_count || 0) + 1;
+  
+  const { error } = await db
+    .from('notification_queue_unified')
+    .update({
+      status: retryCount >= 3 ? 'failed' : 'pending', // Retry até 3x
+      error_message: errorMessage,
+      retry_count: retryCount,
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', notificationId);
+  
+  if (error) {
+    console.error('Erro ao marcar notificação como falha:', error);
+  }
+}
+
+/**
+ * Criar notificação na fila
+ */
+export async function createNotification(userId, type, category, title, body, options = {}) {
+  const db = getSupabase();
+  
+  const { data, error } = await db
+    .from('notification_queue_unified')
+    .insert({
+      user_id: userId,
+      notification_type: type,
+      category: category,
+      title: title,
+      body: body,
+      action_url: options.actionUrl,
+      metadata: options.metadata || {},
+      priority: options.priority || 'medium',
+      scheduled_for: options.scheduledFor || new Date().toISOString(),
+      status: 'pending'
+    })
+    .select()
+    .single();
+  
+  if (error) {
+    console.error('Erro ao criar notificação:', error);
+    return null;
+  }
+  
+  return data;
+}
+
+// ===========================================
+// Funções de Lembretes (Legacy)
 // ===========================================
 
 /**
@@ -228,6 +362,7 @@ export async function getUsersForWaterReminder() {
     .from('profiles')
     .select(`
       id, 
+      user_id,
       full_name, 
       phone,
       advanced_daily_tracking!inner(water_ml)
@@ -250,13 +385,13 @@ export async function getUsersForWeightReminder() {
   // Usuários que não pesaram na última semana
   const { data } = await db
     .from('profiles')
-    .select('id, full_name, phone')
+    .select('id, user_id, full_name, phone')
     .not('phone', 'is', null);
   
   // Filtrar quem não pesou recentemente
   const usersToRemind = [];
   for (const user of data || []) {
-    const lastWeight = await getLastWeight(user.id);
+    const lastWeight = await getLastWeight(user.user_id || user.id);
     if (!lastWeight || new Date(lastWeight.measurement_date) < weekAgo) {
       usersToRemind.push(user);
     }

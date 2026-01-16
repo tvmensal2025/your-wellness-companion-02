@@ -267,6 +267,113 @@ export const templates = {
   // Análise de alimento confirmada
   foodConfirmed: (calories, protein, carbs, fat) => ({
     message: `✅ Refeição registrada!\n\n🔥 ${calories} kcal\n🥩 ${protein}g proteína\n🍞 ${carbs}g carboidratos\n🧈 ${fat}g gordura\n\nBoa escolha! 🥗`
+  }),
+  
+  // ===========================================
+  // NOVOS TEMPLATES - Notificações Centralizadas
+  // ===========================================
+  
+  // Conquista desbloqueada
+  achievement: (name, achievement, xpReward) => ({
+    message: `🏆 Parabéns ${name}!\n\n${achievement}${xpReward ? `\n\n+${xpReward} XP ganhos!` : ''}\n\nContinue assim! 💪`
+  }),
+  
+  // Morning Briefing - Dr. Vital
+  morningBriefing: (name, missions) => ({
+    message: `☀️ Bom dia ${name}!\n\n📋 *Suas missões de hoje:*\n${missions.map((m, i) => `${i + 1}. ${m}`).join('\n')}\n\nVamos lá! 🚀`,
+    buttons: [
+      { id: 'start_missions', text: '🎯 Começar' },
+      { id: 'view_app', text: '📱 Ver no app' }
+    ]
+  }),
+  
+  // Lembrete de medicação
+  medicationReminder: (name, medication, dosage) => ({
+    message: `💊 Olá ${name}!\n\nHora de tomar: *${medication}*\nDosagem: ${dosage}\n\nNão esqueça! ❤️`,
+    buttons: [
+      { id: 'med_taken', text: '✅ Tomei' },
+      { id: 'med_later', text: '⏰ Lembrar depois' }
+    ]
+  }),
+  
+  // Level Up
+  levelUp: (name, newLevel, levelTitle) => ({
+    message: `⬆️ *PARABÉNS ${name.toUpperCase()}!*\n\nVocê subiu para o *Nível ${newLevel}*!\n🏅 Título: ${levelTitle}\n\nContinue evoluindo! 🌟`
+  }),
+  
+  // Streak
+  streakMilestone: (name, streakDays) => ({
+    message: `🔥 *STREAK DE ${streakDays} DIAS!*\n\nIncrível ${name}! Você está em uma sequência de ${streakDays} dias!\n\nNão pare agora! 💪`
+  }),
+  
+  // Weekly Report
+  weeklyReport: (name) => ({
+    message: `📊 Olá ${name}!\n\nSeu *relatório semanal* está pronto!\n\nVeja como foi sua semana de saúde no app. 📱`,
+    buttons: [
+      { id: 'view_report', text: '📊 Ver relatório' }
+    ]
+  }),
+  
+  // Re-engagement
+  reEngagement: (name, daysSince) => ({
+    message: `🌟 Olá ${name}!\n\nSentimos sua falta! Faz ${daysSince} dias desde sua última missão.\n\nQue tal voltar hoje? 💪`,
+    buttons: [
+      { id: 'return_now', text: '🎯 Voltar agora' },
+      { id: 'remind_later', text: '⏰ Me lembre depois' }
+    ]
+  }),
+  
+  // Treino reminder
+  workoutReminder: (name) => ({
+    message: `💪 Olá ${name}!\n\nHora de treinar! Seu corpo está pronto para mais um desafio.\n\nBora se mexer? 🏃`,
+    buttons: [
+      { id: 'start_workout', text: '💪 Começar' },
+      { id: 'skip_today', text: '⏰ Hoje não' }
+    ]
+  }),
+  
+  // Recovery day
+  recoveryDay: (name) => ({
+    message: `🧘 Olá ${name}!\n\nHoje é dia de recuperação! Seu corpo precisa descansar para crescer.\n\n💆 Descanse bem!`
+  }),
+  
+  // Community - Like
+  newLike: (name, actorName, postPreview) => ({
+    message: `❤️ ${name}, *${actorName}* curtiu seu post!\n\n"${postPreview.slice(0, 50)}..."\n\n📱 Veja no app!`
+  }),
+  
+  // Community - Comment
+  newComment: (name, actorName, commentPreview) => ({
+    message: `💬 ${name}, novo comentário de *${actorName}*!\n\n"${commentPreview.slice(0, 50)}..."\n\n📱 Responda no app!`
+  }),
+  
+  // Challenge invite
+  challengeInvite: (name, challengeTitle, inviterName) => ({
+    message: `🎯 ${name}, *${inviterName}* te convidou para um desafio!\n\n*${challengeTitle}*\n\nAceita? 💪`,
+    buttons: [
+      { id: 'accept_challenge', text: '✅ Aceitar' },
+      { id: 'decline_challenge', text: '❌ Recusar' }
+    ]
+  }),
+  
+  // Dica da Sofia
+  sofiaTip: (name, tip) => ({
+    message: `💡 *Dica da Sofia para você, ${name}!*\n\n${tip}\n\n🌟 Cuide-se!`
+  }),
+  
+  // Health alert
+  healthAlert: (name, message) => ({
+    message: `❤️ *Alerta de Saúde*\n\n${name}, ${message}\n\n⚠️ Preste atenção aos sinais do seu corpo!`
+  }),
+  
+  // Sistema genérico
+  system: (name, title, body) => ({
+    message: `🔔 *${title}*\n\n${name}, ${body}`
+  }),
+  
+  // Resumo diário
+  dailySummary: (name, data) => ({
+    message: `📊 *Resumo do dia, ${name}!*\n\n💧 Água: ${data.water || 0}ml\n👣 Passos: ${data.steps || 0}\n🔥 Calorias: ${data.calories || 0}\n😊 Humor: ${data.mood || '-'}/10\n\n${data.message || 'Continue assim! 💪'}`
   })
 };
 
