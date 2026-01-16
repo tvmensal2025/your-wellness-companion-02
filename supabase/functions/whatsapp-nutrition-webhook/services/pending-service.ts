@@ -228,7 +228,7 @@ export async function cancelAllMedicalBatches(
 }
 
 /**
- * Save to food history
+ * Save to food history with comprehensive nutrition extraction
  */
 export async function saveToFoodHistory(
   supabase: SupabaseClient,
@@ -246,6 +246,54 @@ export async function saveToFoodHistory(
     const mealDate = now.toISOString().split("T")[0];
     const mealTime = now.toTimeString().split(" ")[0];
 
+    // Extração robusta de macros de múltiplas fontes
+    const totalCalories = 
+      nutritionData?.total_kcal ??
+      nutritionData?.totalCalories ??
+      nutritionData?.kcal ??
+      nutritionData?.calories ??
+      nutritionData?.nutrition_totals?.totals?.kcal ??
+      0;
+
+    const totalProteins = 
+      nutritionData?.total_proteina ??
+      nutritionData?.totalProteins ??
+      nutritionData?.proteins ??
+      nutritionData?.protein ??
+      nutritionData?.nutrition_totals?.totals?.protein ??
+      0;
+
+    const totalCarbs = 
+      nutritionData?.total_carbo ??
+      nutritionData?.totalCarbs ??
+      nutritionData?.carbs ??
+      nutritionData?.carbohydrates ??
+      nutritionData?.nutrition_totals?.totals?.carbs ??
+      0;
+
+    const totalFats = 
+      nutritionData?.total_gordura ??
+      nutritionData?.totalFats ??
+      nutritionData?.fats ??
+      nutritionData?.fat ??
+      nutritionData?.nutrition_totals?.totals?.fat ??
+      0;
+
+    const totalFiber = 
+      nutritionData?.total_fibra ??
+      nutritionData?.totalFiber ??
+      nutritionData?.fiber ??
+      nutritionData?.nutrition_totals?.totals?.fiber ??
+      0;
+
+    console.log("[PendingService] 📊 Salvando food_history com macros:", {
+      calories: totalCalories,
+      proteins: totalProteins,
+      carbs: totalCarbs,
+      fats: totalFats,
+      fiber: totalFiber,
+    });
+
     const { data, error } = await supabase
       .from("food_history")
       .insert({
@@ -255,11 +303,11 @@ export async function saveToFoodHistory(
         meal_type: mealType,
         photo_url: photoUrl,
         food_items: foodItems,
-        total_calories: nutritionData?.total_kcal || nutritionData?.totalCalories || 0,
-        total_proteins: nutritionData?.total_proteina || nutritionData?.proteins || 0,
-        total_carbs: nutritionData?.total_carbo || nutritionData?.carbs || 0,
-        total_fats: nutritionData?.total_gordura || nutritionData?.fats || 0,
-        total_fiber: nutritionData?.total_fibra || nutritionData?.fiber || 0,
+        total_calories: Number(totalCalories) || 0,
+        total_proteins: Number(totalProteins) || 0,
+        total_carbs: Number(totalCarbs) || 0,
+        total_fats: Number(totalFats) || 0,
+        total_fiber: Number(totalFiber) || 0,
         source: source,
         confidence_score: nutritionData?.confidence || null,
         user_confirmed: confirmed,
@@ -302,11 +350,32 @@ export async function updateFoodHistoryConfirmation(
     }
 
     if (updatedNutrition) {
-      updateData.total_calories = updatedNutrition.total_kcal || updatedNutrition.totalCalories || 0;
-      updateData.total_proteins = updatedNutrition.total_proteina || 0;
-      updateData.total_carbs = updatedNutrition.total_carbo || 0;
-      updateData.total_fats = updatedNutrition.total_gordura || 0;
-      updateData.total_fiber = updatedNutrition.total_fibra || 0;
+      // Extração robusta
+      updateData.total_calories = 
+        updatedNutrition.total_kcal ?? 
+        updatedNutrition.totalCalories ?? 
+        updatedNutrition.kcal ??
+        0;
+      updateData.total_proteins = 
+        updatedNutrition.total_proteina ?? 
+        updatedNutrition.totalProteins ??
+        updatedNutrition.protein ??
+        0;
+      updateData.total_carbs = 
+        updatedNutrition.total_carbo ?? 
+        updatedNutrition.totalCarbs ??
+        updatedNutrition.carbs ??
+        0;
+      updateData.total_fats = 
+        updatedNutrition.total_gordura ?? 
+        updatedNutrition.totalFats ??
+        updatedNutrition.fat ??
+        0;
+      updateData.total_fiber = 
+        updatedNutrition.total_fibra ?? 
+        updatedNutrition.totalFiber ??
+        updatedNutrition.fiber ??
+        0;
     }
 
     await supabase

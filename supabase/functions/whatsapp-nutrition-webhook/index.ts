@@ -520,25 +520,101 @@ async function processFoodImage(user: UserInfo, phone: string, imageUrl: string)
       return;
     }
 
+    // Extrair dados de nutrição de múltiplas fontes possíveis
+    const nutritionTotals = 
+      analysis?.nutrition_totals?.totals ||
+      analysis?.nutrition_data ||
+      analysis?.sofia_analysis?.nutrition_totals?.totals ||
+      {};
+
     const totalCalories =
+      nutritionTotals?.kcal ??
+      nutritionTotals?.total_kcal ??
       analysis?.totalCalories ??
       analysis?.total_kcal ??
       analysis?.nutrition_data?.total_kcal ??
       0;
 
+    const totalProteins =
+      nutritionTotals?.protein ??
+      nutritionTotals?.total_proteina ??
+      analysis?.proteins ??
+      analysis?.total_proteina ??
+      0;
+
+    const totalCarbs =
+      nutritionTotals?.carbs ??
+      nutritionTotals?.total_carbo ??
+      analysis?.carbs ??
+      analysis?.total_carbo ??
+      0;
+
+    const totalFats =
+      nutritionTotals?.fat ??
+      nutritionTotals?.total_gordura ??
+      analysis?.fats ??
+      analysis?.total_gordura ??
+      0;
+
+    const totalFiber =
+      nutritionTotals?.fiber ??
+      nutritionTotals?.total_fibra ??
+      analysis?.fiber ??
+      analysis?.total_fibra ??
+      0;
+
     const mealType = detectMealType();
 
-    // Salvar em food_history
+    // Dados de nutrição consolidados
+    const consolidatedNutrition = {
+      total_kcal: Number(totalCalories) || 0,
+      total_proteina: Number(totalProteins) || 0,
+      total_carbo: Number(totalCarbs) || 0,
+      total_gordura: Number(totalFats) || 0,
+      total_fibra: Number(totalFiber) || 0,
+      confidence: analysis?.confidence || 0.8,
+    };
+
+    console.log(`[Sofia] 📊 Nutrição extraída:`, JSON.stringify(consolidatedNutrition));
+
+    // Salvar em food_history com dados completos
     const foodHistoryId = await saveToFoodHistory(
       user.id,
       mealType,
       imageUrl,
       detectedFoods,
-      { total_kcal: totalCalories, confidence: analysis?.confidence || 0.8 },
+      consolidatedNutrition,
       JSON.stringify(analysis).slice(0, 5000),
       false,
       "whatsapp"
     );
+
+    // Salvar automaticamente em nutrition_tracking com status 'pending'
+    const today = new Date().toISOString().split("T")[0];
+    const { data: pendingTracking, error: trackingError } = await supabase
+      .from("nutrition_tracking")
+      .insert({
+        user_id: user.id,
+        date: today,
+        meal_type: mealType,
+        total_calories: consolidatedNutrition.total_kcal,
+        total_proteins: consolidatedNutrition.total_proteina,
+        total_carbs: consolidatedNutrition.total_carbo,
+        total_fats: consolidatedNutrition.total_gordura,
+        total_fiber: consolidatedNutrition.total_fibra,
+        food_items: detectedFoods,
+        photo_url: imageUrl,
+        notes: "Aguardando confirmação via WhatsApp",
+        status: "pending",
+      })
+      .select("id")
+      .single();
+
+    if (trackingError) {
+      console.error("[Sofia] ⚠️ Erro ao salvar nutrition_tracking pendente:", trackingError);
+    } else {
+      console.log("[Sofia] ✅ Salvo em nutrition_tracking (pendente):", pendingTracking?.id);
+    }
 
     // Formatar mensagem
     const foodsList = detectedFoods
@@ -570,9 +646,14 @@ async function processFoodImage(user: UserInfo, phone: string, imageUrl: string)
       image_url: imageUrl,
       analysis_result: {
         detectedFoods,
-        totalCalories: Number(totalCalories) || null,
+        totalCalories: consolidatedNutrition.total_kcal,
+        totalProteins: consolidatedNutrition.total_proteina,
+        totalCarbs: consolidatedNutrition.total_carbo,
+        totalFats: consolidatedNutrition.total_gordura,
+        totalFiber: consolidatedNutrition.total_fibra,
         raw: analysis,
         food_history_id: foodHistoryId,
+        nutrition_tracking_id: pendingTracking?.id || null,
       },
       waiting_confirmation: true,
       waiting_edit: false,

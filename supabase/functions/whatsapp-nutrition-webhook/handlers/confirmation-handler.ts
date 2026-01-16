@@ -66,25 +66,59 @@ export async function handleDirectConfirm(
     await updateFoodHistoryConfirmation(supabase, foodHistoryId, true, detectedFoods, nutritionData);
   }
 
-  // Save to nutrition_tracking
+  // Atualizar nutrition_tracking existente para status 'confirmed' ou criar novo
   const today = new Date().toISOString().split("T")[0];
-  const { data: tracking } = await supabase
-    .from("nutrition_tracking")
-    .insert({
-      user_id: user.id,
-      date: today,
-      meal_type: pending.meal_type || detectMealType(),
-      total_calories: nutritionData.total_kcal || 0,
-      total_proteins: nutritionData.total_proteina || 0,
-      total_carbs: nutritionData.total_carbo || 0,
-      total_fats: nutritionData.total_gordura || 0,
-      total_fiber: nutritionData.total_fibra || 0,
-      food_items: detectedFoods,
-      photo_url: pending.image_url,
-      notes: "Registrado via WhatsApp",
-    })
-    .select()
-    .single();
+  const existingTrackingId = analysis.nutrition_tracking_id;
+  
+  let tracking: any = null;
+  
+  if (existingTrackingId) {
+    // Atualizar registro existente (criado como pendente)
+    const { data: updatedTracking, error: updateError } = await supabase
+      .from("nutrition_tracking")
+      .update({
+        total_calories: nutritionData.total_kcal || 0,
+        total_proteins: nutritionData.total_proteina || 0,
+        total_carbs: nutritionData.total_carbo || 0,
+        total_fats: nutritionData.total_gordura || 0,
+        total_fiber: nutritionData.total_fibra || 0,
+        food_items: detectedFoods,
+        notes: "Confirmado via WhatsApp",
+        status: "confirmed",
+      })
+      .eq("id", existingTrackingId)
+      .select()
+      .single();
+    
+    if (!updateError) {
+      tracking = updatedTracking;
+      console.log("[Confirmation] ✅ nutrition_tracking atualizado para confirmed:", existingTrackingId);
+    }
+  }
+  
+  // Se não tinha registro pendente, criar novo
+  if (!tracking) {
+    const { data: newTracking } = await supabase
+      .from("nutrition_tracking")
+      .insert({
+        user_id: user.id,
+        date: today,
+        meal_type: pending.meal_type || detectMealType(),
+        total_calories: nutritionData.total_kcal || 0,
+        total_proteins: nutritionData.total_proteina || 0,
+        total_carbs: nutritionData.total_carbo || 0,
+        total_fats: nutritionData.total_gordura || 0,
+        total_fiber: nutritionData.total_fibra || 0,
+        food_items: detectedFoods,
+        photo_url: pending.image_url,
+        notes: "Registrado via WhatsApp",
+        status: "confirmed",
+      })
+      .select()
+      .single();
+    
+    tracking = newTracking;
+  }
 
   // Update pending as processed
   await supabase
@@ -124,12 +158,26 @@ export async function handleDirectCancel(
 
   const analysis = pending.analysis_result || {};
   const foodHistoryId = analysis.food_history_id;
+  const nutritionTrackingId = analysis.nutrition_tracking_id;
 
   if (foodHistoryId) {
     await supabase
       .from("food_history")
       .update({ user_notes: "Cancelado pelo usuário" })
       .eq("id", foodHistoryId);
+  }
+
+  // Atualizar nutrition_tracking para status 'cancelled'
+  if (nutritionTrackingId) {
+    await supabase
+      .from("nutrition_tracking")
+      .update({ 
+        status: "cancelled",
+        notes: "Cancelado pelo usuário via WhatsApp" 
+      })
+      .eq("id", nutritionTrackingId);
+    
+    console.log("[Confirmation] ✅ nutrition_tracking atualizado para cancelled:", nutritionTrackingId);
   }
 
   await supabase
