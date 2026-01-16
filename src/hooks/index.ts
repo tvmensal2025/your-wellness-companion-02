@@ -72,6 +72,9 @@ export { useEnhancedGamification } from './useEnhancedGamification';
 export { useChallenges } from './useChallenges';
 export { useChallengeParticipation } from './useChallengeParticipation';
 export { useFlashChallenge } from './useFlashChallenge';
+export { useNotifications } from './useNotifications';
+export { useProfessionalEvaluation } from './useProfessionalEvaluation';
+export { useDailyNutritionTracking } from './useDailyNutritionTracking';
 
 // ═══════════════════════════════════════════════════════════════════════════
 // 🎯 GOALS

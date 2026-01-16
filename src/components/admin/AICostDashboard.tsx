@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { checkVPSHealth, isVPSConfigured } from '@/lib/vpsApi';
-// VPSApiMonitor removed - table was empty
+import { VPSApiMonitor } from './VPSApiMonitor';
 import { 
   Brain, 
   DollarSign, 

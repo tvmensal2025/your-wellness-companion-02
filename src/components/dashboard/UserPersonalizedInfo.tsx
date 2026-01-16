@@ -88,7 +88,7 @@ export const UserPersonalizedInfo: React.FC<UserPersonalizedInfoProps> = ({ user
         .limit(3);
 
       // Conversas recentes (usando chat_conversations que existe no types)
-      const { data: recentConversations } = await supabase
+      const { data: recentConversations } = await (supabase as any)
         .from('chat_conversations')
         .select('*')
         .eq('user_id', userId)

@@ -30,7 +30,7 @@ export const useSofiaProactive = () => {
       const newInsights: ProactiveInsight[] = [];
 
       // 1. Verificar hidratação
-      const { data: waterToday } = await supabase
+      const { data: waterToday } = await (supabase as any)
         .from('water_tracking')
         .select('amount_ml')
         .eq('user_id', user.id)

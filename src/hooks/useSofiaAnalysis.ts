@@ -95,7 +95,7 @@ export const useSofiaAnalysis = () => {
   // Buscar histórico de análises
   const loadAnalysisHistory = useCallback(async (userId: string) => {
     try {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('preventive_health_analyses')
         .select('*')
         .eq('user_id', userId)
@@ -141,7 +141,7 @@ export const useSofiaAnalysis = () => {
       console.log(`Trigger automático: ${trigger} para usuário ${userId}`);
       
       // Verificar se já foi feita análise recente
-      const { data: recentAnalysis } = await supabase
+      const { data: recentAnalysis } = await (supabase as any)
         .from('preventive_health_analyses')
         .select('created_at')
         .eq('user_id', userId)
