@@ -13,6 +13,7 @@ import {
 } from "../services/pending-service.ts";
 import { getDailyTotal } from "../services/user-service.ts";
 import { withCache, generateTextHash, getCachedResponse, setCachedResponse } from "../services/cache-service.ts";
+import { tryOllamaForSimpleMessage, isSimpleMessage, logOllamaSaving } from "../utils/ollama-helper.ts";
 
 // 🚀 RESPOSTAS FAQ INSTANTÂNEAS - Resposta em <100ms para mensagens comuns
 const INSTANT_FAQ_RESPONSES: Record<string, string> = {
@@ -278,12 +279,25 @@ export async function handleTextMessage(
   text: string
 ): Promise<void> {
   try {
-    // 🚀 OTIMIZAÇÃO: Verificar FAQ instantâneo primeiro (<100ms)
+    // 🚀 OTIMIZAÇÃO 1: Verificar FAQ instantâneo primeiro (<100ms)
     const instantResponse = getInstantFAQResponse(text);
     if (instantResponse) {
       console.log("[TextHandler] FAQ instantâneo detectado:", text.slice(0, 20));
       await sendTextMessage(phone, instantResponse);
       return;
+    }
+    
+    // 🦙 OTIMIZAÇÃO 2: Tentar Ollama para mensagens simples (GRÁTIS!)
+    if (isSimpleMessage(text)) {
+      console.log("[TextHandler] 🦙 Mensagem simples detectada, tentando Ollama...");
+      const ollamaResult = await tryOllamaForSimpleMessage(text, user);
+      if (ollamaResult) {
+        console.log("[TextHandler] ✅ Ollama respondeu (GRÁTIS!)");
+        logOllamaSaving(user.id);
+        await sendTextMessage(phone, ollamaResult.response);
+        return;
+      }
+      console.log("[TextHandler] Ollama indisponível, continuando fluxo normal...");
     }
     
     // Try to analyze as food first
