@@ -5,6 +5,7 @@ import { Upload, Camera, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { invalidateUserDataCache } from '@/hooks/useUserDataCache';
+import { uploadToVPS } from '@/lib/vpsApi';
 
 interface AvatarUploadProps {
   currentAvatar?: string;
@@ -77,35 +78,12 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
         throw new Error('Usuário não está logado');
       }
 
-      // Criar nome único para o arquivo
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}_${Date.now()}.${fileExt}`;
-      const filePath = `${user.id}/${fileName}`;
-
-      // Remover avatar anterior se existir
-      if (currentAvatar) {
-        const oldPath = currentAvatar.split('/').slice(-2).join('/');
-        await supabase.storage
-          .from('avatars')
-          .remove([oldPath]);
-      }
-
-      // Upload do novo arquivo
-      const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: false
-        });
-
-      if (uploadError) throw uploadError;
-
-      // Obter URL pública
-      const { data } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(filePath);
-
-      const avatarUrl = data.publicUrl;
+      // Upload via MinIO (Edge Function com fallback para Supabase)
+      console.log('[AvatarUpload] Enviando para MinIO via Edge Function...');
+      const uploadResult = await uploadToVPS(file, 'avatars');
+      const avatarUrl = uploadResult.url;
+      
+      console.log(`[AvatarUpload] Upload sucesso via ${uploadResult.source}: ${avatarUrl}`);
 
       // Atualizar perfil do usuário (upsert para criar se não existir)
       const { error: updateError } = await supabase

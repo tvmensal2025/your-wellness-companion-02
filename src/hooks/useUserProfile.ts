@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { invalidateUserDataCache } from '@/hooks/useUserDataCache';
+import { uploadToVPS } from '@/lib/vpsApi';
 
 interface ProfileData {
   fullName: string;
@@ -113,25 +114,18 @@ export const useUserProfile = (user: User | null) => {
       // Nunca persistir data-uri gigante em metadata (isso incha o token e quebra requests)
       let avatarUrlToSave = rawAvatarUrl;
 
-      // Se vier data-uri, tenta converter para upload no bucket de avatars e troca por URL pública
+      // Se vier data-uri, tenta converter para upload via MinIO (Edge Function)
       if (hasDataUriAvatar) {
         try {
           const blob = await (await fetch(rawAvatarUrl)).blob();
           const ext = blob.type?.split('/')[1] || 'png';
-          const filePath = `${user.id}/${Date.now()}_avatar.${ext}`;
+          const file = new File([blob], `${Date.now()}_avatar.${ext}`, { type: blob.type || 'image/png' });
 
-          const { error: uploadErr } = await supabase.storage
-            .from('avatars')
-            .upload(filePath, blob, {
-              cacheControl: '3600',
-              upsert: true,
-              contentType: blob.type || 'image/png',
-            });
-
-          if (!uploadErr) {
-            const { data: pub } = supabase.storage.from('avatars').getPublicUrl(filePath);
-            if (pub?.publicUrl) avatarUrlToSave = pub.publicUrl;
-          }
+          // Upload via MinIO (Edge Function com fallback para Supabase)
+          console.log('[useUserProfile] Enviando avatar para MinIO via Edge Function...');
+          const uploadResult = await uploadToVPS(file, 'avatars');
+          avatarUrlToSave = uploadResult.url;
+          console.log(`[useUserProfile] Upload sucesso via ${uploadResult.source}: ${avatarUrlToSave}`);
         } catch (e) {
           console.warn('Falha ao converter avatar base64 para URL. Limpando avatar na metadata.', e);
           avatarUrlToSave = '';
@@ -208,30 +202,17 @@ export const useUserProfile = (user: User | null) => {
         throw new Error('Arquivo muito grande. Máximo 5MB permitido');
       }
 
-      console.log('🔄 Iniciando upload do avatar...', {
+      console.log('🔄 Iniciando upload do avatar via MinIO...', {
         fileName: file.name,
         fileSize: file.size,
         fileType: file.type,
       });
 
-      const fileExt = (file.name.split('.').pop() || 'png').toLowerCase();
-      const safeExt = fileExt.match(/^[a-z0-9]+$/) ? fileExt : 'png';
-      const filePath = `${user.id}/${Date.now()}_avatar.${safeExt}`;
-
-      const { error: uploadErr } = await supabase.storage
-        .from('avatars')
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: true,
-        });
-
-      if (uploadErr) {
-        console.error('❌ Erro no upload do avatar:', uploadErr);
-        throw uploadErr;
-      }
-
-      const { data: pub } = supabase.storage.from('avatars').getPublicUrl(filePath);
-      const avatarUrl = pub?.publicUrl || '';
+      // Upload via MinIO (Edge Function com fallback para Supabase)
+      const uploadResult = await uploadToVPS(file, 'avatars');
+      const avatarUrl = uploadResult.url;
+      
+      console.log(`✅ Avatar enviado via ${uploadResult.source}: ${avatarUrl}`);
 
       if (!avatarUrl) {
         throw new Error('Não foi possível gerar URL pública do avatar');

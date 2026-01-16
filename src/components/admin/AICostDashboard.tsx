@@ -29,7 +29,8 @@ import {
   Camera,
   Scale,
   Bot,
-  Eye
+  Eye,
+  AlertTriangle
 } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, Legend, BarChart, Bar, CartesianGrid } from 'recharts';
 import { format, subDays, startOfDay, endOfDay } from 'date-fns';
@@ -633,6 +634,16 @@ export function AICostDashboard() {
                 </div>
                 <div className="flex items-center gap-2 mt-2">
                   {vpsStats?.status === 'ok' ? (
+                    <>
+                      <CheckCircle className="h-5 w-5 text-green-500" />
+                      <span className="text-lg font-bold text-green-600">Online</span>
+                    </>
+                  ) : vpsStats?.status === 'degraded' ? (
+                    <>
+                      <AlertTriangle className="h-5 w-5 text-yellow-500" />
+                      <span className="text-lg font-bold text-yellow-600">Parcial</span>
+                    </>
+                  ) : vpsStats?.uptime && vpsStats.uptime > 0 ? (
                     <>
                       <CheckCircle className="h-5 w-5 text-green-500" />
                       <span className="text-lg font-bold text-green-600">Online</span>
