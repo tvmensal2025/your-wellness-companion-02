@@ -686,7 +686,7 @@ export const SofiaNutricionalRedesigned: React.FC<SofiaNutricionalRedesignedProp
       setPhysicalData(data);
       const {
         data: goalsData
-      } = await supabase.from('nutritional_goals').select('*').eq('user_id', userId).eq('status', 'active').maybeSingle();
+      } = await (supabase as any).from('nutritional_goals').select('*').eq('user_id', userId).eq('status', 'active').maybeSingle();
       const objective = (goalsData as any)?.objective as NutritionObjective || NutritionObjective.MAINTAIN;
       const calculatedGoals = calculateNutritionalGoals(objective, data);
       setUserGoals({

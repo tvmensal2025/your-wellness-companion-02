@@ -815,6 +815,36 @@ export type Database = {
         }
         Relationships: []
       }
+      chat_conversations: {
+        Row: {
+          created_at: string | null
+          id: string
+          metadata: Json | null
+          personality: string | null
+          title: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          personality?: string | null
+          title?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          metadata?: Json | null
+          personality?: string | null
+          title?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       company_configurations: {
         Row: {
           about_us: string | null
@@ -2444,6 +2474,39 @@ export type Database = {
         }
         Relationships: []
       }
+      notifications: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_read: boolean | null
+          message: string | null
+          metadata: Json | null
+          title: string
+          type: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message?: string | null
+          metadata?: Json | null
+          title: string
+          type?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message?: string | null
+          metadata?: Json | null
+          title?: string
+          type?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       nutrition_foods: {
         Row: {
           aliases: string[] | null
@@ -2617,6 +2680,45 @@ export type Database = {
         }
         Relationships: []
       }
+      nutritional_goals: {
+        Row: {
+          calories_target: number | null
+          carbs_target: number | null
+          created_at: string | null
+          fats_target: number | null
+          fiber_target: number | null
+          id: string
+          protein_target: number | null
+          updated_at: string | null
+          user_id: string
+          water_target: number | null
+        }
+        Insert: {
+          calories_target?: number | null
+          carbs_target?: number | null
+          created_at?: string | null
+          fats_target?: number | null
+          fiber_target?: number | null
+          id?: string
+          protein_target?: number | null
+          updated_at?: string | null
+          user_id: string
+          water_target?: number | null
+        }
+        Update: {
+          calories_target?: number | null
+          carbs_target?: number | null
+          created_at?: string | null
+          fats_target?: number | null
+          fiber_target?: number | null
+          id?: string
+          protein_target?: number | null
+          updated_at?: string | null
+          user_id?: string
+          water_target?: number | null
+        }
+        Relationships: []
+      }
       nutritional_recommendations: {
         Row: {
           created_at: string | null
@@ -2698,6 +2800,39 @@ export type Database = {
           multiplier?: number | null
           points?: number | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      preventive_health_analyses: {
+        Row: {
+          analysis_type: string | null
+          created_at: string | null
+          id: string
+          recommendations: Json | null
+          risk_factors: Json | null
+          risk_score: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          analysis_type?: string | null
+          created_at?: string | null
+          id?: string
+          recommendations?: Json | null
+          risk_factors?: Json | null
+          risk_score?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          analysis_type?: string | null
+          created_at?: string | null
+          id?: string
+          recommendations?: Json | null
+          risk_factors?: Json | null
+          risk_score?: number | null
+          updated_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -4032,6 +4167,36 @@ export type Database = {
           },
         ]
       }
+      user_achievements: {
+        Row: {
+          achievement_name: string | null
+          achievement_type: string | null
+          created_at: string | null
+          description: string | null
+          earned_at: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          achievement_name?: string | null
+          achievement_type?: string | null
+          created_at?: string | null
+          description?: string | null
+          earned_at?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          achievement_name?: string | null
+          achievement_type?: string | null
+          created_at?: string | null
+          description?: string | null
+          earned_at?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_achievements_v2: {
         Row: {
           achieved_at: string | null
@@ -4299,6 +4464,27 @@ export type Database = {
           water_intake?: string | null
           weight_fluctuation_classification?: string | null
           weight_gain_started_age?: number | null
+        }
+        Relationships: []
+      }
+      user_blocks: {
+        Row: {
+          blocked_id: string
+          blocker_id: string
+          created_at: string | null
+          id: string
+        }
+        Insert: {
+          blocked_id: string
+          blocker_id: string
+          created_at?: string | null
+          id?: string
+        }
+        Update: {
+          blocked_id?: string
+          blocker_id?: string
+          created_at?: string | null
+          id?: string
         }
         Relationships: []
       }
@@ -5295,6 +5481,39 @@ export type Database = {
         }
         Relationships: []
       }
+      user_subscriptions: {
+        Row: {
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          started_at: string | null
+          status: string | null
+          subscription_type: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          started_at?: string | null
+          status?: string | null
+          subscription_type?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          started_at?: string | null
+          status?: string | null
+          subscription_type?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_supplements: {
         Row: {
           created_at: string | null
@@ -5436,6 +5655,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      water_tracking: {
+        Row: {
+          amount_ml: number
+          created_at: string | null
+          date: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          amount_ml?: number
+          created_at?: string | null
+          date?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          amount_ml?: number
+          created_at?: string | null
+          date?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       webhook_destinations: {
         Row: {

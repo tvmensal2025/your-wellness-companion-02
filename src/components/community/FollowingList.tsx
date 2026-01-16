@@ -138,7 +138,7 @@ export const FollowingList: React.FC<FollowingListProps> = ({ onProfileClick, on
       
       try {
         // Tentar buscar de user_achievements primeiro
-        const { data: userAchievements } = await supabase
+        const { data: userAchievements } = await (supabase as any)
           .from('user_achievements')
           .select('id, user_id, achievement_name, achievement_type, description, earned_at')
           .in('user_id', followingIds)

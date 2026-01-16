@@ -45,7 +45,7 @@ export const useSubscription = () => {
       }
 
       // Buscar assinatura ativa do usuário
-      const { data: subscriptionData, error: subscriptionError } = await supabase
+      const { data: subscriptionData, error: subscriptionError } = await (supabase as any)
         .from('user_subscriptions')
         .select('*')
         .eq('user_id', user.id)

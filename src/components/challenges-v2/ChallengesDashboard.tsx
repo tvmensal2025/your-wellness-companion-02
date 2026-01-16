@@ -21,7 +21,7 @@ import { DuelCard } from './duels/DuelCard';
 import { CreateDuelModal } from './duels/CreateDuelModal';
 import { TeamCard } from './teams/TeamCard';
 import { CreateTeamModal } from './teams/CreateTeamModal';
-// TeamDetailView removed - team_battles table was empty
+import { TeamDetailView } from './teams/TeamDetailView';
 import { CompactAlerts } from './CompactAlerts';
 import { CreateChallengeModal } from './admin/CreateChallengeModal';
 import { useAdminMode } from '@/hooks/useAdminMode';

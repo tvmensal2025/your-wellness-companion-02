@@ -30,7 +30,7 @@ export function useUserBlock(userId: string | null) {
       }
 
       // Check both directions with RLS now allowing both
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('user_blocks')
         .select('blocker_id, blocked_id')
         .or(`and(blocker_id.eq.${user.id},blocked_id.eq.${userId}),and(blocker_id.eq.${userId},blocked_id.eq.${user.id})`);
