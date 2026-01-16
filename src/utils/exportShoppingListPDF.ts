@@ -80,12 +80,16 @@ export async function exportShoppingListToPDF(
   // QR code (melhor esforço): tenta usar lib 'qrcode'; se falhar, mostra URL
   const url = window.location.href;
   try {
-    // @ts-expect-error - Dynamic import of qrcode module (types may not be available)
-    const mod = await import('qrcode');
-    const dataUrl = await (mod as any).toDataURL(url, { margin: 1, scale: 4 });
-    pdf.addImage(dataUrl, 'PNG', pageWidth - margin - 32, y, 28, 28);
-    pdf.setFontSize(9);
-    pdf.text('Reabra este plano', pageWidth - margin - 32, y + 32);
+    const mod = await import('qrcode').catch(() => null);
+    if (mod) {
+      const dataUrl = await (mod as any).toDataURL(url, { margin: 1, scale: 4 });
+      pdf.addImage(dataUrl, 'PNG', pageWidth - margin - 32, y, 28, 28);
+      pdf.setFontSize(9);
+      pdf.text('Reabra este plano', pageWidth - margin - 32, y + 32);
+    } else {
+      pdf.setFontSize(9);
+      pdf.text(`Acesse: ${url}`, margin, y + 6);
+    }
   } catch {
     pdf.setFontSize(9);
     pdf.text(`Acesse: ${url}`, margin, y + 6);

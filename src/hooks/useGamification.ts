@@ -220,7 +220,9 @@ export const useGamification = () => {
       if (!challenge) throw new Error('Desafio não encontrado');
 
       // Buscar ou criar participação
-      const { data: participation, error: participationError } = await supabase
+      let participationData: { id: string } | null = null;
+      
+      const { data: existingParticipation, error: participationError } = await supabase
         .from('challenge_participations')
         .select('*')
         .eq('user_id', user.id)
@@ -242,10 +244,11 @@ export const useGamification = () => {
           .single();
 
         if (createError) throw createError;
-        participation = newParticipation;
+        participationData = newParticipation;
       } else if (participationError) {
         throw participationError;
       } else {
+        participationData = existingParticipation;
         // Atualizar participação existente
         const { error: updateError } = await supabase
           .from('challenge_participations')
@@ -254,7 +257,7 @@ export const useGamification = () => {
             progress: 100,
             completed_at: new Date().toISOString()
           })
-          .eq('id', participation.id);
+          .eq('id', existingParticipation.id);
 
         if (updateError) throw updateError;
       }

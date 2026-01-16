@@ -14,14 +14,14 @@ class IntersectionObserverMock {
   takeRecords() { return [] }
 }
 
-// @ts-expect-error - Mock ResizeObserver for testing environment (not available in jsdom)
-global.ResizeObserver = ResizeObserverMock as any
-// @ts-expect-error - Mock IntersectionObserver for testing environment (not available in jsdom)
-global.IntersectionObserver = IntersectionObserverMock as any
+// Mock ResizeObserver for testing environment (not available in jsdom)
+Object.defineProperty(global, 'ResizeObserver', { value: ResizeObserverMock })
+// Mock IntersectionObserver for testing environment (not available in jsdom)
+Object.defineProperty(global, 'IntersectionObserver', { value: IntersectionObserverMock })
 
-// @ts-expect-error - Mock matchMedia for testing environment (not available in jsdom)
-global.matchMedia = global.matchMedia || function () {
-  return { matches: false, addListener() {}, removeListener() {} }
-}
+// Mock matchMedia for testing environment (not available in jsdom)
+Object.defineProperty(global, 'matchMedia', {
+  value: () => ({ matches: false, addListener() {}, removeListener() {} })
+})
 
 

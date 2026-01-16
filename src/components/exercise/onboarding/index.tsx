@@ -940,3 +940,5 @@ export const ExerciseOnboardingModal: React.FC<ExerciseOnboardingModalProps> = (
     </Dialog>
   );
 };
+
+export default ExerciseOnboardingModal;

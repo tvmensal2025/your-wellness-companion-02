@@ -45,11 +45,11 @@ export const SofiaInteractiveAnalysis: React.FC<SofiaInteractiveAnalysisProps> =
 
       await supabase
         .from('food_analysis')
-        .insert({
+        .insert([{
           user_id: user.id,
           meal_type: 'refeicao',
           image_url: imageUrl,
-          food_items: { alimentos: foods },
+          food_items: foods,
           nutrition_analysis: {
             calorias: analysisData.calorias,
             proteinas: analysisData.proteinas,
@@ -62,7 +62,7 @@ export const SofiaInteractiveAnalysis: React.FC<SofiaInteractiveAnalysisProps> =
             imagem_confirmada: true
           },
           analysis_text: 'Análise confirmada pelo usuário'
-        });
+        }]);
 
       // Salvar na conversa do chat
       await saveSofiaChatMessage(

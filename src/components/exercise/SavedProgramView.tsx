@@ -256,6 +256,7 @@ export const SavedProgramView: React.FC<SavedProgramProps> = ({
         if (error) throw error;
 
         // Se não encontrou exercícios suficientes, buscar TODOS
+        let finalData = data;
         if (!data || data.length < 10) {
           const { data: allData, error: allError } = await supabase
             .from('exercises_library')
@@ -263,12 +264,12 @@ export const SavedProgramView: React.FC<SavedProgramProps> = ({
             .eq('is_active', true);
 
           if (!allError && allData && allData.length > (data?.length || 0)) {
-            data = allData;
-            console.log(`Fallback: carregando ${data.length} exercícios de todos os locais`);
+            finalData = allData;
+            console.log(`Fallback: carregando ${finalData.length} exercícios de todos os locais`);
           }
         }
 
-        setLibraryExercises((data || []) as Exercise[]);
+        setLibraryExercises((finalData || []) as Exercise[]);
       } catch (e) {
         console.error('Erro ao carregar biblioteca de exercícios:', e);
         if (mounted) setLibraryExercises([]);

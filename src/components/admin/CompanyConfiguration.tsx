@@ -93,12 +93,11 @@ const CompanyConfiguration: React.FC = () => {
       setLoading(true);
       
       // Salvar usando a nova tabela company_data
-      // @ts-expect-error - Campos podem não existir no tipo gerado
       const { data, error } = await supabase
         .from('company_data')
         .upsert({
           company_name: companyData.company_name,
-          description: companyData.about_us
+          settings: { description: companyData.about_us }
         })
         .select()
         .single();
