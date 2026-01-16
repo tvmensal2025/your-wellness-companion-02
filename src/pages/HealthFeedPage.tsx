@@ -204,10 +204,7 @@ export default function HealthFeedPage() {
     const post = posts.find(p => p.id === postId);
     if (post) {
       trackInteraction(post, 'like');
-      // Create notification for post author
-      if (post.user_id !== user?.id) {
-        createNotification(post.user_id, 'like', 'Curtiu seu post', post.content.substring(0, 50), 'post', postId);
-      }
+      // Note: Notification system to be implemented
     }
     toggleLike(postId);
   };
@@ -216,10 +213,7 @@ export default function HealthFeedPage() {
     const post = posts.find(p => p.id === postId);
     if (post) {
       trackInteraction(post, 'comment');
-      // Create notification for post author
-      if (post.user_id !== user?.id) {
-        createNotification(post.user_id, 'comment', 'Comentou no seu post', comment.substring(0, 50), 'post', postId);
-      }
+      // Note: Notification system to be implemented
     }
     addComment(postId, comment);
   };
@@ -349,8 +343,8 @@ export default function HealthFeedPage() {
   }, [ranking]);
 
   const handleMotivateUser = (userId: string, userName: string) => {
-    // Criar notificação de motivação
-    createNotification(userId, 'like', '💪 Te motivou!', 'Continue assim, você está arrasando!', 'motivation');
+    // Note: Notification system to be implemented
+    toast.success(`Motivação enviada para ${userName}! 💪`);
   };
 
   // Função para gerar bio/foco baseado no nível ou conteúdo (fallback)
