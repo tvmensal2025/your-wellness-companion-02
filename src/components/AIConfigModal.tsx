@@ -15,8 +15,56 @@ interface AIConfiguration {
   temperature: number;
   is_active: boolean;
   preset_level: string;
+  personality?: string;
   system_prompt?: string;
 }
+
+// Personalidades disponíveis
+const personalityOptions = [
+  { 
+    value: 'sofia', 
+    label: 'Sofia 🥗', 
+    description: 'Nutricionista virtual - empática, motivacional e acolhedora',
+    color: 'bg-green-50 border-green-200 text-green-700'
+  },
+  { 
+    value: 'drvital', 
+    label: 'Dr. Vital 🩺', 
+    description: 'Médico virtual - profissional, seguro e baseado em evidências',
+    color: 'bg-blue-50 border-blue-200 text-blue-700'
+  },
+  { 
+    value: 'generico', 
+    label: 'Genérico 🤖', 
+    description: 'Assistente neutro - versátil para qualquer funcionalidade',
+    color: 'bg-gray-50 border-gray-200 text-gray-700'
+  }
+];
+
+// Níveis de preset
+const presetLevelOptions = [
+  { 
+    value: 'minimo', 
+    label: 'Mínimo 💰', 
+    description: 'Econômico - respostas curtas (512-1024 tokens)',
+    tokens: 1024,
+    temperature: 0.5
+  },
+  { 
+    value: 'medio', 
+    label: 'Médio ⚖️', 
+    description: 'Equilibrado - bom custo/benefício (2048-4096 tokens)',
+    tokens: 4096,
+    temperature: 0.7
+  },
+  { 
+    value: 'maximo', 
+    label: 'Máximo 🚀', 
+    description: 'Premium - respostas completas (4096-8192 tokens)',
+    tokens: 8192,
+    temperature: 0.8
+  }
+];
 
 interface AIConfigModalProps {
   isOpen: boolean;
@@ -135,9 +183,21 @@ export const AIConfigModal: React.FC<AIConfigModalProps> = ({
       food_analysis: 'Análise Alimentar',
       daily_missions: 'Missões Diárias',
       whatsapp_reports: 'Relatórios WhatsApp',
-      email_reports: 'Relatórios Email'
+      email_reports: 'Relatórios Email',
+      image_analysis: 'Análise de Imagens',
+      medical_exam_analysis: 'Extração de Exames',
+      simple_messages: 'Mensagens Simples (Ollama)'
     };
     return titles[functionality] || functionality;
+  };
+
+  const handlePresetChange = (preset: typeof presetLevelOptions[0]) => {
+    setLocalConfig({
+      ...localConfig,
+      preset_level: preset.value,
+      max_tokens: preset.tokens,
+      temperature: preset.temperature
+    });
   };
 
   const currentService = serviceInfo[localConfig.service_name as keyof typeof serviceInfo] || serviceInfo.lovable;
@@ -241,6 +301,51 @@ export const AIConfigModal: React.FC<AIConfigModalProps> = ({
                 ))}
               </div>
             </div>
+
+            {/* Seleção de Personalidade */}
+            <div>
+              <h3 className="font-semibold mb-4">Personalidade</h3>
+              <div className="space-y-2">
+                {personalityOptions.map((personality) => (
+                  <button
+                    key={personality.value}
+                    onClick={() => setLocalConfig({ ...localConfig, personality: personality.value })}
+                    className={`w-full p-3 rounded-lg border-2 text-left transition-all ${
+                      localConfig.personality === personality.value
+                        ? personality.color + ' ring-2 ring-offset-1'
+                        : 'bg-white border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <span className="font-medium text-sm">{personality.label}</span>
+                    <p className="text-xs text-gray-500 mt-1">{personality.description}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Seleção de Nível */}
+            <div>
+              <h3 className="font-semibold mb-4">Nível de Resposta</h3>
+              <div className="space-y-2">
+                {presetLevelOptions.map((preset) => (
+                  <button
+                    key={preset.value}
+                    onClick={() => handlePresetChange(preset)}
+                    className={`w-full p-3 rounded-lg border-2 text-left transition-all ${
+                      localConfig.preset_level === preset.value
+                        ? 'bg-purple-50 border-purple-300 ring-2 ring-purple-200 ring-offset-1'
+                        : 'bg-white border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium text-sm">{preset.label}</span>
+                      <span className="text-xs text-gray-500 font-mono">{preset.tokens} tokens</span>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">{preset.description}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
 
           {/* Coluna Direita - Parâmetros e Prompt */}
@@ -305,6 +410,18 @@ export const AIConfigModal: React.FC<AIConfigModalProps> = ({
                 <div className="flex justify-between">
                   <span className="text-gray-600">Modelo:</span>
                   <span className="font-mono text-xs">{localConfig.model}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Personalidade:</span>
+                  <span className="font-medium">
+                    {personalityOptions.find(p => p.value === localConfig.personality)?.label || 'Não definida'}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Nível:</span>
+                  <span className="font-medium">
+                    {presetLevelOptions.find(p => p.value === localConfig.preset_level)?.label || localConfig.preset_level}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Tokens:</span>

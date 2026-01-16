@@ -205,15 +205,23 @@ const AIControlPanelUnified = () => {
     let config = configurations.find(c => c.functionality === functionality);
     
     if (!config) {
+      // Definir personalidade padrão baseada na funcionalidade
+      const defaultPersonality = functionality.includes('medical') || functionality.includes('preventive') 
+        ? 'drvital' 
+        : functionality === 'simple_messages' 
+          ? 'sofia' 
+          : 'sofia';
+      
       config = {
         id: `temp-${functionality}`,
         functionality,
-        service_name: 'openai',
-        model: 'gpt-4o',
+        service_name: functionality === 'simple_messages' ? 'ollama' : 'lovable',
+        model: functionality === 'simple_messages' ? 'llama3.2:3b' : 'google/gemini-2.5-flash',
         max_tokens: 4096,
         temperature: 0.8,
         is_active: false,
         preset_level: 'maximo',
+        personality: defaultPersonality,
         system_prompt: `Você é um assistente especializado em ${functionality.replace('_', ' ')}. Sua função é fornecer respostas precisas e úteis.`
       };
     }
