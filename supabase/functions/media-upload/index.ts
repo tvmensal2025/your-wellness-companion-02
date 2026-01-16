@@ -1,43 +1,38 @@
+/**
+ * Edge Function: media-upload
+ * 
+ * MODO: 100% MinIO (SEM FALLBACK PARA SUPABASE STORAGE)
+ * 
+ * Upload de mídia via VPS/Media-API para MinIO.
+ * Se MinIO falhar, retorna erro - NÃO usa Supabase Storage.
+ */
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
-
-/**
- * Edge Function: Media Upload Proxy
- * 
- * Recebe uploads do frontend e envia para MinIO via VPS.
- * O frontend não tem acesso às variáveis VITE_VPS_*, então esta
- * function atua como proxy seguro.
- * 
- * Endpoints:
- * - POST / : Upload via base64
- * - POST /file : Upload via FormData (futuro)
- * 
- * Fallback: Se VPS falhar, usa Supabase Storage
- */
 
 // Folders permitidos para upload
 const ALLOWED_FOLDERS = [
   'avatars',
-  'banners',           // banners da plataforma
+  'banners',
   'chat-images', 
   'course-thumbnails',
   'exercise-media',
   'exercise-videos',
   'feed',
   'food-analysis',
-  'lesson-videos',     // vídeos de aulas
+  'lesson-videos',
   'medical-exams',
   'medical-reports',
   'profiles',
+  'product-images',
   'stories',
   'weight-photos',
   'whatsapp',
-  'product-images',
 ];
 
 // MIME types permitidos
@@ -46,9 +41,14 @@ const ALLOWED_MIME_TYPES = [
   'image/png',
   'image/gif',
   'image/webp',
+  'image/svg+xml',
   'video/mp4',
   'video/quicktime',
   'video/webm',
+  'video/x-msvideo',
+  'audio/mpeg',
+  'audio/wav',
+  'application/pdf',
 ];
 
 interface UploadRequest {
@@ -59,212 +59,228 @@ interface UploadRequest {
   filename?: string;
 }
 
-interface UploadResponse {
-  success: boolean;
-  url?: string;
-  path?: string;
-  size?: number;
-  mimeType?: string;
-  error?: string;
-  source?: 'minio' | 'supabase';
-}
-
 serve(async (req) => {
-  // Handle CORS
-  if (req.method === "OPTIONS") {
+  // CORS preflight
+  if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    const VPS_API_URL = Deno.env.get('VPS_API_URL');
+    const VPS_API_KEY = Deno.env.get('VPS_API_KEY');
+
+    // Validar configuração - OBRIGATÓRIO para modo MinIO-only
+    if (!VPS_API_URL) {
+      console.error('[media-upload] ❌ VPS_API_URL não configurado');
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'VPS_API_URL não configurado. Configure nas secrets do projeto.',
+          code: 'CONFIG_ERROR'
+        }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (!VPS_API_KEY) {
+      console.error('[media-upload] ❌ VPS_API_KEY não configurado');
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'VPS_API_KEY não configurado. Configure nas secrets do projeto.',
+          code: 'CONFIG_ERROR'
+        }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log('[media-upload] VPS_API_URL:', VPS_API_URL);
+    console.log('[media-upload] VPS_API_KEY: configurado');
+
     // Parse request body
     const body: UploadRequest = await req.json();
     const { data, folder, userId, mimeType, filename } = body;
 
-    // Validações
+    // Validar campos obrigatórios
     if (!data) {
       return new Response(
-        JSON.stringify({ success: false, error: "Dados da imagem não fornecidos" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ success: false, error: 'Campo "data" (base64) é obrigatório', code: 'MISSING_DATA' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    if (!folder || !ALLOWED_FOLDERS.includes(folder)) {
+    if (!folder) {
       return new Response(
-        JSON.stringify({ success: false, error: `Pasta inválida: ${folder}` }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ success: false, error: 'Campo "folder" é obrigatório', code: 'MISSING_FOLDER' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    if (!mimeType || !ALLOWED_MIME_TYPES.includes(mimeType)) {
+    // Validar folder permitido
+    if (!ALLOWED_FOLDERS.includes(folder)) {
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: "Formato não suportado. Use JPEG, PNG, GIF, WebP, MP4, MOV ou WebM.",
-          code: "INVALID_TYPE"
+          error: `Pasta inválida: ${folder}. Permitidas: ${ALLOWED_FOLDERS.join(', ')}`,
+          code: 'INVALID_FOLDER'
         }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
+    // Validar MIME type
+    const normalizedMimeType = mimeType || 'application/octet-stream';
+    if (mimeType && !ALLOWED_MIME_TYPES.includes(mimeType)) {
+      console.warn(`[media-upload] MIME type não listado: ${mimeType} (continuando mesmo assim)`);
+    }
+
     // Validar tamanho (base64 é ~33% maior que o arquivo original)
-    const estimatedSize = Math.ceil((data.length * 3) / 4);
+    const cleanBase64 = data.replace(/^data:[^;]+;base64,/, '');
+    const estimatedSize = Math.ceil((cleanBase64.length * 3) / 4);
     const maxSize = 50 * 1024 * 1024; // 50MB
+    
     if (estimatedSize > maxSize) {
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: "Arquivo muito grande. Máximo 50MB.",
-          code: "FILE_TOO_LARGE"
+          error: `Arquivo muito grande (${Math.round(estimatedSize / 1024 / 1024)}MB). Máximo: 50MB.`,
+          code: 'FILE_TOO_LARGE'
         }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Tentar upload para MinIO via VPS
-    const VPS_API_URL = Deno.env.get("VPS_API_URL") || Deno.env.get("VITE_VPS_API_URL");
-    const VPS_API_KEY = Deno.env.get("VPS_API_KEY") || Deno.env.get("VITE_VPS_API_KEY");
+    // Gerar nome de arquivo único
+    const timestamp = Date.now();
+    const randomId = Math.random().toString(36).substring(2, 8);
+    const extension = getExtensionFromMime(normalizedMimeType);
+    const generatedFilename = `${timestamp}-${randomId}${extension}`;
+    const finalFilename = filename || generatedFilename;
 
-    console.log(`[media-upload] VPS_API_URL configurado: ${VPS_API_URL ? 'SIM' : 'NÃO'}`);
-    console.log(`[media-upload] VPS_API_KEY configurado: ${VPS_API_KEY ? 'SIM' : 'NÃO'}`);
+    // Construir path
+    const filePath = userId 
+      ? `${userId}/${generatedFilename}`
+      : generatedFilename;
 
-    if (VPS_API_URL && VPS_API_KEY) {
-      try {
-        console.log(`[media-upload] Tentando upload para MinIO: ${folder} via ${VPS_API_URL}`);
-        
-        const vpsResponse = await fetch(`${VPS_API_URL}/storage/upload-base64`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-API-Key": VPS_API_KEY,
-          },
-          body: JSON.stringify({
-            data: data.replace(/^data:[^;]+;base64,/, ''), // Remove prefix se existir
-            folder,
-            userId,
-            mimeType,
-            filename,
-          }),
-        });
+    console.log(`[media-upload] Upload para MinIO: folder=${folder}, path=${filePath}, size=${Math.round(estimatedSize/1024)}KB`);
 
-        if (vpsResponse.ok) {
-          const result = await vpsResponse.json();
-          console.log(`[media-upload] Upload MinIO sucesso: ${result.url}`);
-          
-          return new Response(
-            JSON.stringify({
-              success: true,
-              url: result.url,
-              path: result.path,
-              size: result.size || estimatedSize,
-              mimeType: result.mimeType || mimeType,
-              source: 'minio',
-            } as UploadResponse),
-            { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-          );
-        }
-
-        const errorData = await vpsResponse.json().catch(() => ({}));
-        console.warn(`[media-upload] ⚠️ MinIO falhou (status ${vpsResponse.status}): ${errorData.error || 'Erro desconhecido'}`);
-        console.log(`[media-upload] Ativando fallback para Supabase Storage...`);
-        // Continua para fallback
-      } catch (vpsError) {
-        console.warn(`[media-upload] ⚠️ Erro de conexão com MinIO:`, vpsError);
-        console.log(`[media-upload] Ativando fallback para Supabase Storage...`);
-        // Continua para fallback
-      }
-    } else {
-      console.log("[media-upload] ℹ️ VPS não configurada, usando Supabase Storage diretamente");
-    }
-
-    // Fallback: Supabase Storage
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
-
-    // Converter base64 para Uint8Array
-    const cleanBase64 = data.replace(/^data:[^;]+;base64,/, '');
-    const binaryString = atob(cleanBase64);
-    const bytes = new Uint8Array(binaryString.length);
-    for (let i = 0; i < binaryString.length; i++) {
-      bytes[i] = binaryString.charCodeAt(i);
-    }
-
-    // Gerar nome de arquivo
-    const extension = mimeType.split('/')[1] || 'jpg';
-    const finalFilename = filename || `${Date.now()}-${Math.random().toString(36).substring(7)}.${extension}`;
-    const filePath = userId ? `${userId}/${finalFilename}` : finalFilename;
-
-    // Mapear folder para bucket do Supabase
-    const bucketMap: Record<string, string> = {
-      'avatars': 'avatars',
-      'banners': 'community-uploads',
-      'chat-images': 'chat-images',
-      'course-thumbnails': 'course-thumbnails',
-      'exercise-media': 'exercise-media',
-      'exercise-videos': 'exercise-media',
-      'feed': 'community-uploads',
-      'food-analysis': 'chat-images',
-      'lesson-videos': 'exercise-media',
-      'medical-exams': 'medical-documents',
-      'medical-reports': 'medical-documents-reports',
-      'product-images': 'chat-images',
-      'profiles': 'avatars',
-      'stories': 'community-uploads',
-      'weight-photos': 'chat-images',
-      'whatsapp': 'chat-images',
+    // ===== UPLOAD PARA MINIO VIA MEDIA-API =====
+    const uploadUrl = `${VPS_API_URL}/storage/upload-base64`;
+    
+    const uploadPayload = {
+      data: cleanBase64,
+      folder,
+      mimeType: normalizedMimeType,
+      filename: filePath,
+      userId: userId || null
     };
 
-    const bucket = bucketMap[folder] || 'chat-images';
+    console.log(`[media-upload] Chamando: POST ${uploadUrl}`);
 
-    console.log(`[media-upload] Upload para Supabase Storage: ${bucket}/${filePath}`);
+    const response = await fetch(uploadUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-API-Key': VPS_API_KEY,
+      },
+      body: JSON.stringify(uploadPayload),
+    });
 
-    const { data: uploadData, error: uploadError } = await supabase.storage
-      .from(bucket)
-      .upload(filePath, bytes, {
-        contentType: mimeType,
-        upsert: true,
-      });
+    const responseText = await response.text();
+    console.log(`[media-upload] MinIO resposta status: ${response.status}`);
 
-    if (uploadError) {
-      console.error(`[media-upload] Erro Supabase Storage:`, uploadError);
+    if (!response.ok) {
+      // Log detalhado do erro
+      console.error(`[media-upload] ❌ MinIO falhou (status ${response.status})`);
+      console.error(`[media-upload] Resposta: ${responseText}`);
+      
+      // Tentar parsear erro JSON
+      let errorMessage = `MinIO upload falhou (status ${response.status})`;
+      let errorDetails = responseText;
+      
+      try {
+        const errorJson = JSON.parse(responseText);
+        errorMessage = errorJson.error || errorJson.message || errorMessage;
+        errorDetails = JSON.stringify(errorJson, null, 2);
+      } catch {
+        // responseText não é JSON
+      }
+
+      // MODO SEM FALLBACK: Retornar erro direto (não tenta Supabase Storage)
       return new Response(
         JSON.stringify({ 
           success: false, 
-          error: uploadError.message || "Erro ao fazer upload",
-          code: "UPLOAD_FAILED"
+          error: errorMessage,
+          details: errorDetails,
+          code: 'MINIO_ERROR',
+          folder,
+          mimeType: normalizedMimeType,
+          vpsUrl: VPS_API_URL
         }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Gerar URL pública
-    const { data: publicUrlData } = supabase.storage
-      .from(bucket)
-      .getPublicUrl(uploadData.path);
+    // Parse resposta de sucesso
+    let result;
+    try {
+      result = JSON.parse(responseText);
+    } catch {
+      console.error('[media-upload] Resposta MinIO não é JSON válido:', responseText);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Resposta inválida do MinIO (não é JSON)',
+          code: 'INVALID_RESPONSE',
+          rawResponse: responseText.substring(0, 500)
+        }),
+        { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
-    console.log(`[media-upload] Upload Supabase sucesso: ${publicUrlData.publicUrl}`);
+    console.log(`[media-upload] ✅ Upload MinIO sucesso: ${result.url}`);
 
     return new Response(
       JSON.stringify({
         success: true,
-        url: publicUrlData.publicUrl,
-        path: uploadData.path,
-        size: bytes.length,
-        mimeType,
-        source: 'supabase',
-      } as UploadResponse),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        url: result.url,
+        path: result.path || filePath,
+        size: result.size || estimatedSize,
+        mimeType: result.mimeType || normalizedMimeType,
+        source: 'minio',
+        folder
+      }),
+      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
-    console.error("[media-upload] Erro geral:", error);
+    console.error('[media-upload] Erro geral:', error);
     return new Response(
       JSON.stringify({ 
         success: false, 
-        error: error instanceof Error ? error.message : "Erro interno",
-        code: "INTERNAL_ERROR"
+        error: error instanceof Error ? error.message : 'Erro interno',
+        code: 'INTERNAL_ERROR'
       }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });
+
+function getExtensionFromMime(mimeType: string): string {
+  const map: Record<string, string> = {
+    'image/jpeg': '.jpg',
+    'image/png': '.png',
+    'image/gif': '.gif',
+    'image/webp': '.webp',
+    'image/svg+xml': '.svg',
+    'video/mp4': '.mp4',
+    'video/quicktime': '.mov',
+    'video/webm': '.webm',
+    'video/x-msvideo': '.avi',
+    'audio/mpeg': '.mp3',
+    'audio/wav': '.wav',
+    'application/pdf': '.pdf',
+    'application/octet-stream': '.bin',
+  };
+  return map[mimeType] || '.bin';
+}
