@@ -88,12 +88,12 @@ export const useTrackingData = () => {
         .eq('sleep_date', today)
         .maybeSingle();
 
-      // 😊 Carregar dados de humor
+      // 😊 Carregar dados de humor from advanced_daily_tracking
       const { data: moodData } = await (supabase as any)
-        .from('mood_tracking')
-        .select('*')
+        .from('advanced_daily_tracking')
+        .select('mood_rating, stress_level, energy_level, tracking_date')
         .eq('user_id', user.id)
-        .eq('date', today)
+        .eq('tracking_date', today)
         .maybeSingle();
 
       // 🚶 Carregar dados de exercício
@@ -139,11 +139,11 @@ export const useTrackingData = () => {
         },
         mood: {
           today: {
-            day_rating: moodData?.day_rating || 0,
+            day_rating: moodData?.mood_rating || 0,
             energy_level: moodData?.energy_level || 0,
             stress_level: moodData?.stress_level || 0
           },
-          average: moodData?.day_rating || 0,
+          average: moodData?.mood_rating || 0,
           weeklyData: []
         },
         exercise: {
@@ -280,32 +280,30 @@ export const useTrackingData = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
+      const today = new Date().toISOString().split('T')[0];
+
+      // Upsert directly to advanced_daily_tracking
       const { error } = await (supabase as any)
-        .from('mood_tracking')
+        .from('advanced_daily_tracking')
         .upsert({
           user_id: user.id,
-          day_rating: moodForm.rating,
+          tracking_date: today,
+          mood_rating: moodForm.rating,
           energy_level: moodForm.energy,
           stress_level: moodForm.stress,
-          gratitude_text: moodForm.gratitude,
-          date: new Date().toISOString().split('T')[0]
-        });
+          notes: moodForm.gratitude,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'user_id,tracking_date' });
 
       if (error) throw error;
       
-      // Upsert de daily_advanced_tracking e detecção de anomalias logo após salvar
-      const today = new Date().toISOString().split('T')[0];
+      // Detect anomalies with the updated record
       const { data: newDailyRecord, error: advError } = await (supabase as any)
-        .from('daily_advanced_tracking')
-        .upsert({
-          user_id: user.id,
-          date: today,
-          mood_general: moodForm.rating,
-          energy_morning: moodForm.energy,
-          updated_at: new Date().toISOString()
-        })
-        .select()
-        .single();
+        .from('advanced_daily_tracking')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('tracking_date', today)
+        .maybeSingle();
 
       if (!advError && newDailyRecord) {
         // Não bloquear a UI; log silencioso em caso de erro

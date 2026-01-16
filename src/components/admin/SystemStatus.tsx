@@ -132,8 +132,8 @@ const SystemStatus: React.FC = () => {
         'courses',
         'sessions',
         'water_tracking',
-        'sleep_tracking',
-        'mood_tracking'
+        'advanced_daily_tracking',
+        'exercise_tracking'
       ];
 
       const updatedStatus = [...statusChecks];

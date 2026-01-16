@@ -32,55 +32,47 @@ serve(async (req) => {
     const currentDayOfWeek = now.getDay() === 0 ? 7 : now.getDay(); // 1-7 (seg-dom)
     const currentDayOfMonth = now.getDate();
 
-    // Buscar lembretes ativos com WhatsApp habilitado
-    const { data: reminders, error: remindersError } = await supabase
-      .from("goal_reminders")
+    // Buscar metas ativas com lembretes habilitados via user_goals
+    const { data: goalsWithReminders, error: goalsError } = await supabase
+      .from("user_goals")
       .select(`
         id,
-        goal_id,
         user_id,
+        title,
+        target_value,
+        current_value,
+        unit,
+        status,
+        reminder_enabled,
         reminder_frequency,
         reminder_day,
-        last_sent_at,
-        send_whatsapp
+        last_reminder_sent
       `)
       .eq("reminder_enabled", true)
-      .eq("send_whatsapp", true);
+      .eq("status", "ativa");
 
-    if (remindersError) {
-      throw new Error(`Erro ao buscar lembretes: ${remindersError.message}`);
+    if (goalsError) {
+      throw new Error(`Erro ao buscar metas: ${goalsError.message}`);
     }
 
-    console.log(`📋 ${reminders?.length || 0} lembretes ativos encontrados`);
+    console.log(`📋 ${goalsWithReminders?.length || 0} metas com lembretes encontradas`);
 
     const results: any[] = [];
     const today = now.toISOString().split("T")[0];
 
-    for (const reminder of reminders || []) {
+    for (const goal of goalsWithReminders || []) {
       try {
         // Verificar se deve enviar hoje
         const shouldSendToday = checkShouldSend(
-          reminder.reminder_frequency,
-          reminder.reminder_day,
+          goal.reminder_frequency || 'daily',
+          goal.reminder_day,
           currentDayOfWeek,
           currentDayOfMonth,
-          reminder.last_sent_at,
+          goal.last_reminder_sent,
           today
         );
 
         if (!shouldSendToday) {
-          continue;
-        }
-
-        // Buscar dados da meta
-        const { data: goal, error: goalError } = await supabase
-          .from("user_goals")
-          .select("id, title, target_value, current_value, unit, status")
-          .eq("id", reminder.goal_id)
-          .single();
-
-        if (goalError || !goal) {
-          console.log(`⚠️ Meta não encontrada: ${reminder.goal_id}`);
           continue;
         }
 
@@ -93,11 +85,11 @@ serve(async (req) => {
         const { data: profile } = await supabase
           .from("profiles")
           .select("full_name, phone")
-          .eq("user_id", reminder.user_id)
+          .eq("user_id", goal.user_id)
           .single();
 
         if (!profile?.phone) {
-          console.log(`⚠️ Usuário sem telefone: ${reminder.user_id}`);
+          console.log(`⚠️ Usuário sem telefone: ${goal.user_id}`);
           continue;
         }
 
@@ -105,7 +97,7 @@ serve(async (req) => {
         const { data: settings } = await supabase
           .from("user_notification_settings")
           .select("whatsapp_enabled")
-          .eq("user_id", reminder.user_id)
+          .eq("user_id", goal.user_id)
           .single();
 
         if (!settings?.whatsapp_enabled) {
@@ -116,7 +108,6 @@ serve(async (req) => {
         const progress = goal.target_value > 0 
           ? Math.min(100, Math.round((goal.current_value / goal.target_value) * 100))
           : 0;
-
         // Gerar mensagem personalizada
         const message = generateGoalReminderMessage(
           firstName,
@@ -150,7 +141,7 @@ serve(async (req) => {
 
         // Log da mensagem
         await supabase.from("whatsapp_evolution_logs").insert({
-          user_id: reminder.user_id,
+          user_id: goal.user_id,
           phone: phone,
           message_type: "goal_reminder",
           message_content: message,
@@ -158,15 +149,15 @@ serve(async (req) => {
           status: evolutionResponse.ok ? "sent" : "failed",
         });
 
-        // Atualizar last_sent_at
+        // Atualizar last_reminder_sent na meta
         await supabase
-          .from("goal_reminders")
-          .update({ last_sent_at: now.toISOString() })
-          .eq("id", reminder.id);
+          .from("user_goals")
+          .update({ last_reminder_sent: now.toISOString() })
+          .eq("id", goal.id);
 
         results.push({
-          userId: reminder.user_id,
-          goalId: reminder.goal_id,
+          userId: goal.user_id,
+          goalId: goal.id,
           goalTitle: goal.title,
           sent: true,
         });
@@ -176,8 +167,8 @@ serve(async (req) => {
         // Delay entre mensagens
         await new Promise((resolve) => setTimeout(resolve, 2000));
 
-      } catch (reminderError) {
-        console.error(`❌ Erro no lembrete ${reminder.id}:`, reminderError);
+      } catch (goalError) {
+        console.error(`❌ Erro no lembrete ${goal.id}:`, goalError);
       }
     }
 

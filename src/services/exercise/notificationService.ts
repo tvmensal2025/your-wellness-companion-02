@@ -521,11 +521,11 @@ export class NotificationService {
   // ============================================
 
   async getOptimalWorkoutTime(): Promise<LocalNotificationTiming> {
-    // Buscar histórico de treinos
-    const { data: workouts } = await fromTable('exercise_performance_metrics')
-      .select('created_at, difficulty_rating, fatigue_level')
+    // Buscar histórico de treinos using user_exercise_history
+    const { data: workouts } = await fromTable('user_exercise_history')
+      .select('completed_at, difficulty_level')
       .eq('user_id', this.userId)
-      .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()) as any;
+      .gte('completed_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()) as any;
 
     if (!workouts || workouts.length < 5) {
       return {
@@ -539,15 +539,17 @@ export class NotificationService {
 
     // Agrupar por hora do dia
     const hourStats: Record<number, { count: number; avgPerformance: number }> = {};
+    const difficultyMap: Record<string, number> = { easy: 3, medium: 6, hard: 9 };
 
     workoutList.forEach((w: any) => {
-      const hour = new Date(w.created_at).getHours();
+      const hour = new Date(w.completed_at).getHours();
       if (!hourStats[hour]) {
         hourStats[hour] = { count: 0, avgPerformance: 0 };
       }
       hourStats[hour].count++;
-      // Performance = baixa dificuldade percebida + baixa fadiga
-      const performance = 10 - ((w.difficulty_rating || 5) + (w.fatigue_level || 5)) / 2;
+      // Performance = baixa dificuldade percebida (derived from difficulty_level)
+      const difficultyRating = w.difficulty_level ? (difficultyMap[w.difficulty_level] || 5) : 5;
+      const performance = 10 - difficultyRating;
       hourStats[hour].avgPerformance += performance;
     });
 

@@ -92,11 +92,11 @@ serve(async (req) => {
         // Medições e tracking
         db.from("weight_measurements").select("*").eq("user_id", userId).order("measurement_date", { ascending: false }).limit(20),
         db.from("nutrition_tracking").select("*").eq("user_id", userId).gte("date", dateFilter).order("date", { ascending: false }),
-        db.from("food_analysis").select("*").eq("user_id", userId).order("created_at", { ascending: false }).limit(20),
+        db.from("sofia_food_analysis").select("*").eq("user_id", userId).order("created_at", { ascending: false }).limit(20),
         db.from("exercise_tracking").select("*").eq("user_id", userId).gte("date", dateFilter).order("date", { ascending: false }),
         db.from("water_tracking").select("*").eq("user_id", userId).gte("date", dateFilter).order("date", { ascending: false }),
-        db.from("sleep_tracking").select("*").eq("user_id", userId).gte("date", dateFilter).order("date", { ascending: false }),
-        db.from("mood_tracking").select("*").eq("user_id", userId).gte("date", dateFilter).order("date", { ascending: false }),
+        db.from("advanced_daily_tracking").select("sleep_hours, sleep_quality, tracking_date").eq("user_id", userId).gte("tracking_date", dateFilter).order("tracking_date", { ascending: false }),
+        db.from("advanced_daily_tracking").select("mood_rating, stress_level, energy_level, tracking_date").eq("user_id", userId).gte("tracking_date", dateFilter).order("tracking_date", { ascending: false }),
         
         // Metas e engajamento
         db.from("user_goals").select("*").eq("user_id", userId).order("created_at", { ascending: false }),
