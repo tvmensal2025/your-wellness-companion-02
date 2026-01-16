@@ -110,13 +110,26 @@ export const useNutritionHistory = () => {
     }
   };
 
+  // Get daily totals for a specific date
+  const getDailyTotals = (date: string) => {
+    const dayAnalyses = analyses.filter(a => a.analysis_date === date);
+    return dayAnalyses.reduce((acc, a) => ({
+      calories: acc.calories + (a.total_calories || 0),
+      protein: acc.protein + (a.total_protein || 0),
+      carbs: acc.carbs + (a.total_carbs || 0),
+      fat: acc.fat + (a.total_fat || 0),
+      fiber: acc.fiber + (a.total_fiber || 0),
+    }), { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 });
+  };
+
   return {
     analyses,
     loading,
     error,
     fetchAnalyses,
     getAnalysesByDate,
-    deleteAnalysis
+    deleteAnalysis,
+    getDailyTotals
   };
 };
 

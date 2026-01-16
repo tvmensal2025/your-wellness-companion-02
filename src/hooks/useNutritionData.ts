@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/hooks/useAuth';
 
 const DEFAULT_TARGETS = {
   calories: 2000,
@@ -8,7 +9,7 @@ const DEFAULT_TARGETS = {
   fat: 65,
 };
 
-interface NutritionDataState {
+export interface NutritionDataState {
   totals: { calories: number; protein: number; carbs: number; fat: number };
   targets: typeof DEFAULT_TARGETS;
   progress: { calories: number; protein: number; carbs: number; fat: number };
@@ -24,16 +25,49 @@ interface NutritionDataState {
     fat: number;
     time: string;
   }>;
+  // Aliases for compatibility with dashboards
+  caloriesConsumed: number;
+  caloriesTarget: number;
+  caloriesRemaining: number;
+  mealsCompleted: number;
+  totalMeals: number;
+  protein: { current: number; target: number };
+  carbs: { current: number; target: number };
+  fat: { current: number; target: number };
+  weekProgress: { completed: number; total: number };
 }
 
+const DEFAULT_STATE: NutritionDataState = {
+  totals: { calories: 0, protein: 0, carbs: 0, fat: 0 },
+  targets: DEFAULT_TARGETS,
+  progress: { calories: 0, protein: 0, carbs: 0, fat: 0 },
+  mealsToday: 0,
+  streak: 0,
+  daysThisWeek: 0,
+  todayMeals: [],
+  // Aliases
+  caloriesConsumed: 0,
+  caloriesTarget: DEFAULT_TARGETS.calories,
+  caloriesRemaining: DEFAULT_TARGETS.calories,
+  mealsCompleted: 0,
+  totalMeals: 4,
+  protein: { current: 0, target: DEFAULT_TARGETS.protein },
+  carbs: { current: 0, target: DEFAULT_TARGETS.carbs },
+  fat: { current: 0, target: DEFAULT_TARGETS.fat },
+  weekProgress: { completed: 0, total: 7 },
+};
+
 // food_analysis table was removed - using sofia_food_analysis instead
-export function useNutritionData(userId: string | undefined) {
-  const [nutritionData, setNutritionData] = useState<NutritionDataState | null>(null);
+export function useNutritionData(userId?: string) {
+  const { user } = useAuth();
+  const effectiveUserId = userId || user?.id;
+  
+  const [nutritionData, setNutritionData] = useState<NutritionDataState>(DEFAULT_STATE);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!userId) {
+    if (!effectiveUserId) {
       setLoading(false);
       return;
     }
@@ -48,7 +82,7 @@ export function useNutritionData(userId: string | undefined) {
         const { data: todayAnalyses, error: todayError } = await supabase
           .from('sofia_food_analysis')
           .select('*')
-          .eq('user_id', userId)
+          .eq('user_id', effectiveUserId)
           .gte('created_at', `${today}T00:00:00`)
           .lte('created_at', `${today}T23:59:59`)
           .order('created_at', { ascending: true });
@@ -59,7 +93,7 @@ export function useNutritionData(userId: string | undefined) {
         const { data: nutritionGoals } = await supabase
           .from('user_goals')
           .select('goal_type, target_value')
-          .eq('user_id', userId)
+          .eq('user_id', effectiveUserId)
           .in('goal_type', ['calories', 'protein', 'carbs', 'fat'])
           .eq('status', 'active');
 
@@ -67,7 +101,7 @@ export function useNutritionData(userId: string | undefined) {
         const { data: weekData } = await supabase
           .from('sofia_food_analysis')
           .select('created_at')
-          .eq('user_id', userId)
+          .eq('user_id', effectiveUserId)
           .gte('created_at', weekAgo)
           .order('created_at', { ascending: false });
 
@@ -75,7 +109,7 @@ export function useNutritionData(userId: string | undefined) {
         const { data: pointsData } = await supabase
           .from('user_points')
           .select('current_streak')
-          .eq('user_id', userId)
+          .eq('user_id', effectiveUserId)
           .single();
 
         // Calcular totais do dia
@@ -123,6 +157,10 @@ export function useNutritionData(userId: string | undefined) {
           };
         });
 
+        const mealsCount = todayMeals.length;
+        const streak = pointsData?.current_streak || 0;
+        const daysThisWeek = uniqueDays.size;
+
         setNutritionData({
           totals,
           targets,
@@ -132,10 +170,20 @@ export function useNutritionData(userId: string | undefined) {
             carbs: Math.min(100, Math.round((totals.carbs / targets.carbs) * 100)),
             fat: Math.min(100, Math.round((totals.fat / targets.fat) * 100)),
           },
-          mealsToday: todayMeals.length,
-          streak: pointsData?.current_streak || 0,
-          daysThisWeek: uniqueDays.size,
+          mealsToday: mealsCount,
+          streak,
+          daysThisWeek,
           todayMeals,
+          // Aliases for compatibility
+          caloriesConsumed: totals.calories,
+          caloriesTarget: targets.calories,
+          caloriesRemaining: Math.max(0, targets.calories - totals.calories),
+          mealsCompleted: mealsCount,
+          totalMeals: 4,
+          protein: { current: totals.protein, target: targets.protein },
+          carbs: { current: totals.carbs, target: targets.carbs },
+          fat: { current: totals.fat, target: targets.fat },
+          weekProgress: { completed: daysThisWeek, total: 7 },
         });
       } catch (err: any) {
         setError(err.message);
@@ -145,7 +193,7 @@ export function useNutritionData(userId: string | undefined) {
     };
 
     fetchData();
-  }, [userId]);
+  }, [effectiveUserId]);
 
   return { nutritionData, loading, error };
 }

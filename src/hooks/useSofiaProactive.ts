@@ -1,4 +1,3 @@
-
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -52,12 +51,12 @@ export const useSofiaProactive = () => {
         });
       }
 
-      // 2. Verificar sono da noite anterior - usar daily_health_snapshot que tem dados de sono
+      // 2. Verificar sono da noite anterior - usar advanced_daily_tracking que tem dados de sono
       const { data: sleepData } = await supabase
-        .from('daily_health_snapshot')
+        .from('advanced_daily_tracking')
         .select('sleep_hours, sleep_quality')
         .eq('user_id', user.id)
-        .eq('snapshot_date', today)
+        .eq('tracking_date', today)
         .maybeSingle();
 
       if (!sleepData && hour >= 10) {
@@ -72,13 +71,13 @@ export const useSofiaProactive = () => {
         });
       }
 
-      // 3. Correlações inteligentes - usar daily_health_snapshot que tem mood e stress
+      // 3. Correlações inteligentes - usar advanced_daily_tracking que tem mood e stress
       const { data: moodData } = await supabase
-        .from('daily_health_snapshot')
+        .from('advanced_daily_tracking')
         .select('*')
         .eq('user_id', user.id)
-        .gte('snapshot_date', yesterday)
-        .order('snapshot_date', { ascending: false })
+        .gte('tracking_date', yesterday)
+        .order('tracking_date', { ascending: false })
         .limit(7);
 
       if (moodData && moodData.length >= 3) {

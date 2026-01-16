@@ -35,7 +35,7 @@ export const useGoalsGamification = (userId: string | undefined) => {
         .from('user_achievements_v2')
         .select('*')
         .eq('user_id', userId)
-        .order('unlocked_at', { ascending: false })
+        .order('achieved_at', { ascending: false })
         .limit(100);
 
       if (error) {
@@ -70,7 +70,7 @@ export const useGoalsGamification = (userId: string | undefined) => {
   });
 
   // Processar ganho de XP
-  const processXPGain = useMutation({
+  const processXPGainMutation = useMutation({
     mutationFn: async ({ xpAmount }: { xpAmount: number }) => {
       if (!userId) throw new Error('User ID required');
 
@@ -99,6 +99,75 @@ export const useGoalsGamification = (userId: string | undefined) => {
     },
   });
 
+  // Update streak mutation
+  const updateStreakMutation = useMutation({
+    mutationFn: async ({ goalId }: { goalId: string }) => {
+      if (!userId) throw new Error('User ID required');
+
+      const today = new Date().toISOString().split('T')[0];
+      
+      // Check if streak exists for this goal
+      const { data: existingStreak, error: fetchError } = await supabase
+        .from('goal_streaks')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('goal_id', goalId)
+        .single();
+
+      if (fetchError && fetchError.code !== 'PGRST116') throw fetchError;
+
+      if (existingStreak) {
+        // Update existing streak
+        const lastUpdate = existingStreak.last_update_date;
+        const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+        
+        let newStreak = existingStreak.current_streak || 0;
+        if (lastUpdate === yesterday) {
+          newStreak += 1;
+        } else if (lastUpdate !== today) {
+          newStreak = 1; // Reset streak
+        }
+
+        const { data, error } = await supabase
+          .from('goal_streaks')
+          .update({
+            current_streak: newStreak,
+            longest_streak: Math.max(newStreak, existingStreak.longest_streak || 0),
+            last_update_date: today,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', existingStreak.id)
+          .select()
+          .single();
+
+        if (error) throw error;
+        return data;
+      } else {
+        // Create new streak
+        const { data, error } = await supabase
+          .from('goal_streaks')
+          .insert({
+            user_id: userId,
+            goal_id: goalId,
+            current_streak: 1,
+            longest_streak: 1,
+            last_update_date: today,
+          })
+          .select()
+          .single();
+
+        if (error) throw error;
+        return data;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['goal-streaks', userId] });
+    },
+    onError: (error) => {
+      console.error('Error updating streak:', error);
+    },
+  });
+
   // Desbloquear conquista using user_achievements_v2
   const unlockAchievement = useMutation({
     mutationFn: async ({ 
@@ -120,8 +189,9 @@ export const useGoalsGamification = (userId: string | undefined) => {
         .upsert([{
           user_id: userId,
           achievement_type: achievementType,
-          achievement_name: achievementName,
-          badge_icon: icon,
+          title: achievementName,
+          description: achievementDescription,
+          icon: icon,
         }], {
           onConflict: 'user_id,achievement_type',
           ignoreDuplicates: false,
@@ -141,12 +211,23 @@ export const useGoalsGamification = (userId: string | undefined) => {
     },
   });
 
+  // Wrapper function for processXPGain that can be called directly
+  const processXPGain = (params: { xpAmount: number }) => {
+    processXPGainMutation.mutate(params);
+  };
+
+  // Wrapper function for updateStreak that can be called directly
+  const updateStreak = (params: { goalId: string }) => {
+    updateStreakMutation.mutate(params);
+  };
+
   return {
     userLevel,
     achievements: achievements || [],
     streaks: streaks || [],
     isLoading: levelLoading || achievementsLoading || streaksLoading,
     processXPGain,
+    updateStreak,
     unlockAchievement,
   };
 };
