@@ -280,25 +280,6 @@ export function useFeedPosts() {
     console.log('Comments feature is temporarily disabled');
     return null;
   };
-          : p
-      ));
-
-      // Increment comments count in database
-      const post = posts.find(p => p.id === postId);
-      if (post) {
-        await supabase
-          .from('health_feed_posts')
-          .update({ comments_count: post.comments_count + 1 })
-          .eq('id', postId);
-      }
-
-      return newComment;
-    } catch (err: any) {
-      console.error('Error adding comment:', err);
-      toast.error('Erro ao adicionar comentário');
-      return null;
-    }
-  };
 
   // Delete a post
   const deletePost = async (postId: string) => {
