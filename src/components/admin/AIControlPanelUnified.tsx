@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
-import { Settings, Brain, FileText, Mail, MessageSquare, Heart, Utensils, Target, Phone } from 'lucide-react';
+import { Settings, Brain, FileText, Mail, MessageSquare, Heart, Utensils, Target, Phone, Image, Stethoscope, Smile, Zap } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { AIConfigModal } from '@/components/AIConfigModal';
@@ -65,6 +65,20 @@ const functionalities = [
     color: 'bg-yellow-50 border-yellow-200'
   },
   {
+    key: 'image_analysis',
+    title: 'Análise de Imagens',
+    description: 'Análise detalhada de imagens com IA',
+    icon: Image,
+    color: 'bg-cyan-50 border-cyan-200'
+  },
+  {
+    key: 'medical_exam_analysis',
+    title: 'Extração de Exames',
+    description: 'Extração automática de dados de exames',
+    icon: Stethoscope,
+    color: 'bg-rose-50 border-rose-200'
+  },
+  {
     key: 'daily_missions',
     title: 'Missões Diárias',
     description: 'Geração inteligente de tarefas personalizadas',
@@ -84,6 +98,13 @@ const functionalities = [
     description: 'Envio personalizado de relatórios por email',
     icon: Mail,
     color: 'bg-blue-50 border-blue-200'
+  },
+  {
+    key: 'simple_messages',
+    title: 'Mensagens Simples (Ollama)',
+    description: '💚 GRÁTIS - Saudações e respostas simples',
+    icon: Smile,
+    color: 'bg-emerald-100 border-emerald-300'
   }
 ];
 
@@ -93,6 +114,8 @@ const AIControlPanelUnified = () => {
   const [selectedConfig, setSelectedConfig] = useState<AIConfiguration | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activating, setActivating] = useState(false);
+  const [ollamaStatus, setOllamaStatus] = useState<{ ok: boolean; models?: number } | null>(null);
+
   useEffect(() => {
     loadConfigurations();
   }, []);
@@ -130,6 +153,11 @@ const AIControlPanelUnified = () => {
       const openaiOk = data?.openai?.ok ? '✅' : '❌';
       const googleOk = data?.google?.ok ? '✅' : '❌';
       const ollamaOk = data?.ollama?.ok ? '✅' : '❌';
+      
+      // Atualizar status do Ollama
+      if (data?.ollama) {
+        setOllamaStatus({ ok: data.ollama.ok, models: data.ollama.models });
+      }
       
       toast.success(`IA ativada: Lovable ${lovableOk} • OpenAI ${openaiOk} • Google ${googleOk} • Ollama ${ollamaOk}`);
       
@@ -257,6 +285,33 @@ const AIControlPanelUnified = () => {
           </Button>
         </div>
       </div>
+
+      {/* Ollama Status Card */}
+      {ollamaStatus && (
+        <Card className="mb-6 bg-emerald-50 border-emerald-200">
+          <CardContent className="py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className={`w-3 h-3 rounded-full ${ollamaStatus.ok ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`} />
+                <div>
+                  <span className="font-semibold text-emerald-800">
+                    Ollama {ollamaStatus.ok ? 'Online' : 'Offline'}
+                  </span>
+                  <span className="text-sm text-emerald-600 ml-2">
+                    {ollamaStatus.models ? `${ollamaStatus.models} modelos disponíveis` : ''}
+                  </span>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Zap className="w-4 h-4 text-emerald-600" />
+                <span className="text-sm text-emerald-700 font-medium">
+                  Economia: Mensagens simples são processadas gratuitamente
+                </span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {functionalities.map((func) => {

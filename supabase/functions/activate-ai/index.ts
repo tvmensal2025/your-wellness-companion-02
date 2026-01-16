@@ -17,7 +17,7 @@ serve(async (req) => {
     const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY") ?? "";
     const GOOGLE_AI_API_KEY = Deno.env.get("GOOGLE_AI_API_KEY") ?? "";
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY") ?? "";
-    const OLLAMA_URL = "https://ids-ollama-web.ifrhb3.easypanel.host";
+    const OLLAMA_URL = Deno.env.get("OLLAMA_URL") || "https://ids-ollama-web.ifrhb3.easypanel.host";
     
     console.log('🔥 Ativando e testando APIs de IA...');
     console.log('🔑 Lovable AI Key exists:', !!LOVABLE_API_KEY);
@@ -178,9 +178,12 @@ serve(async (req) => {
         { functionality: "medical_analysis", service: "lovable", model: "google/gemini-2.5-pro", max_tokens: 4096, temperature: 0.5, is_enabled: true, level: "maximo", personality: "drvital", system_prompt: "Você é o Dr. Vital, médico virtual do MaxNutrition. Analise exames médicos de forma profissional e segura." },
         { functionality: "preventive_analysis", service: "lovable", model: "google/gemini-2.5-flash", max_tokens: 2048, temperature: 0.6, is_enabled: true, level: "maximo", personality: "drvital", system_prompt: "Você é o Dr. Vital. Analise dados de saúde e identifique riscos potenciais de forma preventiva." },
         { functionality: "food_analysis", service: "lovable", model: "google/gemini-2.5-flash", max_tokens: 2048, temperature: 0.7, is_enabled: true, level: "maximo", personality: "sofia", system_prompt: "Você é a Sofia. Analise fotos de refeições e forneça estimativas nutricionais." },
+        { functionality: "image_analysis", service: "lovable", model: "google/gemini-2.5-flash", max_tokens: 2048, temperature: 0.7, is_enabled: true, level: "maximo", personality: "sofia", system_prompt: "Você é a Sofia. Analise imagens de forma detalhada e forneça insights úteis sobre nutrição e saúde." },
+        { functionality: "medical_exam_analysis", service: "lovable", model: "google/gemini-2.5-pro", max_tokens: 4096, temperature: 0.5, is_enabled: true, level: "maximo", personality: "drvital", system_prompt: "Você é o Dr. Vital. Extraia e analise dados de exames médicos com precisão e segurança." },
         { functionality: "daily_missions", service: "lovable", model: "google/gemini-2.5-flash-lite", max_tokens: 1024, temperature: 0.8, is_enabled: true, level: "medio", personality: "sofia", system_prompt: "Você é a Sofia. Gere missões diárias personalizadas e motivadoras." },
         { functionality: "whatsapp_reports", service: "lovable", model: "google/gemini-2.5-flash-lite", max_tokens: 512, temperature: 0.7, is_enabled: true, level: "minimo", personality: "sofia", system_prompt: "Você é a Sofia. Gere mensagens curtas e motivacionais para WhatsApp." },
         { functionality: "email_reports", service: "lovable", model: "google/gemini-2.5-flash", max_tokens: 2048, temperature: 0.7, is_enabled: true, level: "medio", personality: "sofia", system_prompt: "Você é a Sofia. Gere emails personalizados com relatórios e orientações." },
+        { functionality: "simple_messages", service: "ollama", model: "llama3.2:3b", max_tokens: 512, temperature: 0.7, is_enabled: true, level: "minimo", personality: "sofia", system_prompt: "Você é a Sofia. Responda mensagens simples de forma amigável e calorosa." },
       ];
 
       for (const config of lovableConfigs) {

@@ -9,7 +9,7 @@ declare const Deno: {
   env: { get(key: string): string | undefined; };
 };
 
-const OLLAMA_URL = Deno.env.get('OLLAMA_URL') || 'https://yolo-service-ollama.0sw627.easypanel.host';
+const OLLAMA_URL = Deno.env.get('OLLAMA_URL') || 'https://ids-ollama-web.ifrhb3.easypanel.host';
 
 export interface OllamaChatMessage {
   role: 'system' | 'user' | 'assistant';
