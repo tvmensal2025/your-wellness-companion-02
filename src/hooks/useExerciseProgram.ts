@@ -89,7 +89,8 @@ export const useExerciseProgram = (userId: string | undefined) => {
         .from('sport_training_plans')
         .select('*')
         .eq('user_id', userId)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(50);
 
       if (error) throw error;
 
@@ -117,13 +118,14 @@ export const useExerciseProgram = (userId: string | undefined) => {
     if (!userId) return;
 
     try {
-      // @ts-ignore - Ignorar erro de tipo profundo do Supabase
+      // @ts-expect-error - Deep type inference issue with Supabase query builder
       const result: any = await supabase
         .from('sport_workout_logs')
         .select('*')
         .eq('user_id', userId)
         .eq('plan_id', planId)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(200);
 
       if (result.error) throw result.error;
 

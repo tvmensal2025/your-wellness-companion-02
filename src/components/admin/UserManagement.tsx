@@ -47,42 +47,61 @@ const UserManagement: React.FC = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isExamAccessModalOpen, setIsExamAccessModalOpen] = useState(false);
   const [selectedUserForExam, setSelectedUserForExam] = useState<{id: string, name: string} | null>(null);
+  const [loadLimit, setLoadLimit] = useState(50); // Começar com 50 usuários
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchUsers();
-  }, []);
+  }, [loadLimit]);
 
   const fetchUsers = async () => {
     try {
       setLoading(true);
+      setError(null);
 
-      // Buscar usuários da tabela profiles
+      // Buscar usuários da tabela profiles (limitado)
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select('id, full_name, email, created_at');
+        .select('id, full_name, email, created_at')
+        .order('created_at', { ascending: false })
+        .limit(loadLimit);
       
-      // A tabela user_profiles foi unificada com profiles
-
       if (profilesError) {
         console.error('Error fetching profiles:', profilesError);
+        setError('Erro ao carregar usuários. Tente novamente.');
+        setLoading(false);
+        return;
       }
 
-      // Buscar medições para estatísticas
+      if (!profiles || profiles.length === 0) {
+        setUsers([]);
+        setLoading(false);
+        return;
+      }
+
+      // Pegar IDs dos usuários para queries otimizadas
+      const userIds = profiles.map(p => p.id);
+
+      // Buscar medições apenas dos usuários carregados
       const { data: measurements, error: measurementsError } = await supabase
         .from('weight_measurements')
         .select('user_id, measurement_date, peso_kg')
-        .order('measurement_date', { ascending: false });
+        .in('user_id', userIds)
+        .order('measurement_date', { ascending: false })
+        .limit(1000);
 
       if (measurementsError) {
         console.error('Error fetching measurements:', measurementsError);
       }
 
-      // Buscar missões completadas para atividade
+      // Buscar missões completadas apenas dos usuários carregados
       const { data: missions, error: missionsError } = await supabase
         .from('daily_mission_sessions')
         .select('user_id, date, is_completed')
+        .in('user_id', userIds)
         .eq('is_completed', true)
-        .order('date', { ascending: false });
+        .order('date', { ascending: false })
+        .limit(1000);
 
       if (missionsError) {
         console.error('Error fetching missions:', missionsError);
@@ -107,8 +126,6 @@ const UserManagement: React.FC = () => {
           completedMissions: 0
         });
       });
-
-      // A tabela user_profiles foi unificada com profiles
 
       // Processar medições
       measurements?.forEach(measurement => {
@@ -169,6 +186,7 @@ const UserManagement: React.FC = () => {
 
     } catch (error) {
       console.error('Error fetching users:', error);
+      setError('Erro inesperado ao carregar usuários.');
     } finally {
       setLoading(false);
     }
@@ -258,12 +276,12 @@ const UserManagement: React.FC = () => {
     setIsExamAccessModalOpen(true);
   };
 
-  if (loading) {
+  if (loading && users.length === 0) {
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <div className="h-8 bg-muted rounded w-48"></div>
-          <div className="h-10 bg-muted rounded w-32"></div>
+          <div className="h-8 bg-muted rounded w-48 animate-pulse"></div>
+          <div className="h-10 bg-muted rounded w-32 animate-pulse"></div>
         </div>
         <div className="space-y-4">
           {[...Array(5)].map((_, i) => (
@@ -280,6 +298,27 @@ const UserManagement: React.FC = () => {
         </Card>
           ))}
         </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold">Gerenciamento de Usuários</h1>
+            <p className="text-muted-foreground">Erro ao carregar dados</p>
+          </div>
+        </div>
+        <Card className="border-red-200 bg-red-50 dark:bg-red-950/20">
+          <CardContent className="p-6 text-center">
+            <p className="text-red-600 dark:text-red-400 mb-4">{error}</p>
+            <Button onClick={() => fetchUsers()}>
+              Tentar Novamente
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -345,7 +384,21 @@ const UserManagement: React.FC = () => {
 
       {/* Users List */}
       <div className="space-y-4">
-        {filteredUsers.map((user) => (
+        {filteredUsers.length === 0 ? (
+          <Card>
+            <CardContent className="p-12 text-center">
+              <Users className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+              <p className="text-muted-foreground">
+                {searchTerm || filterStatus !== 'all' 
+                  ? 'Nenhum usuário encontrado com os filtros aplicados'
+                  : 'Nenhum usuário cadastrado ainda'
+                }
+              </p>
+            </CardContent>
+          </Card>
+        ) : (
+          <>
+            {filteredUsers.map((user) => (
           <Card key={user.user_id}>
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
@@ -407,6 +460,21 @@ const UserManagement: React.FC = () => {
             </CardContent>
           </Card>
         ))}
+        
+        {/* Botão Carregar Mais */}
+        {users.length >= loadLimit && filteredUsers.length >= loadLimit && (
+          <div className="flex justify-center pt-4">
+            <Button 
+              variant="outline" 
+              onClick={() => setLoadLimit(prev => prev + 50)}
+              disabled={loading}
+            >
+              {loading ? 'Carregando...' : 'Carregar Mais Usuários'}
+            </Button>
+          </div>
+        )}
+      </>
+        )}
       </div>
 
       {/* Stats */}

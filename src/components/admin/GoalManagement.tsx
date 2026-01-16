@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -15,10 +14,44 @@ import { useAdminPermissions } from '@/hooks/useAdminPermissions';
 import { usePointsConfig } from '@/hooks/usePointsConfig';
 import { Target, CheckCircle2, XCircle, Edit, Trash2, ArrowRightLeft, Info } from 'lucide-react';
 
+// Tipos para metas
+interface UserGoal {
+  id: string;
+  user_id: string;
+  title?: string;
+  description?: string;
+  target_value?: number;
+  unit?: string;
+  difficulty?: 'facil' | 'medio' | 'dificil';
+  estimated_points?: number;
+  peso_meta_kg?: number;
+  status: string;
+  challenge_id?: string;
+  data_fim?: string;
+  created_at: string;
+  updated_at?: string;
+  user_info?: {
+    full_name: string;
+    email: string | null;
+  };
+}
+
+interface ApprovalData {
+  status: 'aprovada' | 'rejeitada';
+  points_awarded: number;
+  comments: string;
+}
+
+interface GoalApproval {
+  status: 'aprovada' | 'rejeitada';
+  points_awarded: number;
+  comments: string;
+}
+
 export function GoalManagement() {
   const [selectedTab, setSelectedTab] = useState('pendente');
-  const [selectedGoal, setSelectedGoal] = useState<any>(null);
-  const [approvalData, setApprovalData] = useState({
+  const [selectedGoal, setSelectedGoal] = useState<UserGoal | null>(null);
+  const [approvalData, setApprovalData] = useState<ApprovalData>({
     status: 'aprovada' as 'aprovada' | 'rejeitada',
     points_awarded: 0,
     comments: ''
@@ -74,14 +107,14 @@ export function GoalManagement() {
   });
 
   const approveGoalMutation = useMutation({
-    mutationFn: async ({ goalId, approval }: { goalId: string, approval: any }) => {
+    mutationFn: async ({ goalId, approval }: { goalId: string, approval: GoalApproval }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Admin não autenticado");
 
       console.log('🔍 Processando aprovação:', { goalId, approval, adminId: user.id });
 
       // Atualizar meta diretamente
-      const updateData: any = {
+      const updateData: Record<string, unknown> = {
         status: approval.status,
         approved_by: user.id,
         approved_at: new Date().toISOString(),
@@ -122,7 +155,7 @@ export function GoalManagement() {
   });
 
   const transformToChallengeMutation = useMutation({
-    mutationFn: async (goal: any) => {
+    mutationFn: async (goal: UserGoal) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Usuário não autenticado");
 
@@ -179,7 +212,7 @@ export function GoalManagement() {
     }
   });
 
-  const handleApproval = (goal: any, status: 'aprovada' | 'rejeitada') => {
+  const handleApproval = (goal: UserGoal, status: 'aprovada' | 'rejeitada') => {
     setSelectedGoal(goal);
     // Buscar pontos padrão da configuração
     const defaultPoints = getPoints('goal_complete');
@@ -195,7 +228,7 @@ export function GoalManagement() {
   };
 
   // Handlers de edição e exclusão para super admin
-  const handleEditGoal = (goal: any) => {
+  const handleEditGoal = (goal: UserGoal) => {
     if (!isSuperAdmin) {
       toast({
         title: "Acesso Negado",
@@ -267,21 +300,21 @@ export function GoalManagement() {
             <div>Carregando...</div>
           ) : goals && goals.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {goals.map((goal) => (
+              {goals.map((goal: UserGoal) => (
                 <Card key={goal.id}>
                   <CardHeader>
-                    <CardTitle className="text-lg">{(goal as any).title || 'Meta de Saúde'}</CardTitle>
+                    <CardTitle className="text-lg">{goal.title || 'Meta de Saúde'}</CardTitle>
                      <p className="text-sm text-muted-foreground">
                        Usuário: {goal.user_info?.full_name || goal.user_id.substring(0, 8) + '...'}
                      </p>
                    </CardHeader>
                     <CardContent className="space-y-4">
                      <div className="text-sm space-y-1">
-                       <p>🎯 Meta: {(goal as any).target_value || goal.peso_meta_kg} {(goal as any).unit || 'kg'}</p>
-                       <p>⚡ Dificuldade: {(goal as any).difficulty || 'medio'}</p>
-                        <p>💰 Pontos: {(goal as any).estimated_points || 100}</p>
-                        {goal.status === 'transformada' && (goal as any).challenge_id && (
-                          <p className="text-blue-600">🚀 Desafio: Criado (ID: {(goal as any).challenge_id.substring(0, 8)}...)</p>
+                       <p>🎯 Meta: {goal.target_value || goal.peso_meta_kg} {goal.unit || 'kg'}</p>
+                       <p>⚡ Dificuldade: {goal.difficulty || 'medio'}</p>
+                        <p>💰 Pontos: {goal.estimated_points || 100}</p>
+                        {goal.status === 'transformada' && goal.challenge_id && (
+                          <p className="text-blue-600">🚀 Desafio: Criado (ID: {goal.challenge_id.substring(0, 8)}...)</p>
                         )}
                         {goal.user_info?.full_name && (
                           <p>👤 Criado por: {goal.user_info.full_name}</p>

@@ -25,59 +25,51 @@ export default defineConfig(({ mode }) => ({
     chunkSizeWarningLimit: 300, // Reduzido para alertar bundles grandes
     rollupOptions: {
       output: {
-        manualChunks: (id) => {
-          // Core React
-          if (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/')) {
-            return 'vendor-react';
-          }
-          // Router
-          if (id.includes('react-router')) {
-            return 'vendor-router';
-          }
-          // Supabase
-          if (id.includes('@supabase')) {
-            return 'vendor-supabase';
-          }
-          // Radix UI components
-          if (id.includes('@radix-ui')) {
-            return 'vendor-radix';
-          }
-          // React Query
-          if (id.includes('@tanstack/react-query')) {
-            return 'vendor-query';
-          }
-          // Framer Motion
-          if (id.includes('framer-motion')) {
-            return 'vendor-motion';
-          }
-          // Charts - Recharts
-          if (id.includes('recharts') || id.includes('d3-')) {
-            return 'vendor-charts';
-          }
-          // Charts - ApexCharts
-          if (id.includes('apexcharts')) {
-            return 'vendor-apex';
-          }
-          // Forms
-          if (id.includes('react-hook-form') || id.includes('@hookform') || id.includes('zod')) {
-            return 'vendor-forms';
-          }
+        manualChunks: {
+          // Core React - separate chunk for React and ReactDOM
+          'vendor-react': ['react', 'react-dom'],
+          
+          // Router - React Router
+          'vendor-router': ['react-router-dom'],
+          
+          // UI Components - Radix UI primitives
+          'vendor-ui': [
+            '@radix-ui/react-dialog',
+            '@radix-ui/react-dropdown-menu',
+            '@radix-ui/react-select',
+            '@radix-ui/react-tabs',
+            '@radix-ui/react-tooltip',
+            '@radix-ui/react-popover',
+            '@radix-ui/react-accordion',
+            '@radix-ui/react-alert-dialog',
+            '@radix-ui/react-checkbox',
+            '@radix-ui/react-label',
+            '@radix-ui/react-radio-group',
+            '@radix-ui/react-slider',
+            '@radix-ui/react-switch',
+            '@radix-ui/react-progress',
+          ],
+          
+          // State Management - React Query
+          'vendor-query': ['@tanstack/react-query'],
+          
+          // Backend - Supabase
+          'vendor-supabase': ['@supabase/supabase-js'],
+          
+          // Charts - Recharts only (ApexCharts moved to separate chunk)
+          'vendor-charts': ['recharts'],
+          
+          // Animation - Framer Motion
+          'vendor-motion': ['framer-motion'],
+          
+          // Forms - React Hook Form and Zod
+          'vendor-forms': ['react-hook-form', 'zod'],
+          
           // Date utilities
-          if (id.includes('date-fns') || id.includes('react-day-picker')) {
-            return 'vendor-date';
-          }
-          // PDF/Export
-          if (id.includes('jspdf') || id.includes('html2canvas')) {
-            return 'vendor-export';
-          }
+          'vendor-date': ['date-fns'],
+          
           // Icons
-          if (id.includes('lucide-react')) {
-            return 'vendor-icons';
-          }
-          // Other node_modules
-          if (id.includes('node_modules')) {
-            return 'vendor-misc';
-          }
+          'vendor-icons': ['lucide-react'],
         },
         compact: true
       }

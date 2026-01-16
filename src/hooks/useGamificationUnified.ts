@@ -77,16 +77,19 @@ export const useGamificationUnified = (userId?: string) => {
         supabase
           .from('challenges')
           .select('*')
-          .eq('is_active', true),
+          .eq('is_active', true)
+          .limit(100),
         supabase
           .from('challenge_participations')
           .select('*')
-          .eq('user_id', userId),
+          .eq('user_id', userId)
+          .limit(200),
         supabase
           .from('user_goals')
           .select('estimated_points')
           .eq('user_id', userId)
-          .eq('status', 'concluida'),
+          .eq('status', 'concluida')
+          .limit(500),
         supabase
           .from('goal_updates')
           .select('created_at')

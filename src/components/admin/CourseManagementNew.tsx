@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -77,6 +76,61 @@ interface Stats {
   totalStudents: number;
 }
 
+// Tipos para dados de formulário
+interface CourseFormData {
+  title: string;
+  description: string;
+  category: string;
+  difficulty_level: string;
+  duration_minutes: number;
+  instructor_name: string;
+  is_premium: boolean;
+  is_published: boolean;
+  thumbnail_url?: string;
+  price?: number;
+  structure_type?: 'course_lesson' | 'course_module_lesson';
+}
+
+interface ModuleFormData {
+  title: string;
+  description?: string;
+  course_id: string;
+  order_index?: number;
+  is_active?: boolean;
+  thumbnail_url?: string;
+  order?: number;
+  structure_type?: string;
+}
+
+interface LessonFormData {
+  title: string;
+  description?: string;
+  moduleId?: string;
+  module_id?: string;
+  order_index?: number;
+  order?: number;
+  duration?: number;
+  duration_minutes?: number;
+  videoUrl?: string;
+  video_url?: string;
+  isActive?: boolean;
+  is_free?: boolean;
+  lesson_type?: string;
+}
+
+interface LessonData {
+  id: string;
+  title: string;
+  description: string | null;
+  module_id: string;
+  order_index: number;
+  duration_minutes: number;
+  video_url: string | null;
+  is_free: boolean;
+  is_premium?: boolean;
+  created_at: string;
+}
+
 export const CourseManagementNew = () => {
   // Estados principais
   const [activeTab, setActiveTab] = useState<'overview' | 'courses' | 'modules' | 'lessons'>('overview');
@@ -153,8 +207,8 @@ export const CourseManagementNew = () => {
 
       // Buscar contagem de módulos e aulas para cada curso
       const coursesWithCounts = await Promise.all(
-        (data || []).map(async (courseData: any) => {
-          const course = courseData as Course;
+        (data || []).map(async (courseData: Course) => {
+          const course = courseData;
           const { data: modulesData } = await supabase
             .from('course_modules')
             .select('id')
@@ -237,7 +291,7 @@ export const CourseManagementNew = () => {
       if (error) throw error;
 
       setLessons(
-        (data || []).map((lesson: any) => ({
+        (data || []).map((lesson: LessonData) => ({
           ...lesson,
           description: lesson.description ?? "",
           is_free: lesson.is_free ?? true,
@@ -249,7 +303,7 @@ export const CourseManagementNew = () => {
   };
 
   // Handlers de criação
-  const handleCreateCourse = async (courseData: any) => {
+  const handleCreateCourse = async (courseData: CourseFormData) => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) await repairAuthSessionIfTooLarge(session);
@@ -278,7 +332,7 @@ export const CourseManagementNew = () => {
     }
   };
 
-  const handleCreateModule = async (moduleData: any) => {
+  const handleCreateModule = async (moduleData: ModuleFormData) => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) await repairAuthSessionIfTooLarge(session);
@@ -318,7 +372,7 @@ export const CourseManagementNew = () => {
     }
   };
 
-  const handleCreateLesson = async (lessonData: any) => {
+  const handleCreateLesson = async (lessonData: LessonFormData) => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) await repairAuthSessionIfTooLarge(session);
@@ -493,9 +547,9 @@ export const CourseManagementNew = () => {
 
       fetchCourses();
       fetchStats();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erro ao excluir curso:', error);
-      const errorMessage = error?.message || error?.error_description || 'Erro desconhecido';
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       toast({
         title: "Erro ao Excluir",
         description: errorMessage || "Não foi possível excluir o curso. Verifique as permissões.",
@@ -535,9 +589,9 @@ export const CourseManagementNew = () => {
         fetchModules(selectedCourse.id);
       }
       fetchStats();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erro ao excluir módulo:', error);
-      const errorMessage = error?.message || error?.error_description || 'Erro desconhecido';
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       toast({
         title: "Erro ao Excluir",
         description: errorMessage || "Não foi possível excluir o módulo. Verifique as permissões.",
@@ -577,9 +631,9 @@ export const CourseManagementNew = () => {
         fetchLessons(selectedModule.id);
       }
       fetchStats();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erro ao excluir aula:', error);
-      const errorMessage = error?.message || error?.error_description || 'Erro desconhecido';
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       toast({
         title: "Erro ao Excluir",
         description: errorMessage || "Não foi possível excluir a aula. Verifique as permissões.",
@@ -589,7 +643,7 @@ export const CourseManagementNew = () => {
   };
 
   // Handlers de atualização
-  const handleUpdateCourse = async (courseData: any) => {
+  const handleUpdateCourse = async (courseData: CourseFormData) => {
     if (!editingCourse) return;
 
     try {
@@ -619,7 +673,7 @@ export const CourseManagementNew = () => {
     }
   };
 
-  const handleUpdateModule = async (moduleData: any) => {
+  const handleUpdateModule = async (moduleData: ModuleFormData) => {
     if (!editingModule) return;
 
     try {
@@ -663,7 +717,7 @@ export const CourseManagementNew = () => {
     }
   };
 
-  const handleUpdateLesson = async (lessonData: any) => {
+  const handleUpdateLesson = async (lessonData: LessonFormData) => {
     if (!editingLesson) return;
 
     try {
@@ -686,8 +740,8 @@ export const CourseManagementNew = () => {
         video_url: lessonData.videoUrl ?? editingLesson.video_url ?? null,
         duration_minutes: Number(lessonData.duration ?? editingLesson.duration_minutes ?? 0),
         order_index: Number(lessonData.order ?? editingLesson.order_index ?? 1),
-        is_free: lessonData.isActive !== undefined ? !!lessonData.isActive : (editingLesson as any).is_free,
-        module_id: lessonData.moduleId || (editingLesson as any).module_id,
+        is_free: lessonData.isActive !== undefined ? !!lessonData.isActive : editingLesson.is_free,
+        module_id: lessonData.moduleId || editingLesson.module_id,
       };
 
       const { error } = await supabase
@@ -820,7 +874,7 @@ export const CourseManagementNew = () => {
       </div>
 
       {/* Tabs principais */}
-      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as any)} className="space-y-6">
+      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'overview' | 'courses' | 'modules' | 'lessons')} className="space-y-6">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="overview" className="flex items-center gap-2">
             <BarChart3 className="h-4 w-4" />

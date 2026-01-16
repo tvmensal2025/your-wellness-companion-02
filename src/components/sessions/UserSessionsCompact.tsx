@@ -12,6 +12,7 @@ import {
   ChevronRight, Flame, ArrowRight, Star,
   Lock, Timer, Trophy
 } from 'lucide-react';
+import GenericSessionExecutor from './GenericSessionExecutor';
 
 interface Session {
   id: string;
@@ -20,6 +21,7 @@ interface Session {
   type: string;
   difficulty: string;
   estimated_time: number;
+  content: any;
 }
 
 interface UserSession {
@@ -194,6 +196,8 @@ export default function UserSessionsCompact({ user, onStartSession }: Props) {
   const [sessions, setSessions] = useState<UserSession[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
+  const [selectedSession, setSelectedSession] = useState<UserSession | null>(null);
+  const [isExecutorOpen, setIsExecutorOpen] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -205,7 +209,7 @@ export default function UserSessionsCompact({ user, onStartSession }: Props) {
       setLoading(true);
       const { data, error } = await supabase
         .from('user_sessions')
-        .select(`*, sessions (id, title, description, type, difficulty, estimated_time)`)
+        .select(`*, sessions (id, title, description, type, difficulty, estimated_time, content)`)
         .eq('user_id', user?.id)
         .order('assigned_at', { ascending: false });
 
@@ -243,12 +247,21 @@ export default function UserSessionsCompact({ user, onStartSession }: Props) {
     const s = sessions.find(x => x.id === id);
     if (!s || s.is_locked) return;
 
+    // Abrir o executor de sessão
+    setSelectedSession(s);
+    setIsExecutorOpen(true);
+
     if (s.status === 'pending') {
       await supabase.from('user_sessions').update({ status: 'in_progress', started_at: new Date().toISOString() }).eq('id', id);
     }
+    
     onStartSession?.(id);
+  };
+
+  const handleSessionComplete = () => {
     loadSessions();
-    toast({ title: "🚀 Vamos lá!", description: s.sessions.title });
+    setSelectedSession(null);
+    setIsExecutorOpen(false);
   };
 
   if (loading) {
@@ -307,6 +320,22 @@ export default function UserSessionsCompact({ user, onStartSession }: Props) {
           <p className="font-semibold text-foreground">Parabéns! 🎉</p>
           <p className="text-sm text-muted-foreground">Todas as {stats.completed} sessões completas!</p>
         </motion.div>
+      )}
+
+      {/* Session Executor Modal */}
+      {selectedSession && (
+        <GenericSessionExecutor
+          isOpen={isExecutorOpen}
+          onClose={() => {
+            setIsExecutorOpen(false);
+            setSelectedSession(null);
+            loadSessions();
+          }}
+          userSession={selectedSession}
+          userId={user?.id || ''}
+          userName={user?.user_metadata?.full_name || user?.email?.split('@')[0]}
+          onComplete={handleSessionComplete}
+        />
       )}
     </div>
   );

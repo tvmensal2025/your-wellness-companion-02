@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Users, Navigation } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useActiveSection } from '@/contexts/ActiveSectionContext';
 
 interface CommunityIntegrationProps {
   totalUsers: number;
@@ -11,7 +11,7 @@ interface CommunityIntegrationProps {
 }
 
 export function CommunityIntegration({ totalUsers, totalPoints, totalMissions }: CommunityIntegrationProps) {
-  const navigate = useNavigate();
+  const { setActiveSection } = useActiveSection();
   const [activeTab, setActiveTab] = React.useState<'position' | 'points' | 'missions' | 'streak'>('position');
 
   return (
@@ -27,7 +27,7 @@ export function CommunityIntegration({ totalUsers, totalPoints, totalMissions }:
             variant="outline"
             size="icon"
             className="rounded-full border-border/60"
-            onClick={() => navigate('/health-feed')}
+            onClick={() => setActiveSection('comunidade')}
             aria-label="Ir para comunidade"
           >
             <Navigation className="w-4 h-4" />

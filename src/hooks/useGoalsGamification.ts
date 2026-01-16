@@ -50,7 +50,8 @@ export const useGoalsGamification = (userId?: string) => {
         .from('goal_achievements')
         .select('*')
         .eq('user_id', userId)
-        .order('unlocked_at', { ascending: false });
+        .order('unlocked_at', { ascending: false })
+        .limit(100);
 
       // Se a tabela não existe, retornar array vazio
       if (error && (error.message?.includes('406') || error.message?.includes('Not Acceptable'))) {
@@ -73,7 +74,8 @@ export const useGoalsGamification = (userId?: string) => {
         .from('goal_streaks')
         .select('*')
         .eq('user_id', userId)
-        .order('current_streak', { ascending: false });
+        .order('current_streak', { ascending: false })
+        .limit(50);
 
       // Se a tabela não existe, retornar array vazio
       if (error && (error.message?.includes('406') || error.message?.includes('Not Acceptable'))) {

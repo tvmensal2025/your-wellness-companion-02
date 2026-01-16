@@ -132,7 +132,8 @@ export async function getPendingNotifications(userId: string): Promise<SmartNoti
     .is('sent_at', null)
     .lte('scheduled_for', new Date().toISOString())
     .order('priority', { ascending: false })
-    .order('scheduled_for', { ascending: true }) as any;
+    .order('scheduled_for', { ascending: true })
+    .limit(50) as any;
 
   if (error) throw error;
   return (data || []).map(rowToNotification);

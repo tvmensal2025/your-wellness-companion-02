@@ -1,5 +1,64 @@
 import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+// ===========================================
+// External Storage (MinIO via VPS)
+// ===========================================
+
+/**
+ * Upload bytes to external storage (MinIO via VPS)
+ * Falls back to Supabase if VPS is unavailable
+ */
+async function uploadToExternalMedia(
+  userId: string,
+  bytes: Uint8Array,
+  contentType: string
+): Promise<string | null> {
+  const MEDIA_API_URL = Deno.env.get('MEDIA_API_URL') || Deno.env.get('VPS_API_URL');
+  const MEDIA_API_KEY = Deno.env.get('MEDIA_API_KEY') || Deno.env.get('VPS_API_KEY');
+  
+  if (!MEDIA_API_URL) {
+    console.warn('[ImageUpload] MEDIA_API_URL não configurado, usando Supabase');
+    return null;
+  }
+  
+  try {
+    // Convert bytes to base64
+    const base64 = btoa(String.fromCharCode(...bytes));
+    
+    const response = await fetch(`${MEDIA_API_URL}/storage/upload-base64`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(MEDIA_API_KEY && { 'X-API-Key': MEDIA_API_KEY }),
+      },
+      body: JSON.stringify({
+        data: base64,
+        folder: 'whatsapp',
+        userId,
+        mimeType: contentType,
+      }),
+    });
+    
+    if (!response.ok) {
+      console.error('[ImageUpload] Erro no upload externo:', response.status);
+      return null;
+    }
+    
+    const result = await response.json();
+    
+    if (result.success && result.url) {
+      console.log('[ImageUpload] Upload externo OK:', result.url.slice(0, 80));
+      return result.url;
+    }
+    
+    console.error('[ImageUpload] Resposta inválida do storage externo:', result);
+    return null;
+  } catch (error) {
+    console.error('[ImageUpload] Erro ao fazer upload externo:', error);
+    return null;
+  }
+}
+
 /**
  * Convert base64 to bytes
  */
@@ -14,7 +73,8 @@ function base64ToBytes(base64: string): Uint8Array {
 }
 
 /**
- * Upload bytes to Supabase storage
+ * Upload bytes to storage
+ * Tries external storage (MinIO) first, falls back to Supabase
  */
 export async function uploadBytesToStorage(
   supabase: SupabaseClient,
@@ -22,6 +82,14 @@ export async function uploadBytesToStorage(
   bytes: Uint8Array,
   contentType: string
 ): Promise<string | null> {
+  // 1. Tentar storage externo (MinIO via VPS) primeiro
+  const externalUrl = await uploadToExternalMedia(userId, bytes, contentType);
+  if (externalUrl) {
+    return externalUrl;
+  }
+  
+  // 2. Fallback para Supabase Storage
+  console.log('[ImageUpload] Usando fallback Supabase Storage');
   const ext = contentType.includes("png")
     ? "png"
     : contentType.includes("webp")
@@ -40,7 +108,7 @@ export async function uploadBytesToStorage(
     );
 
   if (uploadError) {
-    console.error("[ImageUpload] Erro no upload:", uploadError);
+    console.error("[ImageUpload] Erro no upload Supabase:", uploadError);
     return null;
   }
 

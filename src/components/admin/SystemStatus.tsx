@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -37,7 +37,7 @@ const SystemStatus: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
-  const checkSystemStatus = async () => {
+  const checkSystemStatus = useCallback(async () => {
     setLoading(true);
     
     try {
@@ -157,61 +157,76 @@ const SystemStatus: React.FC = () => {
           let count = 0;
           
           switch (i) {
-            case 2: // Users
+            case 2: {
+              // Users
               const { data: profiles, error: profilesError } = await supabase
                 .from('profiles')
                 .select('id', { count: 'exact' });
               count = profiles?.length || 0;
               updatedStatus[i].status = profilesError ? 'warning' : 'active';
               break;
+            }
               
-            case 3: // Weighing system
+            case 3: {
+              // Weighing system
               const { data: measurements, error: measurementsError } = await supabase
                 .from('weight_measurements')
                 .select('id', { count: 'exact' });
               count = measurements?.length || 0;
               updatedStatus[i].status = measurementsError ? 'warning' : 'active';
               break;
+            }
               
-            case 4: // Goals
+            case 4: {
+              // Goals
               const { data: goals, error: goalsError } = await supabase
                 .from('user_goals')
                 .select('id', { count: 'exact' });
               count = goals?.length || 0;
               updatedStatus[i].status = goalsError ? 'warning' : 'active';
               break;
+            }
               
-            case 5: // Daily missions
+            case 5: {
+              // Daily missions
               const { data: missions, error: missionsError } = await supabase
                 .from('daily_mission_sessions')
                 .select('id', { count: 'exact' });
               count = missions?.length || 0;
               updatedStatus[i].status = missionsError ? 'warning' : 'active';
               break;
+            }
               
-            case 6: // Saboteurs
+            case 6: {
+              // Saboteurs
               // Mock data since custom_saboteurs table doesn't exist yet
               count = 0;
               updatedStatus[i].status = 'warning';
               break;
+            }
               
-            case 7: // Courses
+            case 7: {
+              // Courses
               const { data: courses, error: coursesError } = await supabase
                 .from('courses')
                 .select('id', { count: 'exact' });
               count = courses?.length || 0;
               updatedStatus[i].status = coursesError ? 'warning' : 'active';
               break;
+            }
               
-            case 8: // Sessions
+            case 8: {
+              // Sessions
               const { data: sessions, error: sessionsError } = await supabase
                 .from('sessions')
                 .select('id', { count: 'exact' });
               count = sessions?.length || 0;
               updatedStatus[i].status = sessionsError ? 'warning' : 'active';
               break;
+            }
               
-            case 9: // Chat/AI
+            case 9: {
+              // Chat/AI
               // Test edge function call
               try {
                 const { error: chatError } = await supabase.functions.invoke('gpt-chat', {
@@ -222,8 +237,10 @@ const SystemStatus: React.FC = () => {
                 updatedStatus[i].status = 'warning';
               }
               break;
+            }
               
-            case 10: // Habit tracking
+            case 10: {
+              // Habit tracking
               // Using health_diary table instead of water_tracking
               const { data: water, error: waterError } = await supabase
                 .from('health_diary')
@@ -232,8 +249,10 @@ const SystemStatus: React.FC = () => {
               count = water?.length || 0;
               updatedStatus[i].status = waterError ? 'warning' : 'active';
               break;
+            }
               
-            case 11: // Edge Functions
+            case 11: {
+              // Edge Functions
               try {
                 const { error: funcError } = await supabase.functions.invoke('health-chat-bot', {
                   body: { message: 'ping' }
@@ -243,6 +262,7 @@ const SystemStatus: React.FC = () => {
                 updatedStatus[i].status = 'warning';
               }
               break;
+            }
           }
           
           updatedStatus[i].count = count;
@@ -271,11 +291,11 @@ const SystemStatus: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
 
   useEffect(() => {
     checkSystemStatus();
-  }, []);
+  }, [checkSystemStatus]);
 
   const getStatusBadge = (status: string) => {
     switch (status) {

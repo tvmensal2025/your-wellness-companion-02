@@ -42,7 +42,7 @@ export const CoachingReportCard: React.FC<CoachingReportCardProps> = ({
 
   return (
     <div 
-      className="w-[420px] bg-white text-gray-900 overflow-hidden rounded-xl shadow-2xl"
+      className="w-[420px] bg-card text-card-foreground overflow-hidden rounded-xl shadow-2xl"
       style={{ fontFamily: 'Georgia, serif' }}
     >
       {/* Header Elegante */}
@@ -86,15 +86,15 @@ export const CoachingReportCard: React.FC<CoachingReportCardProps> = ({
       </div>
 
       {/* Informações do Cliente */}
-      <div className="px-6 py-4 bg-slate-50 border-b border-slate-200">
+      <div className="px-6 py-4 bg-muted/50 border-b border-border">
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div>
-            <div className="text-xs text-slate-500 uppercase tracking-wider mb-1">Cliente</div>
-            <div className="font-semibold text-slate-900">{fullName}</div>
+            <div className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Cliente</div>
+            <div className="font-semibold text-foreground">{fullName}</div>
           </div>
           <div>
-            <div className="text-xs text-slate-500 uppercase tracking-wider mb-1">Data</div>
-            <div className="font-semibold text-slate-900">{reportDate}</div>
+            <div className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Data</div>
+            <div className="font-semibold text-foreground">{reportDate}</div>
           </div>
         </div>
       </div>
@@ -108,8 +108,9 @@ export const CoachingReportCard: React.FC<CoachingReportCardProps> = ({
               <circle
                 cx="50" cy="50" r="45"
                 fill="none"
-                stroke="#e2e8f0"
+                stroke="currentColor"
                 strokeWidth="6"
+                className="text-muted"
               />
               <circle
                 cx="50" cy="50" r="45"
@@ -122,16 +123,16 @@ export const CoachingReportCard: React.FC<CoachingReportCardProps> = ({
               />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-3xl font-bold text-slate-900">{insights.overallScore}</span>
-              <span className="text-xs text-slate-500">de 100</span>
+              <span className="text-3xl font-bold text-foreground">{insights.overallScore}</span>
+              <span className="text-xs text-muted-foreground">de 100</span>
             </div>
           </div>
           <div className="mt-2">
             <span className={cn(
               "inline-block px-3 py-1 rounded-full text-xs font-semibold",
-              insights.overallScore >= 80 ? "bg-emerald-100 text-emerald-700" :
-              insights.overallScore >= 60 ? "bg-amber-100 text-amber-700" :
-              "bg-red-100 text-red-700"
+              insights.overallScore >= 80 ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400" :
+              insights.overallScore >= 60 ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" :
+              "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
             )}>
               {insights.overallScore >= 80 ? 'Excelente' :
                insights.overallScore >= 60 ? 'Bom' : 'Atenção Necessária'}
@@ -141,7 +142,7 @@ export const CoachingReportCard: React.FC<CoachingReportCardProps> = ({
 
         {/* Seção: Análise */}
         <ReportSection title="Análise do Coach" icon="📋" accentColor={visualConfig.accentColor}>
-          <p className="text-sm text-slate-700 leading-relaxed">
+          <p className="text-sm text-muted-foreground leading-relaxed">
             {insights.analysis}
           </p>
         </ReportSection>
@@ -153,7 +154,7 @@ export const CoachingReportCard: React.FC<CoachingReportCardProps> = ({
               {insights.strengths.map((strength, i) => (
                 <li key={i} className="flex items-start gap-2 text-sm">
                   <span className="text-emerald-500 mt-0.5">●</span>
-                  <span className="text-slate-700">{strength}</span>
+                  <span className="text-muted-foreground">{strength}</span>
                 </li>
               ))}
             </ul>
@@ -167,7 +168,7 @@ export const CoachingReportCard: React.FC<CoachingReportCardProps> = ({
               {insights.improvements.map((item, i) => (
                 <li key={i} className="flex items-start gap-2 text-sm">
                   <span className="text-amber-500 mt-0.5">●</span>
-                  <span className="text-slate-700">{item}</span>
+                  <span className="text-muted-foreground">{item}</span>
                 </li>
               ))}
             </ul>
@@ -178,14 +179,14 @@ export const CoachingReportCard: React.FC<CoachingReportCardProps> = ({
         <ReportSection title="Recomendações Personalizadas" icon="💡" accentColor={visualConfig.accentColor}>
           <div className="space-y-3">
             {insights.recommendations.map((rec, i) => (
-              <div key={i} className="flex gap-3 p-3 bg-slate-50 rounded-lg">
+              <div key={i} className="flex gap-3 p-3 bg-muted/50 rounded-lg">
                 <div 
                   className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 text-white"
                   style={{ backgroundColor: visualConfig.accentColor }}
                 >
                   {i + 1}
                 </div>
-                <p className="text-sm text-slate-700">{rec}</p>
+                <p className="text-sm text-muted-foreground">{rec}</p>
               </div>
             ))}
           </div>
@@ -193,7 +194,7 @@ export const CoachingReportCard: React.FC<CoachingReportCardProps> = ({
 
         {/* Seção: Próximos Passos */}
         <ReportSection title="Próximos Passos" icon="🚀" accentColor={visualConfig.accentColor}>
-          <p className="text-sm text-slate-700 leading-relaxed">
+          <p className="text-sm text-muted-foreground leading-relaxed">
             {insights.nextSteps}
           </p>
         </ReportSection>
@@ -222,11 +223,11 @@ export const CoachingReportCard: React.FC<CoachingReportCardProps> = ({
       </div>
 
       {/* Disclaimer */}
-      <div className="px-6 py-3 bg-slate-100 text-center">
-        <p className="text-xs text-slate-500">
+      <div className="px-6 py-3 bg-muted/50 text-center">
+        <p className="text-xs text-muted-foreground">
           Este relatório é confidencial e destinado exclusivamente ao cliente.
         </p>
-        <p className="text-xs text-slate-400 mt-1">
+        <p className="text-xs text-muted-foreground/70 mt-1">
           MaxNutrition © 2026 • maxnutrition.com.br
         </p>
       </div>
@@ -247,9 +248,9 @@ const ReportSection = ({
   accentColor?: string;
 }) => (
   <div>
-    <div className="flex items-center gap-2 mb-3 pb-2 border-b border-slate-200">
+    <div className="flex items-center gap-2 mb-3 pb-2 border-b border-border">
       <span className="text-lg">{icon}</span>
-      <h3 className="font-semibold text-slate-900 text-sm uppercase tracking-wider">{title}</h3>
+      <h3 className="font-semibold text-foreground text-sm uppercase tracking-wider">{title}</h3>
     </div>
     {children}
   </div>

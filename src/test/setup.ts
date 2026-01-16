@@ -14,12 +14,12 @@ class IntersectionObserverMock {
   takeRecords() { return [] }
 }
 
-// @ts-ignore
+// @ts-expect-error - Mock ResizeObserver for testing environment (not available in jsdom)
 global.ResizeObserver = ResizeObserverMock as any
-// @ts-ignore
+// @ts-expect-error - Mock IntersectionObserver for testing environment (not available in jsdom)
 global.IntersectionObserver = IntersectionObserverMock as any
 
-// @ts-ignore
+// @ts-expect-error - Mock matchMedia for testing environment (not available in jsdom)
 global.matchMedia = global.matchMedia || function () {
   return { matches: false, addListener() {}, removeListener() {} }
 }

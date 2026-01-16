@@ -220,7 +220,7 @@ export const useGamification = () => {
       if (!challenge) throw new Error('Desafio não encontrado');
 
       // Buscar ou criar participação
-      let { data: participation, error: participationError } = await supabase
+      const { data: participation, error: participationError } = await supabase
         .from('challenge_participations')
         .select('*')
         .eq('user_id', user.id)

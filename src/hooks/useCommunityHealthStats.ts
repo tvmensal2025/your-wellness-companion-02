@@ -36,7 +36,8 @@ export function useCommunityHealthStats() {
       const { data: profiles } = await supabase
         .from('profiles')
         .select('user_id, full_name, avatar_url')
-        .eq('show_weight_results', true);
+        .eq('show_weight_results', true)
+        .limit(500);
 
       if (!profiles || profiles.length === 0) {
         setLoading(false);

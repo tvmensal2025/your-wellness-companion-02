@@ -298,7 +298,8 @@ export class GamificationService {
       .select('*')
       .eq('is_active', true)
       .order('category')
-      .order('rarity') as any;
+      .order('rarity')
+      .limit(100) as any;
 
     return (data || []).map((a: any) => ({
       id: a.id,
@@ -325,7 +326,8 @@ export class GamificationService {
       .select('*')
       .eq('is_active', true)
       .gte('end_date', new Date().toISOString())
-      .order('end_date') as any;
+      .order('end_date')
+      .limit(50) as any;
 
     return (data || []).map((c: any) => ({
       id: c.id,

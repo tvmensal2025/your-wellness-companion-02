@@ -110,7 +110,7 @@ function extractOneDriveInfo(url: string): { embedUrl: string | null; directUrl:
     // ou https://[tenant].sharepoint.com/:v:/r/...
     if (url.includes('sharepoint.com')) {
       // Tentar converter para formato de visualização
-      const sharepointMatch = url.match(/(https:\/\/[^\/]+\.sharepoint\.com\/[^:]+:v:[^\/]+\/[^?]+)/);
+      const sharepointMatch = url.match(/(https:\/\/[^/]+\.sharepoint\.com\/[^:]+:v:[^/]+\/[^?]+)/);
       if (sharepointMatch) {
         const baseUrl = sharepointMatch[1];
         // Converter para formato de visualização
@@ -171,7 +171,7 @@ function getOneDriveEmbedUrl(url: string): string {
     if (url.includes('sharepoint.com')) {
       // Tenta converter para formato de visualização embed
       // Formato: https://[tenant].sharepoint.com/sites/[site]/_layouts/15/embed.aspx?UniqueId=[id]
-      const embedMatch = url.match(/(https:\/\/[^\/]+\.sharepoint\.com\/[^:]+:v:[^\/]+\/[^?]+)/);
+      const embedMatch = url.match(/(https:\/\/[^/]+\.sharepoint\.com\/[^:]+:v:[^/]+\/[^?]+)/);
       if (embedMatch) {
         // Adiciona parâmetros para embed
         const baseUrl = embedMatch[1].replace(':v:/', '/').replace(':v:', '/');

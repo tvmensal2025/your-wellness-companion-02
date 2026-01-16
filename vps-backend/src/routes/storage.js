@@ -42,10 +42,10 @@ const upload = multer({
 router.post('/upload', upload.single('file'), async (req, res) => {
   try {
     if (!req.file) {
-      return res.status(400).json({ error: 'Nenhum arquivo enviado' });
+      return res.status(400).json({ success: false, error: 'Nenhum arquivo enviado', code: 'INVALID_REQUEST' });
     }
     
-    const { folder = 'general' } = req.body;
+    const { folder = 'general', userId } = req.body;
     // Todas as pastas do MinIO bucket 'images'
     const allowedFolders = [
       'avatars',
@@ -66,7 +66,11 @@ router.post('/upload', upload.single('file'), async (req, res) => {
     ];
     
     if (!allowedFolders.includes(folder)) {
-      return res.status(400).json({ error: `Pasta inválida: ${folder}. Permitidas: ${allowedFolders.join(', ')}` });
+      return res.status(400).json({ 
+        success: false, 
+        error: `Pasta inválida: ${folder}. Permitidas: ${allowedFolders.join(', ')}`,
+        code: 'INVALID_REQUEST'
+      });
     }
     
     let buffer = req.file.buffer;
@@ -83,7 +87,8 @@ router.post('/upload', upload.single('file'), async (req, res) => {
       buffer,
       folder,
       mimeType,
-      req.file.originalname
+      req.file.originalname,
+      userId || null
     );
     
     res.json({
@@ -92,7 +97,7 @@ router.post('/upload', upload.single('file'), async (req, res) => {
     });
   } catch (error) {
     console.error('Erro no upload:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ success: false, error: error.message, code: 'UPLOAD_FAILED' });
   }
 });
 
@@ -102,10 +107,10 @@ router.post('/upload', upload.single('file'), async (req, res) => {
 // ===========================================
 router.post('/upload-base64', async (req, res) => {
   try {
-    const { data, folder = 'general', mimeType, filename } = req.body;
+    const { data, folder = 'general', mimeType, filename, userId } = req.body;
     
     if (!data) {
-      return res.status(400).json({ error: 'Dados não fornecidos' });
+      return res.status(400).json({ success: false, error: 'Dados não fornecidos', code: 'INVALID_REQUEST' });
     }
     
     // Todas as pastas do MinIO bucket 'images'
@@ -127,22 +132,54 @@ router.post('/upload-base64', async (req, res) => {
       'general'
     ];
     if (!allowedFolders.includes(folder)) {
-      return res.status(400).json({ error: `Pasta inválida: ${folder}` });
+      return res.status(400).json({ success: false, error: `Pasta inválida: ${folder}`, code: 'INVALID_REQUEST' });
+    }
+    
+    // Validar MIME type
+    const allowedMimeTypes = [
+      'image/jpeg',
+      'image/png',
+      'image/gif',
+      'image/webp',
+      'video/mp4',
+      'video/quicktime',
+      'video/webm',
+      'application/pdf'
+    ];
+    
+    const finalMimeType = mimeType || 'image/jpeg';
+    if (!allowedMimeTypes.includes(finalMimeType)) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Formato não suportado. Use JPEG, PNG, GIF, WebP, MP4, MOV ou WebM.',
+        code: 'INVALID_TYPE'
+      });
     }
     
     // Decodificar base64
     const base64Data = data.replace(/^data:[^;]+;base64,/, '');
     let buffer = Buffer.from(base64Data, 'base64');
-    let finalMimeType = mimeType || 'image/jpeg';
+    
+    // Validar tamanho (50MB)
+    const maxSize = 50 * 1024 * 1024;
+    if (buffer.length > maxSize) {
+      return res.status(400).json({
+        success: false,
+        error: 'Arquivo muito grande. Máximo 50MB.',
+        code: 'FILE_TOO_LARGE'
+      });
+    }
+    
+    let processedMimeType = finalMimeType;
     
     // Otimizar imagens
     if (finalMimeType.startsWith('image/') && finalMimeType !== 'image/gif') {
       const optimized = await optimizeImage(buffer, finalMimeType);
       buffer = optimized.buffer;
-      finalMimeType = optimized.mimeType;
+      processedMimeType = optimized.mimeType;
     }
     
-    const result = await uploadFile(buffer, folder, finalMimeType, filename);
+    const result = await uploadFile(buffer, folder, processedMimeType, filename, userId || null);
     
     res.json({
       success: true,
@@ -150,7 +187,7 @@ router.post('/upload-base64', async (req, res) => {
     });
   } catch (error) {
     console.error('Erro no upload base64:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ success: false, error: error.message, code: 'UPLOAD_FAILED' });
   }
 });
 
@@ -168,7 +205,7 @@ router.delete('/:folder/:filename', async (req, res) => {
     res.json({ success: true, deleted: path });
   } catch (error) {
     console.error('Erro ao deletar:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ success: false, error: error.message, code: 'DELETE_FAILED' });
   }
 });
 
@@ -191,7 +228,7 @@ router.get('/list/:folder', async (req, res) => {
     });
   } catch (error) {
     console.error('Erro ao listar:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ success: false, error: error.message, code: 'LIST_FAILED' });
   }
 });
 

@@ -175,7 +175,7 @@ export const JourneyModal = ({ isOpen, onClose, onSubmit }: JourneyModalProps) =
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="w-[95vw] bg-gray-900 border-gray-700 text-white max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-[95vw] bg-card border-border text-foreground max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl font-bold">
             <Target className="h-6 w-6 text-purple-500" />
@@ -187,7 +187,7 @@ export const JourneyModal = ({ isOpen, onClose, onSubmit }: JourneyModalProps) =
           {/* Informações Básicas */}
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="title" className="text-sm font-medium text-gray-300">
+              <Label htmlFor="title" className="text-sm font-medium text-muted-foreground">
                 🎯 Título da Jornada
               </Label>
               <Input
@@ -195,7 +195,7 @@ export const JourneyModal = ({ isOpen, onClose, onSubmit }: JourneyModalProps) =
                 value={formData.title}
                 onChange={(e) => handleInputChange("title", e.target.value)}
                 placeholder="Digite o título da jornada..."
-                className="bg-gray-800 border-gray-600 text-white placeholder-gray-400"
+                className="bg-muted border-border text-foreground placeholder:text-muted-foreground"
               />
               {errors.title && (
                 <div className="flex items-center gap-1 text-red-400 text-sm">
@@ -206,7 +206,7 @@ export const JourneyModal = ({ isOpen, onClose, onSubmit }: JourneyModalProps) =
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description" className="text-sm font-medium text-gray-300">
+              <Label htmlFor="description" className="text-sm font-medium text-muted-foreground">
                 📄 Descrição
               </Label>
               <Textarea
@@ -215,7 +215,7 @@ export const JourneyModal = ({ isOpen, onClose, onSubmit }: JourneyModalProps) =
                 onChange={(e) => handleInputChange("description", e.target.value)}
                 placeholder="Descreva a jornada de transformação..."
                 rows={3}
-                className="bg-gray-800 border-gray-600 text-white placeholder-gray-400"
+                className="bg-muted border-border text-foreground placeholder:text-muted-foreground"
               />
               {errors.description && (
                 <div className="flex items-center gap-1 text-red-400 text-sm">
@@ -227,7 +227,7 @@ export const JourneyModal = ({ isOpen, onClose, onSubmit }: JourneyModalProps) =
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="duration" className="text-sm font-medium text-gray-300">
+                <Label htmlFor="duration" className="text-sm font-medium text-muted-foreground">
                   ⏱️ Duração (dias)
                 </Label>
                 <Input
@@ -237,7 +237,7 @@ export const JourneyModal = ({ isOpen, onClose, onSubmit }: JourneyModalProps) =
                   onChange={(e) => handleInputChange("duration", parseInt(e.target.value) || 0)}
                   placeholder="7"
                   min="1"
-                  className="bg-gray-800 border-gray-600 text-white"
+                  className="bg-muted border-border text-foreground"
                 />
                 {errors.duration && (
                   <div className="flex items-center gap-1 text-red-400 text-sm">
@@ -248,7 +248,7 @@ export const JourneyModal = ({ isOpen, onClose, onSubmit }: JourneyModalProps) =
               </div>
 
               <div className="flex items-center justify-between">
-                <Label htmlFor="isActive" className="text-sm font-medium text-gray-300">
+                <Label htmlFor="isActive" className="text-sm font-medium text-muted-foreground">
                   ✅ Jornada Ativa
                 </Label>
                 <Switch
@@ -264,7 +264,7 @@ export const JourneyModal = ({ isOpen, onClose, onSubmit }: JourneyModalProps) =
           {/* Itens da Jornada */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <Label className="text-sm font-medium text-gray-300">
+              <Label className="text-sm font-medium text-muted-foreground">
                 📋 ITENS DA JORNADA
               </Label>
               <Button 
@@ -278,17 +278,17 @@ export const JourneyModal = ({ isOpen, onClose, onSubmit }: JourneyModalProps) =
             </div>
 
             {formData.items.length === 0 && (
-              <div className="text-center py-8 text-gray-400 border-2 border-dashed border-gray-600 rounded-lg">
-                <Target className="h-12 w-12 mx-auto mb-2 text-gray-500" />
+              <div className="text-center py-8 text-muted-foreground border-2 border-dashed border-border rounded-lg">
+                <Target className="h-12 w-12 mx-auto mb-2 text-muted-foreground/50" />
                 <p>Nenhum item adicionado ainda</p>
                 <p className="text-sm">Clique em "Adicionar Item" para começar</p>
               </div>
             )}
 
             {formData.items.map((item, index) => (
-              <div key={item.id} className="border border-gray-600 rounded-lg p-4 space-y-4">
+              <div key={item.id} className="border border-border rounded-lg p-4 space-y-4">
                 <div className="flex items-center justify-between">
-                  <h4 className="text-sm font-medium text-gray-300">
+                  <h4 className="text-sm font-medium text-muted-foreground">
                     📝 Item {index + 1}
                   </h4>
                   <Button
@@ -303,14 +303,14 @@ export const JourneyModal = ({ isOpen, onClose, onSubmit }: JourneyModalProps) =
 
                 <div className="space-y-3">
                   <div className="space-y-2">
-                    <Label className="text-sm font-medium text-gray-300">
+                    <Label className="text-sm font-medium text-muted-foreground">
                       Título do Item
                     </Label>
                     <Input
                       value={item.title}
                       onChange={(e) => handleItemChange(item.id, "title", e.target.value)}
                       placeholder="Digite o título do item..."
-                      className="bg-gray-800 border-gray-600 text-white placeholder-gray-400"
+                      className="bg-muted border-border text-foreground placeholder:text-muted-foreground"
                     />
                     {errors[`item-${index}-title`] && (
                       <div className="flex items-center gap-1 text-red-400 text-sm">
@@ -322,10 +322,10 @@ export const JourneyModal = ({ isOpen, onClose, onSubmit }: JourneyModalProps) =
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label className="text-sm font-medium text-gray-300">
+                      <Label className="text-sm font-medium text-muted-foreground">
                         🎬 Vídeo
                       </Label>
-                      <div className="border-2 border-dashed border-gray-600 rounded-lg p-3 text-center hover:border-gray-500 transition-colors">
+                      <div className="border-2 border-dashed border-border rounded-lg p-3 text-center hover:border-primary/50 transition-colors">
                         <input
                           type="file"
                           accept="video/*"
@@ -334,8 +334,8 @@ export const JourneyModal = ({ isOpen, onClose, onSubmit }: JourneyModalProps) =
                           id={`video-${item.id}`}
                         />
                         <label htmlFor={`video-${item.id}`} className="cursor-pointer">
-                          <Video className="h-8 w-8 text-gray-400 mx-auto mb-1" />
-                          <p className="text-gray-300 text-sm">
+                          <Video className="h-8 w-8 text-muted-foreground mx-auto mb-1" />
+                          <p className="text-muted-foreground text-sm">
                             {item.video ? item.video.name : "📁 Upload Vídeo"}
                           </p>
                         </label>
@@ -343,7 +343,7 @@ export const JourneyModal = ({ isOpen, onClose, onSubmit }: JourneyModalProps) =
                     </div>
 
                     <div className="space-y-2">
-                      <Label className="text-sm font-medium text-gray-300">
+                      <Label className="text-sm font-medium text-muted-foreground">
                         ⏱️ Duração (min)
                       </Label>
                       <Input
@@ -352,7 +352,7 @@ export const JourneyModal = ({ isOpen, onClose, onSubmit }: JourneyModalProps) =
                         onChange={(e) => handleItemChange(item.id, "duration", parseInt(e.target.value) || 0)}
                         placeholder="0"
                         min="0"
-                        className="bg-gray-800 border-gray-600 text-white"
+                        className="bg-muted border-border text-foreground"
                       />
                       {errors[`item-${index}-duration`] && (
                         <div className="flex items-center gap-1 text-red-400 text-sm">
@@ -380,7 +380,7 @@ export const JourneyModal = ({ isOpen, onClose, onSubmit }: JourneyModalProps) =
             variant="outline"
             onClick={handleClose}
             disabled={isLoading}
-            className="border-gray-600 text-white hover:bg-gray-800"
+            className="border-border text-foreground hover:bg-muted"
           >
             <X className="h-4 w-4 mr-2" />
             Cancelar

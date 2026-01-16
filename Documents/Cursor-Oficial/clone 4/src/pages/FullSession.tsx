@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -9,6 +9,32 @@ import { ArrowLeft, ArrowRight, CheckCircle } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import butterflyLogo from '@/assets/butterfly-logo.png';
 
+interface SessionTask {
+  title: string;
+  description: string;
+}
+
+interface SessionContent {
+  intro: string;
+  video_url: string;
+  tasks: SessionTask[];
+  conclusion: string;
+}
+
+interface Session {
+  id: number;
+  title: string;
+  description: string;
+  estimated_duration: string;
+  content: string;
+}
+
+interface Step {
+  name: string;
+  component: string;
+  taskIndex?: number;
+}
+
 const FullSession = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -17,7 +43,7 @@ const FullSession = () => {
   const [responses, setResponses] = useState<string[]>([]);
 
   // Sample session data (same as before but now full access)
-  const sessions = [
+  const sessions: Session[] = [
     {
       id: 1,
       title: "Descobrindo Seus Sabotadores Internos",
@@ -105,34 +131,32 @@ const FullSession = () => {
 
   const session = sessions.find(s => s.id === parseInt(id || '1'));
 
-  if (!session) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-muted-foreground">Sessão não encontrada.</p>
-      </div>
-    );
-  }
+  const sessionContent: SessionContent | null = useMemo(() => {
+    if (!session) return null;
+    return typeof session.content === 'string' 
+      ? JSON.parse(session.content) 
+      : session.content;
+  }, [session]);
 
-  const sessionContent = typeof session.content === 'string' 
-    ? JSON.parse(session.content) 
-    : session.content;
-
-  const steps = [
-    { name: 'Introdução', component: 'intro' },
-    { name: 'Vídeo', component: 'video' },
-    ...sessionContent.tasks.map((task, index) => ({
-      name: `Tarefa ${index + 1}`,
-      component: 'task',
-      taskIndex: index
-    })),
-    { name: 'Conclusão', component: 'conclusion' }
-  ];
+  const steps: Step[] = useMemo(() => {
+    if (!sessionContent) return [];
+    return [
+      { name: 'Introdução', component: 'intro' },
+      { name: 'Vídeo', component: 'video' },
+      ...sessionContent.tasks.map((task, index) => ({
+        name: `Tarefa ${index + 1}`,
+        component: 'task',
+        taskIndex: index
+      })),
+      { name: 'Conclusão', component: 'conclusion' }
+    ];
+  }, [sessionContent]);
 
   const currentStepData = steps[currentStep];
 
-  // Save progress for users (database)
+  // Save progress for users (database) - MUST be before any conditional returns
   useEffect(() => {
-    if (id && user) {
+    if (id && user && steps.length > 0) {
       const progress = (currentStep / (steps.length - 1)) * 100;
       // TODO: Save to database
       
@@ -140,7 +164,16 @@ const FullSession = () => {
         // TODO: Save completion to database
       }
     }
-  }, [currentStep, id, user]);
+  }, [currentStep, id, user, steps.length]);
+
+  // Early return AFTER all hooks
+  if (!session || !sessionContent) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-muted-foreground">Sessão não encontrada.</p>
+      </div>
+    );
+  }
 
   const handleResponseChange = (taskIndex: number, value: string) => {
     const newResponses = [...responses];

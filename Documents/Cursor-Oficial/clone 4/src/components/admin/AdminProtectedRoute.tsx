@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent } from '@/components/ui/card';
 import { AlertTriangle, CheckCircle } from 'lucide-react';
@@ -22,6 +22,35 @@ export const AdminProtectedRoute: React.FC<AdminProtectedRouteProps> = ({ childr
     'rafael@admin.com'
   ];
 
+  const isAdmin = user ? adminEmails.includes(user.email || '') : false;
+
+  // Verificar e configurar tabelas necessárias - DEVE estar antes de qualquer return condicional
+  useEffect(() => {
+    const initializeAdminSystem = async () => {
+      if (!user || !isAdmin) return;
+      
+      console.log('🚀 Inicializando sistema administrativo...');
+      
+      // Verificar tabelas
+      const result = await setupAdminTables();
+      
+      if (result === true) {
+        // Inserir dados de exemplo se necessário
+        await insertSampleData();
+        console.log('✅ Sistema administrativo pronto!');
+        setTablesReady(true);
+      } else {
+        console.log('⚠️ Algumas tabelas estão faltando.');
+        setTablesReady(false);
+        // Definir quais tabelas podem estar faltando
+        const potentialMissingTables = ['goals', 'sessions', 'dados_saude_usuario', 'courses', 'course_modules', 'course_lessons'];
+        setMissingTables(potentialMissingTables);
+      }
+    };
+
+    initializeAdminSystem();
+  }, [user, isAdmin]);
+
   console.log('🔒 AdminProtectedRoute - User:', user?.email);
 
   if (!user) {
@@ -43,7 +72,6 @@ export const AdminProtectedRoute: React.FC<AdminProtectedRouteProps> = ({ childr
     );
   }
 
-  const isAdmin = adminEmails.includes(user.email || '');
   console.log('🔒 AdminProtectedRoute - User email:', user.email, 'Is admin:', isAdmin);
 
   if (!isAdmin) {
@@ -70,33 +98,6 @@ export const AdminProtectedRoute: React.FC<AdminProtectedRouteProps> = ({ childr
 
   // Acesso permitido
   console.log('🔒 AdminProtectedRoute - ✅ ACESSO LIBERADO para:', user.email);
-  
-  // Verificar e configurar tabelas necessárias
-  useEffect(() => {
-    const initializeAdminSystem = async () => {
-      console.log('🚀 Inicializando sistema administrativo...');
-      
-      // Verificar tabelas
-      const result = await setupAdminTables();
-      
-      if (result === true) {
-        // Inserir dados de exemplo se necessário
-        await insertSampleData();
-        console.log('✅ Sistema administrativo pronto!');
-        setTablesReady(true);
-      } else {
-        console.log('⚠️ Algumas tabelas estão faltando.');
-        setTablesReady(false);
-        // Definir quais tabelas podem estar faltando
-        const potentialMissingTables = ['goals', 'sessions', 'dados_saude_usuario', 'courses', 'course_modules', 'course_lessons'];
-        setMissingTables(potentialMissingTables);
-      }
-    };
-
-    if (user) {
-      initializeAdminSystem();
-    }
-  }, [user]);
 
   const handleRefreshTables = async () => {
     setTablesReady(null); // Loading state

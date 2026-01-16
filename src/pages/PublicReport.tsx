@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { FileText, AlertCircle, Loader2, Share2, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import DOMPurify from "dompurify";
 
 const PublicReport = () => {
   const { token } = useParams<{ token: string }>();
@@ -149,7 +150,7 @@ const PublicReport = () => {
       {/* Conteúdo do relatório */}
       <div 
         className="report-content"
-        dangerouslySetInnerHTML={{ __html: html || "" }}
+        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(html || "") }}
       />
 
       {/* Footer */}

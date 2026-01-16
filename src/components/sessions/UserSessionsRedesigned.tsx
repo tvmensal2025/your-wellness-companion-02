@@ -11,9 +11,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Clock, CheckCircle, PlayCircle, BookOpen, 
   Target, ChevronRight, Trophy, Flame,
-  Lock, Filter, Sparkles, ArrowRight,
+  Lock, Sparkles, ArrowRight,
   Calendar, Timer, Star, Zap
 } from 'lucide-react';
+import GenericSessionExecutor from './GenericSessionExecutor';
 
 // Types
 interface Session {
@@ -433,6 +434,8 @@ export default function UserSessionsRedesigned({ user, onStartSession }: UserSes
   const [sessions, setSessions] = useState<UserSession[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
+  const [selectedSession, setSelectedSession] = useState<UserSession | null>(null);
+  const [isExecutorOpen, setIsExecutorOpen] = useState(false);
   const { toast } = useToast();
 
   // Load sessions
@@ -509,6 +512,10 @@ export default function UserSessionsRedesigned({ user, onStartSession }: UserSes
     const session = sessions.find(s => s.id === sessionId);
     if (!session || session.is_locked) return;
 
+    // Abrir o executor de sessão
+    setSelectedSession(session);
+    setIsExecutorOpen(true);
+
     try {
       // Update status to in_progress if pending
       if (session.status === 'pending') {
@@ -526,9 +533,6 @@ export default function UserSessionsRedesigned({ user, onStartSession }: UserSes
         onStartSession(sessionId);
       }
 
-      // Reload sessions
-      loadSessions();
-
       toast({
         title: session.status === 'pending' ? "Sessão Iniciada! 🚀" : "Continuando sessão...",
         description: session.sessions.title
@@ -540,6 +544,12 @@ export default function UserSessionsRedesigned({ user, onStartSession }: UserSes
         variant: "destructive"
       });
     }
+  };
+
+  const handleSessionComplete = () => {
+    loadSessions();
+    setSelectedSession(null);
+    setIsExecutorOpen(false);
   };
 
   // Loading state
@@ -660,6 +670,22 @@ export default function UserSessionsRedesigned({ user, onStartSession }: UserSes
             )}
           </div>
         </motion.div>
+      )}
+
+      {/* Session Executor Modal */}
+      {selectedSession && (
+        <GenericSessionExecutor
+          isOpen={isExecutorOpen}
+          onClose={() => {
+            setIsExecutorOpen(false);
+            setSelectedSession(null);
+            loadSessions();
+          }}
+          userSession={selectedSession}
+          userId={user?.id || ''}
+          userName={user?.user_metadata?.full_name || user?.email?.split('@')[0]}
+          onComplete={handleSessionComplete}
+        />
       )}
     </div>
   );

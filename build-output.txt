@@ -1,0 +1,134 @@
+
+> institutodossonhos01-26@0.0.0 build
+> vite build
+
+vite v5.4.19 building for production...
+transforming...
+[vite:css] Replace color-adjust to print-color-adjust. The color-adjust shorthand is currently deprecated.
+1039|      padding: 0 !important;
+1040|      -webkit-print-color-adjust: exact !important;
+1041|      color-adjust: exact !important;
+   |      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+1042|      background: white !important;
+1043|    }
+[plugin:vite:esbuild] [plugin vite:esbuild] src/components/exercise/SavedProgramView.tsx: This assignment will throw because "data" is a constant
+264|  
+265|            if (!allError && allData && allData.length > (data?.length || 0)) {
+266|              data = allData;
+   |              ^
+267|              console.log(`Fallback: carregando ${data.length} exercícios de todos os locais`);
+268|            }
+
+✓ 5029 modules transformed.
+Circular chunk: vendor-react -> vendor-apex -> vendor-react. Please adjust the manual chunk logic for these chunks.
+Circular chunk: vendor-react -> vendor-apex -> vendor-misc -> vendor-react. Please adjust the manual chunk logic for these chunks.
+Circular chunk: vendor-misc -> vendor-export -> vendor-misc. Please adjust the manual chunk logic for these chunks.
+Circular chunk: vendor-apex -> vendor-misc -> vendor-apex. Please adjust the manual chunk logic for these chunks.
+Generated an empty chunk: "vendor-forms".
+rendering chunks...
+computing gzip size...
+dist/manifest.webmanifest                               0.88 kB
+dist/index.html                                         8.47 kB │ gzip:   2.65 kB
+dist/assets/dtox-FgbagOzs.jpeg                        133.60 kB
+dist/assets/moro-complex-DVTl6aLT.jpeg                139.09 kB
+dist/assets/cromo-max-CIMj_v5m.jpeg                   144.11 kB
+dist/assets/amargo-hW1O-xCe.jpeg                      159.45 kB
+dist/assets/vital-green-B42QrZxY.jpeg                 159.82 kB
+dist/assets/creatina-DJlax2Nd.jpeg                    173.13 kB
+dist/assets/sofia-CWk2kyDd.png                        208.61 kB
+dist/assets/index-DTLcoM21.css                        384.32 kB │ gzip:  50.18 kB
+dist/assets/vendor-forms-vwDjcXxQ.js                    0.00 kB │ gzip:   0.02 kB
+dist/assets/supabase-helpers-DfY0Yv_Z.js                0.10 kB │ gzip:   0.11 kB
+dist/assets/progress-C66dFoCj.js                        0.48 kB │ gzip:   0.33 kB
+dist/assets/textarea-Bgr2cmOB.js                        0.52 kB │ gzip:   0.34 kB
+dist/assets/useAdminMode-1udsjCg6.js                    0.53 kB │ gzip:   0.36 kB
+dist/assets/useUserGender-uJRTffGa.js                   0.56 kB │ gzip:   0.33 kB
+dist/assets/skeleton-cDWO4b3w.js                        0.57 kB │ gzip:   0.35 kB
+dist/assets/SofiaNutricionalPage-CHVycR-u.js            0.77 kB │ gzip:   0.42 kB
+dist/assets/slider-aUXC25PN.js                          0.79 kB │ gzip:   0.44 kB
+dist/assets/ProgressPage-N9QXrY8a.js                    0.81 kB │ gzip:   0.44 kB
+dist/assets/popover-DCsRjEBX.js                         0.82 kB │ gzip:   0.43 kB
+dist/assets/switch-LqRa_TgC.js                          0.86 kB │ gzip:   0.46 kB
+dist/assets/useSafeAnimation-DGpPiBRM.js                0.98 kB │ gzip:   0.53 kB
+dist/assets/radio-group-k99r3vK6.js                     0.99 kB │ gzip:   0.49 kB
+dist/assets/WhatsAppSettingsModal-DNL32Ihd.js           0.99 kB │ gzip:   0.51 kB
+dist/assets/alert-CHPn5zmc.js                           0.99 kB │ gzip:   0.51 kB
+dist/assets/virtual_pwa-register-DXCCtstw.js            1.11 kB │ gzip:   0.58 kB
+dist/assets/exporters-CrbncFd2.js                       1.59 kB │ gzip:   0.77 kB
+dist/assets/SimpleWeightForm-DIqlQWqv.js                1.83 kB │ gzip:   0.92 kB
+dist/assets/sheet-8L-1Tj88.js                           2.34 kB │ gzip:   0.92 kB
+dist/assets/AutoLoginPage-Dqkdvo2o.js                   2.48 kB │ gzip:   1.13 kB
+dist/assets/useUserProgressStats-CfEfBX91.js            2.50 kB │ gzip:   0.91 kB
+dist/assets/CharacterImage-C3kuVbeu.js                  2.70 kB │ gzip:   1.34 kB
+dist/assets/vendor-query-errKMsOu.js                    2.83 kB │ gzip:   1.30 kB
+dist/assets/useUserDataCache-BklJBaef.js                3.32 kB │ gzip:   1.36 kB
+dist/assets/GoogleFitCallback-CD6wE81I.js               3.58 kB │ gzip:   1.68 kB
+dist/assets/useExerciseProgram-Ncj7kaZg.js              4.24 kB │ gzip:   1.72 kB
+dist/assets/useGoogleFitData-D-HtmJiR.js                4.36 kB │ gzip:   1.77 kB
+dist/assets/PublicReport-B5JBP_SO.js                    4.37 kB │ gzip:   1.65 kB
+dist/assets/PublicPostPage-DTEadbSs.js                  5.03 kB │ gzip:   1.78 kB
+dist/assets/useGamificationUnified-BO-OvgSZ.js          6.11 kB │ gzip:   2.15 kB
+dist/assets/LayoutPreferencesModal-BHhTJp2P.js          6.27 kB │ gzip:   2.38 kB
+dist/assets/UserDrVitalPage-CcnQqzGG.js                 6.36 kB │ gzip:   2.18 kB
+dist/assets/CoursePlatform-Bx5MmyGg.js                  6.47 kB │ gzip:   1.96 kB
+dist/assets/Install-DBUOFe4Z.js                         6.90 kB │ gzip:   1.92 kB
+dist/assets/VisualEffectsManager-D-17N5t3.js            7.44 kB │ gzip:   2.77 kB
+dist/assets/UserSessionsCompact-f0C3OHrQ.js             7.90 kB │ gzip:   2.77 kB
+dist/assets/PaymentPlans-OrAnprlM.js                    9.04 kB │ gzip:   3.15 kB
+dist/assets/GoogleFitTestPage-CPkln9dN.js               9.09 kB │ gzip:   2.69 kB
+dist/assets/WhatsAppNotificationSettings-BJLQwheb.js   12.03 kB │ gzip:   3.01 kB
+dist/assets/SystemHealth-4C1Hnp2w.js                   12.20 kB │ gzip:   2.93 kB
+dist/assets/useWeightMeasurement-DNbb_R3s.js           12.21 kB │ gzip:   4.08 kB
+dist/assets/GoogleFitPage-DcMmiwNP.js                  15.50 kB │ gzip:   3.74 kB
+dist/assets/DrVitalDashboard-BeBEq-9E.js               15.89 kB │ gzip:   4.30 kB
+dist/assets/useNutritionTracking-DF-I9C-O.js           17.71 kB │ gzip:   5.03 kB
+dist/assets/CreateGoalDialog-DcZs9wpQ.js               17.78 kB │ gzip:   5.92 kB
+dist/assets/DailyMissionsLight-DFpxV4oe.js             17.94 kB │ gzip:   5.43 kB
+dist/assets/UserProfile-BBMGG5j_.js                    20.23 kB │ gzip:   5.46 kB
+dist/assets/ChallengesV2Page-w7K8Zo_P.js               20.84 kB │ gzip:   5.65 kB
+dist/assets/GoalsPageV2-BLw8CHBi.js                    22.35 kB │ gzip:   6.27 kB
+dist/assets/AnamnesisPage-CCxVL22C.js                  22.85 kB │ gzip:   6.23 kB
+dist/assets/MedicalDocumentsSection-CS9EDewY.js        24.99 kB │ gzip:   7.19 kB
+dist/assets/ChallengeDetailPage-2YgIujTZ.js            30.64 kB │ gzip:   8.03 kB
+dist/assets/vendor-router-dDgDKEAI.js                  32.85 kB │ gzip:  12.12 kB
+dist/assets/GoalsPage-BF6ijWTu.js                      33.23 kB │ gzip:   9.11 kB
+dist/assets/DrVitalEnhancedPage-EtIj2a-M.js            33.24 kB │ gzip:   9.28 kB
+dist/assets/GoogleFitPremiumDashboard-DOCeOYMr.js      35.89 kB │ gzip:   9.99 kB
+dist/assets/NutritionTrackingPage-TitFheML.js          36.25 kB │ gzip:   7.75 kB
+dist/assets/MyProgress-CZ9MCdn-.js                     42.83 kB │ gzip:  11.77 kB
+dist/assets/SofiaPage-CJxQM4PI.js                      43.17 kB │ gzip:  12.27 kB
+dist/assets/CoursePlatformNetflix-DIzLUnly.js          44.55 kB │ gzip:  10.44 kB
+dist/assets/vendor-icons-DcKem4OG.js                   46.37 kB │ gzip:  15.15 kB
+dist/assets/ReportGenerator-RuuaCbPJ.js                48.50 kB │ gzip:  14.07 kB
+dist/assets/SaboteurTest-2vcv2Ni6.js                   51.94 kB │ gzip:  13.01 kB
+dist/assets/ChallengesDashboard-DIJldSpQ.js            62.32 kB │ gzip:  14.57 kB
+dist/assets/index-X0y4ihr4.js                          69.52 kB │ gzip:  17.48 kB
+dist/assets/vendor-date-Df50pSGV.js                    72.38 kB │ gzip:  20.64 kB
+dist/assets/vendor-motion-Cb3kFZrS.js                  78.37 kB │ gzip:  25.31 kB
+dist/assets/DashboardOverview-DgBALcvl.js             117.39 kB │ gzip:  31.02 kB
+dist/assets/vendor-radix-9cRtybdz.js                  125.67 kB │ gzip:  37.06 kB
+dist/assets/ProfessionalEvaluationPage-jc0VIHnT.js    126.64 kB │ gzip:  28.18 kB
+dist/assets/vendor-react-0el4dAjO.js                  137.21 kB │ gzip:  44.01 kB
+dist/assets/index-DSbypV3R.js                         149.52 kB │ gzip:  39.64 kB
+dist/assets/vendor-supabase-BSBhLKNS.js               162.39 kB │ gzip:  41.67 kB
+dist/assets/SofiaNutricionalSection-TQIVDbxc.js       177.26 kB │ gzip:  47.56 kB
+dist/assets/ExerciseDashboard-CLlXGowI.js             194.91 kB │ gzip:  49.57 kB
+dist/assets/HealthFeedPage-BQdQ6aTd.js                203.82 kB │ gzip:  49.86 kB
+dist/assets/vendor-charts-CcQMx45W.js                 309.62 kB │ gzip:  83.97 kB
+dist/assets/vendor-misc-BoG_aZ4G.js                   457.19 kB │ gzip: 155.71 kB
+dist/assets/AdminPage-Bw-ApNIi.js                     497.01 kB │ gzip: 110.42 kB
+dist/assets/vendor-export-DSFDL9pK.js                 544.31 kB │ gzip: 157.48 kB
+dist/assets/vendor-apex-yAoNuXxR.js                   580.49 kB │ gzip: 157.35 kB
+
+(!) Some chunks are larger than 300 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 6.33s
+
+PWA v1.2.0
+mode      generateSW
+precache  113 entries (8590.99 KiB)
+files generated
+  dist/sw.js
+  dist/workbox-4b126c97.js

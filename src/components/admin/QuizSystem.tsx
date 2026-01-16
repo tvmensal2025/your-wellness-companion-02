@@ -147,8 +147,8 @@ export const QuizSystem = ({ courseId, lessonId }: QuizSystemProps) => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-white">Sistema de Quizzes</h2>
-          <p className="text-gray-400">Gerencie quizzes e certificados do curso</p>
+          <h2 className="text-2xl font-bold text-foreground">Sistema de Quizzes</h2>
+          <p className="text-muted-foreground">Gerencie quizzes e certificados do curso</p>
         </div>
         <Dialog open={isCreating} onOpenChange={setIsCreating}>
           <DialogTrigger asChild>
@@ -308,7 +308,7 @@ export const QuizSystem = ({ courseId, lessonId }: QuizSystemProps) => {
       {/* Lista de Quizzes */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {quizzes.map((quiz) => (
-          <Card key={quiz.id} className="bg-gray-900 border-gray-700 text-white">
+          <Card key={quiz.id} className="bg-card border-border text-foreground">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg">{quiz.title}</CardTitle>
@@ -319,7 +319,7 @@ export const QuizSystem = ({ courseId, lessonId }: QuizSystemProps) => {
                   </Badge>
                 )}
               </div>
-              <p className="text-sm text-gray-400">{quiz.description}</p>
+              <p className="text-sm text-muted-foreground">{quiz.description}</p>
             </CardHeader>
             
             <CardContent className="space-y-4">
@@ -361,7 +361,7 @@ export const QuizSystem = ({ courseId, lessonId }: QuizSystemProps) => {
       </div>
       
       {/* Estatísticas dos Quizzes */}
-      <Card className="bg-gray-900 border-gray-700 text-white">
+      <Card className="bg-card border-border text-foreground">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <BarChart3 className="h-5 w-5" />
@@ -371,20 +371,20 @@ export const QuizSystem = ({ courseId, lessonId }: QuizSystemProps) => {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div className="text-center">
-              <div className="text-2xl font-bold text-blue-400">1,247</div>
-              <div className="text-sm text-gray-400">Tentativas Totais</div>
+              <div className="text-2xl font-bold text-blue-500 dark:text-blue-400">1,247</div>
+              <div className="text-sm text-muted-foreground">Tentativas Totais</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-green-400">67%</div>
-              <div className="text-sm text-gray-400">Taxa de Aprovação</div>
+              <div className="text-2xl font-bold text-green-500 dark:text-green-400">67%</div>
+              <div className="text-sm text-muted-foreground">Taxa de Aprovação</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-yellow-400">892</div>
-              <div className="text-sm text-gray-400">Certificados Emitidos</div>
+              <div className="text-2xl font-bold text-yellow-500 dark:text-yellow-400">892</div>
+              <div className="text-sm text-muted-foreground">Certificados Emitidos</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-purple-400">18:30</div>
-              <div className="text-sm text-gray-400">Tempo Médio</div>
+              <div className="text-2xl font-bold text-purple-500 dark:text-purple-400">18:30</div>
+              <div className="text-sm text-muted-foreground">Tempo Médio</div>
             </div>
           </div>
         </CardContent>
@@ -401,31 +401,31 @@ export const CertificatePreview = ({ courseName, studentName, score, date }: {
   date: string;
 }) => {
   return (
-    <div className="bg-white text-gray-900 p-8 rounded-lg shadow-lg max-w-2xl mx-auto">
+    <div className="bg-card text-foreground p-8 rounded-lg shadow-lg max-w-2xl mx-auto">
       <div className="text-center border-4 border-yellow-500 p-8">
         <div className="mb-4">
           <Trophy className="h-16 w-16 text-yellow-500 mx-auto mb-4" />
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">CERTIFICADO DE CONCLUSÃO</h1>
+          <h1 className="text-3xl font-bold text-foreground mb-2">CERTIFICADO DE CONCLUSÃO</h1>
           <div className="w-24 h-1 bg-yellow-500 mx-auto"></div>
         </div>
         
         <div className="my-8">
-          <h2 className="text-2xl font-semibold text-gray-700 mb-4">"{courseName}"</h2>
-          <p className="text-lg text-gray-600 mb-4">Concedido a:</p>
-          <h3 className="text-3xl font-bold text-gray-800 mb-4">{studentName}</h3>
+          <h2 className="text-2xl font-semibold text-muted-foreground mb-4">"{courseName}"</h2>
+          <p className="text-lg text-muted-foreground mb-4">Concedido a:</p>
+          <h3 className="text-3xl font-bold text-foreground mb-4">{studentName}</h3>
         </div>
         
-        <div className="flex justify-between items-center mt-8 pt-4 border-t border-gray-300">
+        <div className="flex justify-between items-center mt-8 pt-4 border-t border-border">
           <div>
-            <p className="text-sm text-gray-600">Data:</p>
+            <p className="text-sm text-muted-foreground">Data:</p>
             <p className="font-semibold">{date}</p>
           </div>
           <div>
-            <p className="text-sm text-gray-600">Pontuação:</p>
-            <p className="font-semibold text-green-600">{score}%</p>
+            <p className="text-sm text-muted-foreground">Pontuação:</p>
+            <p className="font-semibold text-green-600 dark:text-green-400">{score}%</p>
           </div>
           <div>
-            <p className="text-sm text-gray-600">MaxNutrition</p>
+            <p className="text-sm text-muted-foreground">MaxNutrition</p>
             <p className="font-semibold">Certificação Oficial</p>
           </div>
         </div>

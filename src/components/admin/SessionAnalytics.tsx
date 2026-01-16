@@ -33,8 +33,33 @@ interface QuestionAnalytics {
   question_id: string;
   question_text: string;
   question_type: string;
-  responses: any[];
-  chartData: any[];
+  responses: SessionResponse[];
+  chartData: ChartDataItem[];
+}
+
+interface SessionResponse {
+  user_id: string;
+  question_id: string;
+  response_value: string | number | boolean;
+  created_at: string;
+  session_questions?: {
+    question_text: string;
+    question_type: string;
+  };
+}
+
+interface SessionAssignment {
+  user_id: string;
+  is_completed: boolean;
+  completed_at?: string;
+  profiles: {
+    full_name: string;
+  };
+}
+
+interface ChartDataItem {
+  name: string;
+  value: number;
 }
 
 interface EvolutionData {
@@ -62,145 +87,141 @@ export const SessionAnalytics: React.FC<SessionAnalyticsProps> = ({
   const [selectedPeriod, setSelectedPeriod] = useState('7d');
 
   useEffect(() => {
-    loadAnalytics();
-  }, [sessionId, selectedPeriod]);
-
-  const loadAnalytics = async () => {
-    try {
-      setLoading(true);
+    const generateEvolutionData = (responses: SessionResponse[], period: string): EvolutionData[] => {
+      const days = period === '7d' ? 7 : period === '30d' ? 30 : 90;
+      const data: EvolutionData[] = [];
       
-      // Mock de dados de respostas já que session_responses não existe
-      const responses: any[] = [];
-      const responsesError = null;
+      for (let i = days - 1; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        const dateStr = date.toISOString().split('T')[0];
+        
+        const dayResponses = responses.filter(r => 
+          r.created_at.split('T')[0] === dateStr
+        );
+        
+        data.push({
+          date: dateStr,
+          responses: dayResponses.length,
+          completion_rate: dayResponses.length
+        });
+      }
+      
+      return data;
+    };
 
-      // Mock de dados de atribuições já que session_assignments não existe
-      const assignments: any[] = [];
-      const assignmentsError = null;
+    const processAnalyticsData = (responses: SessionResponse[], assignments: SessionAssignment[]): AnalyticsData => {
+      const totalAssigned = assignments.length;
+      const completed = assignments.filter(a => a.is_completed).length;
+      
+      // Agrupar respostas por pergunta
+      const questionGroups = responses.reduce((acc: Record<string, { question_id: string; question_text: string; question_type: string; responses: SessionResponse[] }>, response) => {
+        const questionId = response.question_id;
+        if (!acc[questionId]) {
+          acc[questionId] = {
+            question_id: questionId,
+            question_text: response.session_questions?.question_text || '',
+            question_type: response.session_questions?.question_type || '',
+            responses: []
+          };
+        }
+        acc[questionId].responses.push(response);
+        return acc;
+      }, {});
 
-      // Processar dados
-      const analyticsData = processAnalyticsData(responses || [], assignments || []);
-      setAnalytics(analyticsData);
+      // Gerar dados para gráficos de pizza para cada pergunta
+      const questionAnalytics: QuestionAnalytics[] = Object.values(questionGroups).map((group) => {
+        let chartData: ChartDataItem[] = [];
+        
+        if (group.question_type === 'single_choice' || group.question_type === 'multiple_choice') {
+          const valueCounts = group.responses.reduce((acc: Record<string, number>, r) => {
+            const value = typeof r.response_value === 'string' ? r.response_value : JSON.stringify(r.response_value);
+            acc[value] = (acc[value] || 0) + 1;
+            return acc;
+          }, {});
+          
+          chartData = Object.entries(valueCounts).map(([value, count]) => ({
+            name: value,
+            value: count
+          }));
+        } else if (group.question_type === 'numeric_scale' || group.question_type === 'percentage') {
+          const values = group.responses.map((r) => Number(r.response_value) || 0);
+          const ranges = [
+            { name: '0-25%', value: values.filter(v => v <= 25).length },
+            { name: '26-50%', value: values.filter(v => v > 25 && v <= 50).length },
+            { name: '51-75%', value: values.filter(v => v > 50 && v <= 75).length },
+            { name: '76-100%', value: values.filter(v => v > 75).length }
+          ];
+          chartData = ranges.filter(r => r.value > 0);
+        } else if (group.question_type === 'boolean') {
+          const valueCounts = group.responses.reduce((acc: Record<string, number>, r) => {
+            const value = r.response_value === true || r.response_value === 'true' || r.response_value === 'Sim' ? 'Sim' : 'Não';
+            acc[value] = (acc[value] || 0) + 1;
+            return acc;
+          }, {});
+          
+          chartData = Object.entries(valueCounts).map(([value, count]) => ({
+            name: value,
+            value: count
+          }));
+        }
 
-    } catch (error: any) {
-      console.error('Erro ao carregar analytics:', error);
-      toast({
-        title: "Erro",
-        description: "Não foi possível carregar os dados de analytics",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const processAnalyticsData = (responses: any[], assignments: any[]): AnalyticsData => {
-    const totalAssigned = assignments.length;
-    const uniqueRespondents = new Set(responses.map(r => r.user_id)).size;
-    const completed = assignments.filter(a => a.is_completed).length;
-    
-    // Agrupar respostas por pergunta
-    const questionGroups = responses.reduce((acc, response) => {
-      const questionId = response.question_id;
-      if (!acc[questionId]) {
-        acc[questionId] = {
-          question_id: questionId,
-          question_text: response.session_questions.question_text,
-          question_type: response.session_questions.question_type,
-          responses: []
+        return {
+          ...group,
+          chartData
         };
-      }
-      acc[questionId].responses.push(response);
-      return acc;
-    }, {});
+      });
 
-    // Gerar dados para gráficos de pizza para cada pergunta
-    const questionAnalytics: QuestionAnalytics[] = Object.values(questionGroups).map((group: any) => {
-      let chartData = [];
-      
-      if (group.question_type === 'single_choice' || group.question_type === 'multiple_choice') {
-        const valueCounts = group.responses.reduce((acc: any, r: any) => {
-          const value = typeof r.response_value === 'string' ? r.response_value : JSON.stringify(r.response_value);
-          acc[value] = (acc[value] || 0) + 1;
-          return acc;
-        }, {});
-        
-        chartData = Object.entries(valueCounts).map(([value, count]) => ({
-          name: value,
-          value: count
-        }));
-      } else if (group.question_type === 'numeric_scale' || group.question_type === 'percentage') {
-        const values = group.responses.map((r: any) => Number(r.response_value) || 0);
-        const avg = values.reduce((a, b) => a + b, 0) / values.length;
-        const ranges = [
-          { name: '0-25%', value: values.filter(v => v <= 25).length },
-          { name: '26-50%', value: values.filter(v => v > 25 && v <= 50).length },
-          { name: '51-75%', value: values.filter(v => v > 50 && v <= 75).length },
-          { name: '76-100%', value: values.filter(v => v > 75).length }
-        ];
-        chartData = ranges.filter(r => r.value > 0);
-      } else if (group.question_type === 'boolean') {
-        const valueCounts = group.responses.reduce((acc: any, r: any) => {
-          const value = r.response_value === true || r.response_value === 'true' || r.response_value === 'Sim' ? 'Sim' : 'Não';
-          acc[value] = (acc[value] || 0) + 1;
-          return acc;
-        }, {});
-        
-        chartData = Object.entries(valueCounts).map(([value, count]) => ({
-          name: value,
-          value: count
-        }));
-      }
+      // Dados de evolução ao longo do tempo
+      const evolutionData = generateEvolutionData(responses, selectedPeriod);
+
+      // Progresso dos usuários
+      const userProgress: UserProgress[] = assignments.map(assignment => ({
+        user_id: assignment.user_id,
+        user_name: assignment.profiles.full_name,
+        completion_date: assignment.completed_at,
+        responses: responses.filter(r => r.user_id === assignment.user_id).length,
+        score: assignment.is_completed ? 100 : 0
+      }));
 
       return {
-        ...group,
-        chartData
+        totalResponses: responses.length,
+        completionRate: totalAssigned > 0 ? (completed / totalAssigned) * 100 : 0,
+        avgCompletionTime: 0,
+        questionAnalytics,
+        evolutionData,
+        userProgress
       };
-    });
-
-    // Dados de evolução ao longo do tempo
-    const evolutionData = generateEvolutionData(responses, selectedPeriod);
-
-    // Progresso dos usuários
-    const userProgress: UserProgress[] = assignments.map(assignment => ({
-      user_id: assignment.user_id,
-      user_name: assignment.profiles.full_name,
-      completion_date: assignment.completed_at,
-      responses: responses.filter(r => r.user_id === assignment.user_id).length,
-      score: assignment.is_completed ? 100 : 0
-    }));
-
-    return {
-      totalResponses: responses.length,
-      completionRate: totalAssigned > 0 ? (completed / totalAssigned) * 100 : 0,
-      avgCompletionTime: 0, // Calcular depois se necessário
-      questionAnalytics,
-      evolutionData,
-      userProgress
     };
-  };
 
-  const generateEvolutionData = (responses: any[], period: string): EvolutionData[] => {
-    const days = period === '7d' ? 7 : period === '30d' ? 30 : 90;
-    const data: EvolutionData[] = [];
-    
-    for (let i = days - 1; i >= 0; i--) {
-      const date = new Date();
-      date.setDate(date.getDate() - i);
-      const dateStr = date.toISOString().split('T')[0];
-      
-      const dayResponses = responses.filter(r => 
-        r.created_at.split('T')[0] === dateStr
-      );
-      
-      data.push({
-        date: dateStr,
-        responses: dayResponses.length,
-        completion_rate: dayResponses.length // Simplificado
-      });
-    }
-    
-    return data;
-  };
+    const loadAnalytics = async () => {
+      try {
+        setLoading(true);
+        
+        // Mock de dados de respostas já que session_responses não existe
+        const responses: SessionResponse[] = [];
+
+        // Mock de dados de atribuições já que session_assignments não existe
+        const assignments: SessionAssignment[] = [];
+
+        // Processar dados
+        const analyticsData = processAnalyticsData(responses || [], assignments || []);
+        setAnalytics(analyticsData);
+
+      } catch (error: unknown) {
+        console.error('Erro ao carregar analytics:', error);
+        toast({
+          title: "Erro",
+          description: "Não foi possível carregar os dados de analytics",
+          variant: "destructive"
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadAnalytics();
+  }, [sessionId, selectedPeriod, toast]);
 
   const exportData = async () => {
     if (!analytics) return;
@@ -389,7 +410,7 @@ export const SessionAnalytics: React.FC<SessionAnalyticsProps> = ({
             <CardContent>
               {questionData.chartData.length > 0 ? (
                 <div className="space-y-2">
-                  {questionData.chartData.map((item: any, idx: number) => (
+                  {questionData.chartData.map((item: ChartDataItem, idx: number) => (
                     <div key={idx} className="flex justify-between items-center p-2 border rounded">
                       <span>{item.name}</span>
                       <span className="font-bold">{item.value}</span>

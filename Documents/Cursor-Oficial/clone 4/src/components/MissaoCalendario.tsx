@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -43,13 +43,7 @@ export const MissaoCalendario = () => {
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
 
-  useEffect(() => {
-    if (user) {
-      fetchMissoesDoMes(selectedDate);
-    }
-  }, [user, selectedDate]);
-
-  const fetchMissoesDoMes = async (date: Date) => {
+  const fetchMissoesDoMes = useCallback(async (date: Date) => {
     if (!user) return;
 
     setLoading(true);
@@ -66,7 +60,8 @@ export const MissaoCalendario = () => {
         .eq('user_id', profile.data.id)
         .gte('data', format(inicio, 'yyyy-MM-dd'))
         .lte('data', format(fim, 'yyyy-MM-dd'))
-        .order('data');
+        .order('data')
+        .limit(100);
 
       if (error) throw error;
 
@@ -83,7 +78,13 @@ export const MissaoCalendario = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      fetchMissoesDoMes(selectedDate);
+    }
+  }, [user, selectedDate, fetchMissoesDoMes]);
 
   const fetchMissaoDetalhada = async (date: Date) => {
     if (!user) return;

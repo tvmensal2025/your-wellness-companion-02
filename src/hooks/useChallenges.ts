@@ -46,7 +46,8 @@ export const useChallenges = () => {
         .from('challenges')
         .select('*')
         .eq('is_active', true)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(100);
 
       if (error) throw error;
 
@@ -60,7 +61,8 @@ export const useChallenges = () => {
             *,
             challenge:challenges(*)
           `)
-          .eq('user_id', user.id);
+          .eq('user_id', user.id)
+          .limit(200);
 
         if (participationsError) {
           console.error('Erro ao buscar participações:', participationsError);

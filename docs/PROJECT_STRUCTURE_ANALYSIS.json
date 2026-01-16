@@ -1,0 +1,1094 @@
+{
+  "timestamp": "2026-01-15T19:22:09.135662",
+  "summary": {
+    "total_files": 1114,
+    "total_lines": 313203,
+    "components_count": 742,
+    "hooks_count": 165,
+    "services_count": 43,
+    "pages_count": 27,
+    "tests_count": 39
+  },
+  "files_by_type": {
+    ".tsx": 746,
+    ".css": 3,
+    ".ts": 362,
+    ".json": 3
+  },
+  "lines_by_type": {
+    ".tsx": 208541,
+    ".css": 3034,
+    ".ts": 99891,
+    ".json": 1737
+  },
+  "large_components": [
+    {
+      "path": "src/components/UserSessions.tsx",
+      "lines": 1320,
+      "excess": 820
+    },
+    {
+      "path": "src/components/meal-plan/UltraCreativeLayoutsV2.tsx",
+      "lines": 1290,
+      "excess": 790
+    },
+    {
+      "path": "src/components/admin/CourseManagementNew.tsx",
+      "lines": 1273,
+      "excess": 773
+    },
+    {
+      "path": "src/components/dashboard/MedicalDocumentsSection.tsx",
+      "lines": 1210,
+      "excess": 710
+    },
+    {
+      "path": "src/components/admin/SessionTemplates.tsx",
+      "lines": 1180,
+      "excess": 680
+    },
+    {
+      "path": "src/components/SaboteurTest.tsx",
+      "lines": 1120,
+      "excess": 620
+    },
+    {
+      "path": "src/components/meal-plan/CompactMealPlanModal.tsx",
+      "lines": 1037,
+      "excess": 537
+    },
+    {
+      "path": "src/components/dr-vital/DrVitalEnhancedChat.tsx",
+      "lines": 969,
+      "excess": 469
+    },
+    {
+      "path": "src/components/exercise/onboarding/index.tsx",
+      "lines": 942,
+      "excess": 442
+    },
+    {
+      "path": "src/components/nutrition-tracking/MealPlanGeneratorModal.tsx",
+      "lines": 937,
+      "excess": 437
+    },
+    {
+      "path": "src/components/XiaomiScaleButton.tsx",
+      "lines": 917,
+      "excess": 417
+    },
+    {
+      "path": "src/components/FoodAnalysisSystem.tsx",
+      "lines": 897,
+      "excess": 397
+    },
+    {
+      "path": "src/components/SystemicAnamnesis.tsx",
+      "lines": 890,
+      "excess": 390
+    },
+    {
+      "path": "src/components/dashboard/DesafiosSection.tsx",
+      "lines": 881,
+      "excess": 381
+    },
+    {
+      "path": "src/components/exercise/ActiveWorkoutModal.tsx",
+      "lines": 875,
+      "excess": 375
+    },
+    {
+      "path": "src/components/admin/LessonModal.tsx",
+      "lines": 873,
+      "excess": 373
+    },
+    {
+      "path": "src/components/UserProfile.tsx",
+      "lines": 870,
+      "excess": 370
+    },
+    {
+      "path": "src/components/admin/HealthWheelSession.tsx",
+      "lines": 866,
+      "excess": 366
+    },
+    {
+      "path": "src/components/sessions/UserSessionsCreative.tsx",
+      "lines": 865,
+      "excess": 365
+    },
+    {
+      "path": "src/components/goals/CreateGoalDialog.tsx",
+      "lines": 855,
+      "excess": 355
+    }
+  ],
+  "refactored_components": [
+    {
+      "directory": "src/components/dashboard/course-platform",
+      "files": 8,
+      "total_lines": 2506,
+      "file_list": [
+        "src/components/dashboard/course-platform/CourseProgress.tsx",
+        "src/components/dashboard/course-platform/CoursePlayerModals.tsx",
+        "src/components/dashboard/course-platform/CoursePlayer.tsx",
+        "src/components/dashboard/course-platform/CourseCard.tsx",
+        "src/components/dashboard/course-platform/CourseGrid.tsx",
+        "src/components/dashboard/course-platform/CourseHeader.tsx",
+        "src/components/dashboard/course-platform/index.ts",
+        "src/components/dashboard/course-platform/hooks/useCourseData.ts"
+      ]
+    },
+    {
+      "directory": "src/components/exercise/onboarding",
+      "files": 6,
+      "total_lines": 1600,
+      "file_list": [
+        "src/components/exercise/onboarding/index.tsx",
+        "src/components/exercise/onboarding/steps/WelcomeStep.tsx",
+        "src/components/exercise/onboarding/steps/ExperienceStep.tsx",
+        "src/components/exercise/onboarding/steps/EquipmentStep.tsx",
+        "src/components/exercise/onboarding/steps/GoalsStep.tsx",
+        "src/components/exercise/onboarding/hooks/useOnboardingState.ts"
+      ]
+    },
+    {
+      "directory": "src/components/exercise/workout",
+      "files": 3,
+      "total_lines": 554,
+      "file_list": [
+        "src/components/exercise/workout/WorkoutTimer.tsx",
+        "src/components/exercise/workout/ProgressTracker.tsx",
+        "src/components/exercise/workout/ExerciseDisplay.tsx"
+      ]
+    },
+    {
+      "directory": "src/components/sessions/templates",
+      "files": 5,
+      "total_lines": 1306,
+      "file_list": [
+        "src/components/sessions/templates/index.tsx",
+        "src/components/sessions/templates/TemplateEditor.tsx",
+        "src/components/sessions/templates/TemplateList.tsx",
+        "src/components/sessions/templates/hooks/sessionPayloadBuilder.ts",
+        "src/components/sessions/templates/hooks/useTemplateLogic.ts"
+      ]
+    },
+    {
+      "directory": "src/components/sessions/user-sessions",
+      "files": 4,
+      "total_lines": 1234,
+      "file_list": [
+        "src/components/sessions/user-sessions/SessionList.tsx",
+        "src/components/sessions/user-sessions/SessionCard.tsx",
+        "src/components/sessions/user-sessions/SessionActions.tsx",
+        "src/components/sessions/user-sessions/hooks/useSessionData.ts"
+      ]
+    },
+    {
+      "directory": "src/components/sofia/chat",
+      "files": 8,
+      "total_lines": 1041,
+      "file_list": [
+        "src/components/sofia/chat/MessageInput.tsx",
+        "src/components/sofia/chat/ChatHeader.tsx",
+        "src/components/sofia/chat/MessageList.tsx",
+        "src/components/sofia/chat/index.ts",
+        "src/components/sofia/chat/hooks/useMessageSending.ts",
+        "src/components/sofia/chat/hooks/useChatLogic.ts",
+        "src/components/sofia/chat/hooks/useImageHandling.ts",
+        "src/components/sofia/chat/hooks/index.ts"
+      ]
+    },
+    {
+      "directory": "src/components/admin/course-management",
+      "files": 7,
+      "total_lines": 1032,
+      "file_list": [
+        "src/components/admin/course-management/OverviewTab.tsx",
+        "src/components/admin/course-management/StatsCards.tsx",
+        "src/components/admin/course-management/CoursesTab.tsx",
+        "src/components/admin/course-management/Breadcrumb.tsx",
+        "src/components/admin/course-management/LessonsTab.tsx",
+        "src/components/admin/course-management/ModulesTab.tsx",
+        "src/components/admin/course-management/hooks/useCourseManagement.ts"
+      ]
+    },
+    {
+      "directory": "src/components/dashboard/medical-documents",
+      "files": 5,
+      "total_lines": 656,
+      "file_list": [
+        "src/components/dashboard/medical-documents/DocumentUploadModal.tsx",
+        "src/components/dashboard/medical-documents/DocumentFilters.tsx",
+        "src/components/dashboard/medical-documents/DocumentCard.tsx",
+        "src/components/dashboard/medical-documents/DocumentStatsCards.tsx",
+        "src/components/dashboard/medical-documents/DocumentList.tsx"
+      ]
+    },
+    {
+      "directory": "src/components/saboteur-test",
+      "files": 2,
+      "total_lines": 275,
+      "file_list": [
+        "src/components/saboteur-test/ResultsStep.tsx",
+        "src/components/saboteur-test/QuestionStep.tsx"
+      ]
+    },
+    {
+      "directory": "src/components/meal-plan/ultra-creative-layouts-v2",
+      "files": 7,
+      "total_lines": 1289,
+      "file_list": [
+        "src/components/meal-plan/ultra-creative-layouts-v2/index.tsx",
+        "src/components/meal-plan/ultra-creative-layouts-v2/layouts/AdventureMapLayout.tsx",
+        "src/components/meal-plan/ultra-creative-layouts-v2/layouts/SmartphoneLayout.tsx",
+        "src/components/meal-plan/ultra-creative-layouts-v2/layouts/MusicPlayerLayout.tsx",
+        "src/components/meal-plan/ultra-creative-layouts-v2/layouts/ZenNatureLayout.tsx",
+        "src/components/meal-plan/ultra-creative-layouts-v2/layouts/CinemaLayout.tsx",
+        "src/components/meal-plan/ultra-creative-layouts-v2/layouts/LuxuryLayout.tsx"
+      ]
+    }
+  ],
+  "import_stats": {
+    "alias_imports": 3144,
+    "relative_imports": 296,
+    "external_imports": 1927,
+    "deep_relative": 0
+  },
+  "bundle_stats": {
+    "total_size": 4905341,
+    "chunks": [
+      {
+        "name": "ProfessionalEvaluationPage-BSYIELsF.js",
+        "size_kb": 691.34
+      },
+      {
+        "name": "AdminPage-CDlw3DMg.js",
+        "size_kb": 489.1
+      },
+      {
+        "name": "vendor-charts-3N-3FZ_O.js",
+        "size_kb": 370.09
+      },
+      {
+        "name": "jspdf.es.min-bY8YQSVR.js",
+        "size_kb": 344.06
+      },
+      {
+        "name": "index-gPyvl-0w.js",
+        "size_kb": 232.31
+      },
+      {
+        "name": "HealthFeedPage-CjQ-XDZi.js",
+        "size_kb": 199.55
+      },
+      {
+        "name": "html2canvas.esm-BpODSdIb.js",
+        "size_kb": 196.13
+      },
+      {
+        "name": "ExerciseDashboard-BYMFXjZ9.js",
+        "size_kb": 190.88
+      },
+      {
+        "name": "SofiaNutricionalSection-BINvRWHh.js",
+        "size_kb": 174.02
+      },
+      {
+        "name": "vendor-supabase-DD20C1V1.js",
+        "size_kb": 163.98
+      },
+      {
+        "name": "index.es-DBwyfjRs.js",
+        "size_kb": 146.29
+      },
+      {
+        "name": "vendor-react-ff1rHKYy.js",
+        "size_kb": 137.67
+      },
+      {
+        "name": "vendor-ui-KxORqsdA.js",
+        "size_kb": 131.99
+      },
+      {
+        "name": "DashboardOverview-CgHlxktS.js",
+        "size_kb": 115.08
+      },
+      {
+        "name": "vendor-motion-Dfm06Ltw.js",
+        "size_kb": 113.71
+      },
+      {
+        "name": "index-CrpEEBZ7.js",
+        "size_kb": 68.65
+      },
+      {
+        "name": "ChallengesDashboard-Ck2vrvQF.js",
+        "size_kb": 61.12
+      },
+      {
+        "name": "CreateGoalDialog-BkfmiZgk.js",
+        "size_kb": 57.27
+      },
+      {
+        "name": "SaboteurTest-BcxjN8_a.js",
+        "size_kb": 51.21
+      },
+      {
+        "name": "ReportGenerator-Cm3tfALN.js",
+        "size_kb": 47.52
+      },
+      {
+        "name": "vendor-icons-Cj1-x5Cf.js",
+        "size_kb": 45.29
+      },
+      {
+        "name": "MyProgress-CII-u3DP.js",
+        "size_kb": 44.35
+      },
+      {
+        "name": "CoursePlatformNetflix-DEQ-8eqH.js",
+        "size_kb": 43.57
+      },
+      {
+        "name": "SofiaPage-02UZeiQM.js",
+        "size_kb": 42.46
+      },
+      {
+        "name": "vendor-query-BY_6lxv0.js",
+        "size_kb": 39.58
+      },
+      {
+        "name": "NutritionTrackingPage-D9ti1sVM.js",
+        "size_kb": 35.43
+      },
+      {
+        "name": "GoogleFitPremiumDashboard-DB3hzGxD.js",
+        "size_kb": 35.15
+      },
+      {
+        "name": "DrVitalEnhancedPage-Dg0aUxR9.js",
+        "size_kb": 32.61
+      },
+      {
+        "name": "GoalsPage-DtzPbPgZ.js",
+        "size_kb": 32.53
+      },
+      {
+        "name": "vendor-router-BYREgJ9v.js",
+        "size_kb": 32.08
+      },
+      {
+        "name": "ChallengeDetailPage-Cfi1xp4_.js",
+        "size_kb": 30.02
+      },
+      {
+        "name": "vendor-date-BwQxhbJQ.js",
+        "size_kb": 25.6
+      },
+      {
+        "name": "MedicalDocumentsSection-CS3g3WYk.js",
+        "size_kb": 24.51
+      },
+      {
+        "name": "AnamnesisPage-dHu_QDU0.js",
+        "size_kb": 22.35
+      },
+      {
+        "name": "GoalsPageV2-Cua_aHaS.js",
+        "size_kb": 21.84
+      },
+      {
+        "name": "purify.es-ByMGxX7-.js",
+        "size_kb": 21.06
+      },
+      {
+        "name": "ChallengesV2Page-C9mgDMJO.js",
+        "size_kb": 20.3
+      },
+      {
+        "name": "UserProfile-CA1aHyoC.js",
+        "size_kb": 19.75
+      },
+      {
+        "name": "DailyMissionsLight-CQ1qKe3d.js",
+        "size_kb": 17.57
+      },
+      {
+        "name": "useNutritionTracking-D1AvQgwA.js",
+        "size_kb": 17.33
+      },
+      {
+        "name": "DrVitalDashboard-BIEf7t3U.js",
+        "size_kb": 15.52
+      },
+      {
+        "name": "GoogleFitPage-DdOHf2AA.js",
+        "size_kb": 15.23
+      },
+      {
+        "name": "useWeightMeasurement-CYQUexVf.js",
+        "size_kb": 11.94
+      },
+      {
+        "name": "SystemHealth-DLu_utUq.js",
+        "size_kb": 11.86
+      },
+      {
+        "name": "WhatsAppNotificationSettings-Jj1HoguS.js",
+        "size_kb": 11.78
+      },
+      {
+        "name": "confetti.module-Bu62fHyK.js",
+        "size_kb": 10.33
+      },
+      {
+        "name": "GoogleFitTestPage-CyCLD-cE.js",
+        "size_kb": 8.91
+      },
+      {
+        "name": "index-CszlGvMa.js",
+        "size_kb": 8.84
+      },
+      {
+        "name": "PaymentPlans-CjIPI7Xj.js",
+        "size_kb": 8.82
+      },
+      {
+        "name": "UserSessionsCompact-DedsXFWj.js",
+        "size_kb": 7.66
+      },
+      {
+        "name": "VisualEffectsManager-B0sOvhlF.js",
+        "size_kb": 7.33
+      },
+      {
+        "name": "Install-Bz-xxId8.js",
+        "size_kb": 6.7
+      },
+      {
+        "name": "CoursePlatform-Cxl5OXjU.js",
+        "size_kb": 6.26
+      },
+      {
+        "name": "UserDrVitalPage-CVa0yHgQ.js",
+        "size_kb": 6.19
+      },
+      {
+        "name": "LayoutPreferencesModal-DSAXIOh2.js",
+        "size_kb": 6.06
+      },
+      {
+        "name": "useGamificationUnified-BXclIFS6.js",
+        "size_kb": 5.98
+      },
+      {
+        "name": "workbox-window.prod.es5-vqzQaGvo.js",
+        "size_kb": 5.58
+      },
+      {
+        "name": "PublicPostPage-N8tTMT9j.js",
+        "size_kb": 4.86
+      },
+      {
+        "name": "useGoogleFitData-B5s6caSl.js",
+        "size_kb": 4.27
+      },
+      {
+        "name": "PublicReport-Ct_d0IvZ.js",
+        "size_kb": 4.25
+      },
+      {
+        "name": "useExerciseProgram-CRtT7Sn_.js",
+        "size_kb": 4.16
+      },
+      {
+        "name": "GoogleFitCallback-D6lMMZxI.js",
+        "size_kb": 3.45
+      },
+      {
+        "name": "useUserDataCache-DUAKofbA.js",
+        "size_kb": 3.24
+      },
+      {
+        "name": "CharacterImage-DBgFlssZ.js",
+        "size_kb": 2.68
+      },
+      {
+        "name": "useUserProgressStats-THmGFhpM.js",
+        "size_kb": 2.44
+      },
+      {
+        "name": "AutoLoginPage-n3pMXnC4.js",
+        "size_kb": 2.36
+      },
+      {
+        "name": "sheet-ftztSBYR.js",
+        "size_kb": 2.24
+      },
+      {
+        "name": "SimpleWeightForm-DOIpw9En.js",
+        "size_kb": 1.82
+      },
+      {
+        "name": "exporters-CqOl019t.js",
+        "size_kb": 1.56
+      },
+      {
+        "name": "web-D8L5FnoA.js",
+        "size_kb": 1.25
+      },
+      {
+        "name": "virtual_pwa-register-Bg2sovgZ.js",
+        "size_kb": 1.05
+      },
+      {
+        "name": "alert-CHTzLEG6.js",
+        "size_kb": 0.97
+      },
+      {
+        "name": "useSafeAnimation-BGemd3Nh.js",
+        "size_kb": 0.96
+      },
+      {
+        "name": "radio-group-CoGTavoC.js",
+        "size_kb": 0.96
+      },
+      {
+        "name": "WhatsAppSettingsModal-BD5eGEzK.js",
+        "size_kb": 0.91
+      },
+      {
+        "name": "switch-Bh0zCJV_.js",
+        "size_kb": 0.83
+      },
+      {
+        "name": "popover-Cpbjcm9Y.js",
+        "size_kb": 0.79
+      },
+      {
+        "name": "slider-C1KDHBTY.js",
+        "size_kb": 0.77
+      },
+      {
+        "name": "ProgressPage-DJQ55Mj2.js",
+        "size_kb": 0.76
+      },
+      {
+        "name": "SofiaNutricionalPage-HpfQLFjX.js",
+        "size_kb": 0.72
+      },
+      {
+        "name": "textarea-Cj2JBRJ0.js",
+        "size_kb": 0.55
+      },
+      {
+        "name": "skeleton-BVsiPgIj.js",
+        "size_kb": 0.55
+      },
+      {
+        "name": "useUserGender-CU-kF9ue.js",
+        "size_kb": 0.54
+      },
+      {
+        "name": "useAdminMode-Yy7Pb17U.js",
+        "size_kb": 0.52
+      },
+      {
+        "name": "progress-kWgvkHXU.js",
+        "size_kb": 0.46
+      },
+      {
+        "name": "supabase-helpers-DwS0jNMf.js",
+        "size_kb": 0.1
+      },
+      {
+        "name": "vendor-forms-DVV0Oaho.js",
+        "size_kb": 0.04
+      }
+    ],
+    "largest_chunks": [
+      {
+        "name": "ProfessionalEvaluationPage-BSYIELsF.js",
+        "size_kb": 691.34
+      },
+      {
+        "name": "AdminPage-CDlw3DMg.js",
+        "size_kb": 489.1
+      },
+      {
+        "name": "vendor-charts-3N-3FZ_O.js",
+        "size_kb": 370.09
+      },
+      {
+        "name": "jspdf.es.min-bY8YQSVR.js",
+        "size_kb": 344.06
+      },
+      {
+        "name": "index-gPyvl-0w.js",
+        "size_kb": 232.31
+      },
+      {
+        "name": "HealthFeedPage-CjQ-XDZi.js",
+        "size_kb": 199.55
+      },
+      {
+        "name": "html2canvas.esm-BpODSdIb.js",
+        "size_kb": 196.13
+      },
+      {
+        "name": "ExerciseDashboard-BYMFXjZ9.js",
+        "size_kb": 190.88
+      },
+      {
+        "name": "SofiaNutricionalSection-BINvRWHh.js",
+        "size_kb": 174.02
+      },
+      {
+        "name": "vendor-supabase-DD20C1V1.js",
+        "size_kb": 163.98
+      }
+    ]
+  },
+  "specs": [
+    {
+      "name": "camera-workout-pose-estimation",
+      "files": 3,
+      "completed_tasks": 27,
+      "total_tasks": 58,
+      "progress": "46.6%"
+    },
+    {
+      "name": "maxnutrition-refactoring",
+      "files": 15,
+      "completed_tasks": 119,
+      "total_tasks": 124,
+      "progress": "96.0%"
+    },
+    {
+      "name": "smart-supplement-recommendations",
+      "files": 3,
+      "completed_tasks": 24,
+      "total_tasks": 38,
+      "progress": "63.2%"
+    },
+    {
+      "name": "real-heart-monitoring",
+      "files": 3,
+      "completed_tasks": 32,
+      "total_tasks": 32,
+      "progress": "100.0%"
+    },
+    {
+      "name": "character-menu-selector",
+      "files": 3,
+      "completed_tasks": 28,
+      "total_tasks": 28,
+      "progress": "100.0%"
+    },
+    {
+      "name": "theme-color-consistency",
+      "files": 3,
+      "completed_tasks": 9,
+      "total_tasks": 57,
+      "progress": "15.8%"
+    },
+    {
+      "name": "whatsapp-hybrid-integration",
+      "files": 3,
+      "completed_tasks": 57,
+      "total_tasks": 63,
+      "progress": "90.5%"
+    },
+    {
+      "name": "advanced-exercise-system",
+      "files": 3,
+      "completed_tasks": 37,
+      "total_tasks": 90,
+      "progress": "41.1%"
+    },
+    {
+      "name": "dr-vital-revolution",
+      "files": 3,
+      "completed_tasks": 62,
+      "total_tasks": 65,
+      "progress": "95.4%"
+    }
+  ],
+  "tests": {
+    "total_files": 36,
+    "property_tests": 23,
+    "unit_tests": 13,
+    "integration_tests": 0,
+    "test_directories": []
+  },
+  "supabase_functions": [
+    {
+      "name": "generate-coaching-report",
+      "lines": 292
+    },
+    {
+      "name": "vision-api",
+      "lines": 132
+    },
+    {
+      "name": "activate-ai",
+      "lines": 233
+    },
+    {
+      "name": "saboteur-html-report",
+      "lines": 293
+    },
+    {
+      "name": "enrich-food-data",
+      "lines": 185
+    },
+    {
+      "name": "nutrition-calc-deterministic",
+      "lines": 343
+    },
+    {
+      "name": "check-gender-issue",
+      "lines": 65
+    },
+    {
+      "name": "dr-vital-weekly-report",
+      "lines": 415
+    },
+    {
+      "name": "whatsapp-smart-reminders",
+      "lines": 290
+    },
+    {
+      "name": "analyze-medical-exam",
+      "lines": 4499
+    },
+    {
+      "name": "confirm-food-analysis",
+      "lines": 132
+    },
+    {
+      "name": "generate-user-biography",
+      "lines": 161
+    },
+    {
+      "name": "cleanup-medical-images",
+      "lines": 96
+    },
+    {
+      "name": "whatsapp-saboteur-result",
+      "lines": 240
+    },
+    {
+      "name": "whatsapp-goal-reminders",
+      "lines": 288
+    },
+    {
+      "name": "nutrition-ai-insights",
+      "lines": 219
+    },
+    {
+      "name": "whatsapp-habits-analysis",
+      "lines": 291
+    },
+    {
+      "name": "whatsapp-health-check",
+      "lines": 173
+    },
+    {
+      "name": "enrich-sofia-analysis",
+      "lines": 397
+    },
+    {
+      "name": "detect-image-type",
+      "lines": 171
+    },
+    {
+      "name": "fix-storage",
+      "lines": 101
+    },
+    {
+      "name": "check-user-data-completeness",
+      "lines": 134
+    },
+    {
+      "name": "whatsapp-daily-motivation",
+      "lines": 349
+    },
+    {
+      "name": "nutrition-calc",
+      "lines": 318
+    },
+    {
+      "name": "whatsapp-ai-assistant",
+      "lines": 1118
+    },
+    {
+      "name": "test-webhook",
+      "lines": 169
+    },
+    {
+      "name": "unified-ai-assistant",
+      "lines": 433
+    },
+    {
+      "name": "google-fit-hourly-sync",
+      "lines": 64
+    },
+    {
+      "name": "whatsapp-nutrition-check",
+      "lines": 262
+    },
+    {
+      "name": "google-fit-token",
+      "lines": 254
+    },
+    {
+      "name": "whatsapp-celebration",
+      "lines": 236
+    },
+    {
+      "name": "generate-human-message",
+      "lines": 224
+    },
+    {
+      "name": "nutrition-alias-admin",
+      "lines": 62
+    },
+    {
+      "name": "send-meal-plan-whatsapp",
+      "lines": 229
+    },
+    {
+      "name": "google-fit-callback",
+      "lines": 399
+    },
+    {
+      "name": "mealie-real",
+      "lines": 1020
+    },
+    {
+      "name": "whatsapp-send-interactive",
+      "lines": 312
+    },
+    {
+      "name": "check-subscription",
+      "lines": 120
+    },
+    {
+      "name": "bulk-queue-leads",
+      "lines": 135
+    },
+    {
+      "name": "fix-ai-configurations",
+      "lines": 145
+    },
+    {
+      "name": "fix-handle-new-user",
+      "lines": 102
+    },
+    {
+      "name": "sofia-enhanced-memory",
+      "lines": 829
+    },
+    {
+      "name": "whatsapp-medical-handler",
+      "lines": 333
+    },
+    {
+      "name": "whatsapp-webhook-unified",
+      "lines": 909
+    },
+    {
+      "name": "nutrition-daily-summary",
+      "lines": 377
+    },
+    {
+      "name": "google-fit-sync",
+      "lines": 675
+    },
+    {
+      "name": "premium-medical-report",
+      "lines": 281
+    },
+    {
+      "name": "goal-notifications",
+      "lines": 159
+    },
+    {
+      "name": "food-analysis",
+      "lines": 591
+    },
+    {
+      "name": "create-checkout",
+      "lines": 74
+    },
+    {
+      "name": "send-lead-webhooks",
+      "lines": 212
+    },
+    {
+      "name": "cache-manager",
+      "lines": 191
+    },
+    {
+      "name": "send-email",
+      "lines": 107
+    },
+    {
+      "name": "whatsapp-generate-template",
+      "lines": 225
+    },
+    {
+      "name": "create-sirlene",
+      "lines": 82
+    },
+    {
+      "name": "whatsapp-mission-complete",
+      "lines": 292
+    },
+    {
+      "name": "whatsapp-welcome",
+      "lines": 134
+    },
+    {
+      "name": "fix-stuck-documents",
+      "lines": 148
+    },
+    {
+      "name": "generate-ai-workout",
+      "lines": 223
+    },
+    {
+      "name": "whatsapp-nutrition-webhook",
+      "lines": 749
+    },
+    {
+      "name": "sofia-text-analysis",
+      "lines": 294
+    },
+    {
+      "name": "get-public-report",
+      "lines": 95
+    },
+    {
+      "name": "interpret-user-intent",
+      "lines": 283
+    },
+    {
+      "name": "cleanup-scheduler",
+      "lines": 174
+    },
+    {
+      "name": "add-google-fit-columns",
+      "lines": 77
+    },
+    {
+      "name": "medical-batch-timeout",
+      "lines": 147
+    },
+    {
+      "name": "generate-medical-report",
+      "lines": 324
+    },
+    {
+      "name": "dr-vital-chat",
+      "lines": 487
+    },
+    {
+      "name": "enhanced-gpt-chat",
+      "lines": 116
+    },
+    {
+      "name": "rate-limiter",
+      "lines": 194
+    },
+    {
+      "name": "improve-exercises",
+      "lines": 173
+    },
+    {
+      "name": "evolution-send-message",
+      "lines": 296
+    },
+    {
+      "name": "create-asaas-payment",
+      "lines": 137
+    },
+    {
+      "name": "sofia-deterministic",
+      "lines": 485
+    },
+    {
+      "name": "fix-storage-rls",
+      "lines": 113
+    },
+    {
+      "name": "apply-robust-base",
+      "lines": 309
+    },
+    {
+      "name": "dr-vital-notifications",
+      "lines": 311
+    },
+    {
+      "name": "customer-portal",
+      "lines": 69
+    },
+    {
+      "name": "whatsapp-weekly-report",
+      "lines": 569
+    },
+    {
+      "name": "sofia-image-analysis",
+      "lines": 1981
+    },
+    {
+      "name": "whatsapp-test-interactive",
+      "lines": 166
+    },
+    {
+      "name": "finalize-medical-document",
+      "lines": 1092
+    },
+    {
+      "name": "generate-meal-plan-taco",
+      "lines": 138
+    },
+    {
+      "name": "nutrition-planner",
+      "lines": 342
+    },
+    {
+      "name": "repair-auth-metadata",
+      "lines": 148
+    },
+    {
+      "name": "seed-standard-recipes",
+      "lines": 103
+    },
+    {
+      "name": "google-fit-ai-analysis",
+      "lines": 273
+    },
+    {
+      "name": "n8n-weekly-whatsapp-report",
+      "lines": 212
+    },
+    {
+      "name": "dr-vital-enhanced",
+      "lines": 546
+    }
+  ],
+  "component_size_distribution": {
+    "0-100": 144,
+    "101-200": 178,
+    "201-300": 173,
+    "301-400": 107,
+    "401-500": 53,
+    "501-750": 57,
+    "751-1000": 23,
+    "1000+": 7
+  }
+}

@@ -141,7 +141,7 @@ export const ModuleModal = ({ isOpen, onClose, onSubmit, courses }: ModuleModalP
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="bg-gray-900 border-gray-700 text-white max-w-2xl">
+      <DialogContent className="bg-card border-border text-foreground max-w-2xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl font-bold">
             <FileText className="h-6 w-6 text-blue-500" />
@@ -152,7 +152,7 @@ export const ModuleModal = ({ isOpen, onClose, onSubmit, courses }: ModuleModalP
         <div className="space-y-6 py-4">
           {/* Título do Módulo */}
           <div className="space-y-2">
-            <Label htmlFor="title" className="text-sm font-medium text-gray-300">
+            <Label htmlFor="title" className="text-sm font-medium text-muted-foreground">
               📝 Título do Módulo
             </Label>
             <Input
@@ -160,7 +160,7 @@ export const ModuleModal = ({ isOpen, onClose, onSubmit, courses }: ModuleModalP
               value={formData.title}
               onChange={(e) => handleInputChange("title", e.target.value)}
               placeholder="Digite o título do módulo..."
-              className="bg-gray-800 border-gray-600 text-white placeholder-gray-400"
+              className="bg-muted border-border text-foreground placeholder:text-muted-foreground"
             />
             {errors.title && (
               <div className="flex items-center gap-1 text-red-400 text-sm">
@@ -175,19 +175,19 @@ export const ModuleModal = ({ isOpen, onClose, onSubmit, courses }: ModuleModalP
           {/* Curso e Ordem */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="course_id" className="text-sm font-medium text-gray-300">
+              <Label htmlFor="course_id" className="text-sm font-medium text-muted-foreground">
                 📚 Curso
               </Label>
               <Select 
                 value={formData.course_id} 
                 onValueChange={(value) => handleInputChange("course_id", value)}
               >
-                <SelectTrigger className="bg-gray-800 border-gray-600 text-white">
+                <SelectTrigger className="bg-muted border-border text-foreground">
                   <SelectValue placeholder="Selecione um curso" />
                 </SelectTrigger>
-                <SelectContent className="bg-gray-800 border-gray-600">
+                <SelectContent className="bg-popover border-border">
                   {courses.map((course) => (
-                    <SelectItem key={course.id} value={course.id} className="text-white hover:bg-gray-700">
+                    <SelectItem key={course.id} value={course.id} className="text-foreground hover:bg-muted">
                       {course.title}
                     </SelectItem>
                   ))}
@@ -202,7 +202,7 @@ export const ModuleModal = ({ isOpen, onClose, onSubmit, courses }: ModuleModalP
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="order_index" className="text-sm font-medium text-gray-300">
+              <Label htmlFor="order_index" className="text-sm font-medium text-muted-foreground">
                 🔢 Ordem
               </Label>
               <Input
@@ -212,7 +212,7 @@ export const ModuleModal = ({ isOpen, onClose, onSubmit, courses }: ModuleModalP
                 onChange={(e) => handleInputChange("order_index", parseInt(e.target.value) || 1)}
                 placeholder="1"
                 min="1"
-                className="bg-gray-800 border-gray-600 text-white"
+                className="bg-muted border-border text-foreground"
               />
               {errors.order_index && (
                 <div className="flex items-center gap-1 text-red-400 text-sm">
@@ -225,7 +225,7 @@ export const ModuleModal = ({ isOpen, onClose, onSubmit, courses }: ModuleModalP
 
           {/* Imagem de Capa */}
           <div className="space-y-2">
-            <Label htmlFor="imageUrl" className="text-sm font-medium text-gray-300">
+            <Label htmlFor="imageUrl" className="text-sm font-medium text-muted-foreground">
               🖼️ URL da Imagem de Capa
             </Label>
             <Input
@@ -234,19 +234,19 @@ export const ModuleModal = ({ isOpen, onClose, onSubmit, courses }: ModuleModalP
               value={imageUrl}
               onChange={(e) => setImageUrl(e.target.value)}
               placeholder="https://exemplo.com/imagem.jpg"
-              className="bg-gray-800 border-gray-600 text-white placeholder-gray-400"
+              className="bg-muted border-border text-foreground placeholder:text-muted-foreground"
             />
-            <p className="text-gray-400 text-xs">
+            <p className="text-muted-foreground text-xs">
               URL direta da imagem para ser usada como capa do módulo
             </p>
             <div className="mt-2">
-              <Label className="text-sm font-medium text-gray-300">ou Upload de arquivo</Label>
+              <Label className="text-sm font-medium text-muted-foreground">ou Upload de arquivo</Label>
               <Input type="file" accept="image/*" onChange={(e) => setFile(e.target.files?.[0] || null)} />
             </div>
             {imageUrl && (
               <div className="mt-2">
-                <p className="text-sm text-gray-300 mb-2">Preview:</p>
-                <div className="w-32 h-20 bg-gray-800 rounded-lg overflow-hidden border border-gray-600">
+                <p className="text-sm text-muted-foreground mb-2">Preview:</p>
+                <div className="w-32 h-20 bg-muted rounded-lg overflow-hidden border border-border">
                   <img 
                     src={imageUrl} 
                     alt="Preview" 
@@ -260,7 +260,7 @@ export const ModuleModal = ({ isOpen, onClose, onSubmit, courses }: ModuleModalP
                       }
                     }}
                   />
-                  <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs" style={{display: 'none'}}>
+                  <div className="w-full h-full flex items-center justify-center text-muted-foreground text-xs" style={{display: 'none'}}>
                     Erro ao carregar
                   </div>
                 </div>
@@ -270,7 +270,7 @@ export const ModuleModal = ({ isOpen, onClose, onSubmit, courses }: ModuleModalP
 
           {/* Módulo Ativo */}
           <div className="flex items-center justify-between">
-            <Label htmlFor="is_active" className="text-sm font-medium text-gray-300">
+            <Label htmlFor="is_active" className="text-sm font-medium text-muted-foreground">
               ✅ Módulo Ativo
             </Label>
             <Switch
@@ -283,11 +283,11 @@ export const ModuleModal = ({ isOpen, onClose, onSubmit, courses }: ModuleModalP
 
           {/* Informações do Curso Selecionado */}
           {formData.course_id && (
-            <div className="p-4 bg-gray-800 rounded-lg border border-gray-600">
-              <div className="flex items-center gap-2 text-sm text-gray-300">
+            <div className="p-4 bg-muted rounded-lg border border-border">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <CheckCircle className="h-4 w-4 text-green-400" />
                 <span>Módulo será adicionado ao curso: </span>
-                <span className="font-medium text-white">
+                <span className="font-medium text-foreground">
                   {courses.find(c => c.id === formData.course_id)?.title}
                 </span>
               </div>
@@ -300,7 +300,7 @@ export const ModuleModal = ({ isOpen, onClose, onSubmit, courses }: ModuleModalP
             variant="outline"
             onClick={handleClose}
             disabled={isLoading}
-            className="border-gray-600 text-white hover:bg-gray-800"
+            className="border-border text-foreground hover:bg-muted"
           >
             <X className="h-4 w-4 mr-2" />
             Cancelar

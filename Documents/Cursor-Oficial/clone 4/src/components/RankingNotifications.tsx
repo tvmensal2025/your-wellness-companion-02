@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Trophy, Star, ArrowUp, ArrowDown, Medal, Crown } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
@@ -15,16 +15,17 @@ interface RankingNotification {
 export const RankingNotifications = () => {
   const [notifications, setNotifications] = useState<RankingNotification[]>([]);
   const { currentUserRanking } = useUserPoints();
-  const [previousRanking, setPreviousRanking] = useState(currentUserRanking?.position);
+  const previousRankingRef = useRef<number | undefined>(currentUserRanking?.position);
 
   useEffect(() => {
-    if (!currentUserRanking || !previousRanking) {
-      setPreviousRanking(currentUserRanking?.position);
+    if (!currentUserRanking) {
       return;
     }
 
+    const previousRanking = previousRankingRef.current;
+
     // Detectar mudanças de posição
-    if (currentUserRanking.position !== previousRanking) {
+    if (previousRanking !== undefined && currentUserRanking.position !== previousRanking) {
       const improved = currentUserRanking.position < previousRanking;
       const notification: RankingNotification = {
         id: Date.now().toString(),
@@ -48,8 +49,8 @@ export const RankingNotifications = () => {
       }
     }
 
-    setPreviousRanking(currentUserRanking.position);
-  }, [currentUserRanking?.position]);
+    previousRankingRef.current = currentUserRanking.position;
+  }, [currentUserRanking]);
 
   const addNotification = (notification: RankingNotification) => {
     setNotifications(prev => [notification, ...prev].slice(0, 5)); // Manter apenas as 5 últimas

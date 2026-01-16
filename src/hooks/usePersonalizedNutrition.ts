@@ -78,7 +78,8 @@ export const usePersonalizedNutrition = (userId: string | undefined) => {
         .select('*')
         .eq('user_id', userId)
         .gte('created_at', `${today}T00:00:00`)
-        .lte('created_at', `${today}T23:59:59`);
+        .lte('created_at', `${today}T23:59:59`)
+        .limit(50);
 
       // Extrair valores com fallbacks
       const peso = (weightData as any)?.[0]?.weight_kg || (physical as any)?.peso_atual_kg || 70;

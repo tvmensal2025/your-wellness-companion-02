@@ -209,7 +209,8 @@ export async function checkAndUnlockAchievements(
   const { data: unlockedData } = await (supabase
     .from('health_achievements' as any)
     .select('achievement_key')
-    .eq('user_id', userId)) as { data: { achievement_key: string }[] | null };
+    .eq('user_id', userId)
+    .limit(100)) as { data: { achievement_key: string }[] | null };
   
   const unlockedKeys = new Set((unlockedData || []).map(a => a.achievement_key));
   
@@ -272,7 +273,8 @@ export async function getAllAchievements(userId: string): Promise<Achievement[]>
   const { data: unlockedData } = await (supabase
     .from('health_achievements' as any)
     .select('*')
-    .eq('user_id', userId)) as { data: HealthAchievementRow[] | null };
+    .eq('user_id', userId)
+    .limit(100)) as { data: HealthAchievementRow[] | null };
   
   const unlockedMap = new Map(
     (unlockedData || []).map(a => [a.achievement_key, a])
@@ -304,7 +306,8 @@ export async function getUnlockedAchievements(userId: string): Promise<Achieveme
     .from('health_achievements' as any)
     .select('*')
     .eq('user_id', userId)
-    .order('unlocked_at', { ascending: false })) as { data: HealthAchievementRow[] | null; error: any };
+    .order('unlocked_at', { ascending: false })
+    .limit(100)) as { data: HealthAchievementRow[] | null; error: any };
   
   if (error) throw error;
   
@@ -368,10 +371,10 @@ async function getUserStats(userId: string): Promise<UserStats> {
     healthScoresResult,
   ] = await Promise.all([
     supabase.from('health_streaks' as any).select('*').eq('user_id', userId).single() as unknown as Promise<{ data: StreakData | null; error: any }>,
-    supabase.from('health_missions' as any).select('id').eq('user_id', userId).eq('is_completed', true) as unknown as Promise<{ data: { id: string }[] | null; error: any }>,
-    supabase.from('health_missions' as any).select('id').eq('user_id', userId).eq('type', 'boss_battle').eq('is_completed', true) as unknown as Promise<{ data: { id: string }[] | null; error: any }>,
-    supabase.from('food_analysis' as any).select('id').eq('user_id', userId) as unknown as Promise<{ data: { id: string }[] | null; error: any }>,
-    supabase.from('workout_sessions' as any).select('id').eq('user_id', userId) as unknown as Promise<{ data: { id: string }[] | null; error: any }>,
+    supabase.from('health_missions' as any).select('id').eq('user_id', userId).eq('is_completed', true).limit(500) as unknown as Promise<{ data: { id: string }[] | null; error: any }>,
+    supabase.from('health_missions' as any).select('id').eq('user_id', userId).eq('type', 'boss_battle').eq('is_completed', true).limit(100) as unknown as Promise<{ data: { id: string }[] | null; error: any }>,
+    supabase.from('food_analysis' as any).select('id').eq('user_id', userId).limit(1000) as unknown as Promise<{ data: { id: string }[] | null; error: any }>,
+    supabase.from('workout_sessions' as any).select('id').eq('user_id', userId).limit(500) as unknown as Promise<{ data: { id: string }[] | null; error: any }>,
     supabase.from('health_scores' as any).select('score').eq('user_id', userId).order('calculated_at', { ascending: false }).limit(30) as unknown as Promise<{ data: HealthScoreData[] | null; error: any }>,
   ]);
 

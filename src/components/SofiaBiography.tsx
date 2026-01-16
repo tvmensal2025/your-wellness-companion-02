@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { User } from '@supabase/supabase-js';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -22,7 +22,7 @@ export const SofiaBiography = ({ user }: SofiaBiographyProps) => {
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
 
-  const fetchBiography = async () => {
+  const fetchBiography = useCallback(async () => {
     if (!user?.id) return;
 
     try {
@@ -36,7 +36,7 @@ export const SofiaBiography = ({ user }: SofiaBiographyProps) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.id]);
 
   const generateBiography = async () => {
     if (!user?.id) return;
@@ -65,7 +65,7 @@ export const SofiaBiography = ({ user }: SofiaBiographyProps) => {
 
   useEffect(() => {
     fetchBiography();
-  }, [user?.id]);
+  }, [fetchBiography]);
 
   if (loading) {
     return (

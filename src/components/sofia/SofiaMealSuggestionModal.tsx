@@ -119,13 +119,13 @@ IMPORTANTE: Não inclua texto fora do JSON. Não use markdown.`;
   };
 
   const tryParseJson = (text: string): any | null => {
-    try { return JSON.parse(text); } catch {}
+    try { return JSON.parse(text); } catch (e) { /* Invalid JSON, try extraction */ }
     // tenta extrair o maior bloco JSON
     const start = text.indexOf('{');
     const end = text.lastIndexOf('}');
     if (start >= 0 && end > start) {
       const sub = text.slice(start, end + 1);
-      try { return JSON.parse(sub); } catch {}
+      try { return JSON.parse(sub); } catch (e) { /* Extraction failed */ }
     }
     return null;
   };

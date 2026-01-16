@@ -20,7 +20,8 @@ export interface ExerciseChallenge {
   challengedAvatar?: string;
   exerciseName: string;
   exerciseEmoji: string;
-  challengeType: 'max_reps' | 'first_to' | 'timed';
+  challengeType: 'max_reps' | 'first_to' | 'timed' | 'custom';
+  customTypeDescription?: string;
   targetValue?: number;
   durationSeconds: number;
   challengerProgress: number;
@@ -45,9 +46,10 @@ export interface CreateChallengeParams {
   challengedId: string;
   exerciseName: string;
   exerciseEmoji?: string;
-  challengeType: 'max_reps' | 'first_to' | 'timed';
+  challengeType: 'max_reps' | 'first_to' | 'timed' | 'custom';
   targetValue?: number;
   durationSeconds?: number;
+  customTypeDescription?: string;
 }
 
 // ============================================
@@ -93,6 +95,7 @@ export function useExerciseChallenges(userId?: string) {
           exerciseName: c.exercise_name,
           exerciseEmoji: c.exercise_emoji || '💪',
           challengeType: c.challenge_type,
+          customTypeDescription: c.custom_type_description,
           targetValue: c.target_value,
           durationSeconds: c.duration_seconds || 60,
           challengerProgress: c.challenger_progress || 0,
@@ -135,6 +138,7 @@ export function useExerciseChallenges(userId?: string) {
           exercise_name: params.exerciseName,
           exercise_emoji: params.exerciseEmoji || '💪',
           challenge_type: params.challengeType,
+          custom_type_description: params.customTypeDescription,
           target_value: params.targetValue,
           duration_seconds: params.durationSeconds || 60,
         })

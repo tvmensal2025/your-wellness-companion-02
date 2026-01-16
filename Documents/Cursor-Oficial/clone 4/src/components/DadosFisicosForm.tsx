@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useRegistrationSystem } from '@/hooks/useRegistrationSystem';
 import { supabase } from '@/integrations/supabase/client';
@@ -15,18 +15,24 @@ interface PhysicalFormData {
   metaPeso?: number;
 }
 
+interface ExistingDataType {
+  peso_atual_kg?: number;
+  altura_cm?: number;
+  circunferencia_abdominal_cm?: number;
+  data_nascimento?: string;
+  sexo?: string;
+  meta_peso_kg?: number;
+  fullName?: string;
+}
+
 export const DadosFisicosForm = () => {
   const { user } = useAuth();
   const { executeCompleteRegistration, executeHealthCheck, isSubmitting } = useRegistrationSystem();
-  const [existingData, setExistingData] = useState<any>(null);
+  const [existingData, setExistingData] = useState<ExistingDataType | null>(null);
   const [hasExistingData, setHasExistingData] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    checkExistingData();
-  }, [user]);
-
-  const checkExistingData = async () => {
+  const checkExistingData = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -56,7 +62,11 @@ export const DadosFisicosForm = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    checkExistingData();
+  }, [checkExistingData]);
 
   const handleInitialSubmit = async (data: PhysicalFormData) => {
     if (!user) {

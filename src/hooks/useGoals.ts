@@ -22,7 +22,8 @@ export const useGoals = () => {
         .from("user_goals")
         .select("*")
         .eq("user_id", user.id)
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })
+        .limit(100);
 
       if (error) throw error;
       return data;
@@ -132,7 +133,8 @@ export const useGoals = () => {
       const { data, error } = await supabase
         .from("user_goals")
         .select("status, estimated_points")
-        .eq("user_id", user.id);
+        .eq("user_id", user.id)
+        .limit(200);
 
       if (error) throw error;
 

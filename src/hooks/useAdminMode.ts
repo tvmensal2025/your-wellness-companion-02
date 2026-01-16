@@ -25,12 +25,18 @@ export const useAdminMode = (user: User | null) => {
     (async () => {
       try {
         const { data, error } = await supabase.rpc("is_admin_user");
+        
+        if (error) {
+          console.error('useAdminMode: Erro na RPC:', error);
+        }
+        
         const ok = !error && data === true;
 
         if (cancelled) return;
         setIsAdmin(ok);
         setAdminModeEnabled(ok);
-      } catch {
+      } catch (err) {
+        console.error('useAdminMode: Exception:', err);
         if (cancelled) return;
         setIsAdmin(false);
         setAdminModeEnabled(false);

@@ -73,7 +73,9 @@ export function loadPreference(): CharacterId | null {
     if (!isValidCharacterId(saved)) {
       try {
         localStorage.removeItem(STORAGE_KEY);
-      } catch {}
+      } catch (e) {
+        // Silently ignore localStorage errors (e.g., private browsing mode)
+      }
       return null;
     }
     

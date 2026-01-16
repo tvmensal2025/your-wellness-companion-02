@@ -296,7 +296,7 @@ const AuthPage = () => {
     }
 
     // Validar formato do telefone (aceita vários formatos)
-    const phoneRegex = /^[\d\s\(\)\-\+]+$/;
+    const phoneRegex = /^[\d\s()+-]+$/;
     if (!phoneRegex.test(signupData.phone) || signupData.phone.replace(/\D/g, '').length < 10) {
       toast({
         title: "Telefone inválido",

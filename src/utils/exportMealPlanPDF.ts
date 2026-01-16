@@ -167,7 +167,7 @@ export async function exportMealPlanToPDF(plan: MealPlanForPDF) {
   try {
     const spec = 'qrcode';
     // Evita falha de análise do Vite em ambientes onde 'qrcode' não está instalado
-    // @ts-ignore
+    // @ts-expect-error - Dynamic import with vite-ignore directive (types may not be available)
     const mod: any = await import(/* @vite-ignore */ spec).catch(() => null);
     if (mod) {
       const QR = mod.default ?? mod;

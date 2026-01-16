@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { Scale, Edit3, LineChart, BarChart3, Target } from 'lucide-react';
 import SimpleWeightForm from '../weighing/SimpleWeightForm';
-import { XiaomiScaleFlow } from '../XiaomiScaleFlow';
+
 import { XiaomiScaleConnection } from '../XiaomiScaleConnection';
 import { XiaomiScaleTroubleshooter } from '../XiaomiScaleTroubleshooter';
 import PersonagemCorporal3D from '../PersonagemCorporal3D';
@@ -198,7 +198,6 @@ export const ProfessionalWeighingSystem: React.FC<ProfessionalWeighingSystemProp
                     Conecte sua balança Xiaomi para pesagem automática e análise completa
                   </p>
                   <div className="grid gap-4 sm:gap-6">
-                    <XiaomiScaleFlow />
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                       <XiaomiScaleConnection />
                       <XiaomiScaleTroubleshooter />

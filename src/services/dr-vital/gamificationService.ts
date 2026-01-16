@@ -106,7 +106,8 @@ export async function generateDailyMissions(userId: string): Promise<HealthMissi
     .select('*')
     .eq('user_id', userId)
     .eq('type', 'daily')
-    .gte('created_at', new Date().toISOString().split('T')[0]) as unknown as { data: HealthMissionRow[] | null };
+    .gte('created_at', new Date().toISOString().split('T')[0])
+    .limit(10) as unknown as { data: HealthMissionRow[] | null };
   
   if (existingMissions && existingMissions.length > 0) {
     return existingMissions.map(rowToMission);
@@ -177,7 +178,8 @@ export async function getActiveMissions(userId: string): Promise<HealthMission[]
     .select('*')
     .eq('user_id', userId)
     .eq('is_completed', false)
-    .order('created_at', { ascending: false }) as unknown as { data: HealthMissionRow[] | null };
+    .order('created_at', { ascending: false })
+    .limit(50) as unknown as { data: HealthMissionRow[] | null };
   
   return (data || []).map(rowToMission);
 }
@@ -224,7 +226,8 @@ export async function checkDailyCompletion(userId: string): Promise<boolean> {
     .select('is_completed')
     .eq('user_id', userId)
     .eq('type', 'daily')
-    .gte('created_at', today) as unknown as { data: { is_completed: boolean }[] | null };
+    .gte('created_at', today)
+    .limit(10) as unknown as { data: { is_completed: boolean }[] | null };
   
   if (!missions || missions.length === 0) return false;
   return missions.every(m => m.is_completed);

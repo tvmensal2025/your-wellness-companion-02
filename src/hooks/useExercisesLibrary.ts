@@ -166,7 +166,7 @@ function generatePlanFromExercises(
   );
 
   return split.days.map((dayConfig) => {
-    let dayExercises: Exercise[] = [];
+    const dayExercises: Exercise[] = [];
     
     if (!dayConfig.isRest) {
       // Para cada grupo muscular do dia

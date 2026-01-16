@@ -10,6 +10,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { DrVitalImage } from '@/components/shared/CharacterImage';
 import { getCharacterImageUrls } from '@/lib/character-images';
+import DOMPurify from 'dompurify';
 
 interface DataAvailable {
   profile: boolean;
@@ -126,9 +127,9 @@ export const DrVitalEnhancedChat: React.FC = () => {
     // 2) Cabeçalhos markdown -> títulos elegantes
     personalizedText = personalizedText.replace(/^#{1,6}\s*(.+)$/gm, (m, p1) => `\n\nTÍTULO:${p1.trim()}\n`);
     // 3) Negrito markdown **texto** -> destaque elegante
-    personalizedText = personalizedText.replace(/\*\*(.+?)\*\*/g, '<span class="important-text">$1<\/span>');
+    personalizedText = personalizedText.replace(/\*\*(.+?)\*\*/g, '<span class="important-text">$1</span>');
     // 4) Itálico markdown *texto* ou _texto_ -> leve ênfase
-    personalizedText = personalizedText.replace(/(^|\s)[*_]([^*_][^*_]*?)[*_](?=\s|$)/g, '$1<span class="highlight-value">$2<\/span>');
+    personalizedText = personalizedText.replace(/(^|\s)[*_]([^*_][^*_]*?)[*_](?=\s|$)/g, '$1<span class="highlight-value">$2</span>');
 
     // Dividir em blocos por parágrafos
     const blocks = personalizedText.split("\n\n").filter(block => block.trim().length > 0);
@@ -177,11 +178,11 @@ export const DrVitalEnhancedChat: React.FC = () => {
       // Formatações: listas e destaques
       const formatted = block
         // Listas numeradas
-        .replace(/^(\d+)\.\s*(.+)$/gm, '<div class="numbered-item"><div class="number">$1<\/div><div class="text">$2<\/div><\/div>')
+        .replace(/^(\d+)\.\s*(.+)$/gm, '<div class="numbered-item"><div class="number">$1</div><div class="text">$2</div></div>')
         // Pontos com traço
-        .replace(/^\-\s*(.+)$/gm, '<div class="bullet-item"><span class="bullet-marker">•<\/span><span class="bullet-text">$1<\/span><\/div>')
+        .replace(/^-\s*(.+)$/gm, '<div class="bullet-item"><span class="bullet-marker">•</span><span class="bullet-text">$1</span></div>')
         // Percentuais em badge
-        .replace(/(\(?\s*)(\d+%)(\s*\)?)/g, '$1<span class="percentage-badge">$2<\/span>$3');
+        .replace(/(\(?\s*)(\d+%)(\s*\)?)/g, '$1<span class="percentage-badge">$2</span>$3');
 
       formattedBlocks.push(`
         <div class="content-block ${blockType}">
@@ -893,7 +894,7 @@ export const DrVitalEnhancedChat: React.FC = () => {
                     `}</style>
                     <div 
                       className="text-xs sm:text-sm leading-relaxed text-slate-700"
-                      dangerouslySetInnerHTML={{ __html: formatResponse(response.response) }}
+                      dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(formatResponse(response.response)) }}
                     />
                   </div>
                   

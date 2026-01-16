@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { 
@@ -48,11 +48,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     icon: React.ReactNode;
   }>>([]);
 
-  useEffect(() => {
-    loadDashboardData();
-  }, []);
-
-  const loadDashboardData = async () => {
+  const loadDashboardData = useCallback(async () => {
     try {
       setLoading(true);
       
@@ -123,13 +119,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const handleRefresh = async () => {
+  useEffect(() => {
+    loadDashboardData();
+  }, [loadDashboardData]);
+
+  const handleRefresh = useCallback(async () => {
     setRefreshing(true);
     await loadDashboardData();
     setRefreshing(false);
-  };
+  }, [loadDashboardData]);
 
   const formatTimeAgo = (date: Date) => {
     const now = new Date();
@@ -401,7 +401,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               <div className="flex justify-between items-center p-3 bg-muted/30 rounded-lg">
                 <span className="text-sm font-medium">Servidor</span>
                 <Badge variant="default" className="bg-green-500">
-                  <div className="w-2 h-2 bg-white rounded-full mr-2 animate-pulse"></div>
+                  <div className="w-2 h-2 bg-green-100 rounded-full mr-2 animate-pulse"></div>
                   Online
                 </Badge>
               </div>
@@ -409,7 +409,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               <div className="flex justify-between items-center p-3 bg-muted/30 rounded-lg">
                 <span className="text-sm font-medium">Banco de Dados</span>
                 <Badge variant="default" className="bg-green-500">
-                  <div className="w-2 h-2 bg-white rounded-full mr-2 animate-pulse"></div>
+                  <div className="w-2 h-2 bg-green-100 rounded-full mr-2 animate-pulse"></div>
                   Conectado
                 </Badge>
               </div>
@@ -417,7 +417,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               <div className="flex justify-between items-center p-3 bg-muted/30 rounded-lg">
                 <span className="text-sm font-medium">IA (Sofia/DrVital)</span>
                 <Badge variant="default" className="bg-green-500">
-                  <div className="w-2 h-2 bg-white rounded-full mr-2 animate-pulse"></div>
+                  <div className="w-2 h-2 bg-green-100 rounded-full mr-2 animate-pulse"></div>
                   Ativo
                 </Badge>
               </div>
@@ -425,7 +425,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               <div className="flex justify-between items-center p-3 bg-muted/30 rounded-lg">
                 <span className="text-sm font-medium">Autenticação</span>
                 <Badge variant="default" className="bg-green-500">
-                  <div className="w-2 h-2 bg-white rounded-full mr-2 animate-pulse"></div>
+                  <div className="w-2 h-2 bg-green-100 rounded-full mr-2 animate-pulse"></div>
                   Funcional
                 </Badge>
               </div>

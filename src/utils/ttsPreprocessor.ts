@@ -61,11 +61,26 @@ function replaceEmojis(text: string): string {
 
 function stripDecorative(text: string): string {
   // Remove caracteres decorativos comuns (borders, art, etc.)
+  // Using Unicode escapes to avoid combined character class issues
   return text
-    .replace(/[•·●◦▪▫◆◇▸►▹▻◼■□▪︎✦✧✪✩✰☆★❖✽✿❀❁❇❈❉♢♣♦♠♡♥❤❥☼☀☾☽☁☂☔⚡⚠︎✓✔︎✗✘]/g, '')
-    .replace(/[＿–—‒―▪︎•]/g, '-')
-    .replace(/[“”«»„‟‹›]/g, '"')
-    .replace(/[‘’‚‛]/g, "'");
+    // Bullets and shapes
+    .replace(/[\u2022\u00B7\u25CF\u25E6\u25AA\u25AB\u25C6\u25C7\u25B8\u25BA\u25B9\u25BB\u25FC\u25A0\u25A1]/g, '')
+    // Stars and decorative symbols
+    .replace(/[\u2726\u2727\u272A\u2729\u2730\u2606\u2605\u2756\u273D\u273F\u2740\u2741\u2747\u2748\u2749]/g, '')
+    // Card suits and hearts
+    .replace(/[\u2662\u2663\u2666\u2660\u2661\u2665\u2764\u2763]/g, '')
+    // Weather and misc symbols
+    .replace(/[\u263C\u2600\u263E\u263D\u2601\u2602\u2614\u26A1\u26A0]/g, '')
+    // Check marks
+    .replace(/[\u2713\u2714\u2717\u2718]/g, '')
+    // Variation selectors (FE0E, FE0F)
+    .replace(/[\uFE0E\uFE0F]/g, '')
+    // Dashes and underscores
+    .replace(/[\uFF3F\u2013\u2014\u2012\u2015]/g, '-')
+    // Quotation marks
+    .replace(/[\u201C\u201D\u00AB\u00BB\u201E\u201F\u2039\u203A]/g, '"')
+    // Apostrophes
+    .replace(/[\u2018\u2019\u201A\u201B]/g, "'");
 }
 
 function normalizeSpaces(text: string): string {

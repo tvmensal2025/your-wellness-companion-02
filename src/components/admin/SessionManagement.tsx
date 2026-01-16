@@ -40,7 +40,6 @@ interface Session {
   content: string;
   estimated_time: number;
   target_saboteurs: string[];
-  tools_data: any;
   is_active: boolean;
   created_at: string;
   assigned_users?: number;
@@ -83,7 +82,6 @@ const SessionManagement: React.FC = () => {
           content: typeof session.content === 'string' ? session.content : '',
           estimated_time: session.estimated_time || 15,
           target_saboteurs: session.target_saboteurs || [],
-          tools_data: null,
           is_active: session.is_active ?? true,
           created_at: session.created_at || '',
           assigned_users: 0
@@ -109,11 +107,11 @@ const SessionManagement: React.FC = () => {
       try {
         const { data, error } = await supabase
           .from('profiles')
-          .select('user_id, full_name, email');
+          .select('id, full_name, email');
         
         if (error) throw error;
         setUsers(data?.map(profile => ({
-          id: profile.user_id,
+          id: profile.id,
           email: profile.email || '',
           name: profile.full_name || ''
         })) || []);
@@ -134,11 +132,33 @@ const SessionManagement: React.FC = () => {
     try {
       setSending(sessionId);
       
+      // Buscar título da sessão
+      const session = sessions.find(s => s.id === sessionId);
+      const sessionTitle = session?.title || 'Nova Sessão';
+      
       const { error } = await supabase.rpc('assign_session_to_all_users', {
         session_id_param: sessionId
       });
 
       if (error) throw error;
+
+      // Criar notificações para todos os usuários
+      const { data: allUsers } = await supabase
+        .from('profiles')
+        .select('id');
+      
+      if (allUsers && allUsers.length > 0) {
+        const notifications = allUsers.map(user => ({
+          user_id: user.id,
+          title: '📋 Nova Sessão Disponível!',
+          message: `A sessão "${sessionTitle}" foi atribuída a você. Clique para começar!`,
+          type: 'session',
+          is_read: false,
+          action_url: '/sessions'
+        }));
+
+        await supabase.from('notifications').insert(notifications);
+      }
 
       toast({
         title: "✅ Sucesso!",
@@ -170,6 +190,24 @@ const SessionManagement: React.FC = () => {
         if (error) {
           console.error(`Erro ao enviar sessão ${session.title}:`, error);
         }
+      }
+      
+      // Criar notificações para todos os usuários
+      const { data: allUsers } = await supabase
+        .from('profiles')
+        .select('id');
+      
+      if (allUsers && allUsers.length > 0) {
+        const notifications = allUsers.map(user => ({
+          user_id: user.id,
+          title: '📋 Novas Sessões Disponíveis!',
+          message: `${activeSessions.length} sessões foram atribuídas a você. Clique para ver!`,
+          type: 'session',
+          is_read: false,
+          action_url: '/sessions'
+        }));
+
+        await supabase.from('notifications').insert(notifications);
       }
       
       toast({

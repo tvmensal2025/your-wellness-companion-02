@@ -357,7 +357,9 @@ const MedicalDocumentsSection: React.FC<MedicalDocumentsSectionProps> = ({ hideS
           await loadDocuments();
           toast({ title: 'Documento atualizado', description: 'Verifique seus relatórios.' });
         }
-      } catch {}
+      } catch (err) {
+        console.error('Error polling document status:', err);
+      }
       if (attempts >= maxAttempts) clearInterval(interval);
     }, 15000);
   };
@@ -374,7 +376,9 @@ const MedicalDocumentsSection: React.FC<MedicalDocumentsSectionProps> = ({ hideS
         return;
       }
       toast({ title: 'Aguardando processamento', description: 'Tente novamente em alguns instantes.' });
-    } catch {}
+    } catch (err) {
+      console.error('Error refreshing document:', err);
+    }
   };
 
   const getDocumentIcon = (type: string) => {
@@ -443,12 +447,15 @@ const MedicalDocumentsSection: React.FC<MedicalDocumentsSectionProps> = ({ hideS
       if (mode === 'print') {
         // Aguarda renderização e dispara impressão
         setTimeout(() => {
-          try { popup.focus(); popup.print(); } catch {}
+          try { popup.focus(); popup.print(); } catch (printErr) {
+            console.error('Error printing document:', printErr);
+          }
         }, 700);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Tente novamente';
       console.error('Erro ao abrir relatório:', err);
-      toast({ title: 'Falha ao abrir relatório', description: err?.message || 'Tente novamente', variant: 'destructive' });
+      toast({ title: 'Falha ao abrir relatório', description: errorMessage, variant: 'destructive' });
     }
   };
 

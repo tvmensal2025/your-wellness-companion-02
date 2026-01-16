@@ -109,7 +109,7 @@ export const AbundanceResults: React.FC<AbundanceResultsProps> = ({
     const score = totalScore;
     
     switch (method) {
-      case 'email':
+      case 'email': {
         const emailSubject = encodeURIComponent(`Minha Avaliação - ${assessmentName}`);
         const emailBody = encodeURIComponent(
           `Olá! Acabei de fazer minha avaliação de ${assessmentName} e obtive um score de ${score}%.\n\n` +
@@ -119,8 +119,9 @@ export const AbundanceResults: React.FC<AbundanceResultsProps> = ({
         );
         window.open(`mailto:?subject=${emailSubject}&body=${emailBody}`);
         break;
+      }
         
-      case 'whatsapp':
+      case 'whatsapp': {
         const whatsappText = encodeURIComponent(
           `🌟 Acabei de fazer minha avaliação de ${assessmentName}!\n\n` +
           `📊 Score: ${score}%\n` +
@@ -130,10 +131,12 @@ export const AbundanceResults: React.FC<AbundanceResultsProps> = ({
         );
         window.open(`https://wa.me/?text=${whatsappText}`);
         break;
+      }
         
-      case 'print':
+      case 'print': {
         window.print();
         break;
+      }
     }
 
     toast({

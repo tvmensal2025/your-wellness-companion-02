@@ -53,16 +53,22 @@ export function getMinioClient() {
  * @param {string} folder - Pasta (whatsapp, feed, stories, profiles)
  * @param {string} mimeType - Tipo MIME
  * @param {string} originalName - Nome original (opcional)
- * @returns {Promise<{url: string, path: string, size: number}>}
+ * @param {string} userId - ID do usuário (opcional, para organização por usuário)
+ * @returns {Promise<{url: string, path: string, size: number, mimeType: string}>}
  */
-export async function uploadFile(buffer, folder, mimeType, originalName = '') {
+export async function uploadFile(buffer, folder, mimeType, originalName = '', userId = null) {
   const client = getMinioClient();
   const bucket = process.env.MINIO_BUCKET || 'images';
   
-  // Gerar nome único
+  // Gerar nome único com timestamp
   const ext = getExtensionFromMime(mimeType);
-  const fileName = `${uuidv4()}${ext}`;
-  const path = `${folder}/${fileName}`;
+  const timestamp = Date.now();
+  const fileName = `${timestamp}-${uuidv4()}${ext}`;
+  
+  // Path com ou sem userId: {userId}/{folder}/{file} ou {folder}/{file}
+  const path = userId 
+    ? `${userId}/${folder}/${fileName}`
+    : `${folder}/${fileName}`;
   
   // Metadados
   const metaData = {

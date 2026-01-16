@@ -1,5 +1,4 @@
-// @ts-nocheck
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -25,7 +24,8 @@ import {
   Shield,
   Zap,
   FileText,
-  BarChart3
+  BarChart3,
+  LucideIcon
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -44,8 +44,15 @@ interface AuditResult {
   dataRecords?: number;
   lastUpdate?: string;
   error?: string;
-  icon: any;
+  icon: LucideIcon;
   suggestions?: string[];
+}
+
+interface FunctionalityTest {
+  category: string;
+  functionality: string;
+  icon: LucideIcon;
+  test: () => Promise<TestResult>;
 }
 
 interface PlatformStats {
@@ -158,14 +165,14 @@ const PlatformAudit: React.FC = () => {
         // const { data: updates, error: updatesError } = await supabase
         //   .from('goal_updates')
         //   .select('*');
-        const updates: any[] = [];
+        const updates: Record<string, unknown>[] = [];
         const updatesError = null;
         
         if (updatesError) throw updatesError;
         
         return {
           dataRecords: goals?.length || 0,
-          lastUpdate: (goals as any)?.[0]?.updated_at,
+          lastUpdate: goals?.[0]?.updated_at,
           suggestions: updates?.length === 0 ? ['Nenhuma atualização de progresso'] : []
         };
       }
@@ -199,14 +206,16 @@ const PlatformAudit: React.FC = () => {
       functionality: 'Sistema de Pontos e Níveis',
       icon: TrendingUp,
       test: async (): Promise<TestResult> => {
-        const { data, error } = await (supabase as any)
+        // @ts-expect-error - Tabela pode não existir no tipo gerado
+        const { data, error } = await supabase
           .from('user_gamification')
           .select('*');
         
         if (error) throw error;
+        const records = data as Record<string, unknown>[] | null;
         return {
-          dataRecords: data?.length || 0,
-          lastUpdate: (data as any)?.[0]?.updated_at,
+          dataRecords: records?.length || 0,
+          lastUpdate: records?.[0]?.updated_at as string | undefined,
           suggestions: []
         };
       }
@@ -216,14 +225,16 @@ const PlatformAudit: React.FC = () => {
       functionality: 'Rastreamento de Água',
       icon: Activity,
       test: async (): Promise<TestResult> => {
-        const { data, error } = await (supabase as any)
+        // @ts-expect-error - Tabela pode não existir no tipo gerado
+        const { data, error } = await supabase
           .from('water_tracking')
           .select('*');
         
         if (error) throw error;
+        const records = data as Record<string, unknown>[] | null;
         return {
-          dataRecords: data?.length || 0,
-          lastUpdate: (data as any)?.[0]?.recorded_at,
+          dataRecords: records?.length || 0,
+          lastUpdate: records?.[0]?.recorded_at as string | undefined,
           suggestions: []
         };
       }
@@ -233,14 +244,16 @@ const PlatformAudit: React.FC = () => {
       functionality: 'Rastreamento de Sono',
       icon: Activity,
       test: async (): Promise<TestResult> => {
-        const { data, error } = await (supabase as any)
+        // @ts-expect-error - Tabela pode não existir no tipo gerado
+        const { data, error } = await supabase
           .from('sleep_tracking')
           .select('*');
         
         if (error) throw error;
+        const records = data as Record<string, unknown>[] | null;
         return {
-          dataRecords: data?.length || 0,
-          lastUpdate: (data as any)?.[0]?.created_at,
+          dataRecords: records?.length || 0,
+          lastUpdate: records?.[0]?.created_at as string | undefined,
           suggestions: []
         };
       }
@@ -250,14 +263,16 @@ const PlatformAudit: React.FC = () => {
       functionality: 'Rastreamento de Humor',
       icon: Heart,
       test: async (): Promise<TestResult> => {
-        const { data, error } = await (supabase as any)
+        // @ts-expect-error - Tabela pode não existir no tipo gerado
+        const { data, error } = await supabase
           .from('mood_tracking')
           .select('*');
         
         if (error) throw error;
+        const records = data as Record<string, unknown>[] | null;
         return {
-          dataRecords: data?.length || 0,
-          lastUpdate: (data as any)?.[0]?.created_at,
+          dataRecords: records?.length || 0,
+          lastUpdate: records?.[0]?.created_at as string | undefined,
           suggestions: []
         };
       }
@@ -267,15 +282,17 @@ const PlatformAudit: React.FC = () => {
       functionality: 'Sistema de Sabotadores',
       icon: Brain,
       test: async (): Promise<TestResult> => {
-        const { data, error } = await (supabase as any)
+        // @ts-expect-error - Tabela pode não existir no tipo gerado
+        const { data, error } = await supabase
           .from('custom_saboteurs')
           .select('*')
           .eq('is_active', true);
         
         if (error) throw error;
+        const records = data as Record<string, unknown>[] | null;
         return {
-          dataRecords: data?.length || 0,
-          lastUpdate: (data as any)?.[0]?.updated_at,
+          dataRecords: records?.length || 0,
+          lastUpdate: records?.[0]?.updated_at as string | undefined,
           suggestions: []
         };
       }
@@ -309,15 +326,17 @@ const PlatformAudit: React.FC = () => {
       functionality: 'Feed de Saúde',
       icon: Users,
       test: async (): Promise<TestResult> => {
-        const { data, error } = await (supabase as any)
+        // @ts-expect-error - Tabela pode não existir no tipo gerado
+        const { data, error } = await supabase
           .from('health_feed_posts')
           .select('*')
           .eq('is_public', true);
         
         if (error) throw error;
+        const records = data as Record<string, unknown>[] | null;
         return {
-          dataRecords: data?.length || 0,
-          lastUpdate: (data as any)?.[0]?.updated_at,
+          dataRecords: records?.length || 0,
+          lastUpdate: records?.[0]?.updated_at as string | undefined,
           suggestions: []
         };
       }
@@ -334,16 +353,18 @@ const PlatformAudit: React.FC = () => {
         
         if (challengesError) throw challengesError;
         
-        const { data: participations, error: participationsError } = await (supabase as any)
+        // @ts-expect-error - Tabela pode não existir no tipo gerado
+        const { data: participations, error: participationsError } = await supabase
           .from('challenge_participations')
           .select('*');
         
         if (participationsError) throw participationsError;
+        const participationRecords = participations as Record<string, unknown>[] | null;
         
         return {
           dataRecords: challenges?.length || 0,
-          lastUpdate: (challenges as any)?.[0]?.updated_at,
-          suggestions: participations?.length === 0 ? ['Nenhuma participação em desafios'] : []
+          lastUpdate: challenges?.[0]?.updated_at,
+          suggestions: participationRecords?.length === 0 ? ['Nenhuma participação em desafios'] : []
         };
       }
     },
@@ -366,8 +387,8 @@ const PlatformAudit: React.FC = () => {
             lastUpdate: new Date().toISOString(),
             suggestions: []
           };
-        } catch (err: any) {
-          throw new Error(`Chat IA indisponível: ${err.message}`);
+        } catch (err: unknown) {
+          throw new Error(`Chat IA indisponível: ${err instanceof Error ? err.message : String(err)}`);
         }
       }
     },
@@ -412,13 +433,13 @@ const PlatformAudit: React.FC = () => {
         // const { data, error } = await supabase
         //   .from('preventive_health_analyses')
         //   .select('*');
-        const data: any[] = [];
+        const data: Record<string, unknown>[] = [];
         const error = null;
         
         if (error) throw error;
         return {
           dataRecords: data?.length || 0,
-          lastUpdate: data?.[0]?.created_at,
+          lastUpdate: data?.[0]?.created_at as string | undefined,
           suggestions: []
         };
       }
@@ -428,21 +449,23 @@ const PlatformAudit: React.FC = () => {
       functionality: 'Google Fit',
       icon: Activity,
       test: async (): Promise<TestResult> => {
-        const { data, error } = await (supabase as any)
+        // @ts-expect-error - Tabela pode não existir no tipo gerado
+        const { data, error } = await supabase
           .from('google_fit_data')
           .select('*');
         
         if (error) throw error;
+        const records = data as Record<string, unknown>[] | null;
         return {
-          dataRecords: data?.length || 0,
-          lastUpdate: (data as any)?.[0]?.created_at,
-          suggestions: data?.length === 0 ? ['Nenhuma integração ativa'] : []
+          dataRecords: records?.length || 0,
+          lastUpdate: records?.[0]?.created_at as string | undefined,
+          suggestions: records?.length === 0 ? ['Nenhuma integração ativa'] : []
         };
       }
     }
   ];
 
-  const loadPlatformStats = async () => {
+  const loadPlatformStats = useCallback(async () => {
     try {
       const [
         { data: users },
@@ -482,7 +505,7 @@ const PlatformAudit: React.FC = () => {
     } catch (error) {
       console.error('Error loading platform stats:', error);
     }
-  };
+  }, []);
 
   const runFullAudit = async () => {
     setIsRunning(true);
@@ -518,13 +541,13 @@ const PlatformAudit: React.FC = () => {
           suggestions: testResult.suggestions
         });
         
-      } catch (error: any) {
+      } catch (error: unknown) {
         results.push({
           category: func.category,
           functionality: func.functionality,
           status: 'fail',
           description: 'Falha na verificação',
-          error: error.message,
+          error: error instanceof Error ? error.message : String(error),
           icon: func.icon,
           suggestions: ['Requer atenção imediata']
         });
@@ -552,7 +575,7 @@ const PlatformAudit: React.FC = () => {
 
   useEffect(() => {
     loadPlatformStats();
-  }, []);
+  }, [loadPlatformStats]);
 
   const getStatusIcon = (status: string) => {
     switch (status) {

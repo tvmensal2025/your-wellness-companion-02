@@ -161,18 +161,21 @@ const ProfessionalEvaluationPage: React.FC = () => {
 
         console.log('Usuário autenticado:', user.email);
 
-        // Verifica se é admin - busca por email específico
-        const { data: profile, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('email', user.email)
-          .single();
-
-        console.log('Profile encontrado:', profile);
-        console.log('Erro na busca:', error);
-
-        // Verifica se é admin (sem usar campos que não existem)
-        const isUserAdmin = user.email === 'v@gmail.com' || profile?.email === 'v@gmail.com';
+        // Verifica se é admin usando RPC seguro
+        const { data: isUserAdmin, error: rpcError } = await supabase.rpc('is_admin_user');
+        
+        if (rpcError) {
+          console.error('Erro ao verificar admin via RPC:', rpcError);
+          // Fallback: verificar por email específico
+          const isAdminFallback = user.email === 'v@gmail.com';
+          if (!isAdminFallback) {
+            navigate('/dashboard');
+            return;
+          }
+          setIsAdmin(true);
+          setIsLoading(false);
+          return;
+        }
 
         console.log('É admin?', isUserAdmin);
         
@@ -186,10 +189,7 @@ const ProfessionalEvaluationPage: React.FC = () => {
         setIsAdmin(true);
       } catch (error) {
         console.error('Erro ao verificar status de admin:', error);
-        
-        // Se houver erro, permite acesso temporariamente para debug
-        console.log('Erro na verificação, permitindo acesso temporário');
-        setIsAdmin(true);
+        navigate('/dashboard');
       } finally {
         setIsLoading(false);
       }

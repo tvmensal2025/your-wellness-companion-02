@@ -170,7 +170,8 @@ export const useSofiaAnalysis = () => {
         .select('*')
         .eq('user_id', userId)
         .gte('tracking_date', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0])
-        .order('tracking_date', { ascending: false });
+        .order('tracking_date', { ascending: false })
+        .limit(30);
 
       if (!recentData || recentData.length < 3) {
         return []; // Poucos dados para detectar anomalias

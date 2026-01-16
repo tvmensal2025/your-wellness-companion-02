@@ -295,10 +295,10 @@ export const ExerciseManagement = () => {
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
-      case 'facil': return 'bg-green-100 text-green-800';
-      case 'medio': return 'bg-yellow-100 text-yellow-800';
-      case 'dificil': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'facil': return 'bg-green-500/20 text-green-700 dark:text-green-300';
+      case 'medio': return 'bg-yellow-500/20 text-yellow-700 dark:text-yellow-300';
+      case 'dificil': return 'bg-red-500/20 text-red-700 dark:text-red-300';
+      default: return 'bg-muted text-muted-foreground';
     }
   };
 

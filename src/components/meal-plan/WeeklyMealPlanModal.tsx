@@ -409,7 +409,9 @@ export const WeeklyMealPlanModal: React.FC<WeeklyMealPlanModalProps> = ({
       try {
         const { data } = await supabase.auth.getUser();
         setUserFullName((data.user?.user_metadata as any)?.full_name || '');
-      } catch {}
+      } catch (e) {
+        // Silently ignore auth errors - user name is optional
+      }
     })();
   }, []);
 

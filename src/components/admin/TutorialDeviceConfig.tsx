@@ -55,7 +55,7 @@ export const TutorialDeviceConfig: React.FC<TutorialDeviceConfigProps> = ({
 
   // Extrair ID do vídeo do YouTube
   const extractVideoId = (url: string): string => {
-    const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+    const regex = /(?:youtube\.com\/(?:[^/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?/\s]{11})/;
     const match = url.match(regex);
     return match ? match[1] : '';
   };
@@ -131,7 +131,7 @@ export const TutorialDeviceConfig: React.FC<TutorialDeviceConfigProps> = ({
       exit={{ opacity: 0 }}
     >
       <motion.div
-        className="bg-white rounded-xl shadow-xl max-w-lg w-full max-h-[70vh] overflow-y-auto mx-4"
+        className="bg-card rounded-xl shadow-xl max-w-lg w-full max-h-[70vh] overflow-y-auto mx-4"
         initial={{ scale: 0.9, y: 20 }}
         animate={{ scale: 1, y: 0 }}
         exit={{ scale: 0.9, y: 20 }}
@@ -149,7 +149,7 @@ export const TutorialDeviceConfig: React.FC<TutorialDeviceConfigProps> = ({
                 console.log('🔴 Botão fechar clicado!');
                 onClose();
               }}
-              className="text-white hover:text-gray-200 transition-colors p-1 hover:bg-white hover:bg-opacity-20 rounded cursor-pointer"
+              className="text-white hover:text-white/80 transition-colors p-1 hover:bg-white/20 rounded cursor-pointer"
               type="button"
             >
               ✕
@@ -161,15 +161,15 @@ export const TutorialDeviceConfig: React.FC<TutorialDeviceConfigProps> = ({
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-gray-200 px-3 pt-2 overflow-x-auto">
+        <div className="flex border-b border-border px-3 pt-2 overflow-x-auto">
           {tutorials.map((tutorial) => (
             <button
               key={tutorial.device}
               onClick={() => setActiveTab(tutorial.device)}
               className={`flex items-center space-x-1 px-2 py-1 border-b-2 transition-colors whitespace-nowrap ${
                 activeTab === tutorial.device
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
+                  ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                  : 'border-transparent text-muted-foreground hover:text-foreground'
               }`}
             >
               {getDeviceIcon(tutorial.device)}
@@ -187,19 +187,19 @@ export const TutorialDeviceConfig: React.FC<TutorialDeviceConfigProps> = ({
             return (
               <div className="space-y-3">
                 {/* Informações do Tutorial */}
-                <div className="bg-gray-50 rounded-lg p-2">
+                <div className="bg-muted rounded-lg p-2">
                   <div className="flex items-center space-x-2 mb-1">
                     <div className={`${getDeviceColor(activeTutorial.device)}`}>
                       {getDeviceIcon(activeTutorial.device)}
                     </div>
-                    <h3 className="text-sm font-semibold text-gray-900">{activeTutorial.name}</h3>
+                    <h3 className="text-sm font-semibold text-foreground">{activeTutorial.name}</h3>
                   </div>
-                  <p className="text-gray-600 text-xs">{activeTutorial.description}</p>
+                  <p className="text-muted-foreground text-xs">{activeTutorial.description}</p>
                 </div>
 
                 {/* Input da URL */}
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                  <label className="block text-xs font-medium text-foreground mb-1">
                     URL do Vídeo do YouTube
                   </label>
                   <div className="flex flex-col sm:flex-row space-y-1 sm:space-y-0 sm:space-x-2">
@@ -227,7 +227,7 @@ export const TutorialDeviceConfig: React.FC<TutorialDeviceConfigProps> = ({
                 {/* Preview do Vídeo */}
                 {activeTutorial.videoId && (
                   <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                    <label className="block text-xs font-medium text-foreground mb-1">
                       Preview do Vídeo
                     </label>
                     <div className="relative w-full h-0 pb-[56.25%] rounded overflow-hidden border border-gray-200">
@@ -258,7 +258,7 @@ export const TutorialDeviceConfig: React.FC<TutorialDeviceConfigProps> = ({
                       }}
                       className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
                     />
-                    <span className="text-sm font-medium text-gray-700">
+                    <span className="text-sm font-medium text-foreground">
                       Tutorial ativo para {activeTutorial.device}
                     </span>
                   </label>
@@ -269,10 +269,10 @@ export const TutorialDeviceConfig: React.FC<TutorialDeviceConfigProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="bg-gray-50 px-2 py-2 rounded-b-xl flex flex-col sm:flex-row justify-end space-y-1 sm:space-y-0 sm:space-x-2">
+        <div className="bg-muted px-2 py-2 rounded-b-xl flex flex-col sm:flex-row justify-end space-y-1 sm:space-y-0 sm:space-x-2">
           <button
             onClick={onClose}
-            className="px-2 py-1 text-gray-600 hover:text-gray-800 transition-colors order-2 sm:order-1 text-xs"
+            className="px-2 py-1 text-muted-foreground hover:text-foreground transition-colors order-2 sm:order-1 text-xs"
           >
             Cancelar
           </button>

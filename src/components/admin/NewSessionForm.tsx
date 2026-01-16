@@ -44,8 +44,6 @@ interface SessionData {
   materials_needed: string[];
   follow_up_questions: string[];
   is_active: boolean;
-  tools_data: any;
-  tools: any;
 }
 
 interface ExtendedSessionData extends SessionData {
@@ -100,8 +98,6 @@ export const NewSessionForm: React.FC<NewSessionFormProps> = ({
     materials_needed: [],
     follow_up_questions: [],
     is_active: true,
-    tools_data: {},
-    tools: {},
     questions: [],
     selected_users: []
   });

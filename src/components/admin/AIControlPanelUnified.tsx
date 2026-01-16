@@ -244,8 +244,8 @@ const AIControlPanelUnified = () => {
         <div className="flex items-center gap-3">
           <Brain className="w-8 h-8 text-purple-600" />
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Controle Unificado de IA</h1>
-            <p className="text-gray-600">Gerencie todas as funcionalidades de IA em um só lugar</p>
+            <h1 className="text-3xl font-bold text-foreground">Controle Unificado de IA</h1>
+            <p className="text-muted-foreground">Gerencie todas as funcionalidades de IA em um só lugar</p>
           </div>
         </div>
         <div className="flex gap-2">
@@ -268,12 +268,12 @@ const AIControlPanelUnified = () => {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-white rounded-lg">
-                      <IconComponent className="w-5 h-5 text-gray-700" />
+                    <div className="p-2 bg-background rounded-lg">
+                      <IconComponent className="w-5 h-5 text-foreground" />
                     </div>
                     <div>
                       <CardTitle className="text-lg">{func.title}</CardTitle>
-                      <p className="text-sm text-gray-600 mt-1">{func.description}</p>
+                      <p className="text-sm text-muted-foreground mt-1">{func.description}</p>
                     </div>
                   </div>
                   <Button
@@ -297,7 +297,7 @@ const AIControlPanelUnified = () => {
                       onCheckedChange={() => toggleAI(func.key, config?.is_active || false)}
                     />
                     {config && (
-                       <span className="text-xs text-gray-500">
+                       <span className="text-xs text-muted-foreground">
                          {config.service_name || 'openai'} • {config.model || 'gpt-4o'}
                        </span>
                      )}
@@ -305,16 +305,16 @@ const AIControlPanelUnified = () => {
                 </div>
                 
                 {config && (
-                  <div className="mt-3 pt-3 border-t border-gray-200">
-                    <div className="flex justify-between text-xs text-gray-600 mb-2">
+                  <div className="mt-3 pt-3 border-t border-border">
+                    <div className="flex justify-between text-xs text-muted-foreground mb-2">
                       <span>Tokens: {config.max_tokens}</span>
                       <span>Temp: {config.temperature}</span>
                     </div>
-                    <div className="flex justify-between text-xs text-gray-500">
+                    <div className="flex justify-between text-xs text-muted-foreground/70">
                       <span>Nível: {config.preset_level}</span>
                       <span>{config.personality || 'genérico'}</span>
                     </div>
-                    <div className="mt-2 text-xs text-gray-400 flex items-center gap-1">
+                    <div className="mt-2 text-xs text-muted-foreground/50 flex items-center gap-1">
                       <Settings className="h-3 w-3" />
                       Edite as configurações acima
                     </div>

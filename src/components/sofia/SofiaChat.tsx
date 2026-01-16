@@ -1,36 +1,15 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import { User as SupabaseUser } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { useToast } from '@/hooks/use-toast';
 import { 
-  Bot, 
   User as UserIcon, 
-  Mic, 
-  Camera, 
-  Send, 
-  Image, 
-  X, 
-  Loader2, 
-  CheckCheck, 
-  Volume2, 
-  VolumeX,
   MessageCircle,
   Target,
-  Flame,
   Trophy,
   BarChart3,
-  Activity,
-  Sparkles,
   Apple,
   ChefHat,
   Zap,
-  Menu,
-  Home,
-  MessageSquare,
   Camera as CameraIcon,
   Settings,
   Heart,
@@ -39,20 +18,14 @@ import {
   Trophy as TrophyIcon
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
 import { useNutritionTracking } from '@/hooks/useNutritionTracking';
 import { DailyMissionsLight } from '@/components/daily-missions/DailyMissionsLight';
 import { NutritionTracker } from '@/components/nutrition-tracking/NutritionTracker';
 import SofiaConfirmationModal from './SofiaConfirmationModal';
-import sofiaAvatar from '@/assets/sofia-avatar.png';
-
-interface Message {
-  id: string;
-  type: 'user' | 'sofia';
-  content: string;
-  timestamp: Date;
-  imageUrl?: string;
-}
+import { ChatHeader } from './chat/ChatHeader';
+import { MessageList } from './chat/MessageList';
+import { MessageInput } from './chat/MessageInput';
+import { useChatLogic } from './chat/hooks/useChatLogic';
 
 type SofiaSection = 'chat' | 'metas' | 'missao' | 'desafios' | 'historico' | 'estatisticas' | 'analysis' | 'challenges' | 'image-analysis' | 'nutrition' | 'tracking' | 'goals' | 'progress' | 'education' | 'achievements' | 'settings' | 'profile';
 
@@ -61,520 +34,40 @@ interface SofiaChatProps {
 }
 
 const SofiaChat: React.FC<SofiaChatProps> = ({ user }) => {
-  const { toast } = useToast();
   const navigate = useNavigate();
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [pendingInvites, setPendingInvites] = useState<any[]>([]);
-  const [inputMessage, setInputMessage] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [currentSection, setCurrentSection] = useState<SofiaSection>('chat');
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const cameraInputRef = useRef<HTMLInputElement>(null);
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
-  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
-  const [pendingAnalysis, setPendingAnalysis] = useState<any>(null);
-  const [voiceEnabled, setVoiceEnabled] = useState(false);
-  const [isListening, setIsListening] = useState(false);
-  const [isSpeaking, setIsSpeaking] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+
+  // Chat logic hook
+  const {
+    messages,
+    inputMessage,
+    setInputMessage,
+    isLoading,
+    selectedImage,
+    imagePreview,
+    showConfirmationModal,
+    setShowConfirmationModal,
+    pendingAnalysis,
+    setPendingAnalysis,
+    voiceEnabled,
+    isListening,
+    fileInputRef,
+    cameraInputRef,
+    scrollAreaRef,
+    handleImageSelect,
+    handleSendMessage,
+    handleKeyPress,
+    handleCameraClick,
+    handleGalleryClick,
+    handleMicClick,
+    toggleVoice,
+    handleRemoveImage,
+    handleConfirmation,
+  } = useChatLogic({ user });
 
   // Hooks
   const { meals, goals, getDailyNutrition } = useNutritionTracking();
-
-  // Criar mensagem inicial quando o usuário estiver disponível
-  useEffect(() => {
-    if (user && messages.length === 0) {
-      const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'querido(a)';
-      setMessages([{
-        id: '1',
-        type: 'sofia',
-        content: `Oi ${userName}! 👋 Sou a Sofia, sua nutricionista virtual da MaxNutrition!
-
-Estou aqui para te ajudar com:
-🍽️ Análise de refeições (envie fotos!)
-📊 Dicas nutricionais personalizadas
-💪 Orientações sobre alimentação saudável
-🎯 Apoio na sua jornada de transformação
-
-O que você gostaria de conversar hoje? Pode me enviar uma foto da sua refeição ou fazer qualquer pergunta sobre nutrição! ✨`,
-        timestamp: new Date()
-      }]);
-    }
-  }, [user, messages.length]);
-
-  // Buscar convites pendentes (metas em grupo) para este usuário
-  async function loadPendingInvites() {
-    try {
-      if (!user) return;
-        const { data, error } = await (supabase as any)
-          .from('user_goal_invitations')
-          .select('id, goal_id, invitee_name, invitee_email, status, created_at')
-          .eq('invitee_user_id', user.id)
-          .eq('status', 'pending')
-          .order('created_at', { ascending: false });
-      if (!error) setPendingInvites(data || []);
-    } catch (e) {
-      console.error('Erro ao carregar convites:', e);
-    }
-  }
-
-  useEffect(() => { loadPendingInvites(); }, [user]);
-  useEffect(() => {
-    const i = setInterval(() => loadPendingInvites(), 30000);
-    return () => clearInterval(i);
-  }, [user]);
-
-  async function acceptInvite(inviteId: string, goalId: string) {
-    try {
-      if (!user) return;
-      // inserir participação
-      await (supabase as any).from('user_goal_participants').insert({ goal_id: goalId, user_id: user.id, can_view_progress: true });
-      // atualizar convite
-      await (supabase as any).from('user_goal_invitations').update({ status: 'approved' }).eq('id', inviteId);
-      await loadPendingInvites();
-      toast({
-        title: "Meta sincronizada!",
-        description: "Vocês poderão ver o progresso um do outro.",
-      });
-      setMessages(prev => [...prev, {
-        id: Date.now().toString(),
-        type: 'sofia',
-        content: 'Parabéns! 🎉 Sua nova meta compartilhada foi aprovada e sincronizada. Estou aqui para te ajudar nessa jornada!',
-        timestamp: new Date()
-      }]);
-    } catch (e) {
-      console.error(e);
-      toast({
-        title: "Erro",
-        description: "Não foi possível aceitar o convite.",
-        variant: "destructive",
-      });
-    }
-  }
-
-  async function rejectInvite(inviteId: string) {
-    try {
-      if (!user) return;
-      await (supabase as any).from('user_goal_invitations').update({ status: 'rejected' }).eq('id', inviteId);
-      await loadPendingInvites();
-      toast({
-        title: "Convite recusado",
-        description: "O convite foi recusado com sucesso.",
-      });
-    } catch (e) {
-      console.error(e);
-      toast({
-        title: "Erro",
-        description: "Não foi possível recusar o convite.",
-        variant: "destructive",
-      });
-    }
-  }
-
-  const handleImageUpload = async (file: File): Promise<string | null> => {
-    try {
-      if (!user) {
-        toast({
-          title: "Erro",
-          description: "Você precisa estar logado para enviar imagens",
-          variant: "destructive",
-        });
-        return null;
-      }
-
-      const safeOriginalName = (file.name || 'imagem')
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/[^a-zA-Z0-9._-]/g, '-');
-
-      const fileName = `${user.id}/${Date.now()}_${safeOriginalName}`;
-      const { data, error } = await supabase.storage
-        .from('chat-images')
-        .upload(fileName, file);
-
-      if (error) {
-        console.error('Erro ao fazer upload da imagem:', error);
-        toast({
-          title: "Erro",
-          description: "Erro ao fazer upload da imagem",
-          variant: "destructive",
-        });
-        return null;
-      }
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('chat-images')
-        .getPublicUrl(fileName);
-
-      return publicUrl;
-    } catch (error) {
-      console.error('Erro ao processar imagem:', error);
-      toast({
-        title: "Erro",
-        description: "Erro ao processar imagem",
-        variant: "destructive",
-      });
-      return null;
-    }
-  };
-
-  const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      // Validar tipo de arquivo
-      if (!file.type.startsWith('image/')) {
-        toast({
-          title: "Erro",
-          description: "Por favor, selecione apenas arquivos de imagem",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Validar tamanho (5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        toast({
-          title: "Erro",
-          description: "A imagem deve ter no máximo 5MB",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      setSelectedImage(file);
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setImagePreview(e.target?.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleSendMessage = async () => {
-    if ((!inputMessage.trim() && !selectedImage) || !user || isLoading) return;
-
-    let imageUrl: string | undefined;
-
-    // Upload da imagem se houver
-    if (selectedImage) {
-      toast({
-        title: "📸 Fazendo upload da imagem...",
-        description: "Aguarde um momento",
-      });
-      imageUrl = await handleImageUpload(selectedImage);
-      if (!imageUrl) return; // Para se falhou o upload
-    }
-
-    const currentMessage = inputMessage.trim();
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      type: 'user',
-      content: currentMessage,
-      timestamp: new Date(),
-      imageUrl: imageUrl
-    };
-
-    setMessages(prev => [...prev, userMessage]);
-    setInputMessage('');
-    setSelectedImage(null);
-    setImagePreview(null);
-    setIsLoading(true);
-
-    try {
-      // Preparar histórico de conversa para contexto
-      const conversationHistory = messages.slice(-5).map(msg => ({
-        role: msg.type === 'user' ? 'user' : 'assistant',
-        content: msg.content
-      }));
-
-      let data, error;
-
-      if (imageUrl) {
-        // 🎯 ROTEAMENTO INTELIGENTE DE IMAGEM
-        // Primeiro detectar o tipo de imagem (FOOD, MEDICAL, OTHER)
-        toast({
-          title: "🔍 Analisando tipo de imagem...",
-          description: "Identificando o conteúdo",
-        });
-
-        let imageType = 'FOOD'; // Default para comida
-        let imageConfidence = 0.5;
-        let imageDetails = '';
-
-        try {
-          const detectResult = await supabase.functions.invoke('detect-image-type', {
-            body: { imageUrl }
-          });
-
-          if (detectResult.data && !detectResult.error) {
-            imageType = detectResult.data.type || 'FOOD';
-            imageConfidence = detectResult.data.confidence || 0.5;
-            imageDetails = detectResult.data.details || '';
-            console.log('🎯 Tipo de imagem detectado:', { imageType, imageConfidence, imageDetails });
-          }
-        } catch (detectError) {
-          console.warn('⚠️ Erro na detecção de tipo, assumindo FOOD:', detectError);
-        }
-
-        // 🍽️ ROTA: COMIDA -> Sofia analisa
-        if (imageType === 'FOOD') {
-          toast({
-            title: "🥗 Sofia está analisando sua refeição...",
-            description: "Calculando nutrientes e dando dicas",
-          });
-          
-          const analysisResult = await supabase.functions.invoke('sofia-image-analysis', {
-            body: {
-              imageUrl: imageUrl,
-              userId: user.id,
-              userContext: {
-                currentMeal: 'refeicao',
-                userName: user.user_metadata?.full_name || user.email?.split('@')[0] || 'usuário'
-              }
-            }
-          });
-
-          console.log('📊 Sofia Image Analysis Response:', {
-            success: analysisResult.data?.success,
-            requires_confirmation: analysisResult.data?.requires_confirmation,
-            foods_count: analysisResult.data?.food_detection?.foods_detected?.length,
-            error: analysisResult.error,
-          });
-
-          data = analysisResult.data;
-          error = analysisResult.error;
-
-          // Fluxo: quando a função pede confirmação de porções, abrir o modal
-          if (data?.success && data?.requires_confirmation) {
-            const foodsForModal = (data.food_detection?.foods_detected && data.food_detection.foods_detected.length > 0)
-              ? data.food_detection.foods_detected
-              : (data.sofia_analysis?.foods_detected && data.sofia_analysis.foods_detected.length > 0)
-                ? data.sofia_analysis.foods_detected
-                : (data.alimentos_identificados || []);
-
-            if (Array.isArray(foodsForModal) && foodsForModal.length > 0) {
-              setPendingAnalysis({
-                analysisId: String(data.analysis_id || data.analysisId || ''),
-                detectedFoods: foodsForModal,
-                userName: user.user_metadata?.full_name || user.email?.split('@')[0] || 'usuário'
-              });
-              setShowConfirmationModal(true);
-              toast({
-                title: "📸 Análise concluída!",
-                description: "Confirme as gramas no modal para calcular os nutrientes.",
-              });
-              setIsLoading(false);
-              return;
-            }
-            if (data?.sofia_analysis?.analysis) {
-              const sofiaResponse: Message = {
-                id: (Date.now() + 1).toString(),
-                type: 'sofia',
-                content: data.sofia_analysis.analysis,
-                timestamp: new Date()
-              };
-              setMessages(prev => [...prev, sofiaResponse]);
-            }
-            setIsLoading(false);
-            return;
-          }
-
-          if (analysisResult.data && analysisResult.data.sofia_analysis) {
-            const sofiaResponse: Message = {
-              id: (Date.now() + 1).toString(),
-              type: 'sofia',
-              content: analysisResult.data.sofia_analysis.analysis || 'Analisei sua refeição!',
-              timestamp: new Date()
-            };
-            setMessages(prev => [...prev, sofiaResponse]);
-            toast({
-              title: "✅ Análise da Sofia concluída!",
-              description: "Sua refeição foi analisada com sucesso",
-            });
-            setIsLoading(false);
-            return;
-          } else if (analysisResult.error) {
-            throw new Error(analysisResult.error.message || 'Erro na análise da imagem');
-          }
-
-        // 🩺 ROTA: EXAME MÉDICO -> Dr. Vital analisa
-        } else if (imageType === 'MEDICAL') {
-          toast({
-            title: "🩺 Dr. Vital está analisando seu exame...",
-            description: "Preparando relatório detalhado",
-          });
-
-          // Mostrar mensagem de processamento
-          const processingMessage: Message = {
-            id: (Date.now() + 1).toString(),
-            type: 'sofia',
-            content: `🩺 *Recebi seu exame!*\n\nOlá! Sou o Dr. Vital. Detectei que você enviou um documento médico/exame.\n\n⏳ Estou analisando cuidadosamente cada resultado para te dar um relatório completo e humanizado.\n\nAguarde um momento... 💙`,
-            timestamp: new Date()
-          };
-          setMessages(prev => [...prev, processingMessage]);
-
-          try {
-            const examResult = await supabase.functions.invoke('analyze-medical-exam', {
-              body: {
-                imageUrl: imageUrl,
-                userId: user.id,
-                userName: user.user_metadata?.full_name || user.email?.split('@')[0] || 'usuário'
-              }
-            });
-
-            console.log('🩺 Dr. Vital Exam Analysis Response:', {
-              success: examResult.data?.success,
-              error: examResult.error,
-            });
-
-            if (examResult.data && !examResult.error) {
-              const analysisContent = examResult.data.analysis || 
-                examResult.data.resultado?.analise_formatada || 
-                examResult.data.resultado?.summary ||
-                'Análise do exame concluída. Consulte seu médico para mais detalhes.';
-
-              const drVitalResponse: Message = {
-                id: (Date.now() + 2).toString(),
-                type: 'sofia',
-                content: `🩺 *Relatório do Dr. Vital*\n\n${analysisContent}`,
-                timestamp: new Date()
-              };
-              setMessages(prev => [...prev, drVitalResponse]);
-
-              toast({
-                title: "✅ Análise médica concluída!",
-                description: "Dr. Vital analisou seu exame",
-              });
-            } else {
-              throw new Error(examResult.error?.message || 'Erro na análise do exame');
-            }
-          } catch (examError) {
-            console.error('❌ Erro na análise do exame:', examError);
-            const errorResponse: Message = {
-              id: (Date.now() + 2).toString(),
-              type: 'sofia',
-              content: `🩺 Desculpe, tive dificuldade em analisar este exame. Por favor, tente enviar uma foto mais nítida ou em melhor iluminação.\n\nSe o problema persistir, você pode me enviar os valores digitados que faço a análise! 💙`,
-              timestamp: new Date()
-            };
-            setMessages(prev => [...prev, errorResponse]);
-          }
-          
-          setIsLoading(false);
-          return;
-
-        // ❓ ROTA: OUTRO TIPO -> Resposta gentil
-        } else {
-          const otherResponse: Message = {
-            id: (Date.now() + 1).toString(),
-            type: 'sofia',
-            content: `🥗💚 Oi amor! Recebi sua imagem, mas não consegui identificar se é uma foto de *comida* ou de um *exame médico*.\n\n📸 Se for uma *refeição*, tente tirar uma foto mais de cima mostrando bem os alimentos!\n\n🩺 Se for um *exame*, certifique-se que a foto está nítida e mostra os resultados claramente.\n\nOu se preferir, me conta o que você gostaria de saber! Estou aqui para ajudar! ✨`,
-            timestamp: new Date()
-          };
-          setMessages(prev => [...prev, otherResponse]);
-          setIsLoading(false);
-          return;
-        }
-      } else {
-        const chatResult = await supabase.functions.invoke('sofia-enhanced-memory', {
-          body: {
-            message: currentMessage,
-            userId: user.id,
-            conversationHistory
-          }
-        });
-        data = chatResult.data;
-        error = chatResult.error;
-      }
-
-      if (error) {
-        console.error('❌ Erro da Edge Function:', error);
-        throw new Error(error.message || 'Erro na comunicação com o servidor');
-      }
-
-      if (data && (data.response || data.message)) {
-        const sofiaResponse: Message = {
-          id: (Date.now() + 2).toString(),
-          type: 'sofia',
-          content: data.response || data.message || 'Oi querido(a)! Como posso te ajudar hoje? 💚',
-          timestamp: new Date()
-        };
-        setMessages(prev => [...prev, sofiaResponse]);
-      } else {
-        throw new Error('Resposta inválida do servidor');
-      }
-
-    } catch (error) {
-      console.error('Erro ao enviar mensagem:', error);
-      toast({
-        title: "Erro",
-        description: "Erro ao enviar mensagem. Tente novamente!",
-        variant: "destructive",
-      });
-      
-      const errorMessage: Message = {
-        id: (Date.now() + 3).toString(),
-        type: 'sofia',
-        content: 'Ops! Tive um probleminha técnico. Pode tentar novamente? 🤖💭',
-        timestamp: new Date()
-      };
-      setMessages(prev => [...prev, errorMessage]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
-    }
-  };
-
-  const handleCameraClick = () => {
-    cameraInputRef.current?.click();
-  };
-
-  const handleGalleryClick = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleMicClick = () => {
-    if (voiceEnabled) {
-      // Implementar gravação de áudio
-      setIsListening(!isListening);
-      toast({
-        title: isListening ? "Parando gravação..." : "Iniciando gravação...",
-        description: isListening ? "Processando sua mensagem..." : "Fale agora!",
-      });
-    } else {
-      toast({
-        title: "Ative a voz primeiro!",
-        description: "Clique no botão de voz para ativar o modo áudio",
-      });
-    }
-  };
-
-  const toggleVoice = () => {
-    setVoiceEnabled(!voiceEnabled);
-    if (!voiceEnabled) {
-      toast({
-        title: "Voz ativada!",
-        description: "Agora você pode conversar com a Sofia por voz",
-      });
-    } else {
-      setIsListening(false);
-      setIsSpeaking(false);
-      toast({
-        title: "Voz desativada",
-        description: "Modo texto ativado",
-      });
-    }
-  };
-
-  const menuItems: { id: string; label: string; icon: React.ElementType; color: string }[] = [];
 
   const handleDashboardClick = () => {
     navigate('/dashboard');
@@ -582,7 +75,7 @@ O que você gostaria de conversar hoje? Pode me enviar uma foto da sua refeiçã
 
   const handleSectionChange = (section: typeof currentSection) => {
     setCurrentSection(section);
-    setIsMobileSidebarOpen(false); // Fecha o sidebar no mobile
+    setIsMobileSidebarOpen(false);
   };
 
   const renderContent = () => {
@@ -591,202 +84,32 @@ O que você gostaria de conversar hoje? Pode me enviar uma foto da sua refeiçã
         return (
           <div className="flex-1 flex flex-col h-full bg-gradient-to-b from-[#0a0f14] to-[#0d1318] min-h-0">
             {/* Header estilo WhatsApp moderno */}
-            <div className="flex items-center gap-4 px-4 py-3 sm:px-6 sm:py-4 bg-gradient-to-r from-[#075E54] to-[#128C7E] shadow-lg z-10 flex-shrink-0">
-              {/* Botão Home para Dashboard */}
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-white hover:bg-white/10 h-10 w-10 flex-shrink-0"
-                onClick={handleDashboardClick}
-              >
-                <Home className="w-5 h-5" />
-              </Button>
-              
-              {/* Avatar com status online */}
-              <div className="relative flex-shrink-0">
-                <img 
-                  src={sofiaAvatar} 
-                  alt="Sofia"
-                  className="w-11 h-11 sm:w-12 sm:h-12 rounded-full object-cover border-2 border-white/30 shadow-md"
-                />
-                <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-[#25D366] rounded-full border-2 border-[#075E54]" />
-              </div>
-              
-              {/* Info do contato */}
-              <div className="flex-1 min-w-0">
-                <h1 className="font-semibold text-white text-lg sm:text-xl truncate">Sofia</h1>
-                <p className="text-sm text-[#a8d8d5] truncate">online</p>
-              </div>
-            </div>
+            <ChatHeader onHomeClick={handleDashboardClick} />
 
             {/* Área de mensagens com wallpaper */}
-            <div className="flex-1 relative overflow-hidden min-h-0" style={{
-              backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23128C7E' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-              backgroundColor: '#0a100e'
-            }}>
-              <ScrollArea className="h-full w-full" ref={scrollAreaRef}>
-                <div className="p-4 sm:p-5 space-y-3 sm:space-y-4 relative z-10 pb-4">
-                  {messages.map(message => {
-                    const time = message.timestamp.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-                    const isUser = message.type === 'user';
-                    return (
-                      <motion.div 
-                        key={message.id} 
-                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        transition={{ duration: 0.2 }}
-                        className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}
-                      >
-                        <div className={`relative max-w-[85%] sm:max-w-[75%] ${
-                          isUser 
-                            ? 'bg-[#005C4B] rounded-2xl rounded-tr-md' 
-                            : 'bg-[#1F2C33] rounded-2xl rounded-tl-md'
-                        } px-4 py-2.5 sm:px-4 sm:py-3 shadow-lg`}>
-                          {/* Seta do balão */}
-                          <div className={`absolute top-0 ${
-                            isUser 
-                              ? 'right-0 -mr-2 border-l-[8px] border-l-[#005C4B] border-t-[8px] border-t-transparent border-b-[8px] border-b-transparent' 
-                              : 'left-0 -ml-2 border-r-[8px] border-r-[#1F2C33] border-t-[8px] border-t-transparent border-b-[8px] border-b-transparent'
-                          }`} style={{ width: 0, height: 0 }} />
-                          
-                          {message.imageUrl && (
-                            <img 
-                              src={message.imageUrl} 
-                              alt="Imagem enviada" 
-                              className="max-w-[240px] sm:max-w-[280px] h-auto rounded-lg mb-2 object-cover" 
-                            />
-                          )}
-                          <p className="whitespace-pre-wrap text-[15px] sm:text-base leading-relaxed break-words text-white/95">{message.content}</p>
-                          <div className="flex items-center justify-end gap-1 mt-1">
-                            <span className="text-[11px] sm:text-xs text-white/50">{time}</span>
-                            {isUser && <CheckCheck className="w-4 h-4 text-[#53BDEB]" />}
-                          </div>
-                        </div>
-                      </motion.div>
-                    );
-                  })}
-                  {isLoading && (
-                    <motion.div 
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="flex justify-start"
-                    >
-                      <div className="bg-[#1F2C33] rounded-2xl rounded-tl-md px-4 py-3 shadow-lg">
-                        <div className="flex items-center gap-2">
-                          <div className="flex gap-1">
-                            <span className="w-2 h-2 bg-[#25D366] rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                            <span className="w-2 h-2 bg-[#25D366] rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                            <span className="w-2 h-2 bg-[#25D366] rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-                          </div>
-                        </div>
-                      </div>
-                    </motion.div>
-                  )}
-                </div>
-              </ScrollArea>
-            </div>
-
-            {/* Preview de imagem */}
-            <AnimatePresence>
-              {imagePreview && (
-                <motion.div 
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 20 }}
-                  className="px-4 py-2 bg-[#1F2C33] border-t border-[#2a3942]"
-                >
-                  <div className="relative inline-block">
-                    <img src={imagePreview} alt="Preview" className="h-20 w-auto rounded-lg object-cover" />
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="absolute -top-2 -right-2 h-6 w-6 bg-red-500 hover:bg-red-600 rounded-full text-white"
-                      onClick={() => { setSelectedImage(null); setImagePreview(null); }}
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+            <MessageList 
+              messages={messages}
+              isLoading={isLoading}
+              scrollAreaRef={scrollAreaRef}
+            />
 
             {/* Barra de entrada estilo WhatsApp */}
-            <div className="px-3 py-2 sm:px-4 sm:py-3 bg-[#1F2C33] border-t border-[#2a3942] flex-shrink-0">
-              <div className="flex items-center gap-2 sm:gap-3">
-                {/* Botão de Voz Toggle */}
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className={`h-10 w-10 sm:h-11 sm:w-11 rounded-full flex-shrink-0 transition-all ${
-                    voiceEnabled 
-                      ? 'bg-[#25D366]/20 text-[#25D366] hover:bg-[#25D366]/30' 
-                      : 'text-[#8696A0] hover:bg-white/5'
-                  }`}
-                  onClick={toggleVoice}
-                  title={voiceEnabled ? "Desativar voz" : "Ativar voz"}
-                >
-                  {voiceEnabled ? <Volume2 className="h-5 w-5 sm:h-6 sm:w-6" /> : <VolumeX className="h-5 w-5 sm:h-6 sm:w-6" />}
-                </Button>
-
-                {/* Campo de texto */}
-                <div className="flex-1 min-w-0 relative">
-                  <Input
-                    placeholder="Digite sua mensagem..."
-                    value={inputMessage}
-                    onChange={(e) => setInputMessage(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    disabled={isLoading}
-                    className="bg-[#2A3942] border-none rounded-full text-white placeholder:text-[#8696A0] text-[15px] sm:text-base h-11 sm:h-12 pl-4 pr-24 focus-visible:ring-1 focus-visible:ring-[#25D366]"
-                  />
-                  <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                    <Button 
-                      type="button" 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-9 w-9 text-[#8696A0] hover:bg-white/5 hover:text-white rounded-full" 
-                      onClick={handleCameraClick} 
-                      disabled={isLoading} 
-                      title="Câmera"
-                    >
-                      <Camera className="h-5 w-5" />
-                    </Button>
-                    <Button 
-                      type="button" 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-9 w-9 text-[#8696A0] hover:bg-white/5 hover:text-white rounded-full" 
-                      onClick={handleGalleryClick} 
-                      disabled={isLoading} 
-                      title="Galeria"
-                    >
-                      <Image className="h-5 w-5" />
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Botão enviar/microfone */}
-                <Button
-                  onClick={inputMessage.trim() || selectedImage ? handleSendMessage : handleMicClick}
-                  disabled={isLoading}
-                  size="icon"
-                  className={`rounded-full h-11 w-11 sm:h-12 sm:w-12 flex-shrink-0 shadow-lg transition-all ${
-                    isListening 
-                      ? 'bg-red-500 text-white animate-pulse hover:bg-red-600' 
-                      : 'bg-[#00A884] text-white hover:bg-[#00A884]/90'
-                  }`}
-                >
-                  {isLoading ? (
-                    <Loader2 className="h-5 w-5 sm:h-6 sm:w-6 animate-spin" />
-                  ) : inputMessage.trim() || selectedImage ? (
-                    <Send className="h-5 w-5 sm:h-6 sm:w-6" />
-                  ) : (
-                    <Mic className="h-5 w-5 sm:h-6 sm:w-6" />
-                  )}
-                </Button>
-              </div>
-            </div>
-
+            <MessageInput
+              inputMessage={inputMessage}
+              setInputMessage={setInputMessage}
+              isLoading={isLoading}
+              selectedImage={selectedImage}
+              imagePreview={imagePreview}
+              voiceEnabled={voiceEnabled}
+              isListening={isListening}
+              onSendMessage={handleSendMessage}
+              onKeyPress={handleKeyPress}
+              onCameraClick={handleCameraClick}
+              onGalleryClick={handleGalleryClick}
+              onMicClick={handleMicClick}
+              onToggleVoice={toggleVoice}
+              onRemoveImage={handleRemoveImage}
+            />
           </div>
         );
       
@@ -1125,17 +448,7 @@ O que você gostaria de conversar hoje? Pode me enviar uma foto da sua refeiçã
           detectedFoods={pendingAnalysis.detectedFoods}
           userName={pendingAnalysis.userName}
           userId={user?.id || 'guest'}
-          onConfirmation={(response: string) => {
-            const sofiaMessage: Message = {
-              id: (Date.now() + 3).toString(),
-              type: 'sofia',
-              content: response,
-              timestamp: new Date()
-            };
-            setMessages(prev => [...prev, sofiaMessage]);
-            setShowConfirmationModal(false);
-            setPendingAnalysis(null);
-          }}
+          onConfirmation={handleConfirmation}
         />
       )}
     </div>

@@ -17,6 +17,7 @@ export { default as AITestPanel } from './AITestPanel';
 // Management
 export { default as AnamnesisManagement } from './AnamnesisManagement';
 export { default as ChallengeManagement } from './ChallengeManagement';
+export { default as X1ChallengeManagement } from './X1ChallengeManagement';
 export { CourseManagement } from './CourseManagement';
 export { CourseManagementNew } from './CourseManagementNew';
 export { default as SessionTemplates } from './SessionTemplates';

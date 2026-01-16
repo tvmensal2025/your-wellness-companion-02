@@ -23,6 +23,7 @@ import { reportService } from '@/services/dr-vital/reportService';
 import type { HealthReport, ReportType } from '@/types/dr-vital-revolution';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import DOMPurify from 'dompurify';
 
 type PeriodOption = '7' | '30' | '90' | '180';
 
@@ -305,11 +306,11 @@ export const ReportGenerator: React.FC = () => {
               <div className="prose prose-sm max-w-none">
                 <div 
                   dangerouslySetInnerHTML={{ 
-                    __html: previewReport.aiAnalysis
+                    __html: DOMPurify.sanitize(previewReport.aiAnalysis
                       .replace(/## /g, '<h2 class="text-lg font-semibold mt-4 mb-2">')
                       .replace(/### /g, '<h3 class="text-base font-medium mt-3 mb-1">')
                       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                      .replace(/\n/g, '<br />') 
+                      .replace(/\n/g, '<br />'))
                   }} 
                 />
               </div>

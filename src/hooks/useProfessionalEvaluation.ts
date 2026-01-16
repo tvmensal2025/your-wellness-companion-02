@@ -60,7 +60,8 @@ export const useProfessionalEvaluation = () => {
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('*')
-        .order('full_name');
+        .order('full_name')
+        .limit(500);
 
       if (profilesError) {
         console.error('Erro ao buscar profiles:', profilesError);

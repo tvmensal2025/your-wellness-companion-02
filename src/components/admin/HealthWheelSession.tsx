@@ -587,7 +587,7 @@ export const HealthWheelSession: React.FC<HealthWheelSessionProps> = ({
                 <CardTitle className="text-white flex items-center justify-center gap-2 text-base sm:text-lg">
                   📊 Score Geral
                 </CardTitle>
-                <p className="text-xs sm:text-sm text-gray-300">Pontuação Total da Avaliação</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">Pontuação Total da Avaliação</p>
               </CardHeader>
               <CardContent className="p-3 sm:p-6">
                 {/* Termômetro de Score Responsivo */}
@@ -651,15 +651,15 @@ export const HealthWheelSession: React.FC<HealthWheelSessionProps> = ({
                     <div className="flex flex-wrap justify-center gap-2 sm:gap-4 text-xs sm:text-sm">
                       <div className="flex items-center gap-1">
                         <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                        <span className="text-gray-400">0-40%</span>
+                        <span className="text-muted-foreground">0-40%</span>
                       </div>
                       <div className="flex items-center gap-1">
                         <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                        <span className="text-gray-400">41-70%</span>
+                        <span className="text-muted-foreground">41-70%</span>
                       </div>
                       <div className="flex items-center gap-1">
                         <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                        <span className="text-gray-400">71-100%</span>
+                        <span className="text-muted-foreground">71-100%</span>
                       </div>
                     </div>
                   </div>
@@ -673,7 +673,7 @@ export const HealthWheelSession: React.FC<HealthWheelSessionProps> = ({
                 <CardTitle className="text-white flex items-center justify-center gap-2 text-base sm:text-lg">
                   {content.areas ? '🎯 Roda da Vida' : '🩺 Roda da Saúde'}
                 </CardTitle>
-                <p className="text-xs sm:text-sm text-gray-300">Avaliação Atual dos Sistemas</p>
+                <p className="text-xs sm:text-sm text-muted-foreground">Avaliação Atual dos Sistemas</p>
               </CardHeader>
               <CardContent className="flex justify-center p-2 sm:p-6">
                 <GalileuHealthWheel 
@@ -700,10 +700,10 @@ export const HealthWheelSession: React.FC<HealthWheelSessionProps> = ({
                   {results.sort((a, b) => b.score - a.score).map((result, index) => (
                     <div 
                       key={index}
-                      className="flex flex-col items-center p-2 sm:p-3 rounded-lg bg-gray-800/50 border border-gray-700"
+                      className="flex flex-col items-center p-2 sm:p-3 rounded-lg bg-muted/50 border border-border"
                     >
                       <span className="text-xl sm:text-2xl mb-1">{result.icon}</span>
-                      <span className="text-xs text-gray-400 text-center truncate w-full">{result.systemName}</span>
+                      <span className="text-xs text-muted-foreground text-center truncate w-full">{result.systemName}</span>
                       <span 
                         className="text-sm sm:text-lg font-bold mt-1"
                         style={{ color: result.color }}

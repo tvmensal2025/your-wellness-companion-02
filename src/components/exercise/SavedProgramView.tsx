@@ -246,7 +246,7 @@ export const SavedProgramView: React.FC<SavedProgramProps> = ({
         setLibraryLoading(true);
         
         // Primeiro tenta buscar com location específico
-        let { data, error } = await supabase
+        const { data, error } = await supabase
           .from('exercises_library')
           .select('*')
           .eq('is_active', true)

@@ -86,7 +86,8 @@ export const useAdvancedTracking = () => {
         .eq('user_id', user.id)
         .gte('date', startDate.toISOString().split('T')[0])
         .lte('date', endDate.toISOString().split('T')[0])
-        .order('date', { ascending: false });
+        .order('date', { ascending: false })
+        .limit(30);
 
       if (error) throw error;
 

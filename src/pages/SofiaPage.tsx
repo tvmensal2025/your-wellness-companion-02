@@ -2,7 +2,7 @@
 // Substitui o CompleteDashboardPage com Sofia como tela principal
 
 import React, { useState, useEffect, useRef, lazy, Suspense, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useUserDataCache, invalidateUserDataCache } from '@/hooks/useUserDataCache';
@@ -22,7 +22,7 @@ const CoursePlatformNetflix = lazy(() => import('@/components/dashboard/CoursePl
 const UserSessionsCompact = lazy(() => import('@/components/sessions/UserSessionsCompact'));
 const GoalsPageV2 = lazy(() => import('@/pages/GoalsPageV2'));
 const ChallengesV2Dashboard = lazy(() => import('@/components/challenges-v2/ChallengesDashboard'));
-const ExerciseOnboardingModal = lazy(() => import('@/components/exercise/ExerciseOnboardingModal').then(m => ({ default: m.ExerciseOnboardingModal })));
+const ExerciseOnboardingModal = lazy(() => import('@/components/exercise/onboarding').then(m => ({ default: m.ExerciseOnboardingModal })));
 const ExerciseDashboard = lazy(() => import('@/components/exercise/ExerciseDashboard').then(m => ({ default: m.ExerciseDashboard })));
 const HealthFeedPage = lazy(() => import('@/pages/HealthFeedPage'));
 const PaymentPlans = lazy(() => import('@/components/PaymentPlans'));
@@ -55,7 +55,7 @@ const SofiaPage = () => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeSectionState, setActiveSectionState] = useState<DashboardSection>('dashboard');
-  const { setActiveSection: setActiveSectionContext } = useActiveSection();
+  const { activeSection: contextActiveSection, setActiveSection: setActiveSectionContext } = useActiveSection();
   const { isMenuEnabled, selectedCharacter, setShowSelector } = useMenuStyleContext();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
@@ -66,7 +66,11 @@ const SofiaPage = () => {
   const [whatsappSettingsOpen, setWhatsappSettingsOpen] = useState(false);
   const [dmModalOpen, setDmModalOpen] = useState(false);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { totalUnread } = useDirectMessages();
+
+  // Ler seção da URL query param
+  const urlSection = searchParams.get('section') as DashboardSection | null;
 
   // Sincroniza estado local com contexto global para ocultar Sofia na comunidade
   const activeSection = activeSectionState;
@@ -74,6 +78,26 @@ const SofiaPage = () => {
     setActiveSectionState(section);
     setActiveSectionContext(section);
   };
+
+  // Sincronizar quando o contexto mudar de fora (ex: useChallengeLogic)
+  useEffect(() => {
+    if (contextActiveSection && contextActiveSection !== activeSectionState) {
+      const validSections: DashboardSection[] = ['dashboard', 'missions', 'courses', 'sessions', 'comunidade', 'goals', 'challenges', 'saboteur-test', 'progress', 'subscriptions', 'sofia-nutricional', 'dr-vital', 'exercicios', 'apps', 'help', 'profile'];
+      if (validSections.includes(contextActiveSection as DashboardSection)) {
+        setActiveSectionState(contextActiveSection as DashboardSection);
+      }
+    }
+  }, [contextActiveSection]);
+
+  // Aplicar seção da URL quando mudar
+  useEffect(() => {
+    if (urlSection && urlSection !== activeSectionState) {
+      const validSections: DashboardSection[] = ['dashboard', 'missions', 'courses', 'sessions', 'comunidade', 'goals', 'challenges', 'saboteur-test', 'progress', 'subscriptions', 'sofia-nutricional', 'dr-vital', 'exercicios', 'apps', 'help', 'profile'];
+      if (validSections.includes(urlSection)) {
+        setActiveSection(urlSection);
+      }
+    }
+  }, [urlSection]);
 
   const menuItems = [
     {
@@ -265,7 +289,9 @@ const SofiaPage = () => {
   const handleLogout = async () => {
     try {
       await Promise.race([supabase.auth.signOut(), new Promise(resolve => setTimeout(resolve, 1500))]);
-    } catch (e) {} finally {
+    } catch (error) {
+      console.error('Erro ao fazer logout:', error);
+    } finally {
       setLoading(false);
       navigate('/auth', { replace: true });
     }

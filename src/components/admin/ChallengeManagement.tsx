@@ -15,10 +15,11 @@ import { Switch } from '@/components/ui/switch';
 import { GoalManagement } from './GoalManagement';
 import { CreateGoalModal } from './CreateGoalModal';
 import { PointsConfiguration } from './PointsConfiguration';
+import X1ChallengeManagement from './X1ChallengeManagement';
 import {
   Plus, Edit, Trash2, Trophy, Users, Calendar, 
   Target, CheckCircle, AlertCircle, Search, 
-  Filter, BarChart3, Activity, Settings, Bell, Coins
+  Filter, BarChart3, Activity, Settings, Bell, Coins, Swords
 } from 'lucide-react';
 
 interface Challenge {
@@ -119,18 +120,8 @@ export default function ChallengeManagement({ user }: ChallengeManagementProps) 
     { value: 'extremo', label: 'Extremo', color: 'bg-red-100 text-red-800' }
   ];
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
-    try {
-      await Promise.all([loadChallenges(), loadParticipations(), loadPendingGoals()]);
-    } catch (error) {
-      console.error('Error loading data:', error);
-    } finally {
-      setLoading(false);
-    }
+  const getCategoryIcon = (category: string) => {
+    return categories.find(c => c.value === category)?.icon || '🏆';
   };
 
   const loadPendingGoals = async () => {
@@ -206,6 +197,20 @@ export default function ChallengeManagement({ user }: ChallengeManagementProps) 
       console.error('Erro ao carregar participações:', error);
     }
   };
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        await Promise.all([loadChallenges(), loadParticipations(), loadPendingGoals()]);
+      } catch (error) {
+        console.error('Error loading data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadData();
+  }, []);
 
   const createChallenge = async () => {
     if (!formData.title.trim()) {
@@ -407,10 +412,6 @@ export default function ChallengeManagement({ user }: ChallengeManagementProps) 
       max_participants: challenge.max_participants
     });
     setIsEditModalOpen(true);
-  };
-
-  const getCategoryIcon = (category: string) => {
-    return categories.find(c => c.value === category)?.icon || '🏆';
   };
 
   const getDifficultyColor = (difficulty: string) => {
@@ -633,10 +634,14 @@ export default function ChallengeManagement({ user }: ChallengeManagementProps) 
       </div>
 
       <Tabs defaultValue="challenges" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="challenges" className="flex items-center gap-2">
             <Trophy className="h-4 w-4" />
             Desafios
+          </TabsTrigger>
+          <TabsTrigger value="x1" className="flex items-center gap-2">
+            <Swords className="h-4 w-4" />
+            X1 Duelos
           </TabsTrigger>
           <TabsTrigger value="goals" className="flex items-center gap-2 relative">
             <Target className="h-4 w-4" />
@@ -770,6 +775,10 @@ export default function ChallengeManagement({ user }: ChallengeManagementProps) 
               </Card>
             ))}
           </div>
+        </TabsContent>
+
+        <TabsContent value="x1" className="space-y-4">
+          <X1ChallengeManagement />
         </TabsContent>
 
         <TabsContent value="goals" className="space-y-4">

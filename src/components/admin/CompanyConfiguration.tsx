@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,6 +21,21 @@ interface CompanyData {
   health_philosophy: string;
 }
 
+interface CompanyDataRecord {
+  company_name?: string;
+  description?: string;
+  mission?: string;
+  vision?: string;
+  values?: string;
+  about_us?: string;
+  target_audience?: string;
+  main_services?: string;
+  differentials?: string;
+  company_culture?: string;
+  health_philosophy?: string;
+  [key: string]: unknown;
+}
+
 const CompanyConfiguration: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [companyData, setCompanyData] = useState<CompanyData>({
@@ -40,7 +55,7 @@ const CompanyConfiguration: React.FC = () => {
     loadCompanyData();
   }, []);
 
-  const loadCompanyData = async () => {
+  const loadCompanyData = useCallback(async () => {
     try {
       // Usar a nova tabela company_data
       const { data, error } = await supabase
@@ -54,35 +69,37 @@ const CompanyConfiguration: React.FC = () => {
       }
 
       if (data) {
+        const record = data as CompanyDataRecord;
         setCompanyData({
-          company_name: data.company_name || '',
-          mission: (data as any).mission || '',
-          vision: (data as any).vision || '',
-          values: (data as any).values || '',
-          about_us: (data as any).about_us || '',
-          target_audience: (data as any).target_audience || '',
-          main_services: (data as any).main_services || '',
-          differentials: (data as any).differentials || '',
-          company_culture: (data as any).company_culture || '',
-          health_philosophy: (data as any).health_philosophy || ''
+          company_name: record.company_name || '',
+          mission: record.mission || '',
+          vision: record.vision || '',
+          values: record.values || '',
+          about_us: record.about_us || '',
+          target_audience: record.target_audience || '',
+          main_services: record.main_services || '',
+          differentials: record.differentials || '',
+          company_culture: record.company_culture || '',
+          health_philosophy: record.health_philosophy || ''
         });
       }
     } catch (error) {
       console.error('Erro ao carregar dados da empresa:', error);
     }
-  };
+  }, []);
 
   const saveCompanyData = async () => {
     try {
       setLoading(true);
       
       // Salvar usando a nova tabela company_data
+      // @ts-expect-error - Campos podem não existir no tipo gerado
       const { data, error } = await supabase
         .from('company_data')
         .upsert({
           company_name: companyData.company_name,
           description: companyData.about_us
-        } as any)
+        })
         .select()
         .single();
 

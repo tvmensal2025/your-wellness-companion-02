@@ -213,7 +213,7 @@ export const QuizModal = ({ isOpen, onClose, onSubmit, lessons }: QuizModalProps
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="w-[95vw] bg-gray-900 border-gray-700 text-white max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-[95vw] bg-card border-border text-foreground max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl font-bold">
             <CheckCircle className="h-6 w-6 text-purple-500" />
@@ -225,7 +225,7 @@ export const QuizModal = ({ isOpen, onClose, onSubmit, lessons }: QuizModalProps
           {/* Informações Básicas */}
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="title" className="text-sm font-medium text-gray-300">
+              <Label htmlFor="title" className="text-sm font-medium text-muted-foreground">
                 📝 Título do Quiz
               </Label>
               <Input
@@ -233,7 +233,7 @@ export const QuizModal = ({ isOpen, onClose, onSubmit, lessons }: QuizModalProps
                 value={formData.title}
                 onChange={(e) => handleInputChange("title", e.target.value)}
                 placeholder="Digite o título do quiz..."
-                className="bg-gray-800 border-gray-600 text-white placeholder-gray-400"
+                className="bg-muted border-border text-foreground placeholder:text-muted-foreground"
               />
               {errors.title && (
                 <div className="flex items-center gap-1 text-red-400 text-sm">
@@ -244,7 +244,7 @@ export const QuizModal = ({ isOpen, onClose, onSubmit, lessons }: QuizModalProps
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description" className="text-sm font-medium text-gray-300">
+              <Label htmlFor="description" className="text-sm font-medium text-muted-foreground">
                 📄 Descrição
               </Label>
               <Textarea
@@ -253,7 +253,7 @@ export const QuizModal = ({ isOpen, onClose, onSubmit, lessons }: QuizModalProps
                 onChange={(e) => handleInputChange("description", e.target.value)}
                 placeholder="Descreva o conteúdo do quiz..."
                 rows={3}
-                className="bg-gray-800 border-gray-600 text-white placeholder-gray-400"
+                className="bg-muted border-border text-foreground placeholder:text-muted-foreground"
               />
               {errors.description && (
                 <div className="flex items-center gap-1 text-red-400 text-sm">
@@ -265,16 +265,16 @@ export const QuizModal = ({ isOpen, onClose, onSubmit, lessons }: QuizModalProps
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="lessonId" className="text-sm font-medium text-gray-300">
+                <Label htmlFor="lessonId" className="text-sm font-medium text-muted-foreground">
                   📚 Aula
                 </Label>
                 <Select value={formData.lessonId} onValueChange={(value) => handleInputChange("lessonId", value)}>
-                  <SelectTrigger className="bg-gray-800 border-gray-600 text-white">
+                  <SelectTrigger className="bg-muted border-border text-foreground">
                     <SelectValue placeholder="Selecione uma aula" />
                   </SelectTrigger>
-                  <SelectContent className="bg-gray-800 border-gray-600">
+                  <SelectContent className="bg-popover border-border">
                     {lessons.map((lesson) => (
-                      <SelectItem key={lesson.id} value={lesson.id} className="text-white hover:bg-gray-700">
+                      <SelectItem key={lesson.id} value={lesson.id} className="text-foreground hover:bg-muted">
                         {lesson.title}
                       </SelectItem>
                     ))}
@@ -289,7 +289,7 @@ export const QuizModal = ({ isOpen, onClose, onSubmit, lessons }: QuizModalProps
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="timeLimit" className="text-sm font-medium text-gray-300">
+                <Label htmlFor="timeLimit" className="text-sm font-medium text-muted-foreground">
                   ⏱️ Tempo Limite (minutos)
                 </Label>
                 <Input
@@ -299,7 +299,7 @@ export const QuizModal = ({ isOpen, onClose, onSubmit, lessons }: QuizModalProps
                   onChange={(e) => handleInputChange("timeLimit", parseInt(e.target.value) || 0)}
                   placeholder="30"
                   min="1"
-                  className="bg-gray-800 border-gray-600 text-white"
+                  className="bg-muted border-border text-foreground"
                 />
                 {errors.timeLimit && (
                   <div className="flex items-center gap-1 text-red-400 text-sm">
@@ -310,7 +310,7 @@ export const QuizModal = ({ isOpen, onClose, onSubmit, lessons }: QuizModalProps
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="minimumScore" className="text-sm font-medium text-gray-300">
+                <Label htmlFor="minimumScore" className="text-sm font-medium text-muted-foreground">
                   🎯 Pontuação Mínima (%)
                 </Label>
                 <Input
@@ -321,7 +321,7 @@ export const QuizModal = ({ isOpen, onClose, onSubmit, lessons }: QuizModalProps
                   placeholder="70"
                   min="0"
                   max="100"
-                  className="bg-gray-800 border-gray-600 text-white"
+                  className="bg-muted border-border text-foreground"
                 />
                 {errors.minimumScore && (
                   <div className="flex items-center gap-1 text-red-400 text-sm">
@@ -336,7 +336,7 @@ export const QuizModal = ({ isOpen, onClose, onSubmit, lessons }: QuizModalProps
           {/* Questões */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <Label className="text-sm font-medium text-gray-300">
+              <Label className="text-sm font-medium text-muted-foreground">
                 📋 QUESTÕES
               </Label>
               <Button 
@@ -350,17 +350,17 @@ export const QuizModal = ({ isOpen, onClose, onSubmit, lessons }: QuizModalProps
             </div>
 
             {formData.questions.length === 0 && (
-              <div className="text-center py-8 text-gray-400 border-2 border-dashed border-gray-600 rounded-lg">
-                <HelpCircle className="h-12 w-12 mx-auto mb-2 text-gray-500" />
+              <div className="text-center py-8 text-muted-foreground border-2 border-dashed border-border rounded-lg">
+                <HelpCircle className="h-12 w-12 mx-auto mb-2 text-muted-foreground/50" />
                 <p>Nenhuma questão adicionada ainda</p>
                 <p className="text-sm">Clique em "Adicionar Questão" para começar</p>
               </div>
             )}
 
             {formData.questions.map((question, index) => (
-              <div key={question.id} className="border border-gray-600 rounded-lg p-4 space-y-4">
+              <div key={question.id} className="border border-border rounded-lg p-4 space-y-4">
                 <div className="flex items-center justify-between">
-                  <h4 className="text-sm font-medium text-gray-300">
+                  <h4 className="text-sm font-medium text-muted-foreground">
                     ❓ Pergunta {index + 1}
                   </h4>
                   <Button
@@ -376,7 +376,7 @@ export const QuizModal = ({ isOpen, onClose, onSubmit, lessons }: QuizModalProps
                 <div className="space-y-4">
                   {/* Pergunta */}
                   <div className="space-y-2">
-                    <Label className="text-sm font-medium text-gray-300">
+                    <Label className="text-sm font-medium text-muted-foreground">
                       Pergunta
                     </Label>
                     <Textarea
@@ -384,7 +384,7 @@ export const QuizModal = ({ isOpen, onClose, onSubmit, lessons }: QuizModalProps
                       onChange={(e) => handleQuestionChange(question.id, "question", e.target.value)}
                       placeholder="Digite a pergunta..."
                       rows={2}
-                      className="bg-gray-800 border-gray-600 text-white placeholder-gray-400"
+                      className="bg-muted border-border text-foreground placeholder:text-muted-foreground"
                     />
                     {errors[`question-${index}-question`] && (
                       <div className="flex items-center gap-1 text-red-400 text-sm">
@@ -396,7 +396,7 @@ export const QuizModal = ({ isOpen, onClose, onSubmit, lessons }: QuizModalProps
 
                   {/* Opções */}
                   <div className="space-y-3">
-                    <Label className="text-sm font-medium text-gray-300">
+                    <Label className="text-sm font-medium text-muted-foreground">
                       Opções
                     </Label>
                     {question.options.map((option, optionIndex) => (
@@ -408,7 +408,7 @@ export const QuizModal = ({ isOpen, onClose, onSubmit, lessons }: QuizModalProps
                           >
                             <div className="flex items-center space-x-2">
                               <RadioGroupItem value={optionIndex.toString()} id={`correct-${question.id}-${optionIndex}`} />
-                              <Label htmlFor={`correct-${question.id}-${optionIndex}`} className="text-sm text-gray-300">
+                              <Label htmlFor={`correct-${question.id}-${optionIndex}`} className="text-sm text-muted-foreground">
                                 {String.fromCharCode(65 + optionIndex)}
                               </Label>
                             </div>
@@ -418,7 +418,7 @@ export const QuizModal = ({ isOpen, onClose, onSubmit, lessons }: QuizModalProps
                           value={option}
                           onChange={(e) => handleOptionChange(question.id, optionIndex, e.target.value)}
                           placeholder={`Opção ${String.fromCharCode(65 + optionIndex)}`}
-                          className="bg-gray-800 border-gray-600 text-white placeholder-gray-400 flex-1"
+                          className="bg-muted border-border text-foreground placeholder:text-muted-foreground flex-1"
                         />
                         {errors[`question-${index}-option-${optionIndex}`] && (
                           <div className="flex items-center gap-1 text-red-400 text-sm">
@@ -432,7 +432,7 @@ export const QuizModal = ({ isOpen, onClose, onSubmit, lessons }: QuizModalProps
 
                   {/* Explicação */}
                   <div className="space-y-2">
-                    <Label className="text-sm font-medium text-gray-300">
+                    <Label className="text-sm font-medium text-muted-foreground">
                       📝 Explicação
                     </Label>
                     <Textarea
@@ -440,7 +440,7 @@ export const QuizModal = ({ isOpen, onClose, onSubmit, lessons }: QuizModalProps
                       onChange={(e) => handleQuestionChange(question.id, "explanation", e.target.value)}
                       placeholder="Explique por que esta é a resposta correta..."
                       rows={2}
-                      className="bg-gray-800 border-gray-600 text-white placeholder-gray-400"
+                      className="bg-muted border-border text-foreground placeholder:text-muted-foreground"
                     />
                     {errors[`question-${index}-explanation`] && (
                       <div className="flex items-center gap-1 text-red-400 text-sm">
@@ -452,7 +452,7 @@ export const QuizModal = ({ isOpen, onClose, onSubmit, lessons }: QuizModalProps
 
                   {/* Pontos */}
                   <div className="space-y-2">
-                    <Label className="text-sm font-medium text-gray-300">
+                    <Label className="text-sm font-medium text-muted-foreground">
                       🎯 Pontos
                     </Label>
                     <Input
@@ -461,7 +461,7 @@ export const QuizModal = ({ isOpen, onClose, onSubmit, lessons }: QuizModalProps
                       onChange={(e) => handleQuestionChange(question.id, "points", parseInt(e.target.value) || 0)}
                       placeholder="10"
                       min="1"
-                      className="bg-gray-800 border-gray-600 text-white w-24"
+                      className="bg-muted border-border text-foreground w-24"
                     />
                     {errors[`question-${index}-points`] && (
                       <div className="flex items-center gap-1 text-red-400 text-sm">
@@ -481,7 +481,7 @@ export const QuizModal = ({ isOpen, onClose, onSubmit, lessons }: QuizModalProps
             variant="outline"
             onClick={handleClose}
             disabled={isLoading}
-            className="border-gray-600 text-white hover:bg-gray-800"
+            className="border-border text-foreground hover:bg-muted"
           >
             <X className="h-4 w-4 mr-2" />
             Cancelar

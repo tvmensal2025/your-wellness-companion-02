@@ -27,7 +27,8 @@ export const usePointsConfig = () => {
         .from('points_configuration')
         .select('*')
         .order('category', { ascending: true })
-        .order('action_name', { ascending: true });
+        .order('action_name', { ascending: true })
+        .limit(200);
 
       if (error) throw error;
       return data as PointsConfig[];

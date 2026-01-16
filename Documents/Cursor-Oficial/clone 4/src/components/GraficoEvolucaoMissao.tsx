@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
@@ -30,50 +30,7 @@ export const GraficoEvolucaoMissao = () => {
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
 
-  useEffect(() => {
-    if (user) {
-      fetchDadosEvolucao();
-    }
-  }, [user, periodo]);
-
-  const fetchDadosEvolucao = async () => {
-    if (!user) return;
-
-    setLoading(true);
-    try {
-      const profile = await supabase.from('profiles').select('id').eq('user_id', user.id).single();
-      if (profile.error) throw profile.error;
-
-      const dataInicio = format(subDays(new Date(), periodo), 'yyyy-MM-dd');
-      const dataFim = format(new Date(), 'yyyy-MM-dd');
-
-      const { data, error } = await supabase
-        .from('pontuacao_diaria')
-        .select('data, total_pontos_dia, categoria_dia')
-        .eq('user_id', profile.data.id)
-        .gte('data', dataInicio)
-        .lte('data', dataFim)
-        .order('data');
-
-      if (error) throw error;
-
-      const dadosFormatados: DadosPontuacao[] = data?.map(item => ({
-        data: item.data,
-        pontos: item.total_pontos_dia || 0,
-        categoria: item.categoria_dia || 'baixa',
-        dataFormatada: format(parseISO(item.data), 'dd/MM', { locale: ptBR })
-      })) || [];
-
-      setDadosEvolucao(dadosFormatados);
-      calcularEstatisticas(dadosFormatados);
-    } catch (error) {
-      console.error('Erro ao buscar dados de evolução:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const calcularEstatisticas = (dados: DadosPontuacao[]) => {
+  const calcularEstatisticas = useCallback((dados: DadosPontuacao[]) => {
     if (dados.length === 0) {
       setEstatisticas(null);
       return;
@@ -92,8 +49,12 @@ export const GraficoEvolucaoMissao = () => {
     const primeiraMetade = dados.slice(0, metade);
     const segundaMetade = dados.slice(metade);
 
-    const mediaPrimeira = primeiraMetade.reduce((sum, item) => sum + item.pontos, 0) / primeiraMetade.length;
-    const mediaSegunda = segundaMetade.reduce((sum, item) => sum + item.pontos, 0) / segundaMetade.length;
+    const mediaPrimeira = primeiraMetade.length > 0 
+      ? primeiraMetade.reduce((sum, item) => sum + item.pontos, 0) / primeiraMetade.length 
+      : 0;
+    const mediaSegunda = segundaMetade.length > 0 
+      ? segundaMetade.reduce((sum, item) => sum + item.pontos, 0) / segundaMetade.length 
+      : 0;
 
     let tendencia: 'subindo' | 'descendo' | 'estavel' = 'estavel';
     const diferenca = mediaSegunda - mediaPrimeira;
@@ -110,7 +71,51 @@ export const GraficoEvolucaoMissao = () => {
       diasAtivos,
       tendencia
     });
-  };
+  }, []);
+
+  const fetchDadosEvolucao = useCallback(async () => {
+    if (!user) return;
+
+    setLoading(true);
+    try {
+      const profile = await supabase.from('profiles').select('id').eq('user_id', user.id).single();
+      if (profile.error) throw profile.error;
+
+      const dataInicio = format(subDays(new Date(), periodo), 'yyyy-MM-dd');
+      const dataFim = format(new Date(), 'yyyy-MM-dd');
+
+      const { data, error } = await supabase
+        .from('pontuacao_diaria')
+        .select('data, total_pontos_dia, categoria_dia')
+        .eq('user_id', profile.data.id)
+        .gte('data', dataInicio)
+        .lte('data', dataFim)
+        .order('data')
+        .limit(100);
+
+      if (error) throw error;
+
+      const dadosFormatados: DadosPontuacao[] = data?.map(item => ({
+        data: item.data,
+        pontos: item.total_pontos_dia || 0,
+        categoria: item.categoria_dia || 'baixa',
+        dataFormatada: format(parseISO(item.data), 'dd/MM', { locale: ptBR })
+      })) || [];
+
+      setDadosEvolucao(dadosFormatados);
+      calcularEstatisticas(dadosFormatados);
+    } catch (error) {
+      console.error('Erro ao buscar dados de evolução:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [user, periodo, calcularEstatisticas]);
+
+  useEffect(() => {
+    if (user) {
+      fetchDadosEvolucao();
+    }
+  }, [user, periodo, fetchDadosEvolucao]);
 
   const getTendenciaIcon = () => {
     if (!estatisticas) return null;

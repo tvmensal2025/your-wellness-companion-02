@@ -415,8 +415,9 @@ const ChallengeCard: React.FC<ChallengeCardProps> = ({
         started_at: new Date().toISOString(),
       }, { onConflict: 'user_id,challenge_id' });
       window.location.reload();
-    } catch (e) {
-      console.error(e);
+    } catch (error) {
+      console.error('Erro ao participar do desafio:', error);
+      // Toast não disponível neste componente, mas o erro é logado
     } finally {
       setIsJoining(false);
     }

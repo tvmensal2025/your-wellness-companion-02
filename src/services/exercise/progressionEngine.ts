@@ -161,7 +161,8 @@ export class ProgressionEngine {
       .select('*')
       .eq('user_id', this.userId)
       .gte('created_at', new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString())
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .limit(200);
 
     if (exerciseCode) {
       query = query.eq('exercise_code', exerciseCode);
@@ -311,7 +312,8 @@ export class ProgressionEngine {
   async getMuscleGroupProgress(): Promise<MuscleGroupProgress[]> {
     const { data } = await (fromTable('exercise_muscle_group_progress') as any)
       .select('*')
-      .eq('user_id', this.userId);
+      .eq('user_id', this.userId)
+      .limit(50);
 
     return (data || []).map((mg: any) => ({
       muscleGroup: mg.muscle_group,
@@ -696,7 +698,8 @@ export class ProgressionEngine {
       .from('exercise_performance_metrics')
       .select('exercise_code')
       .eq('user_id', this.userId)
-      .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString());
+      .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
+      .limit(500);
 
     const codes = (data || []).map(d => d.exercise_code);
     return [...new Set(codes)];

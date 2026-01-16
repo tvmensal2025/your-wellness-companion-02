@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { User } from '@supabase/supabase-js';
 import { useRanking } from '@/hooks/useRanking';
 import { Card, CardContent } from '@/components/ui/card';
@@ -22,9 +22,13 @@ export default function RankingCommunity({ user }: RankingCommunityProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('position');
 
-  useEffect(() => {
+  const handleRefetch = useCallback(() => {
     refetch();
-  }, []);
+  }, [refetch]);
+
+  useEffect(() => {
+    handleRefetch();
+  }, [handleRefetch]);
 
   const getRankBadge = (position: number) => {
     if (position === 1) {

@@ -543,7 +543,8 @@ export class SocialHub {
     const { data } = await (fromTable('exercise_team_challenges') as any)
       .select('*')
       .eq('group_id', groupId)
-      .order('end_date');
+      .order('end_date')
+      .limit(50);
 
     return (data || []).map((c: any) => ({
       id: c.id,
@@ -779,7 +780,8 @@ export class SocialHub {
       .from('exercise_competitions')
       .select('*')
       .in('status', ['upcoming', 'active'])
-      .order('start_date', { ascending: true });
+      .order('start_date', { ascending: true })
+      .limit(50);
 
     return (data || []).map((c: Record<string, unknown>) => this.mapCompetition(c));
   }
@@ -791,7 +793,8 @@ export class SocialHub {
         *,
         competition:exercise_competitions(*)
       `)
-      .eq('user_id', this.userId);
+      .eq('user_id', this.userId)
+      .limit(100);
 
     return (data || []).map((p: Record<string, unknown>) => ({
       id: p.id as string,
@@ -991,7 +994,8 @@ export class SocialHub {
       .select('*')
       .lte('start_date', now)
       .gte('end_date', now)
-      .eq('is_active', true);
+      .eq('is_active', true)
+      .limit(20);
 
     return (data || []).map((e: Record<string, unknown>) => ({
       id: e.id as string,

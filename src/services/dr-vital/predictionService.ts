@@ -585,7 +585,8 @@ export async function getActivePredictions(userId: string): Promise<HealthPredic
     .select('*')
     .eq('user_id', userId)
     .eq('is_active', true)
-    .order('probability', { ascending: false }) as any;
+    .order('probability', { ascending: false })
+    .limit(20) as any;
   
   if (error) throw error;
   
@@ -611,7 +612,7 @@ async function fetchUserHealthData(userId: string): Promise<UserHealthData | nul
   if (!physical) return null;
   
   // Calculate age from birth date or use idade field
-  let age = physical.idade || 30;
+  const age = physical.idade || 30;
   
   // Calculate averages from tracking
   const avgSleep = tracking.length > 0

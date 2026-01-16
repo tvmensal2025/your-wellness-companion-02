@@ -1,6 +1,11 @@
-import { supabase } from '@/integrations/supabase/client';
-
-const BUCKET_NAME = 'community-media';
+import { 
+  uploadToExternalStorage, 
+  validateMediaFile as validateExternalMedia,
+  isVideoFile as checkIsVideo,
+  isVideoUrl as checkIsVideoUrl,
+  type MediaFolder as ExternalMediaFolder,
+  type UploadResponse
+} from '@/lib/externalMedia';
 
 export type MediaFolder = 'stories' | 'posts';
 
@@ -11,39 +16,36 @@ export interface UploadResult {
 }
 
 /**
- * Upload a file to the community-media bucket
- * Files are organized by userId and folder (stories/posts)
+ * Upload a file to external storage (MinIO via VPS)
+ * Files are organized by userId and folder (stories/posts -> feed)
  */
 export async function uploadCommunityMedia(
   file: File,
   folder: MediaFolder,
   userId: string
 ): Promise<UploadResult> {
-  const timestamp = Date.now();
-  const randomSuffix = Math.random().toString(36).substring(2, 8);
-  const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-  const fileName = `${timestamp}-${randomSuffix}-${sanitizedName}`;
-  const path = `${userId}/${folder}/${fileName}`;
-
-  const { error: uploadError } = await supabase.storage
-    .from(BUCKET_NAME)
-    .upload(path, file, {
-      cacheControl: '3600',
-      upsert: false,
-    });
-
-  if (uploadError) {
-    throw new Error(`Erro ao fazer upload: ${uploadError.message}`);
+  // Validar arquivo antes do upload
+  const validation = validateExternalMedia(file);
+  if (!validation.valid) {
+    throw new Error(validation.error);
   }
 
-  const { data } = supabase.storage
-    .from(BUCKET_NAME)
-    .getPublicUrl(path);
+  // Mapear 'posts' para 'feed' no storage externo
+  const externalFolder: ExternalMediaFolder = folder === 'posts' ? 'feed' : folder;
+
+  const response: UploadResponse = await uploadToExternalStorage(file, {
+    folder: externalFolder,
+    userId,
+  });
+
+  if (!response.success) {
+    throw new Error(response.error);
+  }
 
   return {
-    publicUrl: data.publicUrl,
-    path,
-    mimeType: file.type,
+    publicUrl: response.url,
+    path: response.path,
+    mimeType: response.mimeType,
   };
 }
 
@@ -51,22 +53,14 @@ export async function uploadCommunityMedia(
  * Check if a file is a video based on MIME type
  */
 export function isVideoFile(file: File): boolean {
-  return file.type.startsWith('video/');
+  return checkIsVideo(file);
 }
 
 /**
  * Check if a URL points to a video (by extension or known patterns)
  */
 export function isVideoUrl(url: string): boolean {
-  if (!url) return false;
-  const lowerUrl = url.toLowerCase();
-  return (
-    lowerUrl.includes('.mp4') ||
-    lowerUrl.includes('.mov') ||
-    lowerUrl.includes('.webm') ||
-    lowerUrl.includes('.m4v') ||
-    lowerUrl.includes('.avi')
-  );
+  return checkIsVideoUrl(url);
 }
 
 /**
@@ -76,30 +70,5 @@ export function validateMediaFile(
   file: File,
   maxSizeMB: number = 50
 ): { valid: boolean; error?: string } {
-  const allowedTypes = [
-    'image/jpeg',
-    'image/png',
-    'image/gif',
-    'image/webp',
-    'video/mp4',
-    'video/quicktime',
-    'video/webm',
-  ];
-
-  if (!allowedTypes.includes(file.type)) {
-    return {
-      valid: false,
-      error: 'Formato não suportado. Use JPEG, PNG, GIF, WebP, MP4, MOV ou WebM.',
-    };
-  }
-
-  const maxSizeBytes = maxSizeMB * 1024 * 1024;
-  if (file.size > maxSizeBytes) {
-    return {
-      valid: false,
-      error: `Arquivo muito grande. Máximo ${maxSizeMB}MB.`,
-    };
-  }
-
-  return { valid: true };
+  return validateExternalMedia(file, maxSizeMB);
 }

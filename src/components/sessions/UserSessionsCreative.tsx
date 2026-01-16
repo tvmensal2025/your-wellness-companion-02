@@ -12,8 +12,9 @@ import {
   ChevronRight, Trophy, Flame, Sparkles, 
   ArrowRight, Star, Zap, Heart, Brain,
   Target, Rocket, Crown, Gift, Lock,
-  Calendar, Timer, TrendingUp, Award
+  Calendar, Timer, Award
 } from 'lucide-react';
+import GenericSessionExecutor from './GenericSessionExecutor';
 
 // Types
 interface Session {
@@ -653,6 +654,8 @@ export default function UserSessionsCreative({ user, onStartSession }: Props) {
   const [sessions, setSessions] = useState<UserSession[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
+  const [selectedSession, setSelectedSession] = useState<UserSession | null>(null);
+  const [isExecutorOpen, setIsExecutorOpen] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -707,6 +710,10 @@ export default function UserSessionsCreative({ user, onStartSession }: Props) {
     const session = sessions.find(s => s.id === sessionId);
     if (!session || session.is_locked) return;
 
+    // Abrir o executor de sessão
+    setSelectedSession(session);
+    setIsExecutorOpen(true);
+
     try {
       if (session.status === 'pending') {
         await supabase
@@ -716,7 +723,6 @@ export default function UserSessionsCreative({ user, onStartSession }: Props) {
       }
 
       onStartSession?.(sessionId);
-      loadSessions();
       
       toast({
         title: session.status === 'pending' ? "🚀 Sessão Iniciada!" : "▶️ Continuando...",
@@ -725,6 +731,12 @@ export default function UserSessionsCreative({ user, onStartSession }: Props) {
     } catch (error) {
       toast({ title: "Erro", description: "Não foi possível iniciar", variant: "destructive" });
     }
+  };
+
+  const handleSessionComplete = () => {
+    loadSessions();
+    setSelectedSession(null);
+    setIsExecutorOpen(false);
   };
 
   // Loading
@@ -859,6 +871,22 @@ export default function UserSessionsCreative({ user, onStartSession }: Props) {
             )}
           </div>
         </motion.div>
+      )}
+
+      {/* Session Executor Modal */}
+      {selectedSession && (
+        <GenericSessionExecutor
+          isOpen={isExecutorOpen}
+          onClose={() => {
+            setIsExecutorOpen(false);
+            setSelectedSession(null);
+            loadSessions();
+          }}
+          userSession={selectedSession}
+          userId={user?.id || ''}
+          userName={user?.user_metadata?.full_name || user?.email?.split('@')[0]}
+          onComplete={handleSessionComplete}
+        />
       )}
     </div>
   );

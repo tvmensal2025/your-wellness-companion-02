@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,13 +9,18 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { AlertTriangle, User, Calendar, Users, Ruler, Loader } from 'lucide-react';
 
+interface ProfileData {
+  id: string;
+  full_name?: string;
+}
+
 export const RequiredDataModal = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [profile, setProfile] = useState<any>(null);
-  const [isChecking, setIsChecking] = useState(false);
+  const [profile, setProfile] = useState<ProfileData | null>(null);
+  const isCheckingRef = useRef(false);
   
   const [formData, setFormData] = useState({
     data_nascimento: '',
@@ -23,17 +28,11 @@ export const RequiredDataModal = () => {
     altura_cm: ''
   });
 
-  useEffect(() => {
-    if (user?.id && !isChecking) {
-      checkRequiredData();
-    }
-  }, [user?.id, isChecking]);
-
-  const checkRequiredData = async () => {
-    if (!user?.id || isChecking) return;
+  const checkRequiredData = useCallback(async () => {
+    if (!user?.id || isCheckingRef.current) return;
     
     try {
-      setIsChecking(true);
+      isCheckingRef.current = true;
       console.log('🔍 Verificando dados obrigatórios para usuário:', user.id);
       
       // Desabilitar modal temporariamente para evitar problemas
@@ -77,9 +76,15 @@ export const RequiredDataModal = () => {
       // Em caso de erro, não mostrar modal para não interromper a experiência
       setOpen(false);
     } finally {
-      setIsChecking(false);
+      isCheckingRef.current = false;
     }
-  };
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (user?.id) {
+      checkRequiredData();
+    }
+  }, [user?.id, checkRequiredData]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

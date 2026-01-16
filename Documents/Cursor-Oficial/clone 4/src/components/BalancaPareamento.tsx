@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -38,7 +38,7 @@ interface LastMeasurement {
 export const BalancaPareamento: React.FC = () => {
   const [isScanning, setIsScanning] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
-  const [device, setDevice] = useState<any>(null);
+  const [device, setDevice] = useState<unknown>(null);
   const [scaleData, setScaleData] = useState<ScaleData | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [lastMeasurement, setLastMeasurement] = useState<LastMeasurement | null>(null);
@@ -46,11 +46,7 @@ export const BalancaPareamento: React.FC = () => {
   const { toast } = useToast();
   const { user } = useAuth();
 
-  useEffect(() => {
-    loadLastMeasurement();
-  }, [user]);
-
-  const loadLastMeasurement = async () => {
+  const loadLastMeasurement = useCallback(async () => {
     if (!user) return;
     
     try {
@@ -68,7 +64,11 @@ export const BalancaPareamento: React.FC = () => {
     } catch (error) {
       console.log('Nenhuma medição anterior encontrada');
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    loadLastMeasurement();
+  }, [loadLastMeasurement]);
 
   const handleWeightMeasurement = (event: Event) => {
     const target = event.target as any;

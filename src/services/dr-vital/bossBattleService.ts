@@ -170,7 +170,8 @@ export async function defeatBossBattle(
     .select('id')
     .eq('user_id', userId)
     .eq('type', 'boss_battle')
-    .eq('is_completed', true) as unknown as { data: { id: string }[] | null };
+    .eq('is_completed', true)
+    .limit(100) as unknown as { data: { id: string }[] | null };
 
   const totalWon = bossBattlesWon?.length || 0;
   let trophyUnlocked = false;
@@ -292,7 +293,8 @@ export async function getActiveBossBattles(userId: string): Promise<HealthMissio
     .eq('user_id', userId)
     .eq('type', 'boss_battle')
     .eq('is_completed', false)
-    .order('created_at', { ascending: false }) as unknown as { data: HealthMissionRow[] | null; error: any };
+    .order('created_at', { ascending: false })
+    .limit(50) as unknown as { data: HealthMissionRow[] | null; error: any };
 
   if (error) throw error;
 
@@ -308,7 +310,8 @@ export async function getDefeatedBossBattles(userId: string): Promise<HealthMiss
     .eq('user_id', userId)
     .eq('type', 'boss_battle')
     .eq('is_completed', true)
-    .order('completed_at', { ascending: false }) as unknown as { data: HealthMissionRow[] | null; error: any };
+    .order('completed_at', { ascending: false })
+    .limit(50) as unknown as { data: HealthMissionRow[] | null; error: any };
 
   if (error) throw error;
 

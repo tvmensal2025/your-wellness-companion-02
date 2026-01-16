@@ -236,11 +236,11 @@ export const ProductManagement = () => {
                   {filteredProducts.map((product) => (
                     <TableRow key={product.id}>
                       <TableCell>
-                         <div className="h-12 w-12 rounded-md bg-gray-100 overflow-hidden border border-gray-200 flex items-center justify-center">
+                         <div className="h-12 w-12 rounded-md bg-muted overflow-hidden border border-border flex items-center justify-center">
                            {product.image_url ? (
                              <img src={product.image_url} alt={product.name} className="h-full w-full object-cover" />
                            ) : (
-                             <Package className="h-6 w-6 text-gray-300" />
+                             <Package className="h-6 w-6 text-muted-foreground" />
                            )}
                          </div>
                       </TableCell>

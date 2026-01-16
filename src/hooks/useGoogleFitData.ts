@@ -100,7 +100,8 @@ export function useGoogleFitData() {
         .select('*')
         .eq('user_id', user.id)
         .gte('date', getLocalDateString(new Date(Date.now() - 31 * 24 * 60 * 60 * 1000)))
-        .order('date', { ascending: true });
+        .order('date', { ascending: true })
+        .limit(100);
 
       if (dbError) throw dbError;
 

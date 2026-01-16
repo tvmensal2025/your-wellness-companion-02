@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useVisitorData } from '@/hooks/useVisitorData';
@@ -10,6 +10,32 @@ import { ArrowLeft, ArrowRight, Play, Pause, CheckCircle, Lock, Clock, Users, Cr
 import ConversionCTA from '@/components/ConversionCTA';
 import butterflyLogo from '@/assets/butterfly-logo.png';
 
+interface SessionTask {
+  title: string;
+  description: string;
+}
+
+interface SessionContent {
+  intro: string;
+  video_url: string;
+  tasks: SessionTask[];
+  conclusion: string;
+}
+
+interface Session {
+  id: number;
+  title: string;
+  description: string;
+  estimated_duration: string;
+  content: string;
+}
+
+interface Step {
+  name: string;
+  component: string;
+  taskIndex?: number;
+}
+
 const SampleSession = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -18,7 +44,7 @@ const SampleSession = () => {
   const { saveSessionProgress, saveSessionResponse, completeSession, addTimeSpent } = useVisitorData();
 
   // Sample session data
-  const sessions = [
+  const sessions: Session[] = [
     {
       id: 1,
       title: "Descobrindo Seus Sabotadores Internos",
@@ -98,35 +124,30 @@ const SampleSession = () => {
 
   const session = sessions.find(s => s.id === parseInt(id || '1'));
 
-  if (!session) return null;
+  const sessionContent: SessionContent | null = useMemo(() => {
+    if (!session) return null;
+    return typeof session.content === 'string' 
+      ? JSON.parse(session.content) 
+      : session.content;
+  }, [session]);
 
-  // Parse content if it's a string
-  const sessionContent = typeof session.content === 'string' 
-    ? JSON.parse(session.content) 
-    : session.content;
-
-  // Ensure tasks exist
-  if (!sessionContent?.tasks) {
-    return <div className="min-h-screen flex items-center justify-center">
-      <p className="text-muted-foreground">Conteúdo da sessão não disponível.</p>
-    </div>;
-  }
-
-  // Define steps before useEffect
-  const steps = [
-    { name: 'Introdução', component: 'intro' },
-    { name: 'Vídeo', component: 'video' },
-    ...sessionContent.tasks.map((task, index) => ({
-      name: `Tarefa ${index + 1}`,
-      component: 'task',
-      taskIndex: index
-    })),
-    { name: 'Conclusão', component: 'conclusion' }
-  ];
+  const steps: Step[] = useMemo(() => {
+    if (!sessionContent?.tasks) return [];
+    return [
+      { name: 'Introdução', component: 'intro' },
+      { name: 'Vídeo', component: 'video' },
+      ...sessionContent.tasks.map((task, index) => ({
+        name: `Tarefa ${index + 1}`,
+        component: 'task',
+        taskIndex: index
+      })),
+      { name: 'Conclusão', component: 'conclusion' }
+    ];
+  }, [sessionContent]);
 
   const currentStepData = steps[currentStep];
 
-  // Track time spent (simulated)
+  // Track time spent (simulated) - MUST be before any conditional returns
   useEffect(() => {
     const interval = setInterval(() => {
       addTimeSpent(0.5); // Add 30 seconds every 30 seconds
@@ -135,9 +156,9 @@ const SampleSession = () => {
     return () => clearInterval(interval);
   }, [addTimeSpent]);
 
-  // Save progress when step changes
+  // Save progress when step changes - MUST be before any conditional returns
   useEffect(() => {
-    if (id) {
+    if (id && steps.length > 0) {
       const progress = (currentStep / (steps.length - 1)) * 100;
       saveSessionProgress(id, progress);
       
@@ -147,6 +168,15 @@ const SampleSession = () => {
       }
     }
   }, [currentStep, id, saveSessionProgress, completeSession, steps.length]);
+
+  // Early returns AFTER all hooks
+  if (!session) return null;
+
+  if (!sessionContent?.tasks) {
+    return <div className="min-h-screen flex items-center justify-center">
+      <p className="text-muted-foreground">Conteúdo da sessão não disponível.</p>
+    </div>;
+  }
 
   const renderStep = () => {
     const step = currentStepData;

@@ -1082,43 +1082,43 @@ const SessionTemplates: React.FC = () => {
   const categoryTags: Record<string, { tags: string[]; bgColor: string; textColor: string }> = {
     '12-areas': {
       tags: ['Saúde', 'Família', 'Carreira', 'Finanças', 'Relacionamentos', 'Diversão', 'Crescimento'],
-      bgColor: 'bg-blue-100',
-      textColor: 'text-blue-800'
+      bgColor: 'bg-blue-500/20 dark:bg-blue-500/30',
+      textColor: 'text-blue-700 dark:text-blue-300'
     },
     '147-perguntas': {
       tags: ['Digestivo', 'Respiratório', 'Cardiovascular', 'Neurológico', 'Musculoesquelético', 'Imunológico'],
-      bgColor: 'bg-purple-100',
-      textColor: 'text-purple-800'
+      bgColor: 'bg-purple-500/20 dark:bg-purple-500/30',
+      textColor: 'text-purple-700 dark:text-purple-300'
     },
     '8-pilares': {
       tags: ['Mindset', 'Planejamento', 'Investimentos', 'Renda', 'Gastos', 'Proteção', 'Impostos'],
-      bgColor: 'bg-yellow-100',
-      textColor: 'text-yellow-800'
+      bgColor: 'bg-yellow-500/20 dark:bg-yellow-500/30',
+      textColor: 'text-yellow-700 dark:text-yellow-300'
     },
     '8-competencias': {
       tags: ['Liderança', 'Comunicação', 'Inovação', 'Estratégia', 'Execução', 'Relacionamento', 'Adaptabilidade'],
-      bgColor: 'bg-red-100',
-      textColor: 'text-red-800'
+      bgColor: 'bg-red-500/20 dark:bg-red-500/30',
+      textColor: 'text-red-700 dark:text-red-300'
     },
     'sabotadores': {
       tags: ['Comportamentais', 'Psicológicos', 'Relacionais', 'Físicos', 'Temporais', 'Socioeconômicos'],
-      bgColor: 'bg-orange-100',
-      textColor: 'text-orange-800'
+      bgColor: 'bg-orange-500/20 dark:bg-orange-500/30',
+      textColor: 'text-orange-700 dark:text-orange-300'
     },
     'sono': {
       tags: ['Duração', 'Qualidade', 'Facilidade', 'Despertar', 'Energia', 'Regularidade'],
-      bgColor: 'bg-indigo-100',
-      textColor: 'text-indigo-800'
+      bgColor: 'bg-indigo-500/20 dark:bg-indigo-500/30',
+      textColor: 'text-indigo-700 dark:text-indigo-300'
     },
     'estresse': {
       tags: ['Estresse', 'Ansiedade', 'Tensão', 'Preocupações', 'Irritabilidade', 'Concentração'],
-      bgColor: 'bg-pink-100',
-      textColor: 'text-pink-800'
+      bgColor: 'bg-pink-500/20 dark:bg-pink-500/30',
+      textColor: 'text-pink-700 dark:text-pink-300'
     },
     'bem-estar': {
       tags: ['Presença', 'Gratidão', 'Autocuidado', 'Conexão', 'Propósito', 'Paz'],
-      bgColor: 'bg-teal-100',
-      textColor: 'text-teal-800'
+      bgColor: 'bg-teal-500/20 dark:bg-teal-500/30',
+      textColor: 'text-teal-700 dark:text-teal-300'
     }
   };
 

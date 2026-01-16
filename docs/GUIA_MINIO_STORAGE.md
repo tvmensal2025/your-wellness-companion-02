@@ -392,3 +392,158 @@ Para 100GB de imagens:
 - [EasyPanel Docs](https://easypanel.io/docs)
 - Backend do projeto: `vps-backend/`
 - Componente de upload: `src/components/admin/ImageUpload.tsx`
+
+
+---
+
+## 🔄 PARTE 5: Migração de Storage (Supabase → MinIO)
+
+### Buckets Migrados para MinIO
+
+Os seguintes buckets agora usam MinIO via VPS:
+
+| Bucket Original | Pasta MinIO | Uso |
+|-----------------|-------------|-----|
+| community-media | feed/ | Posts da comunidade |
+| community-media | stories/ | Stories |
+| chat-images | whatsapp/ | Imagens do WhatsApp |
+| - | profiles/ | Fotos de perfil (novo) |
+| - | food-analysis/ | Análises de alimentos |
+| - | weight-photos/ | Fotos de pesagem |
+
+### Buckets RETIDOS no Supabase (Dados Sensíveis)
+
+⚠️ **IMPORTANTE**: Estes buckets NÃO foram migrados por conterem dados sensíveis:
+
+| Bucket | Motivo |
+|--------|--------|
+| medical-documents | Documentos médicos - dados sensíveis |
+| avatars | Fotos de perfil - dados pessoais |
+| medical-documents-reports | Relatórios médicos - dados sensíveis |
+
+### Biblioteca externalMedia.ts
+
+Nova biblioteca centralizada para uploads externos:
+
+```typescript
+import { uploadToExternalStorage, validateMediaFile } from '@/lib/externalMedia';
+
+// Upload de arquivo
+const result = await uploadToExternalStorage(file, {
+  folder: 'feed',
+  userId: 'user-123',
+  maxSizeMB: 50
+});
+
+if (result.success) {
+  console.log('URL:', result.url);
+  console.log('Path:', result.path);
+} else {
+  console.error('Erro:', result.error);
+}
+
+// Validação prévia
+const validation = validateMediaFile(file, 50);
+if (!validation.valid) {
+  alert(validation.error);
+}
+```
+
+### Tipos de Arquivo Permitidos
+
+```typescript
+const ALLOWED_MIME_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/gif',
+  'image/webp',
+  'video/mp4',
+  'video/quicktime',
+  'video/webm',
+];
+```
+
+### Códigos de Erro
+
+| Código | Descrição | Mensagem |
+|--------|-----------|----------|
+| INVALID_TYPE | MIME type não permitido | "Formato não suportado. Use JPEG, PNG, GIF, WebP, MP4, MOV ou WebM." |
+| FILE_TOO_LARGE | Arquivo maior que limite | "Arquivo muito grande. Máximo {X}MB." |
+| CONFIG_ERROR | MEDIA_API_URL não configurada | "Configuração de upload não encontrada." |
+| NETWORK_ERROR | Erro de conexão | "Erro de conexão. Tente novamente." |
+| UPLOAD_FAILED | Erro no servidor | "Erro ao fazer upload. Tente novamente." |
+
+### Variáveis de Ambiente para Edge Functions
+
+Configure no Supabase Dashboard → Settings → Edge Functions → Secrets:
+
+```bash
+MEDIA_API_URL=https://media-api-yolo-service.0sw627.easypanel.host
+MEDIA_API_KEY=sua-chave-secreta-aqui
+```
+
+### Graceful Degradation
+
+O sistema implementa fallback automático:
+
+1. **WhatsApp Images**: Tenta MinIO primeiro, fallback para Supabase se falhar
+2. **Community Media**: Usa MinIO diretamente (sem fallback)
+3. **Medical Documents**: Sempre usa Supabase (não migrado)
+
+---
+
+## 📊 API Endpoints do Media API
+
+### POST /storage/upload
+
+Upload via multipart/form-data:
+
+```bash
+curl -X POST https://media-api.../storage/upload \
+  -H "X-API-Key: sua-chave" \
+  -F "file=@imagem.jpg" \
+  -F "folder=feed" \
+  -F "userId=user-123"
+```
+
+### POST /storage/upload-base64
+
+Upload via JSON (base64):
+
+```bash
+curl -X POST https://media-api.../storage/upload-base64 \
+  -H "X-API-Key: sua-chave" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "data": "base64-encoded-data",
+    "folder": "whatsapp",
+    "userId": "user-123",
+    "mimeType": "image/jpeg"
+  }'
+```
+
+### Resposta de Sucesso
+
+```json
+{
+  "success": true,
+  "url": "https://minio.../images/user-123/feed/1234567890-uuid.webp",
+  "path": "user-123/feed/1234567890-uuid.webp",
+  "size": 123456,
+  "mimeType": "image/webp"
+}
+```
+
+### Resposta de Erro
+
+```json
+{
+  "success": false,
+  "error": "Formato não suportado. Use JPEG, PNG, GIF, WebP, MP4, MOV ou WebM.",
+  "code": "INVALID_TYPE"
+}
+```
+
+---
+
+*Última atualização: Janeiro 2026*

@@ -92,7 +92,8 @@ export class PerformanceDashboard {
       .from('exercise_performance_metrics')
       .select('*')
       .eq('user_id', this.userId)
-      .gte('created_at', startDate.toISOString());
+      .gte('created_at', startDate.toISOString())
+      .limit(500);
 
     if (!workouts || workouts.length === 0) {
       return this.getEmptyStats();
@@ -458,7 +459,8 @@ export class PerformanceDashboard {
     // Buscar dados agregados de todos os usuários
     const { data: allUsers } = await supabase
       .from('exercise_gamification_points')
-      .select('total_points, current_level');
+      .select('total_points, current_level')
+      .limit(1000);
 
     if (!allUsers || allUsers.length === 0) {
       return {

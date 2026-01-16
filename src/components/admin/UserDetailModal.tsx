@@ -86,12 +86,6 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({
   });
   const { toast } = useToast();
 
-  useEffect(() => {
-    if (isOpen && userId) {
-      fetchUserDetail();
-    }
-  }, [isOpen, userId]);
-
   const fetchUserDetail = async () => {
     if (!userId) return;
 
@@ -193,6 +187,12 @@ const UserDetailModal: React.FC<UserDetailModalProps> = ({
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (isOpen && userId) {
+      fetchUserDetail();
+    }
+  }, [isOpen, userId]);
 
   const handleSave = async () => {
     if (!userId) return;

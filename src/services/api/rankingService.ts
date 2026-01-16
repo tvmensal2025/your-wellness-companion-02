@@ -232,7 +232,8 @@ export async function fetchRankingStats(): Promise<{
   const { data, error } = await supabase
     .from('user_points')
     .select('total_points, current_streak')
-    .gt('total_points', 0);
+    .gt('total_points', 0)
+    .limit(10000);
 
   if (error || !data) {
     return {

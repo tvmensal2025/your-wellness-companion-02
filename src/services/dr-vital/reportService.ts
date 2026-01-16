@@ -110,7 +110,8 @@ async function getHealthScoresForPeriod(userId: string, period: DateRange) {
     .eq('user_id', userId)
     .gte('calculated_at', period.start.toISOString())
     .lte('calculated_at', period.end.toISOString())
-    .order('calculated_at', { ascending: true }) as any;
+    .order('calculated_at', { ascending: true })
+    .limit(100) as any;
   return data || [];
 }
 
@@ -119,7 +120,8 @@ async function getMissionsForPeriod(userId: string, period: DateRange) {
     .select('*')
     .eq('user_id', userId)
     .gte('created_at', period.start.toISOString())
-    .lte('created_at', period.end.toISOString()) as any;
+    .lte('created_at', period.end.toISOString())
+    .limit(200) as any;
   return data || [];
 }
 
@@ -129,7 +131,8 @@ async function getTimelineForPeriod(userId: string, period: DateRange) {
     .eq('user_id', userId)
     .gte('event_date', period.start.toISOString())
     .lte('event_date', period.end.toISOString())
-    .order('event_date', { ascending: true }) as any;
+    .order('event_date', { ascending: true })
+    .limit(200) as any;
   return data || [];
 }
 
@@ -137,7 +140,8 @@ async function getPredictionsForUser(userId: string) {
   const { data } = await fromTable('health_predictions')
     .select('*')
     .eq('user_id', userId)
-    .eq('is_active', true) as any;
+    .eq('is_active', true)
+    .limit(20) as any;
   return data || [];
 }
 

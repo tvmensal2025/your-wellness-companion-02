@@ -127,7 +127,7 @@ export const ExerciseLibraryManagement = () => {
 
   const getYoutubeEmbedUrl = (url: string) => {
     if (!url) return null;
-    const videoId = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
+    const videoId = url.match(/(?:youtube\.com\/(?:[^/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?/\s]{11})/);
     return videoId ? `https://www.youtube.com/embed/${videoId[1]}` : null;
   };
 

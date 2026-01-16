@@ -174,7 +174,9 @@ const MyProgress: React.FC = () => {
         if (g.activeMinutesGoal) setActiveMinutesGoal(g.activeMinutesGoal);
         if (g.caloriesGoal) setCaloriesGoal(g.caloriesGoal);
       }
-    } catch {}
+    } catch (e) {
+      // Silently ignore localStorage parsing errors
+    }
   }, []);
 
   const saveGoals = () => {

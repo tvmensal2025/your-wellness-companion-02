@@ -37,6 +37,7 @@ export async function getAllTimelineEvents(userId: string, filter?: TimelineFilt
   if (filter?.types?.length) query = query.in('event_type', filter.types);
   if (filter?.dateRange) query = query.gte('event_date', filter.dateRange.start.toISOString()).lte('event_date', filter.dateRange.end.toISOString());
   if (filter?.milestonesOnly) query = query.eq('is_milestone', true);
+  query = query.limit(200);
   const { data, error } = await query;
   if (error) throw error;
   return (data || []).map(rowToEvent);
@@ -131,7 +132,7 @@ function getEventIcon(eventType: TimelineEventType): string {
 }
 
 async function getAverageHealthScore(userId: string, startDate: Date, endDate: Date): Promise<number> {
-  const { data } = await fromTable('health_scores').select('score').eq('user_id', userId).gte('calculated_at', startDate.toISOString()).lte('calculated_at', endDate.toISOString()) as any;
+  const { data } = await fromTable('health_scores').select('score').eq('user_id', userId).gte('calculated_at', startDate.toISOString()).lte('calculated_at', endDate.toISOString()).limit(100) as any;
   if (!data?.length) return 0;
   return data.reduce((sum: number, s: any) => sum + s.score, 0) / data.length;
 }

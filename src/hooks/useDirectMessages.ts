@@ -162,7 +162,8 @@ export function useDirectMessages() {
         .from('health_feed_direct_messages')
         .select('*')
         .or(`and(sender_id.eq.${user.id},receiver_id.eq.${partnerId}),and(sender_id.eq.${partnerId},receiver_id.eq.${user.id})`)
-        .order('created_at', { ascending: true });
+        .order('created_at', { ascending: true })
+        .limit(500);
 
       if (error) throw error;
 
