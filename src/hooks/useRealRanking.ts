@@ -42,12 +42,11 @@ export const useRealRanking = () => {
 
         const totalXP = goals?.reduce((sum, g) => sum + (g.estimated_points || 0), 0) || 0;
 
-        // Buscar conquistas
+        // Buscar conquistas from user_achievements_v2
         const { data: achievements } = await supabase
-          .from('achievement_tracking')
+          .from('user_achievements_v2')
           .select('id')
-          .eq('user_id', userId)
-          .not('unlocked_at', 'is', null);
+          .eq('user_id', userId);
 
         // Calcular streak
         const { data: activities } = await supabase

@@ -105,15 +105,15 @@ export function useUserProgressStats(userId: string | null) {
           .eq('user_id', userId)
           .eq('is_completed', true);
 
-        // Fetch total meals logged (food_analysis)
+        // Fetch total meals logged (using sofia_food_analysis instead of food_analysis)
         const { count: totalMealsLogged } = await supabase
-          .from('food_analysis')
+          .from('sofia_food_analysis')
           .select('*', { count: 'exact', head: true })
           .eq('user_id', userId);
 
-        // Fetch total workouts - simplified query
+        // Fetch total workouts (using exercise_tracking instead of activity_sessions)
         const { count: totalWorkouts } = await supabase
-          .from('activity_sessions')
+          .from('exercise_tracking')
           .select('*', { count: 'exact', head: true })
           .eq('user_id', userId);
 

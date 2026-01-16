@@ -25,7 +25,7 @@ export const UpdateGoalProgressModal = ({
   const [progress, setProgress] = useState(goal.current_value || 0);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const { processXPGain, updateStreak } = useGoalsGamification(goal.user_id);
+  const { processXPGain, updateStreak } = useGoalsGamification(goal?.user_id);
 
   const handleQuickAction = (amount: number) => {
     setProgress(prev => Math.min(prev + amount, goal.target_value));

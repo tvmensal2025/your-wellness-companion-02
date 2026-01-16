@@ -98,13 +98,14 @@ export function calculateTrend(
 
 /**
  * Calcula o score de nutrição baseado nos dados do usuário
+ * Uses sofia_food_analysis instead of food_analysis
  */
 async function calculateNutritionScore(userId: string): Promise<number> {
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
   
   const { data: foodAnalysis } = await supabase
-    .from('food_analysis')
+    .from('sofia_food_analysis')
     .select('*')
     .eq('user_id', userId)
     .gte('created_at', sevenDaysAgo.toISOString())
@@ -113,9 +114,24 @@ async function calculateNutritionScore(userId: string): Promise<number> {
   
   if (!foodAnalysis || foodAnalysis.length === 0) return 12; // Default middle score
   
-  // Use calories as proxy for health score if health_score column doesn't exist
-  const avgHealthScore = foodAnalysis.reduce((sum, item: any) => 
-    sum + ((item as any).health_score || 50), 0) / foodAnalysis.length;
+  // Use analysis_result to calculate health score
+  const avgHealthScore = foodAnalysis.reduce((sum, item: any) => {
+    const result = item.analysis_result as any || {};
+    // Calculate health score based on nutritional balance
+    const calories = result.calorias_totais || 0;
+    const protein = result.proteinas || 0;
+    const carbs = result.carboidratos || 0;
+    const fat = result.gorduras || 0;
+    
+    // Simple score based on macros balance
+    let score = 50;
+    if (protein >= 15 && protein <= 35) score += 10;
+    if (carbs >= 30 && carbs <= 55) score += 10;
+    if (fat >= 20 && fat <= 35) score += 10;
+    if (calories > 0 && calories < 800) score += 20;
+    
+    return sum + Math.min(100, score);
+  }, 0) / foodAnalysis.length;
   
   // Convert 0-100 to 0-25
   return Math.round((avgHealthScore / 100) * COMPONENT_MAX);
@@ -128,11 +144,12 @@ async function calculateExerciseScore(userId: string): Promise<number> {
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
   
-  // Check workout sessions
-  const { data: workouts } = await fromTable('workout_sessions')
+  // Check exercise_tracking instead of workout_sessions
+  const { data: workouts } = await supabase
+    .from('exercise_tracking')
     .select('id, duration_minutes')
     .eq('user_id', userId)
-    .gte('created_at', sevenDaysAgo.toISOString()) as any;
+    .gte('created_at', sevenDaysAgo.toISOString());
   
   if (!workouts || workouts.length === 0) return 5; // Low score for no exercise
   
