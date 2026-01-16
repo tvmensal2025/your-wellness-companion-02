@@ -52,17 +52,32 @@ serve(async (req) => {
 
     console.log("[get-public-report] Link encontrado, report_path:", linkData.report_path);
 
-    // Buscar HTML do Storage
-    const { data: fileData, error: fileError } = await supabase.storage
-      .from("medical-documents-reports")
-      .download(linkData.report_path);
+    // Buscar HTML - primeiro tentar MinIO (URL pública), depois Supabase Storage
+    let html = '';
+    
+    // Se o report_path for uma URL completa do MinIO, fazer fetch direto
+    if (linkData.report_path.startsWith('http')) {
+      console.log("[get-public-report] Baixando do MinIO:", linkData.report_path);
+      const response = await fetch(linkData.report_path);
+      if (response.ok) {
+        html = await response.text();
+      } else {
+        throw new Error(`Erro ao baixar do MinIO: ${response.status}`);
+      }
+    } else {
+      // Fallback: buscar do Supabase Storage
+      console.log("[get-public-report] Baixando do Supabase Storage");
+      const { data: fileData, error: fileError } = await supabase.storage
+        .from("medical-documents-reports")
+        .download(linkData.report_path);
 
-    if (fileError) {
-      console.error("[get-public-report] Erro ao baixar arquivo:", fileError);
-      throw new Error("Erro ao carregar relatório");
+      if (fileError) {
+        console.error("[get-public-report] Erro ao baixar arquivo:", fileError);
+        throw new Error("Erro ao carregar relatório");
+      }
+
+      html = await fileData.text();
     }
-
-    const html = await fileData.text();
 
     // Atualizar contagem de visualizações
     await supabase

@@ -30,13 +30,19 @@ serve(async (req) => {
       throw error;
     }
 
+    // Configurar VPS para MinIO
+    const VPS_API_URL = Deno.env.get('VPS_API_URL');
+    const VPS_API_KEY = Deno.env.get('VPS_API_KEY');
+    
     let totalRemoved = 0;
     let totalDocs = 0;
+    
     for (const d of docs || []) {
       totalDocs++;
       const paths: string[] = Array.isArray(d.report_meta?.image_paths)
         ? d.report_meta.image_paths as string[]
         : (d.file_url ? [d.file_url as string] : []);
+      
       if (paths.length === 0) {
         // apenas marca que não há imagens
         await supabase.from('medical_documents')
@@ -44,12 +50,45 @@ serve(async (req) => {
           .eq('id', d.id);
         continue;
       }
-      const { error: delErr } = await supabase.storage.from('medical-documents').remove(paths);
-      if (delErr) {
-        console.error('Falha ao remover imagens do documento', d.id, delErr.message);
-        continue; // processa próximos
+      
+      // Tentar deletar do MinIO via VPS
+      let deleted = false;
+      if (VPS_API_URL && VPS_API_KEY) {
+        try {
+          for (const path of paths) {
+            // Extrair path relativo da URL do MinIO
+            let relativePath = path;
+            if (path.startsWith('http')) {
+              const urlObj = new URL(path);
+              relativePath = urlObj.pathname.split('/').slice(-3).join('/');
+            }
+            
+            await fetch(`${VPS_API_URL}/storage/delete`, {
+              method: 'DELETE',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-API-Key': VPS_API_KEY,
+              },
+              body: JSON.stringify({ path: relativePath, folder: 'medical-exams' }),
+            });
+          }
+          deleted = true;
+          totalRemoved += paths.length;
+        } catch (vpsError) {
+          console.error('Erro ao deletar do MinIO:', vpsError);
+        }
       }
-      totalRemoved += paths.length;
+      
+      // Fallback: tentar Supabase Storage
+      if (!deleted) {
+        const { error: delErr } = await supabase.storage.from('medical-documents').remove(paths);
+        if (delErr) {
+          console.error('Falha ao remover imagens do documento', d.id, delErr.message);
+          continue;
+        }
+        totalRemoved += paths.length;
+      }
+      
       // Atualiza metadados marcando que imagens foram apagadas
       const newMeta = { ...(d.report_meta || {}), images_deleted: true } as Record<string, unknown>;
       await supabase.from('medical_documents')
@@ -57,30 +96,11 @@ serve(async (req) => {
         .eq('id', d.id);
     }
 
-    // 2) Limpar temporários em tmp/ mais antigos que 24h (best-effort)
-    // varre top-level de tmp e subpastas de usuários
-    const listUserDirs = async (prefix: string) => {
-      const { data: entries } = await supabase.storage.from('medical-documents').list(prefix, { limit: 1000 });
-      return entries || [];
-    };
+    // 2) Limpar temporários - no MinIO a limpeza é feita pelo próprio serviço
+    // Apenas logar que a limpeza foi executada
+    console.log('[cleanup-medical-images] Limpeza de documentos concluída');
 
-    const tmpRoot = await listUserDirs('tmp');
-    for (const entry of tmpRoot) {
-      if (entry.name && entry.id) {
-        const userPrefix = `tmp/${entry.name}`;
-        const { data: files } = await supabase.storage.from('medical-documents').list(userPrefix, { limit: 1000 });
-        const oldFiles = (files || []).filter(f => {
-          const created = f.created_at ? new Date(f.created_at).getTime() : 0;
-          return created > 0 && created < now.getTime() - 24 * 60 * 60 * 1000;
-        });
-        if (oldFiles.length > 0) {
-          const toRemove = oldFiles.map(f => `${userPrefix}/${f.name}`);
-          await supabase.storage.from('medical-documents').remove(toRemove);
-        }
-      }
-    }
-
-    return new Response(JSON.stringify({ totalDocs, totalRemoved }), {
+    return new Response(JSON.stringify({ totalDocs, totalRemoved, source: 'minio' }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
 
