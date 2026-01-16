@@ -1,19 +1,24 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { uploadToVPS } from '@/lib/vpsApi';
 import { 
   Settings, 
   Image as ImageIcon, 
   Save, 
   RefreshCw,
   AlertCircle,
-  Eye
+  Eye,
+  Upload,
+  Link,
+  Loader2
 } from 'lucide-react';
 
 interface DashboardSettings {
@@ -31,6 +36,38 @@ export const PlatformSettingsPanel = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const [imageSource, setImageSource] = useState<'upload' | 'url'>('url');
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileUpload = async (file: File) => {
+    setUploading(true);
+    try {
+      const result = await uploadToVPS(file, 'banners');
+      handleChange('banner_image_url', result.url);
+      toast({ title: '✅ Upload concluído!', description: 'Imagem enviada para o servidor.' });
+    } catch (error) {
+      console.error('Erro no upload:', error);
+      toast({ title: 'Erro no upload', description: 'Não foi possível enviar a imagem.', variant: 'destructive' });
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const onFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        toast({ title: 'Arquivo inválido', description: 'Selecione uma imagem.', variant: 'destructive' });
+        return;
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        toast({ title: 'Arquivo muito grande', description: 'Máximo 10MB.', variant: 'destructive' });
+        return;
+      }
+      handleFileUpload(file);
+    }
+  };
 
   useEffect(() => {
     loadSettings();
@@ -173,18 +210,62 @@ export const PlatformSettingsPanel = () => {
             />
           </div>
 
-          {/* URL da Imagem */}
-          <div className="space-y-2">
-            <Label htmlFor="banner_image_url" className="text-sm font-medium">
-              🖼️ URL da Imagem de Fundo
-            </Label>
-            <Input
-              id="banner_image_url"
-              value={settings.banner_image_url}
-              onChange={(e) => handleChange('banner_image_url', e.target.value)}
-              placeholder="Ex: /images/capa02.png ou https://..."
-              className="bg-muted border-border"
-            />
+          {/* Imagem de Fundo - Upload ou URL */}
+          <div className="space-y-3">
+            <Label className="text-sm font-medium">🖼️ Imagem de Fundo</Label>
+            
+            <Tabs value={imageSource} onValueChange={(v) => setImageSource(v as 'upload' | 'url')} className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="upload" className="flex items-center gap-2">
+                  <Upload className="h-4 w-4" />
+                  Upload
+                </TabsTrigger>
+                <TabsTrigger value="url" className="flex items-center gap-2">
+                  <Link className="h-4 w-4" />
+                  URL Externa
+                </TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="upload" className="mt-3">
+                <div 
+                  className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-primary/50 transition-colors cursor-pointer"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={onFileSelect}
+                    className="hidden"
+                  />
+                  {uploading ? (
+                    <div className="flex flex-col items-center gap-2">
+                      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                      <p className="text-sm text-muted-foreground">Enviando...</p>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center gap-2">
+                      <Upload className="h-8 w-8 text-muted-foreground" />
+                      <p className="text-sm text-muted-foreground">
+                        Clique para selecionar uma imagem
+                      </p>
+                      <p className="text-xs text-muted-foreground">PNG, JPG até 10MB</p>
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="url" className="mt-3">
+                <Input
+                  id="banner_image_url"
+                  value={settings.banner_image_url}
+                  onChange={(e) => handleChange('banner_image_url', e.target.value)}
+                  placeholder="Ex: /images/capa02.png ou https://..."
+                  className="bg-muted border-border"
+                />
+              </TabsContent>
+            </Tabs>
+            
             <p className="text-xs text-muted-foreground">
               📱 Tamanho recomendado: <strong>1920 x 800px</strong> (Desktop) | <strong>750 x 500px</strong> (Mobile)
               <br />

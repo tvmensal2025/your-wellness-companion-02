@@ -1,7 +1,7 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { invalidateUserDataCache } from '@/hooks/useUserDataCache';
+import { uploadToVPS } from '@/lib/vpsApi';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -324,21 +324,9 @@ const UserProfile = ({ onOpenLayoutPrefs }: UserProfileProps = {}) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Usuário não autenticado');
 
-      // Gerar nome único para o arquivo
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${user.id}/avatar-${Date.now()}.${fileExt}`;
-
-      // Upload para o Storage
-      const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(fileName, file, { upsert: true });
-
-      if (uploadError) throw uploadError;
-
-      // Obter URL pública
-      const { data: { publicUrl } } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(fileName);
+      // Upload para MinIO via Edge Function
+      const uploadResult = await uploadToVPS(file, 'avatars');
+      const publicUrl = uploadResult.url;
 
       // Atualizar perfil com nova URL
       const { error: updateError } = await supabase

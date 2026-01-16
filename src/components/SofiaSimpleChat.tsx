@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
+import { uploadToVPS } from '@/lib/vpsApi';
 import { 
   Bot, 
   User as UserIcon, 
@@ -91,26 +92,8 @@ Como posso te ajudar hoje? Pode me enviar uma foto da sua refeição ou fazer qu
         return null;
       }
 
-      const fileName = `${user.id}/${Date.now()}_${file.name}`;
-      const { data, error } = await supabase.storage
-        .from('chat-images')
-        .upload(fileName, file);
-
-      if (error) {
-        console.error('Erro ao fazer upload da imagem:', error);
-        toast({
-          title: "Erro",
-          description: "Erro ao fazer upload da imagem",
-          variant: "destructive",
-        });
-        return null;
-      }
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('chat-images')
-        .getPublicUrl(fileName);
-
-      return publicUrl;
+      const result = await uploadToVPS(file, 'chat-images');
+      return result.url;
     } catch (error) {
       console.error('Erro ao processar imagem:', error);
       toast({

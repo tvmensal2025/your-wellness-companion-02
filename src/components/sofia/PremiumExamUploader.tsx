@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { uploadToVPS } from '@/lib/vpsApi';
 
 interface PremiumExamUploaderProps { isOpen: boolean; onClose: () => void; }
 
@@ -36,11 +37,9 @@ export const PremiumExamUploader: React.FC<PremiumExamUploaderProps> = ({ isOpen
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Faça login para continuar');
 
-      // Upload temporário igual ao painel de documentos
-      const ext = file.name.split('.').pop();
-      const tmpPath = `tmp/${user.id}/${crypto.randomUUID()}.${ext}`;
-      const { error: upErr } = await supabase.storage.from('medical-documents').upload(tmpPath, file);
-      if (upErr) throw upErr;
+      // Upload para MinIO via Edge Function
+      const uploadResult = await uploadToVPS(file, 'medical-exams');
+      const tmpPath = uploadResult.path;
 
       // Finaliza e dispara análise premium
       const { error } = await supabase.functions.invoke('finalize-medical-document', {

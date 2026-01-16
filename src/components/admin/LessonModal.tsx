@@ -8,6 +8,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { uploadToVPS } from "@/lib/vpsApi";
+import { useToast } from "@/hooks/use-toast";
 import { 
   Video, 
   X, 
@@ -23,7 +26,8 @@ import {
   Tag,
   Code,
   Clock,
-  Hash
+  Hash,
+  Loader2
 } from "lucide-react";
 
 interface LessonModalProps {
@@ -92,6 +96,10 @@ export const LessonModal = ({ isOpen, onClose, onSubmit, courses, modules }: Les
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [newTag, setNewTag] = useState("");
+  const [uploadingVideo, setUploadingVideo] = useState(false);
+  const [uploadingThumbnail, setUploadingThumbnail] = useState(false);
+  const [videoUploadProgress, setVideoUploadProgress] = useState(0);
+  const { toast } = useToast();
 
   const handleInputChange = (field: keyof LessonFormData, value: string | number | boolean) => {
     setFormData(prev => ({
@@ -108,13 +116,53 @@ export const LessonModal = ({ isOpen, onClose, onSubmit, courses, modules }: Les
     }
   };
 
-  const handleFileUpload = (field: 'thumbnail' | 'document' | 'image' | 'video', event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (field: 'thumbnail' | 'document' | 'image' | 'video', event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      setFormData(prev => ({
-        ...prev,
-        [field]: file
-      }));
+      // Se for vídeo e o tipo for upload, fazer upload para MinIO
+      if (field === 'video' && formData.videoType === 'upload') {
+        setUploadingVideo(true);
+        setVideoUploadProgress(10);
+        try {
+          const result = await uploadToVPS(file, 'lesson-videos');
+          setVideoUploadProgress(100);
+          setFormData(prev => ({
+            ...prev,
+            videoUrl: result.url,
+            video: file
+          }));
+          toast({ title: '✅ Vídeo enviado!', description: 'Upload concluído com sucesso.' });
+        } catch (error) {
+          console.error('Erro no upload do vídeo:', error);
+          toast({ title: 'Erro no upload', description: 'Não foi possível enviar o vídeo.', variant: 'destructive' });
+        } finally {
+          setUploadingVideo(false);
+          setVideoUploadProgress(0);
+        }
+      } else if (field === 'thumbnail') {
+        // Upload de thumbnail para MinIO
+        setUploadingThumbnail(true);
+        try {
+          const result = await uploadToVPS(file, 'course-thumbnails');
+          setFormData(prev => ({
+            ...prev,
+            thumbnail: file,
+            thumbnail_url: result.url
+          }));
+          toast({ title: '✅ Thumbnail enviada!' });
+        } catch (error) {
+          console.error('Erro no upload da thumbnail:', error);
+          toast({ title: 'Erro no upload', variant: 'destructive' });
+        } finally {
+          setUploadingThumbnail(false);
+        }
+      } else {
+        // Outros arquivos, apenas armazenar localmente
+        setFormData(prev => ({
+          ...prev,
+          [field]: file
+        }));
+      }
     }
   };
 
@@ -558,30 +606,74 @@ export const LessonModal = ({ isOpen, onClose, onSubmit, courses, modules }: Les
                 </div>
               </div>
 
-              {/* URL do Vídeo */}
-              <div className="space-y-2">
-                <Label htmlFor="videoUrl" className="text-sm font-medium text-gray-300">
-                  🎬 URL do Vídeo
-                </Label>
-                <Input
-                  id="videoUrl"
-                  value={formData.videoUrl}
-                  onChange={(e) => handleInputChange("videoUrl", e.target.value)}
-                  placeholder={
-                    formData.videoType === "youtube" ? "https://youtube.com/watch?v=..." :
-                    formData.videoType === "vimeo" ? "https://vimeo.com/123456789" :
-                    formData.videoType === "panda" ? "https://panda.com/video/abc123" :
-                    "Selecione o tipo de vídeo primeiro"
-                  }
-                  className="bg-gray-800 border-gray-600 text-white placeholder-gray-400"
-                />
-                <div className="text-xs text-gray-400">
-                  {formData.videoType === "youtube" && "Exemplo: https://youtube.com/watch?v=abc123"}
-                  {formData.videoType === "vimeo" && "Exemplo: https://vimeo.com/123456789"}
-                  {formData.videoType === "panda" && "Exemplo: https://panda.com/video/abc123"}
-                  {formData.videoType === "upload" && "Clique em 'Upload Local' na aba MÍDIA"}
+              {/* URL do Vídeo ou Upload */}
+              {formData.videoType === 'upload' ? (
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-gray-300">
+                    📤 Upload de Vídeo Local
+                  </Label>
+                  <div className="border-2 border-dashed border-gray-600 rounded-lg p-6 text-center hover:border-purple-500 transition-colors">
+                    <input
+                      id="video-upload"
+                      type="file"
+                      accept="video/mp4,video/webm,video/quicktime"
+                      onChange={(e) => handleFileUpload('video', e)}
+                      className="hidden"
+                      disabled={uploadingVideo}
+                    />
+                    <label htmlFor="video-upload" className="cursor-pointer">
+                      {uploadingVideo ? (
+                        <div className="flex flex-col items-center gap-2">
+                          <Loader2 className="h-12 w-12 text-purple-500 animate-spin" />
+                          <p className="text-purple-400">Enviando vídeo...</p>
+                          <Progress value={videoUploadProgress} className="w-full max-w-xs" />
+                        </div>
+                      ) : formData.video ? (
+                        <div className="flex flex-col items-center gap-2">
+                          <CheckCircle className="h-12 w-12 text-green-500" />
+                          <p className="text-green-400">{formData.video.name}</p>
+                          <p className="text-xs text-gray-400">Clique para alterar</p>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center gap-2">
+                          <Upload className="h-12 w-12 text-gray-400" />
+                          <p className="text-gray-300">Clique para selecionar um vídeo</p>
+                          <p className="text-xs text-gray-400">MP4, WebM, MOV até 500MB</p>
+                        </div>
+                      )}
+                    </label>
+                  </div>
+                  {formData.videoUrl && (
+                    <div className="flex items-center gap-2 text-green-400 text-sm">
+                      <CheckCircle className="h-4 w-4" />
+                      URL: {formData.videoUrl.slice(0, 50)}...
+                    </div>
+                  )}
                 </div>
-              </div>
+              ) : (
+                <div className="space-y-2">
+                  <Label htmlFor="videoUrl" className="text-sm font-medium text-gray-300">
+                    🎬 URL do Vídeo
+                  </Label>
+                  <Input
+                    id="videoUrl"
+                    value={formData.videoUrl}
+                    onChange={(e) => handleInputChange("videoUrl", e.target.value)}
+                    placeholder={
+                      formData.videoType === "youtube" ? "https://youtube.com/watch?v=..." :
+                      formData.videoType === "vimeo" ? "https://vimeo.com/123456789" :
+                      formData.videoType === "panda" ? "https://panda.com/video/abc123" :
+                      "Selecione o tipo de vídeo primeiro"
+                    }
+                    className="bg-gray-800 border-gray-600 text-white placeholder-gray-400"
+                  />
+                  <div className="text-xs text-gray-400">
+                    {formData.videoType === "youtube" && "Exemplo: https://youtube.com/watch?v=abc123"}
+                    {formData.videoType === "vimeo" && "Exemplo: https://vimeo.com/123456789"}
+                    {formData.videoType === "panda" && "Exemplo: https://panda.com/video/abc123"}
+                  </div>
+                </div>
+              )}
 
               {/* Editor de Texto Rico */}
               <div className="space-y-2">
@@ -630,15 +722,25 @@ export const LessonModal = ({ isOpen, onClose, onSubmit, courses, modules }: Les
                     accept="image/*"
                     onChange={(e) => handleFileUpload('thumbnail', e)}
                     className="hidden"
+                    disabled={uploadingThumbnail}
                   />
                   <label htmlFor="thumbnail" className="cursor-pointer">
-                    <ImageIcon className="h-12 w-12 text-gray-400 mx-auto mb-2" />
-                    <p className="text-gray-300 mb-1">
-                      {formData.thumbnail ? formData.thumbnail.name : "📁 Upload Thumbnail"}
-                    </p>
-                    <p className="text-gray-400 text-sm">
-                      PNG, JPG até 2MB
-                    </p>
+                    {uploadingThumbnail ? (
+                      <div className="flex flex-col items-center gap-2">
+                        <Loader2 className="h-12 w-12 text-purple-500 animate-spin" />
+                        <p className="text-purple-400">Enviando...</p>
+                      </div>
+                    ) : (
+                      <>
+                        <ImageIcon className="h-12 w-12 text-gray-400 mx-auto mb-2" />
+                        <p className="text-gray-300 mb-1">
+                          {formData.thumbnail ? formData.thumbnail.name : "📁 Upload Thumbnail"}
+                        </p>
+                        <p className="text-gray-400 text-sm">
+                          PNG, JPG até 2MB
+                        </p>
+                      </>
+                    )}
                   </label>
                 </div>
                 {formData.thumbnail && (

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { uploadToVPS } from '@/lib/vpsApi';
 import { 
   Upload, 
   FileText, 
@@ -203,7 +204,7 @@ const MedicalDocumentsSection: React.FC<MedicalDocumentsSectionProps> = ({ hideS
     });
   };
 
-  // Upload temporário (sem cobrar crédito)
+  // Upload temporário (sem cobrar crédito) - Usa MinIO via Edge Function
   const handleFileUploadTmp = async (file: File) => {
     try {
       setUploading(true);
@@ -216,26 +217,13 @@ const MedicalDocumentsSection: React.FC<MedicalDocumentsSectionProps> = ({ hideS
         throw new Error('Sessão expirada. Faça login novamente.');
       }
 
-      // Upload do arquivo para o Supabase Storage (TMP)
-      const fileExt = file.name.split('.').pop();
-      const fileName = `tmp/${user.id}/${crypto.randomUUID()}.${fileExt}`;
+      // Upload do arquivo para MinIO via Edge Function
+      console.log('Tentando upload para MinIO...');
       
-      console.log('Tentando upload para:', fileName);
-      
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('medical-documents')
-        .upload(fileName, file, {
-          cacheControl: '3600',
-          upsert: false
-        });
+      const uploadResult = await uploadToVPS(file, 'medical-exams');
 
-      if (uploadError) {
-        console.error('Erro no upload:', uploadError);
-        throw uploadError;
-      }
-
-      console.log('Upload bem-sucedido:', uploadData?.path);
-      return uploadData?.path;
+      console.log('Upload bem-sucedido:', uploadResult.path);
+      return uploadResult.path;
     } catch (error: any) {
       console.error('Erro ao fazer upload:', error);
       toast({
