@@ -1,7 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.55.0';
-import { analyzeWithEnhancedAI } from './enhanced-detection.ts';
+import { analyzeWithEnhancedAI, getAdaptiveModelConfig } from './enhanced-detection.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -335,10 +335,99 @@ function detectMealTypeByTime(): string {
   return 'ceia';
 }
 
+// 🎯 Mapeamento de área (pixels) para gramas (calibrado)
+// Fator aproximado baseado em análise visual de pratos padrão
+const AREA_TO_GRAMS: Record<string, number> = {
+  // Frutas (menor densidade visual)
+  'banana': 0.012, 'maçã': 0.015, 'laranja': 0.018, 'uvas': 0.008,
+  // Proteínas
+  'frango': 0.008, 'carne': 0.009, 'peixe': 0.007, 'ovo': 0.010,
+  // Carboidratos
+  'arroz': 0.005, 'feijão': 0.006, 'pizza': 0.008, 'pão': 0.007,
+  // Salgados brasileiros
+  'coxinha': 0.010, 'pastel': 0.008, 'empada': 0.009, 'esfiha': 0.008,
+  // Vegetais (baixa densidade)
+  'salada': 0.003, 'alface': 0.002, 'tomate': 0.006,
+  // Default
+  'default': 0.007
+};
+
+function estimateGramsFromArea(className: string, areaPx: number): number {
+  if (!areaPx || areaPx <= 0) return 0;
+  const normalizedName = className.toLowerCase();
+  const factor = AREA_TO_GRAMS[normalizedName] || AREA_TO_GRAMS['default'];
+  return Math.round(areaPx * factor);
+}
+
+// 🇧🇷 Prompts para alimentos brasileiros (YOLOE)
+const BRAZILIAN_FOOD_PROMPTS = [
+  'coxinha', 'pastel', 'pão de queijo', 'brigadeiro',
+  'açaí', 'tapioca', 'feijoada', 'moqueca', 'acarajé',
+  'esfiha', 'quibe', 'empada', 'risole', 'torta salgada',
+  'pudim', 'beijinho', 'paçoca', 'pão francês', 'farofa'
+];
+
+// 🦾 Função para detectar alimentos brasileiros com YOLOE
+async function tryYoloeAlimentosBrasileiros(imageUrl: string): Promise<{
+  foods: string[];
+  detections: Array<{prompt: string; confidence: number; area: number}>;
+  maxConfidence: number;
+} | null> {
+  if (!yoloEnabled) return null;
+  
+  console.log(`🇧🇷 YOLOE: Detectando alimentos brasileiros...`);
+  
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
+    
+    const resp = await fetch(`${yoloServiceUrl}/detect/prompt`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      signal: controller.signal,
+      body: JSON.stringify({
+        image_url: imageUrl,
+        prompts: BRAZILIAN_FOOD_PROMPTS,
+        confidence: 0.30,
+        max_detections: 10
+      })
+    });
+    
+    clearTimeout(timeoutId);
+    
+    if (!resp.ok) {
+      console.log(`⚠️ YOLOE /detect/prompt não disponível (${resp.status})`);
+      return null;
+    }
+    
+    const data = await resp.json();
+    const detections = (data.detections || []).map((d: any) => ({
+      prompt: d.prompt,
+      confidence: d.confidence,
+      area: d.area || 0
+    }));
+    
+    if (detections.length === 0) return null;
+    
+    const maxConfidence = Math.max(...detections.map((d: any) => d.confidence));
+    console.log(`✅ YOLOE BR: ${detections.length} alimentos brasileiros detectados (max conf: ${(maxConfidence * 100).toFixed(0)}%)`);
+    
+    return {
+      foods: detections.map((d: any) => d.prompt),
+      detections,
+      maxConfidence
+    };
+  } catch (error) {
+    const err = error as Error;
+    console.log(`⚠️ YOLOE BR: ${err.name === 'AbortError' ? 'Timeout' : err.message}`);
+    return null;
+  }
+}
+
 async function tryYoloDetect(imageUrl: string): Promise<{ 
   foods: string[]; 
   liquids: string[]; 
-  objects: Array<{class_name: string; score: number; name: string}>;
+  objects: Array<{class_name: string; score: number; name: string; area_px: number; estimated_grams: number}>;
   maxConfidence: number;
   totalObjects: number;
   detectionQuality: string;
@@ -382,20 +471,28 @@ async function tryYoloDetect(imageUrl: string): Promise<{
     }
     
     const data = await resp.json();
-    const objects: Array<{ class_name: string; score: number }> = Array.isArray(data?.objects) ? data.objects : [];
+    // 🔥 EXTRAIR ÁREA DO RESPONSE YOLO
+    const objects: Array<{ class_name: string; score: number; area?: number; area_px?: number }> = 
+      Array.isArray(data?.objects) ? data.objects : [];
     
     if (objects.length === 0) {
       console.log('⚠️ YOLO: Nenhum objeto detectado');
       return null;
     }
     
-    // Mapear objetos
+    // 🔥 MAPEAR OBJETOS COM ÁREA E GRAMAGEM ESTIMADA
     const mapped = objects
-      .map(o => ({ 
-        class_name: o.class_name,
-        score: Number(o.score) || 0,
-        name: YOLO_CLASS_MAP[o.class_name?.toLowerCase()] || YOLO_CLASS_MAP[o.class_name] || ''
-      }))
+      .map(o => {
+        const name = YOLO_CLASS_MAP[o.class_name?.toLowerCase()] || YOLO_CLASS_MAP[o.class_name] || '';
+        const areaPx = Number(o.area) || Number(o.area_px) || 0;
+        return { 
+          class_name: o.class_name,
+          score: Number(o.score) || 0,
+          name,
+          area_px: areaPx,
+          estimated_grams: estimateGramsFromArea(name || o.class_name, areaPx)
+        };
+      })
       .filter(o => o.name && o.score >= 0.25);
     
     if (mapped.length === 0) return null;
@@ -419,7 +516,9 @@ async function tryYoloDetect(imageUrl: string): Promise<{
     
     const quality = maxConfidence >= 0.7 ? 'excellent' : maxConfidence >= 0.5 ? 'good' : 'fair';
     
-    console.log(`⚡ YOLO: ${foods.length} alimentos em ${Date.now()}ms`);
+    // Log com informações de área
+    const areasDetected = mapped.filter(m => m.area_px > 0).length;
+    console.log(`⚡ YOLO: ${foods.length} alimentos, ${areasDetected} com área para gramagem`);
     
     return {
       foods,

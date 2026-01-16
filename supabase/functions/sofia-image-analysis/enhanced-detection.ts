@@ -18,12 +18,41 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
 // Cache em memória para TACO (dura durante a requisição)
 const tacoCache: Map<string, any> = new Map();
 
-// Configuração de IA - Usando modelo PRO para MÁXIMA PRECISÃO em imagens
+// Configuração de IA - Modelo adaptativo baseado em confiança YOLO
 let AI_MODEL_CONFIG = {
-  model: 'google/gemini-2.5-pro', // Modelo PRO = melhor para análise visual complexa
-  max_tokens: 4000, // Mais tokens para análise detalhada
-  temperature: 0.1 // Temperatura muito baixa = máxima precisão
+  model: 'google/gemini-2.5-pro', // Será ajustado dinamicamente
+  max_tokens: 4000,
+  temperature: 0.1
 };
+
+// 🎯 MODELO ADAPTATIVO: Seleciona modelo baseado na confiança YOLO
+// - Alta confiança (>= 0.6): usa Flash (mais barato, mais rápido)
+// - Baixa confiança (< 0.6): usa Pro (mais preciso)
+export function getAdaptiveModelConfig(yoloMaxConfidence: number = 0): { 
+  model: string; 
+  max_tokens: number; 
+  temperature: number 
+} {
+  const FLASH_MODEL = 'google/gemini-2.5-flash';
+  const PRO_MODEL = 'google/gemini-2.5-pro';
+  const CONFIDENCE_THRESHOLD = 0.6;
+  
+  if (yoloMaxConfidence >= CONFIDENCE_THRESHOLD) {
+    console.log(`🚀 Modelo FLASH selecionado (YOLO confidence ${(yoloMaxConfidence * 100).toFixed(0)}% >= ${CONFIDENCE_THRESHOLD * 100}%)`);
+    return {
+      model: FLASH_MODEL,
+      max_tokens: 3000,
+      temperature: 0.15
+    };
+  } else {
+    console.log(`🎯 Modelo PRO selecionado (YOLO confidence ${(yoloMaxConfidence * 100).toFixed(0)}% < ${CONFIDENCE_THRESHOLD * 100}%)`);
+    return {
+      model: PRO_MODEL,
+      max_tokens: 4000,
+      temperature: 0.1
+    };
+  }
+}
 
 // ========================================
 // 🍽️ MAPEAMENTO PRECISO PARA TACO COM MÉTODO DE PREPARO
