@@ -122,9 +122,12 @@ serve(async (req) => {
     const VPS_API_URL = Deno.env.get("VPS_API_URL") || Deno.env.get("VITE_VPS_API_URL");
     const VPS_API_KEY = Deno.env.get("VPS_API_KEY") || Deno.env.get("VITE_VPS_API_KEY");
 
+    console.log(`[media-upload] VPS_API_URL configurado: ${VPS_API_URL ? 'SIM' : 'NÃO'}`);
+    console.log(`[media-upload] VPS_API_KEY configurado: ${VPS_API_KEY ? 'SIM' : 'NÃO'}`);
+
     if (VPS_API_URL && VPS_API_KEY) {
       try {
-        console.log(`[media-upload] Tentando upload para MinIO: ${folder}`);
+        console.log(`[media-upload] Tentando upload para MinIO: ${folder} via ${VPS_API_URL}`);
         
         const vpsResponse = await fetch(`${VPS_API_URL}/storage/upload-base64`, {
           method: "POST",
@@ -159,14 +162,16 @@ serve(async (req) => {
         }
 
         const errorData = await vpsResponse.json().catch(() => ({}));
-        console.warn(`[media-upload] MinIO falhou: ${errorData.error || vpsResponse.status}`);
+        console.warn(`[media-upload] ⚠️ MinIO falhou (status ${vpsResponse.status}): ${errorData.error || 'Erro desconhecido'}`);
+        console.log(`[media-upload] Ativando fallback para Supabase Storage...`);
         // Continua para fallback
       } catch (vpsError) {
-        console.warn(`[media-upload] Erro MinIO, usando fallback:`, vpsError);
+        console.warn(`[media-upload] ⚠️ Erro de conexão com MinIO:`, vpsError);
+        console.log(`[media-upload] Ativando fallback para Supabase Storage...`);
         // Continua para fallback
       }
     } else {
-      console.log("[media-upload] VPS não configurada, usando Supabase Storage");
+      console.log("[media-upload] ℹ️ VPS não configurada, usando Supabase Storage diretamente");
     }
 
     // Fallback: Supabase Storage

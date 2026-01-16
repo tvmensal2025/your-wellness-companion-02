@@ -9,7 +9,7 @@ import {
   CheckCircle, 
   AlertCircle
 } from 'lucide-react';
-import { uploadToVPS, isVPSConfigured, deleteVPSFile } from '@/lib/vpsApi';
+import { uploadToVPS, deleteVPSFile } from '@/lib/vpsApi';
 
 interface ImageUploadProps {
   currentImageUrl?: string;
@@ -56,11 +56,6 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
       setUploading(true);
       setUploadProgress(0);
       setError(null);
-
-      // Verificar se VPS está configurada
-      if (!isVPSConfigured()) {
-        throw new Error('VPS não configurada. Configure VITE_VPS_API_URL e VITE_VPS_API_KEY.');
-      }
 
       // Simular progresso inicial
       const progressInterval = setInterval(() => {
@@ -129,9 +124,6 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
     fileInputRef.current?.click();
   };
 
-  // Verificar se VPS está configurada
-  const vpsConfigured = isVPSConfigured();
-
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -149,16 +141,6 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
           </Button>
         )}
       </div>
-
-      {/* Aviso se VPS não configurada */}
-      {!vpsConfigured && (
-        <div className="flex items-center space-x-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-          <AlertCircle className="w-5 h-5 text-yellow-500" />
-          <span className="text-yellow-700 text-sm">
-            VPS não configurada. Configure VITE_VPS_API_URL e VITE_VPS_API_KEY no .env
-          </span>
-        </div>
-      )}
 
       {/* Preview da imagem */}
       {previewUrl ? (
@@ -196,7 +178,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
               type="button"
               variant="outline"
               onClick={openFileDialog}
-              disabled={uploading || !vpsConfigured}
+              disabled={uploading}
             >
               <Upload className="w-4 h-4 mr-2" />
               {uploading ? 'Enviando...' : 'Selecionar Imagem'}
