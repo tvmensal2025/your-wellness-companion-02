@@ -60,6 +60,19 @@ serve(async (req) => {
 
     const data = await response.json().catch(() => ({}));
 
+    // Para health checks, retornar os dados mesmo com status 503 (degraded)
+    // O frontend pode decidir o que fazer com o status
+    if (endpoint.includes('/health')) {
+      return new Response(
+        JSON.stringify({ 
+          success: true, 
+          ...data,
+          httpStatus: response.status 
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     if (!response.ok) {
       console.error(`[vps-proxy] Erro: ${response.status}`, data);
       return new Response(
@@ -73,7 +86,7 @@ serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify(data),
+      JSON.stringify({ success: true, ...data }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
 
