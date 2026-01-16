@@ -64,7 +64,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         recentChallengesResult
       ] = await Promise.all([
         supabase.from('profiles').select('*', { count: 'exact', head: true }),
-        supabase.from('session_templates').select('*', { count: 'exact', head: true }).eq('is_active', true),
+        supabase.from('sessions').select('*', { count: 'exact', head: true }).eq('is_active', true),
         supabase.from('challenges').select('*', { count: 'exact', head: true }).eq('is_active', true),
         supabase.from('courses').select('*', { count: 'exact', head: true }),
         supabase.from('user_goals').select('*', { count: 'exact', head: true }).eq('status', 'pendente'),

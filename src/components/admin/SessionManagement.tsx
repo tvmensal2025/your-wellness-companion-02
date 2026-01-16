@@ -157,7 +157,7 @@ const SessionManagement: React.FC = () => {
           action_url: '/sessions'
         }));
 
-        await supabase.from('notifications').insert(notifications);
+        await supabase.from('health_feed_notifications').insert(notifications);
       }
 
       toast({
@@ -207,7 +207,7 @@ const SessionManagement: React.FC = () => {
           action_url: '/sessions'
         }));
 
-        await supabase.from('notifications').insert(notifications);
+        await supabase.from('health_feed_notifications').insert(notifications);
       }
       
       toast({

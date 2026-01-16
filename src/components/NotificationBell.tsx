@@ -49,7 +49,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ userId: prop
       lastFetchRef.current = now;
 
       const { data, error } = await supabase
-        .from('notifications')
+        .from('health_feed_notifications')
         .select('*')
         .eq('user_id', userId)
         .order('created_at', { ascending: false })
@@ -76,7 +76,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ userId: prop
         {
           event: 'INSERT',
           schema: 'public',
-          table: 'notifications',
+          table: 'health_feed_notifications',
           filter: `user_id=eq.${userId}`,
         },
         () => {
@@ -88,7 +88,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ userId: prop
         {
           event: 'UPDATE',
           schema: 'public',
-          table: 'notifications',
+          table: 'health_feed_notifications',
           filter: `user_id=eq.${userId}`,
         },
         () => {
@@ -107,7 +107,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ userId: prop
 
   const markAsRead = async (notificationId: string) => {
     await supabase
-      .from('notifications')
+      .from('health_feed_notifications')
       .update({ is_read: true })
       .eq('id', notificationId);
 
@@ -125,7 +125,7 @@ export const NotificationBell: React.FC<NotificationBellProps> = ({ userId: prop
     if (!userId) return;
     
     await supabase
-      .from('notifications')
+      .from('health_feed_notifications')
       .update({ is_read: true })
       .eq('user_id', userId)
       .eq('is_read', false);
