@@ -194,11 +194,12 @@ export class InjuryPredictor {
     description: string;
     affectedMuscles: string[];
   }> {
-    const { data: recentWorkouts } = await fromTable('exercise_performance_metrics')
+    // Using user_exercise_history instead of exercise_performance_metrics
+    const { data: recentWorkouts } = await fromTable('user_exercise_history')
       .select('*')
       .eq('user_id', this.userId)
-      .gte('created_at', new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString())
-      .order('created_at', { ascending: false }) as any;
+      .gte('completed_at', new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString())
+      .order('completed_at', { ascending: false }) as any;
 
     if (!recentWorkouts || recentWorkouts.length === 0) {
       return { isAtRisk: false, severity: 'low', description: '', affectedMuscles: [] };
@@ -206,14 +207,14 @@ export class InjuryPredictor {
 
     const workouts = recentWorkouts as any[];
 
-    // Contar treinos por semana
+    // Contar treinos por semana (using completed_at instead of created_at)
     const last7Days = workouts.filter((w: any) => 
-      new Date(w.created_at).getTime() > Date.now() - 7 * 24 * 60 * 60 * 1000
+      new Date(w.completed_at).getTime() > Date.now() - 7 * 24 * 60 * 60 * 1000
     );
 
     // Verificar dias consecutivos
     const workoutDates = [...new Set(
-      workouts.map((w: any) => new Date(w.created_at).toISOString().split('T')[0])
+      workouts.map((w: any) => new Date(w.completed_at).toISOString().split('T')[0])
     )].sort().reverse();
 
     let consecutiveDays = 1;
@@ -226,10 +227,12 @@ export class InjuryPredictor {
       }
     }
 
-    // Verificar intensidade alta consecutiva
-    const highIntensityWorkouts = workouts.filter((w: any) => 
-      (w.difficulty_rating || 0) >= 8
-    );
+    // Verificar intensidade alta consecutiva (difficulty_level mapped: easy=2, medium=5, hard=8)
+    const highIntensityWorkouts = workouts.filter((w: any) => {
+      const difficultyMap: Record<string, number> = { easy: 2, medium: 5, hard: 8 };
+      const rating = w.difficulty_level ? (difficultyMap[w.difficulty_level] || 5) : 5;
+      return rating >= 8;
+    });
 
     let isAtRisk = false;
     let severity: 'low' | 'moderate' | 'high' | 'critical' = 'low';
@@ -253,10 +256,10 @@ export class InjuryPredictor {
       issues.push(`${highIntensityWorkouts.length} treinos de alta intensidade`);
     }
 
-    // Identificar músculos mais treinados
+    // Identificar músculos mais treinados (using exercise_name instead of exercise_code)
     const muscleCount: Record<string, number> = {};
     workouts.forEach((w: any) => {
-      const muscle = this.exerciseToMuscle(w.exercise_code);
+      const muscle = this.exerciseToMuscle(w.exercise_name || w.exercise_code || '');
       muscleCount[muscle] = (muscleCount[muscle] || 0) + 1;
     });
 
@@ -477,18 +480,21 @@ export class InjuryPredictor {
     level: number;
     chronicFatigue: boolean;
   }> {
-    const { data } = await fromTable('exercise_performance_metrics')
-      .select('fatigue_level, created_at')
+    // Using user_exercise_history and deriving fatigue from difficulty_level
+    const { data } = await fromTable('user_exercise_history')
+      .select('difficulty_level, completed_at')
       .eq('user_id', this.userId)
-      .gte('created_at', new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString())
-      .order('created_at', { ascending: false }) as any;
+      .gte('completed_at', new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString())
+      .order('completed_at', { ascending: false }) as any;
 
     if (!data || data.length === 0) {
       return { level: 0, chronicFatigue: false };
     }
 
+    // Derive fatigue_level from difficulty_level: easy=2, medium=5, hard=8
+    const difficultyMap: Record<string, number> = { easy: 2, medium: 5, hard: 8 };
     const fatigueLevels = (data as any[])
-      .map((d: any) => d.fatigue_level)
+      .map((d: any) => d.difficulty_level ? (difficultyMap[d.difficulty_level] || 5) : null)
       .filter((f: any) => f !== null) as number[];
 
     if (fatigueLevels.length === 0) {
@@ -506,8 +512,9 @@ export class InjuryPredictor {
     stressLevel: number;
     nutritionScore: number;
   }> {
-    const { data } = await fromTable('holistic_health_data')
-      .select('sleep_hours, stress_level, nutrition_score')
+    // Using advanced_daily_tracking instead of holistic_health_data
+    const { data } = await fromTable('advanced_daily_tracking')
+      .select('sleep_hours, stress_level, calories_consumed, protein_g')
       .eq('user_id', this.userId)
       .gte('tracking_date', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString())
       .order('tracking_date', { ascending: false }) as any;
@@ -523,7 +530,12 @@ export class InjuryPredictor {
     const sleepDebt = sleepHours.reduce((debt: number, hours: number) => debt + Math.max(0, 8 - hours), 0);
 
     const avgStress = records.reduce((sum: number, d: any) => sum + (d.stress_level || 5), 0) / records.length;
-    const avgNutrition = records.reduce((sum: number, d: any) => sum + (d.nutrition_score || 5), 0) / records.length;
+    
+    // Derive nutrition_score from calories_consumed and protein_g
+    const avgNutrition = records.reduce((sum: number, d: any) => {
+      const nutritionScore = Math.min(10, ((d.calories_consumed || 0) / 2000) * 5 + ((d.protein_g || 0) / 100) * 5);
+      return sum + (nutritionScore || 5);
+    }, 0) / records.length;
 
     return {
       sleepDebt,

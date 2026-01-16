@@ -326,17 +326,28 @@ export class AIEngineService {
   // ============================================
 
   private async getRecentPerformance(days: number): Promise<PerformanceMetric[]> {
-    const { data } = await fromTable('exercise_performance_metrics')
+    // Using user_exercise_history instead of exercise_performance_metrics
+    const { data } = await fromTable('user_exercise_history')
       .select('*')
       .eq('user_id', this.userId)
-      .gte('created_at', new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString())
-      .order('created_at', { ascending: false }) as any;
+      .gte('completed_at', new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString())
+      .order('completed_at', { ascending: false }) as any;
 
-    return (data || []) as unknown as PerformanceMetric[];
+    // Map user_exercise_history fields to PerformanceMetric structure
+    return ((data || []) as any[]).map((d: any) => {
+      const difficultyMap: Record<string, number> = { easy: 3, medium: 6, hard: 9 };
+      return {
+        ...d,
+        createdAt: d.completed_at,
+        difficultyRating: d.difficulty_level ? (difficultyMap[d.difficulty_level] || 5) : undefined,
+        fatigueLevel: d.difficulty_level ? (difficultyMap[d.difficulty_level] || 5) : undefined,
+      };
+    }) as unknown as PerformanceMetric[];
   }
 
   private async getUserLearningModel(): Promise<UserLearningModel | null> {
-    const { data } = await fromTable('ai_user_learning_model')
+    // Using sofia_learning instead of ai_user_learning_model
+    const { data } = await fromTable('sofia_learning')
       .select('*')
       .eq('user_id', this.userId)
       .maybeSingle() as any;
@@ -345,7 +356,8 @@ export class AIEngineService {
   }
 
   private async getRecentHolisticData(): Promise<Record<string, unknown> | null> {
-    const { data } = await fromTable('holistic_health_data')
+    // Using advanced_daily_tracking instead of holistic_health_data
+    const { data } = await fromTable('advanced_daily_tracking')
       .select('*')
       .eq('user_id', this.userId)
       .order('tracking_date', { ascending: false })

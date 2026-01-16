@@ -589,21 +589,19 @@ export class SocialHub {
   // ============================================
 
   async findWorkoutBuddies(limit: number = 10): Promise<WorkoutBuddy[]> {
-    // Buscar perfil do usuário atual
-    const { data: myProfile } = await (fromTable('exercise_user_preferences') as any)
+    // Buscar perfil do usuário atual from profiles
+    const { data: myProfile } = await (fromTable('profiles') as any)
       .select('*')
       .eq('user_id', this.userId)
       .maybeSingle();
 
-    // Buscar candidatos
-    const { data: candidates } = await (fromTable('exercise_user_preferences') as any)
+    // Buscar candidatos from profiles with user_points for level
+    const { data: candidates } = await (fromTable('profiles') as any)
       .select(`
         *,
-        profile:profiles(full_name, avatar_url),
-        points:exercise_gamification_points(current_level)
+        points:user_points(level, total_points)
       `)
       .neq('user_id', this.userId)
-      .eq('looking_for_buddy', true)
       .limit(50);
 
     if (!candidates || candidates.length === 0) return [];
@@ -619,12 +617,12 @@ export class SocialHub {
 
     return scored.slice(0, limit).map(s => ({
       userId: s.candidate.user_id,
-      userName: (s.candidate.profile as { full_name?: string })?.full_name || 'Usuário',
-      avatarUrl: (s.candidate.profile as { avatar_url?: string })?.avatar_url,
-      level: (s.candidate.points as { current_level?: number })?.current_level || 1,
+      userName: s.candidate.full_name || 'Usuário',
+      avatarUrl: s.candidate.avatar_url,
+      level: (s.candidate.points as { level?: number })?.level || 1,
       compatibilityScore: s.score,
       commonGoals: this.findCommonGoals(myProfile, s.candidate),
-      preferredSchedule: s.candidate.preferred_schedule,
+      preferredSchedule: [],
     }));
   }
 

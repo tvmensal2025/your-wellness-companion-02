@@ -243,14 +243,16 @@ const PlatformAudit: React.FC = () => {
       functionality: 'Rastreamento de Sono',
       icon: Activity,
       test: async (): Promise<TestResult> => {
-        const { data, error } = await fromTable('sleep_tracking')
-          .select('*') as any;
+        // Using advanced_daily_tracking for sleep data
+        const { data, error } = await fromTable('advanced_daily_tracking')
+          .select('sleep_hours, sleep_quality, tracking_date')
+          .not('sleep_hours', 'is', null) as any;
         
         if (error) throw error;
         const records = data as Record<string, unknown>[] | null;
         return {
           dataRecords: records?.length || 0,
-          lastUpdate: records?.[0]?.created_at as string | undefined,
+          lastUpdate: records?.[0]?.tracking_date as string | undefined,
           suggestions: []
         };
       }
@@ -260,14 +262,16 @@ const PlatformAudit: React.FC = () => {
       functionality: 'Rastreamento de Humor',
       icon: Heart,
       test: async (): Promise<TestResult> => {
-        const { data, error } = await fromTable('mood_tracking')
-          .select('*') as any;
+        // Using advanced_daily_tracking for mood data
+        const { data, error } = await fromTable('advanced_daily_tracking')
+          .select('mood_rating, stress_level, tracking_date')
+          .not('mood_rating', 'is', null) as any;
         
         if (error) throw error;
         const records = data as Record<string, unknown>[] | null;
         return {
           dataRecords: records?.length || 0,
-          lastUpdate: records?.[0]?.created_at as string | undefined,
+          lastUpdate: records?.[0]?.tracking_date as string | undefined,
           suggestions: []
         };
       }
