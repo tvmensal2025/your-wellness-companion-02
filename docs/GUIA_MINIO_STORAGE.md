@@ -4,6 +4,49 @@ Este guia explica PASSO A PASSO como configurar o MinIO e o Backend para armazen
 
 ---
 
+## ⚠️ IMPORTANTE: Arquitetura de Upload
+
+### ❌ O que NÃO funciona
+O frontend (Vite/Lovable) **NÃO PODE** acessar:
+- `VITE_VPS_API_URL`
+- `VITE_VPS_API_KEY`
+- Qualquer segredo do Supabase
+
+Essas variáveis existem **apenas nas Edge Functions**.
+
+### ✅ Arquitetura Correta
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      FRONTEND (Lovable)                     │
+│                                                             │
+│  Stories/Feed/Chat ──> uploadToVPS() ──> Edge Function     │
+│                                                             │
+│  NUNCA acessa ENV diretamente!                              │
+└─────────────────────────────┬───────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│              EDGE FUNCTION: media-upload                    │
+│                                                             │
+│  1. Ler VPS_API_URL e VPS_API_KEY via Deno.env.get()       │
+│  2. Se disponível: upload para MinIO                        │
+│  3. Se falhar: fallback Supabase Storage                   │
+│  4. Retornar { success: true, url: "...", source: "..." }  │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### 📁 Arquivos que usam a Edge Function (OBRIGATÓRIO)
+- `src/lib/externalMedia.ts`
+- `src/lib/vpsApi.ts`
+- `src/lib/communityMedia.ts`
+- `src/hooks/useMediaUpload.ts`
+- Todos os componentes de chat/stories/feed
+
+**Nenhum desses arquivos deve tentar ler `import.meta.env.VITE_VPS_*`**
+
+---
+
 ## 📋 Sua Configuração Atual
 
 Você já tem:
