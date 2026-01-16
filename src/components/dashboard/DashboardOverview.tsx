@@ -288,15 +288,14 @@ const DashboardOverview: React.FC = () => {
             gender={gender || 'F'}
           />
 
-          {/* 2. Evolution Chart */}
+          {/* 2. Quick Action - Registrar Peso (único botão) */}
+          <QuickActionsGrid onWeightClick={() => setIsWeightModalOpen(true)} />
+
+          {/* 3. Evolution Chart (sem botão interno para evitar duplicação) */}
           <CleanEvolutionChart
             measurements={measurements || []}
             loading={loading}
-            onRegisterClick={() => setIsWeightModalOpen(true)}
           />
-
-          {/* 3. Quick Actions */}
-          <QuickActionsGrid onWeightClick={() => setIsWeightModalOpen(true)} />
         </div>
 
         {/* === CONTEÚDO EXTRA (só aparece ao arrastar) === */}
