@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
 import { checkVPSHealth } from '@/lib/vpsApi';
+import { WhatsAppButtonMapping } from './WhatsAppButtonMapping';
 import { 
   RefreshCw, 
   CheckCircle, 
@@ -297,8 +298,9 @@ export function VPSApiMonitor() {
       )}
 
       <Tabs defaultValue="endpoints">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="endpoints">📡 Endpoints</TabsTrigger>
+          <TabsTrigger value="buttons">🔘 Botões</TabsTrigger>
           <TabsTrigger value="logs">📋 Histórico</TabsTrigger>
           <TabsTrigger value="cron">⏰ Cron Jobs</TabsTrigger>
         </TabsList>
@@ -367,6 +369,10 @@ export function VPSApiMonitor() {
           </div>
         </TabsContent>
 
+        {/* Tab: Botões WhatsApp */}
+        <TabsContent value="buttons">
+          <WhatsAppButtonMapping />
+        </TabsContent>
         {/* Tab: Logs */}
         <TabsContent value="logs">
           <Card>

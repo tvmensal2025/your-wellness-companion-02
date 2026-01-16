@@ -301,8 +301,86 @@ async function handleButtonResponse(phone, buttonId) {
       }
       break;
       
+    // Medicação
+    case 'med_taken':
+      await sendMessage(phone, '✅ Ótimo! Medicação registrada. Continue cuidando da sua saúde! 💊');
+      break;
+      
+    case 'med_later':
+      await sendMessage(phone, '⏰ Ok! Vou te lembrar novamente em 30 minutos. Não esqueça! 💊');
+      break;
+      
+    // Desafios
+    case 'accept_challenge':
+      await sendMessage(phone, '🎯 Desafio aceito! Boa sorte! Você consegue! 💪');
+      break;
+      
+    case 'decline_challenge':
+      await sendMessage(phone, '👍 Tudo bem! Quando estiver pronto, te aviso de novos desafios.');
+      break;
+      
+    // Treino
+    case 'start_workout':
+      await sendMessage(phone, '💪 Bora treinar! Registre seu treino no app quando terminar. Você consegue! 🏋️');
+      break;
+      
+    case 'skip_today':
+      await sendMessage(phone, '⏰ Ok! Descanse hoje, mas amanhã voltamos com tudo! 💪');
+      break;
+      
+    // Missões do dia
+    case 'start_missions':
+      await sendMessage(phone, '🎯 Vamos lá! Suas missões te esperam no app. Abra e comece agora! 🚀');
+      break;
+      
+    case 'view_app':
+      await sendMessage(phone, '📱 Abra o app MaxNutrition para ver todos os detalhes!');
+      break;
+      
+    // Re-engagement
+    case 'return_now':
+      await sendMessage(phone, '🎉 Que bom ter você de volta! Abra o app e continue sua jornada de saúde! 💪');
+      break;
+      
+    case 'remind_later':
+      await sendMessage(phone, '⏰ Ok! Vou te lembrar amanhã. Não desista dos seus objetivos! 🌟');
+      break;
+      
+    // Ver relatório
+    case 'view_report':
+      await sendMessage(phone, '📊 Acesse o app para ver seu relatório semanal completo! 📱');
+      break;
+      
+    // Menu
+    case 'menu':
+      const template = templates.goodMorning(user?.full_name?.split(' ')[0] || 'Amigo');
+      if (template.buttons) {
+        await sendButtons(phone, '📋 *Menu Principal*\n\nO que deseja fazer hoje?', [
+          { id: 'water_250ml', text: '💧 +250ml Água' },
+          { id: 'weigh_now', text: '⚖️ Pesar' },
+          { id: 'start_missions', text: '🎯 Missões' }
+        ]);
+      } else {
+        await sendMessage(phone, '📋 Menu disponível no app!');
+      }
+      break;
+      
+    // Help
+    case 'help':
+      await sendMessage(phone, 
+        '👋 *Olá! Como posso ajudar?*\n\n' +
+        '📸 *Enviar foto de refeição* → Analiso calorias\n' +
+        '🩺 *Enviar foto de exame* → Analiso resultados\n' +
+        '💧 *Registrar água* → Responda "água 250ml"\n' +
+        '⚖️ *Registrar peso* → Envie o número (ex: 75.5)\n\n' +
+        '_Sofia 🥗 | Dr. Vital 🩺_'
+      );
+      break;
+      
     default:
       console.log(`⚠️ Botão desconhecido: ${buttonId}`);
+      // Notificar que não reconheceu
+      await sendMessage(phone, '🤔 Não reconheci esse comando. Digite *ajuda* para ver as opções.');
   }
 }
 
