@@ -80,7 +80,7 @@ async function getPatientContext(supabase: any, userId: string): Promise<Patient
     supabase.from("food_history").select("meal_type, food_items, total_calories, meal_time, meal_date").eq("user_id", userId).order("meal_date", { ascending: false }).order("meal_time", { ascending: false }).limit(5),
     supabase.from("menstrual_cycle_tracking").select("cycle_phase, cycle_day, has_cramps, has_headache, has_mood_swings, has_fatigue, tracking_date").eq("user_id", userId).order("tracking_date", { ascending: false }).limit(1),
     supabase.from("mood_monitoring").select("mood_level, mood_date").eq("user_id", userId).gte("mood_date", sevenDaysAgoStr).order("mood_date", { ascending: false }),
-    supabase.from("nutritional_goals").select("target_calories, target_protein_g, target_carbs_g, target_fats_g, target_water_ml").eq("user_id", userId).eq("status", "active").limit(1),
+    supabase.from("nutritional_goals").select("calories_target, protein_target, carbs_target, fats_target, water_target").eq("user_id", userId).order("created_at", { ascending: false }).limit(1),
     supabase.from("advanced_daily_tracking").select("exercise_type, exercise_duration_minutes, tracking_date").eq("user_id", userId).gte("tracking_date", sevenDaysAgoStr).not("exercise_duration_minutes", "is", null),
     supabase.from("medical_exams").select("exam_name, result_value, result_unit, status, exam_date").eq("user_id", userId).order("exam_date", { ascending: false }).limit(10),
   ]);
@@ -170,11 +170,11 @@ async function getPatientContext(supabase: any, userId: string): Promise<Patient
 
   // Processar metas de macros
   const metas_macros = nutritionalGoals ? {
-    calorias: nutritionalGoals.target_calories || 2000,
-    proteina: nutritionalGoals.target_protein_g || 100,
-    carbs: nutritionalGoals.target_carbs_g || 250,
-    gordura: nutritionalGoals.target_fats_g || 65,
-    agua: nutritionalGoals.target_water_ml || 2000,
+    calorias: nutritionalGoals.calories_target || 2000,
+    proteina: nutritionalGoals.protein_target || 100,
+    carbs: nutritionalGoals.carbs_target || 250,
+    gordura: nutritionalGoals.fats_target || 65,
+    agua: nutritionalGoals.water_target || 2000,
   } : null;
 
   // Processar histórico de exercícios

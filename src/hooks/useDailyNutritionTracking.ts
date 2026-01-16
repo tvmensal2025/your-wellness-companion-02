@@ -59,19 +59,20 @@ export function useDailyNutritionTracking() {
       const { data, error } = await fromTable('nutritional_goals')
         .select('*')
         .eq('user_id', user.id)
-        .eq('status', 'active')
+        .order('created_at', { ascending: false })
+        .limit(1)
         .maybeSingle();
 
       if (error) throw error;
 
       if (data) {
         setGoals({
-          calories: (data as any).target_calories || defaultGoals.calories,
-          protein_g: (data as any).target_protein_g || defaultGoals.protein_g,
-          carbs_g: (data as any).target_carbs_g || defaultGoals.carbs_g,
-          fats_g: (data as any).target_fats_g || defaultGoals.fats_g,
-          fiber_g: (data as any).target_fiber_g || defaultGoals.fiber_g,
-          water_ml: (data as any).target_water_ml || defaultGoals.water_ml,
+          calories: (data as any).calories_target || defaultGoals.calories,
+          protein_g: (data as any).protein_target || defaultGoals.protein_g,
+          carbs_g: (data as any).carbs_target || defaultGoals.carbs_g,
+          fats_g: (data as any).fats_target || defaultGoals.fats_g,
+          fiber_g: (data as any).fiber_target || defaultGoals.fiber_g,
+          water_ml: (data as any).water_target || defaultGoals.water_ml,
         });
       }
     } catch (error) {
