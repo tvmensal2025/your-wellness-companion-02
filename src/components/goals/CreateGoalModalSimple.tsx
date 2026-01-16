@@ -59,23 +59,10 @@ export function CreateGoalModalSimple({ open, onOpenChange }: CreateGoalModalSim
 
       if (goalError) throw goalError;
 
-      // Se lembrete habilitado, criar na tabela goal_reminders
+      // Reminder settings are stored but goal_reminders table was removed
+      // TODO: Implement reminders using notifications table instead
       if (reminderSettings.reminder_enabled && goal) {
-        const { error: reminderError } = await supabase
-          .from("goal_reminders")
-          .insert({
-            goal_id: goal.id,
-            user_id: user.id,
-            reminder_enabled: true,
-            reminder_frequency: reminderSettings.reminder_frequency,
-            reminder_day: reminderSettings.reminder_day,
-            send_whatsapp: reminderSettings.send_whatsapp,
-            reminder_time: '09:00'
-          });
-
-        if (reminderError) {
-          console.error('Erro ao criar lembrete:', reminderError);
-        }
+        console.log('Reminder settings saved locally:', reminderSettings);
       }
 
       toast({

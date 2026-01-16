@@ -59,22 +59,18 @@ export const SofiaNutritionReport: React.FC<SofiaNutritionReportProps> = ({ open
     if (error || !data?.success) return;
     const totals = data.totals as { kcal: number; protein_g: number; fat_g: number; carbs_g: number };
 
-    // Salvar em food_analysis como uma análise simples
-    await supabase.from('food_analysis').insert([{
+    // Salvar em sofia_food_analysis como uma análise simples
+    await supabase.from('sofia_food_analysis').insert([{
       user_id: userId,
       meal_type: newItem.meal,
-      food_items: [newItem.name],
-      total_calories: totals.kcal,
-      total_proteins: totals.protein_g,
-      total_fats: totals.fat_g,
-      total_carbs: totals.carbs_g,
-      nutrition_analysis: {
-        totalCalories: totals.kcal,
-        totalProtein: totals.protein_g,
-        totalCarbs: totals.carbs_g,
-        totalFat: totals.fat_g,
+      analysis_result: {
+        alimentos: [newItem.name],
+        calorias_totais: totals.kcal,
+        proteinas: totals.protein_g,
+        gorduras: totals.fat_g,
+        carboidratos: totals.carbs_g,
       },
-      recommendations: 'Item adicionado manualmente',
+      confirmed_by_user: true
     }]);
 
     setAddOpen(false);

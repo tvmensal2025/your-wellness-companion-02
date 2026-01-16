@@ -1,5 +1,4 @@
 import { useState, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
 export interface ProgressLog {
@@ -28,13 +27,13 @@ export interface ExerciseStats {
   last_workout: string | null;
 }
 
+// exercise_progress_logs table was removed - returning mock implementations
 export const useExerciseProgress = (userId: string | undefined) => {
-  const [loading, setLoading] = useState(false);
-  const [progressHistory, setProgressHistory] = useState<ProgressLog[]>([]);
+  const [loading] = useState(false);
+  const [progressHistory] = useState<ProgressLog[]>([]);
   const { toast } = useToast();
 
-  // Registrar progresso de uma série
-  const logProgress = useCallback(async (data: {
+  const logProgress = useCallback(async (_data: {
     exerciseId?: string;
     exerciseName: string;
     setNumber: number;
@@ -52,161 +51,30 @@ export const useExerciseProgress = (userId: string | undefined) => {
       });
       return null;
     }
-
-    try {
-      const { data: result, error } = await supabase
-        .from('exercise_progress_logs')
-        .insert({
-          user_id: userId,
-          exercise_id: data.exerciseId || null,
-          exercise_name: data.exerciseName,
-          set_number: data.setNumber,
-          reps_completed: data.repsCompleted || null,
-          weight_kg: data.weightKg || null,
-          duration_seconds: data.durationSeconds || null,
-          perceived_difficulty: data.perceivedDifficulty || null,
-          notes: data.notes || null
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      return result;
-    } catch (error) {
-      console.error('Erro ao registrar progresso:', error);
-      toast({
-        title: "Erro",
-        description: "Não foi possível registrar o progresso",
-        variant: "destructive"
-      });
-      return null;
-    }
+    // Table was removed - feature disabled
+    console.log('Exercise progress logging is temporarily disabled');
+    return null;
   }, [userId, toast]);
 
-  // Buscar histórico de um exercício específico
-  const getExerciseHistory = useCallback(async (exerciseName: string, limit = 30) => {
-    if (!userId) return [];
+  const getExerciseHistory = useCallback(async (_exerciseName: string, _limit = 30) => {
+    return [];
+  }, []);
 
-    setLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from('exercise_progress_logs')
-        .select('*')
-        .eq('user_id', userId)
-        .eq('exercise_name', exerciseName)
-        .order('workout_date', { ascending: false })
-        .order('set_number', { ascending: true })
-        .limit(limit);
+  const getLastWeight = useCallback(async (_exerciseName: string): Promise<number | null> => {
+    return null;
+  }, []);
 
-      if (error) throw error;
+  const getExerciseStats = useCallback(async (_exerciseName: string): Promise<ExerciseStats | null> => {
+    return null;
+  }, []);
 
-      setProgressHistory(data || []);
-      return data || [];
-    } catch (error) {
-      console.error('Erro ao buscar histórico:', error);
-      return [];
-    } finally {
-      setLoading(false);
-    }
-  }, [userId]);
+  const getWeightProgression = useCallback(async (_exerciseName: string, _days = 30) => {
+    return [];
+  }, []);
 
-  // Buscar última carga usada para um exercício
-  const getLastWeight = useCallback(async (exerciseName: string): Promise<number | null> => {
-    if (!userId) return null;
-
-    try {
-      const { data, error } = await supabase
-        .from('exercise_progress_logs')
-        .select('weight_kg')
-        .eq('user_id', userId)
-        .eq('exercise_name', exerciseName)
-        .not('weight_kg', 'is', null)
-        .order('workout_date', { ascending: false })
-        .order('set_number', { ascending: false })
-        .limit(1)
-        .single();
-
-      if (error && error.code !== 'PGRST116') throw error; // PGRST116 = no rows
-
-      return data?.weight_kg || null;
-    } catch (error) {
-      console.error('Erro ao buscar última carga:', error);
-      return null;
-    }
-  }, [userId]);
-
-  // Buscar estatísticas gerais de um exercício
-  const getExerciseStats = useCallback(async (exerciseName: string): Promise<ExerciseStats | null> => {
-    if (!userId) return null;
-
-    try {
-      const { data, error } = await supabase
-        .from('exercise_progress_stats')
-        .select('*')
-        .eq('user_id', userId)
-        .eq('exercise_name', exerciseName)
-        .single();
-
-      if (error && error.code !== 'PGRST116') throw error;
-
-      return data as ExerciseStats || null;
-    } catch (error) {
-      console.error('Erro ao buscar estatísticas:', error);
-      return null;
-    }
-  }, [userId]);
-
-  // Buscar evolução de peso para gráfico
-  const getWeightProgression = useCallback(async (exerciseName: string, days = 30) => {
-    if (!userId) return [];
-
-    try {
-      const startDate = new Date();
-      startDate.setDate(startDate.getDate() - days);
-
-      const { data, error } = await supabase
-        .from('exercise_progress_logs')
-        .select('workout_date, weight_kg, set_number')
-        .eq('user_id', userId)
-        .eq('exercise_name', exerciseName)
-        .not('weight_kg', 'is', null)
-        .gte('workout_date', startDate.toISOString().split('T')[0])
-        .order('workout_date', { ascending: true });
-
-      if (error) throw error;
-
-      // Agrupar por data e pegar o maior peso do dia
-      const grouped = (data || []).reduce((acc: Record<string, number>, log) => {
-        const date = log.workout_date;
-        if (!acc[date] || (log.weight_kg && log.weight_kg > acc[date])) {
-          acc[date] = log.weight_kg || 0;
-        }
-        return acc;
-      }, {});
-
-      return Object.entries(grouped).map(([date, weight]) => ({
-        date,
-        weight
-      }));
-    } catch (error) {
-      console.error('Erro ao buscar progressão:', error);
-      return [];
-    }
-  }, [userId]);
-
-  // Calcular sugestão de carga (baseado em progressão linear)
-  const getSuggestedWeight = useCallback(async (exerciseName: string): Promise<number | null> => {
-    const lastWeight = await getLastWeight(exerciseName);
-    if (!lastWeight) return null;
-
-    // Sugerir aumento de 2.5kg ou 5% (o que for menor)
-    const percentIncrease = lastWeight * 0.05;
-    const increase = Math.min(2.5, percentIncrease);
-    
-    // Arredondar para múltiplos de 0.5
-    return Math.round((lastWeight + increase) * 2) / 2;
-  }, [getLastWeight]);
+  const getSuggestedWeight = useCallback(async (_exerciseName: string): Promise<number | null> => {
+    return null;
+  }, []);
 
   return {
     loading,

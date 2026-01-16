@@ -108,27 +108,10 @@ export const FeedPostCard: React.FC<FeedPostCardProps> = ({
   const [poll, setPoll] = useState<Poll | null>(null);
   const [reactions, setReactions] = useState<Record<string, number>>({});
 
-  // Fetch poll if exists
+  // Poll feature disabled - table was removed
   useEffect(() => {
-    const fetchPoll = async () => {
-      const { data } = await supabase
-        .from('health_feed_polls')
-        .select('*')
-        .eq('post_id', post.id)
-        .maybeSingle();
-      
-      if (data) {
-        setPoll({
-          id: data.id,
-          post_id: data.post_id,
-          question: data.question,
-          options: data.options as unknown as PollOption[],
-          ends_at: data.ends_at || undefined,
-          created_at: data.created_at
-        });
-      }
-    };
-    fetchPoll();
+    // Polls are no longer supported
+    setPoll(null);
   }, [post.id]);
 
   // Fetch reactions

@@ -112,35 +112,14 @@ export function useFlashChallenges() {
 }
 
 // =====================================================
-// DUELOS
+// DUELOS - Table was removed, returning empty
 // =====================================================
 export function useMyDuels(userId: string | undefined) {
   return useQuery({
     queryKey: CHALLENGE_KEYS.duels(userId || ''),
     queryFn: async () => {
-      if (!userId) return [];
-      
-      try {
-        const { data, error } = await supabase
-          .from('challenge_duels')
-          .select(`
-            *,
-            challenger:profiles!challenge_duels_challenger_id_fkey(full_name, avatar_url),
-            opponent:profiles!challenge_duels_opponent_id_fkey(full_name, avatar_url)
-          `)
-          .or(`challenger_id.eq.${userId},opponent_id.eq.${userId}`)
-          .in('status', ['pending', 'active'])
-          .order('created_at', { ascending: false });
-        
-        if (error) {
-          console.warn('Duels table may not exist:', error.message);
-          return [];
-        }
-        return (data || []) as unknown as ChallengeDuel[];
-      } catch (e) {
-        console.warn('Error fetching duels:', e);
-        return [];
-      }
+      // challenge_duels table was removed
+      return [] as ChallengeDuel[];
     },
     enabled: !!userId,
     staleTime: 30 * 1000,
@@ -148,11 +127,10 @@ export function useMyDuels(userId: string | undefined) {
 }
 
 export function useCreateDuel() {
-  const queryClient = useQueryClient();
   const { toast } = useToast();
   
   return useMutation({
-    mutationFn: async (params: {
+    mutationFn: async (_params: {
       opponent_id: string;
       challenge_type: string;
       target_value: number;
@@ -160,36 +138,8 @@ export function useCreateDuel() {
       duration_hours: number;
       xp_reward?: number;
     }) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Não autenticado');
-      
-      const ends_at = new Date();
-      ends_at.setHours(ends_at.getHours() + params.duration_hours);
-      
-      const { data, error } = await supabase
-        .from('challenge_duels')
-        .insert({
-          challenger_id: user.id,
-          opponent_id: params.opponent_id,
-          challenge_type: params.challenge_type,
-          target_value: params.target_value,
-          unit: params.unit,
-          xp_reward: params.xp_reward || 200,
-          status: 'pending',
-          ends_at: ends_at.toISOString(),
-        })
-        .select()
-        .single();
-      
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: CHALLENGE_KEYS.duels('') });
-      toast({
-        title: '⚔️ Duelo Criado!',
-        description: 'Aguardando aceitação do oponente',
-      });
+      // challenge_duels table was removed
+      throw new Error('Duelos não disponíveis no momento');
     },
     onError: (error) => {
       toast({
@@ -202,25 +152,14 @@ export function useCreateDuel() {
 }
 
 export function useUpdateDuelProgress() {
-  const queryClient = useQueryClient();
-  
   return useMutation({
-    mutationFn: async (params: {
+    mutationFn: async (_params: {
       duel_id: string;
       progress: number;
       is_challenger: boolean;
     }) => {
-      const field = params.is_challenger ? 'challenger_progress' : 'opponent_progress';
-      
-      const { error } = await supabase
-        .from('challenge_duels')
-        .update({ [field]: params.progress, updated_at: new Date().toISOString() })
-        .eq('id', params.duel_id);
-      
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: CHALLENGE_KEYS.duels('') });
+      // challenge_duels table was removed
+      throw new Error('Duelos não disponíveis no momento');
     },
   });
 }

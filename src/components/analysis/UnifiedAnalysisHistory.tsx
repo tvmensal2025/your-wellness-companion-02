@@ -53,9 +53,9 @@ export const UnifiedAnalysisHistory: React.FC = () => {
 
       const userId = user.user.id;
 
-      // Buscar análises nutricionais
+      // Buscar análises nutricionais da sofia_food_analysis
       const { data: nutritionData } = await supabase
-        .from('food_analysis')
+        .from('sofia_food_analysis')
         .select('*')
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
@@ -85,21 +85,21 @@ export const UnifiedAnalysisHistory: React.FC = () => {
       // Combinar todas as análises
       const unifiedAnalyses: UnifiedAnalysis[] = [];
 
-      // Análises nutricionais
+      // Análises nutricionais (agora de sofia_food_analysis)
       nutritionData?.forEach(item => {
-        const foodItems = Array.isArray(item.food_items) ? item.food_items : [];
-        const nutritionAnalysis = typeof item.nutrition_analysis === 'object' ? item.nutrition_analysis as any : null;
-        const calories = nutritionAnalysis?.calorias || nutritionAnalysis?.calories || 0;
+        const analysisResult = typeof item.analysis_result === 'object' ? item.analysis_result as any : null;
+        const foodItems = analysisResult?.alimentos || analysisResult?.foods || [];
+        const calories = analysisResult?.calorias_totais || analysisResult?.totalCalories || 0;
         
         unifiedAnalyses.push({
           id: item.id,
           type: 'nutrition',
           title: `Análise Nutricional - ${getMealTypeLabel(item.meal_type || 'refeicao')}`,
-          description: `${calories ? Math.round(calories) + ' kcal' : 'Análise nutricional'} • ${foodItems.length || 0} alimentos`,
-          created_at: item.created_at,
+          description: `${calories ? Math.round(calories) + ' kcal' : 'Análise nutricional'} • ${Array.isArray(foodItems) ? foodItems.length : 0} alimentos`,
+          created_at: item.created_at || new Date().toISOString(),
           data: item,
           user_id: userId,
-          meal_type: item.meal_type,
+          meal_type: item.meal_type || 'refeicao',
           calories: calories
         });
       });
@@ -207,11 +207,11 @@ export const UnifiedAnalysisHistory: React.FC = () => {
   const deleteAnalysis = async (analysis: UnifiedAnalysis) => {
     if (window.confirm('Tem certeza que deseja excluir esta análise?')) {
       try {
-        let tableName: 'food_analysis' | 'preventive_health_analyses' | 'sofia_food_analysis' | 'medical_documents' | null = null;
+        let tableName: 'preventive_health_analyses' | 'sofia_food_analysis' | 'medical_documents' | null = null;
         
         switch (analysis.type) {
           case 'nutrition': 
-            tableName = 'food_analysis'; 
+            tableName = 'sofia_food_analysis'; 
             break;
           case 'preventive': 
             tableName = 'preventive_health_analyses'; 

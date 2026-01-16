@@ -45,9 +45,9 @@ export function useDailyNutritionReport(date: Date) {
         const dayStr = date.toISOString().slice(0, 10);
         console.log('🔍 Buscando dados nutricionais para:', dayStr, 'userId:', userId);
         
-        // Buscar dados da tabela food_analysis
+        // Buscar dados da tabela sofia_food_analysis (food_analysis was removed)
         const { data, error } = await supabase
-          .from('food_analysis')
+          .from('sofia_food_analysis')
           .select('*')
           .eq('user_id', userId)
           .gte('created_at', `${dayStr}T00:00:00`)
@@ -55,27 +55,26 @@ export function useDailyNutritionReport(date: Date) {
           .order('created_at', { ascending: true });
 
         if (error) {
-          console.error('❌ Erro ao buscar food_analysis:', error);
+          console.error('❌ Erro ao buscar sofia_food_analysis:', error);
           throw error;
         }
 
         console.log('📊 Dados encontrados:', data?.length || 0, 'registros');
 
         const parsed: MacroRow[] = (data || []).map((r: any) => {
-          // Extrair dados nutricionais do campo nutrition_analysis ou user_context
-          const nutritionData = r.nutrition_analysis || {};
-          const userContext = r.user_context || {};
+          // Extrair dados nutricionais do campo analysis_result
+          const analysisResult = r.analysis_result || {};
           
           return {
-            day: r.created_at.slice(0, 10),
+            day: (r.created_at || '').slice(0, 10),
             meal_type: (r.meal_type || 'refeicao') as MealSlot,
-            kcal: Number(nutritionData.total_kcal || nutritionData.totalCalories || userContext.calories || 0),
-            protein_g: Number(nutritionData.total_proteina || nutritionData.totalProtein || userContext.protein || 0),
-            carbs_g: Number(nutritionData.total_carbo || nutritionData.totalCarbs || userContext.carbs || 0),
-            fat_g: Number(nutritionData.total_gordura || nutritionData.totalFat || userContext.fat || 0),
-            fiber_g: Number(nutritionData.total_fibras || nutritionData.totalFiber || userContext.fiber || 0),
-            sodium_mg: Number(nutritionData.total_sodio || nutritionData.totalSodium || userContext.sodium || 0),
-            items: Array.isArray(r.food_items) ? r.food_items : (userContext.foods_detected || []).map((name: string) => ({ name })),
+            kcal: Number(analysisResult.calorias_totais || analysisResult.totalCalories || 0),
+            protein_g: Number(analysisResult.proteinas || analysisResult.totalProtein || 0),
+            carbs_g: Number(analysisResult.carboidratos || analysisResult.totalCarbs || 0),
+            fat_g: Number(analysisResult.gorduras || analysisResult.totalFat || 0),
+            fiber_g: Number(analysisResult.fibras || 0),
+            sodium_mg: Number(analysisResult.sodio || 0),
+            items: Array.isArray(analysisResult.alimentos) ? analysisResult.alimentos.map((name: string) => ({ name })) : [],
           };
         });
 
