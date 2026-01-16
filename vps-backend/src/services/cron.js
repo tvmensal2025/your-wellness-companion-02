@@ -1,18 +1,76 @@
 /**
  * Cron Jobs - Tarefas agendadas
+ * Sistema centralizado de notificações via WhatsApp
  */
 
 import cron from 'node-cron';
+import axios from 'axios';
 import { sendMessage, sendButtons, templates } from './whatsapp.js';
 import { 
   getUsersForWaterReminder, 
   getUsersForWeightReminder,
   getLastWeight,
-  getTodayWater
+  getTodayWater,
+  getPendingNotifications,
+  markNotificationSent,
+  markNotificationFailed,
+  getUserById,
+  getUsersWithPhone
 } from './supabase.js';
 
 export function initCronJobs() {
   console.log('⏰ Iniciando cron jobs...');
+  
+  // ===========================================
+  // PRINCIPAL: Processar fila de notificações - A cada 5 minutos
+  // ===========================================
+  cron.schedule('*/5 * * * *', async () => {
+    console.log('📬 Processando fila de notificações...');
+    
+    try {
+      const notifications = await getPendingNotifications(50);
+      console.log(`📬 ${notifications.length} notificações para processar`);
+      
+      let sent = 0;
+      let failed = 0;
+      
+      for (const notification of notifications) {
+        try {
+          const user = await getUserById(notification.user_id);
+          
+          if (!user?.phone) {
+            await markNotificationFailed(notification.id, 'Usuário sem telefone');
+            failed++;
+            continue;
+          }
+          
+          const name = user.full_name?.split(' ')[0] || 'Amigo';
+          const message = formatNotificationMessage(notification, name);
+          
+          await sendMessage(user.phone, message);
+          await markNotificationSent(notification.id, 'whatsapp');
+          sent++;
+          
+          // Delay para não sobrecarregar
+          await sleep(500);
+          
+        } catch (error) {
+          console.error(`❌ Erro na notificação ${notification.id}:`, error.message);
+          await markNotificationFailed(notification.id, error.message);
+          failed++;
+        }
+      }
+      
+      if (notifications.length > 0) {
+        console.log(`✅ Fila processada: ${sent} enviadas, ${failed} falhas`);
+      }
+      
+    } catch (error) {
+      console.error('❌ Erro ao processar fila:', error);
+    }
+  }, {
+    timezone: 'America/Sao_Paulo'
+  });
   
   // ===========================================
   // Lembrete de água - A cada 3 horas (9h, 12h, 15h, 18h)
@@ -34,9 +92,12 @@ export function initCronJobs() {
           2500
         );
         
-        await sendButtons(user.phone, template.message, template.buttons);
+        try {
+          await sendButtons(user.phone, template.message, template.buttons);
+        } catch (error) {
+          console.error(`❌ Erro ao enviar para ${user.phone}:`, error.message);
+        }
         
-        // Delay para não sobrecarregar
         await sleep(1000);
       }
       
@@ -61,7 +122,8 @@ export function initCronJobs() {
       for (const user of users) {
         if (!user.phone) continue;
         
-        const lastWeight = await getLastWeight(user.id);
+        const userId = user.user_id || user.id;
+        const lastWeight = await getLastWeight(userId);
         const daysSince = lastWeight 
           ? Math.floor((Date.now() - new Date(lastWeight.measurement_date)) / (1000 * 60 * 60 * 24))
           : 0;
@@ -72,7 +134,11 @@ export function initCronJobs() {
           daysSince
         );
         
-        await sendButtons(user.phone, template.message, template.buttons);
+        try {
+          await sendButtons(user.phone, template.message, template.buttons);
+        } catch (error) {
+          console.error(`❌ Erro ao enviar para ${user.phone}:`, error.message);
+        }
         
         await sleep(1000);
       }
@@ -92,8 +158,25 @@ export function initCronJobs() {
     console.log('☀️ Enviando bom dia...');
     
     try {
-      // Buscar usuários ativos (que interagiram nos últimos 7 dias)
-      // Por enquanto, simplificado
+      const users = await getUsersWithPhone(500);
+      console.log(`☀️ ${users.length} usuários ativos`);
+      
+      for (const user of users) {
+        if (!user.phone) continue;
+        
+        const template = templates.goodMorning(
+          user.full_name?.split(' ')[0] || 'Amigo'
+        );
+        
+        try {
+          await sendButtons(user.phone, template.message, template.buttons);
+        } catch (error) {
+          console.error(`❌ Erro ao enviar para ${user.phone}:`, error.message);
+        }
+        
+        await sleep(1000);
+      }
+      
       console.log('☀️ Bom dia enviado');
     } catch (error) {
       console.error('❌ Erro no bom dia:', error);
@@ -109,7 +192,37 @@ export function initCronJobs() {
     console.log('📊 Enviando resumo do dia...');
     
     try {
-      // TODO: Implementar resumo diário
+      const users = await getUsersWithPhone(500);
+      console.log(`📊 ${users.length} usuários para resumo`);
+      
+      for (const user of users) {
+        if (!user.phone) continue;
+        
+        const userId = user.user_id || user.id;
+        const water = await getTodayWater(userId);
+        
+        const template = templates.dailySummary(
+          user.full_name?.split(' ')[0] || 'Amigo',
+          {
+            water: water || 0,
+            steps: 0, // TODO: integrar com tracking
+            calories: 0,
+            mood: '-',
+            message: water >= 2000 
+              ? 'Parabéns pela hidratação! 🎉' 
+              : 'Lembre-se de beber mais água amanhã!'
+          }
+        );
+        
+        try {
+          await sendMessage(user.phone, template.message);
+        } catch (error) {
+          console.error(`❌ Erro ao enviar para ${user.phone}:`, error.message);
+        }
+        
+        await sleep(1000);
+      }
+      
       console.log('📊 Resumo enviado');
     } catch (error) {
       console.error('❌ Erro no resumo:', error);
@@ -119,10 +232,49 @@ export function initCronJobs() {
   });
   
   console.log('✅ Cron jobs configurados:');
+  console.log('   📬 Fila de notificações: a cada 5 minutos');
   console.log('   💧 Água: 9h, 12h, 15h, 18h');
   console.log('   ⚖️ Peso: Segunda 8h');
   console.log('   ☀️ Bom dia: 7h');
   console.log('   📊 Resumo: 21h');
+}
+
+// ===========================================
+// HELPERS
+// ===========================================
+
+function formatNotificationMessage(notification, name) {
+  const { category, title, body, action_url } = notification;
+  
+  // Emojis por categoria
+  const categoryEmojis = {
+    general: '🔔',
+    dr_vital: '👨‍⚕️',
+    exercise: '💪',
+    community: '👥',
+    water: '💧',
+    weight: '⚖️',
+    achievement: '🏆',
+    session: '🧘',
+    reminder: '⏰',
+    tip: '💡',
+    health: '❤️',
+    alert: '⚠️',
+    system: '📱'
+  };
+  
+  const emoji = categoryEmojis[category] || '🔔';
+  
+  // Montar mensagem
+  let message = `${emoji} *${title}*\n\n`;
+  message += `Olá ${name}!\n\n`;
+  message += body;
+  
+  if (action_url) {
+    message += `\n\n📱 Acesse o app para mais detalhes!`;
+  }
+  
+  return message;
 }
 
 function sleep(ms) {
