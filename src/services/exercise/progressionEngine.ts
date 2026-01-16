@@ -113,19 +113,20 @@ export class ProgressionEngine {
   // ============================================
 
   async recordPerformance(metric: Omit<LocalPerformanceMetric, 'id' | 'createdAt'>): Promise<LocalPerformanceMetric> {
-    const { data, error } = await (fromTable('exercise_performance_metrics') as any)
+    // Usar user_exercise_history em vez de exercise_performance_metrics
+    const difficultyMap: Record<number, string> = { 3: 'easy', 5: 'medium', 7: 'hard', 9: 'extreme' };
+    const difficultyLevel = difficultyMap[metric.difficultyRating || 5] || 'medium';
+    
+    const { data, error } = await supabase
+      .from('user_exercise_history')
       .insert({
         user_id: this.userId,
-        exercise_code: metric.exerciseCode,
+        exercise_name: metric.exerciseCode,
         sets_completed: metric.setsCompleted,
         reps_completed: metric.repsCompleted,
         weight_used: metric.weightUsed,
         duration_seconds: metric.durationSeconds,
-        difficulty_rating: metric.difficultyRating,
-        fatigue_level: metric.fatigueLevel,
-        pain_level: metric.painLevel,
-        heart_rate_avg: metric.heartRateAvg,
-        heart_rate_max: metric.heartRateMax,
+        difficulty_level: difficultyLevel,
         notes: metric.notes,
       })
       .select()
@@ -138,18 +139,18 @@ export class ProgressionEngine {
 
     return {
       id: data.id,
-      exerciseCode: data.exercise_code,
-      setsCompleted: data.sets_completed,
-      repsCompleted: data.reps_completed,
+      exerciseCode: data.exercise_name || '',
+      setsCompleted: data.sets_completed || 0,
+      repsCompleted: data.reps_completed || 0,
       weightUsed: data.weight_used,
       durationSeconds: data.duration_seconds,
-      difficultyRating: data.difficulty_rating,
-      fatigueLevel: data.fatigue_level,
-      painLevel: data.pain_level,
-      heartRateAvg: data.heart_rate_avg,
-      heartRateMax: data.heart_rate_max,
+      difficultyRating: metric.difficultyRating,
+      fatigueLevel: metric.fatigueLevel,
+      painLevel: metric.painLevel,
+      heartRateAvg: metric.heartRateAvg,
+      heartRateMax: metric.heartRateMax,
       notes: data.notes,
-      createdAt: new Date(data.created_at),
+      createdAt: new Date(data.created_at || Date.now()),
     };
   }
 
@@ -157,7 +158,9 @@ export class ProgressionEngine {
     exerciseCode?: string,
     days: number = 30
   ): Promise<LocalPerformanceMetric[]> {
-    let query = (fromTable('exercise_performance_metrics') as any)
+    // Usar user_exercise_history em vez de exercise_performance_metrics
+    let query = supabase
+      .from('user_exercise_history')
       .select('*')
       .eq('user_id', this.userId)
       .gte('created_at', new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString())
@@ -165,25 +168,23 @@ export class ProgressionEngine {
       .limit(200);
 
     if (exerciseCode) {
-      query = query.eq('exercise_code', exerciseCode);
+      query = query.eq('exercise_name', exerciseCode);
     }
 
     const { data } = await query;
 
-    return (data || []).map((p: any) => ({
+    const difficultyMap: Record<string, number> = { 'easy': 3, 'medium': 5, 'hard': 7, 'extreme': 9 };
+    
+    return (data || []).map((p) => ({
       id: p.id,
-      exerciseCode: p.exercise_code,
-      setsCompleted: p.sets_completed,
-      repsCompleted: p.reps_completed,
+      exerciseCode: p.exercise_name || '',
+      setsCompleted: p.sets_completed || 0,
+      repsCompleted: p.reps_completed || 0,
       weightUsed: p.weight_used,
       durationSeconds: p.duration_seconds,
-      difficultyRating: p.difficulty_rating,
-      fatigueLevel: p.fatigue_level,
-      painLevel: p.pain_level,
-      heartRateAvg: p.heart_rate_avg,
-      heartRateMax: p.heart_rate_max,
+      difficultyRating: difficultyMap[p.difficulty_level || 'medium'] || 5,
       notes: p.notes,
-      createdAt: new Date(p.created_at),
+      createdAt: new Date(p.created_at || Date.now()),
     }));
   }
 
@@ -694,14 +695,15 @@ export class ProgressionEngine {
   // ============================================
 
   private async getActiveExercises(): Promise<string[]> {
+    // Usar user_exercise_history em vez de exercise_performance_metrics
     const { data } = await supabase
-      .from('exercise_performance_metrics')
-      .select('exercise_code')
+      .from('user_exercise_history')
+      .select('exercise_name')
       .eq('user_id', this.userId)
       .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString())
       .limit(500);
 
-    const codes = (data || []).map(d => d.exercise_code);
+    const codes = (data || []).map(d => d.exercise_name).filter(Boolean) as string[];
     return [...new Set(codes)];
   }
 }

@@ -829,22 +829,22 @@ export class SocialHub {
       throw new Error('Competição está cheia');
     }
 
-    // Deduzir taxa de entrada se houver
+    // Deduzir taxa de entrada se houver - usando user_points
     if (competition.entry_fee_points > 0) {
       const { data: points } = await supabase
-        .from('exercise_gamification_points')
+        .from('user_points')
         .select('total_points')
         .eq('user_id', this.userId)
         .maybeSingle();
 
-      if (!points || points.total_points < competition.entry_fee_points) {
+      if (!points || (points.total_points || 0) < competition.entry_fee_points) {
         throw new Error('Pontos insuficientes para taxa de entrada');
       }
 
       await supabase
-        .from('exercise_gamification_points')
+        .from('user_points')
         .update({ 
-          total_points: points.total_points - competition.entry_fee_points 
+          total_points: (points.total_points || 0) - competition.entry_fee_points 
         })
         .eq('user_id', this.userId);
     }

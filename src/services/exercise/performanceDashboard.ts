@@ -88,8 +88,9 @@ export class PerformanceDashboard {
   async getWorkoutStats(days: number = 30): Promise<WorkoutStats> {
     const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 
+    // Usar user_exercise_history em vez de exercise_performance_metrics
     const { data: workouts } = await supabase
-      .from('exercise_performance_metrics')
+      .from('user_exercise_history')
       .select('*')
       .eq('user_id', this.userId)
       .gte('created_at', startDate.toISOString())
@@ -100,7 +101,7 @@ export class PerformanceDashboard {
     }
 
     // Calcular estatísticas
-    const totalWorkouts = this.countUniqueWorkoutDays(workouts);
+    const totalWorkouts = this.countUniqueWorkoutDays(workouts as Array<{ created_at: string }>);
     const totalDuration = workouts.reduce((sum, w) => sum + (w.duration_seconds || 0), 0);
     const totalVolume = workouts.reduce((sum, w) => 
       sum + (w.sets_completed || 0) * (w.reps_completed || 0) * (w.weight_used || 1), 0);
@@ -111,12 +112,14 @@ export class PerformanceDashboard {
 
     // Calcular médias
     const avgDuration = totalDuration / workouts.length;
+    // Converter difficulty_level para número
+    const difficultyMap: Record<string, number> = { 'easy': 3, 'medium': 5, 'hard': 7, 'extreme': 9 };
     const avgDifficulty = workouts
-      .filter(w => w.difficulty_rating)
-      .reduce((sum, w) => sum + (w.difficulty_rating || 0), 0) / workouts.length;
+      .filter(w => w.difficulty_level)
+      .reduce((sum, w) => sum + (difficultyMap[w.difficulty_level || 'medium'] || 5), 0) / workouts.length || 5;
 
     // Calcular tendências
-    const trends = await this.calculateTrends(workouts);
+    const trends = await this.calculateTrends(workouts as Array<Record<string, unknown>>);
 
     return {
       totalWorkouts,
@@ -191,8 +194,9 @@ export class PerformanceDashboard {
   }
 
   private async getCurrentStreak(): Promise<number> {
+    // Usar user_points em vez de exercise_streaks
     const { data } = await supabase
-      .from('exercise_streaks')
+      .from('user_points')
       .select('current_streak')
       .eq('user_id', this.userId)
       .maybeSingle();
@@ -201,13 +205,14 @@ export class PerformanceDashboard {
   }
 
   private async getLongestStreak(): Promise<number> {
+    // Usar user_points em vez de exercise_streaks
     const { data } = await supabase
-      .from('exercise_streaks')
-      .select('longest_streak')
+      .from('user_points')
+      .select('best_streak')
       .eq('user_id', this.userId)
       .maybeSingle();
 
-    return data?.longest_streak || 0;
+    return data?.best_streak || 0;
   }
 
   // ============================================
@@ -450,16 +455,17 @@ export class PerformanceDashboard {
   async getBenchmarkComparison(): Promise<LocalBenchmarkComparison> {
     // Buscar dados do usuário
     const myStats = await this.getWorkoutStats(30);
+    // Usar user_points em vez de exercise_gamification_points
     const { data: myPoints } = await supabase
-      .from('exercise_gamification_points')
-      .select('total_points, current_level')
+      .from('user_points')
+      .select('total_points, level')
       .eq('user_id', this.userId)
       .maybeSingle();
 
     // Buscar dados agregados de todos os usuários
     const { data: allUsers } = await supabase
-      .from('exercise_gamification_points')
-      .select('total_points, current_level')
+      .from('user_points')
+      .select('total_points, level')
       .limit(1000);
 
     if (!allUsers || allUsers.length === 0) {
@@ -474,13 +480,13 @@ export class PerformanceDashboard {
 
     // Calcular percentil do usuário
     const myTotalPoints = myPoints?.total_points || 0;
-    const sortedPoints = allUsers.map(u => u.total_points).sort((a, b) => a - b);
+    const sortedPoints = allUsers.map(u => u.total_points || 0).sort((a, b) => a - b);
     const userRank = sortedPoints.filter(p => p < myTotalPoints).length;
     const percentile = Math.round((userRank / sortedPoints.length) * 100);
 
     // Calcular média
     const avgPoints = sortedPoints.reduce((a, b) => a + b, 0) / sortedPoints.length;
-    const comparedToAverage = ((myTotalPoints - avgPoints) / avgPoints) * 100;
+    const comparedToAverage = avgPoints > 0 ? ((myTotalPoints - avgPoints) / avgPoints) * 100 : 0;
 
     // Identificar pontos fortes e fracos
     const strengths: string[] = [];
@@ -489,14 +495,14 @@ export class PerformanceDashboard {
     if (myStats.consistency > 0.7) strengths.push('Consistência de treino');
     else areasToImprove.push('Frequência de treino');
 
-    if (myStats.currentStreak > 7) strengths.push('Manutenção de streak');
+    if ((myStats.currentStreak || 0) > 7) strengths.push('Manutenção de streak');
     if (myStats.avgDifficulty > 6) strengths.push('Intensidade de treino');
     else if (myStats.avgDifficulty < 5) areasToImprove.push('Intensidade pode aumentar');
 
     // Contar usuários similares (mesmo nível ±1)
-    const myLevel = myPoints?.current_level || 1;
+    const myLevel = myPoints?.level || 1;
     const similarUsers = allUsers.filter(u => 
-      Math.abs((u.current_level || 1) - myLevel) <= 1
+      Math.abs((u.level || 1) - myLevel) <= 1
     ).length;
 
     return {
@@ -505,7 +511,7 @@ export class PerformanceDashboard {
       strengths,
       areasToImprove,
       similarUsers,
-      levelDistribution: this.calculateLevelDistribution(allUsers),
+      levelDistribution: this.calculateLevelDistribution(allUsers.map(u => ({ current_level: u.level || 1 }))),
     };
   }
 
@@ -541,10 +547,10 @@ export class PerformanceDashboard {
     const stats = await this.getWorkoutStats(days);
     const insights = await this.generateInsights();
 
-    // Buscar exercícios mais realizados
+    // Buscar exercícios mais realizados - usando user_exercise_history
     const { data: exerciseData } = await supabase
-      .from('exercise_performance_metrics')
-      .select('exercise_code, weight_used')
+      .from('user_exercise_history')
+      .select('exercise_name, weight_used')
       .eq('user_id', this.userId)
       .gte('created_at', startDate.toISOString())
       .lte('created_at', endDate.toISOString());
@@ -552,18 +558,19 @@ export class PerformanceDashboard {
     // Agrupar por exercício
     const exerciseMap: Record<string, { count: number; totalWeight: number }> = {};
     (exerciseData || []).forEach(e => {
-      if (!exerciseMap[e.exercise_code]) {
-        exerciseMap[e.exercise_code] = { count: 0, totalWeight: 0 };
+      const exerciseName = e.exercise_name || 'unknown';
+      if (!exerciseMap[exerciseName]) {
+        exerciseMap[exerciseName] = { count: 0, totalWeight: 0 };
       }
-      exerciseMap[e.exercise_code].count++;
-      exerciseMap[e.exercise_code].totalWeight += e.weight_used || 0;
+      exerciseMap[exerciseName].count++;
+      exerciseMap[exerciseName].totalWeight += e.weight_used || 0;
     });
 
     const exercises = Object.entries(exerciseMap)
       .map(([code, data]) => ({
         code,
         count: data.count,
-        avgWeight: Math.round(data.totalWeight / data.count),
+        avgWeight: data.count > 0 ? Math.round(data.totalWeight / data.count) : 0,
       }))
       .sort((a, b) => b.count - a.count)
       .slice(0, 10);
