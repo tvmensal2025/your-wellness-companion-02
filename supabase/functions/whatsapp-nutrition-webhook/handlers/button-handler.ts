@@ -367,6 +367,360 @@ export async function handleFeeling(
 }
 
 /**
+ * Handle Sofia details request
+ */
+export async function handleSofiaDetails(
+  supabase: SupabaseClient,
+  user: UserInfo,
+  phone: string,
+  pending: any
+): Promise<void> {
+  console.log("[Button] 📊 Sofia details - mostrando detalhes...");
+  
+  const analysis = pending?.analysis_result || {};
+  const foods = analysis.detectedFoods || analysis.foods || [];
+  const totalCalories = analysis.totalCalories || 0;
+  const protein = analysis.totalProtein || 0;
+  const carbs = analysis.totalCarbs || 0;
+  const fat = analysis.totalFat || 0;
+  
+  let detailsText = `📊 *Detalhes Nutricionais Completos*\n\n`;
+  detailsText += `🔥 *Calorias:* ${Math.round(totalCalories)} kcal\n`;
+  detailsText += `💪 *Proteínas:* ${Math.round(protein)}g\n`;
+  detailsText += `🍞 *Carboidratos:* ${Math.round(carbs)}g\n`;
+  detailsText += `🥑 *Gorduras:* ${Math.round(fat)}g\n\n`;
+  
+  detailsText += `📋 *Alimentos:*\n`;
+  foods.forEach((f: any, i: number) => {
+    const name = f.nome || f.name || "(alimento)";
+    const grams = f.quantidade ?? f.grams ?? "?";
+    const kcal = f.calorias || f.calories || 0;
+    detailsText += `${i + 1}. ${name} (${grams}g) - ${Math.round(kcal)} kcal\n`;
+  });
+  
+  await sendInteractiveMessage(phone, {
+    headerText: '📊 Detalhes da Análise',
+    bodyText: detailsText,
+    footerText: 'Sofia 🥗',
+    buttons: [
+      { id: 'sofia_confirm', title: '✅ Confirmar' },
+      { id: 'sofia_tips', title: '💡 Dicas' },
+    ],
+  });
+}
+
+/**
+ * Handle Sofia tips request
+ */
+export async function handleSofiaTips(
+  supabase: SupabaseClient,
+  user: UserInfo,
+  phone: string
+): Promise<void> {
+  console.log("[Button] 💡 Sofia tips - gerando dicas...");
+  
+  const tips = [
+    "🥗 Inclua mais vegetais coloridos nas refeições",
+    "💧 Beba água antes das refeições para melhor digestão",
+    "🍎 Prefira frutas inteiras em vez de sucos",
+    "🥩 Distribua proteínas ao longo do dia",
+    "🌾 Escolha carboidratos integrais",
+    "⏰ Evite comer 2h antes de dormir",
+  ];
+  
+  const randomTips = tips.sort(() => Math.random() - 0.5).slice(0, 3);
+  
+  await sendInteractiveMessage(phone, {
+    headerText: '💡 Dicas Nutricionais',
+    bodyText: `Aqui vão algumas dicas para você:\n\n${randomTips.join('\n\n')}\n\n_Pequenas mudanças fazem grande diferença!_`,
+    footerText: 'Sofia 🥗',
+    buttons: [
+      { id: 'sofia_new_photo', title: '📸 Enviar Foto' },
+      { id: 'menu', title: '📋 Menu' },
+    ],
+  });
+}
+
+/**
+ * Handle Sofia meal plan request
+ */
+export async function handleSofiaMealPlan(
+  supabase: SupabaseClient,
+  user: UserInfo,
+  phone: string
+): Promise<void> {
+  console.log("[Button] 🍽️ Sofia meal plan - sugestão de cardápio...");
+  
+  await sendInteractiveMessage(phone, {
+    headerText: '🍽️ Sugestão de Cardápio',
+    bodyText: `*Café da Manhã*\n☕ Café com leite desnatado\n🍞 Pão integral com queijo branco\n🍌 1 banana\n\n*Almoço*\n🍚 Arroz integral (4 col.)\n🫘 Feijão (1 concha)\n🍗 Frango grelhado (120g)\n🥗 Salada verde à vontade\n\n*Jantar*\n🥣 Sopa de legumes\n🥚 Omelete com vegetais\n\n_Adapte conforme suas necessidades!_`,
+    footerText: 'Sofia 🥗',
+    buttons: [
+      { id: 'meal_accept', title: '✅ Aceitar' },
+      { id: 'meal_change', title: '🔄 Outra opção' },
+    ],
+  });
+}
+
+/**
+ * Handle meal accept
+ */
+export async function handleMealAccept(
+  supabase: SupabaseClient,
+  user: UserInfo,
+  phone: string
+): Promise<void> {
+  console.log("[Button] ✅ Meal accept...");
+  
+  await sendInteractiveMessage(phone, {
+    headerText: '✅ Cardápio Salvo!',
+    bodyText: `Ótimo! Salvei essa sugestão de cardápio para você.\n\nPosso te enviar lembretes de refeições se quiser!\n\n💡 *Dica:* Tire foto das suas refeições para eu acompanhar seu progresso.`,
+    footerText: 'Sofia 🥗',
+    buttons: [
+      { id: 'meal_recipe', title: '📝 Ver Receitas' },
+      { id: 'meal_shopping', title: '🛒 Lista Compras' },
+    ],
+  });
+}
+
+/**
+ * Handle meal change
+ */
+export async function handleMealChange(
+  supabase: SupabaseClient,
+  user: UserInfo,
+  phone: string
+): Promise<void> {
+  console.log("[Button] 🔄 Meal change...");
+  
+  await sendWhatsApp(phone,
+    `🔄 *Ok! Vou sugerir outra opção...*\n\n` +
+    `Me conta suas preferências:\n` +
+    `• Vegetariano?\n` +
+    `• Low carb?\n` +
+    `• Alguma restrição?\n\n` +
+    `_Sofia 🥗_`
+  );
+}
+
+/**
+ * Handle meal recipe
+ */
+export async function handleMealRecipe(
+  supabase: SupabaseClient,
+  user: UserInfo,
+  phone: string
+): Promise<void> {
+  console.log("[Button] 📝 Meal recipe...");
+  
+  await sendWhatsApp(phone,
+    `📝 *Receita: Frango Grelhado com Ervas*\n\n` +
+    `⏱️ Tempo: 25 min\n\n` +
+    `🥗 *Ingredientes:*\n` +
+    `• 120g peito de frango\n` +
+    `• 1 colher de azeite\n` +
+    `• Sal, pimenta, alecrim\n` +
+    `• 1 limão\n\n` +
+    `👨‍🍳 *Modo de Preparo:*\n` +
+    `1. Tempere o frango\n` +
+    `2. Aqueça a frigideira\n` +
+    `3. Grelhe 5min cada lado\n` +
+    `4. Finalize com limão\n\n` +
+    `_Sofia 🥗_`
+  );
+}
+
+/**
+ * Handle meal shopping list
+ */
+export async function handleMealShopping(
+  supabase: SupabaseClient,
+  user: UserInfo,
+  phone: string
+): Promise<void> {
+  console.log("[Button] 🛒 Meal shopping...");
+  
+  await sendWhatsApp(phone,
+    `🛒 *Lista de Compras Semanal*\n\n` +
+    `🥬 *Hortifruti:*\n` +
+    `• Alface, tomate, cenoura\n` +
+    `• Banana, maçã, limão\n` +
+    `• Cebola, alho\n\n` +
+    `🥩 *Proteínas:*\n` +
+    `• Peito de frango (500g)\n` +
+    `• Ovos (1 dúzia)\n` +
+    `• Queijo branco (200g)\n\n` +
+    `🌾 *Carboidratos:*\n` +
+    `• Arroz integral (1kg)\n` +
+    `• Feijão (500g)\n` +
+    `• Pão integral\n\n` +
+    `_Sofia 🥗_`
+  );
+}
+
+/**
+ * Handle Dr. Vital understood
+ */
+export async function handleVitalUnderstood(
+  supabase: SupabaseClient,
+  user: UserInfo,
+  phone: string
+): Promise<void> {
+  console.log("[Button] ✅ Vital understood...");
+  
+  await sendInteractiveMessage(phone, {
+    headerText: '✅ Ótimo!',
+    bodyText: `Fico feliz que você entendeu!\n\nLembre-se: estou aqui se tiver mais dúvidas.\n\n⚠️ _Para orientações específicas, consulte seu médico._`,
+    footerText: 'Dr. Vital 🩺',
+    buttons: [
+      { id: 'sofia_new_photo', title: '📸 Novo Exame' },
+      { id: 'menu', title: '📋 Menu' },
+    ],
+  });
+}
+
+/**
+ * Handle Dr. Vital question
+ */
+export async function handleVitalQuestion(
+  supabase: SupabaseClient,
+  user: UserInfo,
+  phone: string
+): Promise<void> {
+  console.log("[Button] ❓ Vital question...");
+  
+  await sendWhatsApp(phone,
+    `❓ *Pode fazer sua pergunta!*\n\n` +
+    `Estou aqui para esclarecer qualquer dúvida sobre seu exame.\n\n` +
+    `_Exemplos de perguntas:_\n` +
+    `• "O que significa colesterol LDL alto?"\n` +
+    `• "Preciso me preocupar com esse resultado?"\n` +
+    `• "Que alimentos devo evitar?"\n\n` +
+    `⚠️ _Minhas respostas são informativas. Para orientações específicas, consulte seu médico._\n\n` +
+    `_Dr. Vital 🩺_`
+  );
+}
+
+/**
+ * Handle Dr. Vital full report
+ */
+export async function handleVitalFullReport(
+  supabase: SupabaseClient,
+  user: UserInfo,
+  phone: string,
+  pendingMedical: any
+): Promise<void> {
+  console.log("[Button] 📋 Vital full report...");
+  
+  const analysis = pendingMedical?.analysis_result || {};
+  const summary = analysis.summary || 'Análise não disponível';
+  const recommendations = analysis.recommendations || [];
+  
+  let reportText = `📋 *Relatório Completo*\n\n`;
+  reportText += summary + `\n\n`;
+  
+  if (recommendations.length > 0) {
+    reportText += `💡 *Recomendações:*\n`;
+    recommendations.slice(0, 4).forEach((rec: string) => {
+      reportText += `• ${rec}\n`;
+    });
+  }
+  
+  reportText += `\n⚠️ _Este relatório é informativo. Consulte sempre seu médico._`;
+  
+  await sendInteractiveMessage(phone, {
+    headerText: '📋 Relatório Completo',
+    bodyText: reportText,
+    footerText: 'Dr. Vital 🩺',
+    buttons: [
+      { id: 'vital_question', title: '❓ Perguntar' },
+      { id: 'vital_share', title: '📤 Compartilhar' },
+    ],
+  });
+}
+
+/**
+ * Handle Dr. Vital share
+ */
+export async function handleVitalShare(
+  supabase: SupabaseClient,
+  user: UserInfo,
+  phone: string
+): Promise<void> {
+  console.log("[Button] 📤 Vital share...");
+  
+  await sendWhatsApp(phone,
+    `📤 *Compartilhar Relatório*\n\n` +
+    `Você pode acessar o relatório completo no app:\n\n` +
+    `📱 Abra o app MaxNutrition\n` +
+    `📊 Vá em "Meus Exames"\n` +
+    `📄 Clique em "Exportar PDF"\n\n` +
+    `_Dr. Vital 🩺_`
+  );
+}
+
+/**
+ * Handle Menu request
+ */
+export async function handleMenu(
+  supabase: SupabaseClient,
+  user: UserInfo,
+  phone: string
+): Promise<void> {
+  console.log("[Button] 📋 Menu...");
+  
+  await sendInteractiveMessage(phone, {
+    headerText: '📋 Menu Principal',
+    bodyText: `O que você gostaria de fazer?\n\n` +
+              `📸 *Analisar Refeição* - Envie foto da comida\n` +
+              `🩺 *Analisar Exame* - Envie foto do exame\n` +
+              `💧 *Registrar Água* - Acompanhe hidratação\n` +
+              `⚖️ *Registrar Peso* - Monitore evolução\n` +
+              `📊 *Ver Resumo* - Seu progresso`,
+    footerText: 'MaxNutrition',
+    buttons: [
+      { id: 'sofia_new_photo', title: '📸 Enviar Foto' },
+      { id: 'water_250ml', title: '💧 +250ml Água' },
+    ],
+  });
+}
+
+/**
+ * Handle water view progress
+ */
+export async function handleWaterViewProgress(
+  supabase: SupabaseClient,
+  user: UserInfo,
+  phone: string
+): Promise<void> {
+  console.log("[Button] 💧 Water view progress...");
+  
+  // Buscar dados de água do dia
+  const today = new Date().toISOString().split('T')[0];
+  const { data: waterData } = await supabase
+    .from('daily_water_intake')
+    .select('amount_ml')
+    .eq('user_id', user.id)
+    .gte('intake_date', today)
+    .single();
+  
+  const currentMl = waterData?.amount_ml || 0;
+  const goalMl = 2500;
+  const percent = Math.round((currentMl / goalMl) * 100);
+  const bar = '█'.repeat(Math.floor(percent / 10)) + '░'.repeat(10 - Math.floor(percent / 10));
+  
+  await sendInteractiveMessage(phone, {
+    headerText: '💧 Progresso de Hidratação',
+    bodyText: `*Hoje:*\n\n${bar} ${percent}%\n\n💧 ${currentMl}ml / ${goalMl}ml\n\n${percent >= 100 ? '🎉 Meta atingida! Parabéns!' : percent >= 50 ? '💪 Bom progresso! Continue assim!' : '⏰ Lembre-se de beber mais água!'}`,
+    footerText: 'MaxNutrition',
+    buttons: [
+      { id: 'water_250ml', title: '🥤 +250ml' },
+      { id: 'water_500ml', title: '🫗 +500ml' },
+    ],
+  });
+}
+
+/**
  * Generic button handler - routes to specific handlers
  */
 export async function handleButtonClick(
@@ -444,6 +798,76 @@ export async function handleButtonClick(
   
   if (buttonId === "feeling_bad") {
     await handleFeeling(supabase, user, phone, "bad");
+    return true;
+  }
+  
+  // Sofia - Detalhes, Dicas, Meal Plan
+  if (buttonId === "sofia_details") {
+    await handleSofiaDetails(supabase, user, phone, pending);
+    return true;
+  }
+  
+  if (buttonId === "sofia_tips") {
+    await handleSofiaTips(supabase, user, phone);
+    return true;
+  }
+  
+  if (buttonId === "sofia_meal_plan") {
+    await handleSofiaMealPlan(supabase, user, phone);
+    return true;
+  }
+  
+  // Meal Plan buttons
+  if (buttonId === "meal_accept") {
+    await handleMealAccept(supabase, user, phone);
+    return true;
+  }
+  
+  if (buttonId === "meal_change") {
+    await handleMealChange(supabase, user, phone);
+    return true;
+  }
+  
+  if (buttonId === "meal_recipe") {
+    await handleMealRecipe(supabase, user, phone);
+    return true;
+  }
+  
+  if (buttonId === "meal_shopping") {
+    await handleMealShopping(supabase, user, phone);
+    return true;
+  }
+  
+  // Dr. Vital buttons
+  if (buttonId === "vital_understood") {
+    await handleVitalUnderstood(supabase, user, phone);
+    return true;
+  }
+  
+  if (buttonId === "vital_question") {
+    await handleVitalQuestion(supabase, user, phone);
+    return true;
+  }
+  
+  if (buttonId === "vital_full_report" && pendingMedical) {
+    await handleVitalFullReport(supabase, user, phone, pendingMedical);
+    return true;
+  }
+  
+  if (buttonId === "vital_share") {
+    await handleVitalShare(supabase, user, phone);
+    return true;
+  }
+  
+  // Menu
+  if (buttonId === "menu") {
+    await handleMenu(supabase, user, phone);
+    return true;
+  }
+  
+  // Water progress
+  if (buttonId === "water_view_progress") {
+    await handleWaterViewProgress(supabase, user, phone);
     return true;
   }
   
