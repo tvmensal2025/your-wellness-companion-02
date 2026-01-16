@@ -77,23 +77,11 @@ export async function exportShoppingListToPDF(
     y += 8;
   });
 
-  // QR code (melhor esforço): tenta usar lib 'qrcode'; se falhar, mostra URL
+  // Rodapé com URL para reabrir
   const url = window.location.href;
-  try {
-    const mod = await import('qrcode').catch(() => null);
-    if (mod) {
-      const dataUrl = await (mod as any).toDataURL(url, { margin: 1, scale: 4 });
-      pdf.addImage(dataUrl, 'PNG', pageWidth - margin - 32, y, 28, 28);
-      pdf.setFontSize(9);
-      pdf.text('Reabra este plano', pageWidth - margin - 32, y + 32);
-    } else {
-      pdf.setFontSize(9);
-      pdf.text(`Acesse: ${url}`, margin, y + 6);
-    }
-  } catch {
-    pdf.setFontSize(9);
-    pdf.text(`Acesse: ${url}`, margin, y + 6);
-  }
+  pdf.setFontSize(9);
+  pdf.setTextColor(107, 114, 128);
+  pdf.text(`Acesse: ${url.length > 60 ? url.slice(0, 60) + '...' : url}`, margin, y + 6);
 
   pdf.save(`lista_compras_${new Date().toISOString().split('T')[0]}.pdf`);
 }

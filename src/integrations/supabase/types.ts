@@ -755,6 +755,45 @@ export type Database = {
         }
         Relationships: []
       }
+      analysis_cache: {
+        Row: {
+          analysis_type: string
+          created_at: string | null
+          hits: number | null
+          id: string
+          image_hash: string
+          last_hit_at: string | null
+          model_used: string | null
+          processing_time_ms: number | null
+          result: Json
+          yolo_confidence: number | null
+        }
+        Insert: {
+          analysis_type: string
+          created_at?: string | null
+          hits?: number | null
+          id?: string
+          image_hash: string
+          last_hit_at?: string | null
+          model_used?: string | null
+          processing_time_ms?: number | null
+          result: Json
+          yolo_confidence?: number | null
+        }
+        Update: {
+          analysis_type?: string
+          created_at?: string | null
+          hits?: number | null
+          id?: string
+          image_hash?: string
+          last_hit_at?: string | null
+          model_used?: string | null
+          processing_time_ms?: number | null
+          result?: Json
+          yolo_confidence?: number | null
+        }
+        Relationships: []
+      }
       assessments: {
         Row: {
           assessment_name: string
@@ -14583,6 +14622,7 @@ export type Database = {
         Returns: Json
       }
       cleanup_expired_cache: { Args: never; Returns: number }
+      cleanup_old_analysis_cache: { Args: never; Returns: number }
       cleanup_old_chat_history: { Args: never; Returns: undefined }
       complete_exercise_challenge: {
         Args: { p_challenge_id: string }

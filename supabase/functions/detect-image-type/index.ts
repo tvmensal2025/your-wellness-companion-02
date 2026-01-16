@@ -1,12 +1,19 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsHeaders } from "../_shared/utils/cors.ts";
+import { hashImage, getCachedResult, setCachedResult, isCacheEnabled } from "../_shared/utils/image-cache.ts";
 
-const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
+// 🎯 Usando Lovable AI Gateway (elimina dependência de OPENAI_API_KEY)
+const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+
+// Modelo mais barato para classificação simples
+const CLASSIFICATION_MODEL = "google/gemini-2.5-flash-lite";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
+
+  const startTime = Date.now();
 
   try {
     const body = await req.json();
@@ -17,14 +24,18 @@ serve(async (req) => {
     
     // Determinar qual usar (prioriza base64 para evitar timeout)
     let imageSource: string;
+    let cacheableData: string = '';
+    
     if (imageBase64) {
       // Se é base64, formatar como data URL se necessário
       imageSource = imageBase64.startsWith("data:") 
         ? imageBase64 
         : `data:image/jpeg;base64,${imageBase64}`;
+      cacheableData = imageBase64;
       console.log("[Detect Image Type] Usando base64 (mais robusto)");
     } else if (imageUrl) {
       imageSource = imageUrl;
+      cacheableData = imageUrl;
       console.log("[Detect Image Type] Usando URL:", imageUrl.slice(0, 100));
     } else {
       return new Response(
@@ -33,25 +44,43 @@ serve(async (req) => {
       );
     }
 
-    if (!OPENAI_API_KEY) {
-      console.error("[Detect Image Type] OPENAI_API_KEY não configurada");
+    // 📦 VERIFICAR CACHE PRIMEIRO
+    if (isCacheEnabled() && cacheableData) {
+      try {
+        const imageHash = await hashImage(cacheableData);
+        const cached = await getCachedResult(imageHash, 'image_type');
+        
+        if (cached) {
+          console.log("[Detect Image Type] ✅ Cache HIT!");
+          return new Response(
+            JSON.stringify({ ...cached, fromCache: true }),
+            { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+      } catch (cacheError) {
+        console.log("[Detect Image Type] Cache lookup falhou:", cacheError);
+      }
+    }
+
+    if (!LOVABLE_API_KEY) {
+      console.error("[Detect Image Type] LOVABLE_API_KEY não configurada");
       return new Response(
         JSON.stringify({ type: "OTHER", confidence: 0, details: "API key não configurada" }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    console.log("[Detect Image Type] Analisando imagem...");
+    console.log(`[Detect Image Type] Analisando com ${CLASSIFICATION_MODEL}...`);
 
-    // Chamar GPT-4o Vision para classificar a imagem
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    // 🚀 Chamar Lovable AI Gateway (gemini-2.5-flash-lite)
+    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${OPENAI_API_KEY}`,
+        "Authorization": `Bearer ${LOVABLE_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "gpt-4o-mini", // Modelo mais barato para classificação
+        model: CLASSIFICATION_MODEL,
         messages: [
           {
             role: "system",
@@ -83,20 +112,35 @@ Responda APENAS com JSON válido no formato:
                 type: "image_url",
                 image_url: {
                   url: imageSource,
-                  detail: "high" // 🔥 Usar HIGH para detectar documentos/exames com precisão
+                  detail: "high"
                 }
               }
             ]
           }
         ],
         max_tokens: 150,
-        temperature: 0.1, // Baixa temperatura para consistência
+        temperature: 0.1,
       }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("[Detect Image Type] Erro OpenAI:", response.status, errorText);
+      console.error("[Detect Image Type] Erro Lovable AI:", response.status, errorText);
+      
+      // Tratamento específico de rate limit
+      if (response.status === 429) {
+        return new Response(
+          JSON.stringify({ error: "Rate limit excedido, tente novamente em alguns segundos" }),
+          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      
+      if (response.status === 402) {
+        return new Response(
+          JSON.stringify({ error: "Créditos insuficientes, adicione fundos ao workspace" }),
+          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
       
       // Fallback: retornar OTHER em caso de erro
       return new Response(
@@ -108,7 +152,7 @@ Responda APENAS com JSON válido no formato:
     const data = await response.json();
     const content = data.choices?.[0]?.message?.content || "";
     
-    console.log("[Detect Image Type] Resposta GPT-4o:", content);
+    console.log("[Detect Image Type] Resposta Lovable AI:", content);
 
     // Tentar parsear JSON da resposta
     let result = { type: "OTHER", confidence: 0.5, details: "Não foi possível classificar" };
@@ -150,7 +194,24 @@ Responda APENAS com JSON válido no formato:
       }
     }
 
-    console.log("[Detect Image Type] Resultado final:", result);
+    const processingTime = Date.now() - startTime;
+    console.log(`[Detect Image Type] Resultado: ${result.type} (${(result.confidence * 100).toFixed(0)}%) em ${processingTime}ms`);
+
+    // 📦 SALVAR NO CACHE
+    if (isCacheEnabled() && cacheableData) {
+      try {
+        const imageHash = await hashImage(cacheableData);
+        await setCachedResult(
+          imageHash, 
+          'image_type', 
+          result, 
+          CLASSIFICATION_MODEL, 
+          processingTime
+        );
+      } catch (cacheError) {
+        console.log("[Detect Image Type] Erro ao salvar cache:", cacheError);
+      }
+    }
 
     return new Response(
       JSON.stringify(result),
