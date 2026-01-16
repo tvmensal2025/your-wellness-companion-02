@@ -46,10 +46,27 @@ router.post('/upload', upload.single('file'), async (req, res) => {
     }
     
     const { folder = 'general' } = req.body;
-    const allowedFolders = ['whatsapp', 'feed', 'stories', 'profiles', 'general'];
+    // Todas as pastas do MinIO bucket 'images'
+    const allowedFolders = [
+      'avatars',
+      'chat-images',
+      'exercise-videos',
+      'feed',
+      'food-analysis',
+      'medical-exams',
+      'medical-reports',
+      'profiles',
+      'stories',
+      'weight-photos',
+      'whatsapp',
+      'course-thumbnails',
+      'product-images',
+      'exercise-media',
+      'general'
+    ];
     
     if (!allowedFolders.includes(folder)) {
-      return res.status(400).json({ error: 'Pasta inválida' });
+      return res.status(400).json({ error: `Pasta inválida: ${folder}. Permitidas: ${allowedFolders.join(', ')}` });
     }
     
     let buffer = req.file.buffer;
@@ -91,9 +108,26 @@ router.post('/upload-base64', async (req, res) => {
       return res.status(400).json({ error: 'Dados não fornecidos' });
     }
     
-    const allowedFolders = ['whatsapp', 'feed', 'stories', 'profiles', 'general'];
+    // Todas as pastas do MinIO bucket 'images'
+    const allowedFolders = [
+      'avatars',
+      'chat-images',
+      'exercise-videos',
+      'feed',
+      'food-analysis',
+      'medical-exams',
+      'medical-reports',
+      'profiles',
+      'stories',
+      'weight-photos',
+      'whatsapp',
+      'course-thumbnails',
+      'product-images',
+      'exercise-media',
+      'general'
+    ];
     if (!allowedFolders.includes(folder)) {
-      return res.status(400).json({ error: 'Pasta inválida' });
+      return res.status(400).json({ error: `Pasta inválida: ${folder}` });
     }
     
     // Decodificar base64
