@@ -74,8 +74,12 @@ export async function uploadFile(buffer, folder, mimeType, originalName = '') {
   // Upload
   await client.putObject(bucket, path, buffer, buffer.length, metaData);
   
-  // URL pública
-  const publicUrl = `${process.env.MINIO_PUBLIC_URL}/${bucket}/${path}`;
+  // URL pública - MinIO pode ter bucket no path ou como subdomínio
+  const baseUrl = process.env.MINIO_PUBLIC_URL || `https://${process.env.MINIO_ENDPOINT}`;
+  // Se a URL já inclui o bucket, não duplicar
+  const publicUrl = baseUrl.includes(bucket) 
+    ? `${baseUrl}/${path}` 
+    : `${baseUrl}/${bucket}/${path}`;
   
   return {
     url: publicUrl,
@@ -104,6 +108,10 @@ export async function listFiles(folder, limit = 100) {
   const files = [];
   const stream = client.listObjects(bucket, folder, true);
   
+  // Construir URL base
+  const baseUrl = process.env.MINIO_PUBLIC_URL || `https://${process.env.MINIO_ENDPOINT}`;
+  const urlPrefix = baseUrl.includes(bucket) ? baseUrl : `${baseUrl}/${bucket}`;
+  
   return new Promise((resolve, reject) => {
     stream.on('data', (obj) => {
       if (files.length < limit) {
@@ -111,7 +119,7 @@ export async function listFiles(folder, limit = 100) {
           name: obj.name,
           size: obj.size,
           lastModified: obj.lastModified,
-          url: `${process.env.MINIO_PUBLIC_URL}/${bucket}/${obj.name}`
+          url: `${urlPrefix}/${obj.name}`
         });
       }
     });

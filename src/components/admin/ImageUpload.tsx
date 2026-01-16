@@ -7,10 +7,9 @@ import {
   X, 
   Image as ImageIcon, 
   CheckCircle, 
-  AlertCircle,
-  Loader2
+  AlertCircle
 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { uploadToVPS, isVPSConfigured, deleteVPSFile } from '@/lib/vpsApi';
 
 interface ImageUploadProps {
   currentImageUrl?: string;
@@ -58,49 +57,36 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
       setUploadProgress(0);
       setError(null);
 
-      // Gerar nome único para o arquivo
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${productId}_${Date.now()}.${fileExt}`;
-      const filePath = `products/${fileName}`;
-
-      // Upload para o Supabase Storage
-      const { data, error: uploadError } = await supabase.storage
-        .from('product-images')
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: false
-        });
-
-      if (uploadError) {
-        throw uploadError;
+      // Verificar se VPS está configurada
+      if (!isVPSConfigured()) {
+        throw new Error('VPS não configurada. Configure VITE_VPS_API_URL e VITE_VPS_API_KEY.');
       }
 
-      // Simular progresso
+      // Simular progresso inicial
       const progressInterval = setInterval(() => {
         setUploadProgress(prev => {
-          if (prev >= 90) {
+          if (prev >= 80) {
             clearInterval(progressInterval);
-            return 90;
+            return 80;
           }
           return prev + 10;
         });
       }, 100);
 
-      // Obter URL pública
-      const { data: urlData } = supabase.storage
-        .from('product-images')
-        .getPublicUrl(filePath);
+      // Upload para MinIO via VPS
+      const result = await uploadToVPS(file, 'product-images');
 
       // Completar progresso
+      clearInterval(progressInterval);
+      setUploadProgress(100);
+      
+      const publicUrl = result.url;
+      setPreviewUrl(publicUrl);
+      onImageChange(publicUrl);
+      
       setTimeout(() => {
-        setUploadProgress(100);
-        clearInterval(progressInterval);
-        
-        const publicUrl = urlData.publicUrl;
-        setPreviewUrl(publicUrl);
-        onImageChange(publicUrl);
         setUploading(false);
-      }, 500);
+      }, 300);
 
     } catch (err) {
       console.error('Erro no upload:', err);
@@ -116,12 +102,13 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
         // Extrair nome do arquivo da URL
         const urlParts = currentImageUrl.split('/');
         const fileName = urlParts[urlParts.length - 1];
-        const filePath = `products/${fileName}`;
 
-        // Deletar do storage
-        await supabase.storage
-          .from('product-images')
-          .remove([filePath]);
+        // Tentar deletar do MinIO
+        try {
+          await deleteVPSFile('product-images', fileName);
+        } catch (deleteErr) {
+          console.warn('Não foi possível deletar arquivo do storage:', deleteErr);
+        }
       }
 
       setPreviewUrl(null);
@@ -142,6 +129,9 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
     fileInputRef.current?.click();
   };
 
+  // Verificar se VPS está configurada
+  const vpsConfigured = isVPSConfigured();
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -159,6 +149,16 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
           </Button>
         )}
       </div>
+
+      {/* Aviso se VPS não configurada */}
+      {!vpsConfigured && (
+        <div className="flex items-center space-x-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <AlertCircle className="w-5 h-5 text-yellow-500" />
+          <span className="text-yellow-700 text-sm">
+            VPS não configurada. Configure VITE_VPS_API_URL e VITE_VPS_API_KEY no .env
+          </span>
+        </div>
+      )}
 
       {/* Preview da imagem */}
       {previewUrl ? (
@@ -196,7 +196,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
               type="button"
               variant="outline"
               onClick={openFileDialog}
-              disabled={uploading}
+              disabled={uploading || !vpsConfigured}
             >
               <Upload className="w-4 h-4 mr-2" />
               {uploading ? 'Enviando...' : 'Selecionar Imagem'}
