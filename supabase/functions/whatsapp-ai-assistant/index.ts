@@ -27,7 +27,35 @@ async function isOllamaAvailable(): Promise<boolean> {
 
 async function callOllama(message: string, userName: string): Promise<string | null> {
   try {
-    const systemPrompt = `Você é Sofia, nutricionista virtual carinhosa do MaxNutrition. Responda breve e amigável. Nome: ${userName}. Assine: _Sofia 💚_`;
+    const systemPrompt = `Você é Sofia 🥗, nutricionista virtual carinhosa do MaxNutrition.
+
+REGRAS IMPORTANTES:
+- Seja BREVE (máximo 2-3 linhas)
+- Seja carinhosa, acolhedora e empática
+- Use 1-2 emojis no máximo
+- SEMPRE termine com assinatura: _Sofia 💚_
+- NÃO dê conselhos médicos ou nutricionais complexos
+- Para perguntas sobre comida/calorias, diga que precisa de mais detalhes
+- Responda de forma natural e humana
+
+Nome do usuário: ${userName}
+
+EXEMPLOS DE RESPOSTAS:
+Usuário: "Oi"
+Resposta: "Olá ${userName}! 💚 Como posso te ajudar hoje?
+
+_Sofia 💚_"
+
+Usuário: "Bom dia"
+Resposta: "Bom dia, ${userName}! ☀️ Espero que tenha um dia maravilhoso!
+
+_Sofia 💚_"
+
+Usuário: "Obrigado"
+Resposta: "Por nada, ${userName}! 😊 Estou sempre aqui pra você!
+
+_Sofia 💚_"`;
+
     const response = await fetch(`${OLLAMA_URL}/api/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -37,26 +65,72 @@ async function callOllama(message: string, userName: string): Promise<string | n
         stream: false,
         options: { temperature: 0.8, num_predict: 256 }
       }),
-      signal: AbortSignal.timeout(30000)
+      signal: AbortSignal.timeout(15000) // Reduced timeout
     });
     if (!response.ok) return null;
     const data = await response.json();
-    return data.message?.content || null;
+    const duration = (data.total_duration || 0) / 1e9;
+    if (data.message?.content) {
+      console.log(`[Ollama] ✅ Resposta em ${duration.toFixed(2)}s (GRÁTIS!)`);
+      return data.message.content;
+    }
+    return null;
   } catch { return null; }
 }
 
 function isSimpleMessage(message: string): boolean {
   const msg = message.toLowerCase().trim();
-  const patterns = [
-    /^(?:oi|olá|ola|hey|hi|e\s*aí|eai|opa|fala)[\s!?.,]*$/i,
+  
+  const simplePatterns = [
+    // Saudações
+    /^(?:oi|olá|ola|hey|hi|hello|e\s*aí|eai|opa|fala|alo|alô)[\s!?.,]*$/i,
     /^(?:bom\s*dia|boa\s*tarde|boa\s*noite)[\s!?.,]*$/i,
-    /^(?:tudo\s*bem|como\s*vai|beleza|suave)[\s!?.,]*$/i,
-    /^(?:obrigad[oa]|valeu|thanks|vlw|brigad[oa])[\s!?.,]*$/i,
-    /^(?:tchau|bye|até\s*mais|flw|falou)[\s!?.,]*$/i,
-    /^(?:ok|certo|entendi|blz|show|top|massa)[\s!?.,]*$/i,
+    /^(?:bom\s*dia|boa\s*tarde|boa\s*noite)\s+(?:sofia|doutor|dr)[\s!?.,]*$/i,
+    
+    // Bem-estar
+    /^(?:tudo\s*bem|como\s*vai|como\s*está|beleza|suave|de\s*boa)[\s!?.,]*$/i,
+    /^(?:e\s*você|e\s*vc|e\s*tu|e\s*aí)[\s!?.,]*$/i,
+    /^(?:tudo\s*ótimo|tudo\s*otimo|muito\s*bem|super\s*bem|estou\s*bem)[\s!?.,]*$/i,
+    /^(?:bem|mal|mais\s*ou\s*menos|normal)[\s!?.,]*$/i,
+    
+    // Agradecimentos
+    /^(?:obrigad[oa]|valeu|thanks|vlw|brigad[oa]|tmj|tmjj)[\s!?.,]*$/i,
+    /^(?:muito\s*obrigad[oa]|agradeço|grat[oa])[\s!?.,]*$/i,
+    /^(?:obrigad[oa]\s*sofia|valeu\s*sofia)[\s!?.,]*$/i,
+    
+    // Despedidas
+    /^(?:tchau|bye|até\s*mais|até\s*logo|flw|falou|xau)[\s!?.,]*$/i,
+    /^(?:bom\s*descanso|durma\s*bem|boa\s*semana)[\s!?.,]*$/i,
+    /^(?:até\s*amanhã|até\s*depois|até\s*breve)[\s!?.,]*$/i,
+    
+    // Confirmações/Reações
+    /^(?:ok|okay|certo|entendi|blz|show|top|massa|legal|nice)[\s!?.,]*$/i,
+    /^(?:perfeito|ótimo|otimo|maravilha|excelente|incrível)[\s!?.,]*$/i,
+    /^(?:sim|não|nao|s|n|ss|nn|sss|yeah|yes|no)[\s!?.,]*$/i,
+    /^(?:pode\s*ser|bora|vamos|isso|isso\s*aí)[\s!?.,]*$/i,
+    
+    // Conversas casuais
+    /^(?:como\s*você\s*está|como\s*vc\s*ta|tá\s*bem|ta\s*bem)[\s!?.,]*$/i,
+    /^(?:qual\s*seu\s*nome|quem\s*é\s*você|quem\s*é\s*vc)[\s!?.,]*$/i,
+    /^(?:haha|kkk|kkkk|rsrs|lol|hehe|hihi|😂|😁|😊|💚|❤️)[\s!?.,]*$/i,
+    
+    // Filler words
+    /^(?:hmm|hum|ah|oh|ué|eita|nossa|uau|wow)[\s!?.,]*$/i,
+    /^(?:sei|aham|uhum|tá|ta|hm)[\s!?.,]*$/i,
   ];
-  for (const p of patterns) if (p.test(msg)) return true;
-  return msg.length < 15 && !/\d/.test(msg);
+  
+  for (const pattern of simplePatterns) {
+    if (pattern.test(msg)) return true;
+  }
+  
+  // Mensagens muito curtas sem números e sem palavras de comida
+  if (msg.length < 20 && !/\d/.test(msg)) {
+    const foodKeywords = ['comi', 'bebi', 'almocei', 'jantei', 'tomei', 'café', 'lanche', 'refeição', 'caloria', 'peso', 'água'];
+    const hasFoodKeyword = foodKeywords.some(kw => msg.includes(kw));
+    if (!hasFoodKeyword) return true;
+  }
+  
+  return false;
 }
 
 // ============ SISTEMA DE TOOLS ============

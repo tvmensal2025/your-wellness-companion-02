@@ -68,19 +68,54 @@ export function isSimpleMessage(message: string): boolean {
   const msg = message.toLowerCase().trim();
   
   const simplePatterns = [
-    /^(?:oi|olá|ola|hey|hi|hello|e\s*aí|eai|opa|fala)[\s!?.,]*$/i,
+    // Saudações
+    /^(?:oi|olá|ola|hey|hi|hello|e\s*aí|eai|opa|fala|alo|alô)[\s!?.,]*$/i,
     /^(?:bom\s*dia|boa\s*tarde|boa\s*noite)[\s!?.,]*$/i,
-    /^(?:tudo\s*bem|como\s*vai|como\s*está|beleza|suave)[\s!?.,]*$/i,
-    /^(?:obrigad[oa]|valeu|thanks|vlw|brigad[oa])[\s!?.,]*$/i,
-    /^(?:tchau|bye|até\s*mais|até\s*logo|flw|falou)[\s!?.,]*$/i,
-    /^(?:ok|okay|certo|entendi|beleza|blz|show|top|massa)[\s!?.,]*$/i,
+    /^(?:bom\s*dia|boa\s*tarde|boa\s*noite)\s+(?:sofia|doutor|dr)[\s!?.,]*$/i,
+    
+    // Bem-estar
+    /^(?:tudo\s*bem|como\s*vai|como\s*está|beleza|suave|de\s*boa)[\s!?.,]*$/i,
+    /^(?:e\s*você|e\s*vc|e\s*tu|e\s*aí)[\s!?.,]*$/i,
+    /^(?:tudo\s*ótimo|tudo\s*otimo|muito\s*bem|super\s*bem|estou\s*bem)[\s!?.,]*$/i,
+    /^(?:bem|mal|mais\s*ou\s*menos|normal)[\s!?.,]*$/i,
+    
+    // Agradecimentos
+    /^(?:obrigad[oa]|valeu|thanks|vlw|brigad[oa]|tmj|tmjj)[\s!?.,]*$/i,
+    /^(?:muito\s*obrigad[oa]|agradeço|grat[oa])[\s!?.,]*$/i,
+    /^(?:obrigad[oa]\s*sofia|valeu\s*sofia)[\s!?.,]*$/i,
+    
+    // Despedidas
+    /^(?:tchau|bye|até\s*mais|até\s*logo|flw|falou|xau)[\s!?.,]*$/i,
+    /^(?:bom\s*descanso|durma\s*bem|boa\s*semana)[\s!?.,]*$/i,
+    /^(?:até\s*amanhã|até\s*depois|até\s*breve)[\s!?.,]*$/i,
+    
+    // Confirmações/Reações
+    /^(?:ok|okay|certo|entendi|blz|show|top|massa|legal|nice)[\s!?.,]*$/i,
+    /^(?:perfeito|ótimo|otimo|maravilha|excelente|incrível)[\s!?.,]*$/i,
+    /^(?:sim|não|nao|s|n|ss|nn|sss|yeah|yes|no)[\s!?.,]*$/i,
+    /^(?:pode\s*ser|bora|vamos|isso|isso\s*aí)[\s!?.,]*$/i,
+    
+    // Conversas casuais
+    /^(?:como\s*você\s*está|como\s*vc\s*ta|tá\s*bem|ta\s*bem)[\s!?.,]*$/i,
+    /^(?:qual\s*seu\s*nome|quem\s*é\s*você|quem\s*é\s*vc)[\s!?.,]*$/i,
+    /^(?:haha|kkk|kkkk|rsrs|lol|hehe|hihi|😂|😁|😊|💚|❤️)[\s!?.,]*$/i,
+    
+    // Filler words
+    /^(?:hmm|hum|ah|oh|ué|eita|nossa|uau|wow)[\s!?.,]*$/i,
+    /^(?:sei|aham|uhum|tá|ta|hm)[\s!?.,]*$/i,
   ];
   
   for (const pattern of simplePatterns) {
     if (pattern.test(msg)) return true;
   }
   
-  if (msg.length < 15 && !/\d/.test(msg)) return true;
+  // Mensagens muito curtas sem números e sem palavras de comida
+  if (msg.length < 20 && !/\d/.test(msg)) {
+    const foodKeywords = ['comi', 'bebi', 'almocei', 'jantei', 'tomei', 'café', 'lanche', 'refeição', 'caloria', 'peso', 'água'];
+    const hasFoodKeyword = foodKeywords.some(kw => msg.includes(kw));
+    if (!hasFoodKeyword) return true;
+  }
+  
   return false;
 }
 

@@ -34,6 +34,59 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+// 🦙 OLLAMA - Para mensagens simples (GRÁTIS)
+const OLLAMA_URL = Deno.env.get('OLLAMA_URL') || 'https://yolo-service-ollama.0sw627.easypanel.host';
+
+function isSimpleMessage(message: string): boolean {
+  const msg = message.toLowerCase().trim();
+  const simplePatterns = [
+    /^(?:oi|olá|ola|hey|hi|hello|e\s*aí|eai|opa|fala|alo|alô)[\s!?.,]*$/i,
+    /^(?:bom\s*dia|boa\s*tarde|boa\s*noite)[\s!?.,]*$/i,
+    /^(?:tudo\s*bem|como\s*vai|como\s*está|beleza|suave|de\s*boa)[\s!?.,]*$/i,
+    /^(?:obrigad[oa]|valeu|thanks|vlw|brigad[oa]|tmj)[\s!?.,]*$/i,
+    /^(?:tchau|bye|até\s*mais|até\s*logo|flw|falou|xau)[\s!?.,]*$/i,
+    /^(?:ok|okay|certo|entendi|blz|show|top|massa|legal)[\s!?.,]*$/i,
+    /^(?:sim|não|nao|s|n|ss|nn)[\s!?.,]*$/i,
+    /^(?:haha|kkk|kkkk|rsrs|lol|hehe|hihi|😂|😁|😊|💚|❤️)[\s!?.,]*$/i,
+  ];
+  for (const p of simplePatterns) if (p.test(msg)) return true;
+  if (msg.length < 20 && !/\d/.test(msg)) {
+    const foodKeywords = ['comi', 'bebi', 'almocei', 'jantei', 'tomei', 'café', 'lanche', 'caloria', 'peso'];
+    if (!foodKeywords.some(kw => msg.includes(kw))) return true;
+  }
+  return false;
+}
+
+async function tryOllamaSimple(message: string, firstName: string): Promise<string | null> {
+  try {
+    const available = await fetch(`${OLLAMA_URL}/api/tags`, { method: 'GET', signal: AbortSignal.timeout(3000) });
+    if (!available.ok) return null;
+    
+    const systemPrompt = `Você é Sofia 🥗, nutricionista virtual carinhosa do MaxNutrition.
+Seja BREVE (máximo 2-3 linhas), carinhosa e empática. Use 1-2 emojis. Termine com: _Sofia 💚_
+Nome do usuário: ${firstName}`;
+
+    const response = await fetch(`${OLLAMA_URL}/api/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'llama3.2:3b',
+        messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: message }],
+        stream: false,
+        options: { temperature: 0.8, num_predict: 256 }
+      }),
+      signal: AbortSignal.timeout(15000)
+    });
+    if (!response.ok) return null;
+    const data = await response.json();
+    if (data.message?.content) {
+      console.log(`[Ollama] ✅ Resposta gerada (GRÁTIS!)`);
+      return data.message.content;
+    }
+    return null;
+  } catch { return null; }
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -47,6 +100,41 @@ Deno.serve(async (req) => {
     const { message, userId, context, forcePersonality } = await req.json();
 
     console.log('🤖 Unified AI Assistant iniciado para usuário:', userId);
+
+    // ============================================
+    // 0. TENTAR OLLAMA PARA MENSAGENS SIMPLES (GRÁTIS!)
+    // ============================================
+    const personality = forcePersonality || detectPersonality(message);
+    
+    if (isSimpleMessage(message) && personality === 'sofia') {
+      console.log('[Unified] 🦙 Mensagem simples detectada, tentando Ollama...');
+      
+      // Buscar nome do usuário rapidamente
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('full_name')
+        .eq('user_id', userId)
+        .maybeSingle();
+      
+      const firstName = profile?.full_name?.split(' ')[0] || 'querido(a)';
+      const ollamaResponse = await tryOllamaSimple(message, firstName);
+      
+      if (ollamaResponse) {
+        console.log('[Unified] ✅ Ollama respondeu (GRÁTIS!)');
+        return new Response(
+          JSON.stringify({
+            message: ollamaResponse,
+            personality: 'sofia',
+            personalityName: 'Sofia 🥗',
+            api_used: 'ollama-free',
+            cost: 0,
+            success: true
+          }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      console.log('[Unified] Ollama indisponível, continuando com IA avançada...');
+    }
 
     // ============================================
     // 1. CARREGAR CONTEXTO COMPLETO DO USUÁRIO
@@ -67,7 +155,6 @@ Deno.serve(async (req) => {
     // ============================================
     // 2. DETECTAR PERSONALIDADE (SOFIA vs DR. VITAL)
     // ============================================
-    const personality = forcePersonality || detectPersonality(message);
     console.log(`🎭 Personalidade detectada: ${getPersonalityName(personality)}`);
 
     // ============================================
