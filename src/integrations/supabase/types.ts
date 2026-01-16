@@ -4809,6 +4809,7 @@ export type Database = {
           ai_analysis: string | null
           confidence_score: number | null
           created_at: string | null
+          deleted_at: string | null
           food_items: Json | null
           id: string
           meal_date: string
@@ -4830,6 +4831,7 @@ export type Database = {
           ai_analysis?: string | null
           confidence_score?: number | null
           created_at?: string | null
+          deleted_at?: string | null
           food_items?: Json | null
           id?: string
           meal_date?: string
@@ -4851,6 +4853,7 @@ export type Database = {
           ai_analysis?: string | null
           confidence_score?: number | null
           created_at?: string | null
+          deleted_at?: string | null
           food_items?: Json | null
           id?: string
           meal_date?: string
@@ -7035,6 +7038,63 @@ export type Database = {
         }
         Relationships: []
       }
+      medical_pdf_reports: {
+        Row: {
+          created_at: string | null
+          expires_at: string | null
+          file_size_bytes: number | null
+          html_url: string | null
+          id: string
+          is_permanent: boolean | null
+          medical_document_id: string | null
+          pdf_path: string
+          pdf_url: string
+          public_link_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          expires_at?: string | null
+          file_size_bytes?: number | null
+          html_url?: string | null
+          id?: string
+          is_permanent?: boolean | null
+          medical_document_id?: string | null
+          pdf_path: string
+          pdf_url: string
+          public_link_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          expires_at?: string | null
+          file_size_bytes?: number | null
+          html_url?: string | null
+          id?: string
+          is_permanent?: boolean | null
+          medical_document_id?: string | null
+          pdf_path?: string
+          pdf_url?: string
+          public_link_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "medical_pdf_reports_medical_document_id_fkey"
+            columns: ["medical_document_id"]
+            isOneToOne: false
+            referencedRelation: "medical_documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "medical_pdf_reports_public_link_id_fkey"
+            columns: ["public_link_id"]
+            isOneToOne: false
+            referencedRelation: "public_report_links"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       medication_adherence_tracking: {
         Row: {
           created_at: string | null
@@ -7723,11 +7783,13 @@ export type Database = {
         Row: {
           created_at: string | null
           date: string | null
+          deleted_at: string | null
           food_items: Json | null
           id: string
           meal_type: string | null
           notes: string | null
           photo_url: string | null
+          status: string | null
           total_calories: number | null
           total_carbs: number | null
           total_fats: number | null
@@ -7740,11 +7802,13 @@ export type Database = {
         Insert: {
           created_at?: string | null
           date?: string | null
+          deleted_at?: string | null
           food_items?: Json | null
           id?: string
           meal_type?: string | null
           notes?: string | null
           photo_url?: string | null
+          status?: string | null
           total_calories?: number | null
           total_carbs?: number | null
           total_fats?: number | null
@@ -7757,11 +7821,13 @@ export type Database = {
         Update: {
           created_at?: string | null
           date?: string | null
+          deleted_at?: string | null
           food_items?: Json | null
           id?: string
           meal_type?: string | null
           notes?: string | null
           photo_url?: string | null
+          status?: string | null
           total_calories?: number | null
           total_carbs?: number | null
           total_fats?: number | null

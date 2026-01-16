@@ -328,3 +328,127 @@ export async function sendTestButtons(phone: string): Promise<boolean> {
     ],
   });
 }
+
+/**
+ * Send document via Whapi
+ */
+export async function sendDocument(
+  phone: string,
+  documentUrl: string,
+  filename: string,
+  caption?: string
+): Promise<boolean> {
+  if (!WHAPI_TOKEN) {
+    console.error('[Whapi Document] ❌ Token não configurado');
+    return false;
+  }
+
+  let formattedPhone = phone.replace(/\D/g, '');
+  if (!formattedPhone.startsWith('55')) {
+    formattedPhone = '55' + formattedPhone;
+  }
+
+  console.log('[Whapi Document] Enviando documento:', {
+    phone: formattedPhone,
+    filename,
+    url: documentUrl.substring(0, 60) + '...',
+  });
+
+  try {
+    const payload: Record<string, any> = {
+      to: formattedPhone,
+      media: documentUrl,
+      filename: filename,
+    };
+
+    if (caption) {
+      payload.caption = caption;
+    }
+
+    const response = await fetch(`${WHAPI_API_URL}/messages/document`, {
+      method: 'POST',
+      headers: getWhapiHeaders(),
+      body: JSON.stringify(payload),
+    });
+
+    const responseText = await response.text();
+    console.log(`[Whapi Document] Status: ${response.status}`);
+
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch {
+      console.error('[Whapi Document] Resposta não é JSON:', responseText.substring(0, 200));
+      return false;
+    }
+
+    if (!response.ok) {
+      console.error('[Whapi Document] Erro:', data);
+      return false;
+    }
+
+    console.log('[Whapi Document] ✅ Enviado:', data?.message?.id || data?.id || 'ok');
+    return true;
+  } catch (error) {
+    console.error('[Whapi Document] Exceção:', error);
+    return false;
+  }
+}
+
+/**
+ * Send image via Whapi
+ */
+export async function sendImage(
+  phone: string,
+  imageUrl: string,
+  caption?: string
+): Promise<boolean> {
+  if (!WHAPI_TOKEN) {
+    console.error('[Whapi Image] ❌ Token não configurado');
+    return false;
+  }
+
+  let formattedPhone = phone.replace(/\D/g, '');
+  if (!formattedPhone.startsWith('55')) {
+    formattedPhone = '55' + formattedPhone;
+  }
+
+  try {
+    const payload: Record<string, any> = {
+      to: formattedPhone,
+      media: imageUrl,
+    };
+
+    if (caption) {
+      payload.caption = caption;
+    }
+
+    const response = await fetch(`${WHAPI_API_URL}/messages/image`, {
+      method: 'POST',
+      headers: getWhapiHeaders(),
+      body: JSON.stringify(payload),
+    });
+
+    const responseText = await response.text();
+    console.log(`[Whapi Image] Status: ${response.status}`);
+
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch {
+      console.error('[Whapi Image] Resposta não é JSON:', responseText.substring(0, 200));
+      return false;
+    }
+
+    if (!response.ok) {
+      console.error('[Whapi Image] Erro:', data);
+      return false;
+    }
+
+    console.log('[Whapi Image] ✅ Enviado:', data?.message?.id || data?.id || 'ok');
+    return true;
+  } catch (error) {
+    console.error('[Whapi Image] Exceção:', error);
+    return false;
+  }
+}

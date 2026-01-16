@@ -178,6 +178,43 @@ async function processExam(
     const publicUrl = `${appUrl}/relatorio/${linkData.token}`;
     console.log("[whatsapp-medical-handler] Link público criado:", publicUrl);
 
+    // 6.5. Gerar PDF do relatório
+    let pdfUrl: string | null = null;
+    let pdfFilename: string | null = null;
+    
+    try {
+      console.log("[whatsapp-medical-handler] Gerando PDF...");
+      
+      const patientInfo = await getPatientInfo(userId);
+      
+      const { data: pdfData, error: pdfError } = await supabase.functions.invoke(
+        "generate-medical-pdf",
+        {
+          body: {
+            htmlUrl: reportData?.report_url || reportData?.signed_url,
+            htmlContent: reportData?.report?.html,
+            userId,
+            documentId: docData.id,
+            publicLinkId: linkData.id,
+            examType: examType || "Laboratorial",
+            examDate: examDate || new Date().toISOString().split("T")[0],
+            patientName: patientInfo?.name || "Paciente",
+          },
+        }
+      );
+
+      if (!pdfError && pdfData?.success) {
+        pdfUrl = pdfData.pdf_url;
+        pdfFilename = pdfData.filename || `relatorio_${docData.id}.pdf`;
+        console.log("[whatsapp-medical-handler] ✅ PDF gerado:", pdfUrl);
+      } else {
+        console.error("[whatsapp-medical-handler] Erro ao gerar PDF:", pdfError);
+      }
+    } catch (pdfGenError) {
+      console.error("[whatsapp-medical-handler] Exceção ao gerar PDF:", pdfGenError);
+      // Continuar sem PDF - não é crítico
+    }
+
     // 7. Atualizar pendente como processado
     if (pendingId) {
       await supabase
@@ -204,6 +241,12 @@ async function processExam(
       publicUrl + "\n\n" +
       "_O link é permanente e funciona em qualquer dispositivo._"
     );
+
+    // 10. Enviar PDF como documento se disponível
+    if (pdfUrl && pdfFilename) {
+      console.log("[whatsapp-medical-handler] Enviando PDF via WhatsApp...");
+      await sendDocument(phone, pdfUrl, pdfFilename, "📄 Seu relatório em PDF - salve para consulta offline");
+    }
 
     return new Response(
       JSON.stringify({
@@ -298,9 +341,57 @@ function base64ToBytes(base64: string): Uint8Array {
   return bytes;
 }
 
+// Whapi configuration
+const WHAPI_API_URL = Deno.env.get('WHAPI_API_URL') || 'https://gate.whapi.cloud';
+const WHAPI_TOKEN = Deno.env.get('WHAPI_TOKEN') || '';
+const WHAPI_CHANNEL_ID = Deno.env.get('WHAPI_CHANNEL_ID') || '';
+
+function getWhapiHeaders(): Record<string, string> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+    'Authorization': `Bearer ${WHAPI_TOKEN}`,
+  };
+  
+  if (WHAPI_CHANNEL_ID) {
+    headers['X-Channel-Id'] = WHAPI_CHANNEL_ID;
+  }
+  
+  return headers;
+}
+
 async function sendWhatsApp(phone: string, message: string): Promise<void> {
+  // Tentar Whapi primeiro
+  if (WHAPI_TOKEN) {
+    let formattedPhone = phone.replace(/\D/g, "");
+    if (!formattedPhone.startsWith("55")) {
+      formattedPhone = "55" + formattedPhone;
+    }
+
+    try {
+      const response = await fetch(`${WHAPI_API_URL}/messages/text`, {
+        method: "POST",
+        headers: getWhapiHeaders(),
+        body: JSON.stringify({
+          to: formattedPhone,
+          body: message,
+        }),
+      });
+
+      if (response.ok) {
+        console.log("[whatsapp-medical-handler] ✅ Mensagem enviada via Whapi");
+        return;
+      }
+      
+      console.error("[whatsapp-medical-handler] Erro Whapi:", await response.text());
+    } catch (error) {
+      console.error("[whatsapp-medical-handler] Erro Whapi:", error);
+    }
+  }
+
+  // Fallback para Evolution API
   if (!EVOLUTION_API_URL || !EVOLUTION_API_KEY || !EVOLUTION_INSTANCE) {
-    console.log("[whatsapp-medical-handler] Evolution API não configurada");
+    console.log("[whatsapp-medical-handler] Nenhuma API WhatsApp configurada");
     return;
   }
 
@@ -329,5 +420,43 @@ async function sendWhatsApp(phone: string, message: string): Promise<void> {
     }
   } catch (error) {
     console.error("[whatsapp-medical-handler] Erro WhatsApp:", error);
+  }
+}
+
+async function sendDocument(phone: string, documentUrl: string, filename: string, caption?: string): Promise<void> {
+  if (!WHAPI_TOKEN) {
+    console.log("[whatsapp-medical-handler] Whapi não configurado para envio de documento");
+    return;
+  }
+
+  let formattedPhone = phone.replace(/\D/g, "");
+  if (!formattedPhone.startsWith("55")) {
+    formattedPhone = "55" + formattedPhone;
+  }
+
+  try {
+    const payload: Record<string, any> = {
+      to: formattedPhone,
+      media: documentUrl,
+      filename: filename,
+    };
+
+    if (caption) {
+      payload.caption = caption;
+    }
+
+    const response = await fetch(`${WHAPI_API_URL}/messages/document`, {
+      method: "POST",
+      headers: getWhapiHeaders(),
+      body: JSON.stringify(payload),
+    });
+
+    if (response.ok) {
+      console.log("[whatsapp-medical-handler] ✅ Documento enviado via Whapi");
+    } else {
+      console.error("[whatsapp-medical-handler] Erro ao enviar documento:", await response.text());
+    }
+  } catch (error) {
+    console.error("[whatsapp-medical-handler] Erro ao enviar documento:", error);
   }
 }
