@@ -409,27 +409,38 @@ async function processImage(user: UserInfo, phone: string, message: any, webhook
   try {
     console.log(`[WhatsApp] 📷 Processando ${isDocument ? 'documento' : 'imagem'} para usuário: ${user.full_name || user.email}`);
     
-    const imageUrl = await processAndUploadImage(supabase, user.id, message, webhook);
-
-    if (!imageUrl) {
-      console.log(`[WhatsApp] ❌ Falha ao fazer upload da ${isDocument ? 'documento' : 'imagem'}`);
-      await sendWhatsApp(phone, `❌ Não consegui processar ${isDocument ? 'seu documento' : 'sua foto'}. Tente enviar novamente!`);
-      return;
-    }
-    
-    console.log(`[WhatsApp] ✅ Upload concluído: ${imageUrl.substring(0, 80)}...`);
-
     // Se é um documento (PDF), encaminhar diretamente para análise médica
     if (isDocument) {
-      console.log('[WhatsApp] 📄 Documento detectado, encaminhando para Dr. Vital...');
+      console.log('[WhatsApp] 📄 Documento detectado, fazendo upload para medical-exams...');
+      const imageUrl = await processAndUploadImage(supabase, user.id, message, webhook, 'medical-exams');
+      
+      if (!imageUrl) {
+        console.log(`[WhatsApp] ❌ Falha ao fazer upload do documento`);
+        await sendWhatsApp(phone, `❌ Não consegui processar seu documento. Tente enviar novamente!`);
+        return;
+      }
+      
+      console.log(`[WhatsApp] ✅ Documento salvo em medical-exams: ${imageUrl.substring(0, 80)}...`);
       await processMedicalImage(supabase, user, phone, imageUrl);
       return;
     }
 
+    // Para imagens, primeiro fazer upload temporário para detectar tipo
+    console.log('[WhatsApp] 🔍 Fazendo upload temporário para detectar tipo...');
+    const tempImageUrl = await processAndUploadImage(supabase, user.id, message, webhook, 'whatsapp');
+
+    if (!tempImageUrl) {
+      console.log(`[WhatsApp] ❌ Falha ao fazer upload da imagem`);
+      await sendWhatsApp(phone, `❌ Não consegui processar sua foto. Tente enviar novamente!`);
+      return;
+    }
+    
+    console.log(`[WhatsApp] ✅ Upload temporário concluído: ${tempImageUrl.substring(0, 80)}...`);
+
     // Detectar tipo de imagem
     console.log('[WhatsApp] 🔍 Detectando tipo de imagem...');
     const { data: imageTypeResult, error: detectError } = await supabase.functions.invoke("detect-image-type", {
-      body: { imageUrl }
+      body: { imageUrl: tempImageUrl }
     });
     
     if (detectError) {
@@ -439,12 +450,17 @@ async function processImage(user: UserInfo, phone: string, message: any, webhook
     const imageType = imageTypeResult?.type || "OTHER";
     console.log(`[WhatsApp] 🏷️ Tipo detectado: ${imageType}`);
 
+    // TODO: Em versão futura, re-upload para pasta correta
+    // Por agora, usamos a URL temporária pois MinIO não suporta move
+    // Alternativa: fazer novo upload com base64 original na pasta correta
+
     if (imageType === "FOOD") {
       console.log('[WhatsApp] 🍽️ Encaminhando para Sofia (análise nutricional)...');
-      await processFoodImage(user, phone, imageUrl);
+      // Imagem já está no MinIO, processar direto
+      await processFoodImage(user, phone, tempImageUrl);
     } else if (imageType === "MEDICAL") {
       console.log('[WhatsApp] 🩺 Encaminhando para Dr. Vital (análise médica)...');
-      await processMedicalImage(supabase, user, phone, imageUrl);
+      await processMedicalImage(supabase, user, phone, tempImageUrl);
     } else {
       // Verificar se tem lote médico ativo
       const { data: activeMedicalBatch } = await supabase
@@ -458,7 +474,7 @@ async function processImage(user: UserInfo, phone: string, message: any, webhook
         .maybeSingle();
 
       if (activeMedicalBatch) {
-        await processMedicalImage(supabase, user, phone, imageUrl);
+        await processMedicalImage(supabase, user, phone, tempImageUrl);
       } else {
         await sendInteractiveMessage(phone, {
           headerText: '📸 Recebi sua foto!',
