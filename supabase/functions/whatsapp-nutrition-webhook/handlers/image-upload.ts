@@ -74,7 +74,7 @@ function base64ToBytes(base64: string): Uint8Array {
 
 /**
  * Upload bytes to storage
- * Tries external storage (MinIO) first, falls back to Supabase
+ * 100% MinIO - SEM FALLBACK para Supabase Storage
  */
 export async function uploadBytesToStorage(
   supabase: SupabaseClient,
@@ -82,38 +82,16 @@ export async function uploadBytesToStorage(
   bytes: Uint8Array,
   contentType: string
 ): Promise<string | null> {
-  // 1. Tentar storage externo (MinIO via VPS) primeiro
+  // Upload via MinIO (VPS) - único método
   const externalUrl = await uploadToExternalMedia(userId, bytes, contentType);
+  
   if (externalUrl) {
     return externalUrl;
   }
   
-  // 2. Fallback para Supabase Storage
-  console.log('[ImageUpload] Usando fallback Supabase Storage');
-  const ext = contentType.includes("png")
-    ? "png"
-    : contentType.includes("webp")
-    ? "webp"
-    : contentType.includes("pdf")
-    ? "pdf"
-    : "jpg";
-  const fileName = `whatsapp/${userId}/${Date.now()}.${ext}`;
-
-  const { error: uploadError } = await supabase.storage
-    .from("chat-images")
-    .upload(
-      fileName,
-      bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength),
-      { contentType, upsert: true }
-    );
-
-  if (uploadError) {
-    console.error("[ImageUpload] Erro no upload Supabase:", uploadError);
-    return null;
-  }
-
-  const { data: urlData } = supabase.storage.from("chat-images").getPublicUrl(fileName);
-  return urlData.publicUrl || null;
+  // Se MinIO falhou, retornar null (SEM fallback para Supabase)
+  console.error('[ImageUpload] ❌ Upload MinIO falhou - sem fallback');
+  return null;
 }
 
 /**

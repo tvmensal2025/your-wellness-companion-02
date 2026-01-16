@@ -30,22 +30,29 @@ const DidacticReportButton: React.FC<DidacticReportButtonProps> = ({ documentId,
       
       if (error) throw error;
       
-      // Verificar se temos um caminho de relatório
+      // Verificar se temos um caminho de relatório ou URL
       const reportPath = data?.reportPath || data?.data?.reportPath;
+      const reportUrl = data?.reportUrl || data?.data?.reportUrl;
       
-      if (!reportPath) {
+      if (!reportPath && !reportUrl) {
         throw new Error('Caminho do relatório não retornado');
       }
       
-      // Obter URL assinada para o relatório premium
-      const { data: signedUrlData, error: signedUrlError } = await supabase.storage
-        .from('medical-documents-reports')
-        .createSignedUrl(reportPath, 60 * 60); // 1 hora
-      
-      if (signedUrlError) throw signedUrlError;
-      
-      // Abrir o relatório premium em uma nova aba
-      window.open(signedUrlData.signedUrl, '_blank');
+      // Se temos URL direta (MinIO), usar direto
+      if (reportUrl && (reportUrl.includes('minio') || reportUrl.includes('easypanel') || reportUrl.startsWith('http'))) {
+        console.log('[DidacticReportButton] Usando URL MinIO:', reportUrl);
+        window.open(reportUrl, '_blank');
+      } else {
+        // Fallback: Obter URL assinada do Supabase Storage
+        const { data: signedUrlData, error: signedUrlError } = await supabase.storage
+          .from('medical-documents-reports')
+          .createSignedUrl(reportPath, 60 * 60); // 1 hora
+        
+        if (signedUrlError) throw signedUrlError;
+        
+        // Abrir o relatório premium em uma nova aba
+        window.open(signedUrlData.signedUrl, '_blank');
+      }
       
       toast({
         title: '✨ Relatório Premium Gerado!',

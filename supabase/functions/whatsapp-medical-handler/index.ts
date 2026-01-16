@@ -64,28 +64,28 @@ async function processExam(
       "Isso pode levar alguns segundos. Aguarde!"
     );
 
-    // 2. Upload da imagem para Storage
-    const imageBytes = base64ToBytes(imageBase64);
-    const fileName = `${userId}/${Date.now()}_exam.jpg`;
+    // 2. Upload da imagem para MinIO via media-upload Edge Function
+    console.log("[whatsapp-medical-handler] Enviando imagem para MinIO...");
     
-    const { error: uploadError } = await supabase.storage
-      .from("medical-documents")
-      .upload(fileName, imageBytes.buffer, {
-        contentType: "image/jpeg",
-        upsert: true,
-      });
+    const { data: uploadData, error: uploadError } = await supabase.functions.invoke(
+      "media-upload",
+      {
+        body: {
+          data: imageBase64,
+          folder: "medical-exams",
+          userId,
+          mimeType: "image/jpeg",
+        },
+      }
+    );
 
-    if (uploadError) {
-      console.error("[whatsapp-medical-handler] Erro no upload:", uploadError);
-      throw new Error("Erro ao salvar imagem");
+    if (uploadError || !uploadData?.success) {
+      console.error("[whatsapp-medical-handler] Erro no upload:", uploadError || uploadData);
+      throw new Error("Erro ao salvar imagem no MinIO");
     }
 
-    const { data: urlData } = supabase.storage
-      .from("medical-documents")
-      .getPublicUrl(fileName);
-
-    const imageUrl = urlData.publicUrl;
-    console.log("[whatsapp-medical-handler] Imagem salva:", imageUrl);
+    const imageUrl = uploadData.url;
+    console.log("[whatsapp-medical-handler] Imagem salva no MinIO:", imageUrl);
 
     // 3. Criar registro na tabela medical_documents
     const { data: docData, error: docError } = await supabase

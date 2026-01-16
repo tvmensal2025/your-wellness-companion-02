@@ -129,12 +129,25 @@ export const AvatarUpload: React.FC<AvatarUploadProps> = ({
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Usuário não está logado');
 
-      // Remover arquivo do storage se existir
+      // Tentar deletar arquivo do MinIO via vps-proxy (best-effort)
       if (currentAvatar) {
-        const oldPath = currentAvatar.split('/').slice(-2).join('/');
-        await supabase.storage
-          .from('avatars')
-          .remove([oldPath]);
+        try {
+          // Extrair path do URL do MinIO
+          const urlObj = new URL(currentAvatar);
+          const path = urlObj.pathname.split('/').slice(-2).join('/');
+          
+          await supabase.functions.invoke('vps-proxy', {
+            body: {
+              endpoint: '/storage/delete',
+              method: 'DELETE',
+              body: { path, folder: 'avatars' }
+            }
+          });
+          console.log('[AvatarUpload] Avatar antigo deletado do MinIO');
+        } catch (deleteError) {
+          // Ignorar erro de delete - não é crítico
+          console.warn('[AvatarUpload] Não foi possível deletar avatar antigo:', deleteError);
+        }
       }
 
       // Atualizar perfil removendo avatar

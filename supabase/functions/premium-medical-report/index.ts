@@ -258,17 +258,54 @@ serve(async (req) => {
     const today = new Date().toISOString();
     const html = buildHTML({ patient: extracted?.patient || {}, sections, date: today });
 
-    // Persist artifacts
+    // Persist artifacts para MinIO
+    const VPS_API_URL = Deno.env.get("VPS_API_URL");
+    const VPS_API_KEY = Deno.env.get("VPS_API_KEY");
+    
     const base = `${user_id}/${reportId}`;
-    const saveText = async (path: string, content: string) => {
-      const { error } = await supabase.storage.from("medical-reports").upload(path, new Blob([content], { type: "text/plain" }), { upsert: true });
+    
+    const saveText = async (filename: string, content: string, mimeType = "text/plain") => {
+      // Converter para base64
+      const bytes = new TextEncoder().encode(content);
+      let binary = '';
+      for (let i = 0; i < bytes.length; i++) {
+        binary += String.fromCharCode(bytes[i]);
+      }
+      const base64 = btoa(binary);
+      
+      if (VPS_API_URL && VPS_API_KEY) {
+        const response = await fetch(`${VPS_API_URL}/storage/upload-base64`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-API-Key': VPS_API_KEY,
+          },
+          body: JSON.stringify({
+            data: base64,
+            folder: 'medical-reports',
+            mimeType,
+            filename,
+            userId: user_id
+          }),
+        });
+        
+        if (response.ok) {
+          const result = await response.json();
+          console.log(`[premium-medical-report] Salvo no MinIO: ${filename}`);
+          return result.url || filename;
+        }
+      }
+      
+      // Fallback para Supabase se VPS não disponível
+      console.warn(`[premium-medical-report] Fallback Supabase para: ${filename}`);
+      const { error } = await supabase.storage.from("medical-reports").upload(filename, new Blob([content], { type: mimeType }), { upsert: true });
       if (error) throw error;
-      return path;
+      return filename;
     };
 
-    const extractedPath = await saveText(`${base}/exams_extracted.json`, JSON.stringify({ extracted, biomarkers }, null, 2));
-    const derivedPath = await saveText(`${base}/derived_metrics.json`, JSON.stringify(derived, null, 2));
-    const htmlPath = await saveText(`${base}/report.html`, html);
+    const extractedPath = await saveText(`${base}/exams_extracted.json`, JSON.stringify({ extracted, biomarkers }, null, 2), "application/json");
+    const derivedPath = await saveText(`${base}/derived_metrics.json`, JSON.stringify(derived, null, 2), "application/json");
+    const htmlPath = await saveText(`${base}/report.html`, html, "text/html");
 
     await supabase.from("premium_medical_reports").update({ status: "ready", extracted_json_path: extractedPath, derived_json_path: derivedPath, html_path: htmlPath }).eq("id", reportId);
     await log("render", "success", "Relatório pronto", { htmlPath });

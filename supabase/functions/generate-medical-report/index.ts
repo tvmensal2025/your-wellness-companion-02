@@ -122,13 +122,60 @@ serve(async (req) => {
     if (!report.html) report.html = renderHTML(visitData, report);
     if (!report.disclaimer) report.disclaimer = "Este documento é educativo e não substitui consulta médica. Não faz diagnóstico nem prescrição.";
 
-    // Salvar HTML no Storage
+    // Salvar HTML no MinIO via media-upload
     const path = `${userId || "public"}/${documentId || `report_${Date.now()}`}.html`;
     const enc = new TextEncoder();
     const bytes = enc.encode(report.html);
-    await supabase.storage.from("medical-documents-reports").remove([path]).catch(() => {});
-    const up = await supabase.storage.from("medical-documents-reports").upload(path, new Blob([bytes], { type: "text/html; charset=utf-8" }), { upsert: true, contentType: "text/html; charset=utf-8" });
-    if (up.error) throw up.error;
+    
+    // Converter HTML para base64
+    let binary = '';
+    for (let i = 0; i < bytes.length; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    const base64Html = btoa(binary);
+    
+    // Upload para MinIO via fetch direto (dentro da Edge Function)
+    const VPS_API_URL = Deno.env.get("VPS_API_URL");
+    const VPS_API_KEY = Deno.env.get("VPS_API_KEY");
+    
+    let reportUrl = '';
+    
+    if (VPS_API_URL && VPS_API_KEY) {
+      console.log("[generate-medical-report] Salvando HTML no MinIO...");
+      
+      const uploadResponse = await fetch(`${VPS_API_URL}/storage/upload-base64`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-API-Key': VPS_API_KEY,
+        },
+        body: JSON.stringify({
+          data: base64Html,
+          folder: 'medical-reports',
+          mimeType: 'text/html',
+          filename: path,
+          userId: userId || 'public'
+        }),
+      });
+      
+      if (uploadResponse.ok) {
+        const uploadResult = await uploadResponse.json();
+        reportUrl = uploadResult.url;
+        console.log("[generate-medical-report] HTML salvo no MinIO:", reportUrl);
+      } else {
+        console.error("[generate-medical-report] Erro ao salvar no MinIO:", await uploadResponse.text());
+        throw new Error("Erro ao salvar relatório no MinIO");
+      }
+    } else {
+      // Fallback: salvar no Supabase Storage se VPS não configurado
+      console.warn("[generate-medical-report] VPS não configurado, usando Supabase Storage");
+      await supabase.storage.from("medical-documents-reports").remove([path]).catch(() => {});
+      const up = await supabase.storage.from("medical-documents-reports").upload(path, new Blob([bytes], { type: "text/html; charset=utf-8" }), { upsert: true, contentType: "text/html; charset=utf-8" });
+      if (up.error) throw up.error;
+      
+      const { data: signedData } = await supabase.storage.from("medical-documents-reports").createSignedUrl(path, 86400);
+      reportUrl = signedData?.signedUrl || '';
+    }
 
     // Atualiza medical_documents se enviado um documentId
     if (documentId) {
@@ -166,13 +213,18 @@ serve(async (req) => {
       }
     }
 
-    // URL assinada (mantém por compatibilidade)
-    const signed = await supabase.storage.from("medical-documents-reports").createSignedUrl(path, 3600);
+    // URL assinada (para compatibilidade - usar URL pública do MinIO ou signed do Supabase)
+    let signedUrl = reportUrl;
+    if (!reportUrl.includes('minio') && !reportUrl.includes('easypanel')) {
+      const signed = await supabase.storage.from("medical-documents-reports").createSignedUrl(path, 3600);
+      signedUrl = signed.data?.signedUrl || reportUrl;
+    }
 
     return new Response(JSON.stringify({ 
       report, 
       report_path: path, 
-      signed_url: signed.data?.signedUrl,
+      report_url: reportUrl,
+      signed_url: signedUrl,
       public_url: publicUrl,
       public_token: publicToken,
     }), {
