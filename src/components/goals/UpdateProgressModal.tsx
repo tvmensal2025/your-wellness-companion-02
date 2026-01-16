@@ -8,6 +8,7 @@ import { Progress } from '@/components/ui/progress';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { uploadToVPS } from '@/lib/vpsApi';
 import { Slider } from '@/components/ui/slider';
 import { Camera, FileText, TrendingUp, Target, Award, Share2, Users, Heart, Upload, X, Image as ImageIcon, Video, Plus } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -56,26 +57,14 @@ export const UpdateProgressModal = ({ goal, onUpdate, children }: UpdateProgress
   const currentProgress = calculateProgress(newValue);
   const isCompleted = newValue >= goal.target_value;
 
-  // Upload de arquivo
+  // Upload de arquivo via MinIO
   const uploadFile = async (file: File): Promise<string | null> => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Usuário não autenticado');
 
-      const fileExt = file.name.split('.').pop();
-      const fileName = `progress/${user.id}/${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(fileName, file);
-
-      if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(fileName);
-
-      return publicUrl;
+      const result = await uploadToVPS(file, 'weight-photos');
+      return result.url;
     } catch (error) {
       console.error('Erro no upload:', error);
       toast({

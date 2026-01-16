@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { uploadToVPS } from '@/lib/vpsApi';
 
 interface ExamUploadModalProps {
   isOpen: boolean;
@@ -103,18 +104,9 @@ export const ExamUploadModal: React.FC<ExamUploadModalProps> = ({ isOpen, onClos
         return;
       }
 
-      // Upload temporário para bucket correto
-      const fileExtension = selectedFile.name.split('.').pop();
-      const tmpPath = `tmp/${user.id}/${crypto.randomUUID()}.${fileExtension}`;
-      
-      const { error: uploadError } = await supabase.storage
-        .from('medical-documents')
-        .upload(tmpPath, selectedFile);
-
-      if (uploadError) {
-        console.error('Erro no upload:', uploadError);
-        throw new Error('Falha ao enviar arquivo: ' + uploadError.message);
-      }
+      // Upload para MinIO via Edge Function
+      const uploadResult = await uploadToVPS(selectedFile, 'medical-exams');
+      const tmpPath = uploadResult.path;
 
       // Finalizar e disparar análise via edge function
       const { data: result, error: finalizeError } = await supabase.functions.invoke('finalize-medical-document', {

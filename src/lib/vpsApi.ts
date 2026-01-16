@@ -29,10 +29,12 @@ export interface UploadResult {
 // Todas as pastas disponíveis no MinIO
 export type MinIOFolder = 
   | 'avatars'
+  | 'banners'
   | 'chat-images'
   | 'exercise-videos'
   | 'feed'
   | 'food-analysis'
+  | 'lesson-videos'
   | 'medical-exams'
   | 'medical-reports'
   | 'profiles'
