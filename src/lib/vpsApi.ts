@@ -386,6 +386,7 @@ export async function checkVPSHealth() {
     timestamp: string;
     uptime: number;
     checks: Record<string, { status: string; error?: string }>;
+    memory?: { rss: number; heapUsed: number };
   }>('/health/detailed');
 }
 
