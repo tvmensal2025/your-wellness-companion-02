@@ -23,12 +23,14 @@ const corsHeaders = {
 // Folders permitidos para upload
 const ALLOWED_FOLDERS = [
   'avatars',
+  'banners',           // banners da plataforma
   'chat-images', 
   'course-thumbnails',
   'exercise-media',
   'exercise-videos',
   'feed',
   'food-analysis',
+  'lesson-videos',     // vídeos de aulas
   'medical-exams',
   'medical-reports',
   'profiles',
@@ -194,20 +196,22 @@ serve(async (req) => {
 
     // Mapear folder para bucket do Supabase
     const bucketMap: Record<string, string> = {
+      'avatars': 'avatars',
+      'banners': 'community-uploads',
       'chat-images': 'chat-images',
-      'food-analysis': 'chat-images',
-      'stories': 'chat-images',
-      'feed': 'chat-images',
       'course-thumbnails': 'course-thumbnails',
       'exercise-media': 'exercise-media',
       'exercise-videos': 'exercise-media',
-      'avatars': 'avatars',
-      'weight-photos': 'chat-images',
-      'profiles': 'avatars',
-      'whatsapp': 'chat-images',
+      'feed': 'community-uploads',
+      'food-analysis': 'chat-images',
+      'lesson-videos': 'exercise-media',
       'medical-exams': 'medical-documents',
       'medical-reports': 'medical-documents-reports',
       'product-images': 'chat-images',
+      'profiles': 'avatars',
+      'stories': 'community-uploads',
+      'weight-photos': 'chat-images',
+      'whatsapp': 'chat-images',
     };
 
     const bucket = bucketMap[folder] || 'chat-images';
