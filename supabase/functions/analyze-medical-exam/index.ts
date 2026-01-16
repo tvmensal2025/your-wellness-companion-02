@@ -2628,8 +2628,45 @@ ANTES DO JSON, escreva uma análise clínica EDUCATIVA, curta e objetiva, basead
     }
 
     let images: { mime: string; data: string }[] = [];
-    if (resolvedPaths && resolvedPaths.length > 0) {
-      console.log('📥 Iniciando download de', resolvedPaths.length, 'imagens...');
+    
+    // 🔥 NOVO: Processar URLs externas (MinIO) primeiro
+    if (externalUrls && externalUrls.length > 0) {
+      console.log('📥 Processando', externalUrls.length, 'URLs externas (MinIO)...');
+      
+      for (const extUrl of externalUrls.slice(0, MAX_IMAGES)) {
+        try {
+          console.log(`📥 Baixando URL externa: ${extUrl.substring(0, 80)}...`);
+          const response = await fetch(extUrl);
+          if (!response.ok) {
+            console.warn(`⚠️ Erro ao baixar URL externa: ${response.status}`);
+            continue;
+          }
+          
+          const blob = await response.blob();
+          const mt = blob.type || 'image/jpeg';
+          const arr = await blob.arrayBuffer();
+          const bytes = new Uint8Array(arr);
+          
+          // Converter para base64
+          let binary = '';
+          for (let i = 0; i < bytes.length; i++) {
+            binary += String.fromCharCode(bytes[i]);
+          }
+          const base64 = btoa(binary);
+          const base64Data = `data:${mt};base64,${base64}`;
+          
+          images.push({ mime: mt, data: base64Data });
+          console.log(`✅ URL externa processada: ${images.length} imagens`);
+        } catch (err) {
+          console.error(`❌ Erro ao processar URL externa:`, err);
+        }
+      }
+      
+      console.log(`✅ URLs externas processadas: ${images.length} imagens`);
+    }
+    
+    if (resolvedPaths && resolvedPaths.length > 0 && images.length === 0) {
+      console.log('📥 Iniciando download de', resolvedPaths.length, 'imagens do storage...');
       
       // Atualiza progresso inicial no banco
       if (documentId) {

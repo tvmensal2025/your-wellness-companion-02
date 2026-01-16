@@ -8,10 +8,21 @@ import { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
  * Upload bytes to external storage (MinIO via VPS)
  * Falls back to Supabase if VPS is unavailable
  */
+/**
+ * Determina a pasta correta baseada no tipo de conteúdo/contexto
+ */
+export type UploadFolder = 
+  | 'food-analysis'
+  | 'medical-exams'
+  | 'whatsapp'
+  | 'avatars'
+  | 'chat-images';
+
 async function uploadToExternalMedia(
   userId: string,
   bytes: Uint8Array,
-  contentType: string
+  contentType: string,
+  folder: UploadFolder = 'whatsapp'
 ): Promise<string | null> {
   const MEDIA_API_URL = Deno.env.get('MEDIA_API_URL') || Deno.env.get('VPS_API_URL');
   const MEDIA_API_KEY = Deno.env.get('MEDIA_API_KEY') || Deno.env.get('VPS_API_KEY');
@@ -25,6 +36,8 @@ async function uploadToExternalMedia(
     // Convert bytes to base64
     const base64 = btoa(String.fromCharCode(...bytes));
     
+    console.log(`[ImageUpload] Enviando para pasta: ${folder}`);
+    
     const response = await fetch(`${MEDIA_API_URL}/storage/upload-base64`, {
       method: 'POST',
       headers: {
@@ -33,7 +46,7 @@ async function uploadToExternalMedia(
       },
       body: JSON.stringify({
         data: base64,
-        folder: 'whatsapp',
+        folder,  // <-- Agora usa a pasta dinâmica
         userId,
         mimeType: contentType,
       }),
@@ -80,10 +93,11 @@ export async function uploadBytesToStorage(
   supabase: SupabaseClient,
   userId: string,
   bytes: Uint8Array,
-  contentType: string
+  contentType: string,
+  folder: UploadFolder = 'whatsapp'
 ): Promise<string | null> {
-  // Upload via MinIO (VPS) - único método
-  const externalUrl = await uploadToExternalMedia(userId, bytes, contentType);
+  // Upload via MinIO (VPS) - com pasta dinâmica
+  const externalUrl = await uploadToExternalMedia(userId, bytes, contentType, folder);
   
   if (externalUrl) {
     return externalUrl;
@@ -101,12 +115,13 @@ export async function uploadBase64ToStorage(
   supabase: SupabaseClient,
   userId: string,
   base64: string,
-  contentType: string
+  contentType: string,
+  folder: UploadFolder = 'whatsapp'
 ): Promise<string | null> {
   const ct = base64.startsWith("data:")
     ? base64.slice(5, base64.indexOf(";"))
     : contentType;
-  return uploadBytesToStorage(supabase, userId, base64ToBytes(base64), ct || contentType);
+  return uploadBytesToStorage(supabase, userId, base64ToBytes(base64), ct || contentType, folder);
 }
 
 /**
@@ -281,12 +296,14 @@ async function getBase64FromEvolution(webhook: any): Promise<string | null> {
 /**
  * Process and upload image from webhook
  * Supports both Evolution API and Whapi formats
+ * NOVO: Aceita folder para upload direto na pasta correta
  */
 export async function processAndUploadImage(
   supabase: SupabaseClient,
   userId: string,
   message: any,
-  webhook: any
+  webhook: any,
+  folder: UploadFolder = 'whatsapp'
 ): Promise<string | null> {
   // Detectar formato baseado no conteúdo, não apenas no provider configurado
   const hasEvolutionImage = !!(
@@ -307,6 +324,7 @@ export async function processAndUploadImage(
   console.log("[ImageUpload] Formato detectado - Evolution:", hasEvolutionImage, "Whapi:", hasWhapiImage);
   console.log("[ImageUpload] Provider configurado:", configuredProvider);
   console.log("[ImageUpload] Message keys:", Object.keys(message || {}));
+  console.log("[ImageUpload] 📁 Pasta destino:", folder);
 
   // Detect content type from various formats
   const contentTypeHint = 
@@ -325,7 +343,7 @@ export async function processAndUploadImage(
 
   if (directBase64) {
     console.log("[ImageUpload] Base64 direto encontrado (Evolution)");
-    const url = await uploadBase64ToStorage(supabase, userId, directBase64, contentTypeHint);
+    const url = await uploadBase64ToStorage(supabase, userId, directBase64, contentTypeHint, folder);
     if (url) return url;
   }
 
@@ -335,7 +353,7 @@ export async function processAndUploadImage(
     const evoBase64 = await getBase64FromEvolution(webhook);
     if (evoBase64) {
       console.log("[ImageUpload] Evolution API retornou base64");
-      return uploadBase64ToStorage(supabase, userId, evoBase64, contentTypeHint);
+      return uploadBase64ToStorage(supabase, userId, evoBase64, contentTypeHint, folder);
     }
   }
 
@@ -346,13 +364,13 @@ export async function processAndUploadImage(
     
     if (whapiMedia?.url) {
       console.log("[ImageUpload] Whapi URL encontrada, fazendo download...");
-      const url = await downloadAndUpload(supabase, userId, whapiMedia.url, contentTypeHint);
+      const url = await downloadAndUploadWithFolder(supabase, userId, whapiMedia.url, contentTypeHint, folder);
       if (url) return url;
     }
     
     if (whapiMedia?.base64) {
       console.log("[ImageUpload] Whapi base64 encontrado, fazendo upload...");
-      return uploadBase64ToStorage(supabase, userId, whapiMedia.base64, contentTypeHint);
+      return uploadBase64ToStorage(supabase, userId, whapiMedia.base64, contentTypeHint, folder);
     }
   }
 
@@ -363,21 +381,62 @@ export async function processAndUploadImage(
     // Tentar Evolution
     const evoBase64 = await getBase64FromEvolution(webhook);
     if (evoBase64) {
-      return uploadBase64ToStorage(supabase, userId, evoBase64, contentTypeHint);
+      return uploadBase64ToStorage(supabase, userId, evoBase64, contentTypeHint, folder);
     }
     
     // Tentar Whapi
     const whapiMedia = await getMediaFromWhapi(message, webhook);
     if (whapiMedia?.url) {
-      return downloadAndUpload(supabase, userId, whapiMedia.url, contentTypeHint);
+      return downloadAndUploadWithFolder(supabase, userId, whapiMedia.url, contentTypeHint, folder);
     }
     if (whapiMedia?.base64) {
-      return uploadBase64ToStorage(supabase, userId, whapiMedia.base64, contentTypeHint);
+      return uploadBase64ToStorage(supabase, userId, whapiMedia.base64, contentTypeHint, folder);
     }
   }
 
   console.log("[ImageUpload] Nenhum método conseguiu obter a imagem");
   return null;
+}
+
+/**
+ * Download from URL and upload to storage WITH FOLDER SUPPORT
+ */
+async function downloadAndUploadWithFolder(
+  supabase: SupabaseClient,
+  userId: string,
+  url: string,
+  contentType: string,
+  folder: UploadFolder = 'whatsapp'
+): Promise<string | null> {
+  try {
+    console.log("[ImageUpload] Baixando de URL:", url.slice(0, 100));
+    const response = await fetch(url);
+    if (!response.ok) {
+      console.error("[ImageUpload] Erro ao baixar URL:", response.status);
+      return null;
+    }
+    
+    const buffer = await response.arrayBuffer();
+    const bytes = new Uint8Array(buffer);
+    console.log("[ImageUpload] Download OK, tamanho:", bytes.length, "pasta:", folder);
+    return uploadBytesToStorage(supabase, userId, bytes, contentType, folder);
+  } catch (e) {
+    console.error("[ImageUpload] Erro ao baixar de URL:", e);
+    return null;
+  }
+}
+
+/**
+ * Upload temporário (pasta whatsapp) para depois mover
+ * DEPRECATED: Use processAndUploadImage com folder diretamente
+ */
+export async function processAndUploadImageTemp(
+  supabase: SupabaseClient,
+  userId: string,
+  message: any,
+  webhook: any
+): Promise<string | null> {
+  return processAndUploadImage(supabase, userId, message, webhook, 'whatsapp');
 }
 
 /**
