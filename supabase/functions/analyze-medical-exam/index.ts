@@ -2036,7 +2036,7 @@ serve(async (req) => {
       throw new Error('OPENAI_API_KEY não configurada');
     }
 
-    const { imageData, storagePath, storagePaths, images: requestImages, examType, userId, documentId: docId, tmpPaths, title, storageBucket } = requestBody;
+    const { imageData, storagePath, storagePaths, images: requestImages, examType, userId, documentId: docId, tmpPaths, title, storageBucket, externalUrls } = requestBody;
     
     console.log('📋 Parâmetros extraídos:');
     console.log('  - userId:', userId);
@@ -2046,6 +2046,7 @@ serve(async (req) => {
     console.log('  - tmpPaths:', JSON.stringify(tmpPaths));
     console.log('  - storagePaths:', JSON.stringify(storagePaths));
     console.log('  - storageBucket:', storageBucket);
+    console.log('  - externalUrls:', externalUrls?.length || 0);
     
     userIdEffective = userId || null;
     let examTypeEffective: string | null = examType || null;
@@ -2054,9 +2055,9 @@ serve(async (req) => {
     const effectiveBucket = storageBucket || (tmpPaths && tmpPaths.length > 0 && tmpPaths[0]?.includes('whatsapp/') ? 'chat-images' : 'medical-documents');
     console.log('📂 Bucket de storage:', effectiveBucket);
     
-    // Validações após definir as variáveis - verificar se temos tmpPaths como alternativa
-    if (!docId && !tmpPaths) {
-      throw new Error('documentId ou tmpPaths é obrigatório');
+    // Validações após definir as variáveis - verificar se temos tmpPaths, externalUrls ou docId
+    if (!docId && !tmpPaths && !externalUrls) {
+      throw new Error('documentId, tmpPaths ou externalUrls é obrigatório');
     }
     
     if (!userIdEffective) {
@@ -2068,15 +2069,16 @@ serve(async (req) => {
       // Usar documento existente
       documentId = docId;
       console.log('✅ Usando documento existente:', documentId);
-    } else if (tmpPaths && tmpPaths.length > 0 && userIdEffective) {
+    } else if ((tmpPaths && tmpPaths.length > 0 || externalUrls && externalUrls.length > 0) && userIdEffective) {
       // Criar novo documento
       try {
+        const pathsForDoc = tmpPaths || externalUrls || [];
         documentId = await createDocument(
           supabase, 
           userIdEffective, 
           title || 'Exame Médico', 
           examTypeEffective || 'exame_laboratorial',
-          tmpPaths
+          pathsForDoc
         );
         console.log('✅ Novo documento criado:', documentId);
       } catch (createError: any) {
