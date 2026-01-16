@@ -149,6 +149,165 @@ async function tryYoloStandardDetect(imageUrl: string): Promise<{
   }
 }
 
+// 🎯 MODELO ADAPTATIVO: Seleciona modelo baseado na complexidade
+// - OCR simples: usa Flash (mais barato, mais rápido)  
+// - Interpretação complexa: usa Pro (mais preciso)
+const MEDICAL_MODELS = {
+  OCR: 'google/gemini-2.5-flash',      // Para extração de texto/números
+  INTERPRETATION: 'google/gemini-2.5-pro', // Para interpretação clínica
+  VERIFICATION: 'google/gemini-2.5-flash-lite' // Para votação de consenso
+};
+
+function getAdaptiveMedicalModel(task: 'ocr' | 'interpretation' | 'verification'): string {
+  switch (task) {
+    case 'ocr':
+      console.log(`🔍 Usando modelo FLASH para OCR`);
+      return MEDICAL_MODELS.OCR;
+    case 'verification':
+      console.log(`✅ Usando modelo LITE para verificação de consenso`);
+      return MEDICAL_MODELS.VERIFICATION;
+    case 'interpretation':
+    default:
+      console.log(`🎯 Usando modelo PRO para interpretação clínica`);
+      return MEDICAL_MODELS.INTERPRETATION;
+  }
+}
+
+// 🗳️ VOTAÇÃO DE CONSENSO: Verifica valores numéricos críticos com segunda chamada
+// Valores como glicose, hemoglobina, colesterol são críticos e erros de OCR podem ser perigosos
+const CRITICAL_NUMERIC_EXAMS = [
+  'glicose', 'glicemia', 'hemoglobina', 'hba1c', 'hemoglobina glicada',
+  'colesterol', 'ldl', 'hdl', 'triglicerideos', 'triglicérides',
+  'creatinina', 'ureia', 'tsh', 't4', 'insulina',
+  'ferro', 'ferritina', 'vitamina d', 'vitamina b12'
+];
+
+interface NumericValue {
+  name: string;
+  value: string;
+  unit: string;
+}
+
+interface VerifiedValue extends NumericValue {
+  verified: boolean;
+  confidence: number;
+  verifiedValue?: string;
+}
+
+async function verifyNumericValuesWithConsensus(
+  extractedValues: NumericValue[],
+  imageBase64: string,
+  mime: string
+): Promise<VerifiedValue[]> {
+  const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+  if (!LOVABLE_API_KEY) {
+    console.log('⚠️ LOVABLE_API_KEY não disponível para verificação');
+    return extractedValues.map(v => ({ ...v, verified: false, confidence: 0.5 }));
+  }
+
+  // Filtrar apenas valores críticos para verificação
+  const criticalValues = extractedValues.filter(v => 
+    CRITICAL_NUMERIC_EXAMS.some(exam => 
+      v.name.toLowerCase().includes(exam)
+    )
+  );
+
+  if (criticalValues.length === 0) {
+    console.log('✅ Nenhum valor crítico para verificar');
+    return extractedValues.map(v => ({ ...v, verified: true, confidence: 0.9 }));
+  }
+
+  console.log(`🗳️ Verificando ${criticalValues.length} valores críticos com consenso...`);
+
+  try {
+    const verificationPrompt = `TAREFA: Verificar APENAS os números destes exames na imagem.
+
+EXAMES PARA VERIFICAR:
+${criticalValues.map(v => `- ${v.name}: ${v.value} ${v.unit}`).join('\n')}
+
+INSTRUÇÕES:
+1. Olhe a imagem e encontre cada exame listado
+2. Confirme ou corrija o valor numérico
+3. Responda APENAS com JSON:
+
+{
+  "verificacoes": [
+    {"exame": "nome_exame", "valor_correto": "123.4", "confianca": 0.95}
+  ]
+}
+
+IMPORTANTE: Foque APENAS nos números, não nas interpretações.`;
+
+    const imageUrl = normalizeImageUrl(imageBase64, mime);
+
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: MEDICAL_MODELS.VERIFICATION,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'text', text: verificationPrompt },
+            { type: 'image_url', image_url: { url: imageUrl, detail: 'high' } }
+          ]
+        }],
+        max_tokens: 500,
+        temperature: 0.1
+      })
+    });
+
+    if (!response.ok) {
+      console.log(`⚠️ Verificação falhou: ${response.status}`);
+      return extractedValues.map(v => ({ ...v, verified: false, confidence: 0.6 }));
+    }
+
+    const data = await response.json();
+    const content = data.choices?.[0]?.message?.content || '';
+    
+    // Parsear resposta
+    let verifications: Array<{exame: string; valor_correto: string; confianca: number}> = [];
+    try {
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        verifications = parsed.verificacoes || [];
+      }
+    } catch {
+      console.log('⚠️ Não foi possível parsear verificações');
+    }
+
+    // Mapear resultados
+    return extractedValues.map(v => {
+      const verification = verifications.find(ver => 
+        v.name.toLowerCase().includes(ver.exame.toLowerCase()) ||
+        ver.exame.toLowerCase().includes(v.name.toLowerCase())
+      );
+
+      if (verification) {
+        const matches = v.value.replace(',', '.') === verification.valor_correto.replace(',', '.');
+        console.log(`   ${v.name}: ${v.value} → ${verification.valor_correto} (${matches ? '✅' : '⚠️'})`);
+        
+        return {
+          ...v,
+          verified: matches,
+          confidence: verification.confianca,
+          verifiedValue: matches ? v.value : verification.valor_correto
+        };
+      }
+
+      return { ...v, verified: true, confidence: 0.8 };
+    });
+
+  } catch (error) {
+    console.error('❌ Erro na verificação de consenso:', error);
+    return extractedValues.map(v => ({ ...v, verified: false, confidence: 0.5 }));
+  }
+}
+
 // 🔧 FUNÇÃO UTILITÁRIA: Normalizar URL de imagem para evitar duplicação de prefixo
 function normalizeImageUrl(imgData: string, mime: string): string {
   // Se já começa com 'data:', usar como está
@@ -3057,6 +3216,52 @@ Por favor, analise as imagens dos exames médicos e extraia todos os valores enc
 
     // Dados estruturados extraídos pelo GPT
     const parsed = extracted || {};
+
+    // 🗳️ VOTAÇÃO DE CONSENSO: Verificar valores numéricos críticos
+    if (parsed.sections && Array.isArray(parsed.sections) && parsed.sections.length > 0) {
+      console.log('🗳️ Iniciando verificação de consenso para valores críticos...');
+      
+      for (const section of parsed.sections) {
+        if (section.metrics && Array.isArray(section.metrics)) {
+          // Extrair valores para verificação
+          const numericValues: NumericValue[] = section.metrics
+            .filter((m: any) => m.value && m.name)
+            .map((m: any) => ({
+              name: m.name,
+              value: String(m.value),
+              unit: m.unit || ''
+            }));
+          
+          if (numericValues.length > 0 && imagesLimited.length > 0) {
+            try {
+              const verifiedValues = await verifyNumericValuesWithConsensus(
+                numericValues,
+                imagesLimited[0].data,
+                imagesLimited[0].mime
+              );
+              
+              // Atualizar métricas com valores verificados
+              for (const verified of verifiedValues) {
+                const metric = section.metrics.find((m: any) => 
+                  m.name.toLowerCase() === verified.name.toLowerCase()
+                );
+                if (metric && verified.verifiedValue && !verified.verified) {
+                  console.log(`⚠️ Corrigindo ${metric.name}: ${metric.value} → ${verified.verifiedValue}`);
+                  metric.value = verified.verifiedValue;
+                  metric.consensus_verified = true;
+                  metric.original_value = verified.value;
+                }
+                if (metric) {
+                  metric.verification_confidence = verified.confidence;
+                }
+              }
+            } catch (verifyError) {
+              console.log('⚠️ Verificação de consenso falhou, mantendo valores originais');
+            }
+          }
+        }
+      }
+    }
     
     // Nome do paciente SEMPRE extraído da imagem pelo GPT com fallbacks mais robustos
     let patientName = 'Paciente';
