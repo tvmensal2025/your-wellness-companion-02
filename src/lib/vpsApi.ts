@@ -445,15 +445,28 @@ export async function sendBroadcast(
 
 /**
  * Verificar status do backend VPS
+ * Retorna dados mesmo quando status é "degraded" (alguns serviços offline)
  */
 export async function checkVPSHealth() {
-  return vpsProxyRequest<{
-    status: string;
-    timestamp: string;
-    uptime: number;
-    checks: Record<string, { status: string; error?: string }>;
-    memory?: { rss: number; heapUsed: number };
-  }>('/health/detailed');
+  const { data, error } = await supabase.functions.invoke('vps-proxy', {
+    body: {
+      endpoint: '/health/detailed',
+      method: 'GET',
+    },
+  });
+
+  if (error) {
+    throw new Error(error.message || 'Erro ao verificar VPS');
+  }
+
+  return {
+    status: data?.status || 'unknown',
+    timestamp: data?.timestamp,
+    uptime: data?.uptime,
+    checks: data?.checks || {},
+    memory: data?.memory,
+    httpStatus: data?.httpStatus,
+  };
 }
 
 /**
