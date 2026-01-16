@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
+import { checkVPSHealth, isVPSConfigured } from '@/lib/vpsApi';
 import { 
   Brain, 
   DollarSign, 
@@ -15,7 +16,12 @@ import {
   Clock,
   CheckCircle,
   XCircle,
-  Sparkles
+  Sparkles,
+  HardDrive,
+  Image,
+  Server,
+  Database,
+  Cpu
 } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, Legend, BarChart, Bar, CartesianGrid } from 'recharts';
 import { format, subDays, startOfDay, endOfDay } from 'date-fns';
@@ -79,8 +85,20 @@ export function AICostDashboard() {
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState('7');
   const [selectedTab, setSelectedTab] = useState('overview');
+  
+  // VPS/Infrastructure stats
+  const [vpsStats, setVpsStats] = useState<{
+    status: string;
+    uptime: number;
+    memory: { rss: number; heapUsed: number };
+    storageUploads: number;
+    storageSizeBytes: number;
+    yoloCalls: number;
+    yoloSavings: number;
+  } | null>(null);
+  const [vpsLoading, setVpsLoading] = useState(false);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
     try {
       const days = parseInt(period);
@@ -184,11 +202,51 @@ export function AICostDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [period]);
 
   useEffect(() => {
     fetchData();
-  }, [period]);
+  }, [fetchData]);
+
+  // Fetch VPS stats
+  const fetchVPSStats = useCallback(async () => {
+    if (!isVPSConfigured()) return;
+    
+    setVpsLoading(true);
+    try {
+      const health = await checkVPSHealth();
+      
+      // Count YOLO calls from logs
+      const yoloCalls = logs.filter(l => l.provider?.toLowerCase() === 'yolo').length;
+      // Estimate savings: YOLO is free, Gemini Vision would cost ~$0.0025 per image
+      const yoloSavings = yoloCalls * 0.0025;
+      
+      // Count storage uploads from logs (approximate)
+      const storageUploads = logs.filter(l => 
+        l.method?.includes('upload') || l.functionality?.includes('storage')
+      ).length;
+      
+      setVpsStats({
+        status: health.status,
+        uptime: health.uptime,
+        memory: health.memory || { rss: 0, heapUsed: 0 },
+        storageUploads,
+        storageSizeBytes: 0, // Would need MinIO API to get actual size
+        yoloCalls,
+        yoloSavings,
+      });
+    } catch (error) {
+      console.error('Error fetching VPS stats:', error);
+    } finally {
+      setVpsLoading(false);
+    }
+  }, [logs]);
+
+  useEffect(() => {
+    if (logs.length > 0) {
+      fetchVPSStats();
+    }
+  }, [logs, fetchVPSStats]);
 
   // Calculate totals
   const totals = {
@@ -306,9 +364,10 @@ export function AICostDashboard() {
 
       {/* Tabs */}
       <Tabs value={selectedTab} onValueChange={setSelectedTab}>
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="overview">Visão Geral</TabsTrigger>
           <TabsTrigger value="providers">Por Provedor</TabsTrigger>
+          <TabsTrigger value="infrastructure">Infraestrutura</TabsTrigger>
           <TabsTrigger value="logs">Logs Detalhados</TabsTrigger>
         </TabsList>
 
@@ -459,6 +518,208 @@ export function AICostDashboard() {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="infrastructure" className="space-y-4">
+          {/* VPS Status */}
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2">
+                  <Server className="h-4 w-4 text-green-500" />
+                  <span className="text-sm text-muted-foreground">VPS Backend</span>
+                </div>
+                <div className="flex items-center gap-2 mt-2">
+                  {vpsStats?.status === 'ok' ? (
+                    <>
+                      <CheckCircle className="h-5 w-5 text-green-500" />
+                      <span className="text-lg font-bold text-green-600">Online</span>
+                    </>
+                  ) : (
+                    <>
+                      <XCircle className="h-5 w-5 text-red-500" />
+                      <span className="text-lg font-bold text-red-600">Offline</span>
+                    </>
+                  )}
+                </div>
+                {vpsStats?.uptime && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Uptime: {Math.floor(vpsStats.uptime / 3600)}h {Math.floor((vpsStats.uptime % 3600) / 60)}m
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2">
+                  <HardDrive className="h-4 w-4 text-blue-500" />
+                  <span className="text-sm text-muted-foreground">MinIO Storage</span>
+                </div>
+                <p className="text-2xl font-bold mt-2">{vpsStats?.storageUploads || 0}</p>
+                <p className="text-xs text-muted-foreground">Uploads no período</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2">
+                  <Image className="h-4 w-4 text-yellow-500" />
+                  <span className="text-sm text-muted-foreground">YOLO Detecções</span>
+                </div>
+                <p className="text-2xl font-bold mt-2">{vpsStats?.yoloCalls || 0}</p>
+                <p className="text-xs text-muted-foreground">Imagens processadas</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2">
+                  <TrendingDown className="h-4 w-4 text-emerald-500" />
+                  <span className="text-sm text-muted-foreground">Economia YOLO</span>
+                </div>
+                <p className="text-2xl font-bold mt-2 text-emerald-600">
+                  ${vpsStats?.yoloSavings?.toFixed(2) || '0.00'}
+                </p>
+                <p className="text-xs text-muted-foreground">vs Gemini Vision</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Infrastructure Details */}
+          <div className="grid md:grid-cols-2 gap-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Database className="h-5 w-5" />
+                  Serviços VPS
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-green-100 rounded-lg">
+                      <Server className="h-4 w-4 text-green-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium">Media API</p>
+                      <p className="text-xs text-muted-foreground">Express + MinIO</p>
+                    </div>
+                  </div>
+                  <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                    Ativo
+                  </Badge>
+                </div>
+
+                <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-blue-100 rounded-lg">
+                      <HardDrive className="h-4 w-4 text-blue-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium">MinIO Storage</p>
+                      <p className="text-xs text-muted-foreground">Bucket: images</p>
+                    </div>
+                  </div>
+                  <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                    Ativo
+                  </Badge>
+                </div>
+
+                <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-yellow-100 rounded-lg">
+                      <Cpu className="h-4 w-4 text-yellow-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium">YOLO Detection</p>
+                      <p className="text-xs text-muted-foreground">Detecção de objetos</p>
+                    </div>
+                  </div>
+                  <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                    Ativo
+                  </Badge>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <TrendingDown className="h-5 w-5" />
+                  Economia Total
+                </CardTitle>
+                <CardDescription>
+                  Comparação com serviços pagos equivalentes
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="p-4 bg-emerald-50 dark:bg-emerald-950/30 rounded-lg border border-emerald-200 dark:border-emerald-800">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium">YOLO vs Gemini Vision</span>
+                    <Badge className="bg-emerald-600">Gratuito</Badge>
+                  </div>
+                  <p className="text-3xl font-bold text-emerald-600">
+                    ${vpsStats?.yoloSavings?.toFixed(2) || '0.00'}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {vpsStats?.yoloCalls || 0} detecções × $0.0025/imagem
+                  </p>
+                </div>
+
+                <div className="p-4 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium">MinIO vs Supabase Storage</span>
+                    <Badge className="bg-blue-600">Gratuito</Badge>
+                  </div>
+                  <p className="text-3xl font-bold text-blue-600">
+                    ${((vpsStats?.storageUploads || 0) * 0.001).toFixed(2)}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {vpsStats?.storageUploads || 0} uploads × $0.001/upload
+                  </p>
+                </div>
+
+                <div className="p-4 bg-purple-50 dark:bg-purple-950/30 rounded-lg border border-purple-200 dark:border-purple-800">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium">Ollama vs OpenAI</span>
+                    <Badge className="bg-purple-600">Gratuito</Badge>
+                  </div>
+                  <p className="text-3xl font-bold text-purple-600">
+                    ${(providerStats.find(p => p.name.includes('Ollama'))?.calls || 0) * 0.002}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {providerStats.find(p => p.name.includes('Ollama'))?.calls || 0} chamadas × $0.002/chamada
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Memory Usage */}
+          {vpsStats?.memory && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Uso de Memória VPS</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-muted-foreground">RSS (Total)</p>
+                    <p className="text-xl font-bold">
+                      {(vpsStats.memory.rss / 1024 / 1024).toFixed(1)} MB
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">Heap Usado</p>
+                    <p className="text-xl font-bold">
+                      {(vpsStats.memory.heapUsed / 1024 / 1024).toFixed(1)} MB
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
 
         <TabsContent value="logs">
