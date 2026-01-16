@@ -82,7 +82,7 @@ export default function HealthFeedPage() {
   const { groupedStories, createStory, viewStory, deleteStory } = useStories();
   const { toggleFollow, isFollowing } = useFollow();
   const { totalUnread } = useDirectMessages();
-  const { unreadCount: notificationCount, createNotification } = useNotifications();
+  const { unreadCount: notificationCount } = useNotifications();
   const { stats: userProgressStats } = useUserProgressStats(user?.id || null);
 
   // Fetch total weight lost by community
