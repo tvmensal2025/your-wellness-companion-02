@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { uploadToVPS } from '@/lib/vpsApi';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -180,22 +181,13 @@ Agora posso falar com você! 🎤 Use o microfone para conversar ou digite suas 
       let data, error;
 
       if (selectedImage) {
-        // Primeiro, fazer upload da imagem para storage
-        const fileName = `${Date.now()}-${selectedImage.name.replace(/[^a-zA-Z0-9.]/g, '-')}`;
-        const { data: uploadData, error: uploadError } = await supabase.storage
-          .from('chat-images')
-          .upload(fileName, selectedImage);
-        
-        if (uploadError) throw uploadError;
-        
-        const { data: urlData } = supabase.storage
-          .from('chat-images')
-          .getPublicUrl(fileName);
+        // Upload para MinIO via VPS
+        const uploadResult = await uploadToVPS(selectedImage, 'chat-images');
         
         // Chamar análise via supabase.functions.invoke
         const result = await supabase.functions.invoke('sofia-image-analysis', {
           body: {
-            imageUrl: urlData.publicUrl,
+            imageUrl: uploadResult.url,
             userId: user.id,
             userContext: {
               currentMeal: 'refeicao',
@@ -276,21 +268,9 @@ Agora posso falar com você! 🎤 Use o microfone para conversar ou digite suas 
 
   const handleImageUpload = async (file: File): Promise<string | null> => {
     try {
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${user?.id}/${Date.now()}.${fileExt}`;
-      const filePath = `sofia-images/${fileName}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('chat-images')
-        .upload(filePath, file);
-
-      if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('chat-images')
-        .getPublicUrl(filePath);
-
-      return publicUrl;
+      // Upload para MinIO via VPS
+      const result = await uploadToVPS(file, 'chat-images');
+      return result.url;
     } catch (error) {
       console.error('Erro no upload:', error);
       toast.error('Erro ao fazer upload da imagem');

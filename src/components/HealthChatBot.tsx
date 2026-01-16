@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
+import { uploadToVPS } from '@/lib/vpsApi';
 import { useAuth } from '@/hooks/useAuth';
 import { useAnamnesisStatus } from '@/hooks/useAnamnesisStatus';
 import { useSofiaPersonalizationContext } from '@/hooks/useAnamnesisContext';
@@ -374,26 +375,9 @@ Clique no botão abaixo para começar! ⬇️`,
     setIsLoading(true);
 
     try {
-      // Upload da imagem - normalizando o nome do arquivo para evitar erros de chave inválida
-      const originalName = file.name || 'imagem.png';
-      const safeBaseName = originalName
-        .normalize('NFD') // remove acentos
-        .replace(/[^a-zA-Z0-9.]+/g, '-') // troca espaços e caracteres especiais por '-'
-        .replace(/-+/g, '-') // compacta múltiplos '-'
-        .toLowerCase();
-      const fileName = `${Date.now()}-${safeBaseName}`;
-
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('chat-images')
-        .upload(fileName, file);
-
-      if (uploadError) throw uploadError;
-
-      const { data: urlData } = supabase.storage
-        .from('chat-images')
-        .getPublicUrl(fileName);
-
-      const imageUrl = urlData.publicUrl;
+      // Upload para MinIO via VPS
+      const uploadResult = await uploadToVPS(file, 'chat-images');
+      const imageUrl = uploadResult.url;
 
       // Adicionar mensagem do usuário
       const userMessage: Message = {

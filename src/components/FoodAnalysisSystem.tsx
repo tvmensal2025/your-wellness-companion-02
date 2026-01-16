@@ -31,6 +31,7 @@ import {
   Activity
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { uploadToVPS } from '@/lib/vpsApi';
 import { getCharacterImageUrl } from '@/lib/character-images';
 import { useFoodAnalysis } from '@/hooks/useFoodAnalysis';
 import { foodDatabase, searchFood, getFoodsByCategory, getCategories } from '@/data/food-database';
@@ -317,25 +318,13 @@ export const FoodAnalysisSystem: React.FC = () => {
     setIsAnalyzing(true);
     
     try {
-      // 1. Upload da imagem para o Supabase Storage
-      const fileName = `food-analysis/${Date.now()}-${file.name}`;
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('chat-images')
-        .upload(fileName, file);
-
-      if (uploadError) {
-        console.error('Erro no upload:', uploadError);
-        throw new Error('Erro ao fazer upload da imagem');
-      }
-
-      // 2. Obter URL pública da imagem
-      const { data: { publicUrl } } = supabase.storage
-        .from('chat-images')
-        .getPublicUrl(fileName);
+      // 1. Upload para MinIO via VPS
+      const uploadResult = await uploadToVPS(file, 'food-analysis');
+      const publicUrl = uploadResult.url;
 
       console.log('📸 Imagem enviada:', publicUrl);
 
-      // 3. Chamar função de análise da SOFIA
+      // 2. Chamar função de análise da SOFIA
       console.log('🔍 Chamando sofia-image-analysis...');
       const { data: analysisData, error: analysisError } = await supabase.functions.invoke('sofia-image-analysis', {
         body: {

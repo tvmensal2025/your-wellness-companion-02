@@ -3,6 +3,7 @@ import { Camera, X, Check, Loader2, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
+import { uploadToVPS } from '@/lib/vpsApi';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -42,26 +43,9 @@ const QuickPhotoCapture: React.FC<QuickPhotoCaptureProps> = ({ isOpen, onClose, 
     setIsAnalyzing(true);
     
     try {
-      // Normalizar nome do arquivo
-      const safeBaseName = file.name
-        .normalize('NFD')
-        .replace(/[^a-zA-Z0-9.]+/g, '-')
-        .replace(/-+/g, '-')
-        .toLowerCase();
-      const fileName = `quick-${Date.now()}-${safeBaseName}`;
-
-      // Upload
-      const { error: uploadError } = await supabase.storage
-        .from('chat-images')
-        .upload(fileName, file);
-
-      if (uploadError) throw uploadError;
-
-      const { data: urlData } = supabase.storage
-        .from('chat-images')
-        .getPublicUrl(fileName);
-
-      const imageUrl = urlData.publicUrl;
+      // Upload para MinIO via VPS
+      const uploadResult = await uploadToVPS(file, 'food-analysis');
+      const imageUrl = uploadResult.url;
 
       // Análise via Sofia
       const { data, error } = await supabase.functions.invoke('sofia-image-analysis', {

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { uploadToVPS } from '@/lib/vpsApi';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -97,27 +98,14 @@ export const ExerciseManagement = () => {
   const handleMediaUpload = async (file: File, type: 'video' | 'image') => {
     try {
       setUploadingMedia(true);
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-      const filePath = `${fileName}`;
 
-      const { error: uploadError, data } = await supabase.storage
-        .from('exercise-media')
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: false,
-        });
-
-      if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('exercise-media')
-        .getPublicUrl(filePath);
+      // Upload para MinIO via VPS
+      const result = await uploadToVPS(file, 'exercise-media');
 
       if (type === 'video') {
-        setFormData(prev => ({ ...prev, video_url: publicUrl }));
+        setFormData(prev => ({ ...prev, video_url: result.url }));
       } else {
-        setFormData(prev => ({ ...prev, image_url: publicUrl }));
+        setFormData(prev => ({ ...prev, image_url: result.url }));
       }
 
       toast({
