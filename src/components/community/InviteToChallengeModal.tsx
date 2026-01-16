@@ -98,21 +98,8 @@ export function InviteToChallengeModal({
 
   const fetchSentInvites = async () => {
     if (!user) return;
-
-    try {
-      const { data, error } = await supabase
-        .from('challenge_invites')
-        .select('challenge_id')
-        .eq('inviter_id', user.id)
-        .eq('invitee_id', inviteeId)
-        .eq('status', 'pending');
-
-      if (error) throw error;
-
-      setSentInvites(new Set(data?.map(i => i.challenge_id) || []));
-    } catch (err) {
-      console.error('Error fetching sent invites:', err);
-    }
+    // Invites table was removed - feature disabled
+    setSentInvites(new Set());
   };
 
   const handleInvite = async (challenge: Challenge) => {
@@ -120,33 +107,7 @@ export function InviteToChallengeModal({
 
     setSending(challenge.id);
     try {
-      // Check if already invited
-      const { data: existing } = await supabase
-        .from('challenge_invites')
-        .select('id')
-        .eq('challenge_id', challenge.id)
-        .eq('inviter_id', user.id)
-        .eq('invitee_id', inviteeId)
-        .single();
-
-      if (existing) {
-        toast.info('Você já convidou esta pessoa para este desafio');
-        return;
-      }
-
-      // Create invite
-      const { error } = await supabase
-        .from('challenge_invites')
-        .insert({
-          challenge_id: challenge.id,
-          inviter_id: user.id,
-          invitee_id: inviteeId,
-          status: 'pending'
-        });
-
-      if (error) throw error;
-
-      // Create notification for invitee
+      // Create notification for invitee (invites table was removed)
       await createNotification(
         inviteeId,
         'Convite para Desafio! 🎯',

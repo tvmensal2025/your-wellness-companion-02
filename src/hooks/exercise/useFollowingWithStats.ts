@@ -118,9 +118,9 @@ export function useFollowingWithStats(userId?: string) {
         return [];
       }
 
-      // 3. Buscar pontos de exercício
+      // 3. Buscar pontos de user_points (exercise_gamification_points was removed)
       const { data: points } = await supabase
-        .from('exercise_gamification_points')
+        .from('user_points')
         .select('user_id, weekly_points, total_points, current_streak')
         .in('user_id', followingIds);
 

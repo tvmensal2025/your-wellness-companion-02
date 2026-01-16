@@ -39,29 +39,25 @@ export const SofiaInteractiveAnalysis: React.FC<SofiaInteractiveAnalysisProps> =
     setStep('confirmed');
 
     try {
-      // Salvar análise confirmada no banco
+      // Salvar análise confirmada no banco (sofia_food_analysis)
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
       await supabase
-        .from('food_analysis')
+        .from('sofia_food_analysis')
         .insert([{
           user_id: user.id,
           meal_type: 'refeicao',
           image_url: imageUrl,
-          food_items: foods,
-          nutrition_analysis: {
-            calorias: analysisData.calorias,
+          analysis_result: {
+            alimentos: foods,
+            calorias_totais: analysisData.calorias,
             proteinas: analysisData.proteinas,
             carboidratos: analysisData.carboidratos,
-            gorduras: analysisData.gorduras
+            gorduras: analysisData.gorduras,
+            mensagem: analysisData.comentario
           },
-          sofia_analysis: {
-            mensagem: analysisData.comentario,
-            timestamp: new Date().toISOString(),
-            imagem_confirmada: true
-          },
-          analysis_text: 'Análise confirmada pelo usuário'
+          confirmed_by_user: true
         }]);
 
       // Salvar na conversa do chat

@@ -95,45 +95,8 @@ export function useFeedPosts() {
         userReactions = new Set(reactionsData?.map(r => r.post_id) || []);
       }
 
-      // Get comments for all posts
-      const postIds = postsData.map(p => p.id);
-      const { data: commentsData } = await supabase
-        .from('health_feed_comments')
-        .select('*')
-        .in('post_id', postIds)
-        .order('created_at', { ascending: true });
-
-      // Get profiles for comment authors
-      const commentUserIds = [...new Set(commentsData?.map(c => c.user_id) || [])];
-      const { data: commentProfilesData } = await supabase
-        .from('profiles')
-        .select('user_id, full_name, avatar_url')
-        .in('user_id', commentUserIds);
-
-      const commentProfilesMap = new Map(
-        commentProfilesData?.map(p => [p.user_id, p]) || []
-      );
-
-      // Map comments with user info
+      // health_feed_comments table was removed - skip comments fetch
       const commentsMap = new Map<string, FeedComment[]>();
-      commentsData?.forEach(comment => {
-        const profile = commentProfilesMap.get(comment.user_id);
-        const mappedComment: FeedComment = {
-          id: comment.id,
-          post_id: comment.post_id,
-          user_id: comment.user_id,
-          content: comment.comment_text || '',
-          parent_comment_id: comment.parent_comment_id,
-          created_at: comment.created_at,
-          user_name: profile?.full_name || 'Usuário',
-          user_avatar: profile?.avatar_url || undefined
-        };
-        
-        if (!commentsMap.has(comment.post_id)) {
-          commentsMap.set(comment.post_id, []);
-        }
-        commentsMap.get(comment.post_id)!.push(mappedComment);
-      });
 
       // Map posts with all info
       const enrichedPosts: FeedPost[] = postsData.map(post => {
@@ -312,52 +275,11 @@ export function useFeedPosts() {
     }
   };
 
-  // Add a comment to a post
-  const addComment = async (postId: string, content: string) => {
-    if (!user) {
-      toast.error('Você precisa estar logado para comentar');
-      return null;
-    }
-
-    try {
-      const { data, error } = await supabase
-        .from('health_feed_comments')
-        .insert({
-          post_id: postId,
-          user_id: user.id,
-          comment_text: content
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      // Get user profile
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('full_name, avatar_url')
-        .eq('user_id', user.id)
-        .single();
-
-      const newComment: FeedComment = {
-        id: data.id,
-        post_id: data.post_id,
-        user_id: data.user_id,
-        content: data.comment_text || '',
-        parent_comment_id: data.parent_comment_id,
-        created_at: data.created_at,
-        user_name: profile?.full_name || 'Você',
-        user_avatar: profile?.avatar_url || undefined
-      };
-
-      // Update local state
-      setPosts(prev => prev.map(p => 
-        p.id === postId 
-          ? { 
-              ...p, 
-              comments_count: p.comments_count + 1,
-              comments: [...(p.comments || []), newComment]
-            } 
+  // Add a comment to a post - health_feed_comments table was removed
+  const addComment = async (_postId: string, _content: string) => {
+    console.log('Comments feature is temporarily disabled');
+    return null;
+  };
           : p
       ));
 

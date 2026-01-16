@@ -42,25 +42,11 @@ export const PollComponent: React.FC<PollComponentProps> = ({
   
   const totalVotes = localPoll.options.reduce((sum, opt) => sum + opt.votes, 0);
   
-  // Check if user already voted
+  // Check if user already voted - poll votes table was removed
   useEffect(() => {
-    const checkVote = async () => {
-      if (!user) return;
-      
-      const { data } = await supabase
-        .from('health_feed_poll_votes')
-        .select('option_index')
-        .eq('poll_id', poll.id)
-        .eq('user_id', user.id)
-        .maybeSingle();
-      
-      if (data) {
-        setSelectedOption(data.option_index);
-        setHasVoted(true);
-      }
-    };
-    
-    checkVote();
+    // Poll votes table no longer exists - reset state
+    setSelectedOption(null);
+    setHasVoted(false);
   }, [poll.id, user]);
 
   // Check if poll has ended
@@ -97,18 +83,7 @@ export const PollComponent: React.FC<PollComponentProps> = ({
     setIsVoting(true);
     
     try {
-      // Record vote
-      const { error: voteError } = await supabase
-        .from('health_feed_poll_votes')
-        .insert({
-          poll_id: poll.id,
-          user_id: user.id,
-          option_index: optionIndex
-        });
-      
-      if (voteError) throw voteError;
-      
-      // Update local state optimistically
+      // Poll votes table was removed - just update local state
       const newOptions = [...localPoll.options];
       newOptions[optionIndex] = {
         ...newOptions[optionIndex],
@@ -119,22 +94,11 @@ export const PollComponent: React.FC<PollComponentProps> = ({
       setSelectedOption(optionIndex);
       setHasVoted(true);
       
-      // Update poll in database
-      await supabase
-        .from('health_feed_polls')
-        .update({ options: newOptions as unknown as Json })
-        .eq('id', poll.id);
-      
       onVote?.();
       toast.success('Voto registrado!');
     } catch (err: any) {
       console.error('Error voting:', err);
-      if (err.message?.includes('duplicate')) {
-        setHasVoted(true);
-        toast.info('Você já votou nesta enquete');
-      } else {
-        toast.error('Erro ao votar');
-      }
+      toast.error('Erro ao votar');
     } finally {
       setIsVoting(false);
     }
