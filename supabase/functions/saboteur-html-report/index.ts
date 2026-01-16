@@ -122,7 +122,7 @@ Deno.serve(async (req) => {
 
     // Fetch physical data
     const { data: physicalData } = await supabase
-      .from("dados_físicos_do_usuário")
+      .from("user_physical_data")
       .select("altura_cm, peso_atual_kg, sexo, data_nascimento, created_at")
       .eq("user_id", userId)
       .order("created_at", { ascending: false })

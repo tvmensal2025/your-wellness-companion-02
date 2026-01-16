@@ -28,6 +28,7 @@ import {
   LucideIcon
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { fromTable } from '@/lib/supabase-helpers';
 import { useToast } from '@/hooks/use-toast';
 
 interface TestResult {
@@ -242,9 +243,8 @@ const PlatformAudit: React.FC = () => {
       functionality: 'Rastreamento de Sono',
       icon: Activity,
       test: async (): Promise<TestResult> => {
-        const { data, error } = await supabase
-          .from('sleep_monitoring')
-          .select('*');
+        const { data, error } = await fromTable('sleep_tracking')
+          .select('*') as any;
         
         if (error) throw error;
         const records = data as Record<string, unknown>[] | null;
@@ -260,9 +260,8 @@ const PlatformAudit: React.FC = () => {
       functionality: 'Rastreamento de Humor',
       icon: Heart,
       test: async (): Promise<TestResult> => {
-        const { data, error } = await supabase
-          .from('mood_monitoring')
-          .select('*');
+        const { data, error } = await fromTable('mood_tracking')
+          .select('*') as any;
         
         if (error) throw error;
         const records = data as Record<string, unknown>[] | null;
@@ -278,16 +277,17 @@ const PlatformAudit: React.FC = () => {
       functionality: 'Sistema de Sabotadores',
       icon: Brain,
       test: async (): Promise<TestResult> => {
+        // Sabotadores são gerenciados via daily_responses section="saboteurs_results"
         const { data, error } = await supabase
-          .from('custom_saboteurs')
+          .from('daily_responses')
           .select('*')
-          .eq('is_active', true);
+          .eq('section', 'saboteurs_results');
         
         if (error) throw error;
         const records = data as Record<string, unknown>[] | null;
         return {
           dataRecords: records?.length || 0,
-          lastUpdate: records?.[0]?.updated_at as string | undefined,
+          lastUpdate: records?.[0]?.created_at as string | undefined,
           suggestions: []
         };
       }

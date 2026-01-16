@@ -27,7 +27,7 @@ const SimpleWeightForm: React.FC<SimpleWeightFormProps> = ({ onSubmit }) => {
       if (!user) return;
 
       const { data } = await supabase
-        .from('dados_físicos_do_usuário')
+        .from('user_physical_data')
         .select('altura_cm')
         .eq('user_id', user.id)
         .maybeSingle();
