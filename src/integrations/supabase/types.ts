@@ -371,7 +371,9 @@ export type Database = {
       analysis_cache: {
         Row: {
           analysis_type: string
+          cache_key: string | null
           created_at: string | null
+          expires_at: string | null
           hits: number | null
           id: string
           image_hash: string
@@ -383,7 +385,9 @@ export type Database = {
         }
         Insert: {
           analysis_type: string
+          cache_key?: string | null
           created_at?: string | null
+          expires_at?: string | null
           hits?: number | null
           id?: string
           image_hash: string
@@ -395,7 +399,9 @@ export type Database = {
         }
         Update: {
           analysis_type?: string
+          cache_key?: string | null
           created_at?: string | null
+          expires_at?: string | null
           hits?: number | null
           id?: string
           image_hash?: string
@@ -404,6 +410,66 @@ export type Database = {
           processing_time_ms?: number | null
           result?: Json
           yolo_confidence?: number | null
+        }
+        Relationships: []
+      }
+      analysis_jobs: {
+        Row: {
+          actual_duration_seconds: number | null
+          attempts: number | null
+          completed_at: string | null
+          created_at: string | null
+          error_message: string | null
+          estimated_duration_seconds: number | null
+          id: string
+          input_data: Json
+          job_type: string
+          max_attempts: number | null
+          priority: number | null
+          result: Json | null
+          started_at: string | null
+          status: string
+          updated_at: string | null
+          user_id: string
+          worker_id: string | null
+        }
+        Insert: {
+          actual_duration_seconds?: number | null
+          attempts?: number | null
+          completed_at?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          estimated_duration_seconds?: number | null
+          id?: string
+          input_data?: Json
+          job_type: string
+          max_attempts?: number | null
+          priority?: number | null
+          result?: Json | null
+          started_at?: string | null
+          status?: string
+          updated_at?: string | null
+          user_id: string
+          worker_id?: string | null
+        }
+        Update: {
+          actual_duration_seconds?: number | null
+          attempts?: number | null
+          completed_at?: string | null
+          created_at?: string | null
+          error_message?: string | null
+          estimated_duration_seconds?: number | null
+          id?: string
+          input_data?: Json
+          job_type?: string
+          max_attempts?: number | null
+          priority?: number | null
+          result?: Json | null
+          started_at?: string | null
+          status?: string
+          updated_at?: string | null
+          user_id?: string
+          worker_id?: string | null
         }
         Relationships: []
       }
@@ -2069,6 +2135,47 @@ export type Database = {
           storage_path?: string
         }
         Relationships: []
+      }
+      job_queue: {
+        Row: {
+          created_at: string | null
+          id: string
+          job_id: string
+          lock_expires_at: string | null
+          locked_at: string | null
+          locked_by: string | null
+          priority: number
+          scheduled_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          job_id: string
+          lock_expires_at?: string | null
+          locked_at?: string | null
+          locked_by?: string | null
+          priority?: number
+          scheduled_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          job_id?: string
+          lock_expires_at?: string | null
+          locked_at?: string | null
+          locked_by?: string | null
+          priority?: number
+          scheduled_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_queue_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: true
+            referencedRelation: "analysis_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       lessons: {
         Row: {
@@ -6428,6 +6535,10 @@ export type Database = {
         Args: { p_challenge_id: string }
         Returns: Json
       }
+      complete_job: {
+        Args: { p_job_id: string; p_result: Json }
+        Returns: boolean
+      }
       complete_session_cycle: {
         Args: { p_session_id: string; p_user_id: string }
         Returns: Json
@@ -6435,6 +6546,18 @@ export type Database = {
       consolidate_daily_health_snapshot: {
         Args: { p_date?: string; p_user_id: string }
         Returns: string
+      }
+      enqueue_job: {
+        Args: { p_job_id: string; p_priority?: number; p_scheduled_at?: string }
+        Returns: string
+      }
+      fail_job: {
+        Args: {
+          p_error_message: string
+          p_job_id: string
+          p_should_retry?: boolean
+        }
+        Returns: boolean
       }
       finalize_duel: { Args: { p_duel_id: string }; Returns: Json }
       finalize_team_battle: { Args: { p_battle_id: string }; Returns: Json }
@@ -6456,6 +6579,16 @@ export type Database = {
           total_calls: number
           total_cost: number
           yolo_savings: number
+        }[]
+      }
+      get_next_job: {
+        Args: { p_lock_duration?: unknown; p_worker_id: string }
+        Returns: {
+          attempts: number
+          input_data: Json
+          job_id: string
+          job_type: string
+          priority: number
         }[]
       }
       has_role: { Args: { _role: string; _user_id: string }; Returns: boolean }
