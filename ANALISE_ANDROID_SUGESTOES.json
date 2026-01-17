@@ -1,0 +1,119 @@
+{
+  "results": {
+    "toast": {
+      "toastify_files": [
+        "src/components/HealthChatBot.tsx",
+        "src/components/FoodAnalysisSystem.tsx",
+        "src/components/sofia/SofiaVoiceTest.tsx"
+      ],
+      "sonner_files": [
+        "src/utils/liberarPesosOcultos.ts",
+        "src/components/UserProfile.tsx",
+        "src/components/SofiaBiography.tsx",
+        "src/components/AIControlPage.tsx",
+        "src/components/SystemicAnamnesis.tsx",
+        "src/components/ui/sonner.tsx",
+        "src/components/settings/WhatsAppNotificationSettings.tsx",
+        "src/components/settings/WeightPrivacyToggle.tsx",
+        "src/components/dr-vital/DrVitalEnhancedChat.tsx",
+        "src/components/dr-vital/ReportGenerator.tsx",
+        "src/components/challenges-v2/admin/CreateChallengeModal.tsx",
+        "src/components/challenges-v2/teams/TeamDetailView.tsx",
+        "src/components/admin/CompanyConfiguration.tsx",
+        "src/components/admin/LiberarPesosButton.tsx",
+        "src/components/admin/WeightReportGenerator.tsx",
+        "src/components/admin/ForceConfigUpdate.tsx",
+        "src/components/admin/PreventiveAnalyticsDashboard.tsx",
+        "src/components/admin/AIControlPanelUnified.tsx",
+        "src/components/admin/IntelligentReports.tsx",
+        "src/components/dashboard/DashboardOverview.tsx",
+        "src/components/dashboard/character-dashboards/RafaelDashboard.tsx",
+        "src/components/dashboard/character-dashboards/AlexDashboard.tsx",
+        "src/components/profile/EditProfileModal.tsx",
+        "src/components/nutrition-tracking/MealPlanGeneratorModalV2.tsx",
+        "src/components/community/ActiveUsersStatus.tsx",
+        "src/components/community/InviteToChallengeModal.tsx",
+        "src/components/community/CreateStoryModal.tsx",
+        "src/components/community/SharePostModal.tsx",
+        "src/components/community/FollowingList.tsx",
+        "src/components/community/FollowersList.tsx",
+        "src/components/community/PollComponent.tsx",
+        "src/components/community/EditConnectionProfileModal.tsx",
+        "src/components/community/FloatingCreateButton.tsx",
+        "src/components/nutrition/QuickPhotoCapture.tsx",
+        "src/components/nutrition/QuickMealEntry.tsx",
+        "src/components/sofia/SofiaIntegratedChat.tsx",
+        "src/components/sofia/SofiaDailyMission.tsx",
+        "src/components/sofia/SofiaConfirmationModal.tsx",
+        "src/components/sofia/SofiaVoiceChat.tsx",
+        "src/components/sofia/SofiaGoals.tsx",
+        "src/components/sofia/SofiaChallenges.tsx",
+        "src/components/sofia/SofiaMealPlanChat.tsx",
+        "src/components/meal-plan/DetailedInstructionsButton.tsx",
+        "src/hooks/useFollow.ts",
+        "src/hooks/useDailyNutritionTracking.ts",
+        "src/hooks/useUserFoodPreferences.ts",
+        "src/hooks/useIntelligentMealGenerator.ts",
+        "src/hooks/usePushNotifications.ts",
+        "src/hooks/useFeedPosts.ts",
+        "src/hooks/usePolls.ts",
+        "src/hooks/useUserBlock.ts",
+        "src/hooks/useWorkoutPlanGenerator.ts",
+        "src/hooks/useStories.ts",
+        "src/hooks/useNotifications.ts",
+        "src/hooks/useCamera.ts",
+        "src/hooks/useDirectMessages.ts",
+        "src/hooks/usePointsConfig.ts",
+        "src/hooks/useProfessionalEvaluation.ts",
+        "src/hooks/useAIWorkoutGenerator.ts",
+        "src/pages/HealthFeedPage.tsx"
+      ],
+      "savings_kb": 18
+    },
+    "mealplan": {
+      "total_lines": 442,
+      "component_count": 24,
+      "needs_refactor": true,
+      "has_pdf": false,
+      "has_canvas": false
+    },
+    "app": {
+      "total_lines": 151,
+      "direct_imports": 13,
+      "lazy_imports": 0,
+      "route_count": 29,
+      "suspense_count": 24,
+      "heavy_direct": []
+    }
+  },
+  "action_plan": [
+    {
+      "priority": "ALTA",
+      "task": "Remover react-toastify",
+      "files": 3,
+      "savings": "18 KB",
+      "effort": "Baixo (30 min)",
+      "steps": [
+        "Substituir toast() de react-toastify por sonner",
+        "Remover import de react-toastify",
+        "npm uninstall react-toastify",
+        "Testar notificações"
+      ]
+    },
+    {
+      "priority": "MÉDIA",
+      "task": "Refatorar MealPlanDisplay.tsx",
+      "files": 1,
+      "savings": "~50-100 KB (parse time)",
+      "effort": "Médio (2-3 horas)",
+      "steps": [
+        "Criar src/components/meal-plan/MealCard.tsx",
+        "Criar src/components/meal-plan/DailyTotalsCard.tsx",
+        "Criar src/hooks/useMealPlanActions.ts",
+        "Mover lógica de PDF para utils/",
+        "Atualizar MealPlanDisplay.tsx"
+      ]
+    }
+  ],
+  "timestamp": "2026-01-17"
+}

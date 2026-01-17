@@ -1,7 +1,7 @@
 
 // Configuração centralizada para variáveis de ambiente
 export const config = {
-  // Supabase Configuration - Lovable Cloud gerencia automaticamente
+  // Supabase Configuration - MaxNutrition Cloud gerencia automaticamente
   supabase: {
     url: import.meta.env.VITE_SUPABASE_URL,
     anonKey: import.meta.env.VITE_SUPABASE_ANON_KEY || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,

@@ -269,10 +269,10 @@ Responda com uma análise médica completa em 2-3 parágrafos, seguida de recome
 
 ANÁLISE DR. VITAL:`;
 
-      // Usar Lovable AI como principal
+      // Usar MaxNutrition AI como principal
       let response;
       if (LOVABLE_API_KEY && (aiConfig.service === 'lovable' || aiConfig.service === 'google')) {
-        console.log('🩺 Dr. Vital usando Lovable AI...');
+        console.log('🩺 Dr. Vital usando MaxNutrition AI...');
         response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
           method: 'POST',
           headers: {

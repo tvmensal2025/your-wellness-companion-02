@@ -405,11 +405,11 @@ export function CameraWorkoutScreen({
 
     // Atualizar FPS
     frameCountRef.current++;
-    const now = Date.now();
-    if (now - lastFpsUpdateRef.current >= 1000) {
+    const fpsNow = Date.now();
+    if (fpsNow - lastFpsUpdateRef.current >= 1000) {
       setCurrentFPS(frameCountRef.current);
       frameCountRef.current = 0;
-      lastFpsUpdateRef.current = now;
+      lastFpsUpdateRef.current = fpsNow;
     }
   }, [screenState, targetReps, soundEnabled, currentFeedback, completeWorkout]);
 

@@ -6,7 +6,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-// Lovable AI endpoint - FREE (no cost per request)
+// MaxNutrition AI endpoint - FREE (no cost per request)
 const LOVABLE_AI_URL = "https://ai.lovable.dev/api/chat";
 
 async function callLovableAI(prompt: string): Promise<string> {
@@ -17,7 +17,7 @@ async function callLovableAI(prompt: string): Promise<string> {
     throw new Error("LOVABLE_API_KEY not configured");
   }
 
-  console.log("Calling Lovable AI (FREE) with Gemini 2.5 Flash...");
+  console.log("Calling MaxNutrition AI (FREE) with Gemini 2.5 Flash...");
 
   const response = await fetch(LOVABLE_AI_URL, {
     method: "POST",
@@ -41,12 +41,12 @@ async function callLovableAI(prompt: string): Promise<string> {
 
   if (!response.ok) {
     const errorText = await response.text();
-    console.error("Lovable AI error:", response.status, errorText);
-    throw new Error(`Lovable AI error: ${response.status}`);
+    console.error("MaxNutrition AI error:", response.status, errorText);
+    throw new Error(`MaxNutrition AI error: ${response.status}`);
   }
 
   const data = await response.json();
-  console.log("Lovable AI response received successfully");
+  console.log("MaxNutrition AI response received successfully");
   return data.choices?.[0]?.message?.content || "";
 }
 
@@ -194,7 +194,7 @@ Deno.serve(async (req) => {
       conclusion: "Lembre-se: reconhecer seus sabotadores é o primeiro passo para a transformação. Você tem o poder de escolher respostas mais positivas a cada dia.",
     };
 
-    // Use Lovable AI (FREE) to enhance the report
+    // Use MaxNutrition AI (FREE) to enhance the report
     if (LOVABLE_API_KEY && sabotadorScores) {
       const prompt = `Você é uma mentora de desenvolvimento pessoal especializada em sabotadores internos.
 
@@ -274,7 +274,7 @@ IMPORTANTE:
           }
         }
       } catch (aiError) {
-        console.error("Erro ao processar resposta do Lovable AI:", aiError);
+        console.error("Erro ao processar resposta do MaxNutrition AI:", aiError);
         // Continue with default data
       }
     }

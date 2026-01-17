@@ -26,7 +26,7 @@ import { uploadToVPS } from '@/lib/vpsApi';
 import { useAuth } from '@/hooks/useAuth';
 import { useAnamnesisStatus } from '@/hooks/useAnamnesisStatus';
 import { useSofiaPersonalizationContext } from '@/hooks/useAnamnesisContext';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 import { useConversation } from '@/hooks/useConversation';
 import SofiaConfirmationModal from './sofia/SofiaConfirmationModal';
 import { useNavigate } from 'react-router-dom';

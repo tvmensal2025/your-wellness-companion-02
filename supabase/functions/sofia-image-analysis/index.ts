@@ -1656,7 +1656,7 @@ serve(async (req) => {
     // 🤖 ANÁLISE COM TABELA TACO
     let tacoNutritionData: any = null;
     
-    console.log('🤖 Iniciando análise com Lovable AI + TACO (modelo:', aiConfig.model, ')...');
+    console.log('🤖 Iniciando análise com MaxNutrition AI + TACO (modelo:', aiConfig.model, ')...');
     try {
       const enhancedResult = await analyzeWithEnhancedAI(imageUrl, 1, {
         model: aiConfig.model,

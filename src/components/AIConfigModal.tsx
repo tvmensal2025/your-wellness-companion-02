@@ -115,7 +115,7 @@ const serviceInfo = {
     color: 'text-purple-600', 
     bgColor: 'bg-purple-50', 
     borderColor: 'border-purple-200',
-    label: 'Lovable AI',
+    label: 'MaxNutrition AI',
     description: 'IA integrada - sem necessidade de API key'
   },
   openai: { 

@@ -1,7 +1,7 @@
 // ========================================
 // 🔧 SISTEMA APRIMORADO DE DETECÇÃO DE ALIMENTOS
 // Usa tabela TACO para cálculos nutricionais precisos
-// Prioridade: Lovable AI (google/gemini-2.5-pro) - MÁXIMA PRECISÃO VISUAL
+// Prioridade: MaxNutrition AI (google/gemini-2.5-pro) - MÁXIMA PRECISÃO VISUAL
 // ========================================
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.55.0';
@@ -691,7 +691,7 @@ export async function analyzeWithEnhancedAI(
     return createFallbackAnalysis();
   }
 
-  console.log(`🤖 Análise com Lovable AI - Tentativa ${attempt}/${MAX_RETRIES}`);
+  console.log(`🤖 Análise com MaxNutrition AI - Tentativa ${attempt}/${MAX_RETRIES}`);
 
   try {
     const body = {
@@ -709,7 +709,7 @@ export async function analyzeWithEnhancedAI(
       ]
     };
 
-    console.log(`🔗 Chamando Lovable AI: ${AI_MODEL_CONFIG.model}`);
+    console.log(`🔗 Chamando MaxNutrition AI: ${AI_MODEL_CONFIG.model}`);
     
     const resp = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -722,7 +722,7 @@ export async function analyzeWithEnhancedAI(
 
     if (!resp.ok) {
       const errorText = await resp.text();
-      console.error(`❌ Lovable AI Error ${resp.status}:`, errorText.substring(0, 200));
+      console.error(`❌ MaxNutrition AI Error ${resp.status}:`, errorText.substring(0, 200));
       
       if (resp.status === 429 && attempt < MAX_RETRIES) {
         await new Promise(r => setTimeout(r, RATE_LIMIT_DELAY * attempt));

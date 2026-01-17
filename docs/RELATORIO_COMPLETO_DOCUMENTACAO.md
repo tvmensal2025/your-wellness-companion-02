@@ -510,7 +510,7 @@ npm run build:prod
 npm run preview
 
 # 3. Deploy (via CI/CD ou manual)
-# - Lovable Cloud (automático)
+# - MaxNutrition Cloud (automático)
 # - Vercel / Netlify (manual)
 # - Docker (VPS)
 ```

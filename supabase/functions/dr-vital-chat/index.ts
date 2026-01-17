@@ -304,7 +304,7 @@ INSTRUÇÕES FINAIS:
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (LOVABLE_API_KEY && (aiConfig.service === 'lovable' || aiConfig.service === 'google')) {
       try {
-        console.log(`Dr. Vital usando Lovable AI (${aiConfig.model})...`);
+        console.log(`Dr. Vital usando MaxNutrition AI (${aiConfig.model})...`);
         const lovableResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
           method: "POST",
           headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
@@ -322,10 +322,10 @@ INSTRUÇÕES FINAIS:
         if (lovableData?.choices?.[0]?.message?.content) {
           answer = lovableData.choices[0].message.content;
           modelUsed = `lovable-${aiConfig.model}`;
-          console.log("✅ Lovable AI funcionou!");
+          console.log("✅ MaxNutrition AI funcionou!");
         }
       } catch (e) {
-        console.error("❌ Erro Lovable AI:", e);
+        console.error("❌ Erro MaxNutrition AI:", e);
       }
     }
 
@@ -417,7 +417,7 @@ INSTRUÇÕES FINAIS:
           value: { last_update: new Date().toISOString(), snippet },
         });
 
-        // 2) Extrator leve de fatos — usa Lovable AI ou OpenAI
+        // 2) Extrator leve de fatos — usa MaxNutrition AI ou OpenAI
         const LOVABLE_KEY = Deno.env.get("LOVABLE_API_KEY");
         const OPENAI_KEY = Deno.env.get("OPENAI_API_KEY");
         

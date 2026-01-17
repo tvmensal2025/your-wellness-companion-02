@@ -188,7 +188,7 @@ GET /health/metrics
 
 ## 🔗 Integração com Lovable
 
-### No Lovable Cloud, criar `src/lib/vpsApi.ts`:
+### No MaxNutrition Cloud, criar `src/lib/vpsApi.ts`:
 
 ```typescript
 const VPS_API_URL = import.meta.env.VITE_VPS_API_URL;

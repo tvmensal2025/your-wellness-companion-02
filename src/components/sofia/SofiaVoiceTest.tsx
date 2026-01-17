@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Volume2, VolumeX, Mic, MicOff, Play, Square } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useConversation } from '@/hooks/useConversation';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 
 const SofiaVoiceTest: React.FC = () => {
   const [testText, setTestText] = useState(

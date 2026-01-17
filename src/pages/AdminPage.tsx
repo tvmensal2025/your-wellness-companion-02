@@ -804,7 +804,7 @@ const AdminPage = () => {
                     🚀 Vercel Dashboard
                   </Button>
                   <Button variant="outline" onClick={() => window.open('https://lovable.dev', '_blank')}>
-                    💜 Lovable Platform
+                    💜 Plataforma MaxNutrition
                   </Button>
                 </div>
               </CardContent>

@@ -124,7 +124,7 @@ Variáveis configuradas no Supabase para Edge Functions.
 
 ## 🔧 Configuração de Secrets
 
-### Via Lovable Cloud
+### Via MaxNutrition Cloud
 
 1. Acesse Configurações do Projeto
 2. Vá em "Backend Settings" > "Secrets"
@@ -194,7 +194,7 @@ VITE_SENTRY_DSN=https://your-sentry-dsn
 # EDGE FUNCTIONS
 # ============================================
 # Configurar diretamente no Supabase Dashboard
-# ou via Lovable Cloud Settings
+# ou via MaxNutrition Cloud Settings
 
 # GOOGLE_AI_API_KEY=your-gemini-key
 # YOLO_SERVICE_URL=https://your-yolo-service.com
@@ -244,7 +244,7 @@ VITE_SENTRY_DSN=https://your-sentry-dsn
 // Erro: "Deno.env.get('GOOGLE_AI_API_KEY') is undefined"
 
 // Verificar:
-// 1. Secret configurado no Lovable Cloud
+// 1. Secret configurado no MaxNutrition Cloud
 // 2. Nome exato da variável (case-sensitive)
 // 3. Redeploy da Edge Function após adicionar secret
 ```

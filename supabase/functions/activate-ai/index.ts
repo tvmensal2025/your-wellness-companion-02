@@ -20,7 +20,7 @@ serve(async (req) => {
     const OLLAMA_URL = Deno.env.get("OLLAMA_URL") || "https://ids-ollama-web.ifrhb3.easypanel.host";
     
     console.log('🔥 Ativando e testando APIs de IA...');
-    console.log('🔑 Lovable AI Key exists:', !!LOVABLE_API_KEY);
+    console.log('🔑 MaxNutrition AI Key exists:', !!LOVABLE_API_KEY);
     console.log('🔑 OpenAI Key exists:', !!OPENAI_API_KEY);
     console.log('🔑 Google AI Key exists:', !!GOOGLE_AI_API_KEY);
     console.log('🔑 Ollama URL:', OLLAMA_URL);
@@ -50,11 +50,11 @@ serve(async (req) => {
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    // 1) Test Lovable AI (PRINCIPAL - sem necessidade de API key externa)
+    // 1) Test MaxNutrition AI (PRINCIPAL - sem necessidade de API key externa)
     let lovableResult: { ok: boolean; status?: number; message?: string } = { ok: false };
     if (LOVABLE_API_KEY) {
       try {
-        console.log('🧪 Testando Lovable AI...');
+        console.log('🧪 Testando MaxNutrition AI...');
         const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
           method: "POST",
           headers: {
@@ -73,10 +73,10 @@ serve(async (req) => {
         const j = await r.json();
         const text = j?.choices?.[0]?.message?.content ?? "";
         lovableResult = { ok: r.ok && typeof text === "string", status: r.status, message: text };
-        console.log(lovableResult.ok ? '✅ Lovable AI conectado!' : '❌ Lovable AI falhou:', text);
+        console.log(lovableResult.ok ? '✅ MaxNutrition AI conectado!' : '❌ MaxNutrition AI falhou:', text);
       } catch (e) {
         lovableResult = { ok: false, message: (e as Error).message };
-        console.log('❌ Lovable AI exception:', e);
+        console.log('❌ MaxNutrition AI exception:', e);
       }
     } else {
       console.log('⚠️ LOVABLE_API_KEY não configurada');
@@ -167,9 +167,9 @@ serve(async (req) => {
       console.log('❌ Ollama exception:', e);
     }
 
-    // 5) Update configurations to use Lovable AI as default if available
+    // 5) Update configurations to use MaxNutrition AI as default if available
     if (lovableResult.ok) {
-      console.log('📝 Atualizando configurações para usar Lovable AI...');
+      console.log('📝 Atualizando configurações para usar MaxNutrition AI...');
       
       const lovableConfigs = [
         { functionality: "chat_daily", service: "lovable", model: "google/gemini-2.5-flash", max_tokens: 2048, temperature: 0.8, is_enabled: true, level: "maximo", personality: "sofia", system_prompt: "Você é a Sofia, nutricionista virtual do MaxNutrition. Seja EMPÁTICA, MOTIVACIONAL e CONCISA. Use linguagem simples e direta, como uma amiga conversando. Foque no bem-estar e motivação do usuário." },
@@ -194,7 +194,7 @@ serve(async (req) => {
         if (error) {
           console.error("Erro ao criar config:", config.functionality, error);
         } else {
-          console.log("✅ Config Lovable AI criada:", config.functionality);
+          console.log("✅ Config MaxNutrition AI criada:", config.functionality);
         }
       }
     }
@@ -220,7 +220,7 @@ serve(async (req) => {
         ollama: ollamaResult,
         summary,
         message: lovableResult.ok 
-          ? "✅ Lovable AI configurado como padrão! Todas as funcionalidades ativas." 
+          ? "✅ MaxNutrition AI configurado como padrão! Todas as funcionalidades ativas." 
           : "IAs validadas e configurações criadas",
         timestamp: new Date().toISOString()
       }),

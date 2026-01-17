@@ -2842,11 +2842,11 @@ ANTES DO JSON, escreva uma análise clínica EDUCATIVA, curta e objetiva, basead
         .eq('id', documentId || '')
         .eq('user_id', userIdEffective || '');
       
-      // PASSO 1: Preparar para análise com Lovable AI (OCR integrado nos modelos de visão)
+      // PASSO 1: Preparar para análise com MaxNutrition AI (OCR integrado nos modelos de visão)
       console.log(`🔍 Preparando ${imagesLimited.length} imagens para análise com IA...`);
       let extractedText: string = '';
       
-      // Atualizar status - Lovable AI faz OCR nativo, não precisa de Google Vision
+      // Atualizar status - MaxNutrition AI faz OCR nativo, não precisa de Google Vision
       await supabase
         .from('medical_documents')
         .update({ 
@@ -2856,7 +2856,7 @@ ANTES DO JSON, escreva uma análise clínica EDUCATIVA, curta e objetiva, basead
         .eq('id', documentId || '')
         .eq('user_id', userIdEffective || '');
       
-      console.log('✅ Imagens preparadas para análise com Lovable AI (OCR nativo)');
+      console.log('✅ Imagens preparadas para análise com MaxNutrition AI (OCR nativo)');
       // ========================================
       // 🆕 USAR LOVABLE AI COMO MÉTODO PRIMÁRIO (google/gemini-2.5-pro)
       // ========================================
@@ -2907,13 +2907,13 @@ IMPORTANTE: Seja CONCISO. Use apenas os campos mostrados acima. NÃO adicione ca
 
 ${extractedText ? `\n===== TEXTO OCR AUXILIAR =====\n${extractedText}\n===============================\nUse o texto acima para CONFIRMAR os valores lidos na imagem.` : ''}`;
 
-      // 🔧 Função unificada para chamar Lovable AI Gateway (suporta Gemini e GPT)
+      // 🔧 Função unificada para chamar MaxNutrition AI Gateway (suporta Gemini e GPT)
       const callLovableAI = async (model: string = 'google/gemini-2.5-pro') => {
         if (!LOVABLE_API_KEY) {
           throw new Error('LOVABLE_API_KEY não configurada');
         }
         
-        console.log(`🤖 Chamando Lovable AI com ${model} para MÁXIMA PRECISÃO`);
+        console.log(`🤖 Chamando MaxNutrition AI com ${model} para MÁXIMA PRECISÃO`);
         
         // 🔧 NORMALIZAR URLs de imagem para evitar duplicação de prefixo
         const imageContent = imagesLimited.map((img) => ({
@@ -2948,7 +2948,7 @@ ${extractedText ? `\n===== TEXTO OCR AUXILIAR =====\n${extractedText}\n=========
 
         if (!response.ok) {
           const errorText = await response.text();
-          console.error(`❌ Lovable AI error (${model}):`, response.status, errorText);
+          console.error(`❌ MaxNutrition AI error (${model}):`, response.status, errorText);
           
           // Tratar rate limit e erro de pagamento
           if (response.status === 429) {
@@ -2958,7 +2958,7 @@ ${extractedText ? `\n===== TEXTO OCR AUXILIAR =====\n${extractedText}\n=========
             throw new Error('Payment required - adicione créditos na Lovable');
           }
           
-          throw new Error(`Lovable AI error: ${response.status}`);
+          throw new Error(`MaxNutrition AI error: ${response.status}`);
         }
 
         const data = await response.json();
@@ -2977,7 +2977,7 @@ ${extractedText ? `\n===== TEXTO OCR AUXILIAR =====\n${extractedText}\n=========
       let usedModel: string = 'google/gemini-2.5-pro';
       let aiResponse: any;
       
-      console.log('🤖 Iniciando cascata de modelos Lovable AI...');
+      console.log('🤖 Iniciando cascata de modelos MaxNutrition AI...');
       await supabase
         .from('medical_documents')
         .update({ 
@@ -3048,7 +3048,7 @@ EXTRAIA EXATAMENTE O QUE ESTÁ ESCRITO NA IMAGEM. NÃO INVENTE DADOS.`;
               'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-              model: 'openai/gpt-5', // Modelo correto via Lovable AI
+              model: 'openai/gpt-5', // Modelo correto via MaxNutrition AI
               messages: [{
                 role: 'user',
                 content: [

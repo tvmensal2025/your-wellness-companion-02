@@ -297,7 +297,7 @@ async function generateSofiaAnalysis(
   aiConfig: { service: string; model: string; max_tokens: number; temperature: number; system_prompt: string }
 ): Promise<SofiaFoodAnalysis> {
   
-  // Buscar configuração de IA - Lovable AI primeiro, depois OpenAI
+  // Buscar configuração de IA - MaxNutrition AI primeiro, depois OpenAI
   const lovableApiKey = Deno.env.get('LOVABLE_API_KEY');
   const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
   if (!lovableApiKey && !openaiApiKey) {
@@ -489,7 +489,7 @@ Seja sempre positiva e encorajadora, mesmo quando há pontos a melhorar.`;
     // 1. LOVABLE AI como provedor PRINCIPAL (usa configurações do banco)
     if (lovableApiKey && (aiConfig.service === 'lovable' || aiConfig.service === 'google')) {
       try {
-        console.log(`🍎 Food Analysis usando Lovable AI (${aiConfig.model})...`);
+        console.log(`🍎 Food Analysis usando MaxNutrition AI (${aiConfig.model})...`);
         response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
           method: 'POST',
           headers: {
@@ -510,10 +510,10 @@ Seja sempre positiva e encorajadora, mesmo quando há pontos a melhorar.`;
         if (response.ok) {
           const data = await response.json();
           reply = data.choices?.[0]?.message?.content || "";
-          console.log('✅ Lovable AI funcionou!');
+          console.log('✅ MaxNutrition AI funcionou!');
         }
       } catch (e) {
-        console.error('❌ Erro Lovable AI:', e);
+        console.error('❌ Erro MaxNutrition AI:', e);
       }
     }
 

@@ -1046,7 +1046,7 @@ serve(async (req) => {
       { role: "user", content: message },
     ];
 
-    // 🔥 Chamar OpenAI via Lovable AI Gateway (melhor compreensão)
+    // 🔥 Chamar OpenAI via MaxNutrition AI Gateway (melhor compreensão)
     // NOTA: Não usar temperature com tool_choice="auto" pois alguns modelos não suportam
     const aiResponse = await fetch(AI_GATEWAY_URL, {
       method: "POST",
@@ -1147,7 +1147,7 @@ serve(async (req) => {
       await saveMessage(userId, sessionId, "assistant", finalResponse, personality);
     }
 
-    // Log AI usage para Lovable AI (fire and forget)
+    // Log AI usage para MaxNutrition AI (fire and forget)
     try {
       await supabase.from('ai_usage_logs').insert({
         user_id: userId,

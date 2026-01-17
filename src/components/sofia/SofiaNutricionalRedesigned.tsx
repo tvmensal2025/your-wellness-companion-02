@@ -737,9 +737,6 @@ export const SofiaNutricionalRedesigned: React.FC<SofiaNutricionalRedesignedProp
       {/* Dica da Sofia */}
       <SofiaTip mealsLogged={dailyStats.mealsLogged} />
 
-      {/* Card Semanal - NOVO! */}
-      <WeeklyPlanCard userId={userId} />
-
       {/* Hero Card com Calorias */}
       <HeroCaloriesCard consumed={dailyStats.calories} target={userGoals?.target_calories || 2000} objective={userGoals?.objective || NutritionObjective.MAINTAIN} streak={streak} mealsLogged={dailyStats.mealsLogged} />
 

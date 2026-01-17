@@ -100,7 +100,7 @@ serve(async (req) => {
       event: "lead.test",
       event_type: "test",
       timestamp: new Date().toISOString(),
-      source: "mission-health-nexus",
+      source: "instituto-dos-sonhos-maxnutrition",
       webhook_id: `test-${Date.now()}`,
       contact: {
         id: "test-user-id",

@@ -198,11 +198,11 @@ export const useNutritionTracking = () => {
         // Se não há dados físicos, usar metas salvas
         console.log('📋 Usando metas salvas (sem dados físicos)');
         setGoals({
-          calories: goalsResponse.calories || 2000,
-          protein: goalsResponse.protein || 150,
-          carbs: goalsResponse.carbs || 250,
-          fat: goalsResponse.fat || 65,
-          fiber: goalsResponse.fiber || 25
+          calories: goalsResponse.target_calories || 2000,
+          protein: goalsResponse.target_protein_g || 150,
+          carbs: goalsResponse.target_carbs_g || 250,
+          fat: goalsResponse.target_fats_g || 65,
+          fiber: goalsResponse.target_fiber_g || 25
         });
       } else {
         // Metas padrão se não há nada salvo
@@ -230,12 +230,14 @@ export const useNutritionTracking = () => {
         .from('nutritional_goals')
         .upsert({
           user_id: user.id,
-          calories: newGoals.calories,
-          protein: newGoals.protein,
-          carbs: newGoals.carbs,
-          fat: newGoals.fat,
-          fiber: newGoals.fiber,
-          objective: newObjective || objective
+          target_calories: newGoals.calories,
+          target_protein_g: newGoals.protein,
+          target_carbs_g: newGoals.carbs,
+          target_fats_g: newGoals.fat,
+          target_fiber_g: newGoals.fiber,
+          status: 'active'
+        }, {
+          onConflict: 'user_id,status'
         });
 
       if (error) throw error;

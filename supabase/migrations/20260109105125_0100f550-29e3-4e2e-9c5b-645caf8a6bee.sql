@@ -43,7 +43,7 @@ BEGIN
     'event', CASE WHEN TG_OP = 'INSERT' THEN 'lead.created' ELSE 'lead.updated' END,
     'event_type', event_type,
     'timestamp', now(),
-    'source', 'mission-health-nexus',
+    'source', 'instituto-dos-sonhos-maxnutrition',
     'webhook_id', gen_random_uuid(),
     
     'contact', jsonb_build_object(

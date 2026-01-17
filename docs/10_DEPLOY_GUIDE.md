@@ -1,7 +1,7 @@
 # 🚀 Guia de Deploy
 
 > Documentação gerada em: 2026-01-16
-> Plataforma: Lovable Cloud
+> Plataforma: MaxNutrition Cloud
 
 ---
 
@@ -27,7 +27,7 @@
 ### Contas/Acessos
 
 - [x] Conta Lovable (já configurada)
-- [x] Lovable Cloud habilitado
+- [x] MaxNutrition Cloud habilitado
 - [ ] Google Cloud Console (para Google Fit)
 - [ ] Evolution API (para WhatsApp)
 - [ ] Resend (para emails)
@@ -119,7 +119,7 @@ Cada push no repositório dispara deploy automático:
 
 ---
 
-## 🗄️ Backend (Lovable Cloud)
+## 🗄️ Backend (MaxNutrition Cloud)
 
 ### Edge Functions
 
@@ -191,7 +191,7 @@ CREATE POLICY "Users can view own data"
 
 ## 🔐 Configuração de Secrets
 
-### Via Lovable Cloud UI
+### Via MaxNutrition Cloud UI
 
 1. Acesse Settings do projeto
 2. Vá em "Backend Settings"
@@ -433,6 +433,6 @@ CNAME   www     [CNAME fornecido pelo Lovable]
 
 ## 📞 Suporte
 
-- **Lovable Docs**: https://docs.lovable.dev
+- **Documentação MaxNutrition**: https://docs.lovable.dev
 - **Supabase Docs**: https://supabase.com/docs
 - **Comunidade**: https://discord.gg/lovable

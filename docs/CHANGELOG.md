@@ -58,10 +58,10 @@ Todas as mudanças notáveis documentadas aqui (estilo SemVer).
 
 ## [1.7.0] - 2025-12-20
 
-### 🤖 Lovable AI Integration
+### 🤖 MaxNutrition AI Integration
 
 #### Adicionado
-- **Lovable AI Gateway**: Integração com gateway de IA da Lovable
+- **MaxNutrition AI Gateway**: Integração com gateway de IA da Lovable
 - **Modelos suportados**:
   - google/gemini-2.5-pro
   - google/gemini-2.5-flash
@@ -72,7 +72,7 @@ Todas as mudanças notáveis documentadas aqui (estilo SemVer).
 - **Fallback Chain**: Lovable → OpenAI → Google AI → Resposta padrão
 
 #### Alterado
-- Sofia e Dr. Vital agora usam Lovable AI como provedor principal
+- Sofia e Dr. Vital agora usam MaxNutrition AI como provedor principal
 - Configurações de IA gerenciadas via tabela `ai_configurations`
 
 ---

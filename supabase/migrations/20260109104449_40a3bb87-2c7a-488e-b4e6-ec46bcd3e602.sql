@@ -12,7 +12,7 @@ BEGIN
     NEW.user_id,
     jsonb_build_object(
       'event', CASE WHEN TG_OP = 'INSERT' THEN 'new_user' ELSE 'user_updated' END,
-      'source', 'mission-health-nexus',
+      'source', 'instituto-dos-sonhos-maxnutrition',
       'timestamp', now(),
       'lead', jsonb_build_object(
         'user_id', NEW.user_id,

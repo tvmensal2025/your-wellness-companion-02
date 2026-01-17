@@ -192,7 +192,7 @@ Deno.serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (LOVABLE_API_KEY) {
       try {
-        console.log(`🤖 Chamando Lovable AI (${aiSettings.model})...`);
+        console.log(`🤖 Chamando MaxNutrition AI (${aiSettings.model})...`);
         const lovableResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
           method: 'POST',
           headers: {
@@ -224,10 +224,10 @@ Deno.serve(async (req) => {
         if (data?.choices?.[0]?.message?.content) {
           response = data.choices[0].message.content;
           apiUsed = `lovable-${aiSettings.model}`;
-          console.log('✅ Lovable AI respondeu com sucesso!');
+          console.log('✅ MaxNutrition AI respondeu com sucesso!');
         }
       } catch (error) {
-        console.error('❌ Erro Lovable AI:', error);
+        console.error('❌ Erro MaxNutrition AI:', error);
       }
     }
 

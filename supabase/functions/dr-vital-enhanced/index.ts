@@ -437,7 +437,7 @@ serve(async (req) => {
       { role: "user", content: message },
     ];
 
-    // 🔥 Chamar Lovable AI Gateway
+    // 🔥 Chamar MaxNutrition AI Gateway
     const aiResponse = await fetch(AI_GATEWAY_URL, {
       method: "POST",
       headers: {

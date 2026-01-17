@@ -36,7 +36,7 @@
 - Carrega dados completos do usuário (20+ tabelas)
 - Memória persistente de longo prazo
 - Configurações de IA dinâmicas do banco
-- Suporte a Lovable AI, OpenAI, Google AI
+- Suporte a MaxNutrition AI, OpenAI, Google AI
 
 **Tabelas Acessadas:** profiles, user_anamnesis, user_physical_data, weight_measurements, nutrition_tracking, food_analysis, exercise_tracking, water_tracking, sleep_tracking, mood_tracking, user_goals, daily_responses, daily_mission_sessions, user_achievements, prescriptions, user_supplements, medical_documents, heart_rate_data, weekly_analyses, dr_vital_memory, conversations, conversation_messages
 
@@ -462,7 +462,7 @@ Cria registro na tabela `profiles` quando um novo usuário se registra, copiando
 |----------|-----------|-----------|
 | `SUPABASE_URL` | URL do projeto Supabase | Todas |
 | `SUPABASE_SERVICE_ROLE_KEY` | Chave de serviço | Todas |
-| `LOVABLE_API_KEY` | API Key Lovable AI | IAs |
+| `LOVABLE_API_KEY` | API Key MaxNutrition AI | IAs |
 | `OPENAI_API_KEY` | API Key OpenAI (fallback) | IAs |
 | `GOOGLE_AI_API_KEY` | API Key Google AI (fallback) | IAs |
 | `GOOGLE_FIT_CLIENT_ID` | Client ID Google Fit | Google Fit |
@@ -478,7 +478,7 @@ Cria registro na tabela `profiles` quando um novo usuário se registra, copiando
 
 - **Total:** 53 Edge Functions
 - **Ativas em Produção:** 53
-- **Usando Lovable AI:** 8
+- **Usando MaxNutrition AI:** 8
 - **Com Fallback OpenAI:** 8
 - **Integrações Externas:** 5 (Google Fit, Stripe, Resend, Mealie, n8n)
 

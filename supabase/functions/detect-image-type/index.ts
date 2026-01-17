@@ -2,7 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsHeaders } from "../_shared/utils/cors.ts";
 import { hashImage, getCachedResult, setCachedResult, isCacheEnabled } from "../_shared/utils/image-cache.ts";
 
-// 🎯 Usando Lovable AI Gateway (elimina dependência de OPENAI_API_KEY)
+// 🎯 Usando MaxNutrition AI Gateway (elimina dependência de OPENAI_API_KEY)
 const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
 
 // Modelo mais barato para classificação simples
@@ -72,7 +72,7 @@ serve(async (req) => {
 
     console.log(`[Detect Image Type] Analisando com ${CLASSIFICATION_MODEL}...`);
 
-    // 🚀 Chamar Lovable AI Gateway (gemini-2.5-flash-lite)
+    // 🚀 Chamar MaxNutrition AI Gateway (gemini-2.5-flash-lite)
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -125,7 +125,7 @@ Responda APENAS com JSON válido no formato:
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("[Detect Image Type] Erro Lovable AI:", response.status, errorText);
+      console.error("[Detect Image Type] Erro MaxNutrition AI:", response.status, errorText);
       
       // Tratamento específico de rate limit
       if (response.status === 429) {
@@ -152,7 +152,7 @@ Responda APENAS com JSON válido no formato:
     const data = await response.json();
     const content = data.choices?.[0]?.message?.content || "";
     
-    console.log("[Detect Image Type] Resposta Lovable AI:", content);
+    console.log("[Detect Image Type] Resposta MaxNutrition AI:", content);
 
     // Tentar parsear JSON da resposta
     let result = { type: "OTHER", confidence: 0.5, details: "Não foi possível classificar" };

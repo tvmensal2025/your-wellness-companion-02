@@ -41,7 +41,7 @@ app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
 
-// CORS - permitir Lovable Cloud
+// CORS - permitir MaxNutrition Cloud
 app.use(cors({
   origin: [
     'https://lovable.dev',

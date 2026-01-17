@@ -35,7 +35,7 @@ serve(async (req) => {
       });
     }
 
-    // Usar Lovable AI (já configurado, sem necessidade de API key do usuário)
+    // Usar MaxNutrition AI (já configurado, sem necessidade de API key do usuário)
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     
     if (!LOVABLE_API_KEY) {

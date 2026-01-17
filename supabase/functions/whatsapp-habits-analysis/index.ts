@@ -35,7 +35,7 @@ serve(async (req) => {
         throw new Error("answers e questions são obrigatórios para gerar análise");
       }
 
-      console.log("🤖 Gerando análise com Lovable AI...", { sessionType });
+      console.log("🤖 Gerando análise com MaxNutrition AI...", { sessionType });
 
       // Criar cliente Supabase para buscar nome do usuário
       const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -142,7 +142,7 @@ Seja caloroso, use o nome do paciente, e surpreenda com insights úteis!`;
 
       if (!aiResponse.ok) {
         const errorText = await aiResponse.text();
-        console.error("❌ Erro Lovable AI:", aiResponse.status, errorText);
+        console.error("❌ Erro MaxNutrition AI:", aiResponse.status, errorText);
         throw new Error(`Erro ao gerar análise: ${aiResponse.status}`);
       }
 

@@ -36,7 +36,7 @@ import { getCharacterImageUrl } from '@/lib/character-images';
 import { useFoodAnalysis } from '@/hooks/useFoodAnalysis';
 import { foodDatabase, searchFood, getFoodsByCategory, getCategories } from '@/data/food-database';
 import { useAuth } from '@/hooks/useAuth';
-import { toast } from 'react-toastify';
+import { toast } from 'sonner';
 
 interface FoodItem {
   id: string;

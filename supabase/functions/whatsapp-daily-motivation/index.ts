@@ -190,7 +190,7 @@ Use os dados acima para tornar a mensagem especial.
 Responda APENAS com a mensagem, iniciando com *${firstName}*,`;
 
         try {
-          // 🔥 OTIMIZADO: Usar Lovable AI com gemini-flash-lite para velocidade
+          // 🔥 OTIMIZADO: Usar MaxNutrition AI com gemini-flash-lite para velocidade
           const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
           
           const aiResponse = LOVABLE_API_KEY 
@@ -227,7 +227,7 @@ Responda APENAS com a mensagem, iniciando com *${firstName}*,`;
 
           if (aiResponse.ok) {
             const aiData = await aiResponse.json();
-            // Suporte para ambos formatos: Lovable AI e Google AI direto
+            // Suporte para ambos formatos: MaxNutrition AI e Google AI direto
             motivationalMessage = aiData.choices?.[0]?.message?.content?.trim() 
               || aiData.candidates?.[0]?.content?.parts?.[0]?.text?.trim() 
               || "";

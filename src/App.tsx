@@ -124,7 +124,8 @@ const App: React.FC = () => {
                           <Route path="/google-fit-dashboard" element={<Suspense fallback={<PageLoader />}><GoogleFitPremiumDashboard /></Suspense>} />
                           <Route path="/dr-vital-enhanced" element={<Suspense fallback={<PageLoader />}><DrVitalEnhancedPage /></Suspense>} />
                           <Route path="/sofia-nutricional" element={<Suspense fallback={<PageLoader />}><SofiaNutricionalPage /></Suspense>} />
-                          <Route path="/professional-evaluation" element={<Suspense fallback={<PageLoader />}><ProfessionalEvaluationPage /></Suspense>} />
+                          {/* DESABILITADO TEMPORARIAMENTE - Avaliação Profissional */}
+                          {/* <Route path="/professional-evaluation" element={<Suspense fallback={<PageLoader />}><ProfessionalEvaluationPage /></Suspense>} /> */}
                           <Route path="/auto-login" element={<Suspense fallback={<PageLoader />}><AutoLoginPage /></Suspense>} />
                           <Route path="/install" element={<Suspense fallback={<PageLoader />}><InstallPage /></Suspense>} />
                           <Route path="/community/post/:postId" element={<Suspense fallback={<PageLoader />}><PublicPostPage /></Suspense>} />

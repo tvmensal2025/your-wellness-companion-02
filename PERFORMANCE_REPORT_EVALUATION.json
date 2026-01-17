@@ -1,0 +1,96 @@
+{
+  "timestamp": "2026-01-17T18:49:55.154377",
+  "components_created": [
+    {
+      "name": "ResultsDisplay.tsx",
+      "path": "src/components/evaluation/ResultsDisplay.tsx",
+      "lines": 173,
+      "size_kb": 8.65,
+      "parse_time_ms": 17.3,
+      "is_optimal": true
+    },
+    {
+      "name": "MetricsForm.tsx",
+      "path": "src/components/evaluation/MetricsForm.tsx",
+      "lines": 161,
+      "size_kb": 8.05,
+      "parse_time_ms": 16.1,
+      "is_optimal": true
+    },
+    {
+      "name": "NewEvaluationWizard.tsx",
+      "path": "src/components/evaluation/NewEvaluationWizard.tsx",
+      "lines": 244,
+      "size_kb": 12.2,
+      "parse_time_ms": 24.4,
+      "is_optimal": false
+    },
+    {
+      "name": "ProfessionalWeighingSystem.tsx",
+      "path": "src/components/evaluation/ProfessionalWeighingSystem.tsx",
+      "lines": 303,
+      "size_kb": 15.15,
+      "parse_time_ms": 30.3,
+      "is_optimal": false
+    },
+    {
+      "name": "EvaluationHistory.tsx",
+      "path": "src/components/evaluation/EvaluationHistory.tsx",
+      "lines": 293,
+      "size_kb": 14.65,
+      "parse_time_ms": 29.3,
+      "is_optimal": false
+    },
+    {
+      "name": "EvaluationHeader.tsx",
+      "path": "src/components/evaluation/EvaluationHeader.tsx",
+      "lines": 110,
+      "size_kb": 5.5,
+      "parse_time_ms": 11.0,
+      "is_optimal": true
+    },
+    {
+      "name": "ChartsPanel.tsx",
+      "path": "src/components/evaluation/ChartsPanel.tsx",
+      "lines": 395,
+      "size_kb": 19.75,
+      "parse_time_ms": 39.5,
+      "is_optimal": false
+    },
+    {
+      "name": "QuickEvaluationModal.tsx",
+      "path": "src/components/evaluation/QuickEvaluationModal.tsx",
+      "lines": 164,
+      "size_kb": 8.2,
+      "parse_time_ms": 16.4,
+      "is_optimal": true
+    },
+    {
+      "name": "WizardContainer.tsx",
+      "path": "src/components/evaluation/Wizard/WizardContainer.tsx",
+      "lines": 90,
+      "size_kb": 4.5,
+      "parse_time_ms": 9.0,
+      "is_optimal": true
+    },
+    {
+      "name": "ClientList.tsx",
+      "path": "src/components/evaluation/Dashboard/ClientList.tsx",
+      "lines": 114,
+      "size_kb": 5.7,
+      "parse_time_ms": 11.4,
+      "is_optimal": true
+    },
+    {
+      "name": "StatsCards.tsx",
+      "path": "src/components/evaluation/Dashboard/StatsCards.tsx",
+      "lines": 50,
+      "size_kb": 2.5,
+      "parse_time_ms": 5.0,
+      "is_optimal": true
+    }
+  ],
+  "total_size_kb": 104.85000000000001,
+  "estimated_parse_time_ms": 209.70000000000002,
+  "optimization_level": "optimal"
+}

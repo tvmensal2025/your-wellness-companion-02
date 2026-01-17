@@ -388,7 +388,7 @@ Edge Function: analyze-medical-exam
 Fluxo Atual:
 1. 📸 Imagem recebida
 2. 🔄 Conversão para base64
-3. 🤖 Lovable AI Gateway (Gemini/GPT) direto
+3. 🤖 MaxNutrition AI Gateway (Gemini/GPT) direto
 4. 📋 Relatório humanizado
 
 Problema:

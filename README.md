@@ -1,4 +1,4 @@
-# Mission Health Nexus
+# Instituto dos Sonhos - MaxNutrition
 
 Uma plataforma completa de saúde e bem-estar com integração de balança inteligente, gamificação e acompanhamento personalizado.
 
@@ -46,10 +46,10 @@ Uma plataforma completa de saúde e bem-estar com integração de balança intel
 
 ```bash
 # Clone o repositório
-git clone https://github.com/tvmensal2025/mission-health-nexus-99.git
+git clone https://github.com/tvmensal2025/instituto-dos-sonhos-maxnutrition-99.git
 
 # Entre no diretório
-cd mission-health-nexus-99
+cd instituto-dos-sonhos-maxnutrition-99
 
 # Instale as dependências
 npm install
@@ -79,7 +79,7 @@ VITE_OPENAI_API_KEY=sua_chave_da_openai
 ## 📱 URLs
 
 - **Desenvolvimento**: http://localhost:5173
-- **GitHub**: https://github.com/tvmensal2025/mission-health-nexus-99
+- **GitHub**: https://github.com/tvmensal2025/instituto-dos-sonhos-maxnutrition-99
 - **Lovable**: [Configurar após deploy]
 
 ## 🎯 Funcionalidades Principais

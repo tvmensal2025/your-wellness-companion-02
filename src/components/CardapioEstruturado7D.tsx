@@ -5,9 +5,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Download, Printer, Image as ImageIcon, Info } from 'lucide-react';
+import { Download, Printer, Image as ImageIcon, Info, ShoppingCart } from 'lucide-react';
 import { detectFoodIntent, sumBlockKcal, avoidRepetition, estimateSuggestionLine, MealLine } from '@/lib/food-intents';
 import { exportPDF, exportPNG } from '@/lib/exporters';
+import { useShoppingList } from '@/hooks/mealie/useShoppingList';
+import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
 type LayoutType = 'guia-colorido' | 'minimalista' | 'planner' | 'instagram';
 
@@ -190,6 +193,9 @@ function IntelligencePopover({ foodName }: { foodName: string }) {
 export default function CardapioEstruturado7D({ logoUrl, layout: initialLayout = 'guia-colorido', input }: CardapioEstruturado7DProps) {
   const [layout, setLayout] = useState<LayoutType>(initialLayout);
   const ref = useRef<HTMLDivElement>(null);
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const { generating, generateList, sendToWhatsApp } = useShoppingList(user?.id);
 
   const daysData = useMemo(() => {
     // Monta 7 dias com 5 blocos cada; completa faltantes com variedade
@@ -240,6 +246,71 @@ export default function CardapioEstruturado7D({ logoUrl, layout: initialLayout =
     if (ref.current) await exportPNG(ref.current, 'cardapio-semanal.png');
   };
 
+  const handleGenerateShoppingList = async () => {
+    if (!user) {
+      toast({
+        title: 'Erro',
+        description: 'Você precisa estar logado',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    try {
+      // Calcular início e fim da semana (próximos 7 dias)
+      const today = new Date();
+      const weekStart = new Date(today);
+      weekStart.setHours(0, 0, 0, 0);
+      
+      const weekEnd = new Date(today);
+      weekEnd.setDate(weekEnd.getDate() + 6);
+      weekEnd.setHours(23, 59, 59, 999);
+
+      toast({
+        title: '🛒 Gerando lista...',
+        description: 'Analisando seu cardápio da semana',
+      });
+
+      const list = await generateList(weekStart, weekEnd);
+
+      if (!list) {
+        toast({
+          title: 'Erro',
+          description: 'Não foi possível gerar a lista',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      toast({
+        title: '📱 Enviando para WhatsApp...',
+        description: 'Aguarde alguns segundos',
+      });
+
+      const sent = await sendToWhatsApp(list.id);
+
+      if (sent) {
+        toast({
+          title: '✅ Lista enviada!',
+          description: 'Confira seu WhatsApp 💚',
+        });
+      } else {
+        toast({
+          title: 'Erro ao enviar',
+          description: 'Verifique se seu telefone está cadastrado',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao gerar lista:', error);
+      toast({
+        title: 'Erro',
+        description: 'Algo deu errado. Tente novamente.',
+        variant: 'destructive',
+      });
+    }
+  };
+
   return (
     <div className="space-y-3">
       {/* Header */}
@@ -249,6 +320,17 @@ export default function CardapioEstruturado7D({ logoUrl, layout: initialLayout =
           <div className="text-xs text-muted-foreground">Conteúdo educativo e sugestivo. Consulte um profissional para ajustes personalizados.</div>
         </div>
         <div className="flex items-center gap-2">
+          <Button 
+            variant="default" 
+            size="sm" 
+            onClick={handleGenerateShoppingList}
+            disabled={generating}
+            className="bg-emerald-500 hover:bg-emerald-600"
+            aria-label="Gerar lista de compras"
+          >
+            <ShoppingCart className="h-4 w-4 mr-2" />
+            {generating ? 'Gerando...' : 'Gerar Lista de Compras'}
+          </Button>
           <Button variant="outline" size="sm" onClick={handlePrint} aria-label="Imprimir"><Printer className="h-4 w-4" /></Button>
           <Button variant="outline" size="sm" onClick={handleExportPDF} aria-label="Baixar PDF"><Download className="h-4 w-4" /></Button>
           <Button variant="outline" size="sm" onClick={handleExportPNG} aria-label="Baixar PNG"><ImageIcon className="h-4 w-4" /></Button>

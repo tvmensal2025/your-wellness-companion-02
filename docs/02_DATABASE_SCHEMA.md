@@ -1,7 +1,7 @@
 # 🗄️ Schema do Banco de Dados MaxNutrition
 
 > Documentação gerada em: 2026-01-16
-> Backend: Lovable Cloud (Supabase)
+> Backend: MaxNutrition Cloud (Supabase)
 
 ---
 

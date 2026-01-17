@@ -95,3 +95,52 @@ jspm_packages/
 # Yarn Integrity file
 .yarn-integrity
 Public/
+
+# ============================================
+# DOCUMENTAÇÃO E ARQUIVOS DE DESENVOLVIMENTO
+# (Não vão para o build do app)
+# ============================================
+
+# Documentação Markdown (raiz)
+/*.md
+!README.md
+!README-DEPLOY.md
+
+# Scripts de análise e testes
+/scripts/*.py
+/scripts/*.sql
+/scripts/*.sh
+
+# Patches e backups
+/.patches/
+
+# Documentação extensa (docs/)
+/docs/*.json
+/docs/*ANALISE*.md
+/docs/*ANTES_DEPOIS*.md
+/docs/*CAMERA_WORKOUT*.md
+/docs/*MAPEAMENTO*.md
+/docs/*SISTEMA*.md
+/docs/*STORAGE*.md
+/docs/*TESTE*.md
+/docs/*GUIA*.md
+/docs/*IMPLEMENTACAO*.md
+/docs/*QUICK*.md
+/docs/*CATALOGO*.md
+
+# Arquivos de configuração de desenvolvimento
+/docker-compose*.yml
+/Dockerfile*
+/nginx.conf
+/Caddyfile
+/*.sh
+
+# Diretórios de serviços externos
+/ollama_proxy/
+/vps-backend/
+/yolo-service-v2/
+/Documents/
+
+# Dados de teste
+/data/*.csv
+/data/*.pdf

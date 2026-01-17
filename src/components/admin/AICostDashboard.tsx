@@ -76,7 +76,7 @@ const PROVIDER_COLORS: Record<string, { color: string; isFree: boolean; displayN
   'yolo': { color: '#eab308', isFree: true, displayName: 'YOLO (Local)' },
   'gemini': { color: '#3b82f6', isFree: false, displayName: 'Google Gemini' },
   'openai': { color: '#ec4899', isFree: false, displayName: 'OpenAI GPT' },
-  'lovable': { color: '#8b5cf6', isFree: false, displayName: 'Lovable AI' },
+  'lovable': { color: '#8b5cf6', isFree: false, displayName: 'MaxNutrition AI' },
   'google': { color: '#4285f4', isFree: false, displayName: 'Google AI' },
 };
 

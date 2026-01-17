@@ -49,7 +49,7 @@ serve(async (req) => {
         event: 'lead.created',
         event_type: 'new_user',
         timestamp: new Date().toISOString(),
-        source: 'mission-health-nexus',
+        source: 'instituto-dos-sonhos-maxnutrition',
         webhook_id: crypto.randomUUID(),
         bulk_sync: true,
 

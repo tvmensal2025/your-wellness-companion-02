@@ -15,7 +15,7 @@ Frontend (Vite)
 | VITE_OPENAI_MODEL | `src/lib/config.ts` | optional | string | `gpt-4o` |
 | VITE_OPENAI_MAX_TOKENS | `src/lib/config.ts` | optional | int | `1000` |
 | VITE_OPENAI_TEMPERATURE | `src/lib/config.ts` | optional | float | `0.7` |
-| VITE_APP_NAME | `src/lib/config.ts` | optional | string | `Mission Health Nexus` |
+| VITE_APP_NAME | `src/lib/config.ts` | optional | string | `Instituto dos Sonhos - MaxNutrition` |
 | VITE_APP_VERSION | `src/lib/config.ts` | optional | string | `1.0.0` |
 | VITE_APP_ENVIRONMENT | `src/lib/config.ts` | optional | enum | `development`/`staging`/`production` |
 | VITE_ENABLE_ANALYTICS | `src/lib/config.ts` | optional | bool | `true`/`false` |
@@ -59,7 +59,7 @@ VITE_SUPABASE_URL=https://<PROJECT>.supabase.co
 VITE_SUPABASE_ANON_KEY=<ANON_PUBLIC_KEY>
 VITE_SUPABASE_EDGE_URL=https://<PROJECT>.supabase.co/functions/v1
 VITE_API_BASE_URL=http://localhost:5173
-VITE_APP_NAME=Mission Health Nexus
+VITE_APP_NAME=Instituto dos Sonhos - MaxNutrition
 VITE_APP_VERSION=1.0.0
 VITE_APP_ENVIRONMENT=development
 VITE_DEBUG_MODE=false
