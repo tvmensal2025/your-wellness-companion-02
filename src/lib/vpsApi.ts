@@ -166,7 +166,7 @@ async function fileToBase64(file: File): Promise<string> {
  * Chamar VPS API via Edge Function proxy (para WhatsApp, Tracking, etc.)
  */
 /**
- * Logar chamada da API no banco
+ * Logar chamada da API no banco (placeholder - tabela não existe ainda)
  */
 async function logApiCall(logData: {
   endpoint: string;
@@ -177,18 +177,9 @@ async function logApiCall(logData: {
   errorMessage?: string;
   requestSummary?: string;
 }) {
-  try {
-    await supabase.from('vps_api_logs').insert([{
-      endpoint: logData.endpoint,
-      method: logData.method,
-      status_code: logData.statusCode,
-      success: logData.success,
-      response_time_ms: logData.responseTimeMs,
-      error_message: logData.errorMessage,
-      request_summary: logData.requestSummary,
-    }]);
-  } catch (err) {
-    console.warn('[VPS API] Erro ao logar chamada:', err);
+  // Placeholder: Log to console until vps_api_logs table is created
+  if (!logData.success) {
+    console.warn('[VPS API] Failed call:', logData.endpoint, logData.errorMessage);
   }
 }
 

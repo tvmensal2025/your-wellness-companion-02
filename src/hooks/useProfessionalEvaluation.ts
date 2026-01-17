@@ -6,8 +6,62 @@ import { useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-interface UserForEvaluation {
+// Exported types for components
+export interface UserProfile {
+  id?: string;
   user_id: string;
+  full_name: string | null;
+  name?: string;
+  email: string | null;
+  avatar_url: string | null;
+  height_cm?: number;
+  current_weight_kg?: number;
+  birth_date?: string;
+  gender?: string;
+  activity_level?: string;
+}
+
+export interface ProfessionalEvaluation {
+  id: string;
+  user_id: string;
+  evaluator_id: string;
+  evaluation_type: string;
+  evaluation_data: any;
+  notes?: string;
+  created_at: string;
+  evaluation_date?: string;
+  weight_kg?: number;
+  height_cm?: number;
+  body_fat_percentage?: number;
+  muscle_mass_kg?: number;
+  lean_mass_kg?: number;
+  fat_mass_kg?: number;
+  bmi?: number;
+  waist_circumference_cm?: number;
+  waist_to_height_ratio?: number;
+  waist_to_hip_ratio?: number;
+  abdominal_circumference_cm?: number;
+  hip_circumference_cm?: number;
+  risk_level?: string;
+  metabolic_age?: number;
+  visceral_fat?: number;
+  bone_mass_kg?: number;
+  water_percentage?: number;
+  basal_metabolism_kcal?: number;
+  bmr_kcal?: number;
+  muscle_to_fat_ratio?: number;
+  // Skinfold measurements
+  skinfold_triceps_mm?: number;
+  skinfold_chest_mm?: number;
+  skinfold_abdomen_mm?: number;
+  skinfold_thigh_mm?: number;
+  skinfold_suprailiac_mm?: number;
+}
+
+interface UserForEvaluation {
+  id?: string;
+  user_id: string;
+  name?: string;
   full_name: string | null;
   email: string | null;
   avatar_url: string | null;
@@ -22,6 +76,16 @@ interface Evaluation {
   evaluation_data: any;
   notes?: string;
   created_at: string;
+  evaluation_date?: string;
+  weight_kg?: number;
+  height_cm?: number;
+  body_fat_percentage?: number;
+  muscle_mass_kg?: number;
+  lean_mass_kg?: number;
+  fat_mass_kg?: number;
+  bmi?: number;
+  waist_circumference_cm?: number;
+  waist_to_height_ratio?: number;
 }
 
 interface CalculatedMetrics {

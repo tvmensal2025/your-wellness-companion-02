@@ -114,16 +114,9 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
     >
       {/* Actor Avatar or Icon */}
       <div className="relative flex-shrink-0">
-        {notification.actor_avatar ? (
-          <Avatar className="w-10 h-10">
-            <AvatarImage src={notification.actor_avatar} />
-            <AvatarFallback>{notification.actor_name?.charAt(0)}</AvatarFallback>
-          </Avatar>
-        ) : (
-          <div className={`w-10 h-10 rounded-full flex items-center justify-center ${getNotificationColor(notification.type)}`}>
-            {getNotificationIcon(notification.type)}
-          </div>
-        )}
+        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${getNotificationColor(notification.type)}`}>
+          {getNotificationIcon(notification.type)}
+        </div>
         <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center ${getNotificationColor(notification.type)} border-2 border-background`}>
           {getNotificationIcon(notification.type)}
         </div>
