@@ -82,7 +82,7 @@ export default function HealthFeedPage() {
   const { groupedStories, createStory, viewStory, deleteStory } = useStories();
   const { toggleFollow, isFollowing } = useFollow();
   const { totalUnread } = useDirectMessages();
-  const { unreadCount: notificationCount, createNotification } = useNotifications();
+  const { unreadCount: notificationCount } = useNotifications();
   const { stats: userProgressStats } = useUserProgressStats(user?.id || null);
 
   // Fetch total weight lost by community
@@ -204,10 +204,6 @@ export default function HealthFeedPage() {
     const post = posts.find(p => p.id === postId);
     if (post) {
       trackInteraction(post, 'like');
-      // Create notification for post author
-      if (post.user_id !== user?.id) {
-        createNotification(post.user_id, 'like', 'Curtiu seu post', post.content.substring(0, 50), 'post', postId);
-      }
     }
     toggleLike(postId);
   };
@@ -216,10 +212,6 @@ export default function HealthFeedPage() {
     const post = posts.find(p => p.id === postId);
     if (post) {
       trackInteraction(post, 'comment');
-      // Create notification for post author
-      if (post.user_id !== user?.id) {
-        createNotification(post.user_id, 'comment', 'Comentou no seu post', comment.substring(0, 50), 'post', postId);
-      }
     }
     addComment(postId, comment);
   };
@@ -349,8 +341,8 @@ export default function HealthFeedPage() {
   }, [ranking]);
 
   const handleMotivateUser = (userId: string, userName: string) => {
-    // Criar notificação de motivação
-    createNotification(userId, 'like', '💪 Te motivou!', 'Continue assim, você está arrasando!', 'motivation');
+    // Placeholder - notifications feature simplified
+    console.log(`Motivating user ${userName} (${userId})`);
   };
 
   // Função para gerar bio/foco baseado no nível ou conteúdo (fallback)

@@ -1,4 +1,9 @@
-import { supabase } from '@/integrations/supabase/client';
+/**
+ * Camera Workout Session Persistence
+ * 
+ * PLACEHOLDER: Database tables not yet created.
+ * All operations return mock data or log to console.
+ */
 
 export interface WorkoutSession {
   id?: string;
@@ -41,25 +46,19 @@ const offlineQueue: {
   postureEvents: [],
 };
 
+// In-memory storage for sessions (placeholder)
+const inMemorySessions: Map<string, WorkoutSession> = new Map();
+
 /**
- * Salva uma sessão de treino no banco de dados
+ * Salva uma sessão de treino (placeholder - logs to console)
  */
 export async function saveWorkoutSession(session: WorkoutSession): Promise<string | null> {
   try {
-    const { data, error } = await supabase
-      .from('camera_workout_sessions')
-      .insert([session])
-      .select('id')
-      .single();
-
-    if (error) {
-      console.error('Error saving workout session:', error);
-      // Adiciona à fila offline
-      offlineQueue.sessions.push(session);
-      return null;
-    }
-
-    return data.id;
+    const id = crypto.randomUUID();
+    const sessionWithId = { ...session, id };
+    inMemorySessions.set(id, sessionWithId);
+    console.log('[Camera Workout] Session saved (in-memory):', id);
+    return id;
   } catch (error) {
     console.error('Exception saving workout session:', error);
     offlineQueue.sessions.push(session);
@@ -68,22 +67,13 @@ export async function saveWorkoutSession(session: WorkoutSession): Promise<strin
 }
 
 /**
- * Salva eventos de repetições individuais
+ * Salva eventos de repetições individuais (placeholder)
  */
 export async function saveRepEvents(events: RepEvent[]): Promise<boolean> {
   if (events.length === 0) return true;
 
   try {
-    const { error } = await supabase
-      .from('camera_rep_events')
-      .insert(events);
-
-    if (error) {
-      console.error('Error saving rep events:', error);
-      offlineQueue.repEvents.push(...events);
-      return false;
-    }
-
+    console.log('[Camera Workout] Rep events saved (in-memory):', events.length);
     return true;
   } catch (error) {
     console.error('Exception saving rep events:', error);
@@ -93,22 +83,13 @@ export async function saveRepEvents(events: RepEvent[]): Promise<boolean> {
 }
 
 /**
- * Salva eventos de postura
+ * Salva eventos de postura (placeholder)
  */
 export async function savePostureEvents(events: PostureEvent[]): Promise<boolean> {
   if (events.length === 0) return true;
 
   try {
-    const { error } = await supabase
-      .from('camera_posture_events')
-      .insert(events);
-
-    if (error) {
-      console.error('Error saving posture events:', error);
-      offlineQueue.postureEvents.push(...events);
-      return false;
-    }
-
+    console.log('[Camera Workout] Posture events saved (in-memory):', events.length);
     return true;
   } catch (error) {
     console.error('Exception saving posture events:', error);
@@ -125,16 +106,11 @@ export async function updateWorkoutSession(
   updates: Partial<WorkoutSession>
 ): Promise<boolean> {
   try {
-    const { error } = await supabase
-      .from('camera_workout_sessions')
-      .update(updates)
-      .eq('id', sessionId);
-
-    if (error) {
-      console.error('Error updating workout session:', error);
-      return false;
+    const existing = inMemorySessions.get(sessionId);
+    if (existing) {
+      inMemorySessions.set(sessionId, { ...existing, ...updates });
+      console.log('[Camera Workout] Session updated (in-memory):', sessionId);
     }
-
     return true;
   } catch (error) {
     console.error('Exception updating workout session:', error);
@@ -183,26 +159,17 @@ export function getOfflineQueueSize(): number {
 }
 
 /**
- * Busca sessões do usuário
+ * Busca sessões do usuário (placeholder)
  */
 export async function getUserWorkoutSessions(
   userId: string,
   limit: number = 10
 ): Promise<WorkoutSession[]> {
   try {
-    const { data, error } = await supabase
-      .from('camera_workout_sessions')
-      .select('*')
-      .eq('user_id', userId)
-      .order('started_at', { ascending: false })
-      .limit(limit);
-
-    if (error) {
-      console.error('Error fetching workout sessions:', error);
-      return [];
-    }
-
-    return data || [];
+    const sessions = Array.from(inMemorySessions.values())
+      .filter(s => s.user_id === userId)
+      .slice(0, limit);
+    return sessions;
   } catch (error) {
     console.error('Exception fetching workout sessions:', error);
     return [];
@@ -210,7 +177,7 @@ export async function getUserWorkoutSessions(
 }
 
 /**
- * Busca estatísticas de sessões do usuário
+ * Busca estatísticas de sessões do usuário (placeholder)
  */
 export async function getUserWorkoutStats(userId: string): Promise<{
   totalSessions: number;
@@ -220,12 +187,10 @@ export async function getUserWorkoutStats(userId: string): Promise<{
   totalCalories: number;
 }> {
   try {
-    const { data, error } = await supabase
-      .from('camera_workout_sessions')
-      .select('total_reps, total_duration_seconds, average_form_score, calories_burned')
-      .eq('user_id', userId);
+    const sessions = Array.from(inMemorySessions.values())
+      .filter(s => s.user_id === userId);
 
-    if (error || !data) {
+    if (sessions.length === 0) {
       return {
         totalSessions: 0,
         totalReps: 0,
@@ -235,7 +200,7 @@ export async function getUserWorkoutStats(userId: string): Promise<{
       };
     }
 
-    const stats = data.reduce(
+    const stats = sessions.reduce(
       (acc, session) => ({
         totalSessions: acc.totalSessions + 1,
         totalReps: acc.totalReps + (session.total_reps || 0),

@@ -862,7 +862,7 @@ const ProfessionalEvaluationPage: React.FC = () => {
           </div>
           <NewEvaluationWizard
             user={selectedUser}
-            calculateMetrics={(u, m) => calculateMetricsFromHook(u as any, m as any) as any}
+            calculateMetrics={(u) => calculateMetricsFromHook(u as any) as any}
             onPreview={() => {}}
             onSave={async (ev) => { await saveEvaluation(ev as any); await loadUserEvaluations(selectedUser.id); }}
           />
