@@ -1,0 +1,508 @@
+{
+  "total_actions": 51,
+  "categories": {
+    "social": {
+      "count": 7,
+      "total_points": 49,
+      "actions": [
+        {
+          "type": "create_post",
+          "name": "Criar Post",
+          "points": 15,
+          "max_daily": 5
+        },
+        {
+          "type": "create_story",
+          "name": "Criar Story",
+          "points": 10,
+          "max_daily": 10
+        },
+        {
+          "type": "view_story",
+          "name": "Visualizar Story",
+          "points": 1,
+          "max_daily": 50
+        },
+        {
+          "type": "react_post",
+          "name": "Reagir Post",
+          "points": 3,
+          "max_daily": 30
+        },
+        {
+          "type": "reply_comment",
+          "name": "Responder Comentário",
+          "points": 5,
+          "max_daily": 10
+        },
+        {
+          "type": "follow_user",
+          "name": "Seguir Usuário",
+          "points": 5,
+          "max_daily": 10
+        },
+        {
+          "type": "get_followed",
+          "name": "Ser Seguido",
+          "points": 10,
+          "max_daily": null
+        }
+      ]
+    },
+    "bonus": {
+      "count": 11,
+      "total_points": 1145,
+      "actions": [
+        {
+          "type": "trending_post",
+          "name": "Post em Destaque",
+          "points": 50,
+          "max_daily": null
+        },
+        {
+          "type": "league_promotion",
+          "name": "Promoção de Liga",
+          "points": 300,
+          "max_daily": null
+        },
+        {
+          "type": "certificate_earned",
+          "name": "Certificado",
+          "points": 200,
+          "max_daily": null
+        },
+        {
+          "type": "good_form_bonus",
+          "name": "Boa Forma",
+          "points": 50,
+          "max_daily": 10
+        },
+        {
+          "type": "exercise_achievement",
+          "name": "Conquista Exercício",
+          "points": 100,
+          "max_daily": null
+        },
+        {
+          "type": "workout_streak_7",
+          "name": "Streak Treino 7d",
+          "points": 100,
+          "max_daily": null
+        },
+        {
+          "type": "connect_google_fit",
+          "name": "Conectar Google Fit",
+          "points": 50,
+          "max_daily": 1
+        },
+        {
+          "type": "health_streak_7",
+          "name": "Streak Saúde 7d",
+          "points": 75,
+          "max_daily": null
+        },
+        {
+          "type": "earn_powerup",
+          "name": "Ganhar Power-up",
+          "points": 20,
+          "max_daily": 5
+        },
+        {
+          "type": "combo_3x",
+          "name": "Combo 3x",
+          "points": 100,
+          "max_daily": null
+        },
+        {
+          "type": "mystery_box_open",
+          "name": "Caixa Presente",
+          "points": 100,
+          "max_daily": 3
+        }
+      ]
+    },
+    "desafio": {
+      "count": 11,
+      "total_points": 1955,
+      "actions": [
+        {
+          "type": "flash_challenge_complete",
+          "name": "Flash Challenge",
+          "points": 150,
+          "max_daily": null
+        },
+        {
+          "type": "duel_win",
+          "name": "Vencer Duelo",
+          "points": 200,
+          "max_daily": 3
+        },
+        {
+          "type": "duel_participate",
+          "name": "Participar Duelo",
+          "points": 50,
+          "max_daily": 5
+        },
+        {
+          "type": "join_team",
+          "name": "Entrar em Time",
+          "points": 20,
+          "max_daily": 1
+        },
+        {
+          "type": "create_team",
+          "name": "Criar Time",
+          "points": 50,
+          "max_daily": 1
+        },
+        {
+          "type": "team_challenge_complete",
+          "name": "Desafio de Time",
+          "points": 300,
+          "max_daily": null
+        },
+        {
+          "type": "team_battle_win",
+          "name": "Batalha de Time",
+          "points": 500,
+          "max_daily": null
+        },
+        {
+          "type": "team_contribution",
+          "name": "Contribuir Time",
+          "points": 10,
+          "max_daily": 10
+        },
+        {
+          "type": "journey_checkpoint",
+          "name": "Checkpoint Jornada",
+          "points": 75,
+          "max_daily": 7
+        },
+        {
+          "type": "journey_boss_defeat",
+          "name": "Boss Derrotado",
+          "points": 200,
+          "max_daily": null
+        },
+        {
+          "type": "seasonal_event_complete",
+          "name": "Evento Sazonal",
+          "points": 400,
+          "max_daily": null
+        }
+      ]
+    },
+    "educacao": {
+      "count": 4,
+      "total_points": 635,
+      "actions": [
+        {
+          "type": "watch_lesson",
+          "name": "Assistir Aula",
+          "points": 20,
+          "max_daily": 10
+        },
+        {
+          "type": "complete_module",
+          "name": "Completar Módulo",
+          "points": 100,
+          "max_daily": 3
+        },
+        {
+          "type": "complete_course",
+          "name": "Completar Curso",
+          "points": 500,
+          "max_daily": null
+        },
+        {
+          "type": "quiz_correct",
+          "name": "Quiz Correto",
+          "points": 15,
+          "max_daily": 20
+        }
+      ]
+    },
+    "exercicio": {
+      "count": 4,
+      "total_points": 575,
+      "actions": [
+        {
+          "type": "workout_complete",
+          "name": "Treino Completo",
+          "points": 100,
+          "max_daily": 3
+        },
+        {
+          "type": "camera_workout",
+          "name": "Treino com Câmera",
+          "points": 150,
+          "max_daily": 5
+        },
+        {
+          "type": "set_complete",
+          "name": "Série Completa",
+          "points": 25,
+          "max_daily": 20
+        },
+        {
+          "type": "program_complete",
+          "name": "Programa Completo",
+          "points": 300,
+          "max_daily": null
+        }
+      ]
+    },
+    "nutricao": {
+      "count": 5,
+      "total_points": 140,
+      "actions": [
+        {
+          "type": "meal_log",
+          "name": "Registrar Refeição",
+          "points": 15,
+          "max_daily": 6
+        },
+        {
+          "type": "meal_photo",
+          "name": "Foto Refeição",
+          "points": 20,
+          "max_daily": 6
+        },
+        {
+          "type": "sofia_analysis",
+          "name": "Análise Sofia",
+          "points": 25,
+          "max_daily": 5
+        },
+        {
+          "type": "calorie_goal_met",
+          "name": "Meta Calórica",
+          "points": 50,
+          "max_daily": 1
+        },
+        {
+          "type": "hydration_complete",
+          "name": "Hidratação 2L",
+          "points": 30,
+          "max_daily": 1
+        }
+      ]
+    },
+    "tracking": {
+      "count": 5,
+      "total_points": 85,
+      "actions": [
+        {
+          "type": "steps_goal_met",
+          "name": "Meta de Passos",
+          "points": 40,
+          "max_daily": 1
+        },
+        {
+          "type": "sleep_log",
+          "name": "Registrar Sono",
+          "points": 15,
+          "max_daily": 1
+        },
+        {
+          "type": "mood_log",
+          "name": "Registrar Humor",
+          "points": 10,
+          "max_daily": 3
+        },
+        {
+          "type": "symptoms_log",
+          "name": "Registrar Sintomas",
+          "points": 15,
+          "max_daily": 5
+        },
+        {
+          "type": "sync_health_data",
+          "name": "Sincronizar Dados",
+          "points": 5,
+          "max_daily": 3
+        }
+      ]
+    },
+    "saude": {
+      "count": 3,
+      "total_points": 170,
+      "actions": [
+        {
+          "type": "upload_exam",
+          "name": "Enviar Exame",
+          "points": 30,
+          "max_daily": 3
+        },
+        {
+          "type": "dr_vital_analysis",
+          "name": "Análise Dr. Vital",
+          "points": 40,
+          "max_daily": 3
+        },
+        {
+          "type": "health_consultation",
+          "name": "Consulta Completa",
+          "points": 100,
+          "max_daily": 1
+        }
+      ]
+    },
+    "especial": {
+      "count": 1,
+      "total_points": 0,
+      "actions": [
+        {
+          "type": "use_powerup",
+          "name": "Usar Power-up",
+          "points": 0,
+          "max_daily": null
+        }
+      ]
+    }
+  },
+  "existing_configs": [
+    "consistency",
+    "challenge_join",
+    "reason",
+    "daily_session",
+    "referral",
+    "action_not_configured",
+    "duel_win",
+    "profile_complete",
+    "sleep_goal",
+    "milestone",
+    "no_config_found",
+    "meal_logged",
+    "weight_log",
+    "water_goal",
+    "steps_goal",
+    "photo_upload",
+    "mission_complete",
+    "workout_minute",
+    "share_post",
+    "streak_bonus_7",
+    "social",
+    "workout_complete",
+    "comment",
+    "lovable",
+    "exercise_complete",
+    "special",
+    "challenge_complete",
+    "boss_battle_win",
+    "streak_bonus_30",
+    "ollama",
+    "daily_checkin",
+    "nutrition",
+    "like",
+    "no_limit",
+    "goal_complete",
+    "camera_workout",
+    "first_login",
+    "sleep",
+    "hydration",
+    "personal_record",
+    "exercise"
+  ],
+  "new_configs": [
+    "create_post",
+    "create_story",
+    "view_story",
+    "react_post",
+    "reply_comment",
+    "follow_user",
+    "get_followed",
+    "trending_post",
+    "flash_challenge_complete",
+    "duel_participate",
+    "join_team",
+    "create_team",
+    "team_challenge_complete",
+    "team_battle_win",
+    "team_contribution",
+    "journey_checkpoint",
+    "journey_boss_defeat",
+    "seasonal_event_complete",
+    "league_promotion",
+    "watch_lesson",
+    "complete_module",
+    "complete_course",
+    "quiz_correct",
+    "certificate_earned",
+    "good_form_bonus",
+    "set_complete",
+    "exercise_achievement",
+    "workout_streak_7",
+    "program_complete",
+    "meal_log",
+    "meal_photo",
+    "sofia_analysis",
+    "calorie_goal_met",
+    "hydration_complete",
+    "steps_goal_met",
+    "sleep_log",
+    "mood_log",
+    "symptoms_log",
+    "connect_google_fit",
+    "sync_health_data",
+    "upload_exam",
+    "dr_vital_analysis",
+    "health_consultation",
+    "health_streak_7",
+    "use_powerup",
+    "earn_powerup",
+    "combo_3x",
+    "mystery_box_open"
+  ],
+  "tables_with_points": [
+    "points_configuration",
+    "challenge_journeys",
+    "camera_workout_sessions",
+    "achievement_tracking",
+    "health_scores",
+    "user_points",
+    "cardio_points_history",
+    "goal_achievements",
+    "exercise_challenges",
+    "user_daily_xp_limits",
+    "ai_user_state_analysis",
+    "team_battles"
+  ],
+  "hooks_with_points": [
+    "useSocialRanking",
+    "useFollowingWithStats",
+    "useDailyMissionsFinal",
+    "useCommunityProfile",
+    "useGamification",
+    "useDailyMissions",
+    "useRealGamification",
+    "useUserPoints",
+    "useGamificationUnified",
+    "useUserDataCache",
+    "useExerciseRanking",
+    "useRanking",
+    "useUserXP",
+    "useSofiaIntegration",
+    "useUserProgressStats",
+    "useUnifiedGamification",
+    "useSofiaEmotional",
+    "useDailyMissionsEnhanced",
+    "useUserDataCentralized"
+  ],
+  "components_with_points": [
+    "complete_challenge",
+    "create_comment",
+    "follow_user",
+    "share_post",
+    "join_challenge",
+    "create_story",
+    "calorie_goal",
+    "complete_workout",
+    "upload_photo",
+    "log_weight",
+    "log_meal",
+    "create_post",
+    "steps_goal"
+  ]
+}

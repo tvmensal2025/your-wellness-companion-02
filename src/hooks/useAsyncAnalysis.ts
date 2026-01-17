@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { sofiaMonitoring } from '@/lib/monitoring';
 
 export type JobType = 'food_image' | 'medical_exam' | 'body_composition';
 export type JobStatus = 'queued' | 'processing' | 'completed' | 'failed' | 'cancelled';
@@ -90,6 +91,15 @@ export function useAsyncAnalysis(
             setProgress(100);
             setError(null);
             
+            // 📊 Track successful analysis
+            const duration = Date.now() - new Date(updatedJob.created_at).getTime();
+            sofiaMonitoring.trackAnalysis(duration, true, {
+              foods_detected: updatedJob.result?.foods?.length || 0,
+              yolo_used: updatedJob.result?.yolo_used || false,
+              gemini_used: updatedJob.result?.gemini_used || false,
+              calories: updatedJob.result?.calories || 0
+            });
+            
             toast({
               title: 'Análise completa! 🎉',
               description: 'Sua análise foi processada com sucesso.',
@@ -108,6 +118,18 @@ export function useAsyncAnalysis(
             setStatus('error');
             setError(updatedJob.error_message || 'Erro desconhecido');
             setProgress(0);
+            
+            // 📊 Track failed analysis
+            const duration = Date.now() - new Date(updatedJob.created_at).getTime();
+            sofiaMonitoring.trackAnalysis(duration, false, {
+              error: updatedJob.error_message
+            });
+            
+            // Track critical error
+            sofiaMonitoring.trackError(
+              new Error(updatedJob.error_message || 'Analysis failed'),
+              { job_id: updatedJob.id, job_type: updatedJob.job_type }
+            );
             
             // Retry logic
             if (options.autoRetry && retryCountRef.current < (options.maxRetries || 3)) {

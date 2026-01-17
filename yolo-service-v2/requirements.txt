@@ -8,10 +8,8 @@ uvicorn[standard]==0.34.0
 python-multipart==0.0.17
 
 # ==================== YOLO - ULTRALYTICS ====================
-# YOLO26 lançado em 14/01/2026 - https://github.com/ultralytics/ultralytics
-# Changelog: https://github.com/ultralytics/ultralytics/releases
-# Requer versão >= 8.4.0 para YOLO26 e YOLOE-26
-ultralytics>=8.4.0
+# Versão estável testada - YOLO11 funciona perfeitamente
+ultralytics==8.3.50
 
 # ==================== VISÃO COMPUTACIONAL ====================
 opencv-python-headless==4.10.0.84

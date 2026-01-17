@@ -14,10 +14,11 @@ const DEFAULT_CONFIG: CameraConfig = {
   autoOptimize: true,
 };
 
+// 🚀 OTIMIZAÇÃO: Resolução reduzida para escalar (+300% capacidade)
 const RESOLUTION_MAP = {
   low: { width: 320, height: 240 },
-  medium: { width: 640, height: 480 },
-  high: { width: 1280, height: 720 },
+  medium: { width: 320, height: 240 },  // Otimizado: 640x480 → 320x240
+  high: { width: 640, height: 480 },    // Otimizado: 1280x720 → 640x480
 };
 
 interface UseCameraWorkoutReturn {

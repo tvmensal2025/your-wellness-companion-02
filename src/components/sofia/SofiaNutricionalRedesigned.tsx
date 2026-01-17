@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { calculateTDEE, calculateNutritionalGoals, NutritionObjective, type PhysicalData } from '@/utils/macro-calculator';
+import { WeeklyPlanCard } from '@/components/mealie/WeeklyPlanCard';
 
 // ============================================
 // TIPOS
@@ -29,12 +30,6 @@ interface UserGoals {
   target_protein: number;
   target_carbs: number;
   target_fat: number;
-}
-interface WeekDayData {
-  date: string;
-  percentage: number;
-  mealsLogged: number;
-  calories: number;
 }
 
 // ============================================
@@ -505,67 +500,6 @@ const MealDetailCard: React.FC<MealDetailCardProps> = ({
 };
 
 // ============================================
-// COMPONENTE: Histórico Semanal Minimalista
-// ============================================
-
-interface WeekHistoryProps {
-  weekData: WeekDayData[];
-}
-const WeekHistory: React.FC<WeekHistoryProps> = ({
-  weekData
-}) => {
-  const days = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
-  const today = new Date().getDay();
-  return <Card className="bg-card/50 backdrop-blur border-0">
-      <CardContent className="p-4">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-primary" />
-            <span className="text-sm font-semibold">Esta Semana</span>
-          </div>
-          <Badge variant="outline" className="text-xs">
-            {weekData.filter(d => d.mealsLogged >= 3).length}/7 completos
-          </Badge>
-        </div>
-
-        <div className="flex justify-between">
-          {days.map((day, idx) => {
-          const data = weekData[idx];
-          const isToday = idx === today;
-          const pct = data?.percentage || 0;
-          const logged = data?.mealsLogged || 0;
-          return <div key={idx} className="flex flex-col items-center gap-1.5 border-8">
-                <span className={cn("text-[10px] font-medium", isToday ? "text-primary" : "text-muted-foreground")}>
-                  {day}
-                </span>
-                
-                {/* Barra vertical de progresso */}
-                <div className="relative w-8 h-16 bg-muted/30 rounded-full overflow-hidden">
-                  <motion.div className={cn("absolute bottom-0 w-full rounded-full", pct >= 80 ? "bg-gradient-to-t from-emerald-500 to-emerald-400" : pct >= 50 ? "bg-gradient-to-t from-amber-500 to-amber-400" : pct > 0 ? "bg-gradient-to-t from-red-500 to-red-400" : "bg-transparent")} initial={{
-                height: 0
-              }} animate={{
-                height: `${Math.max(pct, 5)}%`
-              }} transition={{
-                duration: 0.8,
-                delay: idx * 0.1
-              }} />
-                  
-                  {/* Indicador de hoje */}
-                  {isToday && <div className="absolute inset-0 ring-2 ring-primary ring-offset-1 ring-offset-background rounded-full" />}
-                </div>
-
-                {/* Número de refeições */}
-                <span className={cn("text-[10px] font-medium", logged >= 3 ? "text-emerald-500" : "text-muted-foreground")}>
-                  {logged > 0 ? logged : '-'}
-                </span>
-              </div>;
-        })}
-        </div>
-      </CardContent>
-    </Card>;
-};
-
-// ============================================
 // COMPONENTE: Dica da Sofia (Sutil)
 // ============================================
 
@@ -642,7 +576,6 @@ export const SofiaNutricionalRedesigned: React.FC<SofiaNutricionalRedesignedProp
   const [physicalData, setPhysicalData] = useState<PhysicalData | null>(null);
   const [userGoals, setUserGoals] = useState<UserGoals | null>(null);
   const [streak, setStreak] = useState(0);
-  const [weekData, setWeekData] = useState<WeekDayData[]>([]);
   const [selectedMeal, setSelectedMeal] = useState<MealData | null>(null);
 
   // Carregar dados
@@ -657,7 +590,7 @@ export const SofiaNutricionalRedesigned: React.FC<SofiaNutricionalRedesignedProp
     if (!userId) return;
     setLoading(true);
     try {
-      await Promise.all([loadPhysicalData(), loadTodayMeals(), loadWeekData(), loadStreak()]);
+      await Promise.all([loadPhysicalData(), loadTodayMeals(), loadStreak()]);
     } catch (error) {
       console.error('Erro ao carregar dados:', error);
     } finally {
@@ -716,44 +649,32 @@ export const SofiaNutricionalRedesigned: React.FC<SofiaNutricionalRedesignedProp
       ascending: true
     });
     if (data) {
-      const formattedMeals: MealData[] = data.map((item: any) => ({
-        id: item.id,
-        meal_type: item.meal_type || 'outro',
-        calories: item.total_calories || item.calories || 0,
-        protein_g: item.total_protein || item.total_proteins || 0,
-        carbs_g: item.total_carbs || 0,
-        fat_g: item.total_fat || item.total_fats || item.fats || 0,
-        foods_detected: Array.isArray(item.foods_detected) ? item.foods_detected.map((f: any) => typeof f === 'string' ? f : f.name || f.food || 'Alimento') : [],
-        created_at: item.created_at,
-        confirmed_by_user: item.confirmed_by_user || false
-      }));
+      const formattedMeals: MealData[] = data.map((item: any) => {
+        // ✅ FORMATO CORRETO: Dados estão diretamente na tabela, não em analysis_result
+        
+        // Extrair lista de alimentos de foods_detected (array de objetos)
+        let foodsList: string[] = [];
+        if (Array.isArray(item.foods_detected)) {
+          foodsList = item.foods_detected.map((f: any) => 
+            typeof f === 'string' ? f : f.nome || f.name || f.food || 'Alimento'
+          );
+        }
+        
+        return {
+          id: item.id,
+          meal_type: item.meal_type || 'outro',
+          calories: item.total_calories || 0,
+          protein_g: item.total_protein || 0,
+          carbs_g: item.total_carbs || 0,
+          fat_g: item.total_fat || 0,
+          foods_detected: foodsList.length > 0 ? foodsList : ['Alimento'],
+          created_at: item.created_at,
+          confirmed_by_user: item.confirmed_by_user || false
+        };
+      });
+      
       setMeals(formattedMeals);
     }
-  };
-  const loadWeekData = async () => {
-    if (!userId) return;
-    const weekStart = new Date();
-    weekStart.setDate(weekStart.getDate() - weekStart.getDay());
-    const weekDataArray: WeekDayData[] = [];
-    for (let i = 0; i < 7; i++) {
-      const date = new Date(weekStart);
-      date.setDate(date.getDate() + i);
-      const dateStr = date.toISOString().split('T')[0];
-      const {
-        data
-      } = await supabase.from('sofia_food_analysis').select('total_calories, calories').eq('user_id', userId).gte('created_at', `${dateStr}T00:00:00`).lte('created_at', `${dateStr}T23:59:59`);
-      const totalCalories = data?.reduce((sum, item: any) => sum + (item.total_calories || item.calories || 0), 0) || 0;
-      const mealsLogged = data?.length || 0;
-      const targetCalories = userGoals?.target_calories || 2000;
-      const percentage = totalCalories / targetCalories * 100;
-      weekDataArray.push({
-        date: dateStr,
-        percentage: Math.min(percentage, 100),
-        mealsLogged,
-        calories: totalCalories
-      });
-    }
-    setWeekData(weekDataArray);
   };
   const loadStreak = async () => {
     if (!userId) return;
@@ -816,6 +737,9 @@ export const SofiaNutricionalRedesigned: React.FC<SofiaNutricionalRedesignedProp
       {/* Dica da Sofia */}
       <SofiaTip mealsLogged={dailyStats.mealsLogged} />
 
+      {/* Card Semanal - NOVO! */}
+      <WeeklyPlanCard userId={userId} />
+
       {/* Hero Card com Calorias */}
       <HeroCaloriesCard consumed={dailyStats.calories} target={userGoals?.target_calories || 2000} objective={userGoals?.objective || NutritionObjective.MAINTAIN} streak={streak} mealsLogged={dailyStats.mealsLogged} />
 
@@ -848,8 +772,8 @@ export const SofiaNutricionalRedesigned: React.FC<SofiaNutricionalRedesignedProp
         {selectedMeal && <MealDetailCard meal={selectedMeal} config={selectedMealConfig} onClose={() => setSelectedMeal(null)} />}
       </div>
 
-      {/* Histórico Semanal */}
-      <WeekHistory weekData={weekData} />
+      {/* Card Semanal Interativo - NOVO! */}
+      <WeeklyPlanCard userId={userId} />
     </div>;
 };
 export default SofiaNutricionalRedesigned;

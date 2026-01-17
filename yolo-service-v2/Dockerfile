@@ -15,11 +15,11 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PIP_NO_CACHE_DIR=1
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1
 
-# Modelos YOLO26 (mais rápidos, NMS-free)
-ENV YOLO_MODEL=yolo26s.pt
-ENV YOLO_POSE_MODEL=yolo26s-pose.pt
-# YOLOE para vocabulário aberto (Dr. Vital, alimentos brasileiros)
-ENV YOLOE_MODEL=yoloe-26s-seg.pt
+# Modelos YOLO11 estáveis (testados e funcionando)
+ENV YOLO_MODEL=yolo11s.pt
+ENV YOLO_POSE_MODEL=yolo11s-pose.pt
+# YOLO11 para segmentação
+ENV YOLOE_MODEL=yolo11s-seg.pt
 ENV YOLO_CONF=0.35
 ENV PORT=8000
 

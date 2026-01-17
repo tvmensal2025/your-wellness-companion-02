@@ -66,6 +66,7 @@ import WhatsAppManagement from "@/components/admin/WhatsAppManagement";
 import WebhookManagement from "@/components/admin/WebhookManagement";
 import { PlatformSettingsPanel } from "@/components/admin/PlatformSettingsPanel";
 import { XPConfigPanel } from "@/components/admin/XPConfigPanel";
+import { PerformanceMonitoring } from "@/components/admin/PerformanceMonitoring";
 
 import { repairAuthSessionIfTooLarge } from "@/lib/auth-token-repair";
 
@@ -220,6 +221,7 @@ const AdminPage = () => {
 
   const menuItems = [
     { id: 'dashboard', icon: BarChart3, label: 'Dashboard Admin', color: 'text-primary', description: 'Visão geral completa do sistema' },
+    { id: 'performance', icon: Activity, label: '📊 Performance Monitoring', color: 'text-green-500', description: 'Monitoramento em tempo real de todas as features' },
     { id: 'users', icon: Users, label: 'Gestão de Usuários', color: 'text-blue-500', description: 'Gerenciar todos os usuários' },
     { id: 'weighings', icon: Scale, label: 'Monitoramento de Pesagens', color: 'text-purple-500', description: 'Acompanhar todas as pesagens' },
     { id: 'anamneses', icon: FileText, label: 'Gestão de Anamneses', color: 'text-indigo-500', description: 'Visualizar todas as anamneses para entender como ajudar cada usuário' },
@@ -285,6 +287,8 @@ const AdminPage = () => {
     switch (activeSection) {
       case 'dashboard':
         return <AdminDashboard userRole={isAdmin ? 'admin' : 'super_admin'} />;
+      case 'performance':
+        return <PerformanceMonitoring />;
       case 'users':
         return <UserManagement />;
       case 'weighings':

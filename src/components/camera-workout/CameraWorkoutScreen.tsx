@@ -23,11 +23,14 @@ import {
 import { cn } from '@/lib/utils';
 import { RepCounterDisplay } from './RepCounterDisplay';
 import { FormFeedbackToast } from './FormFeedbackToast';
+import { SkeletonOverlay } from './SkeletonOverlay';
+import { DebugOverlay } from './DebugOverlay';
 import { usePoseEstimation } from '@/hooks/camera-workout/usePoseEstimation';
 import type { 
   ExerciseType, 
   WorkoutScreenState,
   CalibrationData,
+  Keypoint,
 } from '@/types/camera-workout';
 import { EXERCISE_NAMES_PT } from '@/types/camera-workout';
 
@@ -70,6 +73,18 @@ export function CameraWorkoutScreen({
   const [phaseProgress, setPhaseProgress] = useState(0);
   const [isValidRep, setIsValidRep] = useState(false);
   const [detectionActive, setDetectionActive] = useState(false);
+
+  // ✅ NOVOS ESTADOS PARA ESCALABILIDADE (Patch v1.0.0)
+  const [currentKeypoints, setCurrentKeypoints] = useState<Keypoint[]>([]);
+  const [currentAngles, setCurrentAngles] = useState<Record<string, number>>({});
+  const [showSkeleton, setShowSkeleton] = useState(true);
+  const [showDebug, setShowDebug] = useState(false);
+  const [feedbackQueue, setFeedbackQueue] = useState<Array<{
+    message: string;
+    type: 'tip' | 'warning' | 'celebration';
+    timestamp: number;
+  }>>([]);
+  const lastRequestTimeRef = useRef<number>(0);
 
   // Refs
   const containerRef = useRef<HTMLDivElement>(null);
@@ -257,6 +272,16 @@ export function CameraWorkoutScreen({
    * Captura frame do vídeo e envia para YOLO
    */
   const captureAndAnalyzeFrame = useCallback(async () => {
+    // 🛡️ RATE LIMITING: Máximo 15 FPS (Patch v1.0.0)
+    const now = Date.now();
+    const timeSinceLastRequest = now - (lastRequestTimeRef.current || 0);
+    const minInterval = 1000 / 10;  // Otimizado: 10 FPS (+50% capacidade) // 66ms = 15 FPS
+    
+    if (timeSinceLastRequest < minInterval) {
+      return; // Pular frame
+    }
+    lastRequestTimeRef.current = now;
+    
     const video = videoRef.current;
     const canvas = canvasRef.current;
     
@@ -407,7 +432,36 @@ export function CameraWorkoutScreen({
         clearInterval(frameIntervalRef.current);
       }
     };
-  }, [screenState, detectionActive, captureAndAnalyzeFrame]);
+  },  [screenState, detectionActive, captureAndAnalyzeFrame]);
+
+  /**
+   * ✅ SISTEMA DE FILA DE FEEDBACK (Patch v1.0.0)
+   * Processa fila de feedback (mostra 1 por vez, 3s cada)
+   */
+  useEffect(() => {
+    if (feedbackQueue.length === 0 || currentFeedback) return;
+    
+    const nextFeedback = feedbackQueue[0];
+    const age = Date.now() - nextFeedback.timestamp;
+    
+    // Expirar feedbacks antigos (>10s)
+    if (age > 10000) {
+      setFeedbackQueue(prev => prev.slice(1));
+      return;
+    }
+    
+    // Mostrar próximo feedback
+    setCurrentFeedback(nextFeedback.message);
+    setFeedbackType(nextFeedback.type);
+    
+    // Auto-dismiss após 3s
+    const timer = setTimeout(() => {
+      setCurrentFeedback(null);
+      setFeedbackQueue(prev => prev.slice(1));
+    }, 3000);
+    
+    return () => clearTimeout(timer);
+  }, [feedbackQueue, currentFeedback]);
 
   /**
    * Inicia o treino com CONTAGEM AUTOMÁTICA
@@ -666,6 +720,19 @@ export function CameraWorkoutScreen({
               <Button
                 size="icon"
                 variant="secondary"
+                onClick={() => setShowSkeleton(!showSkeleton)}
+                className={cn(
+                  "bg-background/80 backdrop-blur",
+                  showSkeleton && "ring-2 ring-primary"
+                )}
+                title={showSkeleton ? "Ocultar Esqueleto" : "Mostrar Esqueleto"}
+              >
+                <Target className="h-4 w-4" />
+              </Button>
+
+              <Button
+                size="icon"
+                variant="secondary"
                 onClick={toggleFullscreen}
                 className="bg-background/80 backdrop-blur"
               >
@@ -743,6 +810,19 @@ export function CameraWorkoutScreen({
       
       {/* Canvas SEMPRE renderizado para captura de frames */}
       <canvas ref={canvasRef} className="hidden" />
+      
+      {/* ✅ SKELETON OVERLAY - Feedback visual (Patch v1.0.0) */}
+      {showSkeleton && currentKeypoints.length > 0 && 
+       (screenState === 'counting' || screenState === 'paused') && (
+        <div className="absolute inset-0 pointer-events-none z-10">
+          <SkeletonOverlay
+            keypoints={currentKeypoints}
+            formScore={formScore}
+            showLabels={false}
+            animate={true}
+          />
+        </div>
+      )}
       
       {renderContent()}
     </div>

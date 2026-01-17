@@ -3,7 +3,10 @@
  * 
  * Collects and monitors performance metrics for camera workout sessions.
  * Detects environment issues and provides alerts.
+ * Integrates with centralized monitoring system.
  */
+
+import { cameraWorkoutMonitoring } from '@/lib/monitoring';
 
 export interface PerformanceMetrics {
   fps: number;
@@ -167,7 +170,7 @@ class MetricsService {
   }
 
   /**
-   * Save metrics snapshot (placeholder - logs to console)
+   * Save metrics snapshot (sends to monitoring system)
    */
   async saveSnapshot(sessionId: string): Promise<void> {
     const snapshot = this.getSnapshot();
@@ -176,8 +179,23 @@ class MetricsService {
     snapshot.sessionId = sessionId;
 
     try {
-      // Table camera_metrics not yet created - log to console
-      console.log('[Camera Metrics] Snapshot saved (placeholder):', {
+      // Send to centralized monitoring
+      await cameraWorkoutMonitoring.trackWorkout(
+        Date.now(), // Duration will be calculated by caller
+        true,
+        {
+          session_id: sessionId,
+          avg_fps: snapshot.avgFps,
+          avg_latency: snapshot.avgLatency,
+          avg_confidence: snapshot.avgConfidence,
+          min_fps: snapshot.minFps,
+          max_latency: snapshot.maxLatency,
+          min_confidence: snapshot.minConfidence,
+          issues_count: snapshot.issues.length
+        }
+      );
+
+      console.log('[Camera Metrics] Snapshot saved:', {
         session_id: sessionId,
         avg_fps: snapshot.avgFps,
         avg_latency: snapshot.avgLatency,

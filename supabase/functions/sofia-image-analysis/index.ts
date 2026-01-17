@@ -280,59 +280,54 @@ const YOLO_CLASS_MAP: Record<string, string> = {
 // ============================================
 // NORMALIZAÇÃO DE MEAL_TYPE
 // ============================================
-// Mapeia valores em inglês/variantes para o padrão português usado no app
+// Mapeia valores em inglês/variantes para o padrão INGLÊS usado pelo hook
+// Hook espera: 'breakfast' | 'lunch' | 'snack' | 'dinner' | 'refeicao'
 function normalizeMealType(mealType: string | undefined | null): string {
   if (!mealType) {
     // Detectar automaticamente baseado no horário
-    const hour = new Date().getHours();
-    if (hour >= 5 && hour < 10) return 'cafe_da_manha';
-    if (hour >= 10 && hour < 14) return 'almoco';
-    if (hour >= 14 && hour < 18) return 'lanche';
-    if (hour >= 18 && hour < 22) return 'jantar';
-    return 'ceia';
+    return detectMealTypeByTime();
   }
   
   const normalized = mealType.toLowerCase().trim();
   
-  // Mapeamento de inglês para português
+  // Mapeamento para INGLÊS (compatível com useDailyNutritionReport)
   const mealTypeMap: Record<string, string> = {
-    // Inglês
-    'breakfast': 'cafe_da_manha',
-    'lunch': 'almoco',
-    'dinner': 'jantar',
-    'snack': 'lanche',
-    'supper': 'ceia',
-    // Português com variações
-    'café da manhã': 'cafe_da_manha',
-    'cafe da manha': 'cafe_da_manha',
-    'café': 'cafe_da_manha',
-    'cafe': 'cafe_da_manha',
-    'almoço': 'almoco',
-    'almoco': 'almoco',
-    'lanche': 'lanche',
-    'lanche da tarde': 'lanche',
-    'jantar': 'jantar',
-    'janta': 'jantar',
-    'ceia': 'ceia',
-    // Valores já normalizados
-    'cafe_da_manha': 'cafe_da_manha',
+    // Inglês (já normalizado)
+    'breakfast': 'breakfast',
+    'lunch': 'lunch',
+    'dinner': 'dinner',
+    'snack': 'snack',
+    'supper': 'dinner', // Ceia = Jantar
+    // Português → Inglês
+    'café da manhã': 'breakfast',
+    'cafe da manha': 'breakfast',
+    'café': 'breakfast',
+    'cafe': 'breakfast',
+    'cafe_da_manha': 'breakfast',
+    'almoço': 'lunch',
+    'almoco': 'lunch',
+    'lanche': 'snack',
+    'lanche da tarde': 'snack',
+    'jantar': 'dinner',
+    'janta': 'dinner',
+    'ceia': 'dinner',
     // Fallback genérico
-    'refeicao': detectMealTypeByTime(),
-    'refeição': detectMealTypeByTime(),
+    'refeicao': 'refeicao',
+    'refeição': 'refeicao',
     'meal': detectMealTypeByTime()
   };
   
   return mealTypeMap[normalized] || detectMealTypeByTime();
 }
 
-// Helper para detectar tipo de refeição pelo horário
+// Helper para detectar tipo de refeição pelo horário (retorna em INGLÊS)
 function detectMealTypeByTime(): string {
   const hour = new Date().getHours();
-  if (hour >= 5 && hour < 10) return 'cafe_da_manha';
-  if (hour >= 10 && hour < 14) return 'almoco';
-  if (hour >= 14 && hour < 18) return 'lanche';
-  if (hour >= 18 && hour < 22) return 'jantar';
-  return 'ceia';
+  if (hour >= 5 && hour < 10) return 'breakfast';
+  if (hour >= 10 && hour < 14) return 'lunch';
+  if (hour >= 14 && hour < 18) return 'snack';
+  if (hour >= 18 && hour < 22) return 'dinner';
+  return 'dinner'; // Após 22h = jantar tardio
 }
 
 // 🎯 Mapeamento de área (pixels) para gramas (calibrado)

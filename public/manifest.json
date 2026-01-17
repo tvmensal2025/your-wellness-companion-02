@@ -1,12 +1,12 @@
 {
-  "name": "MaxNutrition",
+  "name": "MaxNutrition - Nutrição Inteligente",
   "short_name": "MaxNutrition",
-  "description": "Nutrição inteligente e personalizada para transformar sua saúde",
+  "description": "Transforme sua saúde com IA: análise de alimentos, exames e acompanhamento completo",
   "start_url": "/",
   "id": "/",
   "display": "standalone",
-  "background_color": "#0f172a",
-  "theme_color": "#10b981",
+  "background_color": "#ffffff",
+  "theme_color": "#22c55e",
   "orientation": "portrait-primary",
   "scope": "/",
   "icons": [
