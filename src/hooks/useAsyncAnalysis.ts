@@ -236,7 +236,12 @@ export function useAsyncAnalysis(
           throw new Error(jobError.message);
         }
 
-        setCurrentJob(jobData);
+        // Cast job_type to JobType
+        setCurrentJob({
+          ...jobData,
+          job_type: jobData.job_type as JobType,
+          status: jobData.status as JobStatus,
+        });
 
         toast({
           title: 'Processando...',
