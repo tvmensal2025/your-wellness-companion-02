@@ -5,8 +5,6 @@
  * Detects environment issues and provides alerts.
  */
 
-import { supabase } from '@/integrations/supabase/client';
-
 export interface PerformanceMetrics {
   fps: number;
   latency: number; // ms
@@ -169,7 +167,7 @@ class MetricsService {
   }
 
   /**
-   * Save metrics snapshot to database
+   * Save metrics snapshot (placeholder - logs to console)
    */
   async saveSnapshot(sessionId: string): Promise<void> {
     const snapshot = this.getSnapshot();
@@ -178,23 +176,18 @@ class MetricsService {
     snapshot.sessionId = sessionId;
 
     try {
-      const { error } = await supabase
-        .from('camera_metrics')
-        .insert({
-          session_id: sessionId,
-          avg_fps: snapshot.avgFps,
-          avg_latency: snapshot.avgLatency,
-          avg_confidence: snapshot.avgConfidence,
-          min_fps: snapshot.minFps,
-          max_latency: snapshot.maxLatency,
-          min_confidence: snapshot.minConfidence,
-          issues: snapshot.issues,
-          created_at: snapshot.timestamp.toISOString(),
-        });
-
-      if (error) {
-        console.error('Error saving metrics snapshot:', error);
-      }
+      // Table camera_metrics not yet created - log to console
+      console.log('[Camera Metrics] Snapshot saved (placeholder):', {
+        session_id: sessionId,
+        avg_fps: snapshot.avgFps,
+        avg_latency: snapshot.avgLatency,
+        avg_confidence: snapshot.avgConfidence,
+        min_fps: snapshot.minFps,
+        max_latency: snapshot.maxLatency,
+        min_confidence: snapshot.minConfidence,
+        issues_count: snapshot.issues.length,
+        created_at: snapshot.timestamp.toISOString(),
+      });
     } catch (error) {
       console.error('Failed to save metrics snapshot:', error);
     }

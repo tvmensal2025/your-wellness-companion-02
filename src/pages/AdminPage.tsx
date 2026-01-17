@@ -190,13 +190,10 @@ const AdminPage = () => {
         .from('courses')
         .select('*', { count: 'exact', head: true });
 
-      // Fetch today's completed missions
+      // Fetch today's completed missions (placeholder - table not yet created)
       const today = new Date().toISOString().split('T')[0];
-      const { count: missionsCount } = await supabase
-        .from('user_missions')
-        .select('*', { count: 'exact', head: true })
-        .eq('is_completed', true)
-        .eq('date_assigned', today);
+      console.log('Checking missions for:', today);
+      const missionsCount = 0; // Table user_missions not yet available
 
       // Fetch active sessions (users with activity in last 30 minutes)
       const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString();

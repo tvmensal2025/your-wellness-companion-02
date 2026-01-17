@@ -226,27 +226,8 @@ async function awardChallengeRewards(
   xp: number
 ): Promise<void> {
   try {
-    // Update user points
-    const { error: pointsError } = await supabase.rpc('add_user_points', {
-      p_user_id: userId,
-      p_points: points,
-      p_source: 'camera_workout_challenge',
-    });
-
-    if (pointsError) {
-      console.error('Error awarding points:', pointsError);
-    }
-
-    // Update user XP
-    const { error: xpError } = await supabase.rpc('add_user_xp', {
-      p_user_id: userId,
-      p_xp: xp,
-      p_source: 'camera_workout_challenge',
-    });
-
-    if (xpError) {
-      console.error('Error awarding XP:', xpError);
-    }
+    // Placeholder - tables not yet created
+    console.log(`[Camera Workout] Awarding ${points} points and ${xp} XP to user ${userId}`);
   } catch (error) {
     console.error('Error awarding challenge rewards:', error);
   }
@@ -304,7 +285,7 @@ export async function joinCameraWorkoutChallenge(
         user_id: userId,
         challenge_id: challengeId,
         progress: 0,
-        target_value: challenge.target_reps || challenge.target_sessions || 100,
+        target_value: (challenge as any).target_reps || (challenge as any).target_sessions || challenge.target_value || 100,
         started_at: new Date().toISOString(),
       });
 
