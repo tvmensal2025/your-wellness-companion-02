@@ -47,7 +47,7 @@ interface Achievement {
   title: string;
   description: string;
   points: number;
-  earned_at: string;
+  achieved_at: string;
 }
 
 interface MedicalDocument {
@@ -151,7 +151,7 @@ const UserProfile = ({ onOpenLayoutPrefs }: UserProfileProps = {}) => {
         .from('user_achievements_v2')
         .select('*')
         .eq('user_id', user.id)
-        .order('earned_at', { ascending: false });
+        .order('achieved_at', { ascending: false });
 
       if (achievementsError) throw achievementsError;
       setAchievements(achievementsData as any[] || []);
@@ -654,7 +654,7 @@ const UserProfile = ({ onOpenLayoutPrefs }: UserProfileProps = {}) => {
                       </div>
                       <p className="text-sm text-muted-foreground mb-2 break-words">{achievement.description}</p>
                       <p className="text-xs text-muted-foreground">
-                        Conquistado em {new Date(achievement.earned_at).toLocaleDateString('pt-BR')}
+                        Conquistado em {new Date(achievement.achieved_at).toLocaleDateString('pt-BR')}
                       </p>
                     </div>
                   ))}

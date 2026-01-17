@@ -26,7 +26,7 @@ interface Achievement {
   color?: string;
   rarity?: 'common' | 'rare' | 'epic' | 'legendary';
   description?: string;
-  earned_at?: string;
+  achieved_at?: string;
 }
 
 interface FollowingUser {
@@ -137,12 +137,12 @@ export const FollowingList: React.FC<FollowingListProps> = ({ onProfileClick, on
       const achievementsByUser: Record<string, Achievement[]> = {};
       
       try {
-        // Tentar buscar de user_achievements primeiro
+        // Buscar de user_achievements_v2
         const { data: userAchievements } = await (supabase as any)
-          .from('user_achievements')
-          .select('id, user_id, achievement_name, achievement_type, description, earned_at')
+          .from('user_achievements_v2')
+          .select('id, user_id, title, achievement_type, description, achieved_at')
           .in('user_id', followingIds)
-          .order('earned_at', { ascending: false })
+          .order('achieved_at', { ascending: false })
           .limit(50);
 
         if (userAchievements) {
@@ -153,9 +153,9 @@ export const FollowingList: React.FC<FollowingListProps> = ({ onProfileClick, on
             if (achievementsByUser[ach.user_id].length < 3) {
               achievementsByUser[ach.user_id].push({
                 id: ach.id,
-                name: ach.achievement_name || ach.achievement_type || 'Conquista',
+                name: ach.title || ach.achievement_type || 'Conquista',
                 description: ach.description || undefined,
-                earned_at: ach.earned_at || undefined,
+                achieved_at: ach.achieved_at || undefined,
                 rarity: 'common' // Default, pode ser atualizado se houver campo
               });
             }

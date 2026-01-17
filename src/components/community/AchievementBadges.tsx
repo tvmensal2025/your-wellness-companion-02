@@ -10,7 +10,7 @@ interface Achievement {
   color?: string;
   rarity?: 'common' | 'rare' | 'epic' | 'legendary';
   description?: string;
-  earned_at?: string;
+  achieved_at?: string;
 }
 
 interface AchievementBadgesProps {

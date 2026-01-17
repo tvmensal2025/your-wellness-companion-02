@@ -148,6 +148,32 @@ export const SmartSupplementsSection: React.FC<SmartSupplementsSectionProps> = (
     gcTime: ONE_WEEK_MS,
   });
 
+  // Listener para invalidar cache quando anamnese é atualizada
+  useEffect(() => {
+    if (!userId) return;
+
+    const channel = supabase
+      .channel('anamnesis-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'user_anamnesis',
+          filter: `user_id=eq.${userId}`,
+        },
+        () => {
+          // Invalida cache de perfil e recomendações quando anamnese muda
+          refetch();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [userId, refetch]);
+
   // Scroll handlers
   const scrollToIndex = (index: number) => {
     if (!scrollRef.current || !recommendations) return;

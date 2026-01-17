@@ -1,0 +1,122 @@
+{
+  "stats": {
+    "total_files": 1371,
+    "total_lines": 354383,
+    "typescript_files": 519,
+    "javascript_files": 0,
+    "tsx_files": 794,
+    "jsx_files": 0,
+    "css_files": 3,
+    "json_files": 4,
+    "components": 794,
+    "hooks": 197,
+    "pages": 27,
+    "utils": 35,
+    "services": 47
+  },
+  "issues": {
+    "critical": 0,
+    "high": 4,
+    "medium": 144,
+    "low": 159,
+    "info": 1024
+  },
+  "patterns": {
+    "console_logs": 1592,
+    "any_types": 1598,
+    "todos": 244,
+    "fixmes": 0,
+    "long_files": 138
+  },
+  "details": {
+    "critical_issues": [],
+    "high_issues": [
+      "⚠️ ALTO: Uso de eval() ou Function() em src/utils/meal-plan-test-suite.ts",
+      "⚠️ ALTO: Uso de eval() ou Function() em src/utils/meal-plan-error-handler.ts",
+      "⚠️ ALTO: Uso de eval() ou Function() em src/components/admin/whatsapp/WhatsAppTestSend.tsx",
+      "⚠️ ALTO: Uso de eval() ou Function() em src/hooks/useMealPlanGeneratorV2.ts"
+    ],
+    "long_files": [
+      {
+        "file": "src/types/advanced-exercise-system.ts",
+        "lines": 870
+      },
+      {
+        "file": "src/types/camera-workout.ts",
+        "lines": 510
+      },
+      {
+        "file": "src/types/dr-vital-revolution.ts",
+        "lines": 638
+      },
+      {
+        "file": "src/tests/dr-vital/achievement.property.test.ts",
+        "lines": 518
+      },
+      {
+        "file": "src/tests/dr-vital/prediction.property.test.ts",
+        "lines": 569
+      },
+      {
+        "file": "src/tests/dr-vital/timeline.property.test.ts",
+        "lines": 592
+      },
+      {
+        "file": "src/utils/meal-plan-adapter.ts",
+        "lines": 870
+      },
+      {
+        "file": "src/utils/exportMealPlanDetailedHTML.ts",
+        "lines": 895
+      },
+      {
+        "file": "src/integrations/supabase/types.ts",
+        "lines": 6693
+      },
+      {
+        "file": "src/components/ui/sidebar.tsx",
+        "lines": 762
+      },
+      {
+        "file": "src/components/settings/WhatsAppNotificationSettings.tsx",
+        "lines": 569
+      },
+      {
+        "file": "src/components/MyProgress.tsx",
+        "lines": 549
+      },
+      {
+        "file": "src/components/UserProfile.tsx",
+        "lines": 859
+      },
+      {
+        "file": "src/components/progress/GamifiedProgressPage.tsx",
+        "lines": 716
+      },
+      {
+        "file": "src/components/dr-vital/DrVitalEnhancedChat.tsx",
+        "lines": 969
+      },
+      {
+        "file": "src/components/Dashboard.tsx",
+        "lines": 532
+      },
+      {
+        "file": "src/components/goals/CreateGoalDialog.tsx",
+        "lines": 855
+      },
+      {
+        "file": "src/components/goals/UpdateProgressModal.tsx",
+        "lines": 599
+      },
+      {
+        "file": "src/components/challenges-v2/ChallengesDashboard.tsx",
+        "lines": 531
+      },
+      {
+        "file": "src/components/MissionSystem.tsx",
+        "lines": 533
+      }
+    ]
+  }
+}

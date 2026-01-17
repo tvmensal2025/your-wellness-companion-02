@@ -176,7 +176,7 @@ export interface SportAchievement {
   badge_color: string;
   achievement_data?: Record<string, any>;
   rarity: AchievementRarity;
-  earned_at: string;
+  achieved_at: string;
 }
 
 // ============================================

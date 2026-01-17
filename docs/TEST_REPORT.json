@@ -1,0 +1,34 @@
+{
+  "timestamp": "2026-01-16T22:21:51.446185",
+  "duration_seconds": 6.104001,
+  "success_rate": 92.3076923076923,
+  "results": {
+    "critical_tests": {
+      "App Loading": true,
+      "Auth Page": true,
+      "Dashboard Redirect": false,
+      "Sofia Page": true,
+      "Dr. Vital Page": true
+    },
+    "important_tests": {
+      "Admin Page": true,
+      "Google Fit Page": true,
+      "Performance": true,
+      "PWA Manifest": true
+    },
+    "optional_tests": {
+      "Challenges Page": true,
+      "Goals Page": true,
+      "Install Page": true,
+      "Static Assets": true
+    },
+    "summary": {
+      "total_tests": 13,
+      "passed": 12,
+      "failed": 1,
+      "errors": [
+        "CRITICAL: Dashboard Redirect"
+      ]
+    }
+  }
+}

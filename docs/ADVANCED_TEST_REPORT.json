@@ -1,0 +1,34 @@
+{
+  "timestamp": "2026-01-16T22:23:04.851394",
+  "duration_seconds": 2.559638,
+  "success_rate": 60.0,
+  "results": {
+    "yolo_tests": {
+      "YOLO Service Availability": false,
+      "YOLO Detection Endpoint": false
+    },
+    "ai_tests": {},
+    "gamification_tests": {},
+    "integration_tests": {
+      "App Responsiveness": true,
+      "PWA Features": true,
+      "Offline Capability": true,
+      "Security Headers": false,
+      "API Endpoints": true,
+      "Resource Optimization": true,
+      "Error Handling": false,
+      "Load Time Consistency": true
+    },
+    "summary": {
+      "total_tests": 10,
+      "passed": 6,
+      "failed": 4,
+      "errors": [
+        "YOLO: YOLO Service Availability",
+        "YOLO: YOLO Detection Endpoint",
+        "INTEGRATION: Security Headers",
+        "INTEGRATION: Error Handling"
+      ]
+    }
+  }
+}

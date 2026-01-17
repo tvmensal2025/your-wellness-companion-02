@@ -1,0 +1,130 @@
+{
+  "timestamp": "2026-01-16T22:24:58.384523",
+  "overall_success_rate": 78.78787878787878,
+  "total_tests": 33,
+  "total_passed": 26,
+  "total_failed": 7,
+  "all_errors": [
+    "CRITICAL: Dashboard Redirect",
+    "YOLO: YOLO Service Availability",
+    "YOLO: YOLO Detection Endpoint",
+    "INTEGRATION: Security Headers",
+    "INTEGRATION: Error Handling",
+    "FUNCTIONALITY: API Integration Readiness",
+    "FUNCTIONALITY: Accessibility Basics"
+  ],
+  "individual_reports": {
+    "basic": {
+      "timestamp": "2026-01-16T22:21:51.446185",
+      "duration_seconds": 6.104001,
+      "success_rate": 92.3076923076923,
+      "results": {
+        "critical_tests": {
+          "App Loading": true,
+          "Auth Page": true,
+          "Dashboard Redirect": false,
+          "Sofia Page": true,
+          "Dr. Vital Page": true
+        },
+        "important_tests": {
+          "Admin Page": true,
+          "Google Fit Page": true,
+          "Performance": true,
+          "PWA Manifest": true
+        },
+        "optional_tests": {
+          "Challenges Page": true,
+          "Goals Page": true,
+          "Install Page": true,
+          "Static Assets": true
+        },
+        "summary": {
+          "total_tests": 13,
+          "passed": 12,
+          "failed": 1,
+          "errors": [
+            "CRITICAL: Dashboard Redirect"
+          ]
+        }
+      }
+    },
+    "advanced": {
+      "timestamp": "2026-01-16T22:23:04.851394",
+      "duration_seconds": 2.559638,
+      "success_rate": 60.0,
+      "results": {
+        "yolo_tests": {
+          "YOLO Service Availability": false,
+          "YOLO Detection Endpoint": false
+        },
+        "ai_tests": {},
+        "gamification_tests": {},
+        "integration_tests": {
+          "App Responsiveness": true,
+          "PWA Features": true,
+          "Offline Capability": true,
+          "Security Headers": false,
+          "API Endpoints": true,
+          "Resource Optimization": true,
+          "Error Handling": false,
+          "Load Time Consistency": true
+        },
+        "summary": {
+          "total_tests": 10,
+          "passed": 6,
+          "failed": 4,
+          "errors": [
+            "YOLO: YOLO Service Availability",
+            "YOLO: YOLO Detection Endpoint",
+            "INTEGRATION: Security Headers",
+            "INTEGRATION: Error Handling"
+          ]
+        }
+      }
+    },
+    "interactive": {
+      "timestamp": "2026-01-16T22:24:17.315060",
+      "duration_seconds": 0.233354,
+      "success_rate": 80.0,
+      "results": {
+        "ui_tests": {
+          "React App Hydration": true,
+          "CSS Loading": true,
+          "JavaScript Modules": true,
+          "Meta Tags": true,
+          "Favicon and Icons": true
+        },
+        "functionality_tests": {
+          "Routing System": true,
+          "API Integration Readiness": false,
+          "Error Boundaries": true,
+          "Accessibility Basics": false,
+          "Mobile Optimization": true
+        },
+        "summary": {
+          "total_tests": 10,
+          "passed": 8,
+          "failed": 2,
+          "errors": [
+            "FUNCTIONALITY: API Integration Readiness",
+            "FUNCTIONALITY: Accessibility Basics"
+          ]
+        }
+      }
+    }
+  },
+  "functionality_status": {
+    "App Loading": "\u2705 Funcionando",
+    "Authentication": "\u2705 Funcionando",
+    "Sofia (IA Nutricional)": "\u2705 Funcionando",
+    "Dr. Vital (IA M\u00e9dica)": "\u2705 Funcionando",
+    "Admin Panel": "\u2705 Funcionando",
+    "Google Fit Integration": "\u2705 Funcionando",
+    "PWA Features": "\u2705 Funcionando",
+    "Performance": "\u2705 Excelente (<1s)",
+    "Mobile Optimization": "\u2705 Funcionando",
+    "YOLO Service": "\u274c Indispon\u00edvel (502)",
+    "Security Headers": "\u26a0\ufe0f Limitado",
+    "Accessibility": "\u26a0\ufe0f B\u00e1sico"
+  }
+}

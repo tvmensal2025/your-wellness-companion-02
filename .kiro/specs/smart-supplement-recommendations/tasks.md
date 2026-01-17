@@ -60,7 +60,7 @@ Implementação do sistema de recomendação inteligente de suplementos com IA, 
     - **Property 5: Scientific Article Relevance**
     - **Validates: Requirements 4.1, 4.3**
 
-- [ ] 6. Checkpoint - Validar serviços core
+- [x] 6. Checkpoint - Validar serviços core
   - Ensure all tests pass, ask the user if questions arise.
 
 - [x] 7. Criar componente SmartSupplementCard
@@ -109,7 +109,7 @@ Implementação do sistema de recomendação inteligente de suplementos com IA, 
     - **Property 8: User Behavior Tracking**
     - **Validates: Requirements 9.1**
 
-- [ ] 11. Checkpoint - Validar componentes visuais
+- [x] 11. Checkpoint - Validar componentes visuais
   - Ensure all tests pass, ask the user if questions arise.
 
 - [x] 12. Integrar com SofiaNutricionalSection
@@ -118,8 +118,8 @@ Implementação do sistema de recomendação inteligente de suplementos com IA, 
     - Adicionar opção "Recomendação Inteligente da Sofia" como padrão
     - _Requirements: 8.5_
 
-- [ ] 13. Implementar invalidação de cache
-  - [ ] 13.1 Adicionar listener para mudanças na anamnese
+- [x] 13. Implementar invalidação de cache
+  - [x] 13.1 Adicionar listener para mudanças na anamnese
     - Quando `user_anamnesis` é atualizado, invalidar cache de recomendações
     - Usar React Query `invalidateQueries` para forçar recálculo
     - _Requirements: 9.5_
@@ -141,7 +141,7 @@ Implementação do sistema de recomendação inteligente de suplementos com IA, 
     - Índices para queries de analytics
     - _Requirements: 9.1_
 
-- [ ] 16. Final checkpoint - Validar sistema completo
+- [x] 16. Final checkpoint - Validar sistema completo
   - Ensure all tests pass, ask the user if questions arise.
 
 ## Notes

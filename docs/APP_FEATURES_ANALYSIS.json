@@ -1,0 +1,3078 @@
+{
+  "user_features": {
+    "Autenticação": [
+      "Login com email/senha",
+      "Login com Google OAuth",
+      "Cadastro de nova conta",
+      "Recuperação de senha",
+      "Logout"
+    ],
+    "Onboarding": [
+      "Fluxo de boas-vindas",
+      "Preenchimento de dados básicos",
+      "Seleção de objetivos",
+      "Tutorial inicial"
+    ],
+    "Dashboard": [
+      "Visão geral de saúde",
+      "Widgets personalizáveis",
+      "Score de saúde",
+      "Progresso diário",
+      "Ações rápidas"
+    ],
+    "Perfil": [
+      "Visualizar dados pessoais",
+      "Editar informações",
+      "Alterar foto de perfil",
+      "Configurações de privacidade",
+      "Histórico de atividades"
+    ],
+    "Nutrição/Sofia": [
+      "Análise de fotos de alimentos",
+      "Cálculo nutricional automático",
+      "Histórico de refeições",
+      "Planos alimentares personalizados",
+      "Chat com Sofia (IA nutricionista)",
+      "Sugestões de receitas",
+      "Tracking de água",
+      "Relatórios nutricionais"
+    ],
+    "Saúde/Dr.Vital": [
+      "Upload de exames médicos",
+      "Análise automática de exames",
+      "Interpretação em linguagem simples",
+      "Histórico de exames",
+      "Relatórios médicos em PDF",
+      "Chat com Dr. Vital",
+      "Alertas de saúde",
+      "Recomendações médicas"
+    ],
+    "Exercícios": [
+      "Biblioteca de exercícios",
+      "Programas de treino",
+      "Timer de exercícios",
+      "Tracking de atividades",
+      "Integração com Google Fit",
+      "Análise de performance",
+      "Exercícios com câmera (YOLO)"
+    ],
+    "Gamificação": [
+      "Sistema de pontos (XP)",
+      "Níveis e progressão",
+      "Badges e conquistas",
+      "Streaks (dias consecutivos)",
+      "Ranking global",
+      "Desafios diários",
+      "Desafios semanais",
+      "Flash challenges",
+      "Missões personalizadas"
+    ],
+    "Comunidade": [
+      "Feed social",
+      "Posts e stories",
+      "Seguir outros usuários",
+      "Curtir e comentar",
+      "Ranking comunitário",
+      "Grupos e desafios em equipe",
+      "Mensagens diretas"
+    ],
+    "Metas": [
+      "Criar metas personalizadas",
+      "Tracking de progresso",
+      "Lembretes automáticos",
+      "Celebração de conquistas",
+      "Histórico de metas"
+    ],
+    "Relatórios": [
+      "Relatório semanal automático",
+      "Análise de progresso",
+      "Insights personalizados",
+      "Exportação de dados",
+      "Compartilhamento de resultados"
+    ],
+    "Notificações": [
+      "Push notifications",
+      "Lembretes de refeições",
+      "Lembretes de exercícios",
+      "Alertas de saúde",
+      "Notificações sociais",
+      "WhatsApp notifications"
+    ],
+    "Configurações": [
+      "Preferências de notificação",
+      "Configurações de privacidade",
+      "Tema (claro/escuro)",
+      "Idioma",
+      "Backup de dados",
+      "Exportar dados",
+      "Deletar conta"
+    ]
+  },
+  "admin_features": {
+    "Dashboard Admin": [
+      "Visão geral do sistema",
+      "Métricas de usuários",
+      "Status de saúde do sistema",
+      "Logs de atividade",
+      "Alertas de sistema"
+    ],
+    "Gestão de Usuários": [
+      "Lista de usuários",
+      "Visualizar perfis",
+      "Editar dados de usuários",
+      "Suspender/ativar contas",
+      "Histórico de atividades",
+      "Suporte ao usuário"
+    ],
+    "Gestão de Conteúdo": [
+      "Gerenciar exercícios",
+      "Gerenciar receitas",
+      "Gerenciar templates de sessões",
+      "Gerenciar cursos",
+      "Biblioteca de conteúdo",
+      "Aprovação de posts"
+    ],
+    "Configurações de IA": [
+      "Configurar modelos de IA",
+      "Ajustar prompts",
+      "Monitorar uso de IA",
+      "Custos de IA",
+      "Rate limiting",
+      "Fallback models"
+    ],
+    "Analytics": [
+      "Relatórios de uso",
+      "Métricas de engajamento",
+      "Análise de retenção",
+      "Performance de funcionalidades",
+      "Custos operacionais",
+      "ROI de features"
+    ],
+    "Sistema": [
+      "Logs de sistema",
+      "Monitoramento de performance",
+      "Backup e restore",
+      "Configurações de segurança",
+      "Atualizações de sistema",
+      "Manutenção programada"
+    ],
+    "Comunicação": [
+      "Envio de notificações em massa",
+      "Templates de email",
+      "Configuração WhatsApp",
+      "Campanhas de marketing",
+      "Suporte ao cliente"
+    ],
+    "Financeiro": [
+      "Gestão de assinaturas",
+      "Relatórios financeiros",
+      "Processamento de pagamentos",
+      "Reembolsos",
+      "Análise de churn"
+    ]
+  },
+  "pages": [
+    {
+      "name": "GoalsPage",
+      "file": "src/pages/GoalsPage.tsx",
+      "features": [
+        "Dashboard",
+        "Gamificação",
+        "Admin",
+        "Chat/IA"
+      ],
+      "is_admin": false,
+      "requires_auth": false,
+      "has_forms": false,
+      "has_api_calls": true,
+      "has_navigation": false
+    },
+    {
+      "name": "Install",
+      "file": "src/pages/Install.tsx",
+      "features": [
+        "Dashboard",
+        "Nutrição",
+        "Gamificação",
+        "Chat/IA"
+      ],
+      "is_admin": false,
+      "requires_auth": false,
+      "has_forms": false,
+      "has_api_calls": false,
+      "has_navigation": true
+    },
+    {
+      "name": "GoogleFitTestPage",
+      "file": "src/pages/GoogleFitTestPage.tsx",
+      "features": [
+        "Login/Logout",
+        "Configurações",
+        "Gamificação",
+        "Comunidade",
+        "Chat/IA"
+      ],
+      "is_admin": false,
+      "requires_auth": true,
+      "has_forms": false,
+      "has_api_calls": false,
+      "has_navigation": false
+    },
+    {
+      "name": "SofiaNutricionalPage",
+      "file": "src/pages/SofiaNutricionalPage.tsx",
+      "features": [
+        "Dashboard",
+        "Nutrição",
+        "Gamificação",
+        "Chat/IA"
+      ],
+      "is_admin": false,
+      "requires_auth": false,
+      "has_forms": false,
+      "has_api_calls": false,
+      "has_navigation": false
+    },
+    {
+      "name": "AdminPage",
+      "file": "src/pages/AdminPage.tsx",
+      "features": [
+        "Login/Logout",
+        "Cadastro",
+        "Dashboard",
+        "Perfil",
+        "Configurações",
+        "Nutrição",
+        "Exercícios",
+        "Saúde",
+        "Gamificação",
+        "Desafios",
+        "Comunidade",
+        "Admin",
+        "Relatórios",
+        "Pagamentos",
+        "Chat/IA"
+      ],
+      "is_admin": true,
+      "requires_auth": false,
+      "has_forms": false,
+      "has_api_calls": false,
+      "has_navigation": true
+    },
+    {
+      "name": "GoalsPageV2",
+      "file": "src/pages/GoalsPageV2.tsx",
+      "features": [
+        "Gamificação",
+        "Admin",
+        "Chat/IA"
+      ],
+      "is_admin": false,
+      "requires_auth": false,
+      "has_forms": false,
+      "has_api_calls": true,
+      "has_navigation": false
+    },
+    {
+      "name": "GoogleFitPage",
+      "file": "src/pages/GoogleFitPage.tsx",
+      "features": [
+        "Login/Logout",
+        "Dashboard",
+        "Configurações",
+        "Saúde",
+        "Gamificação",
+        "Chat/IA"
+      ],
+      "is_admin": false,
+      "requires_auth": false,
+      "has_forms": false,
+      "has_api_calls": false,
+      "has_navigation": true
+    },
+    {
+      "name": "UserDrVitalPage",
+      "file": "src/pages/UserDrVitalPage.tsx",
+      "features": [
+        "Dashboard",
+        "Configurações",
+        "Saúde",
+        "Gamificação",
+        "Relatórios",
+        "Pagamentos",
+        "Chat/IA"
+      ],
+      "is_admin": false,
+      "requires_auth": false,
+      "has_forms": false,
+      "has_api_calls": false,
+      "has_navigation": true
+    },
+    {
+      "name": "ChallengeDetailPage",
+      "file": "src/pages/ChallengeDetailPage.tsx",
+      "features": [
+        "Exercícios",
+        "Saúde",
+        "Gamificação",
+        "Desafios",
+        "Comunidade",
+        "Chat/IA"
+      ],
+      "is_admin": false,
+      "requires_auth": false,
+      "has_forms": false,
+      "has_api_calls": false,
+      "has_navigation": true
+    },
+    {
+      "name": "DrVitalEnhancedPage",
+      "file": "src/pages/DrVitalEnhancedPage.tsx",
+      "features": [
+        "Dashboard",
+        "Perfil",
+        "Nutrição",
+        "Exercícios",
+        "Saúde",
+        "Gamificação",
+        "Chat/IA"
+      ],
+      "is_admin": false,
+      "requires_auth": false,
+      "has_forms": false,
+      "has_api_calls": false,
+      "has_navigation": true
+    },
+    {
+      "name": "TermsPage",
+      "file": "src/pages/TermsPage.tsx",
+      "features": [
+        "Configurações",
+        "Nutrição",
+        "Saúde",
+        "Gamificação",
+        "Desafios",
+        "Comunidade",
+        "Admin",
+        "Relatórios",
+        "Chat/IA"
+      ],
+      "is_admin": false,
+      "requires_auth": false,
+      "has_forms": false,
+      "has_api_calls": false,
+      "has_navigation": true
+    },
+    {
+      "name": "ProgressPage",
+      "file": "src/pages/ProgressPage.tsx",
+      "features": [
+        "Gamificação"
+      ],
+      "is_admin": false,
+      "requires_auth": false,
+      "has_forms": false,
+      "has_api_calls": false,
+      "has_navigation": false
+    },
+    {
+      "name": "MissionCompletePage",
+      "file": "src/pages/MissionCompletePage.tsx",
+      "features": [
+        "Dashboard",
+        "Gamificação",
+        "Desafios",
+        "Chat/IA"
+      ],
+      "is_admin": false,
+      "requires_auth": false,
+      "has_forms": false,
+      "has_api_calls": false,
+      "has_navigation": false
+    },
+    {
+      "name": "AuthPage",
+      "file": "src/pages/AuthPage.tsx",
+      "features": [
+        "Login/Logout",
+        "Cadastro",
+        "Dashboard",
+        "Perfil",
+        "Nutrição",
+        "Saúde",
+        "Gamificação",
+        "Comunidade",
+        "Admin",
+        "Chat/IA"
+      ],
+      "is_admin": false,
+      "requires_auth": false,
+      "has_forms": false,
+      "has_api_calls": false,
+      "has_navigation": true
+    },
+    {
+      "name": "NutritionTrackingPage",
+      "file": "src/pages/NutritionTrackingPage.tsx",
+      "features": [
+        "Configurações",
+        "Nutrição",
+        "Saúde",
+        "Gamificação",
+        "Chat/IA"
+      ],
+      "is_admin": false,
+      "requires_auth": false,
+      "has_forms": false,
+      "has_api_calls": false,
+      "has_navigation": false
+    },
+    {
+      "name": "PublicReport",
+      "file": "src/pages/PublicReport.tsx",
+      "features": [
+        "Nutrição",
+        "Saúde",
+        "Gamificação",
+        "Relatórios",
+        "Notificações",
+        "Chat/IA"
+      ],
+      "is_admin": false,
+      "requires_auth": false,
+      "has_forms": false,
+      "has_api_calls": false,
+      "has_navigation": false
+    },
+    {
+      "name": "AnamnesisPage",
+      "file": "src/pages/AnamnesisPage.tsx",
+      "features": [
+        "Gamificação"
+      ],
+      "is_admin": false,
+      "requires_auth": false,
+      "has_forms": false,
+      "has_api_calls": false,
+      "has_navigation": false
+    },
+    {
+      "name": "PublicPostPage",
+      "file": "src/pages/PublicPostPage.tsx",
+      "features": [
+        "Perfil",
+        "Nutrição",
+        "Saúde",
+        "Gamificação",
+        "Comunidade",
+        "Chat/IA"
+      ],
+      "is_admin": false,
+      "requires_auth": false,
+      "has_forms": false,
+      "has_api_calls": false,
+      "has_navigation": true
+    },
+    {
+      "name": "ProfessionalEvaluationPage",
+      "file": "src/pages/ProfessionalEvaluationPage.tsx",
+      "features": [
+        "Cadastro",
+        "Dashboard",
+        "Perfil",
+        "Configurações",
+        "Saúde",
+        "Gamificação",
+        "Admin",
+        "Notificações",
+        "Chat/IA"
+      ],
+      "is_admin": false,
+      "requires_auth": false,
+      "has_forms": false,
+      "has_api_calls": false,
+      "has_navigation": true
+    },
+    {
+      "name": "GoogleFitPremiumDashboard",
+      "file": "src/pages/GoogleFitPremiumDashboard.tsx",
+      "features": [
+        "Login/Logout",
+        "Dashboard",
+        "Perfil",
+        "Saúde",
+        "Gamificação",
+        "Relatórios",
+        "Chat/IA"
+      ],
+      "is_admin": false,
+      "requires_auth": false,
+      "has_forms": false,
+      "has_api_calls": false,
+      "has_navigation": true
+    },
+    {
+      "name": "AutoLoginPage",
+      "file": "src/pages/AutoLoginPage.tsx",
+      "features": [
+        "Login/Logout",
+        "Dashboard",
+        "Nutrição",
+        "Gamificação",
+        "Chat/IA"
+      ],
+      "is_admin": false,
+      "requires_auth": false,
+      "has_forms": false,
+      "has_api_calls": false,
+      "has_navigation": true
+    },
+    {
+      "name": "HealthFeedPage",
+      "file": "src/pages/HealthFeedPage.tsx",
+      "features": [
+        "Perfil",
+        "Nutrição",
+        "Exercícios",
+        "Saúde",
+        "Gamificação",
+        "Desafios",
+        "Comunidade",
+        "Notificações",
+        "Chat/IA"
+      ],
+      "is_admin": false,
+      "requires_auth": true,
+      "has_forms": false,
+      "has_api_calls": false,
+      "has_navigation": false
+    },
+    {
+      "name": "NotFound",
+      "file": "src/pages/NotFound.tsx",
+      "features": [
+        "Gamificação"
+      ],
+      "is_admin": false,
+      "requires_auth": false,
+      "has_forms": false,
+      "has_api_calls": false,
+      "has_navigation": false
+    },
+    {
+      "name": "ChallengesV2Page",
+      "file": "src/pages/ChallengesV2Page.tsx",
+      "features": [
+        "Gamificação",
+        "Desafios"
+      ],
+      "is_admin": false,
+      "requires_auth": false,
+      "has_forms": false,
+      "has_api_calls": false,
+      "has_navigation": false
+    },
+    {
+      "name": "SofiaPage",
+      "file": "src/pages/SofiaPage.tsx",
+      "features": [
+        "Login/Logout",
+        "Dashboard",
+        "Perfil",
+        "Configurações",
+        "Nutrição",
+        "Exercícios",
+        "Saúde",
+        "Gamificação",
+        "Desafios",
+        "Comunidade",
+        "Pagamentos",
+        "Chat/IA"
+      ],
+      "is_admin": false,
+      "requires_auth": false,
+      "has_forms": false,
+      "has_api_calls": false,
+      "has_navigation": true
+    },
+    {
+      "name": "GoogleFitCallback",
+      "file": "src/pages/GoogleFitCallback.tsx",
+      "features": [
+        "Login/Logout",
+        "Dashboard",
+        "Nutrição",
+        "Gamificação",
+        "Chat/IA"
+      ],
+      "is_admin": false,
+      "requires_auth": false,
+      "has_forms": false,
+      "has_api_calls": false,
+      "has_navigation": true
+    }
+  ],
+  "components": [
+    {
+      "name": "SofiaPopup",
+      "file": "src/components/SofiaPopup.tsx",
+      "category": "Nutrição",
+      "has_state": true,
+      "has_effects": false,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "AnamnesisNotification",
+      "file": "src/components/AnamnesisNotification.tsx",
+      "category": "Outros",
+      "has_state": false,
+      "has_effects": false,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "ExamUploadModal",
+      "file": "src/components/ExamUploadModal.tsx",
+      "category": "Outros",
+      "has_state": true,
+      "has_effects": true,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "ProgressCharts",
+      "file": "src/components/ProgressCharts.tsx",
+      "category": "Outros",
+      "has_state": false,
+      "has_effects": false,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "VisionAnalyzer",
+      "file": "src/components/VisionAnalyzer.tsx",
+      "category": "Outros",
+      "has_state": true,
+      "has_effects": false,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "SofiaSimpleChat",
+      "file": "src/components/SofiaSimpleChat.tsx",
+      "category": "Nutrição",
+      "has_state": true,
+      "has_effects": true,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "HealthPyramidMapping",
+      "file": "src/components/HealthPyramidMapping.tsx",
+      "category": "Saúde",
+      "has_state": true,
+      "has_effects": false,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "AutoRedirect",
+      "file": "src/components/AutoRedirect.tsx",
+      "category": "Outros",
+      "has_state": false,
+      "has_effects": false,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "MyProgress",
+      "file": "src/components/MyProgress.tsx",
+      "category": "Outros",
+      "has_state": true,
+      "has_effects": true,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "UserProfile",
+      "file": "src/components/UserProfile.tsx",
+      "category": "Perfil",
+      "has_state": true,
+      "has_effects": true,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "SubscriptionStatus",
+      "file": "src/components/SubscriptionStatus.tsx",
+      "category": "Outros",
+      "has_state": false,
+      "has_effects": false,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "SessionsPage",
+      "file": "src/components/SessionsPage.tsx",
+      "category": "Outros",
+      "has_state": false,
+      "has_effects": false,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "DraggableDashboard",
+      "file": "src/components/DraggableDashboard.tsx",
+      "category": "Dashboard",
+      "has_state": false,
+      "has_effects": false,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "PaymentPlans",
+      "file": "src/components/PaymentPlans.tsx",
+      "category": "Outros",
+      "has_state": true,
+      "has_effects": false,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "Dashboard",
+      "file": "src/components/Dashboard.tsx",
+      "category": "Dashboard",
+      "has_state": false,
+      "has_effects": false,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "PersonagemCorporal3D",
+      "file": "src/components/PersonagemCorporal3D.tsx",
+      "category": "Outros",
+      "has_state": true,
+      "has_effects": true,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "GoogleSignupModal",
+      "file": "src/components/GoogleSignupModal.tsx",
+      "category": "Autenticação",
+      "has_state": true,
+      "has_effects": true,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "IOSInstallPrompt",
+      "file": "src/components/IOSInstallPrompt.tsx",
+      "category": "Outros",
+      "has_state": true,
+      "has_effects": true,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "FloatingMessagesButton",
+      "file": "src/components/FloatingMessagesButton.tsx",
+      "category": "Outros",
+      "has_state": true,
+      "has_effects": true,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "SofiaBiography",
+      "file": "src/components/SofiaBiography.tsx",
+      "category": "Nutrição",
+      "has_state": true,
+      "has_effects": true,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "SupabaseAccountSwitcher",
+      "file": "src/components/SupabaseAccountSwitcher.tsx",
+      "category": "Outros",
+      "has_state": true,
+      "has_effects": false,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "MissionSystem",
+      "file": "src/components/MissionSystem.tsx",
+      "category": "Gamificação",
+      "has_state": true,
+      "has_effects": true,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "GoogleFitConnect",
+      "file": "src/components/GoogleFitConnect.tsx",
+      "category": "Outros",
+      "has_state": false,
+      "has_effects": true,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "DraggableScoreDashboard",
+      "file": "src/components/DraggableScoreDashboard.tsx",
+      "category": "Dashboard",
+      "has_state": false,
+      "has_effects": false,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "VirtualList",
+      "file": "src/components/VirtualList.tsx",
+      "category": "Outros",
+      "has_state": true,
+      "has_effects": true,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "InstallPrompt",
+      "file": "src/components/InstallPrompt.tsx",
+      "category": "Outros",
+      "has_state": true,
+      "has_effects": true,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "XiaomiScaleTroubleshooter",
+      "file": "src/components/XiaomiScaleTroubleshooter.tsx",
+      "category": "IA/Chat",
+      "has_state": true,
+      "has_effects": false,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "NotificationBell",
+      "file": "src/components/NotificationBell.tsx",
+      "category": "Outros",
+      "has_state": true,
+      "has_effects": true,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "DashboardWithDraggableWidgets",
+      "file": "src/components/DashboardWithDraggableWidgets.tsx",
+      "category": "Dashboard",
+      "has_state": false,
+      "has_effects": false,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "TestDesafioModal",
+      "file": "src/components/TestDesafioModal.tsx",
+      "category": "Outros",
+      "has_state": true,
+      "has_effects": false,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "EmotionalTraumaMapping",
+      "file": "src/components/EmotionalTraumaMapping.tsx",
+      "category": "Outros",
+      "has_state": true,
+      "has_effects": false,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "CoursePlatform",
+      "file": "src/components/CoursePlatform.tsx",
+      "category": "Outros",
+      "has_state": true,
+      "has_effects": true,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "RankingCommunity",
+      "file": "src/components/RankingCommunity.tsx",
+      "category": "Comunidade",
+      "has_state": true,
+      "has_effects": true,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "DataCompletenessProgress",
+      "file": "src/components/DataCompletenessProgress.tsx",
+      "category": "Outros",
+      "has_state": false,
+      "has_effects": false,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "LockedSection",
+      "file": "src/components/LockedSection.tsx",
+      "category": "Outros",
+      "has_state": false,
+      "has_effects": false,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "AIControlPage",
+      "file": "src/components/AIControlPage.tsx",
+      "category": "IA/Chat",
+      "has_state": true,
+      "has_effects": false,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "N8nWebhookManager",
+      "file": "src/components/N8nWebhookManager.tsx",
+      "category": "Outros",
+      "has_state": true,
+      "has_effects": true,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "Modelo3DControls",
+      "file": "src/components/Modelo3DControls.tsx",
+      "category": "Outros",
+      "has_state": true,
+      "has_effects": false,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "FeatureLockGuard",
+      "file": "src/components/FeatureLockGuard.tsx",
+      "category": "Outros",
+      "has_state": true,
+      "has_effects": true,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "GoogleSignupForm",
+      "file": "src/components/GoogleSignupForm.tsx",
+      "category": "Autenticação",
+      "has_state": true,
+      "has_effects": true,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "HealthChatBot",
+      "file": "src/components/HealthChatBot.tsx",
+      "category": "Saúde",
+      "has_state": true,
+      "has_effects": true,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "MealPlanDisplay",
+      "file": "src/components/MealPlanDisplay.tsx",
+      "category": "Nutrição",
+      "has_state": true,
+      "has_effects": false,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "XiaomiScaleButton",
+      "file": "src/components/XiaomiScaleButton.tsx",
+      "category": "IA/Chat",
+      "has_state": true,
+      "has_effects": true,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "ScoreNode",
+      "file": "src/components/ScoreNode.tsx",
+      "category": "Outros",
+      "has_state": false,
+      "has_effects": false,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "RankingPage",
+      "file": "src/components/RankingPage.tsx",
+      "category": "Outros",
+      "has_state": false,
+      "has_effects": false,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "LockedMenuItem",
+      "file": "src/components/LockedMenuItem.tsx",
+      "category": "Outros",
+      "has_state": false,
+      "has_effects": false,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "ThemeToggle",
+      "file": "src/components/ThemeToggle.tsx",
+      "category": "Outros",
+      "has_state": false,
+      "has_effects": false,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "QuickSessionAssigner",
+      "file": "src/components/QuickSessionAssigner.tsx",
+      "category": "Outros",
+      "has_state": false,
+      "has_effects": false,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "AIConfigModal",
+      "file": "src/components/AIConfigModal.tsx",
+      "category": "IA/Chat",
+      "has_state": true,
+      "has_effects": true,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "AreaSummaryNode",
+      "file": "src/components/AreaSummaryNode.tsx",
+      "category": "Outros",
+      "has_state": false,
+      "has_effects": false,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "CardapioEstruturado7D",
+      "file": "src/components/CardapioEstruturado7D.tsx",
+      "category": "Outros",
+      "has_state": true,
+      "has_effects": false,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "SofiaTest",
+      "file": "src/components/SofiaTest.tsx",
+      "category": "Nutrição",
+      "has_state": true,
+      "has_effects": false,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "XiaomiScaleAdjuster",
+      "file": "src/components/XiaomiScaleAdjuster.tsx",
+      "category": "IA/Chat",
+      "has_state": true,
+      "has_effects": false,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "AuthGuard",
+      "file": "src/components/AuthGuard.tsx",
+      "category": "Autenticação",
+      "has_state": false,
+      "has_effects": false,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "OfflineIndicator",
+      "file": "src/components/OfflineIndicator.tsx",
+      "category": "Outros",
+      "has_state": false,
+      "has_effects": false,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "AuthLoading",
+      "file": "src/components/AuthLoading.tsx",
+      "category": "Autenticação",
+      "has_state": false,
+      "has_effects": false,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "SaboteurReportImage",
+      "file": "src/components/SaboteurReportImage.tsx",
+      "category": "Outros",
+      "has_state": false,
+      "has_effects": false,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "SystemicAnamnesis",
+      "file": "src/components/SystemicAnamnesis.tsx",
+      "category": "Outros",
+      "has_state": true,
+      "has_effects": true,
+      "has_api": false,
+      "is_form": true
+    },
+    {
+      "name": "HeroCarousel",
+      "file": "src/components/HeroCarousel.tsx",
+      "category": "Outros",
+      "has_state": true,
+      "has_effects": true,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "PWAInstallPrompt",
+      "file": "src/components/PWAInstallPrompt.tsx",
+      "category": "IA/Chat",
+      "has_state": true,
+      "has_effects": true,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "XiaomiScaleConnection",
+      "file": "src/components/XiaomiScaleConnection.tsx",
+      "category": "IA/Chat",
+      "has_state": true,
+      "has_effects": true,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "LimitingBeliefsWheel",
+      "file": "src/components/LimitingBeliefsWheel.tsx",
+      "category": "Outros",
+      "has_state": true,
+      "has_effects": false,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "OnboardingFlow",
+      "file": "src/components/OnboardingFlow.tsx",
+      "category": "Outros",
+      "has_state": true,
+      "has_effects": true,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "DraggableScoreWidgets",
+      "file": "src/components/DraggableScoreWidgets.tsx",
+      "category": "Outros",
+      "has_state": false,
+      "has_effects": false,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "FoodAnalysisSystem",
+      "file": "src/components/FoodAnalysisSystem.tsx",
+      "category": "Nutrição",
+      "has_state": true,
+      "has_effects": true,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "SaboteurTest",
+      "file": "src/components/SaboteurTest.tsx",
+      "category": "Outros",
+      "has_state": true,
+      "has_effects": true,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "OptimizedImage",
+      "file": "src/components/OptimizedImage.tsx",
+      "category": "Outros",
+      "has_state": true,
+      "has_effects": false,
+      "has_api": false,
+      "is_form": false
+    },
+    {
+      "name": "SmartLinkGenerator",
+      "file": "src/components/SmartLinkGenerator.tsx",
+      "category": "Outros",
+      "has_state": true,
+      "has_effects": false,
+      "has_api": false,
+      "is_form": false
+    }
+  ],
+  "hooks": [
+    {
+      "name": "useFollow",
+      "file": "src/hooks/useFollow.ts",
+      "category": "Outros",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 1
+    },
+    {
+      "name": "useRealRanking",
+      "file": "src/hooks/useRealRanking.ts",
+      "category": "Outros",
+      "has_api": true,
+      "has_state": false,
+      "exports_functions": 0
+    },
+    {
+      "name": "useAdminDashboard",
+      "file": "src/hooks/useAdminDashboard.ts",
+      "category": "Admin",
+      "has_api": true,
+      "has_state": false,
+      "exports_functions": 0
+    },
+    {
+      "name": "useFirstAccessTutorial",
+      "file": "src/hooks/useFirstAccessTutorial.ts",
+      "category": "Outros",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 0
+    },
+    {
+      "name": "useAdvancedWeightMeasurement",
+      "file": "src/hooks/useAdvancedWeightMeasurement.ts",
+      "category": "Outros",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 0
+    },
+    {
+      "name": "useDailyMissionsFinal",
+      "file": "src/hooks/useDailyMissionsFinal.ts",
+      "category": "Outros",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 0
+    },
+    {
+      "name": "useUserDataCache",
+      "file": "src/hooks/useUserDataCache.ts",
+      "category": "Outros",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 0
+    },
+    {
+      "name": "useConversation",
+      "file": "src/hooks/useConversation.ts",
+      "category": "Outros",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 0
+    },
+    {
+      "name": "useMenuStyle",
+      "file": "src/hooks/useMenuStyle.ts",
+      "category": "Outros",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 1
+    },
+    {
+      "name": "useProgressData",
+      "file": "src/hooks/useProgressData.ts",
+      "category": "Outros",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 1
+    },
+    {
+      "name": "useMealPlanHistory",
+      "file": "src/hooks/useMealPlanHistory.ts",
+      "category": "Nutrição",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 0
+    },
+    {
+      "name": "useAutoAuth",
+      "file": "src/hooks/useAutoAuth.ts",
+      "category": "Autenticação",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 0
+    },
+    {
+      "name": "useCommunityProfile",
+      "file": "src/hooks/useCommunityProfile.ts",
+      "category": "Comunidade",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 1
+    },
+    {
+      "name": "useExerciseProfileData",
+      "file": "src/hooks/useExerciseProfileData.ts",
+      "category": "Exercícios",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 0
+    },
+    {
+      "name": "useDailyMissions",
+      "file": "src/hooks/useDailyMissions.ts",
+      "category": "Outros",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 0
+    },
+    {
+      "name": "useExerciseProgress",
+      "file": "src/hooks/useExerciseProgress.ts",
+      "category": "Exercícios",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 0
+    },
+    {
+      "name": "useExerciseData",
+      "file": "src/hooks/useExerciseData.ts",
+      "category": "Exercícios",
+      "has_api": true,
+      "has_state": false,
+      "exports_functions": 1
+    },
+    {
+      "name": "useDailyNutritionTracking",
+      "file": "src/hooks/useDailyNutritionTracking.ts",
+      "category": "Nutrição",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 1
+    },
+    {
+      "name": "useExercisePreferences",
+      "file": "src/hooks/useExercisePreferences.ts",
+      "category": "Exercícios",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 0
+    },
+    {
+      "name": "useUserFoodPreferences",
+      "file": "src/hooks/useUserFoodPreferences.ts",
+      "category": "Nutrição",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 0
+    },
+    {
+      "name": "useNutritionHistory",
+      "file": "src/hooks/useNutritionHistory.ts",
+      "category": "Nutrição",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 0
+    },
+    {
+      "name": "useStripeSubscription",
+      "file": "src/hooks/useStripeSubscription.ts",
+      "category": "Outros",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 1
+    },
+    {
+      "name": "useSofiaNutritionFlow",
+      "file": "src/hooks/useSofiaNutritionFlow.ts",
+      "category": "Nutrição",
+      "has_api": false,
+      "has_state": false,
+      "exports_functions": 0
+    },
+    {
+      "name": "useFlashChallenge",
+      "file": "src/hooks/useFlashChallenge.ts",
+      "category": "Gamificação",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 1
+    },
+    {
+      "name": "useMealPlanGeneratorV2",
+      "file": "src/hooks/useMealPlanGeneratorV2.ts",
+      "category": "Nutrição",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 1
+    },
+    {
+      "name": "useCommunityShare",
+      "file": "src/hooks/useCommunityShare.ts",
+      "category": "Comunidade",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 0
+    },
+    {
+      "name": "useWeeklyChatInsights",
+      "file": "src/hooks/useWeeklyChatInsights.ts",
+      "category": "Outros",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 0
+    },
+    {
+      "name": "useGamifiedProgress",
+      "file": "src/hooks/useGamifiedProgress.ts",
+      "category": "Gamificação",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 0
+    },
+    {
+      "name": "useIntelligentMealGenerator",
+      "file": "src/hooks/useIntelligentMealGenerator.ts",
+      "category": "Nutrição",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 0
+    },
+    {
+      "name": "useGoogleFit",
+      "file": "src/hooks/useGoogleFit.ts",
+      "category": "Outros",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 0
+    },
+    {
+      "name": "useSofiaEmotional",
+      "file": "src/hooks/useSofiaEmotional.ts",
+      "category": "Nutrição",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 0
+    },
+    {
+      "name": "useDashboardNavigation",
+      "file": "src/hooks/useDashboardNavigation.ts",
+      "category": "Outros",
+      "has_api": false,
+      "has_state": false,
+      "exports_functions": 1
+    },
+    {
+      "name": "useWorkoutSound",
+      "file": "src/hooks/useWorkoutSound.ts",
+      "category": "Exercícios",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 0
+    },
+    {
+      "name": "useExercisesLibrary",
+      "file": "src/hooks/useExercisesLibrary.ts",
+      "category": "Exercícios",
+      "has_api": true,
+      "has_state": false,
+      "exports_functions": 0
+    },
+    {
+      "name": "useUserRestrictions",
+      "file": "src/hooks/useUserRestrictions.ts",
+      "category": "Outros",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 0
+    },
+    {
+      "name": "useScheduledAnalysis",
+      "file": "src/hooks/useScheduledAnalysis.ts",
+      "category": "Outros",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 0
+    },
+    {
+      "name": "usePushNotifications",
+      "file": "src/hooks/usePushNotifications.ts",
+      "category": "Outros",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 0
+    },
+    {
+      "name": "useUserProfile",
+      "file": "src/hooks/useUserProfile.ts",
+      "category": "Outros",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 0
+    },
+    {
+      "name": "useUserDataCentralized",
+      "file": "src/hooks/useUserDataCentralized.ts",
+      "category": "Outros",
+      "has_api": true,
+      "has_state": false,
+      "exports_functions": 0
+    },
+    {
+      "name": "useFeedPosts",
+      "file": "src/hooks/useFeedPosts.ts",
+      "category": "Comunidade",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 1
+    },
+    {
+      "name": "useRanking",
+      "file": "src/hooks/useRanking.ts",
+      "category": "Outros",
+      "has_api": true,
+      "has_state": false,
+      "exports_functions": 0
+    },
+    {
+      "name": "useVirtualList",
+      "file": "src/hooks/useVirtualList.ts",
+      "category": "Outros",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 1
+    },
+    {
+      "name": "useTrackingData",
+      "file": "src/hooks/useTrackingData.ts",
+      "category": "Outros",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 0
+    },
+    {
+      "name": "useDailyMissionsEnhanced",
+      "file": "src/hooks/useDailyMissionsEnhanced.ts",
+      "category": "Outros",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 0
+    },
+    {
+      "name": "useExerciseRecommendation",
+      "file": "src/hooks/useExerciseRecommendation.ts",
+      "category": "Exercícios",
+      "has_api": false,
+      "has_state": false,
+      "exports_functions": 0
+    },
+    {
+      "name": "useSubscription",
+      "file": "src/hooks/useSubscription.ts",
+      "category": "Outros",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 0
+    },
+    {
+      "name": "useAdminPermissions",
+      "file": "src/hooks/useAdminPermissions.ts",
+      "category": "Admin",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 0
+    },
+    {
+      "name": "useNutritionData",
+      "file": "src/hooks/useNutritionData.ts",
+      "category": "Nutrição",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 1
+    },
+    {
+      "name": "useStandaloneMode",
+      "file": "src/hooks/useStandaloneMode.ts",
+      "category": "Outros",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 2
+    },
+    {
+      "name": "useExerciseAI",
+      "file": "src/hooks/useExerciseAI.ts",
+      "category": "Exercícios",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 0
+    },
+    {
+      "name": "usePolls",
+      "file": "src/hooks/usePolls.ts",
+      "category": "Outros",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 1
+    },
+    {
+      "name": "useCelebration",
+      "file": "src/hooks/useCelebration.ts",
+      "category": "Outros",
+      "has_api": false,
+      "has_state": false,
+      "exports_functions": 0
+    },
+    {
+      "name": "usePhysicalData",
+      "file": "src/hooks/usePhysicalData.ts",
+      "category": "Outros",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 0
+    },
+    {
+      "name": "useUserStreak",
+      "file": "src/hooks/useUserStreak.ts",
+      "category": "Outros",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 0
+    },
+    {
+      "name": "useSafeAnimation",
+      "file": "src/hooks/useSafeAnimation.ts",
+      "category": "Outros",
+      "has_api": false,
+      "has_state": false,
+      "exports_functions": 0
+    },
+    {
+      "name": "useSofiaProactive",
+      "file": "src/hooks/useSofiaProactive.ts",
+      "category": "Nutrição",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 0
+    },
+    {
+      "name": "useSocialRanking",
+      "file": "src/hooks/useSocialRanking.ts",
+      "category": "Comunidade",
+      "has_api": true,
+      "has_state": false,
+      "exports_functions": 0
+    },
+    {
+      "name": "useUserProgressStats",
+      "file": "src/hooks/useUserProgressStats.ts",
+      "category": "Outros",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 1
+    },
+    {
+      "name": "useUserBlock",
+      "file": "src/hooks/useUserBlock.ts",
+      "category": "Outros",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 1
+    },
+    {
+      "name": "use-toast",
+      "file": "src/hooks/use-toast.ts",
+      "category": "UI",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 0
+    },
+    {
+      "name": "useWorkoutPlanGenerator",
+      "file": "src/hooks/useWorkoutPlanGenerator.ts",
+      "category": "Exercícios",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 0
+    },
+    {
+      "name": "useNutritionTracking",
+      "file": "src/hooks/useNutritionTracking.ts",
+      "category": "Nutrição",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 0
+    },
+    {
+      "name": "useDebouncedState",
+      "file": "src/hooks/useDebouncedState.ts",
+      "category": "Outros",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 3
+    },
+    {
+      "name": "useRealGamification",
+      "file": "src/hooks/useRealGamification.ts",
+      "category": "Gamificação",
+      "has_api": true,
+      "has_state": false,
+      "exports_functions": 0
+    },
+    {
+      "name": "useStories",
+      "file": "src/hooks/useStories.ts",
+      "category": "Outros",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 1
+    },
+    {
+      "name": "useAnamnesisStatus",
+      "file": "src/hooks/useAnamnesisStatus.ts",
+      "category": "Outros",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 0
+    },
+    {
+      "name": "useAuth",
+      "file": "src/hooks/useAuth.ts",
+      "category": "Autenticação",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 0
+    },
+    {
+      "name": "useDailyNutritionReport",
+      "file": "src/hooks/useDailyNutritionReport.ts",
+      "category": "Nutrição",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 1
+    },
+    {
+      "name": "useAITesting",
+      "file": "src/hooks/useAITesting.ts",
+      "category": "Outros",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 1
+    },
+    {
+      "name": "useChallengeParticipation",
+      "file": "src/hooks/useChallengeParticipation.ts",
+      "category": "Gamificação",
+      "has_api": true,
+      "has_state": true,
+      "exports_functions": 0
+    },
+    {
+      "name": "useWeeklyGoalProgress",
+      "file": "src/hooks/useWeeklyGoalProgress.ts",
+      "category": "Outros",
+      "has_api": true,
+      "has_state": false,
+      "exports_functions": 0
+    },
+    {
+      "name": "useAIConfig",
+      "file": "src/hooks/useAIConfig.ts",
+      "category": "Outros",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 1
+    },
+    {
+      "name": "useFoodAnalysis",
+      "file": "src/hooks/useFoodAnalysis.ts",
+      "category": "Nutrição",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 0
+    },
+    {
+      "name": "useFoodRestrictionCheck",
+      "file": "src/hooks/useFoodRestrictionCheck.ts",
+      "category": "Nutrição",
+      "has_api": false,
+      "has_state": false,
+      "exports_functions": 0
+    },
+    {
+      "name": "useStripeCheckout",
+      "file": "src/hooks/useStripeCheckout.ts",
+      "category": "Outros",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 1
+    },
+    {
+      "name": "useGamificationUnified",
+      "file": "src/hooks/useGamificationUnified.ts",
+      "category": "Gamificação",
+      "has_api": true,
+      "has_state": false,
+      "exports_functions": 0
+    },
+    {
+      "name": "useHealthData",
+      "file": "src/hooks/useHealthData.ts",
+      "category": "Saúde",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 1
+    },
+    {
+      "name": "useCoachingData",
+      "file": "src/hooks/useCoachingData.ts",
+      "category": "Outros",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 1
+    },
+    {
+      "name": "useAdminMode",
+      "file": "src/hooks/useAdminMode.ts",
+      "category": "Admin",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 0
+    },
+    {
+      "name": "useCommunityHealthStats",
+      "file": "src/hooks/useCommunityHealthStats.ts",
+      "category": "Saúde",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 1
+    },
+    {
+      "name": "useNotifications",
+      "file": "src/hooks/useNotifications.ts",
+      "category": "Outros",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 1
+    },
+    {
+      "name": "useSmartFeed",
+      "file": "src/hooks/useSmartFeed.ts",
+      "category": "Comunidade",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 1
+    },
+    {
+      "name": "useGoalsGamification",
+      "file": "src/hooks/useGoalsGamification.ts",
+      "category": "Gamificação",
+      "has_api": true,
+      "has_state": false,
+      "exports_functions": 0
+    },
+    {
+      "name": "useGamification",
+      "file": "src/hooks/useGamification.ts",
+      "category": "Gamificação",
+      "has_api": true,
+      "has_state": true,
+      "exports_functions": 0
+    },
+    {
+      "name": "useInteractiveTutorial",
+      "file": "src/hooks/useInteractiveTutorial.ts",
+      "category": "Outros",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 0
+    },
+    {
+      "name": "useWhatsAppProviderConfig",
+      "file": "src/hooks/useWhatsAppProviderConfig.ts",
+      "category": "Outros",
+      "has_api": true,
+      "has_state": false,
+      "exports_functions": 3
+    },
+    {
+      "name": "useUnifiedGamification",
+      "file": "src/hooks/useUnifiedGamification.ts",
+      "category": "Gamificação",
+      "has_api": true,
+      "has_state": false,
+      "exports_functions": 3
+    },
+    {
+      "name": "useCamera",
+      "file": "src/hooks/useCamera.ts",
+      "category": "Outros",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 0
+    },
+    {
+      "name": "useGoogleFitData",
+      "file": "src/hooks/useGoogleFitData.ts",
+      "category": "Outros",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 1
+    },
+    {
+      "name": "useDirectMessages",
+      "file": "src/hooks/useDirectMessages.ts",
+      "category": "Outros",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 1
+    },
+    {
+      "name": "usePointsConfig",
+      "file": "src/hooks/usePointsConfig.ts",
+      "category": "Gamificação",
+      "has_api": true,
+      "has_state": false,
+      "exports_functions": 0
+    },
+    {
+      "name": "useExerciseProgram",
+      "file": "src/hooks/useExerciseProgram.ts",
+      "category": "Exercícios",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 0
+    },
+    {
+      "name": "useExamAccess",
+      "file": "src/hooks/useExamAccess.ts",
+      "category": "Outros",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 0
+    },
+    {
+      "name": "useHaptics",
+      "file": "src/hooks/useHaptics.ts",
+      "category": "Outros",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 0
+    },
+    {
+      "name": "useSymptomHistory",
+      "file": "src/hooks/useSymptomHistory.ts",
+      "category": "Outros",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 0
+    },
+    {
+      "name": "useSofiaIntegration",
+      "file": "src/hooks/useSofiaIntegration.ts",
+      "category": "Nutrição",
+      "has_api": true,
+      "has_state": false,
+      "exports_functions": 0
+    },
+    {
+      "name": "useProfessionalEvaluation",
+      "file": "src/hooks/useProfessionalEvaluation.ts",
+      "category": "Outros",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 1
+    },
+    {
+      "name": "useCoachingReport",
+      "file": "src/hooks/useCoachingReport.ts",
+      "category": "Outros",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 0
+    },
+    {
+      "name": "useWelcomeOnboarding",
+      "file": "src/hooks/useWelcomeOnboarding.ts",
+      "category": "Outros",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 0
+    },
+    {
+      "name": "useReducedMotion",
+      "file": "src/hooks/useReducedMotion.ts",
+      "category": "Outros",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 0
+    },
+    {
+      "name": "useAIWorkoutGenerator",
+      "file": "src/hooks/useAIWorkoutGenerator.ts",
+      "category": "Exercícios",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 0
+    },
+    {
+      "name": "useEnhancedGamification",
+      "file": "src/hooks/useEnhancedGamification.ts",
+      "category": "Gamificação",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 0
+    },
+    {
+      "name": "useTopUsers",
+      "file": "src/hooks/useTopUsers.ts",
+      "category": "Outros",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 0
+    },
+    {
+      "name": "useRealTimeHeartRate",
+      "file": "src/hooks/useRealTimeHeartRate.ts",
+      "category": "Outros",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 0
+    },
+    {
+      "name": "useWebhookManagement",
+      "file": "src/hooks/useWebhookManagement.ts",
+      "category": "Outros",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 1
+    },
+    {
+      "name": "index",
+      "file": "src/hooks/index.ts",
+      "category": "Outros",
+      "has_api": false,
+      "has_state": false,
+      "exports_functions": 0
+    },
+    {
+      "name": "useUserDataCompleteness",
+      "file": "src/hooks/useUserDataCompleteness.ts",
+      "category": "Outros",
+      "has_api": true,
+      "has_state": false,
+      "exports_functions": 0
+    },
+    {
+      "name": "useAnamnesisContext",
+      "file": "src/hooks/useAnamnesisContext.ts",
+      "category": "Outros",
+      "has_api": true,
+      "has_state": false,
+      "exports_functions": 0
+    },
+    {
+      "name": "useMediaUpload",
+      "file": "src/hooks/useMediaUpload.ts",
+      "category": "Outros",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 1
+    },
+    {
+      "name": "useUserXP",
+      "file": "src/hooks/useUserXP.ts",
+      "category": "Gamificação",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 0
+    },
+    {
+      "name": "useAITemplates",
+      "file": "src/hooks/useAITemplates.ts",
+      "category": "Outros",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 1
+    },
+    {
+      "name": "useGoogleAuth",
+      "file": "src/hooks/useGoogleAuth.ts",
+      "category": "Autenticação",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 0
+    },
+    {
+      "name": "useHealthScore",
+      "file": "src/hooks/useHealthScore.ts",
+      "category": "Saúde",
+      "has_api": false,
+      "has_state": false,
+      "exports_functions": 0
+    },
+    {
+      "name": "useNetworkStatus",
+      "file": "src/hooks/useNetworkStatus.ts",
+      "category": "Outros",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 0
+    },
+    {
+      "name": "useWeightMeasurement",
+      "file": "src/hooks/useWeightMeasurement.ts",
+      "category": "Outros",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 0
+    },
+    {
+      "name": "useLayoutPreferences",
+      "file": "src/hooks/useLayoutPreferences.ts",
+      "category": "Outros",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 0
+    },
+    {
+      "name": "useSofiaAnalysis",
+      "file": "src/hooks/useSofiaAnalysis.ts",
+      "category": "Nutrição",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 0
+    },
+    {
+      "name": "useGoals",
+      "file": "src/hooks/useGoals.ts",
+      "category": "Outros",
+      "has_api": true,
+      "has_state": false,
+      "exports_functions": 0
+    },
+    {
+      "name": "useCelebrationEffects",
+      "file": "src/hooks/useCelebrationEffects.ts",
+      "category": "Outros",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 0
+    },
+    {
+      "name": "useSwipeGesture",
+      "file": "src/hooks/useSwipeGesture.ts",
+      "category": "Outros",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 1
+    },
+    {
+      "name": "useUserPoints",
+      "file": "src/hooks/useUserPoints.ts",
+      "category": "Gamificação",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 0
+    },
+    {
+      "name": "useUserGender",
+      "file": "src/hooks/useUserGender.ts",
+      "category": "Outros",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 0
+    },
+    {
+      "name": "useAssessmentData",
+      "file": "src/hooks/useAssessmentData.ts",
+      "category": "Outros",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 0
+    },
+    {
+      "name": "useAsaasPayment",
+      "file": "src/hooks/useAsaasPayment.ts",
+      "category": "Outros",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 1
+    },
+    {
+      "name": "useChallenges",
+      "file": "src/hooks/useChallenges.ts",
+      "category": "Gamificação",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 0
+    },
+    {
+      "name": "useLongPress",
+      "file": "src/hooks/useLongPress.ts",
+      "category": "Outros",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 1
+    },
+    {
+      "name": "useAdvancedTracking",
+      "file": "src/hooks/useAdvancedTracking.ts",
+      "category": "Outros",
+      "has_api": false,
+      "has_state": true,
+      "exports_functions": 0
+    }
+  ],
+  "edge_functions": [
+    {
+      "name": "generate-coaching-report",
+      "path": "supabase/functions/generate-coaching-report",
+      "category": "Outros",
+      "has_yolo": false,
+      "has_ai": true,
+      "has_db": true,
+      "lines": 293
+    },
+    {
+      "name": "vision-api",
+      "path": "supabase/functions/vision-api",
+      "category": "Outros",
+      "has_yolo": false,
+      "has_ai": false,
+      "has_db": false,
+      "lines": 133
+    },
+    {
+      "name": "activate-ai",
+      "path": "supabase/functions/activate-ai",
+      "category": "Outros",
+      "has_yolo": false,
+      "has_ai": true,
+      "has_db": true,
+      "lines": 237
+    },
+    {
+      "name": "saboteur-html-report",
+      "path": "supabase/functions/saboteur-html-report",
+      "category": "Outros",
+      "has_yolo": false,
+      "has_ai": true,
+      "has_db": true,
+      "lines": 294
+    },
+    {
+      "name": "enrich-food-data",
+      "path": "supabase/functions/enrich-food-data",
+      "category": "Nutrição/Sofia",
+      "has_yolo": false,
+      "has_ai": false,
+      "has_db": true,
+      "lines": 186
+    },
+    {
+      "name": "nutrition-calc-deterministic",
+      "path": "supabase/functions/nutrition-calc-deterministic",
+      "category": "Nutrição/Sofia",
+      "has_yolo": false,
+      "has_ai": false,
+      "has_db": true,
+      "lines": 343
+    },
+    {
+      "name": "check-gender-issue",
+      "path": "supabase/functions/check-gender-issue",
+      "category": "Outros",
+      "has_yolo": false,
+      "has_ai": false,
+      "has_db": true,
+      "lines": 66
+    },
+    {
+      "name": "dr-vital-weekly-report",
+      "path": "supabase/functions/dr-vital-weekly-report",
+      "category": "Saúde/Dr.Vital",
+      "has_yolo": false,
+      "has_ai": true,
+      "has_db": true,
+      "lines": 415
+    },
+    {
+      "name": "whatsapp-smart-reminders",
+      "path": "supabase/functions/whatsapp-smart-reminders",
+      "category": "WhatsApp",
+      "has_yolo": false,
+      "has_ai": false,
+      "has_db": true,
+      "lines": 291
+    },
+    {
+      "name": "analyze-medical-exam",
+      "path": "supabase/functions/analyze-medical-exam",
+      "category": "Saúde/Dr.Vital",
+      "has_yolo": true,
+      "has_ai": true,
+      "has_db": true,
+      "lines": 4743
+    },
+    {
+      "name": "confirm-food-analysis",
+      "path": "supabase/functions/confirm-food-analysis",
+      "category": "Nutrição/Sofia",
+      "has_yolo": false,
+      "has_ai": false,
+      "has_db": true,
+      "lines": 133
+    },
+    {
+      "name": "generate-user-biography",
+      "path": "supabase/functions/generate-user-biography",
+      "category": "Outros",
+      "has_yolo": false,
+      "has_ai": true,
+      "has_db": true,
+      "lines": 161
+    },
+    {
+      "name": "cleanup-medical-images",
+      "path": "supabase/functions/cleanup-medical-images",
+      "category": "Saúde/Dr.Vital",
+      "has_yolo": false,
+      "has_ai": false,
+      "has_db": true,
+      "lines": 117
+    },
+    {
+      "name": "whatsapp-saboteur-result",
+      "path": "supabase/functions/whatsapp-saboteur-result",
+      "category": "WhatsApp",
+      "has_yolo": false,
+      "has_ai": true,
+      "has_db": true,
+      "lines": 241
+    },
+    {
+      "name": "whatsapp-goal-reminders",
+      "path": "supabase/functions/whatsapp-goal-reminders",
+      "category": "WhatsApp",
+      "has_yolo": false,
+      "has_ai": false,
+      "has_db": true,
+      "lines": 280
+    },
+    {
+      "name": "nutrition-ai-insights",
+      "path": "supabase/functions/nutrition-ai-insights",
+      "category": "Nutrição/Sofia",
+      "has_yolo": false,
+      "has_ai": true,
+      "has_db": true,
+      "lines": 219
+    },
+    {
+      "name": "whatsapp-habits-analysis",
+      "path": "supabase/functions/whatsapp-habits-analysis",
+      "category": "WhatsApp",
+      "has_yolo": false,
+      "has_ai": true,
+      "has_db": true,
+      "lines": 292
+    },
+    {
+      "name": "whatsapp-health-check",
+      "path": "supabase/functions/whatsapp-health-check",
+      "category": "WhatsApp",
+      "has_yolo": false,
+      "has_ai": false,
+      "has_db": true,
+      "lines": 174
+    },
+    {
+      "name": "enrich-sofia-analysis",
+      "path": "supabase/functions/enrich-sofia-analysis",
+      "category": "Nutrição/Sofia",
+      "has_yolo": false,
+      "has_ai": false,
+      "has_db": true,
+      "lines": 398
+    },
+    {
+      "name": "detect-image-type",
+      "path": "supabase/functions/detect-image-type",
+      "category": "Outros",
+      "has_yolo": false,
+      "has_ai": true,
+      "has_db": false,
+      "lines": 233
+    },
+    {
+      "name": "fix-storage",
+      "path": "supabase/functions/fix-storage",
+      "category": "Outros",
+      "has_yolo": false,
+      "has_ai": false,
+      "has_db": true,
+      "lines": 102
+    },
+    {
+      "name": "check-user-data-completeness",
+      "path": "supabase/functions/check-user-data-completeness",
+      "category": "Outros",
+      "has_yolo": false,
+      "has_ai": false,
+      "has_db": true,
+      "lines": 135
+    },
+    {
+      "name": "whatsapp-daily-motivation",
+      "path": "supabase/functions/whatsapp-daily-motivation",
+      "category": "WhatsApp",
+      "has_yolo": false,
+      "has_ai": true,
+      "has_db": true,
+      "lines": 350
+    },
+    {
+      "name": "nutrition-calc",
+      "path": "supabase/functions/nutrition-calc",
+      "category": "Nutrição/Sofia",
+      "has_yolo": false,
+      "has_ai": false,
+      "has_db": true,
+      "lines": 319
+    },
+    {
+      "name": "whatsapp-ai-assistant",
+      "path": "supabase/functions/whatsapp-ai-assistant",
+      "category": "WhatsApp",
+      "has_yolo": true,
+      "has_ai": true,
+      "has_db": true,
+      "lines": 1193
+    },
+    {
+      "name": "test-webhook",
+      "path": "supabase/functions/test-webhook",
+      "category": "Outros",
+      "has_yolo": false,
+      "has_ai": false,
+      "has_db": true,
+      "lines": 170
+    },
+    {
+      "name": "unified-ai-assistant",
+      "path": "supabase/functions/unified-ai-assistant",
+      "category": "Outros",
+      "has_yolo": true,
+      "has_ai": true,
+      "has_db": true,
+      "lines": 521
+    },
+    {
+      "name": "google-fit-hourly-sync",
+      "path": "supabase/functions/google-fit-hourly-sync",
+      "category": "Google Fit",
+      "has_yolo": false,
+      "has_ai": false,
+      "has_db": true,
+      "lines": 65
+    },
+    {
+      "name": "whatsapp-nutrition-check",
+      "path": "supabase/functions/whatsapp-nutrition-check",
+      "category": "Nutrição/Sofia",
+      "has_yolo": false,
+      "has_ai": false,
+      "has_db": true,
+      "lines": 263
+    },
+    {
+      "name": "google-fit-token",
+      "path": "supabase/functions/google-fit-token",
+      "category": "Google Fit",
+      "has_yolo": false,
+      "has_ai": false,
+      "has_db": true,
+      "lines": 255
+    },
+    {
+      "name": "media-upload",
+      "path": "supabase/functions/media-upload",
+      "category": "Outros",
+      "has_yolo": false,
+      "has_ai": false,
+      "has_db": true,
+      "lines": 287
+    },
+    {
+      "name": "whatsapp-celebration",
+      "path": "supabase/functions/whatsapp-celebration",
+      "category": "WhatsApp",
+      "has_yolo": false,
+      "has_ai": false,
+      "has_db": true,
+      "lines": 237
+    },
+    {
+      "name": "generate-human-message",
+      "path": "supabase/functions/generate-human-message",
+      "category": "Outros",
+      "has_yolo": false,
+      "has_ai": true,
+      "has_db": false,
+      "lines": 225
+    },
+    {
+      "name": "nutrition-alias-admin",
+      "path": "supabase/functions/nutrition-alias-admin",
+      "category": "Nutrição/Sofia",
+      "has_yolo": false,
+      "has_ai": false,
+      "has_db": true,
+      "lines": 63
+    },
+    {
+      "name": "send-meal-plan-whatsapp",
+      "path": "supabase/functions/send-meal-plan-whatsapp",
+      "category": "WhatsApp",
+      "has_yolo": false,
+      "has_ai": false,
+      "has_db": true,
+      "lines": 230
+    },
+    {
+      "name": "google-fit-callback",
+      "path": "supabase/functions/google-fit-callback",
+      "category": "Google Fit",
+      "has_yolo": false,
+      "has_ai": false,
+      "has_db": true,
+      "lines": 400
+    },
+    {
+      "name": "mealie-real",
+      "path": "supabase/functions/mealie-real",
+      "category": "Outros",
+      "has_yolo": false,
+      "has_ai": false,
+      "has_db": false,
+      "lines": 1020
+    },
+    {
+      "name": "whatsapp-send-interactive",
+      "path": "supabase/functions/whatsapp-send-interactive",
+      "category": "WhatsApp",
+      "has_yolo": false,
+      "has_ai": false,
+      "has_db": true,
+      "lines": 313
+    },
+    {
+      "name": "check-subscription",
+      "path": "supabase/functions/check-subscription",
+      "category": "Outros",
+      "has_yolo": false,
+      "has_ai": false,
+      "has_db": true,
+      "lines": 120
+    },
+    {
+      "name": "bulk-queue-leads",
+      "path": "supabase/functions/bulk-queue-leads",
+      "category": "Outros",
+      "has_yolo": false,
+      "has_ai": false,
+      "has_db": true,
+      "lines": 136
+    },
+    {
+      "name": "generate-medical-pdf",
+      "path": "supabase/functions/generate-medical-pdf",
+      "category": "Saúde/Dr.Vital",
+      "has_yolo": false,
+      "has_ai": false,
+      "has_db": true,
+      "lines": 189
+    },
+    {
+      "name": "fix-ai-configurations",
+      "path": "supabase/functions/fix-ai-configurations",
+      "category": "Outros",
+      "has_yolo": false,
+      "has_ai": true,
+      "has_db": true,
+      "lines": 145
+    },
+    {
+      "name": "fix-handle-new-user",
+      "path": "supabase/functions/fix-handle-new-user",
+      "category": "Outros",
+      "has_yolo": false,
+      "has_ai": false,
+      "has_db": true,
+      "lines": 103
+    },
+    {
+      "name": "sofia-enhanced-memory",
+      "path": "supabase/functions/sofia-enhanced-memory",
+      "category": "Nutrição/Sofia",
+      "has_yolo": false,
+      "has_ai": true,
+      "has_db": true,
+      "lines": 830
+    },
+    {
+      "name": "whatsapp-medical-handler",
+      "path": "supabase/functions/whatsapp-medical-handler",
+      "category": "Saúde/Dr.Vital",
+      "has_yolo": false,
+      "has_ai": false,
+      "has_db": true,
+      "lines": 463
+    },
+    {
+      "name": "whatsapp-webhook-unified",
+      "path": "supabase/functions/whatsapp-webhook-unified",
+      "category": "WhatsApp",
+      "has_yolo": false,
+      "has_ai": false,
+      "has_db": true,
+      "lines": 910
+    },
+    {
+      "name": "nutrition-daily-summary",
+      "path": "supabase/functions/nutrition-daily-summary",
+      "category": "Nutrição/Sofia",
+      "has_yolo": false,
+      "has_ai": false,
+      "has_db": true,
+      "lines": 378
+    },
+    {
+      "name": "google-fit-sync",
+      "path": "supabase/functions/google-fit-sync",
+      "category": "Google Fit",
+      "has_yolo": false,
+      "has_ai": false,
+      "has_db": true,
+      "lines": 675
+    },
+    {
+      "name": "premium-medical-report",
+      "path": "supabase/functions/premium-medical-report",
+      "category": "Saúde/Dr.Vital",
+      "has_yolo": false,
+      "has_ai": true,
+      "has_db": true,
+      "lines": 319
+    },
+    {
+      "name": "goal-notifications",
+      "path": "supabase/functions/goal-notifications",
+      "category": "Notificações",
+      "has_yolo": false,
+      "has_ai": false,
+      "has_db": true,
+      "lines": 159
+    },
+    {
+      "name": "food-analysis",
+      "path": "supabase/functions/food-analysis",
+      "category": "Nutrição/Sofia",
+      "has_yolo": false,
+      "has_ai": true,
+      "has_db": true,
+      "lines": 591
+    },
+    {
+      "name": "vps-proxy",
+      "path": "supabase/functions/vps-proxy",
+      "category": "Outros",
+      "has_yolo": false,
+      "has_ai": false,
+      "has_db": false,
+      "lines": 215
+    },
+    {
+      "name": "create-checkout",
+      "path": "supabase/functions/create-checkout",
+      "category": "Outros",
+      "has_yolo": false,
+      "has_ai": false,
+      "has_db": true,
+      "lines": 74
+    },
+    {
+      "name": "send-lead-webhooks",
+      "path": "supabase/functions/send-lead-webhooks",
+      "category": "Outros",
+      "has_yolo": false,
+      "has_ai": false,
+      "has_db": true,
+      "lines": 212
+    },
+    {
+      "name": "cache-manager",
+      "path": "supabase/functions/cache-manager",
+      "category": "Outros",
+      "has_yolo": false,
+      "has_ai": false,
+      "has_db": true,
+      "lines": 192
+    },
+    {
+      "name": "send-email",
+      "path": "supabase/functions/send-email",
+      "category": "Notificações",
+      "has_yolo": false,
+      "has_ai": false,
+      "has_db": false,
+      "lines": 107
+    },
+    {
+      "name": "whatsapp-generate-template",
+      "path": "supabase/functions/whatsapp-generate-template",
+      "category": "WhatsApp",
+      "has_yolo": false,
+      "has_ai": true,
+      "has_db": false,
+      "lines": 226
+    },
+    {
+      "name": "create-sirlene",
+      "path": "supabase/functions/create-sirlene",
+      "category": "Outros",
+      "has_yolo": false,
+      "has_ai": false,
+      "has_db": true,
+      "lines": 83
+    },
+    {
+      "name": "whatsapp-mission-complete",
+      "path": "supabase/functions/whatsapp-mission-complete",
+      "category": "WhatsApp",
+      "has_yolo": false,
+      "has_ai": true,
+      "has_db": true,
+      "lines": 293
+    },
+    {
+      "name": "whatsapp-welcome",
+      "path": "supabase/functions/whatsapp-welcome",
+      "category": "WhatsApp",
+      "has_yolo": false,
+      "has_ai": false,
+      "has_db": true,
+      "lines": 135
+    },
+    {
+      "name": "fix-stuck-documents",
+      "path": "supabase/functions/fix-stuck-documents",
+      "category": "Outros",
+      "has_yolo": false,
+      "has_ai": false,
+      "has_db": true,
+      "lines": 148
+    },
+    {
+      "name": "generate-ai-workout",
+      "path": "supabase/functions/generate-ai-workout",
+      "category": "Outros",
+      "has_yolo": false,
+      "has_ai": true,
+      "has_db": false,
+      "lines": 224
+    },
+    {
+      "name": "whatsapp-nutrition-webhook",
+      "path": "supabase/functions/whatsapp-nutrition-webhook",
+      "category": "Nutrição/Sofia",
+      "has_yolo": false,
+      "has_ai": false,
+      "has_db": true,
+      "lines": 847
+    },
+    {
+      "name": "sofia-text-analysis",
+      "path": "supabase/functions/sofia-text-analysis",
+      "category": "Nutrição/Sofia",
+      "has_yolo": false,
+      "has_ai": true,
+      "has_db": true,
+      "lines": 295
+    },
+    {
+      "name": "get-public-report",
+      "path": "supabase/functions/get-public-report",
+      "category": "Outros",
+      "has_yolo": false,
+      "has_ai": false,
+      "has_db": true,
+      "lines": 111
+    },
+    {
+      "name": "interpret-user-intent",
+      "path": "supabase/functions/interpret-user-intent",
+      "category": "Outros",
+      "has_yolo": false,
+      "has_ai": true,
+      "has_db": false,
+      "lines": 284
+    },
+    {
+      "name": "cleanup-scheduler",
+      "path": "supabase/functions/cleanup-scheduler",
+      "category": "Outros",
+      "has_yolo": false,
+      "has_ai": false,
+      "has_db": true,
+      "lines": 175
+    },
+    {
+      "name": "add-google-fit-columns",
+      "path": "supabase/functions/add-google-fit-columns",
+      "category": "Google Fit",
+      "has_yolo": false,
+      "has_ai": false,
+      "has_db": true,
+      "lines": 78
+    },
+    {
+      "name": "medical-batch-timeout",
+      "path": "supabase/functions/medical-batch-timeout",
+      "category": "Saúde/Dr.Vital",
+      "has_yolo": false,
+      "has_ai": false,
+      "has_db": true,
+      "lines": 148
+    },
+    {
+      "name": "generate-medical-report",
+      "path": "supabase/functions/generate-medical-report",
+      "category": "Saúde/Dr.Vital",
+      "has_yolo": false,
+      "has_ai": true,
+      "has_db": true,
+      "lines": 377
+    },
+    {
+      "name": "dr-vital-chat",
+      "path": "supabase/functions/dr-vital-chat",
+      "category": "Saúde/Dr.Vital",
+      "has_yolo": false,
+      "has_ai": true,
+      "has_db": true,
+      "lines": 488
+    },
+    {
+      "name": "enhanced-gpt-chat",
+      "path": "supabase/functions/enhanced-gpt-chat",
+      "category": "Outros",
+      "has_yolo": false,
+      "has_ai": true,
+      "has_db": false,
+      "lines": 116
+    },
+    {
+      "name": "rate-limiter",
+      "path": "supabase/functions/rate-limiter",
+      "category": "Outros",
+      "has_yolo": false,
+      "has_ai": false,
+      "has_db": true,
+      "lines": 195
+    },
+    {
+      "name": "improve-exercises",
+      "path": "supabase/functions/improve-exercises",
+      "category": "Outros",
+      "has_yolo": false,
+      "has_ai": true,
+      "has_db": true,
+      "lines": 173
+    },
+    {
+      "name": "evolution-send-message",
+      "path": "supabase/functions/evolution-send-message",
+      "category": "Outros",
+      "has_yolo": false,
+      "has_ai": false,
+      "has_db": true,
+      "lines": 297
+    },
+    {
+      "name": "create-asaas-payment",
+      "path": "supabase/functions/create-asaas-payment",
+      "category": "Outros",
+      "has_yolo": false,
+      "has_ai": false,
+      "has_db": true,
+      "lines": 137
+    },
+    {
+      "name": "sofia-deterministic",
+      "path": "supabase/functions/sofia-deterministic",
+      "category": "Nutrição/Sofia",
+      "has_yolo": false,
+      "has_ai": false,
+      "has_db": true,
+      "lines": 486
+    },
+    {
+      "name": "fix-storage-rls",
+      "path": "supabase/functions/fix-storage-rls",
+      "category": "Outros",
+      "has_yolo": false,
+      "has_ai": false,
+      "has_db": true,
+      "lines": 114
+    },
+    {
+      "name": "apply-robust-base",
+      "path": "supabase/functions/apply-robust-base",
+      "category": "Outros",
+      "has_yolo": false,
+      "has_ai": false,
+      "has_db": true,
+      "lines": 310
+    },
+    {
+      "name": "dr-vital-notifications",
+      "path": "supabase/functions/dr-vital-notifications",
+      "category": "Saúde/Dr.Vital",
+      "has_yolo": false,
+      "has_ai": false,
+      "has_db": true,
+      "lines": 312
+    },
+    {
+      "name": "customer-portal",
+      "path": "supabase/functions/customer-portal",
+      "category": "Outros",
+      "has_yolo": false,
+      "has_ai": false,
+      "has_db": true,
+      "lines": 69
+    },
+    {
+      "name": "whatsapp-weekly-report",
+      "path": "supabase/functions/whatsapp-weekly-report",
+      "category": "WhatsApp",
+      "has_yolo": false,
+      "has_ai": true,
+      "has_db": true,
+      "lines": 570
+    },
+    {
+      "name": "sofia-image-analysis",
+      "path": "supabase/functions/sofia-image-analysis",
+      "category": "Nutrição/Sofia",
+      "has_yolo": true,
+      "has_ai": true,
+      "has_db": true,
+      "lines": 2080
+    },
+    {
+      "name": "whatsapp-test-interactive",
+      "path": "supabase/functions/whatsapp-test-interactive",
+      "category": "WhatsApp",
+      "has_yolo": false,
+      "has_ai": false,
+      "has_db": false,
+      "lines": 167
+    },
+    {
+      "name": "finalize-medical-document",
+      "path": "supabase/functions/finalize-medical-document",
+      "category": "Saúde/Dr.Vital",
+      "has_yolo": false,
+      "has_ai": true,
+      "has_db": true,
+      "lines": 1092
+    },
+    {
+      "name": "generate-meal-plan-taco",
+      "path": "supabase/functions/generate-meal-plan-taco",
+      "category": "Outros",
+      "has_yolo": false,
+      "has_ai": false,
+      "has_db": false,
+      "lines": 139
+    },
+    {
+      "name": "nutrition-planner",
+      "path": "supabase/functions/nutrition-planner",
+      "category": "Nutrição/Sofia",
+      "has_yolo": false,
+      "has_ai": false,
+      "has_db": true,
+      "lines": 343
+    },
+    {
+      "name": "repair-auth-metadata",
+      "path": "supabase/functions/repair-auth-metadata",
+      "category": "Outros",
+      "has_yolo": false,
+      "has_ai": false,
+      "has_db": true,
+      "lines": 149
+    },
+    {
+      "name": "seed-standard-recipes",
+      "path": "supabase/functions/seed-standard-recipes",
+      "category": "Outros",
+      "has_yolo": false,
+      "has_ai": false,
+      "has_db": true,
+      "lines": 104
+    },
+    {
+      "name": "google-fit-ai-analysis",
+      "path": "supabase/functions/google-fit-ai-analysis",
+      "category": "Google Fit",
+      "has_yolo": false,
+      "has_ai": true,
+      "has_db": false,
+      "lines": 274
+    },
+    {
+      "name": "n8n-weekly-whatsapp-report",
+      "path": "supabase/functions/n8n-weekly-whatsapp-report",
+      "category": "WhatsApp",
+      "has_yolo": false,
+      "has_ai": false,
+      "has_db": true,
+      "lines": 212
+    },
+    {
+      "name": "dr-vital-enhanced",
+      "path": "supabase/functions/dr-vital-enhanced",
+      "category": "Saúde/Dr.Vital",
+      "has_yolo": false,
+      "has_ai": true,
+      "has_db": true,
+      "lines": 547
+    }
+  ],
+  "routes": []
+}

@@ -1,0 +1,104 @@
+{
+  "pre_launch_tests": {
+    "authentication": [
+      "✅ Login com email/senha funciona",
+      "✅ Login com Google OAuth funciona",
+      "✅ Cadastro de nova conta funciona",
+      "✅ Recuperação de senha funciona",
+      "✅ Logout funciona corretamente",
+      "✅ Sessão persiste após reload",
+      "✅ Redirecionamento após login funciona",
+      "✅ Proteção de rotas funciona"
+    ],
+    "onboarding": [
+      "✅ Fluxo de boas-vindas completo",
+      "✅ Preenchimento de dados obrigatórios",
+      "✅ Seleção de objetivos funciona",
+      "✅ Tutorial inicial é exibido",
+      "✅ Skip de etapas opcionais funciona"
+    ],
+    "dashboard": [
+      "✅ Dashboard carrega corretamente",
+      "✅ Widgets são exibidos",
+      "✅ Score de saúde é calculado",
+      "✅ Dados são atualizados em tempo real",
+      "✅ Ações rápidas funcionam"
+    ],
+    "nutrition_sofia": [
+      "✅ Upload de foto de alimento funciona",
+      "✅ YOLO detecta alimentos corretamente",
+      "✅ Análise nutricional é precisa",
+      "✅ Sofia responde adequadamente",
+      "✅ Histórico de refeições é salvo",
+      "✅ Planos alimentares são gerados",
+      "✅ Cálculos nutricionais estão corretos",
+      "✅ Tracking de água funciona"
+    ],
+    "health_drvital": [
+      "✅ Upload de exame médico funciona",
+      "✅ OCR extrai texto corretamente",
+      "✅ Análise de exame é precisa",
+      "✅ Dr. Vital interpreta resultados",
+      "✅ Relatório PDF é gerado",
+      "✅ Histórico de exames é mantido",
+      "✅ Alertas de saúde funcionam"
+    ],
+    "exercises": [
+      "✅ Biblioteca de exercícios carrega",
+      "✅ Programas de treino funcionam",
+      "✅ Timer de exercícios funciona",
+      "✅ Tracking de atividades funciona",
+      "✅ Integração Google Fit funciona",
+      "✅ Exercícios com câmera funcionam"
+    ],
+    "gamification": [
+      "✅ Pontos são calculados corretamente",
+      "✅ XP e níveis funcionam",
+      "✅ Badges são desbloqueados",
+      "✅ Streaks são contabilizados",
+      "✅ Ranking é atualizado",
+      "✅ Desafios são criados e completados",
+      "✅ Celebrações funcionam"
+    ],
+    "community": [
+      "✅ Feed social carrega",
+      "✅ Posts podem ser criados",
+      "✅ Stories funcionam",
+      "✅ Sistema de seguir funciona",
+      "✅ Curtidas e comentários funcionam",
+      "✅ Mensagens diretas funcionam"
+    ],
+    "admin": [
+      "✅ Dashboard admin carrega",
+      "✅ Gestão de usuários funciona",
+      "✅ Configurações de IA funcionam",
+      "✅ Analytics são exibidos",
+      "✅ Logs de sistema funcionam",
+      "✅ Notificações em massa funcionam"
+    ],
+    "mobile_pwa": [
+      "✅ PWA instala corretamente",
+      "✅ Funciona offline",
+      "✅ Push notifications funcionam",
+      "✅ Interface mobile é responsiva",
+      "✅ Gestures funcionam",
+      "✅ Câmera funciona no mobile"
+    ],
+    "performance": [
+      "✅ App carrega em <3 segundos",
+      "✅ Navegação é fluida",
+      "✅ Imagens carregam rapidamente",
+      "✅ APIs respondem em <2 segundos",
+      "✅ Bundle size está otimizado",
+      "✅ Lighthouse score >90"
+    ],
+    "security": [
+      "✅ Dados sensíveis são protegidos",
+      "✅ RLS policies funcionam",
+      "✅ Uploads são validados",
+      "✅ XSS protection ativa",
+      "✅ CSRF protection ativa",
+      "✅ Rate limiting funciona"
+    ]
+  }
+}

@@ -48,7 +48,7 @@ Implementação em 3 fases do módulo "Treino com Câmera" usando YOLO-Pose para
     - Atualizar ultralytics para versão com pose
     - _Requirements: 9.6_
 
-- [ ] 3. Checkpoint - Testar servidor YOLO-Pose
+- [x] 3. Checkpoint - Testar servidor YOLO-Pose
   - Ensure all tests pass, ask the user if questions arise.
   - Testar endpoint `/pose/analyze` com imagens de teste
   - Verificar detecção de keypoints e cálculo de ângulos
@@ -113,7 +113,7 @@ Implementação em 3 fases do módulo "Treino com Câmera" usando YOLO-Pose para
     - Criar em `src/hooks/camera-workout/usePoseEstimation.ts`
     - _Requirements: 2.1, 2.2, 2.3, 2.4_
 
-- [ ] 6. Checkpoint - Testar pipeline de processamento
+- [x] 6. Checkpoint - Testar pipeline de processamento
   - Ensure all tests pass, ask the user if questions arise.
   - Verificar smoothing, rep counting e form analysis funcionando
 
@@ -176,7 +176,7 @@ Implementação em 3 fases do módulo "Treino com Câmera" usando YOLO-Pose para
     - Criar em `src/hooks/camera-workout/useCalibration.ts`
     - _Requirements: 5.7, 5.9_
 
-- [ ] 9. Checkpoint - Testar UI completa do MVP
+- [x] 9. Checkpoint - Testar UI completa do MVP
   - Ensure all tests pass, ask the user if questions arise.
   - Testar fluxo completo: calibração → treino → resultados
   - Verificar feedback visual e contagem de reps
@@ -184,8 +184,8 @@ Implementação em 3 fases do módulo "Treino com Câmera" usando YOLO-Pose para
 
 ### Fase 2: Gamificação e Persistência
 
-- [ ] 10. Implementar persistência de sessões
-  - [ ] 10.1 Criar service de persistência
+- [-] 10. Implementar persistência de sessões
+  - [x] 10.1 Criar service de persistência
     - Salvar sessão ao finalizar treino
     - Salvar eventos de rep individuais
     - Salvar eventos de postura
@@ -197,15 +197,15 @@ Implementação em 3 fases do módulo "Treino com Câmera" usando YOLO-Pose para
     - **Property 18: Session Persistence**
     - **Validates: Requirements 7.5, 8.1, 8.2**
 
-  - [ ] 10.3 Criar hook useWorkoutSession
+  - [x] 10.3 Criar hook useWorkoutSession
     - Gerenciar ciclo de vida da sessão
     - Integrar com persistência
     - Calcular estatísticas em tempo real
     - Criar em `src/hooks/camera-workout/useWorkoutSession.ts`
     - _Requirements: 8.6, 8.7_
 
-- [ ] 11. Implementar gamificação
-  - [ ] 11.1 Criar service de pontuação
+- [-] 11. Implementar gamificação
+  - [x] 11.1 Criar service de pontuação
     - Pontos base por rep
     - Bonus por boa forma (1.5x)
     - Streak bonus
@@ -217,7 +217,7 @@ Implementação em 3 fases do módulo "Treino com Câmera" usando YOLO-Pose para
     - **Property 17: Good Form Bonus Points**
     - **Validates: Requirements 7.1**
 
-  - [ ] 11.3 Criar componente WorkoutSummary
+  - [x] 11.3 Criar componente WorkoutSummary
     - Tela de resultados pós-treino
     - Estatísticas: reps, tempo, pontos, XP
     - Achievements desbloqueados
@@ -225,77 +225,77 @@ Implementação em 3 fases do módulo "Treino com Câmera" usando YOLO-Pose para
     - Criar em `src/components/camera-workout/WorkoutSummary.tsx`
     - _Requirements: 6.11, 7.4, 7.9_
 
-  - [ ] 11.4 Integrar com sistema de desafios existente
+  - [x] 11.4 Integrar com sistema de desafios existente
     - Criar desafios específicos de câmera
     - Missões diárias de reps
     - Integrar com ChallengesV2
     - _Requirements: 7.2, 7.3, 7.6_
 
-- [ ] 12. Checkpoint - Testar gamificação
+- [x] 12. Checkpoint - Testar gamificação
   - Ensure all tests pass, ask the user if questions arise.
   - Verificar pontuação, achievements e persistência
 
 ### Fase 3: Expansão e Polimento
 
-- [ ] 13. Adicionar mais exercícios
-  - [ ] 13.1 Implementar configuração de flexão (pushup)
+- [x] 13. Adicionar mais exercícios
+  - [x] 13.1 Implementar configuração de flexão (pushup)
     - Keypoints: ombros, cotovelos, pulsos
     - Ângulo do cotovelo para contagem
     - Form rules específicas
     - _Requirements: 11.1, 11.2_
 
-  - [ ] 13.2 Implementar configuração de abdominal (situp)
+  - [x] 13.2 Implementar configuração de abdominal (situp)
     - Keypoints: ombros, quadril, joelhos
     - Ângulo do tronco para contagem
     - Form rules específicas
     - _Requirements: 11.1, 11.2_
 
-  - [ ] 13.3 Implementar configuração de prancha (plank)
+  - [x] 13.3 Implementar configuração de prancha (plank)
     - Keypoints: ombros, quadril, tornozelos
     - Detecção de alinhamento (não contagem)
     - Timer em vez de reps
     - _Requirements: 11.1, 11.2_
 
-  - [ ] 13.4 Criar seletor de exercícios
+  - [x] 13.4 Criar seletor de exercícios
     - Lista de exercícios suportados
     - Preview com demonstração
     - Tutorial integrado
     - Criar em `src/components/camera-workout/ExerciseSelector.tsx`
     - _Requirements: 11.3, 11.7_
 
-- [ ] 14. Implementar observabilidade
-  - [ ] 14.1 Criar service de métricas
+- [x] 14. Implementar observabilidade
+  - [x] 14.1 Criar service de métricas
     - Coletar FPS, latência, confiança
     - Detectar problemas de ambiente
     - Alertas automáticos
     - Criar em `src/services/camera-workout/metricsService.ts`
     - _Requirements: 10.1, 10.2, 10.3, 10.4_
 
-  - [ ] 14.2 Criar modo debug
+  - [x] 14.2 Criar modo debug
     - Visualização detalhada de keypoints
     - Valores de ângulos em tempo real
     - Logs de decisões do sistema
     - _Requirements: 10.6_
 
-- [ ] 15. Implementar acessibilidade
-  - [ ] 15.1 Adicionar feedback de áudio
+- [x] 15. Implementar acessibilidade
+  - [x] 15.1 Adicionar feedback de áudio
     - Contagem por voz
     - Dicas de postura faladas
     - Configurável on/off
     - _Requirements: 12.2_
 
-  - [ ] 15.2 Adicionar comandos de voz
+  - [x] 15.2 Adicionar comandos de voz
     - "Pausar", "Continuar", "Encerrar"
     - Integrar com Web Speech API
     - _Requirements: 12.6_
 
-  - [ ] 15.3 Implementar exercícios adaptados
+  - [x] 15.3 Implementar exercícios adaptados
     - Variações sentadas
     - Tolerâncias ajustáveis
     - Exercícios alternativos
     - _Requirements: 12.1, 12.3, 12.4_
 
-- [ ] 16. Checkpoint Final - Validação completa
+- [x] 16. Checkpoint Final - Validação completa
   - Ensure all tests pass, ask the user if questions arise.
   - Testar todos os exercícios
   - Validar com 10 vídeos de teste

@@ -1,0 +1,528 @@
+{
+  "project": {
+    "name": "MaxNutrition",
+    "full_name": "Instituto dos Sonhos - MaxNutrition",
+    "description": "Plataforma de nutrição inteligente e personalizada",
+    "tech_stack": [
+      "TypeScript",
+      "YOLO",
+      "Tailwind",
+      "React",
+      "Vite",
+      "Lucide",
+      "Zod",
+      "Supabase",
+      "Gemini"
+    ]
+  },
+  "architecture": {
+    "frontend": {},
+    "backend": {},
+    "database": {},
+    "integrations": []
+  },
+  "database": {
+    "tables": {
+      "user_anamnesis": {
+        "name": "user_anamnesis",
+        "description": "Anamnese médica completa do usuário.",
+        "columns": []
+      },
+      "user_preferences": {
+        "name": "user_preferences",
+        "description": "Preferências do usuário no app.",
+        "columns": []
+      },
+      "user_points": {
+        "name": "user_points",
+        "description": "Sistema de pontos.",
+        "columns": []
+      },
+      "challenge_participations": {
+        "name": "challenge_participations",
+        "description": "Participações em desafios.",
+        "columns": []
+      },
+      "flash_challenges": {
+        "name": "flash_challenges",
+        "description": "Desafios relâmpago (curta duração).",
+        "columns": []
+      },
+      "daily_mission_sessions": {
+        "name": "daily_mission_sessions",
+        "description": "Sessões de missões diárias.",
+        "columns": []
+      },
+      "food_history": {
+        "name": "food_history",
+        "description": "```sql",
+        "columns": []
+      },
+      "sofia_memory": {
+        "name": "sofia_memory",
+        "description": "Memória da Sofia para contexto.",
+        "columns": []
+      },
+      "sofia_learning": {
+        "name": "sofia_learning",
+        "description": "Aprendizado da Sofia sobre o usuário.",
+        "columns": []
+      },
+      "meal_plans": {
+        "name": "meal_plans",
+        "description": "Planos de refeição.",
+        "columns": []
+      },
+      "nutrition_tracking": {
+        "name": "nutrition_tracking",
+        "description": "Rastreamento nutricional diário.",
+        "columns": []
+      },
+      "medical_exam_analyses": {
+        "name": "medical_exam_analyses",
+        "description": "Análises de exames médicos.",
+        "columns": []
+      },
+      "google_fit_data": {
+        "name": "google_fit_data",
+        "description": "Dados sincronizados do Google Fit.",
+        "columns": []
+      },
+      "health_diary": {
+        "name": "health_diary",
+        "description": "Diário de saúde.",
+        "columns": []
+      },
+      "advanced_daily_tracking": {
+        "name": "advanced_daily_tracking",
+        "description": "Tracking diário avançado.",
+        "columns": []
+      },
+      "exercises_library": {
+        "name": "exercises_library",
+        "description": "Biblioteca de exercícios.",
+        "columns": []
+      },
+      "exercise_tracking": {
+        "name": "exercise_tracking",
+        "description": "Registro de exercícios.",
+        "columns": []
+      },
+      "saved_workout_programs": {
+        "name": "saved_workout_programs",
+        "description": "Programas de treino salvos.",
+        "columns": []
+      },
+      "health_feed_posts": {
+        "name": "health_feed_posts",
+        "description": "```sql",
+        "columns": []
+      },
+      "health_feed_stories": {
+        "name": "health_feed_stories",
+        "description": "Stories do feed.",
+        "columns": []
+      },
+      "health_feed_follows": {
+        "name": "health_feed_follows",
+        "description": "Seguidores.",
+        "columns": []
+      },
+      "health_feed_reactions": {
+        "name": "health_feed_reactions",
+        "description": "Reações aos posts.",
+        "columns": []
+      },
+      "ai_configurations": {
+        "name": "ai_configurations",
+        "description": "Configurações de IA.",
+        "columns": []
+      },
+      "admin_logs": {
+        "name": "admin_logs",
+        "description": "Logs de ações administrativas.",
+        "columns": []
+      },
+      "analysis_cache": {
+        "name": "analysis_cache",
+        "description": "Cache de análises de IA.",
+        "columns": []
+      },
+      "ai_response_cache": {
+        "name": "ai_response_cache",
+        "description": "Cache de respostas de IA.",
+        "columns": []
+      },
+      "ai_usage_logs": {
+        "name": "ai_usage_logs",
+        "description": "Logs de uso de IA.",
+        "columns": []
+      },
+      "google_fit_tokens": {
+        "name": "google_fit_tokens",
+        "description": "Tokens do Google Fit.",
+        "columns": []
+      },
+      "chat_conversations": {
+        "name": "chat_conversations",
+        "description": "Conversas de chat.",
+        "columns": []
+      },
+      "user_physical_data": {
+        "name": "user_physical_data",
+        "description": "Dados físicos do usuário.",
+        "columns": []
+      },
+      "weight_measurements": {
+        "name": "weight_measurements",
+        "description": "Medições de peso e composição corporal.",
+        "columns": []
+      },
+      "sleep_tracking": {
+        "name": "sleep_tracking",
+        "description": "Monitoramento de sono.",
+        "columns": []
+      },
+      "mood_tracking": {
+        "name": "mood_tracking",
+        "description": "Monitoramento de humor.",
+        "columns": []
+      },
+      "heart_rate_data": {
+        "name": "heart_rate_data",
+        "description": "Dados de frequência cardíaca.",
+        "columns": []
+      },
+      "medical_documents": {
+        "name": "medical_documents",
+        "description": "Documentos médicos.",
+        "columns": []
+      },
+      "user_supplements": {
+        "name": "user_supplements",
+        "description": "Suplementos do usuário.",
+        "columns": []
+      },
+      "food_analysis": {
+        "name": "food_analysis",
+        "description": "Análises de alimentos por IA.",
+        "columns": []
+      },
+      "water_tracking": {
+        "name": "water_tracking",
+        "description": "Monitoramento de hidratação.",
+        "columns": []
+      },
+      "nutrition_foods": {
+        "name": "nutrition_foods",
+        "description": "Base de alimentos.",
+        "columns": []
+      },
+      "nutrition_aliases": {
+        "name": "nutrition_aliases",
+        "description": "Aliases para normalização de nomes.",
+        "columns": []
+      },
+      "workout_plans": {
+        "name": "workout_plans",
+        "description": "Planos de treino.",
+        "columns": []
+      },
+      "user_goals": {
+        "name": "user_goals",
+        "description": "Metas do usuário.",
+        "columns": []
+      },
+      "goal_updates": {
+        "name": "goal_updates",
+        "description": "Atualizações de progresso.",
+        "columns": []
+      },
+      "user_achievements": {
+        "name": "user_achievements",
+        "description": "Conquistas desbloqueadas.",
+        "columns": []
+      },
+      "course_modules": {
+        "name": "course_modules",
+        "description": "Módulos de cursos.",
+        "columns": []
+      },
+      "lesson_progress": {
+        "name": "lesson_progress",
+        "description": "Progresso nas aulas.",
+        "columns": []
+      },
+      "community_posts": {
+        "name": "community_posts",
+        "description": "Posts da comunidade.",
+        "columns": []
+      },
+      "conversation_messages": {
+        "name": "conversation_messages",
+        "description": "Mensagens de conversas.",
+        "columns": []
+      },
+      "user_conversations": {
+        "name": "user_conversations",
+        "description": "Histórico permanente de conversas.",
+        "columns": []
+      },
+      "dr_vital_memory": {
+        "name": "dr_vital_memory",
+        "description": "Memória de longo prazo do Dr. Vital.",
+        "columns": []
+      },
+      "base_de_conhecimento_sofia": {
+        "name": "base_de_conhecimento_sofia",
+        "description": "Base de conhecimento da Sofia.",
+        "columns": []
+      },
+      "company_configurations": {
+        "name": "company_configurations",
+        "description": "Configurações da empresa.",
+        "columns": []
+      },
+      "daily_responses": {
+        "name": "daily_responses",
+        "description": "Respostas diárias dos usuários.",
+        "columns": []
+      }
+    },
+    "rpcs": {},
+    "policies": [],
+    "relationships": []
+  },
+  "components": {
+    "ui": [],
+    "features": [],
+    "pages": []
+  },
+  "hooks": {
+    "auth": [
+      "useAuth"
+    ],
+    "data": [
+      "useNutritionData",
+      "useMutation",
+      "useGoogleFitData",
+      "useTrackingData",
+      "useHealthData",
+      "useQuery"
+    ],
+    "ui": [
+      "useToast"
+    ],
+    "gamification": [
+      "useGamificationUnified",
+      "useUserXP",
+      "useUserPoints"
+    ]
+  },
+  "edge_functions": [
+    {
+      "name": "sofia-image-analysis",
+      "description": "Análise de imagens de alimentos usando YOLO + Gemini.",
+      "path": "supabase/functions/sofia-image-analysis"
+    },
+    {
+      "name": "analyze-medical-exam",
+      "description": "Análise de exames médicos com OCR + IA.",
+      "path": "supabase/functions/analyze-medical-exam"
+    },
+    {
+      "name": "dr-vital-chat",
+      "description": "Chat com Dr. Vital (IA médica).",
+      "path": "supabase/functions/dr-vital-chat"
+    },
+    {
+      "name": "food-analysis",
+      "description": "Análise nutricional de texto.",
+      "path": "supabase/functions/food-analysis"
+    },
+    {
+      "name": "nutrition-calc",
+      "description": "Cálculo nutricional determinístico.",
+      "path": "supabase/functions/nutrition-calc"
+    },
+    {
+      "name": "nutrition-daily-summary",
+      "description": "Resumo nutricional diário.",
+      "path": "supabase/functions/nutrition-daily-summary"
+    },
+    {
+      "name": "whatsapp-webhook-unified",
+      "description": "Webhook unificado para mensagens WhatsApp.",
+      "path": "supabase/functions/whatsapp-webhook-unified"
+    },
+    {
+      "name": "whatsapp-weekly-report",
+      "description": "Envia relatório semanal via WhatsApp.",
+      "path": "supabase/functions/whatsapp-weekly-report"
+    },
+    {
+      "name": "whatsapp-daily-motivation",
+      "description": "Envia mensagem motivacional diária.",
+      "path": "supabase/functions/whatsapp-daily-motivation"
+    },
+    {
+      "name": "whatsapp-goal-reminders",
+      "description": "Lembretes de metas via WhatsApp.",
+      "path": "supabase/functions/whatsapp-goal-reminders"
+    },
+    {
+      "name": "google-fit-sync",
+      "description": "Sincroniza dados do Google Fit.",
+      "path": "supabase/functions/google-fit-sync"
+    },
+    {
+      "name": "google-fit-callback",
+      "description": "Callback OAuth do Google Fit.",
+      "path": "supabase/functions/google-fit-callback"
+    },
+    {
+      "name": "google-fit-token",
+      "description": "Gerenciamento de tokens.",
+      "path": "supabase/functions/google-fit-token"
+    },
+    {
+      "name": "google-fit-ai-analysis",
+      "description": "Análise IA dos dados do Google Fit.",
+      "path": "supabase/functions/google-fit-ai-analysis"
+    },
+    {
+      "name": "generate-meal-plan-taco",
+      "description": "Gera plano alimentar usando tabela TACO.",
+      "path": "supabase/functions/generate-meal-plan-taco"
+    },
+    {
+      "name": "nutrition-planner",
+      "description": "Planejador nutricional.",
+      "path": "supabase/functions/nutrition-planner"
+    },
+    {
+      "name": "enrich-food-data",
+      "description": "Enriquece dados de alimentos.",
+      "path": "supabase/functions/enrich-food-data"
+    },
+    {
+      "name": "generate-medical-pdf",
+      "description": "Gera PDF de relatório médico.",
+      "path": "supabase/functions/generate-medical-pdf"
+    },
+    {
+      "name": "generate-medical-report",
+      "description": "Gera relatório médico completo.",
+      "path": "supabase/functions/generate-medical-report"
+    },
+    {
+      "name": "premium-medical-report",
+      "description": "Relatório médico premium (detalhado).",
+      "path": "supabase/functions/premium-medical-report"
+    },
+    {
+      "name": "dr-vital-weekly-report",
+      "description": "Relatório semanal do Dr. Vital.",
+      "path": "supabase/functions/dr-vital-weekly-report"
+    },
+    {
+      "name": "send-email",
+      "description": "Envio de emails via Resend.",
+      "path": "supabase/functions/send-email"
+    },
+    {
+      "name": "goal-notifications",
+      "description": "Notificações de metas.",
+      "path": "supabase/functions/goal-notifications"
+    },
+    {
+      "name": "media-upload",
+      "description": "Upload de mídia para Storage.",
+      "path": "supabase/functions/media-upload"
+    },
+    {
+      "name": "cache-manager",
+      "description": "Gerenciamento de cache.",
+      "path": "supabase/functions/cache-manager"
+    },
+    {
+      "name": "rate-limiter",
+      "description": "Rate limiting para APIs.",
+      "path": "supabase/functions/rate-limiter"
+    },
+    {
+      "name": "detect-image-type",
+      "description": "Detecta tipo de imagem (comida, exame, etc).",
+      "path": "supabase/functions/detect-image-type"
+    }
+  ],
+  "ai_systems": {
+    "sofia": {
+      "name": "Sofia",
+      "type": "Nutricionista Virtual",
+      "capabilities": [
+        "Integração Completa com Instituto dos Sonhos",
+        "Este serviço é crítico para redução de custos e qualidade das análises.",
+        "## 📊 Resumo Executivo",
+        "|",
+        "|",
+        "service` |",
+        "seg.pt` |",
+        "## 🎯 O QUE O YOLO FAZ NO APP",
+        "⚡ **10x mais rápido** (YOLO: 0.8s vs Gemini sozinho: 3",
+        "8s)"
+      ]
+    },
+    "dr_vital": {
+      "name": "Dr. Vital",
+      "type": "Análise de Exames",
+      "capabilities": []
+    },
+    "yolo": {
+      "name": "YOLO",
+      "type": "Detecção de Objetos",
+      "url": "yolo-service-yolo-detection.0sw627.easypanel.host"
+    }
+  },
+  "features": {
+    "gamification": {},
+    "nutrition": {},
+    "exercise": {},
+    "community": {}
+  },
+  "environment": {
+    "VITE_SUPABASE_URL": {
+      "name": "VITE_SUPABASE_URL",
+      "example": "[REQUIRED]"
+    },
+    "VITE_SUPABASE_ANON_KEY": {
+      "name": "VITE_SUPABASE_ANON_KEY",
+      "example": "[REQUIRED]"
+    },
+    "VITE_SUPABASE_PROJECT_ID": {
+      "name": "VITE_SUPABASE_PROJECT_ID",
+      "example": "[REQUIRED]"
+    },
+    "VITE_APP_NAME": {
+      "name": "VITE_APP_NAME",
+      "example": "MaxNutrition"
+    },
+    "VITE_APP_URL": {
+      "name": "VITE_APP_URL",
+      "example": "[REQUIRED]"
+    },
+    "VITE_DEBUG_MODE": {
+      "name": "VITE_DEBUG_MODE",
+      "example": "false"
+    },
+    "VITE_ENABLE_ANALYTICS": {
+      "name": "VITE_ENABLE_ANALYTICS",
+      "example": "false"
+    },
+    "VITE_SENTRY_DSN": {
+      "name": "VITE_SENTRY_DSN",
+      "example": "[REQUIRED]"
+    }
+  },
+  "deployment": {}
+}

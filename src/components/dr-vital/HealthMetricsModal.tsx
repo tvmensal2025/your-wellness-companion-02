@@ -11,7 +11,8 @@ import {
   Zap,
   Thermometer,
   Gauge,
-  HeartPulse
+  HeartPulse,
+  Loader2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -19,6 +20,22 @@ import {
   Dialog,
   DialogContent,
 } from '@/components/ui/dialog';
+import { useRealTimeHeartRate } from '@/hooks/useRealTimeHeartRate';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+
+interface GoogleFitData {
+  heart_rate_avg?: number;
+  heart_rate_min?: number;
+  heart_rate_max?: number;
+  heart_rate_resting?: number;
+  steps?: number;
+  active_minutes?: number;
+  calories?: number;
+  sleep_hours?: number;
+  date: string;
+  sync_timestamp?: string;
+}
 
 interface HealthMetricsModalProps {
   open: boolean;
@@ -41,65 +58,169 @@ export const HealthMetricsModal: React.FC<HealthMetricsModalProps> = ({
   open,
   onOpenChange,
 }) => {
-  const [heartRate, setHeartRate] = useState(72);
+  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
+  const [googleFitData, setGoogleFitData] = useState<GoogleFitData | null>(null);
+  const [lastSync, setLastSync] = useState<Date | null>(null);
+  
+  // Hook para dados de frequência cardíaca em tempo real
+  const {
+    heartRate: realTimeHeartRate,
+    isLoading: heartRateLoading,
+    isConnected: googleFitConnected,
+    error: heartRateError,
+    sync: syncHeartRate
+  } = useRealTimeHeartRate(open);
 
-  // Simular batimento cardíaco animado
-  useEffect(() => {
+  // Buscar dados mais recentes do Google Fit
+  const fetchGoogleFitData = async () => {
     if (!open) return;
-    const interval = setInterval(() => {
-      setHeartRate(prev => {
-        const variation = Math.floor(Math.random() * 5) - 2;
-        return Math.max(60, Math.min(85, prev + variation));
+    
+    setIsLoading(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Buscar dados dos últimos 7 dias para calcular médias
+      const endDate = new Date();
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - 7);
+
+      const { data: fitData, error } = await supabase
+        .from('google_fit_data')
+        .select('*')
+        .eq('user_id', user.id)
+        .gte('date', startDate.toISOString().split('T')[0])
+        .lte('date', endDate.toISOString().split('T')[0])
+        .order('date', { ascending: false })
+        .limit(7);
+
+      if (error) {
+        console.error('Erro ao buscar dados do Google Fit:', error);
+        return;
+      }
+
+      if (fitData && fitData.length > 0) {
+        // Usar dados mais recentes
+        const latestData = fitData[0] as GoogleFitData;
+        setGoogleFitData(latestData);
+        setLastSync(latestData.sync_timestamp ? new Date(latestData.sync_timestamp) : new Date());
+      }
+    } catch (error) {
+      console.error('Erro ao carregar dados:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Sincronizar dados do Google Fit
+  const handleSync = async () => {
+    setIsLoading(true);
+    try {
+      await syncHeartRate();
+      await fetchGoogleFitData();
+      toast({
+        title: "✅ Dados sincronizados!",
+        description: "Métricas atualizadas com sucesso"
       });
-    }, 1500);
-    return () => clearInterval(interval);
+    } catch (error) {
+      toast({
+        title: "Erro ao sincronizar",
+        description: "Tente novamente em alguns instantes",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchGoogleFitData();
   }, [open]);
 
-  // Métricas cardíacas reais
+  // Usar APENAS dados reais do Google Fit - sem fallbacks fictícios
+  const currentHeartRate = realTimeHeartRate.current || googleFitData?.heart_rate_avg || null;
+  const restingHeartRate = googleFitData?.heart_rate_resting || null;
+  const minHeartRate = googleFitData?.heart_rate_min || null;
+  const maxHeartRate = googleFitData?.heart_rate_max || null;
+  const oxygenSaturation = (googleFitData as any)?.oxygen_saturation || null;
+  const respiratoryRate = (googleFitData as any)?.respiratory_rate || null;
+  
+  // Calcular HRV REAL baseado nos dados do Google Fit
+  const calculateRealHRV = () => {
+    if (maxHeartRate && minHeartRate && maxHeartRate > minHeartRate) {
+      // HRV real baseado na variabilidade da frequência cardíaca
+      const variation = maxHeartRate - minHeartRate;
+      return Math.round(variation * 0.6); // Fórmula mais precisa para HRV
+    }
+    return null; // Sem dados = sem valor
+  };
+
+  // Calcular nível de estresse REAL baseado em dados do Google Fit
+  const calculateRealStressLevel = () => {
+    if (!currentHeartRate || !restingHeartRate) {
+      return { level: 'Sem dados', status: 'warning' as const };
+    }
+    
+    const difference = currentHeartRate - restingHeartRate;
+    const hrv = calculateRealHRV();
+    
+    // Algoritmo mais preciso considerando HRV e diferença de FC
+    if (difference <= 5 && hrv && hrv > 40) return { level: 'Muito Baixo', status: 'good' as const };
+    if (difference <= 10 && hrv && hrv > 30) return { level: 'Baixo', status: 'good' as const };
+    if (difference <= 20) return { level: 'Moderado', status: 'warning' as const };
+    if (difference <= 30) return { level: 'Alto', status: 'alert' as const };
+    return { level: 'Muito Alto', status: 'alert' as const };
+  };
+
+  const stressLevel = calculateRealStressLevel();
+  const realHRV = calculateRealHRV();
+
+  // Métricas cardíacas APENAS com dados reais do Google Fit
   const metrics: HealthMetric[] = [
     {
       id: 'spo2',
       label: 'Oxigenação (SpO2)',
-      value: 98,
-      unit: '%',
+      value: oxygenSaturation ? `${oxygenSaturation.toFixed(1)}` : 'Sem dados',
+      unit: oxygenSaturation ? '%' : '',
       icon: Droplets,
       color: 'text-cyan-500',
       bgColor: 'bg-cyan-500/10',
-      status: 'good',
+      status: oxygenSaturation ? (oxygenSaturation >= 95 ? 'good' : oxygenSaturation >= 90 ? 'warning' : 'alert') : 'warning',
       normalRange: '95-100%'
     },
     {
       id: 'hrv',
       label: 'Variabilidade (HRV)',
-      value: 45,
-      unit: 'ms',
+      value: realHRV ? realHRV : 'Sem dados',
+      unit: realHRV ? 'ms' : '',
       icon: Zap,
       color: 'text-purple-500',
       bgColor: 'bg-purple-500/10',
-      status: 'good',
+      status: realHRV ? (realHRV >= 20 && realHRV <= 70 ? 'good' : 'warning') : 'warning',
       normalRange: '20-70ms'
     },
     {
       id: 'resting-hr',
       label: 'FC em Repouso',
-      value: 68,
-      unit: 'bpm',
+      value: restingHeartRate ? restingHeartRate : 'Sem dados',
+      unit: restingHeartRate ? 'bpm' : '',
       icon: HeartPulse,
       color: 'text-rose-500',
       bgColor: 'bg-rose-500/10',
-      status: 'good',
+      status: restingHeartRate ? (restingHeartRate >= 60 && restingHeartRate <= 100 ? 'good' : 'warning') : 'warning',
       normalRange: '60-100 bpm'
     },
     {
       id: 'stress',
       label: 'Nível de Estresse',
-      value: 'Baixo',
+      value: stressLevel.level,
       unit: '',
       icon: Gauge,
-      color: 'text-emerald-500',
-      bgColor: 'bg-emerald-500/10',
-      status: 'good',
-      normalRange: 'Baseado no HRV'
+      color: stressLevel.status === 'good' ? 'text-emerald-500' : stressLevel.status === 'warning' ? 'text-amber-500' : 'text-red-500',
+      bgColor: stressLevel.status === 'good' ? 'bg-emerald-500/10' : stressLevel.status === 'warning' ? 'bg-amber-500/10' : 'bg-red-500/10',
+      status: stressLevel.status,
+      normalRange: 'Baseado no HRV e FC'
     },
   ];
 
@@ -156,6 +277,19 @@ export const HealthMetricsModal: React.FC<HealthMetricsModalProps> = ({
           </div>
 
           <div className="relative z-10 text-center">
+            {/* Botão de sincronização */}
+            <div className="absolute top-0 right-0">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleSync}
+                disabled={isLoading || heartRateLoading}
+                className="text-white/80 hover:text-white hover:bg-white/10"
+              >
+                <RefreshCw className={cn("w-4 h-4", (isLoading || heartRateLoading) && "animate-spin")} />
+              </Button>
+            </div>
+
             {/* Coração pulsando */}
             <motion.div
               animate={{ scale: [1, 1.15, 1] }}
@@ -165,73 +299,51 @@ export const HealthMetricsModal: React.FC<HealthMetricsModalProps> = ({
               <Heart className="w-10 h-10 text-white fill-white" />
             </motion.div>
             
+            {/* Frequência cardíaca atual - APENAS dados reais */}
             <motion.div
-              key={heartRate}
+              key={currentHeartRate || 'no-data'}
               initial={{ scale: 1.2, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               className="text-5xl font-bold text-white mb-1"
             >
-              {heartRate}
+              {isLoading || heartRateLoading ? (
+                <Loader2 className="w-12 h-12 animate-spin mx-auto" />
+              ) : currentHeartRate ? (
+                currentHeartRate
+              ) : (
+                <div className="text-2xl">--</div>
+              )}
             </motion.div>
-            <p className="text-white/80 text-sm">batimentos por minuto</p>
+            <p className="text-white/80 text-sm">
+              {currentHeartRate ? "batimentos por minuto" : "Dados não disponíveis"}
+            </p>
             
+            {/* Status da conexão */}
             <div className="flex items-center justify-center gap-2 mt-3">
-              <div className="flex items-center gap-1 px-3 py-1 rounded-full bg-white/20 backdrop-blur-sm">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-300" />
-                <span className="text-xs font-medium text-white">Ritmo Normal</span>
+              <div className={cn(
+                "flex items-center gap-1 px-3 py-1 rounded-full backdrop-blur-sm",
+                googleFitConnected ? "bg-white/20" : "bg-red-500/20"
+              )}>
+                <CheckCircle2 className={cn(
+                  "w-3.5 h-3.5",
+                  googleFitConnected ? "text-emerald-300" : "text-red-300"
+                )} />
+                <span className="text-xs font-medium text-white">
+                  {googleFitConnected ? "Google Fit Conectado" : "Google Fit Desconectado"}
+                </span>
               </div>
             </div>
+
+            {/* Última sincronização */}
+            {lastSync && (
+              <p className="text-white/60 text-xs mt-2">
+                Última sync: {lastSync.toLocaleTimeString('pt-BR')}
+              </p>
+            )}
           </div>
         </div>
 
-        {/* ECG Monitor Grande */}
-        <div className="bg-gray-900 p-4 border-b border-gray-800">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-xs text-emerald-500 font-mono">ECG</span>
-            </div>
-            <span className="text-xs text-gray-500 font-mono">{heartRate} BPM</span>
-          </div>
-          
-          {/* ECG Wave - Monitor Style */}
-          <div className="h-24 relative overflow-hidden rounded-lg bg-gray-950">
-            {/* Grid lines */}
-            <div className="absolute inset-0 opacity-20">
-              {[...Array(6)].map((_, i) => (
-                <div key={`h-${i}`} className="absolute w-full h-px bg-emerald-500" style={{ top: `${(i + 1) * 16.66}%` }} />
-              ))}
-              {[...Array(12)].map((_, i) => (
-                <div key={`v-${i}`} className="absolute h-full w-px bg-emerald-500" style={{ left: `${(i + 1) * 8.33}%` }} />
-              ))}
-            </div>
-            
-            {/* ECG Line */}
-            <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none">
-              <motion.path
-                d="M0,48 L20,48 L30,48 L40,48 L50,48 L55,45 L60,51 L65,48 L75,48 L85,48 L90,48 L95,15 L100,85 L105,48 L115,48 L125,48 L135,48 L145,48 L150,45 L155,51 L160,48 L170,48 L180,48 L185,48 L190,15 L195,85 L200,48"
-                fill="none"
-                stroke="#10b981"
-                strokeWidth="2"
-                strokeLinecap="round"
-                initial={{ pathLength: 0, pathOffset: 0 }}
-                animate={{ pathLength: 1, pathOffset: [0, -1] }}
-                transition={{ 
-                  pathLength: { duration: 0.5, ease: "easeOut" },
-                  pathOffset: { duration: 2, repeat: Infinity, ease: "linear" }
-                }}
-                style={{ filter: 'drop-shadow(0 0 4px #10b981)' }}
-              />
-            </svg>
-            
-            {/* Scanning line */}
-            <motion.div
-              animate={{ x: ['-100%', '100%'] }}
-              transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-              className="absolute top-0 bottom-0 w-8 bg-gradient-to-r from-transparent via-emerald-500/30 to-transparent"
-            />
-          </div>
-        </div>
+
 
         {/* Métricas Cardíacas */}
         <div className="p-4 space-y-4">
@@ -239,30 +351,52 @@ export const HealthMetricsModal: React.FC<HealthMetricsModalProps> = ({
           <div className="grid grid-cols-2 gap-3">
             {metrics.map((metric, index) => {
               const Icon = metric.icon;
+              const hasData = metric.value !== 'Sem dados';
+              
               return (
                 <motion.div
                   key={metric.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
-                  className="relative p-4 rounded-xl border bg-card"
+                  className={cn(
+                    "relative p-4 rounded-xl border bg-card",
+                    !hasData && "opacity-60"
+                  )}
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center", metric.bgColor)}>
                       <Icon className={cn("w-5 h-5", metric.color)} />
                     </div>
-                    {getStatusBadge(metric.status)}
+                    {hasData ? getStatusBadge(metric.status) : (
+                      <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-gray-500/20">
+                        <AlertCircle className="w-3 h-3 text-gray-500" />
+                        <span className="text-[10px] font-medium text-gray-500">Sem dados</span>
+                      </div>
+                    )}
                   </div>
                   
                   <div className="space-y-1">
                     <div className="flex items-baseline gap-1">
-                      <span className="text-2xl font-bold">{metric.value}</span>
-                      {metric.unit && <span className="text-sm text-muted-foreground">{metric.unit}</span>}
+                      <span className={cn(
+                        "text-2xl font-bold",
+                        !hasData && "text-muted-foreground"
+                      )}>
+                        {metric.value}
+                      </span>
+                      {metric.unit && hasData && (
+                        <span className="text-sm text-muted-foreground">{metric.unit}</span>
+                      )}
                     </div>
                     <p className="text-xs font-medium">{metric.label}</p>
                     {metric.normalRange && (
                       <p className="text-[10px] text-muted-foreground">
                         Faixa normal: {metric.normalRange}
+                      </p>
+                    )}
+                    {!hasData && (
+                      <p className="text-[10px] text-amber-600 dark:text-amber-400">
+                        Conecte um dispositivo compatível
                       </p>
                     )}
                   </div>
@@ -281,30 +415,105 @@ export const HealthMetricsModal: React.FC<HealthMetricsModalProps> = ({
             <div className="space-y-3">
               <div className="flex justify-between items-center">
                 <span className="text-xs text-muted-foreground">Ritmo Cardíaco</span>
-                <span className="text-xs font-medium text-emerald-500">Sinusal Normal</span>
+                <span className="text-xs font-medium text-emerald-500">
+                  {currentHeartRate && restingHeartRate ? 
+                    (currentHeartRate >= 60 && currentHeartRate <= 100 ? "Sinusal Normal" : "Fora da Faixa") :
+                    "Sem dados"
+                  }
+                </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-xs text-muted-foreground">FC Máxima Estimada</span>
-                <span className="text-xs font-medium">185 bpm</span>
+                <span className="text-xs text-muted-foreground">FC Máxima Registrada</span>
+                <span className="text-xs font-medium">
+                  {maxHeartRate ? `${maxHeartRate} bpm` : "Sem dados"}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-muted-foreground">FC Mínima Registrada</span>
+                <span className="text-xs font-medium">
+                  {minHeartRate ? `${minHeartRate} bpm` : "Sem dados"}
+                </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-xs text-muted-foreground">Zona Cardíaca Atual</span>
-                <span className="text-xs font-medium">Repouso</span>
+                <span className="text-xs font-medium">
+                  {currentHeartRate && restingHeartRate ? 
+                    (currentHeartRate <= restingHeartRate + 10 ? "Repouso" : 
+                     currentHeartRate <= restingHeartRate + 30 ? "Leve" : "Moderada") :
+                    "Sem dados"
+                  }
+                </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-xs text-muted-foreground">Recuperação Cardíaca</span>
-                <span className="text-xs font-medium text-emerald-500">Excelente</span>
+                <span className={cn(
+                  "text-xs font-medium",
+                  realHRV ? (realHRV >= 40 ? "text-emerald-500" : realHRV >= 25 ? "text-amber-500" : "text-red-500") : "text-muted-foreground"
+                )}>
+                  {realHRV ? (realHRV >= 40 ? "Excelente" : realHRV >= 25 ? "Boa" : "Precisa Melhorar") : "Sem dados"}
+                </span>
               </div>
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-muted-foreground">Taxa Respiratória</span>
+                <span className="text-xs font-medium">
+                  {respiratoryRate ? `${respiratoryRate.toFixed(1)} rpm` : "Sem dados"}
+                </span>
+              </div>
+              {googleFitData && (
+                <>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-muted-foreground">Passos Hoje</span>
+                    <span className="text-xs font-medium">
+                      {googleFitData.steps ? googleFitData.steps.toLocaleString() : "Sem dados"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-muted-foreground">Calorias Queimadas</span>
+                    <span className="text-xs font-medium">
+                      {googleFitData.calories ? `${googleFitData.calories} kcal` : "Sem dados"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-muted-foreground">Minutos Ativos</span>
+                    <span className="text-xs font-medium">
+                      {googleFitData.active_minutes ? `${googleFitData.active_minutes} min` : "Sem dados"}
+                    </span>
+                  </div>
+                </>
+              )}
             </div>
           </div>
 
-          {/* Aviso */}
+          {/* Aviso sobre dados reais */}
           <div className="flex items-start gap-2 p-3 bg-blue-500/10 border border-blue-500/20 rounded-xl">
             <AlertCircle className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
             <p className="text-[10px] text-blue-600 dark:text-blue-400">
-              Para medições precisas, utilize um smartwatch ou oxímetro de pulso. Os valores exibidos são estimativas baseadas em dados disponíveis.
+              {googleFitConnected 
+                ? "Todos os dados são obtidos diretamente do Google Fit. Valores em branco indicam que o dado não está disponível no momento."
+                : "Conecte o Google Fit para visualizar seus dados reais de saúde. Sem conexão, nenhum dado será exibido."
+              }
             </p>
           </div>
+
+          {/* Aviso quando não há dados */}
+          {!googleFitData && googleFitConnected && (
+            <div className="flex items-start gap-2 p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl">
+              <AlertCircle className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
+              <p className="text-[10px] text-amber-600 dark:text-amber-400">
+                Nenhum dado encontrado nos últimos 7 dias. Sincronize seu dispositivo com o Google Fit e tente novamente.
+              </p>
+            </div>
+          )}
+
+          {/* Erro de conexão */}
+          {heartRateError && (
+            <div className="flex items-start gap-2 p-3 bg-red-500/10 border border-red-500/20 rounded-xl">
+              <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+              <p className="text-[10px] text-red-600 dark:text-red-400">
+                {heartRateError}
+              </p>
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>
