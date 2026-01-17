@@ -53,7 +53,7 @@ const TermsPage = () => {
                   </p>
                   <ul className="list-disc pl-6 mt-2 text-muted-foreground">
                     <li>Monitoramento de saúde e progresso físico</li>
-                    <li>Integração com dispositivos de medição (balança inteligente)</li>
+                    
                     <li>Sistema gamificado de missões e desafios</li>
                     <li>Análise de composição corporal e bioimpedância</li>
                     <li>Chatbot de saúde com IA</li>

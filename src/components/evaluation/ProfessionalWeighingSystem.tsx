@@ -6,8 +6,8 @@ import { Progress } from '@/components/ui/progress';
 import { Scale, Edit3, LineChart, BarChart3, Target } from 'lucide-react';
 import SimpleWeightForm from '../weighing/SimpleWeightForm';
 
-import { XiaomiScaleConnection } from '../XiaomiScaleConnection';
-import { XiaomiScaleTroubleshooter } from '../XiaomiScaleTroubleshooter';
+
+
 import PersonagemCorporal3D from '../PersonagemCorporal3D';
 import { useUserGender } from '@/hooks/useUserGender';
 import { WeightChart } from '../weighing/WeightChart';
@@ -184,7 +184,7 @@ export const ProfessionalWeighingSystem: React.FC<ProfessionalWeighingSystemProp
                 ) : (
                   <>
                     <Scale className="h-5 w-5 sm:h-6 sm:w-6 lg:h-8 lg:w-8 xl:h-10 xl:w-10 text-blue-300 mr-3 sm:mr-4 lg:mr-6" />
-                    Balança Xiaomi Mi Body Scale 2
+                    Sistema de Pesagem
                   </>
                 )}
               </h2>
@@ -195,12 +195,12 @@ export const ProfessionalWeighingSystem: React.FC<ProfessionalWeighingSystemProp
               ) : (
                 <div className="space-y-4 sm:space-y-6 lg:space-y-8">
                   <p className="text-sm sm:text-base lg:text-lg xl:text-2xl text-gray-200">
-                    Conecte sua balança Xiaomi para pesagem automática e análise completa
+                    Sistema de pesagem manual para análise completa
                   </p>
                   <div className="grid gap-4 sm:gap-6">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-                      <XiaomiScaleConnection />
-                      <XiaomiScaleTroubleshooter />
+                      
+                      
                     </div>
                   </div>
                 </div>

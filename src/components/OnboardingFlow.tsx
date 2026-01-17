@@ -81,10 +81,7 @@ const OnboardingFlow: React.FC<{ onComplete: () => void }> = ({ onComplete }) =>
             <div className="flex items-start gap-3 p-4 bg-primary/5 rounded-lg">
               <Scale className="h-6 w-6 text-primary mt-1" />
               <div>
-                <h4 className="font-semibold">Balança Inteligente</h4>
-                <p className="text-sm text-muted-foreground">
-                  Conecte sua Xiaomi Scale para medições automáticas
-                </p>
+                
               </div>
             </div>
             <div className="flex items-start gap-3 p-4 bg-secondary/5 rounded-lg">
@@ -129,9 +126,9 @@ const OnboardingFlow: React.FC<{ onComplete: () => void }> = ({ onComplete }) =>
             <Bluetooth className="h-12 w-12 text-blue-500" />
           </div>
           <div className="space-y-4">
-            <h3 className="text-xl font-semibold">Xiaomi Mi Body Composition Scale 2</h3>
+            
             <p className="text-muted-foreground">
-              Conecte sua balança para monitoramento automático de:
+              Monitoramento manual de:
             </p>
             <div className="space-y-2">
               <Badge variant="outline">Peso</Badge>
@@ -146,7 +143,7 @@ const OnboardingFlow: React.FC<{ onComplete: () => void }> = ({ onComplete }) =>
                 className="w-full"
               >
                 <Bluetooth className="h-4 w-4 mr-2" />
-                Conectar Balança Agora
+                Pular Esta Etapa
               </Button>
               <Button 
                 variant="outline" 
@@ -234,7 +231,7 @@ const OnboardingFlow: React.FC<{ onComplete: () => void }> = ({ onComplete }) =>
               <ol className="text-sm text-muted-foreground space-y-1 text-left max-w-sm mx-auto">
                 <li>1. Complete sua primeira missão diária</li>
                 <li>2. Defina suas metas de saúde</li>
-                <li>3. Conecte sua balança (se ainda não fez)</li>
+                <li>3. Configure suas preferências</li>
                 <li>4. Explore a comunidade</li>
               </ol>
             </div>

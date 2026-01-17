@@ -316,7 +316,7 @@ const WeightMeasurementForm: React.FC = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="manual">Manual</SelectItem>
-                  <SelectItem value="xiaomi_mi_body_scale_2">Xiaomi Mi Body Scale 2</SelectItem>
+                  
                   <SelectItem value="bluetooth_scale">Balança Bluetooth</SelectItem>
                   <SelectItem value="digital_scale">Balança Digital</SelectItem>
                 </SelectContent>

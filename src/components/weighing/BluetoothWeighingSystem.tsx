@@ -26,7 +26,7 @@ interface BluetoothDevice {
   id: string;
   name: string;
   rssi?: number;
-  deviceType: 'xiaomi_scale' | 'generic_scale';
+  deviceType: 'generic_scale';
 }
 
 interface WeightData {
@@ -98,11 +98,11 @@ const BluetoothWeighingSystem: React.FC = () => {
     setIsConnecting(true);
 
     try {
-      // Solicitar acesso a dispositivos Bluetooth (balanças Xiaomi e similares)
+      // Solicitar acesso a dispositivos Bluetooth
       const device = await (navigator as any).bluetooth.requestDevice({
         filters: [
           { namePrefix: 'MI_SCALE' },
-          { namePrefix: 'XIAOMI' },
+          
           { namePrefix: 'Mi Scale' },
           { services: ['0000181d-0000-1000-8000-00805f9b34fb'] }, // Weight Scale Service
           { services: ['0000181b-0000-1000-8000-00805f9b34fb'] }, // Body Composition Service
@@ -111,7 +111,7 @@ const BluetoothWeighingSystem: React.FC = () => {
         optionalServices: [
           '0000181d-0000-1000-8000-00805f9b34fb', // Weight Scale Service
           '0000181b-0000-1000-8000-00805f9b34fb', // Body Composition Service
-          '00001530-0000-3512-2118-0009af100700'  // Xiaomi proprietary service
+          
         ]
       });
 

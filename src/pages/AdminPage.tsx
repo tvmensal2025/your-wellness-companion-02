@@ -543,36 +543,7 @@ const AdminPage = () => {
             </div>
             
             <div className="grid gap-4 md:grid-cols-2">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Balanças Xiaomi</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground mb-4">Configure a integração com balanças inteligentes.</p>
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm">Dispositivos conectados</span>
-                      <Badge>0</Badge>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm">Última sincronização</span>
-                      <span className="text-xs text-muted-foreground">Nunca</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm">Status Bluetooth</span>
-                      <Badge variant="destructive">Desconectado</Badge>
-                    </div>
-                  </div>
-                  <div className="flex gap-2 mt-4">
-                    <Button variant="outline" size="sm" onClick={() => toast({ title: "🔍 Escaneando...", description: "Procurando dispositivos Bluetooth" })}>
-                      Escanear
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={() => toast({ title: "🔗 Conectar", description: "Função em desenvolvimento" })}>
-                      Conectar
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+              
 
               <Card>
                 <CardHeader>
@@ -612,11 +583,7 @@ const AdminPage = () => {
               </CardHeader>
               <CardContent>
                 <div className="grid gap-4 md:grid-cols-3">
-                  <div className="p-3 border rounded-lg text-center">
-                    <div className="text-2xl mb-2">⚖️</div>
-                    <h4 className="font-medium">Mi Body Composition Scale 2</h4>
-                    <p className="text-xs text-muted-foreground">Bluetooth LE</p>
-                  </div>
+                  
                   <div className="p-3 border rounded-lg text-center">
                     <div className="text-2xl mb-2">📱</div>
                     <h4 className="font-medium">Mi Fit App</h4>

@@ -47,7 +47,7 @@ const heroSlides: HeroSlide[] = [
       courses: 15
     },
     features: [
-      "Integração com Balança Xiaomi",
+      
       "Sistema de Missões Diárias",
       "Acompanhamento em Tempo Real",
       "Plataforma de Cursos Premium"
@@ -57,9 +57,9 @@ const heroSlides: HeroSlide[] = [
   },
   {
     id: '2',
-    title: "CONECTE SUA BALANÇA",
-    subtitle: "Tecnologia Xiaomi Mi Body Scale 2",
-    description: "Sincronize automaticamente suas medições de peso, gordura corporal, massa muscular e muito mais. Acompanhe sua evolução com precisão científica e insights personalizados.",
+    title: "ACOMPANHE SEU PROGRESSO",
+subtitle: "Registre suas medições manualmente",
+    description: "Registre manualmente suas medições de peso e acompanhe sua evolução com insights personalizados e análises detalhadas.",
     image: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80",
     gradient: "from-blue-500 via-cyan-500 to-teal-500",
     badge: "CONECTADO",
