@@ -96,7 +96,7 @@ export const MobileHeader: React.FC<MobileHeaderProps> = ({
           
           {/* Center - Title */}
           <div className="absolute left-1/2 -translate-x-1/2 max-w-[40%] z-0">
-            <h1 className="text-xs font-medium text-center leading-tight truncate text-warning">
+            <h1 className="text-xs font-medium text-center leading-tight truncate text-yellow-950">
               {title}
             </h1>
           </div>
