@@ -30,6 +30,16 @@ export interface NotificationPreferences {
   challenge_updates: boolean;
   social_updates: boolean;
   achievement_alerts: boolean;
+  likes_enabled?: boolean;
+  comments_enabled?: boolean;
+  follows_enabled?: boolean;
+  mentions_enabled?: boolean;
+  shares_enabled?: boolean;
+  challenges_enabled?: boolean;
+  achievements_enabled?: boolean;
+  direct_messages_enabled?: boolean;
+  quiet_hours_start?: string;
+  quiet_hours_end?: string;
 }
 
 const defaultPreferences: NotificationPreferences = {

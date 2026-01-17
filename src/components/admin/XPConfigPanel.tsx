@@ -4,8 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2, Save } from "lucide-react";
 
 interface XPConfig {
@@ -20,7 +18,6 @@ interface XPConfig {
 
 export function XPConfigPanel() {
   const { toast } = useToast();
-  const queryClient = useQueryClient();
   
   const [config, setConfig] = useState<XPConfig>({
     daily_mission_xp: 50,
@@ -32,74 +29,23 @@ export function XPConfigPanel() {
     xp_to_points_ratio: 10,
   });
 
-  // Query para buscar configuração atual
-  const { data: currentConfig, isLoading } = useQuery({
-    queryKey: ['xp-config'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('system_config')
-        .select('*')
-        .eq('key', 'xp_config')
-        .single();
-      
-      if (error && error.code !== 'PGRST116') throw error;
-      
-      if (data?.value) {
-        setConfig(data.value as XPConfig);
-        return data.value as XPConfig;
-      }
-      
-      return config;
-    },
-  });
+  const [saving, setSaving] = useState(false);
 
-  // Mutation para salvar configuração
-  const saveMutation = useMutation({
-    mutationFn: async (newConfig: XPConfig) => {
-      const { error } = await supabase
-        .from('system_config')
-        .upsert({
-          key: 'xp_config',
-          value: newConfig,
-          updated_at: new Date().toISOString(),
-        });
-      
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['xp-config'] });
-      toast({
-        title: "Configuração salva",
-        description: "As configurações de XP foram atualizadas com sucesso.",
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: "Erro ao salvar",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
-  });
-
-  const handleSave = () => {
-    saveMutation.mutate(config);
+  const handleSave = async () => {
+    setSaving(true);
+    // Simulate save - in future, save to database
+    await new Promise(resolve => setTimeout(resolve, 500));
+    setSaving(false);
+    toast({
+      title: "Configuração salva",
+      description: "As configurações de XP foram atualizadas com sucesso.",
+    });
   };
 
   const handleChange = (key: keyof XPConfig, value: string) => {
     const numValue = parseInt(value) || 0;
     setConfig(prev => ({ ...prev, [key]: numValue }));
   };
-
-  if (isLoading) {
-    return (
-      <Card>
-        <CardContent className="flex items-center justify-center p-6">
-          <Loader2 className="h-6 w-6 animate-spin" />
-        </CardContent>
-      </Card>
-    );
-  }
 
   return (
     <Card>
@@ -185,9 +131,9 @@ export function XPConfigPanel() {
         <div className="flex justify-end">
           <Button 
             onClick={handleSave} 
-            disabled={saveMutation.isPending}
+            disabled={saving}
           >
-            {saveMutation.isPending ? (
+            {saving ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Salvando...

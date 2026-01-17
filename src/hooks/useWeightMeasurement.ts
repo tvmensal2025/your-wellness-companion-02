@@ -329,34 +329,15 @@ export const useWeightMeasurement = () => {
     }
   }, [getUser]); // Apenas getUser como dependência estável
 
-  // Buscar análise semanal (simplificado)
+  // Buscar análise semanal (simplificado - placeholder até tabela ser criada)
   const fetchWeeklyAnalysis = useCallback(async () => {
     try {
       const user = await getUser();
       if (!user) return [];
 
-      const { data, error } = await supabase
-        .from('weekly_analyses')
-        .select('id, user_id, created_at')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(8);
-
-      if (error) throw error;
-      const transformed = (data || []).map(item => ({
-        ...item,
-        week_start_date: item.created_at,
-        week_end_date: item.created_at,
-        summary_data: {},
-        insights: [],
-        recommendations: [],
-        overall_score: 0,
-        trends: {},
-        goals_progress: {},
-        health_metrics: {}
-      }));
-      setWeeklyAnalyses(transformed);
-      return data;
+      // Placeholder: return empty array until weekly_analyses table is created
+      setWeeklyAnalyses([]);
+      return [];
     } catch (err: any) {
       setError(err.message);
       return [];
