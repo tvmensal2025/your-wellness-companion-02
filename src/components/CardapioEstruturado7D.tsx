@@ -10,7 +10,7 @@ import { detectFoodIntent, sumBlockKcal, avoidRepetition, estimateSuggestionLine
 import { exportPDF, exportPNG } from '@/lib/exporters';
 import { useShoppingList } from '@/hooks/mealie/useShoppingList';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 
 type LayoutType = 'guia-colorido' | 'minimalista' | 'planner' | 'instagram';
 

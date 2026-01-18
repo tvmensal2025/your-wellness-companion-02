@@ -50,11 +50,11 @@ export function useDayMeals(date: Date, userId?: string): UseDayMealsReturn {
       if (mealsError) throw mealsError;
 
       // Buscar meta de calorias do usuário
+      // NOTA: tabela nutritional_goals não tem coluna 'status', removido filtro
       const { data: goalsData } = await supabase
         .from('nutritional_goals')
         .select('target_calories')
         .eq('user_id', userId)
-        .eq('status', 'active')
         .maybeSingle();
 
       const targetCal = (goalsData as any)?.target_calories;

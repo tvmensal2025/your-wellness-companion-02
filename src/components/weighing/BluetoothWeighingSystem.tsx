@@ -26,7 +26,7 @@ interface BluetoothDevice {
   id: string;
   name: string;
   rssi?: number;
-  deviceType: 'generic_scale';
+  deviceType: 'generic_scale' | 'xiaomi_scale';
 }
 
 interface WeightData {

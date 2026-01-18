@@ -7,6 +7,9 @@
  * - Agrupa ingredientes por categoria
  * - Remove duplicatas e soma quantidades
  * - Envia lista via WhatsApp
+ * 
+ * NOTA: A tabela 'shopping_lists' não existe no banco.
+ * Este hook usa armazenamento local como fallback.
  */
 
 import { useState } from 'react';
@@ -19,6 +22,9 @@ interface UseShoppingListReturn {
   generateList: (weekStart: Date, weekEnd: Date) => Promise<ShoppingList | null>;
   sendToWhatsApp: (listId: string) => Promise<boolean>;
 }
+
+// Armazenamento local temporário (tabela não existe)
+const localShoppingLists = new Map<string, any>();
 
 export function useShoppingList(userId?: string): UseShoppingListReturn {
   const [generating, setGenerating] = useState(false);
@@ -88,28 +94,30 @@ export function useShoppingList(userId?: string): UseShoppingListReturn {
       // Converter para array
       const items = Array.from(allIngredients.values());
 
-      // Criar lista no banco
-      const { data: shoppingList, error: insertError } = await supabase
-        .from('shopping_lists')
-        .insert({
-          user_id: userId,
-          week_start: startStr,
-          week_end: endStr,
-          items: items,
-          sent_to_whatsapp: false,
-        })
-        .select()
-        .single();
+      // Criar lista localmente (tabela shopping_lists não existe)
+      // TODO: Criar tabela shopping_lists quando necessário
+      const listId = `local-${Date.now()}`;
+      const shoppingListData = {
+        id: listId,
+        user_id: userId,
+        week_start: startStr,
+        week_end: endStr,
+        items: items,
+        sent_to_whatsapp: false,
+        created_at: new Date().toISOString(),
+      };
 
-      if (insertError) throw insertError;
+      // Armazenar localmente
+      localShoppingLists.set(listId, shoppingListData);
+      console.log('[useShoppingList] Lista criada localmente (tabela não existe):', listId);
 
       return {
-        id: shoppingList.id,
+        id: listId,
         userId,
         weekStart,
         weekEnd,
         items,
-        createdAt: new Date(shoppingList.created_at),
+        createdAt: new Date(),
         sentToWhatsApp: false,
       };
     } catch (err) {
@@ -131,23 +139,24 @@ export function useShoppingList(userId?: string): UseShoppingListReturn {
       setGenerating(true);
       setError(null);
 
-      // Buscar lista
-      const { data: list, error: listError } = await supabase
-        .from('shopping_lists')
-        .select('*')
-        .eq('id', listId)
-        .single();
+      // Buscar lista local (tabela não existe)
+      const list = localShoppingLists.get(listId);
 
-      if (listError) throw listError;
+      if (!list) {
+        setError('Lista não encontrada');
+        return false;
+      }
 
       // Buscar telefone do usuário
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('phone')
-        .eq('id', userId)
-        .single();
+        .eq('user_id', userId)
+        .maybeSingle();
 
-      if (profileError) throw profileError;
+      if (profileError) {
+        console.error('Erro ao buscar perfil:', profileError);
+      }
 
       if (!profile?.phone) {
         setError('Telefone não cadastrado');
@@ -174,11 +183,9 @@ export function useShoppingList(userId?: string): UseShoppingListReturn {
 
       if (sendError) throw sendError;
 
-      // Marcar como enviada
-      await supabase
-        .from('shopping_lists')
-        .update({ sent_to_whatsapp: true })
-        .eq('id', listId);
+      // Marcar como enviada localmente
+      list.sent_to_whatsapp = true;
+      localShoppingLists.set(listId, list);
 
       return true;
     } catch (err) {

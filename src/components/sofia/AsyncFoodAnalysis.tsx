@@ -10,6 +10,17 @@ export function AsyncFoodAnalysis() {
   const { user } = useAuth();
   const [imageUrl, setImageUrl] = useState<string>('');
   
+  const asyncAnalysis = useAsyncAnalysis(user?.id, {
+    onComplete: (result) => {
+      console.log('✅ Análise completa:', result);
+    },
+    onError: (error) => {
+      console.error('❌ Erro na análise:', error);
+    },
+    autoRetry: true,
+    maxRetries: 3
+  });
+
   const {
     status,
     result,
@@ -21,16 +32,7 @@ export function AsyncFoodAnalysis() {
     isProcessing,
     isCompleted,
     hasError
-  } = useAsyncAnalysis(user?.id, {
-    onComplete: (result) => {
-      console.log('✅ Análise completa:', result);
-    },
-    onError: (error) => {
-      console.error('❌ Erro na análise:', error);
-    },
-    autoRetry: true,
-    maxRetries: 3
-  });
+  } = asyncAnalysis;
 
   const handleAnalyze = async () => {
     if (!imageUrl) return;
@@ -102,7 +104,7 @@ export function AsyncFoodAnalysis() {
         </div>
 
         {/* Status e progresso */}
-        {status === 'uploading' && (
+        {status === 'enqueuing' && (
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -111,7 +113,7 @@ export function AsyncFoodAnalysis() {
           </div>
         )}
 
-        {status === 'processing' && (
+        {(status === 'processing' || status === 'pending') && (
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -184,7 +186,7 @@ export function AsyncFoodAnalysis() {
               <XCircle className="h-5 w-5" />
               <span className="font-medium">Erro na análise</span>
             </div>
-            <p className="text-sm text-muted-foreground">{error}</p>
+            <p className="text-sm text-muted-foreground">{String(error)}</p>
           </div>
         )}
 

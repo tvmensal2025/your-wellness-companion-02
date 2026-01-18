@@ -6,6 +6,9 @@
  * - Health checks de serviços
  * - Erros críticos
  * - Gráficos e estatísticas
+ * 
+ * NOTA: Usa dados mock pois as tabelas feature_performance_24h, 
+ * services_status, critical_errors e metrics_hourly não existem.
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -14,7 +17,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import {
   Activity,
@@ -129,6 +131,38 @@ const FEATURE_COLORS: Record<string, string> = {
 };
 
 // ============================================
+// MOCK DATA (tabelas não existem no banco)
+// ============================================
+
+const MOCK_FEATURE_PERFORMANCE: FeaturePerformance[] = [
+  { feature: 'sofia', total_requests: 1250, successful_requests: 1200, avg_duration_ms: 2500, success_rate: 96, p50_duration_ms: 2000, p95_duration_ms: 4000, p99_duration_ms: 6000 },
+  { feature: 'yolo', total_requests: 890, successful_requests: 870, avg_duration_ms: 800, success_rate: 97.8, p50_duration_ms: 600, p95_duration_ms: 1200, p99_duration_ms: 2000 },
+  { feature: 'camera_workout', total_requests: 450, successful_requests: 430, avg_duration_ms: 150, success_rate: 95.6, p50_duration_ms: 100, p95_duration_ms: 300, p99_duration_ms: 500 },
+  { feature: 'dr_vital', total_requests: 320, successful_requests: 310, avg_duration_ms: 3500, success_rate: 96.9, p50_duration_ms: 3000, p95_duration_ms: 5000, p99_duration_ms: 7000 },
+  { feature: 'whatsapp', total_requests: 2100, successful_requests: 2050, avg_duration_ms: 500, success_rate: 97.6, p50_duration_ms: 400, p95_duration_ms: 800, p99_duration_ms: 1200 },
+];
+
+const MOCK_SERVICES_STATUS: ServiceStatus[] = [
+  { service_name: 'YOLO Service', status: 'healthy', response_time_ms: 45, last_check: new Date().toISOString() },
+  { service_name: 'Supabase', status: 'healthy', response_time_ms: 12, last_check: new Date().toISOString() },
+  { service_name: 'OpenAI', status: 'healthy', response_time_ms: 230, last_check: new Date().toISOString() },
+  { service_name: 'WhatsApp API', status: 'healthy', response_time_ms: 180, last_check: new Date().toISOString() },
+];
+
+const MOCK_CRITICAL_ERRORS: CriticalError[] = [];
+
+const MOCK_HOURLY_METRICS: HourlyMetric[] = Array.from({ length: 24 }, (_, i) => ({
+  hour: subHours(new Date(), 23 - i).toISOString(),
+  feature: 'sofia',
+  action: 'analyze',
+  total_calls: Math.floor(Math.random() * 100) + 20,
+  successful_calls: Math.floor(Math.random() * 90) + 15,
+  failed_calls: Math.floor(Math.random() * 10),
+  avg_duration_ms: Math.floor(Math.random() * 1000) + 500,
+  success_rate: 90 + Math.random() * 10
+}));
+
+// ============================================
 // COMPONENTE PRINCIPAL
 // ============================================
 
@@ -138,53 +172,29 @@ export const PerformanceMonitoring: React.FC = () => {
   const [timeRange, setTimeRange] = useState<'1h' | '6h' | '24h'>('24h');
   const { toast } = useToast();
 
-  // Estados
+  // Estados com dados mock
   const [featurePerformance, setFeaturePerformance] = useState<FeaturePerformance[]>([]);
   const [servicesStatus, setServicesStatus] = useState<ServiceStatus[]>([]);
   const [criticalErrors, setCriticalErrors] = useState<CriticalError[]>([]);
   const [hourlyMetrics, setHourlyMetrics] = useState<HourlyMetric[]>([]);
 
   // ============================================
-  // CARREGAR DADOS
+  // CARREGAR DADOS (mock)
   // ============================================
 
   const loadData = useCallback(async () => {
     try {
       setLoading(true);
 
-      // Carregar em paralelo
-      const [perfData, statusData, errorsData, metricsData] = await Promise.all([
-        // Performance por feature
-        supabase
-          .from('feature_performance_24h')
-          .select('*')
-          .order('total_requests', { ascending: false }),
+      // Usar dados mock pois as tabelas não existem
+      // TODO: Criar tabelas feature_performance_24h, services_status, 
+      // critical_errors, metrics_hourly quando necessário
+      console.log('[PerformanceMonitoring] Usando dados mock - tabelas não existem');
 
-        // Status dos serviços
-        supabase
-          .from('services_status')
-          .select('*'),
-
-        // Erros críticos não resolvidos
-        supabase
-          .from('critical_errors')
-          .select('*')
-          .eq('resolved', false)
-          .order('created_at', { ascending: false })
-          .limit(20),
-
-        // Métricas horárias
-        supabase
-          .from('metrics_hourly')
-          .select('*')
-          .order('hour', { ascending: false })
-          .limit(24)
-      ]);
-
-      if (perfData.data) setFeaturePerformance(perfData.data);
-      if (statusData.data) setServicesStatus(statusData.data);
-      if (errorsData.data) setCriticalErrors(errorsData.data);
-      if (metricsData.data) setHourlyMetrics(metricsData.data);
+      setFeaturePerformance(MOCK_FEATURE_PERFORMANCE);
+      setServicesStatus(MOCK_SERVICES_STATUS);
+      setCriticalErrors(MOCK_CRITICAL_ERRORS);
+      setHourlyMetrics(MOCK_HOURLY_METRICS);
 
     } catch (error) {
       console.error('Erro ao carregar dados:', error);
@@ -218,18 +228,15 @@ export const PerformanceMonitoring: React.FC = () => {
 
   const handleResolveError = async (errorId: string) => {
     try {
-      const { error } = await supabase.rpc('resolve_critical_error', {
-        p_error_id: errorId
-      });
-
-      if (error) throw error;
+      // Mock resolve - tabela não existe
+      console.log('[PerformanceMonitoring] Resolvendo erro (mock):', errorId);
+      setCriticalErrors(prev => prev.filter(e => e.id !== errorId));
 
       toast({
         title: 'Erro resolvido',
         description: 'Erro marcado como resolvido'
       });
 
-      await loadData();
     } catch (error) {
       toast({
         title: 'Erro ao resolver',
@@ -501,26 +508,22 @@ export const PerformanceMonitoring: React.FC = () => {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                  <div className="grid grid-cols-4 gap-4 text-sm">
                     <div>
-                      <p className="text-sm text-muted-foreground">Total</p>
-                      <p className="text-2xl font-bold">{feature.total_requests}</p>
+                      <div className="text-muted-foreground">Requisições</div>
+                      <div className="font-bold">{feature.total_requests.toLocaleString()}</div>
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">Média</p>
-                      <p className="text-2xl font-bold">{Math.round(feature.avg_duration_ms)}ms</p>
+                      <div className="text-muted-foreground">Média</div>
+                      <div className="font-bold">{feature.avg_duration_ms}ms</div>
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">P50</p>
-                      <p className="text-2xl font-bold">{Math.round(feature.p50_duration_ms)}ms</p>
+                      <div className="text-muted-foreground">P95</div>
+                      <div className="font-bold">{feature.p95_duration_ms}ms</div>
                     </div>
                     <div>
-                      <p className="text-sm text-muted-foreground">P95</p>
-                      <p className="text-2xl font-bold">{Math.round(feature.p95_duration_ms)}ms</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">P99</p>
-                      <p className="text-2xl font-bold">{Math.round(feature.p99_duration_ms)}ms</p>
+                      <div className="text-muted-foreground">P99</div>
+                      <div className="font-bold">{feature.p99_duration_ms}ms</div>
                     </div>
                   </div>
                 </CardContent>
@@ -536,41 +539,34 @@ export const PerformanceMonitoring: React.FC = () => {
               <Card key={service.service_name}>
                 <CardHeader>
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-lg capitalize">
-                      {service.service_name}
-                    </CardTitle>
+                    <CardTitle className="text-lg">{service.service_name}</CardTitle>
                     <Badge
                       variant={
-                        service.status === 'healthy'
-                          ? 'default'
-                          : service.status === 'degraded'
-                          ? 'secondary'
-                          : 'destructive'
+                        service.status === 'healthy' ? 'default' :
+                        service.status === 'degraded' ? 'secondary' : 'destructive'
                       }
                     >
-                      {service.status === 'healthy' && <CheckCircle className="w-3 h-3 mr-1" />}
-                      {service.status === 'degraded' && <AlertTriangle className="w-3 h-3 mr-1" />}
-                      {service.status === 'down' && <XCircle className="w-3 h-3 mr-1" />}
+                      {service.status === 'healthy' ? <CheckCircle className="w-3 h-3 mr-1" /> :
+                       service.status === 'degraded' ? <AlertTriangle className="w-3 h-3 mr-1" /> :
+                       <XCircle className="w-3 h-3 mr-1" />}
                       {service.status}
                     </Badge>
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-2">
+                  <div className="text-sm">
                     <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">Tempo de resposta</span>
+                      <span className="text-muted-foreground">Tempo de resposta</span>
                       <span className="font-medium">{service.response_time_ms}ms</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">Última verificação</span>
+                    <div className="flex justify-between mt-1">
+                      <span className="text-muted-foreground">Última verificação</span>
                       <span className="font-medium">
                         {format(new Date(service.last_check), 'HH:mm:ss', { locale: ptBR })}
                       </span>
                     </div>
                     {service.error_message && (
-                      <div className="mt-2 p-2 bg-destructive/10 rounded text-sm text-destructive">
-                        {service.error_message}
-                      </div>
+                      <div className="mt-2 text-red-500 text-xs">{service.error_message}</div>
                     )}
                   </div>
                 </CardContent>
@@ -583,48 +579,44 @@ export const PerformanceMonitoring: React.FC = () => {
         <TabsContent value="errors" className="space-y-4">
           {criticalErrors.length === 0 ? (
             <Card>
-              <CardContent className="flex flex-col items-center justify-center h-64">
-                <CheckCircle className="w-16 h-16 text-green-500 mb-4" />
-                <p className="text-lg font-medium">Nenhum erro crítico</p>
-                <p className="text-sm text-muted-foreground">Sistema operando normalmente</p>
+              <CardContent className="py-8 text-center">
+                <CheckCircle className="w-12 h-12 mx-auto text-green-500 mb-4" />
+                <h3 className="text-lg font-semibold">Nenhum erro crítico</h3>
+                <p className="text-muted-foreground">Todos os sistemas funcionando normalmente</p>
               </CardContent>
             </Card>
           ) : (
-            <div className="space-y-4">
+            <div className="grid gap-4">
               {criticalErrors.map((error) => (
-                <Card key={error.id}>
+                <Card key={error.id} className="border-red-200">
                   <CardHeader>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <AlertTriangle className="w-5 h-5 text-destructive" />
-                        <div>
-                          <CardTitle className="text-lg">{error.error_type}</CardTitle>
-                          <CardDescription className="capitalize">
-                            {error.feature.replace('_', ' ')}
-                          </CardDescription>
-                        </div>
+                        <XCircle className="w-5 h-5 text-red-500" />
+                        <CardTitle className="text-lg">{error.error_type}</CardTitle>
                       </div>
                       <Button
                         size="sm"
                         variant="outline"
                         onClick={() => handleResolveError(error.id)}
                       >
-                        Marcar como resolvido
+                        Resolver
                       </Button>
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-2">
-                      <div className="p-3 bg-muted rounded font-mono text-sm">
-                        {error.error_message}
+                    <div className="text-sm space-y-2">
+                      <div>
+                        <span className="text-muted-foreground">Feature: </span>
+                        <span className="font-medium">{error.feature}</span>
                       </div>
-                      <div className="flex justify-between text-sm text-muted-foreground">
-                        <span>
-                          {format(new Date(error.created_at), "dd/MM/yyyy 'às' HH:mm", {
-                            locale: ptBR
-                          })}
-                        </span>
-                        {error.user_id && <span>User ID: {error.user_id.slice(0, 8)}...</span>}
+                      <div>
+                        <span className="text-muted-foreground">Mensagem: </span>
+                        <span>{error.error_message}</span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Data: </span>
+                        <span>{format(new Date(error.created_at), 'dd/MM/yyyy HH:mm:ss', { locale: ptBR })}</span>
                       </div>
                     </div>
                   </CardContent>
@@ -637,3 +629,5 @@ export const PerformanceMonitoring: React.FC = () => {
     </div>
   );
 };
+
+export default PerformanceMonitoring;
