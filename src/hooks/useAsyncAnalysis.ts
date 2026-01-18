@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 type JobType = 'sofia_image' | 'sofia_text' | 'medical_exam' | 'unified_assistant' | 'meal_plan' | 'whatsapp_message' | 'food_image';
@@ -12,7 +12,30 @@ interface UseAsyncAnalysisOptions {
   pollInterval?: number;
 }
 
-export function useAsyncAnalysis(userId?: string, options: UseAsyncAnalysisOptions = {}) {
+interface AsyncAnalysisResult {
+  // Actions
+  enqueueAnalysis: (type: JobType, imageUrl: string, context?: Record<string, any>, mealType?: string) => Promise<any>;
+  cancelAnalysis: () => Promise<void>;
+  reset: () => void;
+  
+  // State
+  status: JobStatus;
+  result: any;
+  error: string | null;
+  progress: number;
+  
+  // Derived state
+  isLoading: boolean;
+  isProcessing: boolean;
+  isCompleted: boolean;
+  hasError: boolean;
+  
+  // Legacy aliases
+  enqueue: (type: JobType, imageUrl: string, context?: Record<string, any>, mealType?: string) => Promise<any>;
+  cancel: () => Promise<void>;
+}
+
+export function useAsyncAnalysis(userId?: string, options: UseAsyncAnalysisOptions = {}): AsyncAnalysisResult {
   const [jobId, setJobId] = useState<string | null>(null);
   const [status, setStatus] = useState<JobStatus>('idle');
   const [result, setResult] = useState<any>(null);
@@ -85,7 +108,6 @@ export function useAsyncAnalysis(userId?: string, options: UseAsyncAnalysisOptio
       // Auto retry if enabled
       if (autoRetry && retryCount < maxRetries) {
         setRetryCount(prev => prev + 1);
-        // Will retry on next call
       }
       
       return null;

@@ -134,3 +134,9 @@ verify_jwt = false
 
 [functions.medical-batch-timeout]
 verify_jwt = false
+
+[functions.enqueue-analysis]
+verify_jwt = false
+
+[functions.get-analysis-status]
+verify_jwt = false

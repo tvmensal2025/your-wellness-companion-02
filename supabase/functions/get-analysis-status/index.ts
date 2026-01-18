@@ -13,13 +13,8 @@ serve(async (req) => {
 
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY')!;
-    
-    // Get auth header
-    const authHeader = req.headers.get('Authorization');
-    const supabase = createClient(supabaseUrl, supabaseKey, {
-      global: { headers: { Authorization: authHeader || '' } }
-    });
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
     const { jobId } = await req.json();
 
@@ -30,10 +25,10 @@ serve(async (req) => {
       );
     }
 
-    // Get job status (RLS will ensure user can only see their own jobs)
+    // Get job status using correct column names
     const { data: job, error } = await supabase
       .from('analysis_jobs')
-      .select('*')
+      .select('id, user_id, job_type, input_data, status, result, error_message, priority, attempts, max_attempts, created_at, started_at, completed_at, updated_at, estimated_duration_seconds, actual_duration_seconds, worker_id')
       .eq('id', jobId)
       .single();
 
@@ -51,20 +46,27 @@ serve(async (req) => {
     const response: any = {
       jobId: job.id,
       status: job.status,
-      type: job.type,
+      type: job.job_type,
       createdAt: job.created_at,
-      updatedAt: job.updated_at
+      updatedAt: job.updated_at,
+      estimatedDuration: job.estimated_duration_seconds
     };
 
     if (job.status === 'completed') {
       response.result = job.result;
-      response.processingTime = job.processing_time_ms;
+      response.processingTime = job.actual_duration_seconds;
+      response.completedAt = job.completed_at;
     } else if (job.status === 'failed') {
-      response.error = job.error;
+      response.error = job.error_message;
       response.attempts = job.attempts;
+      response.maxAttempts = job.max_attempts;
     } else if (job.status === 'processing') {
       response.startedAt = job.started_at;
       response.workerId = job.worker_id;
+      response.attempts = job.attempts;
+    } else if (job.status === 'pending') {
+      response.priority = job.priority;
+      response.attempts = job.attempts;
     }
 
     return new Response(
