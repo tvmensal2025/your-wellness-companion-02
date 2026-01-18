@@ -118,6 +118,7 @@ class MonitoringService {
 
   /**
    * Enviar batch de métricas
+   * NOTA: Tabela performance_metrics não existe, usando console.log como fallback
    */
   private async flushBatch() {
     if (this.batchQueue.length === 0) return;
@@ -131,13 +132,14 @@ class MonitoringService {
     }
 
     try {
-      const { error } = await supabase
-        .from('performance_metrics')
-        .insert(metricsToSend);
-
-      if (error) {
-        console.error('[Monitoring] Erro ao enviar batch:', error);
-      }
+      // TODO: Criar tabela performance_metrics quando necessário
+      // Por enquanto, apenas logar no console
+      console.log('[Monitoring] Métricas (tabela não existe):', metricsToSend.length, 'métricas');
+      
+      // Comentado pois tabela não existe:
+      // const { error } = await supabase
+      //   .from('performance_metrics')
+      //   .insert(metricsToSend);
     } catch (error) {
       console.error('[Monitoring] Erro ao enviar batch:', error);
     }
@@ -145,22 +147,14 @@ class MonitoringService {
 
   /**
    * 🏥 Registrar health check
+   * NOTA: RPC log_health_check não existe, usando console.log
    */
   async logHealthCheck(check: HealthCheck): Promise<void> {
     if (!this.enabled) return;
 
     try {
-      const { error } = await supabase.rpc('log_health_check', {
-        p_service_name: check.service_name,
-        p_status: check.status,
-        p_response_time_ms: check.response_time_ms,
-        p_error_message: check.error_message,
-        p_metadata: check.metadata || {}
-      });
-
-      if (error) {
-        console.error('[Monitoring] Erro ao registrar health check:', error);
-      }
+      // TODO: Criar função RPC log_health_check quando necessário
+      console.log('[Monitoring] Health check (RPC não existe):', check.service_name, check.status);
     } catch (error) {
       console.error('[Monitoring] Erro ao registrar health check:', error);
     }
@@ -168,29 +162,19 @@ class MonitoringService {
 
   /**
    * 🚨 Registrar erro crítico
+   * NOTA: RPC log_critical_error não existe, usando console.log
    */
   async logCriticalError(error: CriticalError): Promise<void> {
     if (!this.enabled) return;
 
     try {
-      const { error: dbError } = await supabase.rpc('log_critical_error', {
-        p_feature: error.feature,
-        p_error_type: error.error_type,
-        p_error_message: error.error_message,
-        p_stack_trace: error.stack_trace,
-        p_user_id: error.user_id,
-        p_user_agent: error.user_agent || navigator.userAgent,
-        p_url: error.url || window.location.href,
-        p_metadata: error.metadata || {}
-      });
-
-      if (dbError) {
-        console.error('[Monitoring] Erro ao registrar erro crítico:', dbError);
-      }
+      // TODO: Criar função RPC log_critical_error quando necessário
+      console.error('[Monitoring] Erro crítico (RPC não existe):', error.feature, error.error_message);
     } catch (err) {
       console.error('[Monitoring] Erro ao registrar erro crítico:', err);
     }
   }
+
 
   /**
    * ⏱️ Wrapper para medir tempo de execução

@@ -1,86 +1,100 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
-type JobType = 'sofia_image' | 'sofia_text' | 'medical_exam' | 'unified_assistant' | 'meal_plan' | 'whatsapp_message';
-type JobStatus = 'idle' | 'enqueuing' | 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled' | 'error';
+type JobType = 'sofia_image' | 'sofia_text' | 'medical_exam' | 'unified_assistant' | 'meal_plan' | 'whatsapp_message' | 'food_image';
+type JobStatus = 'idle' | 'enqueuing' | 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled' | 'error' | 'uploading';
 
 interface UseAsyncAnalysisOptions {
-  type: JobType;
+  onComplete?: (result: any) => void;
+  onError?: (error: string) => void;
+  autoRetry?: boolean;
+  maxRetries?: number;
   pollInterval?: number;
-  onSuccess?: (result: any) => void;
-  onError?: (error: Error) => void;
 }
 
-export function useAsyncAnalysis(options: UseAsyncAnalysisOptions) {
+export function useAsyncAnalysis(userId?: string, options: UseAsyncAnalysisOptions = {}) {
   const [jobId, setJobId] = useState<string | null>(null);
   const [status, setStatus] = useState<JobStatus>('idle');
   const [result, setResult] = useState<any>(null);
-  const [error, setError] = useState<Error | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [progress, setProgress] = useState(0);
+  const [retryCount, setRetryCount] = useState(0);
 
-  // Check feature flag
-  const useAsync = useMemo(() => {
-    switch (options.type) {
-      case 'sofia_image':
-      case 'sofia_text':
-        return import.meta.env.VITE_USE_ASYNC_SOFIA === 'true';
-      case 'medical_exam':
-        return import.meta.env.VITE_USE_ASYNC_EXAMS === 'true';
-      case 'unified_assistant':
-        return import.meta.env.VITE_USE_ASYNC_UNIFIED === 'true';
-      case 'meal_plan':
-        return import.meta.env.VITE_USE_ASYNC_MEAL_PLAN === 'true';
-      case 'whatsapp_message':
-        return import.meta.env.VITE_USE_ASYNC_WHATSAPP === 'true';
-      default:
-        return false;
-    }
-  }, [options.type]);
+  const { pollInterval = 2000, autoRetry = false, maxRetries = 3 } = options;
 
-  // Enqueue job
-  const enqueue = useCallback(async (input: any) => {
-    if (!useAsync) {
-      // Fallback to sync
-      console.log('Using sync fallback');
-      return await callSyncFunction(options.type, input);
+  // Derived states
+  const isProcessing = ['enqueuing', 'pending', 'processing', 'uploading'].includes(status);
+  const isCompleted = status === 'completed';
+  const hasError = status === 'error' || status === 'failed';
+  const isLoading = isProcessing;
+
+  // Enqueue analysis job
+  const enqueueAnalysis = useCallback(async (
+    type: JobType,
+    imageUrl: string,
+    context?: Record<string, any>,
+    mealType?: string
+  ) => {
+    if (!userId) {
+      setError('Usuário não autenticado');
+      setStatus('error');
+      return null;
     }
 
     try {
       setStatus('enqueuing');
       setError(null);
+      setProgress(10);
 
       const { data, error: invokeError } = await supabase.functions.invoke('enqueue-analysis', {
-        body: { type: options.type, input }
+        body: { 
+          type, 
+          input: { 
+            imageUrl, 
+            userId,
+            context,
+            mealType 
+          } 
+        }
       });
 
       if (invokeError) throw invokeError;
 
-      if (data.cached) {
+      if (data?.cached) {
         // Cache hit - return immediately
         setResult(data.result);
         setStatus('completed');
-        options.onSuccess?.(data.result);
+        setProgress(100);
+        options.onComplete?.(data.result);
         return data.result;
       }
 
       // Job enqueued - start polling
-      setJobId(data.jobId);
+      setJobId(data?.jobId);
       setStatus('pending');
+      setProgress(20);
+      return null;
 
     } catch (err: any) {
       console.error('Enqueue error:', err);
-      setError(err);
+      const errorMessage = err?.message || 'Erro ao iniciar análise';
+      setError(errorMessage);
       setStatus('error');
-      options.onError?.(err);
+      options.onError?.(errorMessage);
       
-      // Fallback to sync on error
-      console.log('Falling back to sync due to error');
-      return await callSyncFunction(options.type, input);
+      // Auto retry if enabled
+      if (autoRetry && retryCount < maxRetries) {
+        setRetryCount(prev => prev + 1);
+        // Will retry on next call
+      }
+      
+      return null;
     }
-  }, [useAsync, options]);
+  }, [userId, options, autoRetry, maxRetries, retryCount]);
 
   // Poll for status
   useEffect(() => {
-    if (!jobId || status === 'completed' || status === 'error' || status === 'cancelled') {
+    if (!jobId || status === 'completed' || status === 'error' || status === 'cancelled' || status === 'failed') {
       return;
     }
 
@@ -92,62 +106,78 @@ export function useAsyncAnalysis(options: UseAsyncAnalysisOptions) {
 
         if (statusError) throw statusError;
 
-        setStatus(data.status);
+        const newStatus = data?.status as JobStatus;
+        setStatus(newStatus);
 
-        if (data.status === 'completed') {
+        // Update progress based on status
+        if (newStatus === 'pending') setProgress(30);
+        if (newStatus === 'processing') setProgress(60);
+
+        if (newStatus === 'completed') {
           setResult(data.result);
-          options.onSuccess?.(data.result);
-        } else if (data.status === 'failed') {
-          const err = new Error(data.error || 'Job failed');
-          setError(err);
-          options.onError?.(err);
+          setProgress(100);
+          options.onComplete?.(data.result);
+        } else if (newStatus === 'failed') {
+          const errMsg = data?.error || 'Job falhou';
+          setError(errMsg);
+          options.onError?.(errMsg);
         }
 
       } catch (err: any) {
         console.error('Polling error:', err);
       }
-    }, options.pollInterval || 2000);
+    }, pollInterval);
 
     return () => clearInterval(interval);
-  }, [jobId, status, options]);
+  }, [jobId, status, options, pollInterval]);
 
   // Cancel job
-  const cancel = useCallback(async () => {
+  const cancelAnalysis = useCallback(async () => {
     if (!jobId) return;
 
-    await supabase
-      .from('analysis_jobs')
-      .update({ status: 'cancelled' })
-      .eq('id', jobId);
+    try {
+      await supabase
+        .from('analysis_jobs')
+        .update({ status: 'cancelled' })
+        .eq('id', jobId);
 
-    setStatus('cancelled');
+      setStatus('cancelled');
+      setProgress(0);
+    } catch (err) {
+      console.error('Cancel error:', err);
+    }
   }, [jobId]);
 
+  // Reset state
+  const reset = useCallback(() => {
+    setJobId(null);
+    setStatus('idle');
+    setResult(null);
+    setError(null);
+    setProgress(0);
+    setRetryCount(0);
+  }, []);
+
   return {
-    enqueue,
-    cancel,
+    // Actions
+    enqueueAnalysis,
+    cancelAnalysis,
+    reset,
+    
+    // State
     status,
     result,
     error,
-    isLoading: ['enqueuing', 'pending', 'processing'].includes(status)
+    progress,
+    
+    // Derived state
+    isLoading,
+    isProcessing,
+    isCompleted,
+    hasError,
+    
+    // Legacy aliases
+    enqueue: enqueueAnalysis,
+    cancel: cancelAnalysis,
   };
-}
-
-// Fallback to sync function
-async function callSyncFunction(type: JobType, input: any) {
-  const functionMap: Record<JobType, string> = {
-    'sofia_image': 'sofia-image-analysis',
-    'sofia_text': 'sofia-image-analysis',
-    'medical_exam': 'analyze-medical-exam',
-    'unified_assistant': 'unified-ai-assistant',
-    'meal_plan': 'generate-meal-plan-taco',
-    'whatsapp_message': 'whatsapp-ai-assistant'
-  };
-
-  const { data, error } = await supabase.functions.invoke(functionMap[type], {
-    body: input
-  });
-
-  if (error) throw error;
-  return data;
 }

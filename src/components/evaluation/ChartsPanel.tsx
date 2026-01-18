@@ -13,6 +13,7 @@ import { EvaluationComparison } from '@/components/charts/EvaluationComparison';
 import MuscleCompositionPanel from '@/components/charts/MuscleCompositionPanel';
 import RiskGauge from '@/components/charts/RiskGauge';
 import CompositionDonut from '@/components/charts/CompositionDonut';
+import type { ProfessionalEvaluation } from '@/hooks/useProfessionalEvaluation';
 
 interface ChartDataPoint {
   date: string;
@@ -249,6 +250,27 @@ export const ChartsPanel: React.FC<ChartsPanelProps> = ({
     data: chartData.map(d => d.bmi)
   }];
 
+  // Converter Evaluation[] para ProfessionalEvaluation[] para os componentes que precisam
+  const toProfessionalEvaluation = (eval_: Evaluation): ProfessionalEvaluation => ({
+    id: eval_.id,
+    user_id: '',
+    evaluator_id: '',
+    evaluation_type: 'bioimpedance',
+    evaluation_data: {},
+    evaluation_date: eval_.evaluation_date,
+    weight_kg: eval_.weight_kg,
+    body_fat_percentage: eval_.body_fat_percentage,
+    lean_mass_kg: eval_.lean_mass_kg,
+    muscle_mass_kg: eval_.muscle_mass_kg,
+    fat_mass_kg: eval_.fat_mass_kg,
+    bmi: eval_.bmi,
+    risk_level: eval_.risk_level,
+    created_at: eval_.evaluation_date,
+  });
+
+  const professionalEvaluations = evaluationsToCompare.map(toProfessionalEvaluation);
+  const currentProfessionalEval = selectedEvaluation ? toProfessionalEvaluation(selectedEvaluation) : undefined;
+
   return (
     <div className="space-y-6">
       {/* Comparação de avaliações */}
@@ -261,7 +283,7 @@ export const ChartsPanel: React.FC<ChartsPanelProps> = ({
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <EvaluationComparison evaluations={evaluationsToCompare} />
+            <EvaluationComparison evaluations={professionalEvaluations} />
           </CardContent>
         </Card>
       )}
@@ -278,9 +300,9 @@ export const ChartsPanel: React.FC<ChartsPanelProps> = ({
             </CardHeader>
             <CardContent>
               <CompositionDonut
-                fatMass={selectedEvaluation.fat_mass_kg}
-                muscleMass={selectedEvaluation.muscle_mass_kg}
-                leanMass={selectedEvaluation.lean_mass_kg}
+                weightKg={selectedEvaluation.weight_kg}
+                fatMassKg={selectedEvaluation.fat_mass_kg}
+                leanMassKg={selectedEvaluation.lean_mass_kg}
               />
             </CardContent>
           </Card>
@@ -295,7 +317,7 @@ export const ChartsPanel: React.FC<ChartsPanelProps> = ({
             <CardContent>
               <RiskGauge
                 riskLevel={selectedEvaluation.risk_level}
-                bmi={selectedEvaluation.bmi}
+                bodyFatPercentage={selectedEvaluation.body_fat_percentage}
                 waistToHeightRatio={selectedEvaluation.body_fat_percentage / 100}
               />
             </CardContent>
@@ -382,10 +404,8 @@ export const ChartsPanel: React.FC<ChartsPanelProps> = ({
           </CardHeader>
           <CardContent>
             <MuscleCompositionPanel
-              muscleMass={selectedEvaluation.muscle_mass_kg}
-              fatMass={selectedEvaluation.fat_mass_kg}
-              leanMass={selectedEvaluation.lean_mass_kg}
-              weight={selectedEvaluation.weight_kg}
+              evaluations={professionalEvaluations}
+              currentEvaluation={currentProfessionalEval}
             />
           </CardContent>
         </Card>
