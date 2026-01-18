@@ -27,7 +27,7 @@ serve(async (req) => {
     }
 
     // Validate type
-    const validTypes = ['sofia_image', 'sofia_text', 'medical_exam', 'unified_assistant', 'meal_plan', 'whatsapp_message'];
+    const validTypes = ['sofia_image', 'sofia_text', 'medical_exam', 'unified_assistant', 'meal_plan', 'whatsapp_message', 'food_image'];
     if (!validTypes.includes(type)) {
       return new Response(
         JSON.stringify({ error: `Invalid type. Must be one of: ${validTypes.join(', ')}` }),
@@ -37,10 +37,10 @@ serve(async (req) => {
 
     // Check cache if enabled
     if (useCache) {
-      const cacheKey = generateCacheKey(type, input);
+      const cacheKey = await generateCacheKey(type, input);
       const { data: cached } = await supabase
         .from('analysis_cache')
-        .select('response, hit_count')
+        .select('result, hits')
         .eq('cache_key', cacheKey)
         .gt('expires_at', new Date().toISOString())
         .single();
@@ -50,7 +50,7 @@ serve(async (req) => {
         await supabase
           .from('analysis_cache')
           .update({ 
-            hit_count: cached.hit_count + 1,
+            hits: (cached.hits || 0) + 1,
             last_hit_at: new Date().toISOString()
           })
           .eq('cache_key', cacheKey);
@@ -61,7 +61,7 @@ serve(async (req) => {
           JSON.stringify({
             jobId: null,
             status: 'completed',
-            result: cached.response,
+            result: cached.result,
             cached: true
           }),
           { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -69,19 +69,32 @@ serve(async (req) => {
       }
     }
 
-    // Create job
+    // Create job - use correct column names from schema
+    const userId = input.userId || input.user_id || 'anonymous';
     const { data: job, error } = await supabase
       .from('analysis_jobs')
       .insert({
-        type,
-        input,
+        job_type: type,
+        input_data: input,
         priority,
-        user_id: input.userId || 'anonymous'
+        user_id: userId,
+        status: 'pending',
+        attempts: 0,
+        max_attempts: 3,
+        estimated_duration_seconds: getEstimatedTime(type)
       })
       .select()
       .single();
 
     if (error) throw error;
+
+    // Also add to job_queue for worker processing
+    await supabase
+      .from('job_queue')
+      .insert({
+        job_id: job.id,
+        priority
+      });
 
     console.log(`✅ Job enqueued: ${job.id} (type: ${type})`);
 
@@ -104,16 +117,14 @@ serve(async (req) => {
   }
 });
 
-function generateCacheKey(type: string, input: any): string {
+async function generateCacheKey(type: string, input: any): Promise<string> {
   const normalized = JSON.stringify(input, Object.keys(input).sort());
   const encoder = new TextEncoder();
-  const data = encoder.encode(normalized);
-  return crypto.subtle.digest('SHA-256', data)
-    .then(hash => {
-      const hashArray = Array.from(new Uint8Array(hash));
-      const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-      return `${type}:${hashHex}`;
-    });
+  const data = encoder.encode(`${type}:${normalized}`);
+  const hash = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hash));
+  const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  return `${type}:${hashHex}`;
 }
 
 function getEstimatedTime(type: string): number {
@@ -123,7 +134,8 @@ function getEstimatedTime(type: string): number {
     'medical_exam': 15,
     'unified_assistant': 8,
     'meal_plan': 12,
-    'whatsapp_message': 5
+    'whatsapp_message': 5,
+    'food_image': 8
   };
   return estimates[type] || 10;
 }
