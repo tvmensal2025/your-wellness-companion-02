@@ -137,7 +137,7 @@ Public/
 
 # Diretórios de serviços externos
 /ollama_proxy/
-/vps-backend/
+# /vps-backend/ - COMENTADO para incluir ai-worker
 /yolo-service-v2/
 /Documents/
 
