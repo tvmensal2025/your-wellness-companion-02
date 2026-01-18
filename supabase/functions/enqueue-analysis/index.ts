@@ -74,27 +74,18 @@ serve(async (req) => {
     const { data: job, error } = await supabase
       .from('analysis_jobs')
       .insert({
-        job_type: type,
-        input_data: input,
+        type: type,  // Column name is 'type', not 'job_type'
+        input: input,  // Column name is 'input', not 'input_data'
         priority,
         user_id: userId,
         status: 'pending',
         attempts: 0,
-        max_attempts: 3,
-        estimated_duration_seconds: getEstimatedTime(type)
+        max_attempts: 3
       })
       .select()
       .single();
 
     if (error) throw error;
-
-    // Also add to job_queue for worker processing
-    await supabase
-      .from('job_queue')
-      .insert({
-        job_id: job.id,
-        priority
-      });
 
     console.log(`✅ Job enqueued: ${job.id} (type: ${type})`);
 
