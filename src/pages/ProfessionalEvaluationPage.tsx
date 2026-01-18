@@ -288,7 +288,16 @@ const ProfessionalEvaluationPage: React.FC = () => {
     }
 
     try {
-      await saveEvaluation(userId, measurements, calculatedMetrics);
+      await saveEvaluation({
+        user_id: userId,
+        evaluation_type: 'professional_assessment',
+        evaluation_data: {
+          measurements,
+          calculatedMetrics,
+          timestamp: new Date().toISOString()
+        },
+        notes: ''
+      });
       console.log('Avaliação salva com sucesso');
       
       // Recarregar avaliações
@@ -309,7 +318,32 @@ const ProfessionalEvaluationPage: React.FC = () => {
     }
 
     try {
-      exportEvaluationToPDF(selectedUser, measurements, calculatedMetrics);
+      const height = selectedUser.height_cm || 170;
+      const evaluationForPDF = {
+        id: crypto.randomUUID(),
+        user_id: selectedUser.user_id || selectedUser.id || '',
+        evaluator_id: selectedUser.user_id || selectedUser.id || '',
+        evaluation_type: 'professional_assessment',
+        evaluation_data: { measurements, calculatedMetrics },
+        created_at: new Date().toISOString(),
+        evaluation_date: new Date().toISOString(),
+        weight_kg: measurements.weight,
+        height_cm: height,
+        body_fat_percentage: calculatedMetrics.bodyFatPercentage,
+        muscle_mass_kg: calculatedMetrics.muscleMass,
+        lean_mass_kg: calculatedMetrics.leanMass,
+        fat_mass_kg: calculatedMetrics.fatMass,
+        bmi: calculatedMetrics.bmi,
+        waist_circumference_cm: measurements.waistCircumference,
+        hip_circumference_cm: measurements.hipCircumference,
+        abdominal_circumference_cm: measurements.abdominalCircumference,
+        waist_to_height_ratio: calculatedMetrics.waistToHeightRatio,
+        waist_to_hip_ratio: calculatedMetrics.waistToHipRatio,
+        risk_level: calculatedMetrics.riskLevel,
+        bmr_kcal: calculatedMetrics.bmr,
+        muscle_to_fat_ratio: calculatedMetrics.muscleToFatRatio,
+      };
+      exportEvaluationToPDF(selectedUser, evaluationForPDF);
       console.log('PDF exportado com sucesso');
     } catch (error) {
       console.error('Erro ao exportar PDF:', error);
@@ -408,7 +442,19 @@ const ProfessionalEvaluationPage: React.FC = () => {
 
         <TabsContent value="history" className="space-y-4">
           <EvaluationHistory
-            evaluations={getFilteredEvaluations()}
+            evaluations={getFilteredEvaluations().map(ev => ({
+              id: ev.id,
+              user_id: ev.user_id,
+              evaluation_date: ev.evaluation_date || ev.created_at,
+              weight_kg: ev.weight_kg ?? 0,
+              body_fat_percentage: ev.body_fat_percentage ?? 0,
+              lean_mass_kg: ev.lean_mass_kg ?? 0,
+              muscle_mass_kg: ev.muscle_mass_kg ?? 0,
+              bmi: ev.bmi ?? 0,
+              waist_to_height_ratio: ev.waist_to_height_ratio ?? 0,
+              waist_to_hip_ratio: ev.waist_to_hip_ratio ?? 0,
+              risk_level: (ev.risk_level as 'low' | 'moderate' | 'high') || 'low'
+            }))}
             selectedEvaluation={selectedEvaluation}
             onEvaluationSelect={setSelectedEvaluation}
             onCompare={handleCompare}
@@ -428,10 +474,45 @@ const ProfessionalEvaluationPage: React.FC = () => {
       </Tabs>
 
       {/* Modal: Nova Avaliação */}
-      {showNewEvaluation && (
+      {showNewEvaluation && selectedUser && (
         <NewEvaluationWizard
-          onClose={() => setShowNewEvaluation(false)}
-          onComplete={handleSave}
+          user={selectedUser}
+          calculateMetrics={(u, m) => {
+            const bodyFatPercentage = m.body_fat_percentage || 0;
+            const weight = m.weight_kg || 0;
+            const height = u.height_cm || 170;
+            const fatMass = weight * (bodyFatPercentage / 100);
+            const leanMass = weight - fatMass;
+            const bmi = weight / Math.pow(height / 100, 2);
+            const waistToHeightRatio = (m.waist_circumference_cm || 0) / height;
+            const waistToHipRatio = (m.waist_circumference_cm || 0) / (m.hip_circumference_cm || 1);
+            let riskLevel: 'low' | 'moderate' | 'high' = 'low';
+            if (waistToHeightRatio > 0.6 || bmi > 30) riskLevel = 'high';
+            else if (waistToHeightRatio > 0.5 || bmi > 25) riskLevel = 'moderate';
+            return {
+              body_fat_percentage: Math.round(bodyFatPercentage * 10) / 10,
+              fat_mass_kg: Math.round(fatMass * 10) / 10,
+              lean_mass_kg: Math.round(leanMass * 10) / 10,
+              muscle_mass_kg: Math.round(leanMass * 0.45 * 10) / 10,
+              bmi: Math.round(bmi * 10) / 10,
+              waist_to_height_ratio: Math.round(waistToHeightRatio * 100) / 100,
+              waist_to_hip_ratio: Math.round(waistToHipRatio * 100) / 100,
+              risk_level: riskLevel
+            };
+          }}
+          onPreview={(ev) => {
+            setSelectedEvaluation(ev);
+          }}
+          onSave={async (ev) => {
+            await saveEvaluation({
+              user_id: ev.user_id,
+              evaluation_type: 'professional_assessment',
+              evaluation_data: ev,
+            });
+            setShowNewEvaluation(false);
+            const userId = selectedUser.user_id || selectedUser.id;
+            if (userId) await loadUserEvaluations(userId);
+          }}
         />
       )}
     </div>

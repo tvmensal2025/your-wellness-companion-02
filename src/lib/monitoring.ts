@@ -327,6 +327,15 @@ export const cameraWorkoutMonitoring = {
       reps?: number;
       score?: number;
       yolo_latency?: number;
+      // Extended fields for metricsService
+      session_id?: string;
+      avg_fps?: number;
+      avg_latency?: number;
+      avg_confidence?: number;
+      min_fps?: number;
+      max_latency?: number;
+      min_confidence?: number;
+      issues_count?: number;
     }
   ) {
     await monitoring.logMetric({
