@@ -69,16 +69,16 @@ serve(async (req) => {
       }
     }
 
-    // Create job - use correct column names from schema
+    // Create job - use ACTUAL column names from Lovable migration
     const userId = input.userId || input.user_id || 'anonymous';
     const { data: job, error } = await supabase
       .from('analysis_jobs')
       .insert({
-        type: type,  // Column name is 'type', not 'job_type'
-        input: input,  // Column name is 'input', not 'input_data'
+        job_type: type,  // Lovable uses 'job_type' column
+        input_data: input,  // Lovable uses 'input_data' column
         priority,
         user_id: userId,
-        status: 'pending',
+        status: 'queued',  // Lovable uses 'queued' not 'pending'
         attempts: 0,
         max_attempts: 3
       })

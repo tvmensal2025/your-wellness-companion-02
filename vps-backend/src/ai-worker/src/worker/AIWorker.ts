@@ -5,8 +5,8 @@ import { metrics } from '../utils/metrics.js';
 interface Job {
   id: string;
   user_id: string;
-  type: string;
-  input: any;
+  job_type: string;  // Lovable uses 'job_type' column
+  input_data: any;   // Lovable uses 'input_data' column
   status: string;
   priority: number;
   attempts: number;
@@ -110,7 +110,7 @@ export class AIWorker {
       const { data, error } = await this.supabase
         .from('analysis_jobs')
         .select('*')
-        .eq('status', 'pending')
+        .eq('status', 'queued')  // Lovable uses 'queued' not 'pending'
         .order('priority', { ascending: true })
         .order('created_at', { ascending: true })
         .limit(limit);
@@ -132,10 +132,10 @@ export class AIWorker {
     metrics.activeJobs.set(this.activeJobs.size);
     
     const startTime = Date.now();
-    const timer = metrics.jobDuration.startTimer({ type: job.type });
+    const timer = metrics.jobDuration.startTimer({ type: job.job_type });
 
     try {
-      console.log(`🔄 Processing job ${job.id} (type: ${job.type}, priority: ${job.priority})`);
+      console.log(`🔄 Processing job ${job.id} (type: ${job.job_type}, priority: ${job.priority})`);
 
       // Mark as processing
       await this.supabase
@@ -163,13 +163,13 @@ export class AIWorker {
         .eq('id', job.id);
 
       console.log(`✅ Job ${job.id} completed in ${processingTime}ms`);
-      metrics.jobsProcessed.inc({ type: job.type, status: 'completed' });
+      metrics.jobsProcessed.inc({ type: job.job_type, status: 'completed' });
       timer({ status: 'completed' });
 
     } catch (error: any) {
       console.error(`❌ Job ${job.id} failed:`, error.message);
       await this.handleJobError(job, error);
-      metrics.jobsProcessed.inc({ type: job.type, status: 'failed' });
+      metrics.jobsProcessed.inc({ type: job.job_type, status: 'failed' });
       timer({ status: 'failed' });
     } finally {
       this.activeJobs.delete(job.id);
@@ -200,7 +200,7 @@ export class AIWorker {
       await this.supabase
         .from('analysis_jobs')
         .update({
-          status: 'pending',
+          status: 'queued',  // Lovable uses 'queued'
           attempts,
           error: `Retry ${attempts}/${job.max_attempts}: ${error.message}`
         })
