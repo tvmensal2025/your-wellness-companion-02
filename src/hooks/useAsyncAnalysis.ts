@@ -1,361 +1,153 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { sofiaMonitoring } from '@/lib/monitoring';
 
-export type JobType = 'food_image' | 'medical_exam' | 'body_composition';
-export type JobStatus = 'queued' | 'processing' | 'completed' | 'failed' | 'cancelled';
+type JobType = 'sofia_image' | 'sofia_text' | 'medical_exam' | 'unified_assistant' | 'meal_plan' | 'whatsapp_message';
+type JobStatus = 'idle' | 'enqueuing' | 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled' | 'error';
 
-export interface AnalysisJob {
-  id: string;
-  user_id: string;
-  job_type: JobType;
-  status: JobStatus;
-  input_data: any;
-  result: any;
-  error_message: string | null;
-  created_at: string;
-  started_at: string | null;
-  completed_at: string | null;
-  estimated_duration_seconds: number;
+interface UseAsyncAnalysisOptions {
+  type: JobType;
+  pollInterval?: number;
+  onSuccess?: (result: any) => void;
+  onError?: (error: Error) => void;
 }
 
-export interface UseAsyncAnalysisOptions {
-  onComplete?: (result: any) => void;
-  onError?: (error: string) => void;
-  autoRetry?: boolean;
-  maxRetries?: number;
-}
-
-export function useAsyncAnalysis(
-  userId: string | undefined,
-  options: UseAsyncAnalysisOptions = {}
-) {
-  const { toast } = useToast();
-  const [status, setStatus] = useState<'idle' | 'uploading' | 'processing' | 'completed' | 'error'>('idle');
-  const [currentJob, setCurrentJob] = useState<AnalysisJob | null>(null);
+export function useAsyncAnalysis(options: UseAsyncAnalysisOptions) {
+  const [jobId, setJobId] = useState<string | null>(null);
+  const [status, setStatus] = useState<JobStatus>('idle');
   const [result, setResult] = useState<any>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [progress, setProgress] = useState<number>(0);
-  const channelRef = useRef<any>(null);
-  const retryCountRef = useRef<number>(0);
+  const [error, setError] = useState<Error | null>(null);
 
-  // Cleanup channel on unmount
-  useEffect(() => {
-    return () => {
-      if (channelRef.current) {
-        supabase.removeChannel(channelRef.current);
-        channelRef.current = null;
-      }
-    };
-  }, []);
-
-  // Subscribe to job updates via Realtime
-  useEffect(() => {
-    if (!userId || !currentJob) return;
-
-    console.log(`📡 Inscrevendo-se em atualizações do job ${currentJob.id}`);
-
-    // Remove existing channel if any
-    if (channelRef.current) {
-      supabase.removeChannel(channelRef.current);
+  // Check feature flag
+  const useAsync = useMemo(() => {
+    switch (options.type) {
+      case 'sofia_image':
+      case 'sofia_text':
+        return import.meta.env.VITE_USE_ASYNC_SOFIA === 'true';
+      case 'medical_exam':
+        return import.meta.env.VITE_USE_ASYNC_EXAMS === 'true';
+      case 'unified_assistant':
+        return import.meta.env.VITE_USE_ASYNC_UNIFIED === 'true';
+      case 'meal_plan':
+        return import.meta.env.VITE_USE_ASYNC_MEAL_PLAN === 'true';
+      case 'whatsapp_message':
+        return import.meta.env.VITE_USE_ASYNC_WHATSAPP === 'true';
+      default:
+        return false;
     }
+  }, [options.type]);
 
-    // Create new channel
-    const channel = supabase
-      .channel(`analysis_job_${currentJob.id}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'analysis_jobs',
-          filter: `id=eq.${currentJob.id}`
-        },
-        (payload) => {
-          console.log('📥 Atualização do job recebida:', payload.new);
-          const updatedJob = payload.new as AnalysisJob;
-          
-          setCurrentJob(updatedJob);
-
-          if (updatedJob.status === 'processing') {
-            setStatus('processing');
-            // Simular progresso baseado no tempo estimado
-            const elapsed = Date.now() - new Date(updatedJob.started_at || updatedJob.created_at).getTime();
-            const estimated = updatedJob.estimated_duration_seconds * 1000;
-            const progressPercent = Math.min(90, (elapsed / estimated) * 100);
-            setProgress(progressPercent);
-          } else if (updatedJob.status === 'completed') {
-            setStatus('completed');
-            setResult(updatedJob.result);
-            setProgress(100);
-            setError(null);
-            
-            // 📊 Track successful analysis
-            const duration = Date.now() - new Date(updatedJob.created_at).getTime();
-            sofiaMonitoring.trackAnalysis(duration, true, {
-              foods_detected: updatedJob.result?.foods?.length || 0,
-              yolo_used: updatedJob.result?.yolo_used || false,
-              gemini_used: updatedJob.result?.gemini_used || false,
-              calories: updatedJob.result?.calories || 0
-            });
-            
-            toast({
-              title: 'Análise completa! 🎉',
-              description: 'Sua análise foi processada com sucesso.',
-            });
-
-            if (options.onComplete) {
-              options.onComplete(updatedJob.result);
-            }
-
-            // Cleanup channel
-            if (channelRef.current) {
-              supabase.removeChannel(channelRef.current);
-              channelRef.current = null;
-            }
-          } else if (updatedJob.status === 'failed') {
-            setStatus('error');
-            setError(updatedJob.error_message || 'Erro desconhecido');
-            setProgress(0);
-            
-            // 📊 Track failed analysis
-            const duration = Date.now() - new Date(updatedJob.created_at).getTime();
-            sofiaMonitoring.trackAnalysis(duration, false, {
-              error: updatedJob.error_message
-            });
-            
-            // Track critical error
-            sofiaMonitoring.trackError(
-              new Error(updatedJob.error_message || 'Analysis failed'),
-              { job_id: updatedJob.id, job_type: updatedJob.job_type }
-            );
-            
-            // Retry logic
-            if (options.autoRetry && retryCountRef.current < (options.maxRetries || 3)) {
-              retryCountRef.current++;
-              console.log(`🔄 Tentando novamente (${retryCountRef.current}/${options.maxRetries || 3})...`);
-              
-              toast({
-                title: 'Tentando novamente...',
-                description: `Tentativa ${retryCountRef.current} de ${options.maxRetries || 3}`,
-              });
-
-              // Retry after 2 seconds
-              setTimeout(() => {
-                // Re-enqueue the job
-                enqueueAnalysis(
-                  updatedJob.job_type,
-                  updatedJob.input_data.imageUrl,
-                  updatedJob.input_data.userContext,
-                  updatedJob.input_data.mealType
-                );
-              }, 2000);
-            } else {
-              toast({
-                title: 'Erro na análise',
-                description: updatedJob.error_message || 'Ocorreu um erro ao processar sua análise.',
-                variant: 'destructive',
-              });
-
-              if (options.onError) {
-                options.onError(updatedJob.error_message || 'Erro desconhecido');
-              }
-
-              // Cleanup channel
-              if (channelRef.current) {
-                supabase.removeChannel(channelRef.current);
-                channelRef.current = null;
-              }
-            }
-          }
-        }
-      )
-      .subscribe();
-
-    channelRef.current = channel;
-
-    return () => {
-      if (channel) {
-        supabase.removeChannel(channel);
-      }
-    };
-  }, [userId, currentJob?.id, toast, options]);
-
-  // Enqueue analysis
-  const enqueueAnalysis = useCallback(
-    async (
-      jobType: JobType,
-      imageUrl: string,
-      userContext?: any,
-      mealType?: string
-    ) => {
-      if (!userId) {
-        toast({
-          title: 'Erro',
-          description: 'Você precisa estar logado para fazer análises.',
-          variant: 'destructive',
-        });
-        return null;
-      }
-
-      setStatus('uploading');
-      setError(null);
-      setProgress(0);
-      retryCountRef.current = 0;
-
-      try {
-        console.log(`📤 Enfileirando análise: ${jobType}`);
-
-        const response = await supabase.functions.invoke('enqueue-analysis', {
-          body: {
-            imageUrl,
-            userId,
-            jobType,
-            userContext,
-            mealType
-          }
-        });
-
-        if (response.error) {
-          throw new Error(response.error.message);
-        }
-
-        const data = response.data;
-
-        // Check if cached result
-        if (data.cached) {
-          console.log('✅ Resultado do cache');
-          setStatus('completed');
-          setResult(data.result);
-          setProgress(100);
-          
-          toast({
-            title: 'Resultado instantâneo! ⚡',
-            description: 'Encontramos uma análise recente idêntica.',
-          });
-
-          if (options.onComplete) {
-            options.onComplete(data.result);
-          }
-
-          return data.result;
-        }
-
-        // Job enqueued, wait for updates
-        console.log(`✅ Job enfileirado: ${data.job_id}`);
-        setStatus('processing');
-        setProgress(10);
-
-        // Fetch job details
-        const { data: jobData, error: jobError } = await supabase
-          .from('analysis_jobs')
-          .select('*')
-          .eq('id', data.job_id)
-          .single();
-
-        if (jobError) {
-          throw new Error(jobError.message);
-        }
-
-        // Cast job_type to JobType
-        setCurrentJob({
-          ...jobData,
-          job_type: jobData.job_type as JobType,
-          status: jobData.status as JobStatus,
-        });
-
-        toast({
-          title: 'Processando...',
-          description: data.message,
-        });
-
-        return data.job_id;
-
-      } catch (err) {
-        console.error('❌ Erro ao enfileirar análise:', err);
-        const error = err as Error;
-        setStatus('error');
-        setError(error.message);
-        
-        toast({
-          title: 'Erro',
-          description: error.message || 'Erro ao iniciar análise.',
-          variant: 'destructive',
-        });
-
-        if (options.onError) {
-          options.onError(error.message);
-        }
-
-        return null;
-      }
-    },
-    [userId, toast, options]
-  );
-
-  // Cancel analysis
-  const cancelAnalysis = useCallback(async () => {
-    if (!currentJob) return;
+  // Enqueue job
+  const enqueue = useCallback(async (input: any) => {
+    if (!useAsync) {
+      // Fallback to sync
+      console.log('Using sync fallback');
+      return await callSyncFunction(options.type, input);
+    }
 
     try {
-      const { error } = await supabase
-        .from('analysis_jobs')
-        .update({ status: 'cancelled' })
-        .eq('id', currentJob.id);
+      setStatus('enqueuing');
+      setError(null);
 
-      if (error) throw error;
-
-      setStatus('idle');
-      setCurrentJob(null);
-      setProgress(0);
-
-      toast({
-        title: 'Análise cancelada',
-        description: 'A análise foi cancelada com sucesso.',
+      const { data, error: invokeError } = await supabase.functions.invoke('enqueue-analysis', {
+        body: { type: options.type, input }
       });
 
-    } catch (err) {
-      console.error('❌ Erro ao cancelar análise:', err);
-      toast({
-        title: 'Erro',
-        description: 'Não foi possível cancelar a análise.',
-        variant: 'destructive',
-      });
-    }
-  }, [currentJob, toast]);
+      if (invokeError) throw invokeError;
 
-  // Reset state
-  const reset = useCallback(() => {
-    setStatus('idle');
-    setCurrentJob(null);
-    setResult(null);
-    setError(null);
-    setProgress(0);
-    retryCountRef.current = 0;
+      if (data.cached) {
+        // Cache hit - return immediately
+        setResult(data.result);
+        setStatus('completed');
+        options.onSuccess?.(data.result);
+        return data.result;
+      }
 
-    if (channelRef.current) {
-      supabase.removeChannel(channelRef.current);
-      channelRef.current = null;
+      // Job enqueued - start polling
+      setJobId(data.jobId);
+      setStatus('pending');
+
+    } catch (err: any) {
+      console.error('Enqueue error:', err);
+      setError(err);
+      setStatus('error');
+      options.onError?.(err);
+      
+      // Fallback to sync on error
+      console.log('Falling back to sync due to error');
+      return await callSyncFunction(options.type, input);
     }
-  }, []);
+  }, [useAsync, options]);
+
+  // Poll for status
+  useEffect(() => {
+    if (!jobId || status === 'completed' || status === 'error' || status === 'cancelled') {
+      return;
+    }
+
+    const interval = setInterval(async () => {
+      try {
+        const { data, error: statusError } = await supabase.functions.invoke('get-analysis-status', {
+          body: { jobId }
+        });
+
+        if (statusError) throw statusError;
+
+        setStatus(data.status);
+
+        if (data.status === 'completed') {
+          setResult(data.result);
+          options.onSuccess?.(data.result);
+        } else if (data.status === 'failed') {
+          const err = new Error(data.error || 'Job failed');
+          setError(err);
+          options.onError?.(err);
+        }
+
+      } catch (err: any) {
+        console.error('Polling error:', err);
+      }
+    }, options.pollInterval || 2000);
+
+    return () => clearInterval(interval);
+  }, [jobId, status, options]);
+
+  // Cancel job
+  const cancel = useCallback(async () => {
+    if (!jobId) return;
+
+    await supabase
+      .from('analysis_jobs')
+      .update({ status: 'cancelled' })
+      .eq('id', jobId);
+
+    setStatus('cancelled');
+  }, [jobId]);
 
   return {
-    // State
+    enqueue,
+    cancel,
     status,
-    currentJob,
     result,
     error,
-    progress,
-    
-    // Actions
-    enqueueAnalysis,
-    cancelAnalysis,
-    reset,
-    
-    // Computed
-    isProcessing: status === 'processing' || status === 'uploading',
-    isCompleted: status === 'completed',
-    hasError: status === 'error',
+    isLoading: ['enqueuing', 'pending', 'processing'].includes(status)
   };
+}
+
+// Fallback to sync function
+async function callSyncFunction(type: JobType, input: any) {
+  const functionMap: Record<JobType, string> = {
+    'sofia_image': 'sofia-image-analysis',
+    'sofia_text': 'sofia-image-analysis',
+    'medical_exam': 'analyze-medical-exam',
+    'unified_assistant': 'unified-ai-assistant',
+    'meal_plan': 'generate-meal-plan-taco',
+    'whatsapp_message': 'whatsapp-ai-assistant'
+  };
+
+  const { data, error } = await supabase.functions.invoke(functionMap[type], {
+    body: input
+  });
+
+  if (error) throw error;
+  return data;
 }

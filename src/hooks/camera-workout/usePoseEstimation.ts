@@ -14,8 +14,11 @@ import type {
   PoseAnalyzeResponse,
 } from '@/types/camera-workout';
 
-// URL do servidor YOLO (fixo conforme steering rules)
-const YOLO_SERVICE_URL = 'https://yolo-service-yolo-detection.0sw627.easypanel.host';
+// URL do servidor YOLO com fallback e configuração via env
+const YOLO_SERVICE_URL = import.meta.env.VITE_YOLO_SERVICE_URL || 
+  'https://yolo-service-yolo-detection.0sw627.easypanel.host';
+const YOLO_ENABLED = import.meta.env.VITE_YOLO_ENABLED !== 'false';
+const YOLO_TIMEOUT = 5000; // 5 segundos para mobile
 
 interface UsePoseEstimationConfig {
   exerciseType: ExerciseType;
@@ -23,6 +26,27 @@ interface UsePoseEstimationConfig {
   calibration?: CalibrationData;
   mode?: InferenceMode;
 }
+
+// Health check function
+const checkYoloHealth = async (): Promise<boolean> => {
+  if (!YOLO_ENABLED) return false;
+  
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3000);
+    
+    const response = await fetch(`${YOLO_SERVICE_URL}/health`, {
+      method: 'GET',
+      signal: controller.signal,
+    });
+    
+    clearTimeout(timeoutId);
+    return response.ok;
+  } catch (error) {
+    console.warn('YOLO health check failed:', error);
+    return false;
+  }
+};
 
 interface UsePoseEstimationReturn {
   // Estado

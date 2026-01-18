@@ -1,0 +1,2319 @@
+{
+  "sync_functions": [
+    {
+      "name": "generate-coaching-report",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": true,
+      "has_timeout": false,
+      "estimated_time": 5.0,
+      "lines": 293,
+      "complexity": "LOW"
+    },
+    {
+      "name": "vision-api",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 133,
+      "complexity": "LOW"
+    },
+    {
+      "name": "activate-ai",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": true,
+      "has_timeout": false,
+      "estimated_time": 8.0,
+      "lines": 237,
+      "complexity": "LOW"
+    },
+    {
+      "name": "saboteur-html-report",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": true,
+      "has_timeout": false,
+      "estimated_time": 5.0,
+      "lines": 294,
+      "complexity": "LOW"
+    },
+    {
+      "name": "enrich-food-data",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 186,
+      "complexity": "LOW"
+    },
+    {
+      "name": "nutrition-calc-deterministic",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 343,
+      "complexity": "LOW"
+    },
+    {
+      "name": "check-gender-issue",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 66,
+      "complexity": "LOW"
+    },
+    {
+      "name": "dr-vital-weekly-report",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": true,
+      "has_timeout": false,
+      "estimated_time": 8.0,
+      "lines": 415,
+      "complexity": "LOW"
+    },
+    {
+      "name": "whatsapp-smart-reminders",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": true,
+      "estimated_time": 1.0,
+      "lines": 291,
+      "complexity": "LOW"
+    },
+    {
+      "name": "analyze-medical-exam",
+      "type": "sync",
+      "has_yolo": true,
+      "has_gemini": true,
+      "has_timeout": true,
+      "estimated_time": 10.0,
+      "lines": 4743,
+      "complexity": "HIGH"
+    },
+    {
+      "name": "confirm-food-analysis",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 133,
+      "complexity": "LOW"
+    },
+    {
+      "name": "generate-user-biography",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": true,
+      "has_timeout": false,
+      "estimated_time": 5.0,
+      "lines": 161,
+      "complexity": "LOW"
+    },
+    {
+      "name": "cleanup-medical-images",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 117,
+      "complexity": "LOW"
+    },
+    {
+      "name": "whatsapp-saboteur-result",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": true,
+      "has_timeout": false,
+      "estimated_time": 5.0,
+      "lines": 241,
+      "complexity": "LOW"
+    },
+    {
+      "name": "whatsapp-goal-reminders",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": true,
+      "estimated_time": 1.0,
+      "lines": 280,
+      "complexity": "LOW"
+    },
+    {
+      "name": "nutrition-ai-insights",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 3.0,
+      "lines": 219,
+      "complexity": "LOW"
+    },
+    {
+      "name": "whatsapp-habits-analysis",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": true,
+      "has_timeout": false,
+      "estimated_time": 5.0,
+      "lines": 292,
+      "complexity": "LOW"
+    },
+    {
+      "name": "whatsapp-health-check",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 174,
+      "complexity": "LOW"
+    },
+    {
+      "name": "enrich-sofia-analysis",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 398,
+      "complexity": "LOW"
+    },
+    {
+      "name": "detect-image-type",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": true,
+      "has_timeout": false,
+      "estimated_time": 5.0,
+      "lines": 233,
+      "complexity": "LOW"
+    },
+    {
+      "name": "fix-storage",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 102,
+      "complexity": "LOW"
+    },
+    {
+      "name": "check-user-data-completeness",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 135,
+      "complexity": "LOW"
+    },
+    {
+      "name": "whatsapp-daily-motivation",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": true,
+      "has_timeout": true,
+      "estimated_time": 5.0,
+      "lines": 350,
+      "complexity": "LOW"
+    },
+    {
+      "name": "nutrition-calc",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 319,
+      "complexity": "LOW"
+    },
+    {
+      "name": "whatsapp-ai-assistant",
+      "type": "sync",
+      "has_yolo": true,
+      "has_gemini": true,
+      "has_timeout": false,
+      "estimated_time": 10.0,
+      "lines": 1193,
+      "complexity": "MEDIUM"
+    },
+    {
+      "name": "test-webhook",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": true,
+      "estimated_time": 1.0,
+      "lines": 170,
+      "complexity": "LOW"
+    },
+    {
+      "name": "unified-ai-assistant",
+      "type": "sync",
+      "has_yolo": true,
+      "has_gemini": true,
+      "has_timeout": false,
+      "estimated_time": 10.0,
+      "lines": 521,
+      "complexity": "MEDIUM"
+    },
+    {
+      "name": "google-fit-hourly-sync",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": true,
+      "estimated_time": 1.0,
+      "lines": 65,
+      "complexity": "LOW"
+    },
+    {
+      "name": "whatsapp-nutrition-check",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": true,
+      "estimated_time": 1.0,
+      "lines": 263,
+      "complexity": "LOW"
+    },
+    {
+      "name": "google-fit-token",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 255,
+      "complexity": "LOW"
+    },
+    {
+      "name": "media-upload",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 287,
+      "complexity": "LOW"
+    },
+    {
+      "name": "whatsapp-celebration",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 237,
+      "complexity": "LOW"
+    },
+    {
+      "name": "generate-human-message",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": true,
+      "has_timeout": false,
+      "estimated_time": 5.0,
+      "lines": 225,
+      "complexity": "LOW"
+    },
+    {
+      "name": "nutrition-alias-admin",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 63,
+      "complexity": "LOW"
+    },
+    {
+      "name": "send-meal-plan-whatsapp",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 230,
+      "complexity": "LOW"
+    },
+    {
+      "name": "google-fit-callback",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": true,
+      "estimated_time": 1.0,
+      "lines": 400,
+      "complexity": "LOW"
+    },
+    {
+      "name": "mealie-real",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": true,
+      "estimated_time": 1.0,
+      "lines": 1020,
+      "complexity": "MEDIUM"
+    },
+    {
+      "name": "whatsapp-send-interactive",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 313,
+      "complexity": "LOW"
+    },
+    {
+      "name": "check-subscription",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 120,
+      "complexity": "LOW"
+    },
+    {
+      "name": "bulk-queue-leads",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 136,
+      "complexity": "LOW"
+    },
+    {
+      "name": "generate-medical-pdf",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": true,
+      "estimated_time": 1.0,
+      "lines": 189,
+      "complexity": "LOW"
+    },
+    {
+      "name": "fix-ai-configurations",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 3.0,
+      "lines": 145,
+      "complexity": "LOW"
+    },
+    {
+      "name": "fix-handle-new-user",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 103,
+      "complexity": "LOW"
+    },
+    {
+      "name": "sofia-enhanced-memory",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": true,
+      "has_timeout": false,
+      "estimated_time": 8.0,
+      "lines": 830,
+      "complexity": "MEDIUM"
+    },
+    {
+      "name": "whatsapp-medical-handler",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 463,
+      "complexity": "LOW"
+    },
+    {
+      "name": "whatsapp-webhook-unified",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 910,
+      "complexity": "HIGH"
+    },
+    {
+      "name": "nutrition-daily-summary",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": true,
+      "estimated_time": 1.0,
+      "lines": 378,
+      "complexity": "LOW"
+    },
+    {
+      "name": "google-fit-sync",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 675,
+      "complexity": "MEDIUM"
+    },
+    {
+      "name": "premium-medical-report",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 3.0,
+      "lines": 319,
+      "complexity": "LOW"
+    },
+    {
+      "name": "goal-notifications",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 159,
+      "complexity": "LOW"
+    },
+    {
+      "name": "food-analysis",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": true,
+      "has_timeout": false,
+      "estimated_time": 8.0,
+      "lines": 591,
+      "complexity": "MEDIUM"
+    },
+    {
+      "name": "vps-proxy",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 215,
+      "complexity": "LOW"
+    },
+    {
+      "name": "create-checkout",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 74,
+      "complexity": "LOW"
+    },
+    {
+      "name": "send-lead-webhooks",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": true,
+      "estimated_time": 1.0,
+      "lines": 212,
+      "complexity": "LOW"
+    },
+    {
+      "name": "cache-manager",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 3.0,
+      "lines": 192,
+      "complexity": "LOW"
+    },
+    {
+      "name": "send-email",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 107,
+      "complexity": "LOW"
+    },
+    {
+      "name": "whatsapp-generate-template",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": true,
+      "has_timeout": false,
+      "estimated_time": 5.0,
+      "lines": 226,
+      "complexity": "LOW"
+    },
+    {
+      "name": "create-sirlene",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 83,
+      "complexity": "LOW"
+    },
+    {
+      "name": "whatsapp-mission-complete",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": true,
+      "has_timeout": false,
+      "estimated_time": 5.0,
+      "lines": 293,
+      "complexity": "LOW"
+    },
+    {
+      "name": "whatsapp-welcome",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 135,
+      "complexity": "LOW"
+    },
+    {
+      "name": "fix-stuck-documents",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 148,
+      "complexity": "LOW"
+    },
+    {
+      "name": "generate-ai-workout",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": true,
+      "has_timeout": false,
+      "estimated_time": 5.0,
+      "lines": 224,
+      "complexity": "LOW"
+    },
+    {
+      "name": "whatsapp-nutrition-webhook",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 847,
+      "complexity": "MEDIUM"
+    },
+    {
+      "name": "sofia-text-analysis",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": true,
+      "has_timeout": false,
+      "estimated_time": 5.0,
+      "lines": 295,
+      "complexity": "LOW"
+    },
+    {
+      "name": "get-public-report",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 111,
+      "complexity": "LOW"
+    },
+    {
+      "name": "interpret-user-intent",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": true,
+      "has_timeout": false,
+      "estimated_time": 5.0,
+      "lines": 284,
+      "complexity": "LOW"
+    },
+    {
+      "name": "cleanup-scheduler",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 175,
+      "complexity": "LOW"
+    },
+    {
+      "name": "add-google-fit-columns",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 78,
+      "complexity": "LOW"
+    },
+    {
+      "name": "medical-batch-timeout",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 148,
+      "complexity": "LOW"
+    },
+    {
+      "name": "generate-medical-report",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 3.0,
+      "lines": 377,
+      "complexity": "LOW"
+    },
+    {
+      "name": "dr-vital-chat",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": true,
+      "has_timeout": false,
+      "estimated_time": 8.0,
+      "lines": 488,
+      "complexity": "LOW"
+    },
+    {
+      "name": "enhanced-gpt-chat",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 3.0,
+      "lines": 116,
+      "complexity": "LOW"
+    },
+    {
+      "name": "rate-limiter",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 195,
+      "complexity": "LOW"
+    },
+    {
+      "name": "improve-exercises",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": true,
+      "has_timeout": true,
+      "estimated_time": 5.0,
+      "lines": 173,
+      "complexity": "LOW"
+    },
+    {
+      "name": "evolution-send-message",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 297,
+      "complexity": "LOW"
+    },
+    {
+      "name": "create-asaas-payment",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 137,
+      "complexity": "LOW"
+    },
+    {
+      "name": "sofia-deterministic",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 486,
+      "complexity": "LOW"
+    },
+    {
+      "name": "fix-storage-rls",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 114,
+      "complexity": "LOW"
+    },
+    {
+      "name": "apply-robust-base",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 310,
+      "complexity": "LOW"
+    },
+    {
+      "name": "dr-vital-notifications",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 312,
+      "complexity": "LOW"
+    },
+    {
+      "name": "customer-portal",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 69,
+      "complexity": "LOW"
+    },
+    {
+      "name": "whatsapp-weekly-report",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": true,
+      "has_timeout": true,
+      "estimated_time": 5.0,
+      "lines": 570,
+      "complexity": "MEDIUM"
+    },
+    {
+      "name": "sofia-image-analysis",
+      "type": "sync",
+      "has_yolo": true,
+      "has_gemini": true,
+      "has_timeout": true,
+      "estimated_time": 10.0,
+      "lines": 2075,
+      "complexity": "HIGH"
+    },
+    {
+      "name": "whatsapp-test-interactive",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 167,
+      "complexity": "LOW"
+    },
+    {
+      "name": "finalize-medical-document",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": true,
+      "estimated_time": 3.0,
+      "lines": 1092,
+      "complexity": "MEDIUM"
+    },
+    {
+      "name": "generate-meal-plan-taco",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 139,
+      "complexity": "LOW"
+    },
+    {
+      "name": "nutrition-planner",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": true,
+      "estimated_time": 1.0,
+      "lines": 343,
+      "complexity": "LOW"
+    },
+    {
+      "name": "repair-auth-metadata",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 149,
+      "complexity": "LOW"
+    },
+    {
+      "name": "seed-standard-recipes",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 104,
+      "complexity": "LOW"
+    },
+    {
+      "name": "google-fit-ai-analysis",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": true,
+      "has_timeout": false,
+      "estimated_time": 5.0,
+      "lines": 274,
+      "complexity": "LOW"
+    },
+    {
+      "name": "n8n-weekly-whatsapp-report",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 212,
+      "complexity": "LOW"
+    },
+    {
+      "name": "dr-vital-enhanced",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": true,
+      "has_timeout": false,
+      "estimated_time": 5.0,
+      "lines": 547,
+      "complexity": "MEDIUM"
+    }
+  ],
+  "async_functions": [
+    {
+      "name": "process-analysis-worker",
+      "type": "async",
+      "has_yolo": true,
+      "has_gemini": true,
+      "has_timeout": true,
+      "estimated_time": 7.0,
+      "lines": 236,
+      "complexity": "LOW"
+    },
+    {
+      "name": "enqueue-analysis",
+      "type": "async",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 144,
+      "complexity": "LOW"
+    }
+  ],
+  "frontend_calls": [
+    {
+      "file": "src/components/SofiaSimpleChat.tsx",
+      "sync_calls": 2,
+      "async_calls": 0,
+      "migration_needed": true
+    },
+    {
+      "file": "src/components/HealthChatBot.tsx",
+      "sync_calls": 2,
+      "async_calls": 0,
+      "migration_needed": true
+    },
+    {
+      "file": "src/components/FoodAnalysisSystem.tsx",
+      "sync_calls": 2,
+      "async_calls": 0,
+      "migration_needed": true
+    },
+    {
+      "file": "src/components/dashboard/MedicalDocumentsSection.tsx",
+      "sync_calls": 4,
+      "async_calls": 0,
+      "migration_needed": true
+    },
+    {
+      "file": "src/components/nutrition/QuickPhotoCapture.tsx",
+      "sync_calls": 2,
+      "async_calls": 0,
+      "migration_needed": true
+    },
+    {
+      "file": "src/components/sofia/SofiaVoiceChat.tsx",
+      "sync_calls": 2,
+      "async_calls": 0,
+      "migration_needed": true
+    },
+    {
+      "file": "src/components/sofia/AsyncFoodAnalysis.tsx",
+      "sync_calls": 0,
+      "async_calls": 3,
+      "migration_needed": false
+    }
+  ],
+  "edge_functions": [
+    {
+      "name": "generate-coaching-report",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": true,
+      "has_timeout": false,
+      "estimated_time": 5.0,
+      "lines": 293,
+      "complexity": "LOW"
+    },
+    {
+      "name": "vision-api",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 133,
+      "complexity": "LOW"
+    },
+    {
+      "name": "activate-ai",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": true,
+      "has_timeout": false,
+      "estimated_time": 8.0,
+      "lines": 237,
+      "complexity": "LOW"
+    },
+    {
+      "name": "saboteur-html-report",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": true,
+      "has_timeout": false,
+      "estimated_time": 5.0,
+      "lines": 294,
+      "complexity": "LOW"
+    },
+    {
+      "name": "enrich-food-data",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 186,
+      "complexity": "LOW"
+    },
+    {
+      "name": "nutrition-calc-deterministic",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 343,
+      "complexity": "LOW"
+    },
+    {
+      "name": "check-gender-issue",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 66,
+      "complexity": "LOW"
+    },
+    {
+      "name": "dr-vital-weekly-report",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": true,
+      "has_timeout": false,
+      "estimated_time": 8.0,
+      "lines": 415,
+      "complexity": "LOW"
+    },
+    {
+      "name": "whatsapp-smart-reminders",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": true,
+      "estimated_time": 1.0,
+      "lines": 291,
+      "complexity": "LOW"
+    },
+    {
+      "name": "analyze-medical-exam",
+      "type": "sync",
+      "has_yolo": true,
+      "has_gemini": true,
+      "has_timeout": true,
+      "estimated_time": 10.0,
+      "lines": 4743,
+      "complexity": "HIGH"
+    },
+    {
+      "name": "confirm-food-analysis",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 133,
+      "complexity": "LOW"
+    },
+    {
+      "name": "generate-user-biography",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": true,
+      "has_timeout": false,
+      "estimated_time": 5.0,
+      "lines": 161,
+      "complexity": "LOW"
+    },
+    {
+      "name": "cleanup-medical-images",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 117,
+      "complexity": "LOW"
+    },
+    {
+      "name": "whatsapp-saboteur-result",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": true,
+      "has_timeout": false,
+      "estimated_time": 5.0,
+      "lines": 241,
+      "complexity": "LOW"
+    },
+    {
+      "name": "whatsapp-goal-reminders",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": true,
+      "estimated_time": 1.0,
+      "lines": 280,
+      "complexity": "LOW"
+    },
+    {
+      "name": "nutrition-ai-insights",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 3.0,
+      "lines": 219,
+      "complexity": "LOW"
+    },
+    {
+      "name": "whatsapp-habits-analysis",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": true,
+      "has_timeout": false,
+      "estimated_time": 5.0,
+      "lines": 292,
+      "complexity": "LOW"
+    },
+    {
+      "name": "whatsapp-health-check",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 174,
+      "complexity": "LOW"
+    },
+    {
+      "name": "enrich-sofia-analysis",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 398,
+      "complexity": "LOW"
+    },
+    {
+      "name": "detect-image-type",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": true,
+      "has_timeout": false,
+      "estimated_time": 5.0,
+      "lines": 233,
+      "complexity": "LOW"
+    },
+    {
+      "name": "fix-storage",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 102,
+      "complexity": "LOW"
+    },
+    {
+      "name": "check-user-data-completeness",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 135,
+      "complexity": "LOW"
+    },
+    {
+      "name": "whatsapp-daily-motivation",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": true,
+      "has_timeout": true,
+      "estimated_time": 5.0,
+      "lines": 350,
+      "complexity": "LOW"
+    },
+    {
+      "name": "nutrition-calc",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 319,
+      "complexity": "LOW"
+    },
+    {
+      "name": "whatsapp-ai-assistant",
+      "type": "sync",
+      "has_yolo": true,
+      "has_gemini": true,
+      "has_timeout": false,
+      "estimated_time": 10.0,
+      "lines": 1193,
+      "complexity": "MEDIUM"
+    },
+    {
+      "name": "test-webhook",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": true,
+      "estimated_time": 1.0,
+      "lines": 170,
+      "complexity": "LOW"
+    },
+    {
+      "name": "unified-ai-assistant",
+      "type": "sync",
+      "has_yolo": true,
+      "has_gemini": true,
+      "has_timeout": false,
+      "estimated_time": 10.0,
+      "lines": 521,
+      "complexity": "MEDIUM"
+    },
+    {
+      "name": "google-fit-hourly-sync",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": true,
+      "estimated_time": 1.0,
+      "lines": 65,
+      "complexity": "LOW"
+    },
+    {
+      "name": "whatsapp-nutrition-check",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": true,
+      "estimated_time": 1.0,
+      "lines": 263,
+      "complexity": "LOW"
+    },
+    {
+      "name": "google-fit-token",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 255,
+      "complexity": "LOW"
+    },
+    {
+      "name": "media-upload",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 287,
+      "complexity": "LOW"
+    },
+    {
+      "name": "whatsapp-celebration",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 237,
+      "complexity": "LOW"
+    },
+    {
+      "name": "generate-human-message",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": true,
+      "has_timeout": false,
+      "estimated_time": 5.0,
+      "lines": 225,
+      "complexity": "LOW"
+    },
+    {
+      "name": "nutrition-alias-admin",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 63,
+      "complexity": "LOW"
+    },
+    {
+      "name": "send-meal-plan-whatsapp",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 230,
+      "complexity": "LOW"
+    },
+    {
+      "name": "google-fit-callback",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": true,
+      "estimated_time": 1.0,
+      "lines": 400,
+      "complexity": "LOW"
+    },
+    {
+      "name": "mealie-real",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": true,
+      "estimated_time": 1.0,
+      "lines": 1020,
+      "complexity": "MEDIUM"
+    },
+    {
+      "name": "whatsapp-send-interactive",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 313,
+      "complexity": "LOW"
+    },
+    {
+      "name": "check-subscription",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 120,
+      "complexity": "LOW"
+    },
+    {
+      "name": "bulk-queue-leads",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 136,
+      "complexity": "LOW"
+    },
+    {
+      "name": "process-analysis-worker",
+      "type": "async",
+      "has_yolo": true,
+      "has_gemini": true,
+      "has_timeout": true,
+      "estimated_time": 7.0,
+      "lines": 236,
+      "complexity": "LOW"
+    },
+    {
+      "name": "generate-medical-pdf",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": true,
+      "estimated_time": 1.0,
+      "lines": 189,
+      "complexity": "LOW"
+    },
+    {
+      "name": "fix-ai-configurations",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 3.0,
+      "lines": 145,
+      "complexity": "LOW"
+    },
+    {
+      "name": "fix-handle-new-user",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 103,
+      "complexity": "LOW"
+    },
+    {
+      "name": "sofia-enhanced-memory",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": true,
+      "has_timeout": false,
+      "estimated_time": 8.0,
+      "lines": 830,
+      "complexity": "MEDIUM"
+    },
+    {
+      "name": "whatsapp-medical-handler",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 463,
+      "complexity": "LOW"
+    },
+    {
+      "name": "whatsapp-webhook-unified",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 910,
+      "complexity": "HIGH"
+    },
+    {
+      "name": "nutrition-daily-summary",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": true,
+      "estimated_time": 1.0,
+      "lines": 378,
+      "complexity": "LOW"
+    },
+    {
+      "name": "google-fit-sync",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 675,
+      "complexity": "MEDIUM"
+    },
+    {
+      "name": "premium-medical-report",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 3.0,
+      "lines": 319,
+      "complexity": "LOW"
+    },
+    {
+      "name": "goal-notifications",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 159,
+      "complexity": "LOW"
+    },
+    {
+      "name": "food-analysis",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": true,
+      "has_timeout": false,
+      "estimated_time": 8.0,
+      "lines": 591,
+      "complexity": "MEDIUM"
+    },
+    {
+      "name": "vps-proxy",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 215,
+      "complexity": "LOW"
+    },
+    {
+      "name": "create-checkout",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 74,
+      "complexity": "LOW"
+    },
+    {
+      "name": "send-lead-webhooks",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": true,
+      "estimated_time": 1.0,
+      "lines": 212,
+      "complexity": "LOW"
+    },
+    {
+      "name": "cache-manager",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 3.0,
+      "lines": 192,
+      "complexity": "LOW"
+    },
+    {
+      "name": "send-email",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 107,
+      "complexity": "LOW"
+    },
+    {
+      "name": "whatsapp-generate-template",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": true,
+      "has_timeout": false,
+      "estimated_time": 5.0,
+      "lines": 226,
+      "complexity": "LOW"
+    },
+    {
+      "name": "create-sirlene",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 83,
+      "complexity": "LOW"
+    },
+    {
+      "name": "whatsapp-mission-complete",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": true,
+      "has_timeout": false,
+      "estimated_time": 5.0,
+      "lines": 293,
+      "complexity": "LOW"
+    },
+    {
+      "name": "whatsapp-welcome",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 135,
+      "complexity": "LOW"
+    },
+    {
+      "name": "fix-stuck-documents",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 148,
+      "complexity": "LOW"
+    },
+    {
+      "name": "generate-ai-workout",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": true,
+      "has_timeout": false,
+      "estimated_time": 5.0,
+      "lines": 224,
+      "complexity": "LOW"
+    },
+    {
+      "name": "whatsapp-nutrition-webhook",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 847,
+      "complexity": "MEDIUM"
+    },
+    {
+      "name": "sofia-text-analysis",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": true,
+      "has_timeout": false,
+      "estimated_time": 5.0,
+      "lines": 295,
+      "complexity": "LOW"
+    },
+    {
+      "name": "get-public-report",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 111,
+      "complexity": "LOW"
+    },
+    {
+      "name": "interpret-user-intent",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": true,
+      "has_timeout": false,
+      "estimated_time": 5.0,
+      "lines": 284,
+      "complexity": "LOW"
+    },
+    {
+      "name": "cleanup-scheduler",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 175,
+      "complexity": "LOW"
+    },
+    {
+      "name": "add-google-fit-columns",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 78,
+      "complexity": "LOW"
+    },
+    {
+      "name": "medical-batch-timeout",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 148,
+      "complexity": "LOW"
+    },
+    {
+      "name": "generate-medical-report",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 3.0,
+      "lines": 377,
+      "complexity": "LOW"
+    },
+    {
+      "name": "dr-vital-chat",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": true,
+      "has_timeout": false,
+      "estimated_time": 8.0,
+      "lines": 488,
+      "complexity": "LOW"
+    },
+    {
+      "name": "enhanced-gpt-chat",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 3.0,
+      "lines": 116,
+      "complexity": "LOW"
+    },
+    {
+      "name": "rate-limiter",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 195,
+      "complexity": "LOW"
+    },
+    {
+      "name": "improve-exercises",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": true,
+      "has_timeout": true,
+      "estimated_time": 5.0,
+      "lines": 173,
+      "complexity": "LOW"
+    },
+    {
+      "name": "evolution-send-message",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 297,
+      "complexity": "LOW"
+    },
+    {
+      "name": "create-asaas-payment",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 137,
+      "complexity": "LOW"
+    },
+    {
+      "name": "sofia-deterministic",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 486,
+      "complexity": "LOW"
+    },
+    {
+      "name": "fix-storage-rls",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 114,
+      "complexity": "LOW"
+    },
+    {
+      "name": "apply-robust-base",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 310,
+      "complexity": "LOW"
+    },
+    {
+      "name": "dr-vital-notifications",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 312,
+      "complexity": "LOW"
+    },
+    {
+      "name": "customer-portal",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 69,
+      "complexity": "LOW"
+    },
+    {
+      "name": "whatsapp-weekly-report",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": true,
+      "has_timeout": true,
+      "estimated_time": 5.0,
+      "lines": 570,
+      "complexity": "MEDIUM"
+    },
+    {
+      "name": "sofia-image-analysis",
+      "type": "sync",
+      "has_yolo": true,
+      "has_gemini": true,
+      "has_timeout": true,
+      "estimated_time": 10.0,
+      "lines": 2075,
+      "complexity": "HIGH"
+    },
+    {
+      "name": "whatsapp-test-interactive",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 167,
+      "complexity": "LOW"
+    },
+    {
+      "name": "finalize-medical-document",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": true,
+      "estimated_time": 3.0,
+      "lines": 1092,
+      "complexity": "MEDIUM"
+    },
+    {
+      "name": "generate-meal-plan-taco",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 139,
+      "complexity": "LOW"
+    },
+    {
+      "name": "nutrition-planner",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": true,
+      "estimated_time": 1.0,
+      "lines": 343,
+      "complexity": "LOW"
+    },
+    {
+      "name": "repair-auth-metadata",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 149,
+      "complexity": "LOW"
+    },
+    {
+      "name": "seed-standard-recipes",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 104,
+      "complexity": "LOW"
+    },
+    {
+      "name": "google-fit-ai-analysis",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": true,
+      "has_timeout": false,
+      "estimated_time": 5.0,
+      "lines": 274,
+      "complexity": "LOW"
+    },
+    {
+      "name": "enqueue-analysis",
+      "type": "async",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 144,
+      "complexity": "LOW"
+    },
+    {
+      "name": "n8n-weekly-whatsapp-report",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": false,
+      "has_timeout": false,
+      "estimated_time": 1.0,
+      "lines": 212,
+      "complexity": "LOW"
+    },
+    {
+      "name": "dr-vital-enhanced",
+      "type": "sync",
+      "has_yolo": false,
+      "has_gemini": true,
+      "has_timeout": false,
+      "estimated_time": 5.0,
+      "lines": 547,
+      "complexity": "MEDIUM"
+    }
+  ],
+  "migrations": [
+    {
+      "file": "20260104040533_d3e2defe-8d60-4137-bbf6-970242465cc7.sql",
+      "has_async_tables": false,
+      "has_rpc_functions": true,
+      "lines": 30
+    },
+    {
+      "file": "20260104043813_8e4b127f-8618-4b2f-a92c-6a33488e0739.sql",
+      "has_async_tables": false,
+      "has_rpc_functions": true,
+      "lines": 37
+    },
+    {
+      "file": "20260104050402_37aaff0b-c0e6-43e0-91f1-6c0a44eef7be.sql",
+      "has_async_tables": false,
+      "has_rpc_functions": true,
+      "lines": 31
+    },
+    {
+      "file": "20260104191401_a61bd04d-4f7a-41a4-b625-f29315529a98.sql",
+      "has_async_tables": false,
+      "has_rpc_functions": true,
+      "lines": 54
+    },
+    {
+      "file": "20260105082957_ea7f98b7-1b9c-47ea-b570-05018fb18e6e.sql",
+      "has_async_tables": false,
+      "has_rpc_functions": true,
+      "lines": 43
+    },
+    {
+      "file": "20260107031129_4f86c530-9dd3-449a-8494-ab3a4fd368de.sql",
+      "has_async_tables": false,
+      "has_rpc_functions": true,
+      "lines": 206
+    },
+    {
+      "file": "20260107225626_6b5430b6-f019-4b03-b348-f418cf54b31d.sql",
+      "has_async_tables": false,
+      "has_rpc_functions": true,
+      "lines": 118
+    },
+    {
+      "file": "20260107230351_6393407a-8070-4a50-92cf-ce327fb88fa3.sql",
+      "has_async_tables": false,
+      "has_rpc_functions": true,
+      "lines": 66
+    },
+    {
+      "file": "20260107230924_b63d7200-cca5-4b86-a139-4246585743b2.sql",
+      "has_async_tables": false,
+      "has_rpc_functions": true,
+      "lines": 38
+    },
+    {
+      "file": "20260108002201_9cbd7a22-c4ae-47f3-8827-8497d717f294.sql",
+      "has_async_tables": false,
+      "has_rpc_functions": true,
+      "lines": 54
+    },
+    {
+      "file": "20260108140123_ef17020d-bb7e-41d5-b1ec-8ee0e4c46999.sql",
+      "has_async_tables": false,
+      "has_rpc_functions": true,
+      "lines": 872
+    },
+    {
+      "file": "20260108142655_792edc2a-3fda-49ef-bb6b-4052f2f1141d.sql",
+      "has_async_tables": false,
+      "has_rpc_functions": true,
+      "lines": 163
+    },
+    {
+      "file": "20260108163754_111261b9-6a05-4a14-b4a6-ca03c598ebc7.sql",
+      "has_async_tables": false,
+      "has_rpc_functions": true,
+      "lines": 61
+    },
+    {
+      "file": "20260109083803_ee2cfc18-06b3-42a6-a9eb-758052e8e8ef.sql",
+      "has_async_tables": false,
+      "has_rpc_functions": true,
+      "lines": 34
+    },
+    {
+      "file": "20260109095202_bdbca405-4bf5-4ff2-8ac6-5d1adf6ff84c.sql",
+      "has_async_tables": false,
+      "has_rpc_functions": true,
+      "lines": 72
+    },
+    {
+      "file": "20260109104449_40a3bb87-2c7a-488e-b4e6-ec46bcd3e602.sql",
+      "has_async_tables": false,
+      "has_rpc_functions": true,
+      "lines": 44
+    },
+    {
+      "file": "20260109105125_0100f550-29e3-4e2e-9c5b-645caf8a6bee.sql",
+      "has_async_tables": false,
+      "has_rpc_functions": true,
+      "lines": 153
+    },
+    {
+      "file": "20260109222227_37bdbfa7-3298-4ca7-95c3-8232798641df.sql",
+      "has_async_tables": false,
+      "has_rpc_functions": true,
+      "lines": 183
+    },
+    {
+      "file": "20260109224716_3b61689c-91e4-4b43-b7d0-701ac0789750.sql",
+      "has_async_tables": false,
+      "has_rpc_functions": true,
+      "lines": 31
+    },
+    {
+      "file": "20260110005036_807538c5-8ee5-4302-ae82-557ef2aff9cd.sql",
+      "has_async_tables": false,
+      "has_rpc_functions": true,
+      "lines": 148
+    },
+    {
+      "file": "20260110005130_9cc34d76-b199-45bc-85d3-91788d7d069d.sql",
+      "has_async_tables": false,
+      "has_rpc_functions": true,
+      "lines": 95
+    },
+    {
+      "file": "20260110120000_add_scientific_articles_table.sql",
+      "has_async_tables": false,
+      "has_rpc_functions": true,
+      "lines": 235
+    },
+    {
+      "file": "20260111160000_fix_user_sessions_critical.sql",
+      "has_async_tables": false,
+      "has_rpc_functions": true,
+      "lines": 315
+    },
+    {
+      "file": "20260111180000_fix_streak_calculation.sql",
+      "has_async_tables": false,
+      "has_rpc_functions": true,
+      "lines": 199
+    },
+    {
+      "file": "20260111181039_ca6c9e7b-85f5-4974-821c-667fd180a51a.sql",
+      "has_async_tables": false,
+      "has_rpc_functions": true,
+      "lines": 194
+    },
+    {
+      "file": "20260111190000_optimize_indexes_scalability.sql",
+      "has_async_tables": false,
+      "has_rpc_functions": true,
+      "lines": 216
+    },
+    {
+      "file": "20260111200000_challenges_system_v2.sql",
+      "has_async_tables": false,
+      "has_rpc_functions": true,
+      "lines": 598
+    },
+    {
+      "file": "20260111220000_team_battles_and_chat.sql",
+      "has_async_tables": false,
+      "has_rpc_functions": true,
+      "lines": 167
+    },
+    {
+      "file": "20260111220318_312764e0-f816-4664-960b-0a76585886d2.sql",
+      "has_async_tables": false,
+      "has_rpc_functions": true,
+      "lines": 166
+    },
+    {
+      "file": "20260111232827_b994b380-bb19-49c3-b2f5-2696911f74da.sql",
+      "has_async_tables": false,
+      "has_rpc_functions": true,
+      "lines": 604
+    },
+    {
+      "file": "20260112000000_whatsapp_hybrid_infrastructure.sql",
+      "has_async_tables": false,
+      "has_rpc_functions": true,
+      "lines": 439
+    },
+    {
+      "file": "20260112003154_4730e86c-d697-4a8b-bb98-02343a76ba77.sql",
+      "has_async_tables": false,
+      "has_rpc_functions": true,
+      "lines": 165
+    },
+    {
+      "file": "20260112011950_842c1369-c690-4924-87a1-5f207ac59126.sql",
+      "has_async_tables": false,
+      "has_rpc_functions": true,
+      "lines": 232
+    },
+    {
+      "file": "20260112100000_advanced_exercise_system.sql",
+      "has_async_tables": false,
+      "has_rpc_functions": true,
+      "lines": 1376
+    },
+    {
+      "file": "20260112181238_b2fb0bd5-4551-4ee4-89e5-abeb9346cda2.sql",
+      "has_async_tables": false,
+      "has_rpc_functions": true,
+      "lines": 321
+    },
+    {
+      "file": "20260112200000_camera_workout_system.sql",
+      "has_async_tables": false,
+      "has_rpc_functions": true,
+      "lines": 285
+    },
+    {
+      "file": "20260112300000_dr_vital_revolution.sql",
+      "has_async_tables": false,
+      "has_rpc_functions": true,
+      "lines": 544
+    },
+    {
+      "file": "20260112400000_add_goals_gamification_safe.sql",
+      "has_async_tables": false,
+      "has_rpc_functions": true,
+      "lines": 350
+    },
+    {
+      "file": "20260112500000_coaching_reports_table.sql",
+      "has_async_tables": false,
+      "has_rpc_functions": true,
+      "lines": 64
+    },
+    {
+      "file": "20260113100000_cardio_points_history.sql",
+      "has_async_tables": false,
+      "has_rpc_functions": true,
+      "lines": 138
+    },
+    {
+      "file": "20260114200000_exercise_challenges_x1.sql",
+      "has_async_tables": false,
+      "has_rpc_functions": true,
+      "lines": 225
+    },
+    {
+      "file": "20260114201048_85beeedd-0247-40ac-9b86-beb06b935cdb.sql",
+      "has_async_tables": false,
+      "has_rpc_functions": true,
+      "lines": 273
+    },
+    {
+      "file": "20260115000000_unified_gamification_system.sql",
+      "has_async_tables": false,
+      "has_rpc_functions": true,
+      "lines": 498
+    },
+    {
+      "file": "20260115004306_ebea9f96-ec06-4799-b854-40d414c3a2cd.sql",
+      "has_async_tables": false,
+      "has_rpc_functions": true,
+      "lines": 109
+    },
+    {
+      "file": "20260116121803_f5f83433-d535-4eab-ab2e-92012de14898.sql",
+      "has_async_tables": true,
+      "has_rpc_functions": true,
+      "lines": 39
+    },
+    {
+      "file": "20260116160437_5940447f-2b4a-4e74-b6d5-d631f9538b42.sql",
+      "has_async_tables": false,
+      "has_rpc_functions": true,
+      "lines": 109
+    },
+    {
+      "file": "20260116230000_restore_missing_tables.sql",
+      "has_async_tables": false,
+      "has_rpc_functions": true,
+      "lines": 165
+    },
+    {
+      "file": "20260117032558_5eda9c4e-5909-45e8-aefe-b558dc4a1636.sql",
+      "has_async_tables": true,
+      "has_rpc_functions": true,
+      "lines": 280
+    },
+    {
+      "file": "20260117100000_create_async_jobs_system.sql",
+      "has_async_tables": true,
+      "has_rpc_functions": true,
+      "lines": 370
+    },
+    {
+      "file": "20260117120000_create_performance_monitoring.sql",
+      "has_async_tables": false,
+      "has_rpc_functions": true,
+      "lines": 329
+    },
+    {
+      "file": "20260117150000_create_shopping_lists.sql",
+      "has_async_tables": false,
+      "has_rpc_functions": true,
+      "lines": 84
+    }
+  ],
+  "risks": [
+    {
+      "level": "HIGH",
+      "category": "Breaking Changes",
+      "description": "14 chamadas síncronas em produção precisam ser migradas",
+      "impact": "Requer mudanças em múltiplos componentes do frontend",
+      "mitigation": "Migração gradual com feature flags"
+    },
+    {
+      "level": "MEDIUM",
+      "category": "Complexity",
+      "description": "5 edge functions com >1000 linhas",
+      "impact": "Difícil de refatorar e testar",
+      "mitigation": "Extrair lógica para funções compartilhadas"
+    },
+    {
+      "level": "MEDIUM",
+      "category": "External Dependency",
+      "description": "4 funções dependem do YOLO Service externo",
+      "impact": "Ponto único de falha",
+      "mitigation": "Implementar fallback e retry robusto"
+    },
+    {
+      "level": "LOW",
+      "category": "Technical Debt",
+      "description": "Sistema assíncrono implementado mas não integrado",
+      "impact": "Código duplicado e confusão",
+      "mitigation": "Completar migração ou remover código não usado"
+    }
+  ],
+  "benefits": [
+    {
+      "category": "User Experience",
+      "description": "Usuário não precisa esperar análise completa",
+      "impact": "HIGH",
+      "value": "Redução estimada de 50% na taxa de abandono"
+    },
+    {
+      "category": "Scalability",
+      "description": "Sistema de filas permite processar mais requisições simultâneas",
+      "impact": "HIGH",
+      "value": "Suporta 10x mais usuários simultâneos"
+    },
+    {
+      "category": "Reliability",
+      "description": "Retry automático e cache reduzem falhas",
+      "impact": "MEDIUM",
+      "value": "Redução de 30% em erros reportados"
+    },
+    {
+      "category": "Cost",
+      "description": "Cache e processamento otimizado reduzem custos de IA",
+      "impact": "MEDIUM",
+      "value": "Economia estimada de 20-30% em chamadas de API"
+    }
+  ],
+  "effort_estimate": {
+    "files_to_modify": 6,
+    "estimated_hours": 24,
+    "estimated_days": 3.0,
+    "complexity": "MEDIUM",
+    "breakdown": {
+      "frontend_migration": 12,
+      "testing": 8,
+      "documentation": 4
+    }
+  },
+  "recommendation": {
+    "decision": "RECOMENDADO COM CAUTELA",
+    "reason": "Benefícios justificam o esforço, mas requer planejamento cuidadoso",
+    "confidence": "MEDIUM",
+    "next_steps": [
+      "1. Fazer análise de custo-benefício detalhada",
+      "2. Criar POC com 1 edge function",
+      "3. Medir impacto real em produção",
+      "4. Decidir se continua baseado em dados",
+      "5. Se positivo, seguir plano de migração gradual"
+    ]
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "status": "mostly_ready",
+  "score": 86.66666666666667,
+  "successes": 26,
+  "warnings": 4,
+  "issues": 0,
+  "details": {
+    "successes": [
+      "✅ AppId profissional configurado",
+      "✅ Splash screen com cor da marca",
+      "✅ Sem server.url (produção OK)",
+      "✅ Push notifications configurado",
+      "✅ Supabase URL configurado",
+      "✅ Supabase Key configurado",
+      "✅ App Version configurado",
+      "✅ Versão 1.0.0 (OK para lançamento)",
+      "✅ YOLO URL configurável via environment",
+      "✅ YOLO health check implementado",
+      "✅ YOLO com fallback",
+      "✅ YOLO timeout otimizado (5000ms)",
+      "✅ Nome do pacote profissional",
+      "✅ Versão 1.0.0",
+      "✅ Capacitor instalado (7 pacotes)",
+      "✅ 145 migrações encontradas",
+      "✅ Migração Sistema assíncrono presente",
+      "✅ Migração Monitoramento presente",
+      "✅ Migração Meal types presente",
+      "✅ Migração Listas de compras presente",
+      "✅ public/pwa-192x192.png presente",
+      "✅ public/pwa-512x512.png presente",
+      "✅ public/pwa-maskable-512x512.png presente",
+      "✅ public/screenshot-wide.png presente",
+      "✅ public/screenshot-narrow.png presente",
+      "✅ manifest.json presente"
+    ],
+    "warnings": [
+      "⚠️ YOLO Service tem placeholder (precisa configurar)",
+      "⚠️ Google AI tem placeholder (precisa configurar)",
+      "⚠️ WhatsApp tem placeholder (precisa configurar)",
+      "⚠️ Google Fit tem placeholder (precisa configurar)"
+    ],
+    "issues": []
+  }
+}
