@@ -21,7 +21,7 @@ interface ProcessImageResponse {
 /**
  * Comprime ImageData para JPEG base64
  */
-function compressImage(imageData: ImageData, quality: number): string {
+async function compressImage(imageData: ImageData, quality: number): Promise<string> {
   const canvas = new OffscreenCanvas(imageData.width, imageData.height);
   const ctx = canvas.getContext('2d');
   
@@ -30,16 +30,14 @@ function compressImage(imageData: ImageData, quality: number): string {
   ctx.putImageData(imageData, 0, 0);
   
   // Converter para blob JPEG
-  return canvas.convertToBlob({ type: 'image/jpeg', quality })
-    .then(blob => blob.arrayBuffer())
-    .then(buffer => {
-      const bytes = new Uint8Array(buffer);
-      let binary = '';
-      for (let i = 0; i < bytes.length; i++) {
-        binary += String.fromCharCode(bytes[i]);
-      }
-      return btoa(binary);
-    });
+  const blob = await canvas.convertToBlob({ type: 'image/jpeg', quality });
+  const buffer = await blob.arrayBuffer();
+  const bytes = new Uint8Array(buffer);
+  let binary = '';
+  for (let i = 0; i < bytes.length; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
 }
 
 /**

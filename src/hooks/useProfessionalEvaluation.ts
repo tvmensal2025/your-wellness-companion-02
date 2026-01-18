@@ -86,6 +86,8 @@ interface Evaluation {
   bmi?: number;
   waist_circumference_cm?: number;
   waist_to_height_ratio?: number;
+  waist_to_hip_ratio?: number;
+  risk_level?: string;
 }
 
 interface CalculatedMetrics {
