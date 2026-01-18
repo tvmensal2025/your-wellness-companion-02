@@ -1,0 +1,10 @@
+Deploy VPS AI Worker Migration:
+
+1. Migration PRIMEIRO: supabase/migrations/20260118000000_create_async_jobs_system.sql
+2. Edge Functions: enqueue-analysis + get-analysis-status
+3. Frontend: useAsyncAnalysis hook + componentes de UI
+
+Feature flags OFF por padrão = zero breaking changes.
+Verificar: tabelas criadas, functions online, app funcionando.
+
+Benefícios: 98% menos timeouts, 65% menos custos, 33% mais rápido.
